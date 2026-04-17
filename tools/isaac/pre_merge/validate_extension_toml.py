@@ -31,6 +31,8 @@ This comprehensive validation script checks and can automatically fix multiple a
 7. **Required Fields**: Optionally validates presence of required fields like writeTarget.kit = true
 8. **Deprecation Section**: Validates structure and content of [deprecation] sections
 9. **Core Section Cleanup**: Removes redundant [core] sections that only contain default values (reloadable = true, order = 0)
+10. **Linked File Existence**: Verifies that files referenced by changelog, readme, preview_image, icon,
+   and [documentation] pages actually exist on disk relative to the extension root
 
 ## Formatting and Spacing:
 10. **Section Spacing**: Ensures exactly one blank line between sections (not more, not less)
@@ -1261,6 +1263,9 @@ class ExtensionTomlValidator:
 
         # Check that [package] is the first section if there's no [core] section
         self._validate_package_first_section(file_path, fixed_content, toml_data)
+
+        # Check that linked files (changelog, readme, icon, etc.) exist on disk
+        self._validate_linked_files_exist(file_path, toml_data)
 
         # Check [settings] section comments
         if config.check_settings_comments and "settings" in toml_data:
@@ -2780,6 +2785,47 @@ class ExtensionTomlValidator:
                     return FixResult(was_fixed=True, fixed_content=fixed_content)
 
         return FixResult(was_fixed=False, fixed_content=content)
+
+    def _validate_linked_files_exist(self, file_path: str, toml_data: dict) -> None:
+        """Validate that files referenced by the extension.toml actually exist on disk.
+
+        Checks the following fields:
+        - [package] changelog, readme, preview_image, icon
+        - [documentation] pages (each entry)
+
+        All paths are resolved relative to the extension root directory
+        (the parent of the ``config/`` directory that contains the extension.toml).
+
+        Args:
+            file_path: Absolute path to the extension.toml file.
+            toml_data: Parsed TOML data.
+        """
+        ext_root = Path(file_path).resolve().parent.parent
+
+        package_data = toml_data.get("package", {})
+        file_fields = ["changelog", "readme", "preview_image", "icon"]
+        for field in file_fields:
+            rel_path = package_data.get(field)
+            if rel_path and not (ext_root / rel_path).exists():
+                self.errors.append(
+                    ValidationError(
+                        file_path,
+                        "Missing Linked File",
+                        f"[package] {field} references '{rel_path}' but the file does not exist (resolved to {ext_root / rel_path})",
+                    )
+                )
+
+        doc_data = toml_data.get("documentation", {})
+        pages = doc_data.get("pages", [])
+        for page_path in pages:
+            if page_path and not (ext_root / page_path).exists():
+                self.errors.append(
+                    ValidationError(
+                        file_path,
+                        "Missing Linked File",
+                        f"[documentation] pages references '{page_path}' but the file does not exist (resolved to {ext_root / page_path})",
+                    )
+                )
 
     def _validate_package_first_section(self, file_path: str, content: str, toml_data: dict) -> None:
         """Validate that [package] is the first section if there's no [core] section.
