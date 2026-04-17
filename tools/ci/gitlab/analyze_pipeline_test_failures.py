@@ -34,7 +34,6 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-
 TEST_PROCESS_FAILED_RE = re.compile(r"\[TEST PROCESS FAILED:\s*([^\]]+)\]")
 EXTENSION_TEST_FAILED_RE = re.compile(r"\[EXTENSION TEST FAILED:\s*([^\]]+)\]")
 
@@ -56,9 +55,7 @@ EXPLICIT_TIMEOUT_MARKER_RE = re.compile(
 
 MODULE_NOT_FOUND_RE = re.compile(r"ModuleNotFoundError:\s+No module named ['\"]([^'\"]+)['\"]")
 IMPORT_ERROR_RE = re.compile(r"ImportError:\s+(.+)")
-ATTRIBUTE_ERROR_RE = re.compile(
-    r"AttributeError:\s+module ['\"]([^'\"]+)['\"] has no attribute ['\"]([^'\"]+)['\"]"
-)
+ATTRIBUTE_ERROR_RE = re.compile(r"AttributeError:\s+module ['\"]([^'\"]+)['\"] has no attribute ['\"]([^'\"]+)['\"]")
 GENERIC_ATTRIBUTE_ERROR_RE = re.compile(r"AttributeError:\s+(.+)")
 AUTOSUMMARY_FAILED_IMPORT_RE = re.compile(r"autosummary:\s+failed to import\s+(.+?)\.?$", re.IGNORECASE)
 AUTODOC_FAILED_IMPORT_RE = re.compile(
@@ -74,6 +71,23 @@ TOCTREE_RE = re.compile(
     r"document isn't included in any toctree|toctree contains reference to nonexisting document",
     re.IGNORECASE,
 )
+
+# Infrastructure / CI-config patterns (not test failures per se)
+ARGPARSE_INVALID_CHOICE_RE = re.compile(r"error: argument .+: invalid choice: '([^']+)'")
+REPO_CI_COMMAND_FAILED_RE = re.compile(
+    r"\[ERROR\]\[omni\.repo\.\w+(?:\.\w+)*\]\s+command\s+'.*'\s+exited with code\s+(\d+)",
+)
+SYSTEM_MODULE_NOT_FOUND_RE = re.compile(r"/bin/python3?: No module named (\S+)")
+APT_PERMISSION_DENIED_RE = re.compile(r"E: Could not open lock file .+ Permission denied|E: Unable to lock directory")
+MISSING_DIRECTORY_RE = re.compile(r"ERROR: (\S+) directory not found")
+HISTORICAL_FETCH_ERRORS_RE = re.compile(r"Historical fetch finished with (\d+) error")
+JOB_FAILED_EXIT_RE = re.compile(
+    r"ERROR: Job failed: (?:command (?:exited with|terminated with exit) code|exit status|real exit code:)\s*(\d+)"
+)
+
+# ANSI escape stripper
+_ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;]*[a-zA-Z]|\r")
+
 ACTIONABLE_BUCKETS = {
     "gitlab_access": {
         "label": "GitLab/auth",
@@ -98,6 +112,10 @@ ACTIONABLE_BUCKETS = {
     "failed_tests": {
         "label": "Test failure",
         "recommendation": "Inspect the failing test marker and rerun the narrowest local test that covers the same code path.",
+    },
+    "infrastructure": {
+        "label": "Infrastructure / CI config",
+        "recommendation": "Fix the CI configuration, runner environment, or upstream dependency — these are not test-code bugs.",
     },
 }
 
@@ -496,6 +514,77 @@ def _extract_diagnostics(lines: list[str], job_meta: dict, trace_path: Path) -> 
                 trace_path,
                 idx,
             )
+        elif match := ARGPARSE_INVALID_CHOICE_RE.search(line):
+            bad_choice = match.group(1)
+            record = _new_diagnostic(
+                "infrastructure",
+                "invalid_suite_or_arg",
+                f"Invalid argument `{bad_choice}` — not a valid choice",
+                f"Update .gitlab-ci.yml or the calling script: `{bad_choice}` is not a recognised option for this command.",
+                line,
+                job_meta,
+                trace_path,
+                idx,
+            )
+        elif match := REPO_CI_COMMAND_FAILED_RE.search(line):
+            exit_code = match.group(1)
+            record = _new_diagnostic(
+                "infrastructure",
+                "repo_command_failed",
+                f"Repo CI command exited with code {exit_code}",
+                "Check the command arguments in the CI job definition and the repo.log for details.",
+                line,
+                job_meta,
+                trace_path,
+                idx,
+            )
+        elif match := SYSTEM_MODULE_NOT_FOUND_RE.search(line):
+            module_name = match.group(1)
+            record = _new_diagnostic(
+                "infrastructure",
+                "system_module_missing",
+                f"System Python missing module `{module_name}`",
+                f"The CI runner's system Python lacks `{module_name}`. Install it in the runner image or use the repo's vendored Python.",
+                line,
+                job_meta,
+                trace_path,
+                idx,
+            )
+        elif APT_PERMISSION_DENIED_RE.search(line):
+            record = _new_diagnostic(
+                "infrastructure",
+                "apt_permission_denied",
+                "apt package manager permission denied on runner",
+                "The CI runner does not have permission to install packages via apt. Fix the runner image or job permissions.",
+                line,
+                job_meta,
+                trace_path,
+                idx,
+            )
+        elif match := MISSING_DIRECTORY_RE.search(line):
+            dir_name = match.group(1)
+            record = _new_diagnostic(
+                "infrastructure",
+                "missing_directory",
+                f"Expected directory `{dir_name}` not found",
+                f"An upstream job likely failed to produce `{dir_name}`. Check that the dependency job succeeded and wrote its artifacts.",
+                line,
+                job_meta,
+                trace_path,
+                idx,
+            )
+        elif match := HISTORICAL_FETCH_ERRORS_RE.search(line):
+            error_count = match.group(1)
+            record = _new_diagnostic(
+                "infrastructure",
+                "historical_fetch_error",
+                f"Historical data fetch finished with {error_count} error(s)",
+                "GitLab API calls for historical pipeline data failed. Check token permissions and whether the target branches/pipelines still exist.",
+                line,
+                job_meta,
+                trace_path,
+                idx,
+            )
 
         if record is None:
             continue
@@ -509,39 +598,39 @@ def _extract_diagnostics(lines: list[str], job_meta: dict, trace_path: Path) -> 
     return records
 
 
-def _analyze_job(job_dir: Path, include_success_jobs: bool) -> list[FailureRecord]:
+def _read_trace_lines(job_dir: Path, include_success_jobs: bool) -> tuple[dict, Path, list[str]] | None:
+    """Read and ANSI-strip a job trace, returning (meta, path, lines) or *None*."""
     job_meta = _load_job_metadata(job_dir)
     status = str(job_meta.get("status", "")).lower()
     if (not include_success_jobs) and status not in {"failed", "canceled"}:
-        return []
+        return None
 
     trace_path = job_dir / "job_trace.log"
     if not trace_path.exists():
-        return []
+        return None
 
     try:
-        lines = trace_path.read_text(encoding="utf-8", errors="replace").splitlines()
+        raw = trace_path.read_text(encoding="utf-8", errors="replace")
     except OSError:
-        return []
+        return None
 
+    clean = _ANSI_ESCAPE_RE.sub("", raw)
+    return job_meta, trace_path, clean.splitlines()
+
+
+def _analyze_job(job_dir: Path, include_success_jobs: bool) -> list[FailureRecord]:
+    result = _read_trace_lines(job_dir, include_success_jobs)
+    if result is None:
+        return []
+    job_meta, trace_path, lines = result
     return _classify_failed_tests(lines, job_meta, trace_path)
 
 
 def _analyze_job_diagnostics(job_dir: Path, include_success_jobs: bool) -> list[DiagnosticRecord]:
-    job_meta = _load_job_metadata(job_dir)
-    status = str(job_meta.get("status", "")).lower()
-    if (not include_success_jobs) and status not in {"failed", "canceled"}:
+    result = _read_trace_lines(job_dir, include_success_jobs)
+    if result is None:
         return []
-
-    trace_path = job_dir / "job_trace.log"
-    if not trace_path.exists():
-        return []
-
-    try:
-        lines = trace_path.read_text(encoding="utf-8", errors="replace").splitlines()
-    except OSError:
-        return []
-
+    job_meta, trace_path, lines = result
     return _extract_diagnostics(lines, job_meta, trace_path)
 
 
@@ -658,7 +747,7 @@ def _build_actionable_buckets(
     for record in diagnostics:
         grouped_diagnostics.setdefault(record.bucket, []).append(record)
 
-    for bucket_name in ("gitlab_access", "import_api_exposure", "signature_declaration", "doc_build"):
+    for bucket_name in ("gitlab_access", "infrastructure", "import_api_exposure", "signature_declaration", "doc_build"):
         bucket_records = grouped_diagnostics.get(bucket_name, [])
         if not bucket_records:
             continue
@@ -775,6 +864,52 @@ def main() -> None:
     for job_dir in sorted(p for p in logs_dir.iterdir() if p.is_dir()):
         all_records.extend(_analyze_job(job_dir, args.include_success_jobs))
         diagnostic_records.extend(_analyze_job_diagnostics(job_dir, args.include_success_jobs))
+
+    # Coverage gap detection: find failed jobs with zero detections and
+    # emit a fallback diagnostic so nothing silently disappears.
+    detected_job_ids: set[int] = set()
+    for r in all_records:
+        if r.job_id is not None:
+            detected_job_ids.add(r.job_id)
+    for r in diagnostic_records:
+        if r.job_id is not None:
+            detected_job_ids.add(r.job_id)
+
+    for job_dir in sorted(p for p in logs_dir.iterdir() if p.is_dir()):
+        job_meta = _load_job_metadata(job_dir)
+        job_id = job_meta.get("job_id")
+        status = str(job_meta.get("status", "")).lower()
+        if status not in {"failed", "canceled"} or job_id in detected_job_ids:
+            continue
+        # Scan for the generic "ERROR: Job failed" line to use as evidence
+        trace_path = job_dir / "job_trace.log"
+        evidence = f"Job {job_id} ({job_meta.get('name', 'unknown')}) failed with no specific pattern detected"
+        line_no = 1
+        if trace_path.exists():
+            try:
+                lines = _ANSI_ESCAPE_RE.sub("", trace_path.read_text(encoding="utf-8", errors="replace")).splitlines()
+                for idx, raw_line in enumerate(lines, start=1):
+                    match = JOB_FAILED_EXIT_RE.search(raw_line)
+                    if match:
+                        evidence = raw_line.strip()
+                        line_no = idx
+            except OSError:
+                pass
+        diagnostic_records.append(
+            DiagnosticRecord(
+                bucket="infrastructure",
+                category="unclassified_failure",
+                summary=f"Unclassified failure in `{job_meta.get('name', 'unknown')}`",
+                recommendation="Inspect the full job trace — the failure did not match any known pattern. It may be a CI config, environment, or upstream dependency issue.",
+                job_id=job_id,
+                job_name=job_meta.get("name", "unknown"),
+                stage=job_meta.get("stage", ""),
+                status=status,
+                evidence=evidence,
+                file=str(trace_path),
+                line=line_no,
+            )
+        )
 
     download_report = _load_download_report(logs_dir)
     diagnostic_records.extend(_extract_download_diagnostics(download_report, logs_dir))
