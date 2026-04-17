@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
-# Copyright (c) 2021-2026, NVIDIA CORPORATION. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
 #
-# NVIDIA CORPORATION and its licensors retain all intellectual property
-# and proprietary rights in and to this software, related documentation
-# and any modifications thereto. Any use, reproduction, disclosure or
-# distribution of this software and related documentation without an express
-# license agreement from NVIDIA CORPORATION is strictly prohibited.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Download job logs from a GitLab pipeline for offline analysis.
 
 Given a pipeline ID, this script fetches jobs from the GitLab API and downloads:
@@ -32,7 +39,6 @@ from urllib.parse import quote, urlparse
 
 import requests
 
-
 DEFAULT_TEST_STAGES = {"test", "nightly-test", "external-test", "prod-test", "deploy-test"}
 DEFAULT_TOKEN_ENV_CANDIDATES = (
     "ISAAC_MAINTAINER_RO_TOKEN",
@@ -47,6 +53,37 @@ def _sanitize_name(name: str) -> str:
     return safe[:120] if safe else "unknown_job"
 
 
+def _find_latest_pipeline(
+    gitlab_url: str,
+    project_id: int,
+    headers: dict[str, str],
+    ref: str,
+    statuses: tuple[str, ...] = ("failed", "success"),
+) -> dict[str, Any]:
+    """Find the most recent finished pipeline for *ref* (branch name).
+
+    Searches the given *statuses* in order so that failed pipelines are
+    preferred (the common triage case).  Returns the first match.
+    """
+    for status in statuses:
+        url = f"{gitlab_url}/api/v4/projects/{project_id}/pipelines"
+        params: dict[str, Any] = {
+            "ref": ref,
+            "status": status,
+            "per_page": 1,
+            "order_by": "id",
+            "sort": "desc",
+        }
+        pipelines = _request_json(url, headers, params=params)
+        if pipelines:
+            return pipelines[0]
+
+    raise ValueError(
+        f"No finished pipeline found for ref '{ref}' on {gitlab_url} "
+        f"(project {project_id}).  Tried statuses: {statuses}"
+    )
+
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Download logs from a GitLab pipeline")
     pipeline_group = parser.add_mutually_exclusive_group(required=True)
@@ -54,6 +91,10 @@ def _parse_args() -> argparse.Namespace:
     pipeline_group.add_argument(
         "--pipeline-url",
         help="GitLab pipeline URL (e.g. https://host/group/project/-/pipelines/12345)",
+    )
+    pipeline_group.add_argument(
+        "--ref",
+        help="Branch name — automatically find the latest finished pipeline for this ref (e.g. develop)",
     )
     parser.add_argument(
         "--project-id",
@@ -121,9 +162,7 @@ def _parse_pipeline_url(pipeline_url: str) -> tuple[str, str, int]:
     path = parsed.path.strip("/")
     match = re.search(r"(.+)/-/pipelines/(\d+)$", path)
     if not match:
-        raise ValueError(
-            "Pipeline URL must look like https://<host>/<group>/<project>/-/pipelines/<id>"
-        )
+        raise ValueError("Pipeline URL must look like https://<host>/<group>/<project>/-/pipelines/<id>")
 
     project_path = match.group(1)
     pipeline_id = int(match.group(2))
@@ -150,13 +189,12 @@ def _resolve_token(args: argparse.Namespace) -> tuple[str, str]:
             return token, env_name
 
     searched = ", ".join(DEFAULT_TOKEN_ENV_CANDIDATES)
-    raise ValueError(
-        "GitLab token not found. Set --token-env or one of these environment variables: "
-        f"{searched}"
-    )
+    raise ValueError("GitLab token not found. Set --token-env or one of these environment variables: " f"{searched}")
 
 
-def _list_pipeline_jobs(gitlab_url: str, project_id: int, pipeline_id: int, headers: dict[str, str]) -> list[dict[str, Any]]:
+def _list_pipeline_jobs(
+    gitlab_url: str, project_id: int, pipeline_id: int, headers: dict[str, str]
+) -> list[dict[str, Any]]:
     jobs: list[dict[str, Any]] = []
     page = 1
     while True:
@@ -201,7 +239,9 @@ def _select_jobs(args: argparse.Namespace, jobs: list[dict[str, Any]]) -> list[d
     return selected
 
 
-def _selection_summary(args: argparse.Namespace, jobs: list[dict[str, Any]], selected_jobs: list[dict[str, Any]]) -> dict[str, Any]:
+def _selection_summary(
+    args: argparse.Namespace, jobs: list[dict[str, Any]], selected_jobs: list[dict[str, Any]]
+) -> dict[str, Any]:
     selected_ids = {job["id"] for job in selected_jobs}
     skipped_jobs = [job for job in jobs if job["id"] not in selected_ids]
     return {
@@ -221,6 +261,18 @@ def _selection_summary(args: argparse.Namespace, jobs: list[dict[str, Any]], sel
     }
 
 
+def _resolve_project_id_env(args: argparse.Namespace) -> tuple[str, int]:
+    """Return (gitlab_url, project_id) from args or environment."""
+    gitlab_url = args.gitlab_url
+    project_id = args.project_id
+    if project_id is None:
+        env_project_id = os.getenv("CI_PROJECT_ID")
+        if env_project_id is None:
+            raise ValueError("Provide --project-id or set CI_PROJECT_ID")
+        project_id = int(env_project_id)
+    return gitlab_url, project_id
+
+
 def _resolve_project_id(
     args: argparse.Namespace,
     headers: dict[str, str],
@@ -235,16 +287,18 @@ def _resolve_project_id(
             project_id = int(project["id"])
         return gitlab_url, project_id, pipeline_id
 
-    if args.pipeline_id is None:
-        raise ValueError("Provide --pipeline-id or --pipeline-url")
+    if getattr(args, "ref", None):
+        gitlab_url, project_id = _resolve_project_id_env(args)
+        pipeline = _find_latest_pipeline(gitlab_url, project_id, headers, args.ref)
+        pipeline_id = int(pipeline["id"])
+        print(f"Resolved --ref {args.ref} → pipeline {pipeline_id} ({pipeline.get('status', 'unknown')})")
+        return gitlab_url, project_id, pipeline_id
 
-    project_id = args.project_id
-    if project_id is None:
-        env_project_id = os.getenv("CI_PROJECT_ID")
-        if env_project_id is None:
-            raise ValueError("Provide --project-id (or --pipeline-url) or set CI_PROJECT_ID")
-        project_id = int(env_project_id)
-    return args.gitlab_url, project_id, args.pipeline_id
+    if args.pipeline_id is None:
+        raise ValueError("Provide --pipeline-id, --pipeline-url, or --ref")
+
+    gitlab_url, project_id = _resolve_project_id_env(args)
+    return gitlab_url, project_id, args.pipeline_id
 
 
 def main() -> None:
