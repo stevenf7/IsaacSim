@@ -330,18 +330,21 @@ def run_fetch_mode(args: argparse.Namespace, config: dict | None = None) -> None
             # Try 1: download the raw JUnit XML artifact
             xml_bytes = _download_junit_xml(client, project_enc, job["id"])
             data_fetched = False
-            summary, suites = {}, {}
+            summary: dict = {}
+            sections: dict = {}
 
             if xml_bytes:
                 try:
-                    summary, suites = parse_junit_xml(xml_bytes)
+                    summary, sections = parse_junit_xml(xml_bytes)
                     data_fetched = True
                     print(f"    ✓ artifact  {summary['passed']}/{summary['total']} passed "
                           f"({summary['pass_rate']*100:.1f}%)", file=sys.stderr)
                 except Exception as exc:
                     print(f"    ⚠  XML parse failed: {exc}", file=sys.stderr)
 
-            # Try 2: fall back to GitLab's stored test-report (survives artifact expiry)
+            # Try 2: fall back to GitLab's stored test-report (survives artifact expiry).
+            # parse_test_report_api returns flat classname-grouped suites; wrap them in
+            # a single section named after the job so the cache shape stays consistent.
             if not data_fetched:
                 if xml_bytes is None:
                     print(f"    ⚠  artifact expired — trying test-report API…", file=sys.stderr)
@@ -349,8 +352,13 @@ def run_fetch_mode(args: argparse.Namespace, config: dict | None = None) -> None
                     report = client.get_json(
                         f"/projects/{project_enc}/jobs/{job['id']}/test_report"
                     )
-                    summary, suites = parse_test_report_api(report)
+                    summary, flat_suites = parse_test_report_api(report)
                     if summary.get("total", 0) > 0:
+                        sections = {
+                            job.get("name", "tests"): _make_section(
+                                job.get("id"), job.get("web_url", ""), summary, flat_suites
+                            )
+                        }
                         data_fetched = True
                         print(
                             f"    ✓ test-report {summary['passed']}/{summary['total']} passed "
@@ -369,8 +377,7 @@ def run_fetch_mode(args: argparse.Namespace, config: dict | None = None) -> None
                 failed_count = summary["failed"] + summary["errored"] + summary.get("timed_out", 0)
                 conclusion = "success" if failed_count == 0 else "failure"
 
-            # Save per-run JSON in flat format (backward compat for single-job mode)
-            per_run_path.write_text(json.dumps({"summary": summary, "suites": suites},
+            per_run_path.write_text(json.dumps({"sections": sections},
                                                 separators=(",", ":")))
 
             # Determine isaac_lab_branch: prefer value stored in the pipeline's variables if

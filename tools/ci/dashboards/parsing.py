@@ -77,11 +77,32 @@ def worst_status(*statuses: str) -> str:
     return max(statuses, key=lambda s: STATUS_PRIORITY.get(s, 0))
 
 
+def _status_counts(status: str) -> tuple[int, int, int, int, int, int]:
+    """Return (total, passed, failed, errored, skipped, timed_out) for one status."""
+    return (
+        1,
+        1 if status == "pass" else 0,
+        1 if status == "fail" else 0,
+        1 if status == "error" else 0,
+        1 if status == "skip" else 0,
+        1 if status == "timeout" else 0,
+    )
+
+
 def parse_junit_xml(xml_bytes: bytes) -> tuple[dict, dict]:
-    """Parse JUnit XML bytes.
+    """Parse JUnit XML bytes into the dashboard's sections format.
+
+    Each top-level ``<testsuite>`` becomes a section (a collapsible group in
+    the dashboard).  Within each section, every ``<testcase>`` becomes its
+    own suite row so the heatmap shows one row per test — but the per-suite
+    ``getSections`` expansion that used to happen in JS is now done here,
+    once, at ingest time.  This preserves visual grouping without the
+    per-cell rebuild cost that made the IsaacLab dashboard sluggish.
 
     Returns:
-        (summary dict, suites dict)
+        (summary dict, sections dict) where ``sections`` has the same shape
+        as sections-mode ingest:
+        ``{section_name: {job_id, job_url, summary, suites}}``.
     """
     root = ET.fromstring(xml_bytes)
 
@@ -92,7 +113,7 @@ def parse_junit_xml(xml_bytes: bytes) -> tuple[dict, dict]:
     else:
         suites_elems = list(root.iter("testsuite"))
 
-    suites_data = {}
+    sections: dict = {}
     total = passed = failed = errored = skipped = timed_out = 0
     total_duration = 0.0
 
@@ -100,62 +121,93 @@ def parse_junit_xml(xml_bytes: bytes) -> tuple[dict, dict]:
         suite_name = suite.get("name", "unknown")
         is_timeout_suite = suite_name.startswith("timeout_")
 
-        suite_total = suite_passed = suite_failed = suite_errored = 0
-        suite_skipped = suite_timed_out = 0
-        suite_duration = 0.0
-        suite_worst = "pass"
-        cases = []
+        per_case_suites: dict = {}
+        s_total = s_passed = s_failed = s_errored = s_skipped = s_timed_out = 0
+        s_duration = 0.0
+        s_worst = "pass"
+        used_keys: set[str] = set()
 
         for tc in suite.findall("testcase"):
             status = get_testcase_status(tc)
             if is_timeout_suite and status == "error":
                 status = "timeout"
+            duration = round(float(tc.get("time", 0) or 0), 3)
+            case_name = tc.get("name", "")
+            classname = tc.get("classname", "")
 
-            duration = float(tc.get("time", 0) or 0)
-            suite_duration += duration
-            suite_total += 1
+            # Give every case a unique row key.  Prefer the test name, fall
+            # back to ``classname::name``, then to a numeric suffix when even
+            # that collides (parametrized tests can repeat).
+            key = case_name or "unnamed"
+            if key in used_keys:
+                key = f"{classname}::{case_name}" if classname else f"{case_name}#{len(used_keys)}"
+                n = 1
+                while key in used_keys:
+                    key = f"{classname}::{case_name}#{n}" if classname else f"{case_name}#{n}"
+                    n += 1
+            used_keys.add(key)
 
-            if status == "pass":
-                suite_passed += 1
-            elif status == "fail":
-                suite_failed += 1
-            elif status == "error":
-                suite_errored += 1
-            elif status == "skip":
-                suite_skipped += 1
-            elif status == "timeout":
-                suite_timed_out += 1
+            c_tot, c_pass, c_fail, c_err, c_skip, c_to = _status_counts(status)
+            per_case_suites[key] = {
+                "total": c_tot,
+                "passed": c_pass,
+                "failed": c_fail,
+                "errored": c_err,
+                "skipped": c_skip,
+                "timed_out": c_to,
+                "duration_seconds": duration,
+                "worst_status": status,
+                "cases": [{
+                    "name": case_name,
+                    "classname": classname,
+                    "duration_seconds": duration,
+                    "status": status,
+                }],
+            }
 
-            suite_worst = worst_status(suite_worst, status)
-            cases.append({
-                "name": tc.get("name", ""),
-                "classname": tc.get("classname", ""),
-                "duration_seconds": round(duration, 3),
-                "status": status,
-            })
+            s_total += c_tot
+            s_passed += c_pass
+            s_failed += c_fail
+            s_errored += c_err
+            s_skipped += c_skip
+            s_timed_out += c_to
+            s_duration += duration
+            s_worst = worst_status(s_worst, status)
 
-        if suite_duration == 0:
-            suite_duration = float(suite.get("time", 0) or 0)
+        if not per_case_suites:
+            continue
 
-        suites_data[suite_name] = {
-            "total": suite_total,
-            "passed": suite_passed,
-            "failed": suite_failed,
-            "errored": suite_errored,
-            "skipped": suite_skipped,
-            "timed_out": suite_timed_out,
-            "duration_seconds": round(suite_duration, 2),
-            "worst_status": suite_worst,
-            "cases": cases,
+        # Disambiguate section names when an XML has duplicates (rare).
+        sec_key = suite_name
+        n = 1
+        while sec_key in sections:
+            sec_key = f"{suite_name}#{n}"
+            n += 1
+
+        sections[sec_key] = {
+            "job_id": None,
+            "job_url": None,
+            "summary": {
+                "total": s_total,
+                "passed": s_passed,
+                "failed": s_failed,
+                "errored": s_errored,
+                "skipped": s_skipped,
+                "timed_out": s_timed_out,
+                "pass_rate": round(s_passed / s_total, 4) if s_total else 0.0,
+                "total_duration_seconds": round(s_duration, 2),
+                "worst_status": s_worst,
+            },
+            "suites": per_case_suites,
         }
 
-        total += suite_total
-        passed += suite_passed
-        failed += suite_failed
-        errored += suite_errored
-        skipped += suite_skipped
-        timed_out += suite_timed_out
-        total_duration += suite_duration
+        total += s_total
+        passed += s_passed
+        failed += s_failed
+        errored += s_errored
+        skipped += s_skipped
+        timed_out += s_timed_out
+        total_duration += s_duration
 
     pass_rate = passed / total if total > 0 else 0.0
     summary = {
@@ -169,7 +221,7 @@ def parse_junit_xml(xml_bytes: bytes) -> tuple[dict, dict]:
         "total_duration_seconds": round(total_duration, 2),
     }
 
-    return summary, suites_data
+    return summary, sections
 
 
 def merge_summaries(summaries: list[dict]) -> dict:

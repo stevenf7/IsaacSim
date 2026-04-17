@@ -1209,24 +1209,42 @@ pages:
     script:
       - mkdir -p .public
       - cp -r _build/docs/isaac-sim/latest/* .public/ || true
-      # Heatmap artifacts from both Slack jobs share the same filename; the last
-      # one downloaded wins. Copy whichever is present to a generic location.
-      - cp pipeline_test_chart_heatmap.html .public/heatmap.html 2>/dev/null || true
-      - cp pipeline_test_chart_heatmap.png .public/heatmap.png 2>/dev/null || true
+      # IsaacSim heatmap stays at the generic top-level location for backward
+      # compatibility with existing links.
+      - cp pipeline_test_chart_isaacsim_heatmap.html .public/heatmap.html 2>/dev/null || true
+      - cp pipeline_test_chart_isaacsim_heatmap.png .public/heatmap.png 2>/dev/null || true
       - |
         ILAB_BRANCH="${ISAAC_LAB_BRANCH:-develop}"
         if [ -d _isaaclab_cache/output ]; then
           mkdir -p ".public/isaac-lab/${ILAB_BRANCH}/data"
           cp _isaaclab_cache/output/dashboard.html ".public/isaac-lab/${ILAB_BRANCH}/"
           cp -r _isaaclab_cache/output/data/. ".public/isaac-lab/${ILAB_BRANCH}/data/"
+          # Co-locate the IsaacLab heatmap next to its dashboard so the in-page
+          # link (./heatmap.html) resolves.
+          cp pipeline_test_chart_isaaclab_heatmap.html ".public/isaac-lab/${ILAB_BRANCH}/heatmap.html" 2>/dev/null || true
+          cp pipeline_test_chart_isaaclab_heatmap.png ".public/isaac-lab/${ILAB_BRANCH}/heatmap.png" 2>/dev/null || true
         fi
       - |
         if [ -d _isaacsim_cache/output ]; then
           mkdir -p .public/isaac-sim/data
           cp _isaacsim_cache/output/dashboard.html .public/isaac-sim/index.html
           cp -r _isaacsim_cache/output/data/. .public/isaac-sim/data/
+          # Co-locate the IsaacSim heatmap next to its dashboard so the in-page
+          # link (./heatmap.html) resolves.
+          cp pipeline_test_chart_isaacsim_heatmap.html .public/isaac-sim/heatmap.html 2>/dev/null || true
+          cp pipeline_test_chart_isaacsim_heatmap.png .public/isaac-sim/heatmap.png 2>/dev/null || true
         fi
       - mv .public public
+      - |
+        # Print the public URLs for the dashboards and heatmaps that were published.
+        # CI_PAGES_URL already includes PAGES_PATH_PREFIX when multi-deployment is in use.
+        ILAB_BRANCH="${ISAAC_LAB_BRANCH:-develop}"
+        BASE="${CI_PAGES_URL%/}"
+        echo "=== Published pages URLs ==="
+        [ -f "public/isaac-sim/index.html" ] && echo "IsaacSim dashboard:  ${BASE}/isaac-sim/"
+        [ -f "public/isaac-sim/heatmap.html" ] && echo "IsaacSim heatmap:    ${BASE}/isaac-sim/heatmap.html"
+        [ -f "public/isaac-lab/${ILAB_BRANCH}/dashboard.html" ] && echo "IsaacLab dashboard:  ${BASE}/isaac-lab/${ILAB_BRANCH}/dashboard.html"
+        [ -f "public/isaac-lab/${ILAB_BRANCH}/heatmap.html" ] && echo "IsaacLab heatmap:    ${BASE}/isaac-lab/${ILAB_BRANCH}/heatmap.html"
     artifacts:
         expire_in: never
         paths:
@@ -2439,8 +2457,8 @@ post-to-isaac-lab-slack:
     - ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py slack --config tools/ci/dashboards/config_isaac_lab.yml
   artifacts:
     paths:
-      - pipeline_test_chart_heatmap.html
-      - pipeline_test_chart_heatmap.png
+      - pipeline_test_chart_isaaclab_heatmap.html
+      - pipeline_test_chart_isaaclab_heatmap.png
       - regressions.txt
     expire_in: 1 week
 
@@ -2664,7 +2682,7 @@ post-to-isaac-sim-slack:
     - ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py slack --config tools/ci/dashboards/config_isaac_sim.yml
   artifacts:
     paths:
-      - pipeline_test_chart_heatmap.html
-      - pipeline_test_chart_heatmap.png
+      - pipeline_test_chart_isaacsim_heatmap.html
+      - pipeline_test_chart_isaacsim_heatmap.png
       - regressions.txt
     expire_in: 1 week

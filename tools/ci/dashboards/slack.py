@@ -175,8 +175,16 @@ def _post_heatmap_to_slack(
     if exclude_container_tests and "test-container" not in excl:
         excl.append("test-container")
 
+    # Use namespace_prefix (e.g. "isaacsim"/"isaaclab") to keep the heatmap
+    # filenames unique so that the IsaacSim and IsaacLab Slack jobs don't
+    # overwrite each other's artifacts when both publish to the same pages
+    # deployment.
+    prefix = config.get("namespace_prefix", "heatmap")
+    output_chart = f"pipeline_test_chart_{prefix}.html"
+
     run_pipeline_test_stats(
         heatmap=True, quiet=True,
+        output_chart=output_chart,
         exclude_patterns=excl,
         include_patterns=incl or None,
         limit=hcfg.get("limit", 100),
@@ -189,7 +197,8 @@ def _post_heatmap_to_slack(
 
     token = _cfg_slack_token(config)
     cmap = _cfg_channel_id_map(config)
-    for fname in ("pipeline_test_chart_heatmap.html", "pipeline_test_chart_heatmap.png"):
+    for fname in (f"pipeline_test_chart_{prefix}_heatmap.html",
+                  f"pipeline_test_chart_{prefix}_heatmap.png"):
         if os.path.isfile(fname):
             _post_to_slack(
                 f"Test heatmap for {display_pipeline_url}",
