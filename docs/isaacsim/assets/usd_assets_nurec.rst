@@ -1,6 +1,6 @@
 
 ..
-   Copyright (c) 2025, NVIDIA CORPORATION. All rights reserved.
+   Copyright (c) 2025-2026, NVIDIA CORPORATION. All rights reserved.
    NVIDIA CORPORATION and its licensors retain all intellectual property
    and proprietary rights in and to this software, related documentation
    and any modifications thereto. Any use, reproduction, disclosure or
@@ -14,9 +14,12 @@
 Neural Volume Rendering
 ================================
 
-NuRec (Neural Reconstruction) enables scene rendering in |omni| using neural volumes derived from real-world images. These scenes, based on 3D Gaussian models, can be loaded into |isaac-sim_short| as standard USD assets for visualization and simulation.
+NuRec (Neural Reconstruction) enables scene rendering in |omni| using neural volumes derived from real-world images.
+Compatible environments are published as USD stages that use OpenUSD **ParticleField** geometry (3D Gaussian splats and related radiance fields), which Omniverse RTX renders natively together with polygonal scene content.
+For renderer behavior, import guidance, shadows, and color handling for particle fields, see `Gaussian Splats (Particle Fields) <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/particle-fields.html#particle-fields>`_ in the Omniverse Materials and Rendering documentation.
 
-For more details on how NuRec works in |omni|, including data preparation, rendering settings, and known limitations, see the `NuRec documentation <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/neural-rendering.html>`_. To generate compatible scenes, you can use the open-source project `3DGruT <https://github.com/nv-tlabs/3dgrut>`_ which provides tools for training 3D Gaussian models from image collections and exporting them in a USDZ-based format suitable for use in |omni| applications.
+For NuRec-specific data preparation, reconstruction, rendering, and integration with |omni| applications such as |isaac-sim_short|, see the `NVIDIA Omniverse NuRec documentation <https://docs.nvidia.com/nurec/>`_.
+To train splats and export **ParticleField** USD stages for |omni|, use the open-source `3DGruT <https://github.com/nv-tlabs/3dgrut>`_ project.
 
 Example
 -------
@@ -25,19 +28,20 @@ Example
     :align: center
     :alt: NuRec Carter NavigationScene
 
-The following example demonstrates how to load a NuRec scene into |isaac-sim_short| and run a simulation. The snippet iterates over the provided examples and starts by loading the provided stage, it then loads the carter navigation asset and sets the start location. It then checks if a collision ground plane needs to be created at the spawn location, and if so, creates a plane prim with a collision API applied. It then sets the carter navigation target prim location and runs the simulation for the given number of steps. During the simulation the wheeled robot will navigate towards the target location.
-
-The example script can be run directly from the :ref:`Script Editor <script-editor>` or as a :ref:`Standalone Application <standalone-application>`.
+The following examples show how to load a NuRec USD scene into |isaac-sim_short| and run a simulation.
+Use ``nurec_carter_script_editor.py`` from the :ref:`Script Editor <script-editor>` or ``nurec_carter.py`` as a :ref:`Standalone Application <standalone-application>`.
+Each script iterates over the configured scenarios, opens the stage, loads the Carter navigation asset and sets the start location, optionally creates a collision ground plane at the spawn location, sets the navigation target, and steps the timeline so the wheeled robot drives toward the target.
 
 .. note::
 
-   For correct rendering of NuRec scenes, launch |isaac-sim_short| with ``./isaac-sim.sh --/UJITSO/geometry=true`` or ``./python.sh --/UJITSO/geometry=true``. This option is currently disabled by default.
+   * For correct rendering of NuRec scenes, launch |isaac-sim_short| with ``./isaac-sim.sh --/UJITSO/geometry=true`` or ``./python.sh --/UJITSO/geometry=true``. This option is currently disabled by default.
+   * Rendering particle fields with DLSS Frame Generation enabled may show visual artifacts. If that happens, disable Frame Generation in Rendering Settings. See `Gaussian Splats (Particle Fields) <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/particle-fields.html#particle-fields>`_.
 
 Prerequisites
 ##############
 
 * Download the NVIDIA NuRec Dataset from `Hugging Face <https://huggingface.co/datasets/nvidia/PhysicalAI-Robotics-NuRec>`_.
-* Update the ``USER_PATH`` variable in the script: ``USER_PATH = "/home/user/PhysicalAI-Robotics-NuRec"``
+* Update the ``USER_PATH`` variable in both scripts: ``USER_PATH = "/home/user/PhysicalAI-Robotics-NuRec"``
 
 .. tab-set::
 

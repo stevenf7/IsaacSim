@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2024-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,35 +37,35 @@ NOVA_CARTER_NAV_TARGET_PATH = f"{NOVA_CARTER_NAV_USD_PATH}/targetXform"
 # Scenarios for testing navigation in the environments
 EXAMPLE_CONFIGS = [
     {
-        "name": "Voyager Cafe",
-        "stage_url": f"{USER_PATH}/nova_carter-cafe/stage.usdz",
+        "name": "Andoria",
+        "stage_url": f"{USER_PATH}/hand_hold-endeavor-andoria/stage_particle.usdz",
+        "nav_start_loc": (0.0, 0.5, 0.0),
+        "nav_relative_target_loc": (0.0, 6.0, 0.0),
+        "create_collision_ground_plane": False,
+        "num_simulation_steps": 500,
+    },
+    {
+        "name": "Wormhole",
+        "stage_url": f"{USER_PATH}/hand_hold-endeavor-wormhole/stage_particle.usdz",
+        "nav_start_loc": (5, 0, 0),
+        "nav_relative_target_loc": (0, -4, 0),
+        "create_collision_ground_plane": False,
+        "num_simulation_steps": 500,
+    },
+    {
+        "name": "Cafe",
+        "stage_url": f"{USER_PATH}/nova_carter-cafe/stage_particle.usdz",
         "nav_start_loc": (0, 0, 0),
         "nav_relative_target_loc": (-3, -1.5, 0),
         "create_collision_ground_plane": False,
         "num_simulation_steps": 500,
     },
     {
-        "name": "Galileo Lab - 1",
-        "stage_url": f"{USER_PATH}/nova_carter-galileo/stage.usdz",
+        "name": "Galileo",
+        "stage_url": f"{USER_PATH}/nova_carter-galileo/stage_particle.usdz",
         "nav_start_loc": (-2.5, 2.5, 0),
         "nav_relative_target_loc": (4, 0, 0),
         "create_collision_ground_plane": False,
-        "num_simulation_steps": 500,
-    },
-    {
-        "name": "Wormhole",
-        "stage_url": f"{USER_PATH}/nova_carter-wormhole/stage.usdz",
-        "nav_start_loc": (0, 0, 0),
-        "nav_relative_target_loc": (5, 0, 0),
-        "create_collision_ground_plane": False,
-        "num_simulation_steps": 500,
-    },
-    {
-        "name": "ZH Lounge",
-        "stage_url": f"{USER_PATH}/zh_lounge/usd/zh_lounge.usda",
-        "nav_start_loc": (-1.5, -3, -1.6),
-        "nav_relative_target_loc": (-0.5, 5, -1.6),
-        "create_collision_ground_plane": True,
         "num_simulation_steps": 500,
     },
 ]
@@ -87,6 +87,9 @@ def run_example(example_config):
     print(f"Opening stage: '{stage_url}'")
     omni.usd.get_context().open_stage(stage_url)
     stage = omni.usd.get_context().get_stage()
+    if stage is None:
+        print(f"Failed to open stage: '{stage_url}', exiting")
+        return
 
     # Make sure the physics scene is set to synchronous for the navigation to work
     for prim in stage.Traverse():
