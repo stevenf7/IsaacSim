@@ -19,7 +19,7 @@ align: center
 
 ## Migration
 
-Replace all usage of this extension with the {ref}`CLI Extension Templates <isaac_sim_cli_extension_templates>`,
+Replace all usage of this extension with the CLI Extension Templates (``./repo.sh template new``),
 which will interactively prompt for the extension name, description, and template type.
 
 ## Legacy Functionality

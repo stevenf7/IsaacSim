@@ -181,6 +181,7 @@ sphinx_conf_py_extra = """
         "omni.kit.manipulator",
         "omni.kit.menu",
         "omni.kit.notification_manager",
+        "omni.kit.livestream",
         "omni.kit.property",
         "omni.kit.stage_template",
         "omni.kit.stage_templates",
@@ -219,7 +220,6 @@ sphinx_conf_py_extra = """
         "OmniGraphSchema",
         "omni.isaac.IsaacSensorSchema",
         "omni.isaac.RangeSensorSchema",
-        "isaacsim.ros2.nodes.bindings",
     ]
 
     rst_prolog = '''

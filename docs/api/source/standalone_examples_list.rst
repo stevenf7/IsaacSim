@@ -65,20 +65,6 @@ isaacsim.core.experimental.api
 * ``simulation_callbacks.py``
 * ``visual_materials.py``
 
-isaacsim.cortex.framework
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* ``demo_ur10_conveyor_main.py``
-* ``example_command_api_main.py``
-* ``follow_example_main.py``
-* ``follow_example_modified_main.py``
-* ``franka_examples_main.py``
-
-behaviors/franka
-^^^^^^^^^^^^^^^^
-
-* ``behaviors/franka/franka_behaviors.py``
-
 isaacsim.replicator.behavior
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -264,6 +250,20 @@ standalone_examples/deprecated
 
 api
 ~~~
+
+isaacsim.cortex.framework
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.cortex.framework/demo_ur10_conveyor_main.py``
+* ``isaacsim.cortex.framework/example_command_api_main.py``
+* ``isaacsim.cortex.framework/follow_example_main.py``
+* ``isaacsim.cortex.framework/follow_example_modified_main.py``
+* ``isaacsim.cortex.framework/franka_examples_main.py``
+
+isaacsim.cortex.framework/behaviors/franka
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.cortex.framework/behaviors/franka/franka_behaviors.py``
 
 isaacsim.robot.manipulators
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

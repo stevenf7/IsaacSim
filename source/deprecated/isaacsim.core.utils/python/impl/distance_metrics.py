@@ -15,6 +15,7 @@
 
 """Deprecated distance metric functions."""
 
+from __future__ import annotations
 
 # omniverse
 import carb
