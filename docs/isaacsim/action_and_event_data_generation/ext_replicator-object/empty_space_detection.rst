@@ -68,7 +68,7 @@ Key                                          Type             Default           
 ``exclusive_ratio_threshold``                numeric          ``0.8``                 Ratio used when filtering candidate regions (higher tends to retain more regions; range ``0.0``–``1.0``).
 ``top_tolerance``                            numeric          ``0.2``                 Height tolerance at the top of a span.
 ``bottom_tolerance``                         numeric          ``0.1``                 Height tolerance at the bottom of a span.
-``max_stack_height``                         numeric / null   ``None``              Optional cap on stack height in meters; ``None`` means no limit.
+``max_stack_height``                         numeric / null   ``None``                Optional cap on stack height in meters; ``None`` means no limit.
 ============================================ ================ ======================= =====================================================================
 
 You can drive several of these from a single root-level macro (for example a shared ``cell_size`` in meters) using :ref:`Macro` expressions such as ``$[/cell_size] * 2.0``.
