@@ -26,6 +26,10 @@ project_ext_bindings {
     target_subdir = ogn.bindings_target_path,
 }
 
+-- Windows MAX_PATH fix: default vcxproj location makes the linker's
+-- pre-normalized output path 269 chars (> 260), causing LNK1104.
+location ("%{root}/_compiler/".._ACTION)
+
 add_files("bindings", "bindings/*.*")
 
 filter { "system:linux", "configurations:release" }

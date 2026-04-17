@@ -208,7 +208,7 @@ isaacsim::sensors::physics::IsReading CARB_ABI isGetSensorReading(
 
 void onPlay()
 {
-    g_simulationView = g_tensorApi->createSimulationView(g_stageID);
+    g_simulationView = g_tensorApi->createSimulationView(g_stageID, nullptr);
 
     PXR_NS::UsdStageCache& cache = PXR_NS::UsdUtilsStageCache::Get();
     omni::fabric::UsdStageId stageId = { static_cast<uint64_t>(cache.GetId(g_stage).ToLongInt()) };

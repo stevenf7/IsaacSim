@@ -65,7 +65,7 @@ public:
                 db.logError("Could not find USD stage %ld", stageId);
                 return false;
             }
-            state.m_simView = state.m_tensorInterface->createSimulationView(stageId);
+            state.m_simView = state.m_tensorInterface->createSimulationView(stageId, nullptr);
             if (!state.initializeNodeHandle(
                     std::string(nodeObj.iNode->getPrimPath(nodeObj)),
                     collectNamespace(db.inputs.nodeNamespace(),

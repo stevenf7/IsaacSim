@@ -50,13 +50,12 @@ class TestParticleMaterial(CoreTestCase, TestProperties):
         """Test cloth prim."""
         await update_stage_async()
         self.stage = omni.usd.get_context().get_stage()
-        self.particle_material = ParticleMaterial(prim_path="/particleMaterial", drag=0.1, lift=0.3, friction=0.6)
+        self.particle_material = ParticleMaterial(prim_path="/particleMaterial", friction=0.6)
         self.my_world.scene.add(self.particle_material)
         await self.my_world.reset_async(soft=False)
         await self.my_world.stop_async()
 
-        await self.scalar_prop_test(self.particle_material.get_lift, self.particle_material.set_lift, is_stopped=True)
-        await self.scalar_prop_test(self.particle_material.get_drag, self.particle_material.set_drag, is_stopped=True)
+        # lift and drag were removed from PhysxPBDMaterialAPI — skip those tests
         await self.scalar_prop_test(
             self.particle_material.get_damping, self.particle_material.set_damping, is_stopped=True
         )
@@ -100,8 +99,7 @@ class TestParticleMaterial(CoreTestCase, TestProperties):
         )
 
         await self.my_world.play_async()
-        await self.scalar_prop_test(self.particle_material.get_lift, self.particle_material.set_lift, is_stopped=False)
-        await self.scalar_prop_test(self.particle_material.get_drag, self.particle_material.set_drag, is_stopped=False)
+        # lift and drag were removed from PhysxPBDMaterialAPI — skip those tests
         await self.scalar_prop_test(
             self.particle_material.get_damping, self.particle_material.set_damping, is_stopped=False
         )

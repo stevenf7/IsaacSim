@@ -57,7 +57,7 @@ def create_simulation_view(frontend_name: str, newton_stage: NewtonStage, stage_
     if frontend_id == "numpy" or frontend_id == "np":
         if device_ordinal == -1:
             try:
-                from omni.physics.tensors.impl.frontend_np import FrontendNumpy
+                from omni.physics.tensors.frontend_np import FrontendNumpy
 
                 frontend = FrontendNumpy()
                 return NewtonSimulationView(backend, frontend)
@@ -68,7 +68,7 @@ def create_simulation_view(frontend_name: str, newton_stage: NewtonStage, stage_
 
     elif frontend_id == "torch" or frontend_id == "pytorch":
         try:
-            from omni.physics.tensors.impl.frontend_torch import FrontendTorch
+            from omni.physics.tensors.frontend_torch import FrontendTorch
 
             frontend = FrontendTorch(device_ordinal)
             return NewtonSimulationView(backend, frontend)
@@ -77,7 +77,7 @@ def create_simulation_view(frontend_name: str, newton_stage: NewtonStage, stage_
 
     elif frontend_id == "warp" or frontend_id == "wp":
         try:
-            from omni.physics.tensors.impl.frontend_warp import FrontendWarp
+            from omni.physics.tensors.frontend_warp import FrontendWarp
 
             frontend = FrontendWarp(device_ordinal)
             return NewtonSimulationView(backend, frontend)

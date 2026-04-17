@@ -215,11 +215,11 @@ class ParticleMaterialView:
             physics_sim_view.set_subspace_roots("/")
         carb.log_info(f"initializing view for {self._name}")
         self._physics_sim_view = physics_sim_view
-        self._physics_view = self._physics_sim_view.create_particle_material_view(
-            self._regex_prim_paths.replace(".*", "*")
-        )
-        self._count = self._physics_view.count
-        carb.log_info(f"Particle material View Device: {self._device}")
+        # Particle material views were removed from the physics tensor API.
+        # Keep count from __init__ so USD attribute access (stopped-timeline) still works.
+        carb.log_warn("create_particle_material_view is no longer available; using USD attribute access only.")
+        self._physics_view = None
+        carb.log_info("Particle material View Device: {}".format(self._device))
         return
 
     def set_frictions(
@@ -432,56 +432,18 @@ class ParticleMaterialView:
                 Where M <= size of the encapsulated prims in the view.
 
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            new_values = self._backend_utils.move_data(values, self._device)
-            current_values = self.get_lifts(clone=False)
-            current_values[indices] = new_values
-            self._physics_view.set_lift(current_values, indices)
-            self._physics_sim_view.enable_warnings(True)
-        else:
-            idx_count = 0
-            for i in indices:
-                self._apply_material_api(i.tolist())
-                if "physxPBDMaterial:lift" not in self._prims[i.tolist()].GetPropertyNames():
-                    self._material_apis[i.tolist()].CreateLiftAttr().Set(values[idx_count].tolist())
-                else:
-                    self._material_apis[i.tolist()].GetLiftAttr().Set(values[idx_count].tolist())
-                idx_count += 1
+        # lift attribute was removed from PhysxPBDMaterialAPI — no-op for compatibility
+        carb.log_warn("physxPBDMaterial:lift has been removed; set_lifts is a no-op.")
 
     def get_lifts(
         self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
     ) -> np.ndarray | torch.Tensor:
         """Gets the lifts of materials indicated by the indices.
 
-        Args:
-            indices: indices to specify which material prims to query. Shape (M,).
-                Where M <= size of the encapsulated prims in the view.
-            clone: True to return a clone of the internal buffer. Otherwise False.
-
-        Returns:
-            Lift tensor with shape (M, ).
-
+        Note: lift attribute was removed from PhysxPBDMaterialAPI. Always returns zeros.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            current_values = self._physics_view.get_lift()
-            self._physics_sim_view.enable_warnings(True)
-            if not clone:
-                return current_values[indices]
-            else:
-                return self._backend_utils.clone_tensor(current_values[indices], device=self._device)
-        else:
-            result = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
-            write_idx = 0
-            for i in indices:
-                self._apply_material_api(i.tolist())
-                if "physxPBDMaterial:lift" not in self._prims[i.tolist()].GetPropertyNames():
-                    result[write_idx] = self._material_apis[i.tolist()].CraeteLiftAttr().Get()
-                else:
-                    result[write_idx] = self._material_apis[i.tolist()].GetLiftAttr().Get()
-                write_idx += 1
-            return result
+        return self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
 
     def set_drags(
         self,
@@ -490,62 +452,20 @@ class ParticleMaterialView:
     ) -> None:
         """Sets the drags for the material prims indicated by the indices.
 
-        Args:
-            values: material drag tensor with the shape (M, ).
-            indices: indices to specify which material prims to manipulate. Shape (M,).
-                Where M <= size of the encapsulated prims in the view.
-
+        Note: drag attribute was removed from PhysxPBDMaterialAPI. This is a no-op.
         """
-        indices = self._backend_utils.resolve_indices(indices, self.count, device=self._device)
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            new_values = self._backend_utils.move_data(values, self._device)
-            current_values = self.get_drags(clone=False)
-            current_values[indices] = new_values
-            self._physics_view.set_drag(current_values, indices)
-            self._physics_sim_view.enable_warnings(True)
-        else:
-            idx_count = 0
-            for i in indices:
-                self._apply_material_api(i.tolist())
-                if "physxPBDMaterial:drag" not in self._prims[i.tolist()].GetPropertyNames():
-                    self._material_apis[i.tolist()].CreateDragAttr().Set(values[idx_count].tolist())
-                else:
-                    self._material_apis[i.tolist()].GetDragAttr().Set(values[idx_count].tolist())
-                idx_count += 1
+        # drag attribute was removed from PhysxPBDMaterialAPI — no-op for compatibility
+        carb.log_warn("physxPBDMaterial:drag has been removed; set_drags is a no-op.")
 
     def get_drags(
         self, indices: np.ndarray | list | torch.Tensor | None = None, clone: bool = True
     ) -> np.ndarray | torch.Tensor:
         """Gets the drags of materials indicated by the indices.
 
-        Args:
-            indices: indices to specify which material prims to query. Shape (M,).
-                Where M <= size of the encapsulated prims in the view.
-            clone: True to return a clone of the internal buffer. Otherwise False.
-
-        Returns:
-            Drag tensor with shape (M, ).
-
+        Note: drag attribute was removed from PhysxPBDMaterialAPI. Always returns zeros.
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        if not omni.timeline.get_timeline_interface().is_stopped() and self._physics_view is not None:
-            current_values = self._physics_view.get_drag()
-            self._physics_sim_view.enable_warnings(True)
-            if not clone:
-                return current_values[indices]
-            else:
-                return self._backend_utils.clone_tensor(current_values[indices], device=self._device)
-        else:
-            result = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
-            write_idx = 0
-            for i in indices:
-                self._apply_material_api(i.tolist())
-                if "physxPBDMaterial:drag" not in self._prims[i.tolist()].GetPropertyNames():
-                    result[write_idx] = self._material_apis[i.tolist()].CreateDragAttr().Get()
-                else:
-                    result[write_idx] = self._material_apis[i.tolist()].GetDragAttr().Get()
-                write_idx += 1
-            return result
+        return self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
 
     def set_viscosities(
         self,

@@ -103,7 +103,7 @@ inline void setTransform(pxr::UsdPrim& prim, pxr::GfVec3f bodyTranslation, pxr::
             CARB_LOG_ERROR("Failed to acquire Tensor Api interface\n");
             return;
         }
-        auto mSimView = mTensorInterface->createSimulationView(long(stageId));
+        auto mSimView = mTensorInterface->createSimulationView(long(stageId), nullptr);
         if (mSimView)
         {
             TensorDesc xformTensor;
@@ -179,7 +179,7 @@ inline void setScale(pxr::UsdPrim& prim, pxr::GfVec3f pxBodyScale)
             return;
         }
         uint64_t stageId = pxr::UsdUtilsStageCache::Get().GetId(prim.GetStage()).ToLongInt();
-        if (auto mSimView = mTensorInterface->createSimulationView(long(stageId)))
+        if (auto mSimView = mTensorInterface->createSimulationView(long(stageId), nullptr))
         {
             auto path = prim.GetPath().GetString().c_str();
             auto articulation = mSimView->createArticulationView(path);

@@ -216,9 +216,11 @@ class ParticleSystem:
                 "Using particle system view requires the gpu pipeline or (a World initialized with a cuda device)"
             )
         self._physics_sim_view = physics_sim_view
-        self._physics_view = physics_sim_view.create_particle_system_view(self._regex_prim_paths.replace(".*", "*"))
-        self._count = self._physics_view.count
-        carb.log_info(f"Particle System View Device: {self._device}")
+        # Particle system views were removed from the physics tensor API.
+        # Keep count from __init__ so USD attribute access (stopped-timeline) still works.
+        carb.log_warn("create_particle_system_view is no longer available; using USD attribute access only.")
+        self._physics_view = None
+        carb.log_info("Particle System View Device: {}".format(self._device))
         return
 
     def _invalidate_physics_handle_callback(self, event: object) -> None:

@@ -773,7 +773,7 @@ public:
 
         if (m_tensorApi && stageId != 0 && isPhysxActive())
         {
-            m_simulationView = m_tensorApi->createSimulationView(stageId);
+            m_simulationView = m_tensorApi->createSimulationView(stageId, nullptr);
             if (m_simulationView)
             {
                 m_deviceOrdinal = m_simulationView->getDeviceOrdinal();

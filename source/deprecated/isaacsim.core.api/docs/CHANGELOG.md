@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.2.0] - 2026-04-17
+### Changed
+- Replace deprecated deformable body and cloth API implementations with error stubs since PhysX removed these features
+- Update `PhysicsContext` to use renamed PhysX attribute `GpuMaxDeformableVolumeContacts`
+- Update `ParticleMaterialView` for removed particle material tensor API
+- Remove deprecated deformable/cloth/particle tests
+
 ## [5.1.5] - 2026-04-06
 ### Fixed
 - Fix incorrect default stage units in `World.__init__` and `SimulationContext.__init__` docstrings

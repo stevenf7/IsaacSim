@@ -927,10 +927,10 @@ class PhysicsContext(object):
         """
         if not is_prim_path_valid(self._prim_path):
             raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
-        if self._physx_scene_api.GetGpuMaxSoftBodyContactsAttr().Get() is None:
-            self._physx_scene_api.CreateGpuMaxSoftBodyContactsAttr(value)
+        if self._physx_scene_api.GetGpuMaxDeformableVolumeContactsAttr().Get() is None:
+            self._physx_scene_api.CreateGpuMaxDeformableVolumeContactsAttr(value)
         else:
-            self._physx_scene_api.GetGpuMaxSoftBodyContactsAttr().Set(value)
+            self._physx_scene_api.GetGpuMaxDeformableVolumeContactsAttr().Set(value)
         return
 
     def get_gpu_max_soft_body_contacts(self) -> int:
@@ -945,7 +945,7 @@ class PhysicsContext(object):
         """
         if not is_prim_path_valid(self._prim_path):
             raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
-        return self._physx_scene_api.GetGpuMaxSoftBodyContactsAttr().Get()
+        return self._physx_scene_api.GetGpuMaxDeformableVolumeContactsAttr().Get()
 
     def set_gpu_max_particle_contacts(self, value: int) -> None:
         """Set the maximum number of particle contacts on GPU.
