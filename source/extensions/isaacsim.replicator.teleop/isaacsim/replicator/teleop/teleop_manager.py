@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import contextlib
+from contextlib import nullcontext
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import TYPE_CHECKING, Callable
@@ -27,8 +28,9 @@ import omni.kit.app
 import omni.timeline
 import omni.usd
 from isaacsim.core.experimental.prims import XformPrim
-from pxr import Gf, UsdGeom
+from pxr import Gf, Usd, UsdGeom
 
+from ._xform_utils import WorldPosePrimCache, read_world_pose_gf
 from .coordinate_utils import CoordinateSystem, transform_pose
 from .xr_anchor_manager import AnchorRotationMode, XrAnchorManager
 
@@ -134,6 +136,8 @@ class TeleopManager:
         self._head_tracker: deviceio.HeadTracker | None = None
         self._update_subscription = None
         self._frame_count = 0
+        self._cached_tracking_space: tuple[Gf.Vec3d, Gf.Rotation, Gf.Quatd] | None = None
+        self._cached_tracking_space_frame: int = -1
         self._is_connected = False
         self._update_fail_count = 0  # Consecutive tracking update failures
         self._on_status_changed: Callable[[str], None] | None = None
@@ -154,9 +158,11 @@ class TeleopManager:
         self._locomotion_tracking_enabled = False
         self._coordinate_system = CoordinateSystem.ISAAC_SIM
         self._tracking_space_enabled = False
+        self._tracking_space_retry_failed = False
         self._tracking_space_prim_path: str = ""
         self._active_tracking_space_prim_path: str = ""
         self._tracking_space_xform: XformPrim | None = None
+        self._tracking_space_world_pose_cache = WorldPosePrimCache()
         self._xr_anchor: XrAnchorManager | None = None
         self._on_stage_closing: Callable[[], None] | None = None
         usd_ctx = omni.usd.get_context()
@@ -203,6 +209,7 @@ class TeleopManager:
             self._markers_manager.clear_cached_state()
         self._tracking_space_enabled = False
         self._tracking_space_xform = None
+        self._tracking_space_world_pose_cache.clear()
         self._tracking_space_prim_path = ""
         self._active_tracking_space_prim_path = ""
 
@@ -365,14 +372,16 @@ class TeleopManager:
         the simulation timeline with the web UI Play/Reset buttons.
         """
         try:
-            msg = str(event.payload["message"]) if event.payload else ""
-        except (KeyError, TypeError):
+            msg = event.payload.get("message", {}) if event.payload else {}
+            if isinstance(msg, dict):
+                msg = msg.get("command", "")
+        except (KeyError, TypeError, AttributeError):
             msg = ""
-        if "start" in msg:
+        if msg == "start teleop":
             self.execute_command(TeleopCommand.START)
-        elif "stop" in msg:
+        elif msg == "stop teleop":
             self.execute_command(TeleopCommand.STOP)
-        elif "reset" in msg:
+        elif msg == "reset teleop":
             self.execute_command(TeleopCommand.RESET)
         else:
             print(f"[Teleop] Unknown XR teleop command: '{msg}'")
@@ -506,7 +515,8 @@ class TeleopManager:
         if self._locomotion_tracking_enabled and self._locomotion_controller:
             if not self._locomotion_controller.is_running:
                 if self._markers_manager is not None:
-                    self._locomotion_controller.set_edit_layer(self._markers_manager._layer)
+                    self._locomotion_controller.set_edit_layer(self._markers_manager.layer)
+                self._locomotion_controller.set_tracking_space_prim_path(self._active_tracking_space_prim_path)
                 ok, _ = self._locomotion_controller.enable()
                 if ok:
                     enabled.append("locomotion")
@@ -726,6 +736,7 @@ class TeleopManager:
                 self._update_subscription = app.get_update_event_stream().create_subscription_to_pop(
                     self._on_update, name="TeleopManager_update"
                 )
+            self._reapply_tracking_space()
             print("[Teleop][Debug] Tracking enabled - reading poses from markers.")
         else:
             if not self._is_connected:
@@ -788,6 +799,7 @@ class TeleopManager:
         self._tracking_space_prim_path = ""
         self._active_tracking_space_prim_path = ""
         self._tracking_space_xform = None
+        self._tracking_space_world_pose_cache.set_prim_path("")
         if self._xr_anchor is not None:
             self._xr_anchor.set_tracking_space_prim_path("")
         if self._locomotion_controller is not None:
@@ -834,8 +846,24 @@ class TeleopManager:
             print(f"[Teleop] Tracking Space set to '{requested_path}'.")
         return ok, message
 
+    def _teleop_edit_ctx(self, stage, prim_path: str):
+        """Returns an ``Usd.EditContext`` targeting the markers anonymous layer for Teleop prims."""
+        layer = self._markers_manager.layer if self._markers_manager is not None else None
+        if (
+            layer is not None
+            and prim_path.startswith("/Teleop/")
+            and any(layer.identifier == l.identifier for l in stage.GetLayerStack(includeSessionLayers=True))
+        ):
+            return Usd.EditContext(stage, layer)
+        return nullcontext()
+
     def _apply_tracking_space_path(self, resolved_path: str) -> tuple[bool, str]:
-        """Validate and activate a tracking-space path without changing mode semantics."""
+        """Validate and activate a tracking-space path without changing mode semantics.
+
+        For built-in Teleop prims (under ``/Teleop/``), xformOp writes are
+        directed to the markers anonymous layer so no specs leak to the root
+        layer.
+        """
         stage = omni.usd.get_context().get_stage()
         if not stage:
             return False, "No USD stage available. Current tracking space is unchanged."
@@ -849,7 +877,10 @@ class TeleopManager:
 
         props = prim.GetPropertyNames()
         needs_reset = any(op not in props for op in ("xformOp:translate", "xformOp:orient", "xformOp:scale"))
-        tracking_space_xform = XformPrim(resolved_path, reset_xform_op_properties=needs_reset)
+
+        edit_ctx = self._teleop_edit_ctx(stage, resolved_path)
+        with edit_ctx:
+            tracking_space_xform = XformPrim(resolved_path, reset_xform_op_properties=needs_reset)
 
         warning = ""
         if needs_reset:
@@ -858,19 +889,23 @@ class TeleopManager:
 
         self._active_tracking_space_prim_path = resolved_path
         self._tracking_space_xform = tracking_space_xform
+        self._tracking_space_world_pose_cache.set_prim_path(resolved_path)
+        self._cached_tracking_space_frame = -1
+        self._tracking_space_retry_failed = False
         if self._xr_anchor is not None:
             self._xr_anchor.set_tracking_space_prim_path(resolved_path)
         if self._locomotion_controller is not None:
-            self._locomotion_controller.set_tracking_space_prim_path(resolved_path)
             if self._markers_manager is not None:
-                self._locomotion_controller.set_edit_layer(self._markers_manager._layer)
+                self._locomotion_controller.set_edit_layer(self._markers_manager.layer)
+            self._locomotion_controller.set_tracking_space_prim_path(resolved_path)
         return True, f"Tracking Space: {resolved_path}{warning}"
 
     def _reapply_tracking_space(self) -> tuple[bool, str]:
-        """Reapply the currently selected tracking space after connect/reset."""
-        if not self._tracking_space_enabled:
-            self.disable_tracking_space()
-            return True, "Tracking Space disabled"
+        """Reapply the currently selected tracking space after connect/reset.
+
+        Always activates at least the built-in origin marker so that
+        VR pose offsetting and locomotion carry work out of the box.
+        """
         if self._tracking_space_prim_path:
             return self.set_tracking_space_prim_path(self._tracking_space_prim_path)
         return self.set_builtin_tracking_space()
@@ -883,26 +918,28 @@ class TeleopManager:
     def _get_tracking_space_transform(self) -> tuple[Gf.Vec3d, Gf.Rotation, Gf.Quatd] | None:
         """Reads the tracking-space world transform via the active backend.
 
-        Uses ``XformPrim.get_world_poses()`` so the read goes through the
-        same backend (USD / USDRT / Fabric) that authored the tracking-space
-        transform, avoiding stale identity reads from the anonymous layer.
+        Results are cached per frame so multiple callers within the same
+        ``_on_update`` do not re-read the prim.
 
         Returns:
             ``(position, rotation, quaternion)`` or *None* if no tracking space is set.
         """
+        if self._cached_tracking_space_frame == self._frame_count:
+            return self._cached_tracking_space
+
         if self._tracking_space_xform is None:
             return None
 
         if not self._tracking_space_xform.valid:
             self._tracking_space_xform = None
+            self._tracking_space_world_pose_cache.clear()
             return None
 
-        positions, orientations = self._tracking_space_xform.get_world_poses()
-        pos_np = positions[0].numpy() if hasattr(positions[0], "numpy") else np.asarray(positions[0])
-        ori_np = orientations[0].numpy() if hasattr(orientations[0], "numpy") else np.asarray(orientations[0])
-
-        qd = Gf.Quatd(float(ori_np[0]), float(ori_np[1]), float(ori_np[2]), float(ori_np[3]))
-        return Gf.Vec3d(float(pos_np[0]), float(pos_np[1]), float(pos_np[2])), Gf.Rotation(qd), qd
+        pos, qd = read_world_pose_gf(self._tracking_space_world_pose_cache)
+        result = pos, Gf.Rotation(qd), qd
+        self._cached_tracking_space = result
+        self._cached_tracking_space_frame = self._frame_count
+        return result
 
     @staticmethod
     def _apply_tracking_space_offset(
@@ -925,16 +962,14 @@ class TeleopManager:
         if pos is None or tracking_space is None:
             return pos, orient
 
-        tracking_space_pos, tracking_space_rot, tracking_space_qd = tracking_space
+        ts_pos, ts_rot, ts_qd = tracking_space
 
-        vr_vec = Gf.Vec3d(*pos)
-        world_vec = tracking_space_pos + tracking_space_rot.TransformDir(vr_vec)
+        world_vec = ts_pos + ts_rot.TransformDir(Gf.Vec3d(pos[0], pos[1], pos[2]))
         new_pos = (world_vec[0], world_vec[1], world_vec[2])
 
         new_orient = orient
         if orient is not None:
-            vr_qd = Gf.Quatd(float(orient[3]), float(orient[0]), float(orient[1]), float(orient[2]))
-            combined = tracking_space_qd * vr_qd
+            combined = ts_qd * Gf.Quatd(orient[3], orient[0], orient[1], orient[2])
             im = combined.GetImaginary()
             new_orient = (im[0], im[1], im[2], combined.GetReal())
 
@@ -1071,16 +1106,19 @@ class TeleopManager:
         if controller is not None:
             controller.set_tracking_space_prim_path(self._active_tracking_space_prim_path)
             if self._markers_manager is not None:
-                controller.set_edit_layer(self._markers_manager._layer)
+                controller.set_edit_layer(self._markers_manager.layer)
 
     def set_locomotion_tracking(self, enabled: bool) -> None:
         """Enables or disables locomotion tracking from VR thumbstick input.
 
-        When enabled, the user's tracking-space prim path is forwarded
-        to the locomotion controller so that toggling the left primary
-        face button (``primary_click``, ``X`` on Meta-style controllers)
-        enables Carry Tracking Space, which moves the VR
-        tracking space together with the robot base.
+        Two workflows are supported depending on the locomotion prim:
+
+        * **Robot base** — thumbstick moves the robot.  The left
+          primary button toggles *Carry Tracking Space* to co-move the
+          VR origin.
+        * **VR origin** — locomotion prim IS the tracking-space origin.
+          Every thumbstick movement shifts the VR workspace directly.
+          Use this for floating grippers with no physical base.
 
         Args:
             enabled: True to enable locomotion tracking.
@@ -1089,6 +1127,8 @@ class TeleopManager:
             return
 
         if enabled and self._locomotion_controller is not None:
+            if self._markers_manager is not None:
+                self._locomotion_controller.set_edit_layer(self._markers_manager.layer)
             self._locomotion_controller.set_tracking_space_prim_path(self._active_tracking_space_prim_path)
 
         self._locomotion_tracking_enabled = enabled
@@ -1177,11 +1217,9 @@ class TeleopManager:
     def _on_update_debug(self) -> None:
         """Debug tracking update path — reads composed world poses from markers.
 
-        Replaces the VR polling path when debug tracking is enabled.
-        Since left/right/head are USD children of the origin marker,
+        Since left/right/head are children of the origin marker,
         ``get_world_poses()`` returns the composed world transform —
-        moving the origin automatically moves all child markers.
-        No coordinate transform or tracking-space offset is applied.
+        moving the origin automatically moves all children.
         """
         self._frame_count += 1
 
@@ -1207,11 +1245,13 @@ class TeleopManager:
 
         Data flow (VR mode):
         1. Extract raw VR poses (OpenXR Y-up)
-        2. Convert to target coordinate system (e.g. Isaac Sim Z-up)
-           — these are **origin-local** poses used for marker children
+        2. Convert to target coordinate system (origin-local poses)
         3. Apply tracking-space offset → world-space poses
-        4. Markers receive origin-local poses; all other consumers
-           receive world-space data
+        4. Markers receive origin-local poses; controllers get world-space
+
+        If the tracking-space offset is unavailable, the method falls
+        back to reading composed world poses from the markers so that
+        controllers still receive world-space targets.
 
         When debug tracking is active, delegates to
         :meth:`_on_update_debug` which reads marker poses directly.
@@ -1272,7 +1312,7 @@ class TeleopManager:
         if head_pos is not None:
             head_pos, head_orient = transform_pose(head_pos, head_orient, cs)
 
-        # Save origin-local poses for marker children before applying offset
+        # Origin-local poses for marker children (before tracking-space offset)
         left_local, left_local_orient = left_pos, left_orient
         right_local, right_local_orient = right_pos, right_orient
         head_local, head_local_orient = head_pos, head_orient
@@ -1280,12 +1320,18 @@ class TeleopManager:
         # --- Apply tracking-space offset → world-space poses ---
 
         tracking_space = self._get_tracking_space_transform()
+        if tracking_space is None and self._tracking_space_xform is None and not self._tracking_space_retry_failed:
+            try:
+                self._reapply_tracking_space()
+            except Exception as exc:
+                self._tracking_space_retry_failed = True
+                print(f"[Teleop] Tracking-space reapply failed, skipping further retries: {exc}")
+            tracking_space = self._get_tracking_space_transform()
         left_pos, left_orient = self._apply_tracking_space_offset(left_pos, left_orient, tracking_space)
         right_pos, right_orient = self._apply_tracking_space_offset(right_pos, right_orient, tracking_space)
         head_pos, head_orient = self._apply_tracking_space_offset(head_pos, head_orient, tracking_space)
 
-        # --- Markers get origin-local; controllers get world-space ---
-
+        # Write origin-local poses to marker children first
         if self._live_tracking_enabled:
             self._update_marker_positions(
                 left_local,
@@ -1294,8 +1340,20 @@ class TeleopManager:
                 right_local_orient,
                 head_local,
                 head_local_orient,
-                tracking_space,
             )
+
+        # Controllers need world-space targets.  When the tracking-space
+        # offset was applied above the poses are already in world space.
+        # If the tracking space was unavailable (offset was a no-op),
+        # fall back to reading composed world poses from the markers so
+        # controllers still react when the origin moves.
+        if tracking_space is None and self._markers_manager is not None:
+            lw = self._markers_manager.get_marker_world_pose("left")
+            rw = self._markers_manager.get_marker_world_pose("right")
+            if lw is not None:
+                left_pos, left_orient = lw
+            if rw is not None:
+                right_pos, right_orient = rw
 
         if self._floating_tracking_enabled:
             self._update_floating_targets(left_pos, left_orient, right_pos, right_orient)
@@ -1317,33 +1375,16 @@ class TeleopManager:
         right_orient: tuple | None,
         head_pos: tuple | None = None,
         head_orient: tuple | None = None,
-        tracking_space: tuple[Gf.Vec3d, Gf.Rotation, Gf.Quatd] | None = None,
     ) -> None:
-        """Updates marker transforms from VR pose data.
+        """Updates marker transforms from VR pose data (origin-local).
 
-        Left/right/head poses are **origin-local** (coord-converted,
-        pre-tracking-space offset).  The tracking-space world transform
-        is written to the origin marker.
+        The origin marker is not written here — only locomotion carry or
+        ``move_tracking_space_to`` change the origin.
         """
         if self._markers_manager is None:
             return
         if not self._markers_manager.has_active_markers:
             return
-
-        tracking_space_pos, tracking_space_orient = None, None
-        if tracking_space is not None:
-            tracking_space_pos = (
-                float(tracking_space[0][0]),
-                float(tracking_space[0][1]),
-                float(tracking_space[0][2]),
-            )
-            q = tracking_space[2]  # Gf.Quatd (w, x, y, z)
-            tracking_space_orient = (
-                float(q.GetImaginary()[0]),
-                float(q.GetImaginary()[1]),
-                float(q.GetImaginary()[2]),
-                float(q.GetReal()),
-            )
 
         self._markers_manager.update_marker_transforms(
             left_pos,
@@ -1352,8 +1393,6 @@ class TeleopManager:
             right_orient,
             head_pos,
             head_orient,
-            tracking_space_pos,
-            tracking_space_orient,
         )
 
     def _update_floating_targets(

@@ -27,7 +27,7 @@ The last-used profile is automatically restored when the window opens. Profile v
 
 ### Session Panel
 
-OpenXR connection controls (**Connect** / **Disconnect**), frame marker management (**Show** / **Remove** with adjustable scale), Tracking Space prim selection with coordinate system dropdown, and XR Anchor configuration (position offset, rotation mode, smoothing, fixed-height lock).
+OpenXR connection controls (**Connect** / **Disconnect**), frame marker management (**Show** / **Remove** with adjustable scale), Tracking Space prim selection with coordinate system dropdown, XR Anchor configuration (position offset, rotation mode, smoothing, fixed-height lock), and a **Debug** section with synthetic input controls (thumbstick sliders, trigger sliders, locomotion buttons) and a **Write Backend** dropdown to override the global XformPrim backend (USD / USD-RT / Fabric).
 
 ### Floating Controller Panel
 
@@ -43,4 +43,7 @@ Per-side controls for {class}`GraspController <isaacsim.replicator.teleop.GraspC
 
 ### Locomotion Panel
 
-Controls for {class}`LocomotionController <isaacsim.replicator.teleop.controllers.LocomotionController>`: base prim path, slide and turn speed multipliers, Carry Tracking Space toggle, and enable/disable toggle.
+Controls for {class}`LocomotionController <isaacsim.replicator.teleop.controllers.LocomotionController>`: target prim path, slide and turn speed multipliers, Carry Tracking Space toggle, and enable/disable toggle. Horizontal movement is projected onto the world ground plane using the prim's heading, so axes remain correct regardless of the target prim's local frame orientation. Two workflows are supported:
+
+- **Robot base** — set the prim path to a robot base link. Carry Tracking Space can be toggled to co-move the VR origin with the robot.
+- **VR origin** — set the prim path to the built-in tracking-space origin marker. Carry is implicit because the locomotion prim *is* the VR origin. Use this for floating grippers that have no physical base.

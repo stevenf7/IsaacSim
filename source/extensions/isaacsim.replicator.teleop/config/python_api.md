@@ -109,6 +109,7 @@
   - def enable(self) -> tuple[bool, str]
   - def disable(self)
   - def update(self, left_ctrl, right_ctrl)
+  - [property] def carries_tracking_space_implicitly(self) -> bool
 
 - class PositionBasedIKController
   - def __init__(self, robot: Articulation, ee_link: RigidPrim, ee_link_index: int, num_arm_dofs: int, method: str = 'damped-least-squares', scale: float = 1.0, damping: float = 0.05, vr_target_filter: float = 0.0, max_joint_step_rad: float = 0.0, min_manipulability: float = 0.001, error_scale_distance: float = 0.5)
@@ -192,9 +193,13 @@
   - FRAME_ASSET_PATH: str
   - DEFAULT_FRAME_SCALE: float
   - FRAME_CHILD_NAME: str
+  - SUPPORTED_BACKENDS: tuple[str, Ellipsis]
   - def __init__(self)
   - [property] def has_active_markers(self) -> bool
+  - [property] def layer(self) -> Sdf.Layer | None
   - [property] def frame_scale(self) -> float
+  - [property] def backend(self) -> str
+  - def set_backend(self, backend: Literal[usd, usdrt, fabric])
   - class def get_default_marker_pose(cls, name: str) -> tuple[tuple[float, float, float], tuple[float, float, float, float]]
   - def get_marker_world_pose(self, name: str) -> tuple[tuple[float, float, float], tuple[float, float, float, float]] | None
   - def clear_cached_state(self)
@@ -204,7 +209,7 @@
   - def remove_marker(self, name: str) -> bool
   - def remove_all_markers(self) -> bool
   - def update_marker_transform(self, name: str, position: tuple[float, float, float] | None = None, orientation: tuple[float, float, float, float] | None = None)
-  - def update_marker_transforms(self, left_position: tuple[float, float, float] | None = None, left_orientation: tuple[float, float, float, float] | None = None, right_position: tuple[float, float, float] | None = None, right_orientation: tuple[float, float, float, float] | None = None, head_position: tuple[float, float, float] | None = None, head_orientation: tuple[float, float, float, float] | None = None, origin_position: tuple[float, float, float] | None = None, origin_orientation: tuple[float, float, float, float] | None = None)
+  - def update_marker_transforms(self, left_position: tuple[float, float, float] | None = None, left_orientation: tuple[float, float, float, float] | None = None, right_position: tuple[float, float, float] | None = None, right_orientation: tuple[float, float, float, float] | None = None, head_position: tuple[float, float, float] | None = None, head_orientation: tuple[float, float, float, float] | None = None)
   - def reset_marker_transform(self, name: str)
   - def reset_marker_transforms(self)
 
@@ -341,6 +346,9 @@
 
 ## Functions
 
+- def get_teleop_backend() -> str
+- def set_teleop_backend(backend: Literal['usd', 'usdrt', 'fabric'] | None)
+- def teleop_backend_ctx()
 - def get_builtin_grasp_config_uri(name: str) -> str
 - def get_builtin_grasp_configs() -> list[tuple[str, str]]
 - def load_grasp_config(path: str) -> tuple[GraspConfig | None, list[str]]

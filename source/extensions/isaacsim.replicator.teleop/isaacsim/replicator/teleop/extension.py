@@ -16,10 +16,12 @@
 
 import omni.ext
 
+from ._backend import reset_teleop_backend
+
 
 class Extension(omni.ext.IExt):
     def on_startup(self, ext_id):
         pass
 
     def on_shutdown(self):
-        pass
+        reset_teleop_backend()

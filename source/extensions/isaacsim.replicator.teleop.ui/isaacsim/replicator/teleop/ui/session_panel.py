@@ -27,6 +27,8 @@ from isaacsim.replicator.teleop import (
     TeleopCommand,
     TeleopManager,
     TeleopSettingsProfile,
+    get_teleop_backend,
+    set_teleop_backend,
 )
 from isaacsim.replicator.teleop.xr_anchor_manager import AnchorRotationMode
 from pxr import Sdf, UsdGeom
@@ -65,6 +67,12 @@ _ROTATION_MODES = [
     ("Fixed", AnchorRotationMode.FIXED),
     ("Follow Prim", AnchorRotationMode.FOLLOW_PRIM),
     ("Follow (Smoothed)", AnchorRotationMode.FOLLOW_PRIM_SMOOTHED),
+]
+
+_MARKER_BACKENDS = [
+    ("USD", "usd"),
+    ("USD-RT", "usdrt"),
+    ("Fabric", "fabric"),
 ]
 
 
@@ -110,10 +118,11 @@ class SessionPanel:
         self._anchor_smoothing_slider: ui.FloatSlider | None = None
         self._anchor_fixed_height_cb: ui.CheckBox | None = None
         self._debug_tracking_cb: ui.CheckBox | None = None
+        self._debug_backend_combo: ui.ComboBox | None = None
 
     def build(self) -> None:
         frame = ui.CollapsableFrame(
-            _PANEL_NAME, height=0, collapsed=self._collapsed.get(_PANEL_NAME, True), style=get_style()
+            _PANEL_NAME, height=0, collapsed=self._collapsed.get(_PANEL_NAME, False), style=get_style()
         )
         with frame:
             frame.set_collapsed_changed_fn(lambda c, k=_PANEL_NAME: self._collapsed.__setitem__(k, c))
@@ -347,6 +356,28 @@ class SessionPanel:
                     with ui.VStack(spacing=SECTION_SPACING):
                         with ui.HStack(spacing=ROW_SPACING, height=ROW_HEIGHT):
                             ui.Spacer(width=INDENT)
+                            ui.Label(
+                                "Write Backend:", width=85, tooltip="Global XformPrim backend for all teleop writes"
+                            )
+                            initial_debug_backend_idx = next(
+                                (i for i, (_, val) in enumerate(_MARKER_BACKENDS) if val == get_teleop_backend()), 0
+                            )
+                            self._debug_backend_combo = ui.ComboBox(
+                                initial_debug_backend_idx,
+                                *[name for name, _ in _MARKER_BACKENDS],
+                                width=100,
+                                tooltip=(
+                                    "Global teleop backend for XformPrim writes.\n"
+                                    "USD: plain attribute writes (default).\n"
+                                    "USD-RT / Fabric: faster paths (require FSD)."
+                                ),
+                            )
+                            self._debug_backend_combo.model.add_item_changed_fn(
+                                lambda model, _item: self._on_debug_backend_changed(model.get_item_value_model().as_int)
+                            )
+
+                        with ui.HStack(spacing=ROW_SPACING, height=ROW_HEIGHT):
+                            ui.Spacer(width=INDENT)
                             self._debug_tracking_cb = ui.CheckBox(
                                 width=20,
                                 tooltip=(
@@ -503,6 +534,15 @@ class SessionPanel:
                             )
 
     # ------------------------------------------------------------------
+    # Marker backend callback
+    # ------------------------------------------------------------------
+
+    def _on_debug_backend_changed(self, index: int) -> None:
+        if 0 <= index < len(_MARKER_BACKENDS):
+            _, backend = _MARKER_BACKENDS[index]
+            set_teleop_backend(backend)
+
+    # ------------------------------------------------------------------
     # Debug tracking callbacks
     # ------------------------------------------------------------------
 
@@ -585,8 +625,13 @@ class SessionPanel:
                     set_status(self._tracking_space_status, f"Failed — {msg}", CLR_RED, emit_terminal=True)
 
     def _on_remove_markers(self) -> None:
-        """Stops tracking and removes all markers from the stage."""
+        """Stops tracking, disables debug mode, and removes all markers from the stage."""
+        if self._tm.debug_tracking_enabled:
+            self._tm.set_debug_tracking(False)
+            if self._debug_tracking_cb:
+                self._debug_tracking_cb.model.set_value(False)
         self._tm.set_live_tracking(False)
+        self._tm.disable_tracking_space()
         self._mm.remove_all_markers()
         set_status(self._marker_status, "", CLR_DIM)
         if self._tracking_space_field and not self._tracking_space_field.model.get_value_as_string():
@@ -1009,3 +1054,5 @@ class SessionPanel:
             self._disconnect_btn.enabled = connected
         if self._debug_tracking_cb:
             self._debug_tracking_cb.enabled = not connected
+        if self._debug_backend_combo:
+            self._debug_backend_combo.enabled = not connected

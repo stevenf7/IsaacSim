@@ -13,12 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Target and quaternion helpers shared across teleop controllers."""
+"""Target and quaternion helpers shared across teleop controllers.
+
+Kept NumPy-local: teleop runs these on batch-size-1 inputs (often per IK iteration)
+"""
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
-from pxr import Gf
 
 DEFAULT_ROTATION_OFFSET_DEG = 0
 ROTATION_OFFSET_DEGREES = (-180, -90, 0, 90, 180)
@@ -63,11 +67,13 @@ def quat_mul_xyzw(
     a: tuple[float, float, float, float], b: tuple[float, float, float, float]
 ) -> tuple[float, float, float, float]:
     """Hamilton product for scalar-last quaternions."""
-    qa = Gf.Quatd(float(a[3]), Gf.Vec3d(float(a[0]), float(a[1]), float(a[2])))
-    qb = Gf.Quatd(float(b[3]), Gf.Vec3d(float(b[0]), float(b[1]), float(b[2])))
-    q = qa * qb
-    imag = q.GetImaginary()
-    return (float(imag[0]), float(imag[1]), float(imag[2]), float(q.GetReal()))
+    ax, ay, az, aw = float(a[0]), float(a[1]), float(a[2]), float(a[3])
+    bx, by, bz, bw = float(b[0]), float(b[1]), float(b[2]), float(b[3])
+    x = aw * bx + ax * bw + ay * bz - az * by
+    y = aw * by - ax * bz + ay * bw + az * bx
+    z = aw * bz + ax * by - ay * bx + az * bw
+    w = aw * bw - ax * bx - ay * by - az * bz
+    return (x, y, z, w)
 
 
 def rotation_offset_quat_xyzw(
@@ -77,16 +83,23 @@ def rotation_offset_quat_xyzw(
 ) -> tuple[float, float, float, float]:
     """Quaternion for local-frame XYZ rotation offsets in degrees.
 
-    Offsets are composed in local ``X -> Y -> Z`` order so the caller can
-    reason about each dropdown independently against the viewport gizmo.
+    Offsets compose in local ``X -> Y -> Z`` order (``qx * qy * qz``) so each
+    dropdown reads independently against the viewport gizmo.
     """
-    qx = Gf.Rotation(Gf.Vec3d.XAxis(), float(x_deg)).GetQuat()
-    qy = Gf.Rotation(Gf.Vec3d.YAxis(), float(y_deg)).GetQuat()
-    qz = Gf.Rotation(Gf.Vec3d.ZAxis(), float(z_deg)).GetQuat()
-    q = qx * qy * qz
-    q.Normalize()
-    imag = q.GetImaginary()
-    return (float(imag[0]), float(imag[1]), float(imag[2]), float(q.GetReal()))
+
+    def _axis_quat(axis_idx: int, deg: float) -> tuple[float, float, float, float]:
+        half = 0.5 * math.radians(float(deg))
+        s = math.sin(half)
+        c = math.cos(half)
+        q = [0.0, 0.0, 0.0, c]
+        q[axis_idx] = s
+        return (q[0], q[1], q[2], q[3])
+
+    q = quat_mul_xyzw(quat_mul_xyzw(_axis_quat(0, x_deg), _axis_quat(1, y_deg)), _axis_quat(2, z_deg))
+    n = math.sqrt(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3])
+    if n > 0.0:
+        return (q[0] / n, q[1] / n, q[2] / n, q[3] / n)
+    return q
 
 
 def ema_blend(

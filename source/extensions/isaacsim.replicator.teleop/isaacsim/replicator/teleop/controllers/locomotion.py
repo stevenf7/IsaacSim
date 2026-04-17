@@ -15,6 +15,14 @@
 
 """Kinematic locomotion controller for VR-driven base movement.
 
+Supports two workflows:
+
+1. **Robot base** — target prim is a robot base.  Carry Tracking Space
+   optionally co-moves the VR origin so the user follows the robot.
+2. **VR origin** — target prim is the tracking-space origin marker.
+   Carry is implicit (moving the base IS moving the VR workspace).
+   Use this for floating grippers that have no physical base.
+
 VR controller mapping:
 - Left thumbstick Y:       Forward / backward slide (local frame)
 - Left thumbstick X:       Left / right slide (local frame)
@@ -23,8 +31,9 @@ VR controller mapping:
 - Right secondary button:  Move up (world Z-axis, ``B`` on Meta)
 - Left primary button:     Toggle Carry Tracking Space (``X`` on Meta)
 
-All horizontal movement is in the prim's local frame so "forward" always
-means the direction the prim is currently facing (+X in Isaac Sim Z-up).
+All horizontal movement uses the prim's local +X projected onto the world
+ground plane, so "forward" is the direction the prim faces on the XY plane
+regardless of local frame tilt.  Vertical movement is always along world Z.
 """
 
 from __future__ import annotations
@@ -36,19 +45,32 @@ from contextlib import nullcontext
 import numpy as np
 from isaacsim.core.experimental.prims import XformPrim
 from isaacsim.core.experimental.utils.stage import get_current_stage
-from pxr import Gf, Sdf, Usd
+from pxr import Sdf, Usd, UsdGeom
+
+from .._backend import teleop_backend_ctx
+from .._xform_utils import WorldPosePrimCache, read_world_pose_arrays, to_numpy_array
 
 
 class LocomotionController:
-    """Kinematic locomotion controller - moves a base prim via VR input.
+    """Kinematic locomotion controller — moves an explicit prim via VR input.
 
     Reads thumbstick and grab-trigger values each frame and applies
     incremental position and yaw changes through ``XformPrim`` world-pose API.
     No physics simulation is involved.
 
-    When Carry Tracking Space is toggled on, the same movement delta is also
-    applied to the tracking-space prim so the entire VR workspace
-    moves together with the robot.
+    Two workflows are supported:
+
+    **Robot base locomotion** — the target prim is a robot's base link.
+    Moving it kinematically repositions the entire robot.  Toggling
+    *Carry Tracking Space* (left primary button) also moves the VR
+    origin so the user's workspace follows the robot from one work
+    area to another.
+
+    **VR origin locomotion** — the target prim is the built-in
+    tracking-space origin marker.  Because the base prim *is* the
+    tracking space, carry is implicit: every movement simultaneously
+    shifts the VR workspace.  This is the primary workflow for
+    floating grippers that have no physical base.
     """
 
     DEADZONE = 0.1
@@ -58,8 +80,11 @@ class LocomotionController:
         self._tracking_space_prim_path: str = ""
         self._base_xform: XformPrim | None = None
         self._tracking_space_xform: XformPrim | None = None
+        self._base_world_pose_cache = WorldPosePrimCache()
+        self._tracking_space_world_pose_cache = WorldPosePrimCache()
 
         self._initial_base_pose: tuple[np.ndarray, np.ndarray] | None = None
+        self._initial_base_scale: np.ndarray | None = None
         self._initial_tracking_space_pose: tuple[np.ndarray, np.ndarray] | None = None
 
         self._edit_layer: Sdf.Layer | None = None
@@ -70,6 +95,10 @@ class LocomotionController:
         self._last_update_time: float = 0.0
         self._carry_tracking_space: bool = False
         self._prev_left_primary_click: bool = False
+
+        # Pre-allocated output buffers for set_world_poses (avoid per-frame allocs)
+        self._pos_buf = np.zeros((1, 3), dtype=np.float32)
+        self._orient_buf = np.zeros((1, 4), dtype=np.float32)
 
     # ------------------------------------------------------------------
     # Configuration
@@ -97,6 +126,7 @@ class LocomotionController:
 
     def set_prim_path(self, path: str) -> None:
         self._prim_path = path
+        self._base_world_pose_cache.set_prim_path(path)
 
     def set_tracking_space_prim_path(self, path: str) -> None:
         """Sets the tracking-space prim carried with the base when Carry Tracking Space is enabled."""
@@ -125,9 +155,9 @@ class LocomotionController:
     def validate(self) -> tuple[bool, str]:
         """Validates the target prim and caches XformPrim wrappers.
 
-        Uses ``XformPrim.reset_xform_op_properties()`` to normalise the prim's
-        xform stack to ``xformOp:translate`` / ``xformOp:orient`` / ``xformOp:scale``
-        in double precision (world pose is preserved).
+        Only resets the xform stack when the prim lacks the standard
+        ``translate/orient/scale`` ops required by ``set_world_poses``.
+        When a reset is necessary the original local scale is preserved.
 
         Returns:
             (is_valid, message) tuple.
@@ -143,16 +173,17 @@ class LocomotionController:
         if not prim or not prim.IsValid():
             return False, f"Prim not found at '{self._prim_path}'"
 
-        ctx = (
-            Usd.EditContext(stage, self._edit_layer)
-            if self._edit_layer and self._prim_path.startswith("/Teleop/")
-            else nullcontext()
-        )
-        with ctx:
+        props = set(prim.GetPropertyNames())
+        needs_reset = not {"xformOp:translate", "xformOp:orient", "xformOp:scale"}.issubset(props)
+
+        with self._teleop_edit_ctx(stage, self._prim_path):
+            saved_scale = self._read_local_scale(prim) if needs_reset else None
             try:
-                self._base_xform = XformPrim(self._prim_path, reset_xform_op_properties=True)
+                self._base_xform = XformPrim(self._prim_path, reset_xform_op_properties=needs_reset)
             except Exception as exc:
                 return False, f"XformPrim error: {exc}"
+            if saved_scale is not None:
+                self._base_xform.set_local_scales(saved_scale)
 
         self._refresh_tracking_space_xform()
 
@@ -171,6 +202,10 @@ class LocomotionController:
         self._cache_initial_poses()
         self._running = True
         self._last_update_time = 0.0
+        if self.carries_tracking_space_implicitly:
+            print(f"[Teleop][Locomotion] Enabled on VR origin '{self._prim_path}' (carry is implicit).")
+        else:
+            print(f"[Teleop][Locomotion] Enabled on '{self._prim_path}'.")
         return True, "Running"
 
     def disable(self) -> None:
@@ -212,6 +247,8 @@ class LocomotionController:
                 print("[Teleop][Locomotion] Carry Tracking Space toggle ignored: no tracking-space prim selected.")
             elif self._tracking_space_xform is None:
                 print("[Teleop][Locomotion] Carry Tracking Space toggle ignored: tracking-space prim is unavailable.")
+            elif self.carries_tracking_space_implicitly:
+                print("[Teleop][Locomotion] Carry is implicit — locomotion prim IS the tracking space.")
             else:
                 self._carry_tracking_space = not self._carry_tracking_space
                 state = "enabled" if self._carry_tracking_space else "disabled"
@@ -263,10 +300,48 @@ class LocomotionController:
         sign = 1.0 if value > 0 else -1.0
         return sign * (abs(value) - self.DEADZONE) / (1.0 - self.DEADZONE)
 
+    @staticmethod
+    def _read_local_scale(prim) -> np.ndarray | None:
+        """Extracts local scale from the prim's composed local transform matrix.
+
+        Pre-reset fallback: runs before ``XformPrim`` normalizes xformOps, so it
+        cannot use ``XformPrim.get_local_scales()`` (which requires an authored
+        ``xformOp:scale`` property).
+        """
+        xformable = UsdGeom.Xformable(prim)
+        if not xformable:
+            return None
+        try:
+            mtx = xformable.GetLocalTransformation(Usd.TimeCode.Default())
+        except Exception:
+            return None
+        rows = np.array(
+            [[mtx[i][0], mtx[i][1], mtx[i][2]] for i in range(3)],
+            dtype=np.float32,
+        )
+        return np.linalg.norm(rows, axis=1).reshape(1, 3)
+
+    def _teleop_edit_ctx(self, stage, prim_path: str):
+        """Returns an edit context for Teleop prim writes, or ``nullcontext``.
+
+        Validates that ``_edit_layer`` is still in the stage's layer stack
+        before creating the ``Usd.EditContext`` to avoid crashes when the
+        anonymous marker layer has been dropped between sessions.
+        """
+        if (
+            self._edit_layer is not None
+            and prim_path.startswith("/Teleop/")
+            and any(self._edit_layer.identifier == l.identifier for l in stage.GetLayerStack(includeSessionLayers=True))
+        ):
+            return Usd.EditContext(stage, self._edit_layer)
+        return nullcontext()
+
     def _refresh_tracking_space_xform(self) -> None:
         """Refresh the cached tracking-space wrapper if one is configured."""
         self._tracking_space_xform = None
+        self._tracking_space_world_pose_cache.clear()
         if not self._tracking_space_prim_path:
+            self._tracking_space_world_pose_cache.set_prim_path("")
             return
 
         stage = get_current_stage()
@@ -277,12 +352,8 @@ class LocomotionController:
         if not tracking_space_prim or not tracking_space_prim.IsValid():
             return
 
-        ctx = (
-            Usd.EditContext(stage, self._edit_layer)
-            if self._edit_layer and self._tracking_space_prim_path.startswith("/Teleop/")
-            else nullcontext()
-        )
-        with ctx:
+        self._tracking_space_world_pose_cache.set_prim_path(self._tracking_space_prim_path)
+        with self._teleop_edit_ctx(stage, self._tracking_space_prim_path):
             try:
                 self._tracking_space_xform = XformPrim(self._tracking_space_prim_path, reset_xform_op_properties=False)
             except Exception:
@@ -294,41 +365,53 @@ class LocomotionController:
                     pass
 
     def _cache_initial_poses(self) -> None:
-        """Snapshots the current world poses of base and tracking-space prims."""
-        if self._base_xform is not None:
-            positions, orientations = self._base_xform.get_world_poses()
-            self._initial_base_pose = (positions.numpy().copy(), orientations.numpy().copy())
-        if self._tracking_space_xform is not None:
-            positions, orientations = self._tracking_space_xform.get_world_poses()
-            self._initial_tracking_space_pose = (positions.numpy().copy(), orientations.numpy().copy())
+        """Snapshots the current world poses and local scale of base and tracking-space prims."""
+        with teleop_backend_ctx():
+            if self._base_xform is not None:
+                self._initial_base_pose = read_world_pose_arrays(self._base_world_pose_cache, copy=True)
+                scales = self._base_xform.get_local_scales()
+                self._initial_base_scale = to_numpy_array(scales, copy=True)
+            if self._tracking_space_xform is not None:
+                self._initial_tracking_space_pose = read_world_pose_arrays(
+                    self._tracking_space_world_pose_cache, copy=True
+                )
 
     def _restore_initial_poses(self) -> None:
-        """Restores base and tracking-space prims to the poses cached on enable."""
+        """Restores base and tracking-space prims to the poses and scale cached on enable."""
         stage = get_current_stage()
-        if self._initial_base_pose is not None and self._base_xform is not None:
-            base_ctx = (
-                Usd.EditContext(stage, self._edit_layer)
-                if stage and self._edit_layer and self._prim_path.startswith("/Teleop/")
-                else nullcontext()
-            )
-            with base_ctx:
-                self._base_xform.set_world_poses(
-                    positions=self._initial_base_pose[0],
-                    orientations=self._initial_base_pose[1],
-                )
-        if self._initial_tracking_space_pose is not None and self._tracking_space_xform is not None:
-            ts_ctx = (
-                Usd.EditContext(stage, self._edit_layer)
-                if stage and self._edit_layer and self._tracking_space_prim_path.startswith("/Teleop/")
-                else nullcontext()
-            )
-            with ts_ctx:
-                self._tracking_space_xform.set_world_poses(
-                    positions=self._initial_tracking_space_pose[0],
-                    orientations=self._initial_tracking_space_pose[1],
-                )
+        with teleop_backend_ctx():
+            if self._initial_base_pose is not None and self._base_xform is not None and self._base_xform.valid:
+                with self._teleop_edit_ctx(stage, self._prim_path):
+                    self._base_xform.set_world_poses(
+                        positions=self._initial_base_pose[0],
+                        orientations=self._initial_base_pose[1],
+                    )
+                    if self._initial_base_scale is not None:
+                        self._base_xform.set_local_scales(self._initial_base_scale)
+            if (
+                self._initial_tracking_space_pose is not None
+                and self._tracking_space_xform is not None
+                and self._tracking_space_xform.valid
+            ):
+                with self._teleop_edit_ctx(stage, self._tracking_space_prim_path):
+                    self._tracking_space_xform.set_world_poses(
+                        positions=self._initial_tracking_space_pose[0],
+                        orientations=self._initial_tracking_space_pose[1],
+                    )
         self._initial_base_pose = None
+        self._initial_base_scale = None
         self._initial_tracking_space_pose = None
+
+    @property
+    def carries_tracking_space_implicitly(self) -> bool:
+        """True when the base prim IS the tracking-space prim.
+
+        This happens when the user points locomotion at the VR origin
+        marker to reposition floating grippers.  Moving the base
+        already moves the tracking space, so no explicit carry toggle
+        is needed.
+        """
+        return bool(self._tracking_space_prim_path and self._tracking_space_prim_path == self._prim_path)
 
     def _apply_movement(
         self,
@@ -340,86 +423,95 @@ class LocomotionController:
     ) -> None:
         """Applies incremental translation and yaw rotation to the target prim.
 
-        Translation is in the prim's local frame (+X forward, -Y right).
-        Vertical movement and yaw rotation are in world frame (Z-up).
+        Horizontal movement uses the prim's local +X projected onto the world
+        ground plane (XY).  Vertical movement and yaw are in world frame (Z-up).
 
-        When ``carry_tracking_space`` is True, the tracking-space prim receives
-        the same rigid transform as the base. This means turns rotate the
-        tracking-space offset around the base pivot instead of only rotating the
-        tracking-space prim in place.
+        Two locomotion workflows are supported:
+
+        **Robot base** — the target prim is a robot base.  The carry
+        toggle (left primary button) enables co-moving the tracking-space
+        prim so the VR workspace follows the robot.
+
+        **VR origin** — the target prim IS the tracking-space origin
+        marker.  Moving the base already moves the VR workspace, so
+        carry is implicit and the toggle has no additional effect.
+        This is useful for floating grippers that have no physical base.
         """
-        if self._base_xform is None:
+        if self._base_xform is None or not self._base_xform.valid:
             return
-        positions, orientations = self._base_xform.get_world_poses()
-        pos_np = positions.numpy()[0]
-        orient_wxyz = orientations.numpy()[0]
-        pos = Gf.Vec3d(float(pos_np[0]), float(pos_np[1]), float(pos_np[2]))
-        quat = Gf.Quatd(
-            float(orient_wxyz[0]),
-            float(orient_wxyz[1]),
-            float(orient_wxyz[2]),
-            float(orient_wxyz[3]),
-        )
-
-        rot = Gf.Rotation(quat)
-        forward = rot.TransformDir(Gf.Vec3d(1, 0, 0))
-        right = rot.TransformDir(Gf.Vec3d(0, -1, 0))
-
-        dp = forward * delta_forward + right * delta_lateral + Gf.Vec3d(0, 0, delta_up)
-        new_pos = Gf.Vec3d(pos[0] + dp[0], pos[1] + dp[1], pos[2] + dp[2])
-
-        half = delta_yaw * 0.5
-        yaw_q = Gf.Quatd(math.cos(half), 0.0, 0.0, math.sin(half))
-        yaw_rot = Gf.Rotation(yaw_q)
-        new_orient = yaw_q * quat
 
         stage = get_current_stage()
-        base_ctx = (
-            Usd.EditContext(stage, self._edit_layer)
-            if stage and self._edit_layer and self._prim_path.startswith("/Teleop/")
-            else nullcontext()
-        )
-        with base_ctx:
-            self._base_xform.set_world_poses(
-                positions=np.array([[new_pos[0], new_pos[1], new_pos[2]]], dtype=np.float32),
-                orientations=np.array(
-                    [[new_orient.GetReal(), *new_orient.GetImaginary()]],
-                    dtype=np.float32,
-                ),
-            )
 
-        if (
-            carry_tracking_space
-            and self._tracking_space_xform is not None
-            and self._tracking_space_prim_path != self._prim_path
-        ):
-            o_positions, o_orientations = self._tracking_space_xform.get_world_poses()
-            o_pos_np = o_positions.numpy()[0]
-            o_orient_wxyz = o_orientations.numpy()[0]
-            o_pos = Gf.Vec3d(float(o_pos_np[0]), float(o_pos_np[1]), float(o_pos_np[2]))
-            o_quat = Gf.Quatd(
-                float(o_orient_wxyz[0]),
-                float(o_orient_wxyz[1]),
-                float(o_orient_wxyz[2]),
-                float(o_orient_wxyz[3]),
-            )
-            carried_offset = yaw_rot.TransformDir(o_pos - pos)
-            new_o_pos = Gf.Vec3d(
-                new_pos[0] + carried_offset[0],
-                new_pos[1] + carried_offset[1],
-                new_pos[2] + carried_offset[2],
-            )
-            new_o_orient = yaw_q * o_quat
-            ts_ctx = (
-                Usd.EditContext(stage, self._edit_layer)
-                if stage and self._edit_layer and self._tracking_space_prim_path.startswith("/Teleop/")
-                else nullcontext()
-            )
-            with ts_ctx:
-                self._tracking_space_xform.set_world_poses(
-                    positions=np.array([[new_o_pos[0], new_o_pos[1], new_o_pos[2]]], dtype=np.float32),
-                    orientations=np.array(
-                        [[new_o_orient.GetReal(), *new_o_orient.GetImaginary()]],
-                        dtype=np.float32,
-                    ),
+        with teleop_backend_ctx():
+            pos_arr, quat_arr = read_world_pose_arrays(self._base_world_pose_cache)
+            pos = pos_arr.reshape(-1, 3)[0].astype(np.float64)
+            quat = quat_arr.reshape(-1, 4)[0].astype(np.float64)
+            w, qx, qy, qz = float(quat[0]), float(quat[1]), float(quat[2]), float(quat[3])
+
+            # Rotate prim's local +X by the base orientation; only the XY
+            # components are needed since movement is constrained to the
+            # ground plane.
+            fx = 1.0 - 2.0 * (qy * qy + qz * qz)
+            fy = 2.0 * (qx * qy + w * qz)
+            fwd_len = math.hypot(fx, fy)
+            if fwd_len > 1e-6:
+                forward = np.array([fx / fwd_len, fy / fwd_len, 0.0])
+            else:
+                forward = np.array([1.0, 0.0, 0.0])
+            right = np.array([forward[1], -forward[0], 0.0])
+
+            new_pos = pos + forward * delta_forward + right * delta_lateral + np.array([0.0, 0.0, delta_up])
+
+            half = delta_yaw * 0.5
+            c, s = math.cos(half), math.sin(half)
+            new_orient = np.array([c * w - s * qz, c * qx - s * qy, c * qy + s * qx, c * qz + s * w])
+
+            self._fill_pose_buf(self._pos_buf, self._orient_buf, new_pos, new_orient)
+            with self._teleop_edit_ctx(stage, self._prim_path):
+                self._base_xform.set_world_poses(positions=self._pos_buf, orientations=self._orient_buf)
+                if self._initial_base_scale is not None:
+                    self._base_xform.set_local_scales(self._initial_base_scale)
+
+            if (
+                carry_tracking_space
+                and self._tracking_space_xform is not None
+                and self._tracking_space_prim_path != self._prim_path
+            ):
+                o_pos_arr, o_quat_arr = read_world_pose_arrays(self._tracking_space_world_pose_cache)
+                o_pos = o_pos_arr.reshape(-1, 3)[0].astype(np.float64)
+                o_quat = o_quat_arr.reshape(-1, 4)[0].astype(np.float64)
+                ow, oqx, oqy, oqz = float(o_quat[0]), float(o_quat[1]), float(o_quat[2]), float(o_quat[3])
+
+                # yaw_q rotates around world Z by angle delta_yaw; rotate the
+                # base->tracking-space offset and apply to the new base pose.
+                offset = o_pos - pos
+                cos_yaw, sin_yaw = math.cos(delta_yaw), math.sin(delta_yaw)
+                carried_offset = np.array(
+                    [
+                        offset[0] * cos_yaw - offset[1] * sin_yaw,
+                        offset[0] * sin_yaw + offset[1] * cos_yaw,
+                        offset[2],
+                    ]
                 )
+                new_o_pos = new_pos + carried_offset
+                new_o_orient = np.array([c * ow - s * oqz, c * oqx - s * oqy, c * oqy + s * oqx, c * oqz + s * ow])
+
+                self._fill_pose_buf(self._pos_buf, self._orient_buf, new_o_pos, new_o_orient)
+                with self._teleop_edit_ctx(stage, self._tracking_space_prim_path):
+                    self._tracking_space_xform.set_world_poses(positions=self._pos_buf, orientations=self._orient_buf)
+
+    @staticmethod
+    def _fill_pose_buf(
+        pos_buf: np.ndarray,
+        orient_buf: np.ndarray,
+        pos: np.ndarray,
+        orient_wxyz: np.ndarray,
+    ) -> None:
+        """Writes a single pose into the pre-allocated ``(1, 3)`` / ``(1, 4)`` buffers."""
+        pos_buf[0, 0] = pos[0]
+        pos_buf[0, 1] = pos[1]
+        pos_buf[0, 2] = pos[2]
+        orient_buf[0, 0] = orient_wxyz[0]
+        orient_buf[0, 1] = orient_wxyz[1]
+        orient_buf[0, 2] = orient_wxyz[2]
+        orient_buf[0, 3] = orient_wxyz[3]

@@ -24,8 +24,9 @@ import math
 import numpy as np
 from isaacsim.core.experimental.prims import RigidPrim
 from isaacsim.core.experimental.utils.stage import get_current_stage
-from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
+from pxr import PhysxSchema, Usd, UsdPhysics
 
+from .._xform_utils import read_world_pose_arrays
 from ..coordinate_utils import CoordinateSystem
 from ._utils import (
     DEFAULT_ROTATION_OFFSET_DEG,
@@ -75,8 +76,8 @@ class FloatingRigidBodyController:
 
         self._left_initial_pose: tuple[tuple[float, float, float], tuple[float, float, float, float]] | None = None
         self._right_initial_pose: tuple[tuple[float, float, float], tuple[float, float, float, float]] | None = None
-        self._left_quat_offset: Gf.Quatd | None = None
-        self._right_quat_offset: Gf.Quatd | None = None
+        self._left_quat_offset: tuple[float, float, float, float] | None = None
+        self._right_quat_offset: tuple[float, float, float, float] | None = None
 
         self._left_rigid_prim: RigidPrim | None = None
         self._right_rigid_prim: RigidPrim | None = None
@@ -127,17 +128,15 @@ class FloatingRigidBodyController:
     @staticmethod
     def _capture_world_pose(
         prim: Usd.Prim,
-    ) -> tuple[tuple[float, float, float], tuple[float, float, float, float], Gf.Quatd]:
-        """Extracts position, orientation (xyzw), and raw quaternion from a prim's world transform."""
-        xformable = UsdGeom.Xformable(prim)
-        world_mtx = xformable.ComputeLocalToWorldTransform(Usd.TimeCode.Default())
-        translation = world_mtx.ExtractTranslation()
-        rotation = world_mtx.ExtractRotation()
-        quat = rotation.GetQuat()
-        imag = quat.GetImaginary()
-        pos = (translation[0], translation[1], translation[2])
-        orient_xyzw = (imag[0], imag[1], imag[2], quat.GetReal())
-        return pos, orient_xyzw, quat
+    ) -> tuple[tuple[float, float, float], tuple[float, float, float, float]]:
+        """Extracts position and orientation (xyzw) from a prim's world transform."""
+        pos_arr, quat_arr = read_world_pose_arrays(prim)
+        pos = pos_arr.reshape(-1, 3)[0]
+        quat = quat_arr.reshape(-1, 4)[0]
+        return (
+            (float(pos[0]), float(pos[1]), float(pos[2])),
+            (float(quat[1]), float(quat[2]), float(quat[3]), float(quat[0])),
+        )
 
     def _apply_rotation_offset(
         self, orient: tuple[float, float, float, float] | None, side: str
@@ -149,11 +148,11 @@ class FloatingRigidBodyController:
         if quat_offset is None:
             return orient
 
-        q_target = Gf.Quatd(orient[3], orient[0], orient[1], orient[2])
-        q_result = q_target * quat_offset
-        q_result.Normalize()
-        imag = q_result.GetImaginary()
-        return (imag[0], imag[1], imag[2], q_result.GetReal())
+        q = quat_mul_xyzw(orient, quat_offset)
+        n = math.sqrt(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3])
+        if n > 0.0:
+            return (q[0] / n, q[1] / n, q[2] / n, q[3] / n)
+        return q
 
     def _apply_target_rotation_offsets(
         self, orient: tuple[float, float, float, float] | None, side: str
@@ -289,22 +288,22 @@ class FloatingRigidBodyController:
             print(f"[Teleop][FloatingRigidBody] Control rigid body not found: '{prim_path}'")
             return False
 
-        pos, orient_xyzw, quat_raw = self._capture_world_pose(prim)
-        is_identity = abs(abs(quat_raw.GetReal()) - 1.0) < 1e-6
+        pos, orient_xyzw = self._capture_world_pose(prim)
+        is_identity = abs(abs(orient_xyzw[3]) - 1.0) < 1e-6
         reset_xform_ops = not self._has_required_xform_ops(prim)
 
         if side == "left":
             self._left_initial_pose = (pos, orient_xyzw)
-            self._left_quat_offset = None if is_identity else quat_raw
+            self._left_quat_offset = None if is_identity else orient_xyzw
             self._left_physics_path = prim_path
             self._left_reset_xform_ops = reset_xform_ops
         else:
             self._right_initial_pose = (pos, orient_xyzw)
-            self._right_quat_offset = None if is_identity else quat_raw
+            self._right_quat_offset = None if is_identity else orient_xyzw
             self._right_physics_path = prim_path
             self._right_reset_xform_ops = reset_xform_ops
 
-        euler = Gf.Rotation(quat_raw).Decompose(Gf.Vec3d.XAxis(), Gf.Vec3d.YAxis(), Gf.Vec3d.ZAxis())
+        euler = self._quat_xyzw_to_euler_deg(orient_xyzw)
         offset_str = f"rotation offset ({euler[0]:.1f}, {euler[1]:.1f}, {euler[2]:.1f}) deg"
         reset_str = ", xformOps reset on enable" if reset_xform_ops else ""
         print(
@@ -554,7 +553,7 @@ class FloatingRigidBodyController:
             )
         except Exception as exc:
             print(f"[Teleop][FloatingRigidBody] {side.capitalize()} velocity update failed: {exc}")
-            if "physics tensor entity is not valid" in str(exc).lower():
+            if not control_prim.valid:
                 self._clear_runtime_handle(side)
 
     # =========================================================================
@@ -620,28 +619,37 @@ class FloatingRigidBodyController:
         if current_orient is None or target_orient is None:
             return (0.0, 0.0, 0.0)
 
-        q_current = Gf.Quatd(current_orient[3], current_orient[0], current_orient[1], current_orient[2])
-        q_target = Gf.Quatd(target_orient[3], target_orient[0], target_orient[1], target_orient[2])
-        q_error = q_target * q_current.GetInverse()
+        cx, cy, cz, cw = current_orient
+        current_conj = (-cx, -cy, -cz, cw)
+        ex, ey, ez, ew = quat_mul_xyzw(target_orient, current_conj)
 
-        w = q_error.GetReal()
-        if w < 0:
-            q_error = -q_error
-            w = q_error.GetReal()
-
-        imag = q_error.GetImaginary()
-        x, y, z = imag[0], imag[1], imag[2]
-        w = max(-1.0, min(1.0, w))
-        angle = 2.0 * math.acos(w)
+        if ew < 0.0:
+            ex, ey, ez, ew = -ex, -ey, -ez, -ew
+        ew = max(-1.0, min(1.0, ew))
+        angle = 2.0 * math.acos(ew)
         if abs(angle) < 1e-6:
             return (0.0, 0.0, 0.0)
 
-        sin_half = math.sqrt(x * x + y * y + z * z)
+        sin_half = math.sqrt(ex * ex + ey * ey + ez * ez)
         if sin_half < 1e-6:
             return (0.0, 0.0, 0.0)
 
-        axis = (x / sin_half, y / sin_half, z / sin_half)
-        return (axis[0] * angle, axis[1] * angle, axis[2] * angle)
+        return (ex / sin_half * angle, ey / sin_half * angle, ez / sin_half * angle)
+
+    @staticmethod
+    def _quat_xyzw_to_euler_deg(
+        quat_xyzw: tuple[float, float, float, float],
+    ) -> tuple[float, float, float]:
+        """Intrinsic ``X -> Y -> Z`` (roll, pitch, yaw) decomposition in degrees."""
+        x, y, z, w = quat_xyzw
+        n = math.sqrt(x * x + y * y + z * z + w * w)
+        if n > 0.0:
+            x, y, z, w = x / n, y / n, z / n, w / n
+        sinp = max(-1.0, min(1.0, 2.0 * (w * y - z * x)))
+        pitch = math.asin(sinp)
+        roll = math.atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y))
+        yaw = math.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z))
+        return (math.degrees(roll), math.degrees(pitch), math.degrees(yaw))
 
     def reset_targets(self) -> None:
         """Resets all controller targets to origin/identity."""
