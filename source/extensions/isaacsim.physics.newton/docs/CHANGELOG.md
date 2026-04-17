@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.3] - 2026-04-17
+### Changed
+- Update tensor frontend import paths for `omni.physics.tensors` package restructuring
+
 ## [0.7.2] - 2026-04-15
 ### Fixed
 - Fix stale model references in all tensor view classes (`NewtonSimView`, `ArticulationSet`, `RigidBodySet`, `RigidContactSet`, and their frontend wrappers)

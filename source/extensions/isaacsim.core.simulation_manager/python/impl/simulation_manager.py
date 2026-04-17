@@ -809,7 +809,7 @@ class SimulationManager:
             >>> from isaacsim.core.simulation_manager import SimulationManager
             >>>
             >>> SimulationManager.get_physics_simulation_view()
-            <omni.physics.tensors.impl.api.SimulationView object at 0x...>
+            <omni.physics.tensors.api.SimulationView object at 0x...>
         """
         return cls._physics_sim_view__warp
 

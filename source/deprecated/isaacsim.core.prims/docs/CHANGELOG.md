@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.11.0] - 2026-04-17
+### Changed
+- Replace deprecated cloth and deformable prim implementations with error stubs since PhysX removed these features
+- Update `ParticleSystem` for renamed PhysX attribute
+
 ## [0.10.0] - 2026-04-06
 ### Changed
 - Allow to specify joint or DOF indices and set the last one as the default option when accessing data using the `joint_names` parameter

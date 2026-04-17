@@ -395,8 +395,7 @@ class SimulationContext:
         .. code-block:: python
 
             >>> simulation_context.physics_sim_view
-            <omni.physics.tensors.impl.api.SimulationView object at 0x...>
-
+            <omni.physics.tensors.api.SimulationView object at 0x...>
         """
         return SimulationManager.get_physics_sim_view()
 

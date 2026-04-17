@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.6] - 2026-04-17
+### Fixed
+- Fix link mass inverse test to not add epsilon to denominator
+
 ## [1.7.5] - 2026-04-16
 ### Added
 - Add remote simulator support for articulation DOF target writes

@@ -342,7 +342,7 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
                         device=device,
                     )
                     check_allclose(expected_v0, output, given=(v0,))
-                    expected_inverse = 1.0 / (output.numpy() + 1e-8)
+                    expected_inverse = 1.0 / output.numpy()
                     check_allclose(expected_inverse, inverse_output, given=(v0,))
 
     @parametrize(backends=["tensor"], operations=["wrap"], prim_class=Articulation, populate_stage_func=populate_stage)

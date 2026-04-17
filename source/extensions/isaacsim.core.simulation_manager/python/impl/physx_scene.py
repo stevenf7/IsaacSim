@@ -449,7 +449,7 @@ class PhysxScene(PhysicsScene):
             gpu_max_particle_contacts=physx_scene_api.GetGpuMaxParticleContactsAttr().Get(),
             gpu_max_rigid_contact_count=physx_scene_api.GetGpuMaxRigidContactCountAttr().Get(),
             gpu_max_rigid_patch_count=physx_scene_api.GetGpuMaxRigidPatchCountAttr().Get(),
-            gpu_max_soft_body_contacts=physx_scene_api.GetGpuMaxSoftBodyContactsAttr().Get(),
+            gpu_max_soft_body_contacts=physx_scene_api.GetGpuMaxDeformableVolumeContactsAttr().Get(),
             gpu_temp_buffer_capacity=physx_scene_api.GetGpuTempBufferCapacityAttr().Get(),
             gpu_total_aggregate_pairs_capacity=physx_scene_api.GetGpuTotalAggregatePairsCapacityAttr().Get(),
         )
@@ -494,7 +494,7 @@ class PhysxScene(PhysicsScene):
         if cfg.gpu_max_rigid_patch_count is not None:
             physx_scene_api.GetGpuMaxRigidPatchCountAttr().Set(cfg.gpu_max_rigid_patch_count)
         if cfg.gpu_max_soft_body_contacts is not None:
-            physx_scene_api.GetGpuMaxSoftBodyContactsAttr().Set(cfg.gpu_max_soft_body_contacts)
+            physx_scene_api.GetGpuMaxDeformableVolumeContactsAttr().Set(cfg.gpu_max_soft_body_contacts)
         if cfg.gpu_temp_buffer_capacity is not None:
             physx_scene_api.GetGpuTempBufferCapacityAttr().Set(cfg.gpu_temp_buffer_capacity)
         if cfg.gpu_total_aggregate_pairs_capacity is not None:

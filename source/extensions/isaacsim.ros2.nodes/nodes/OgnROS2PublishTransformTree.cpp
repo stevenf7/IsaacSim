@@ -99,7 +99,7 @@ public:
                     "Connect OgnIsaacComputeTransformTree to inputs:parentFrames/childFrames/translations/orientations instead.");
                 state.m_useExternalData = false;
 
-                state.m_simView = state.m_tensorInterface->createSimulationView(state.m_stageId);
+                state.m_simView = state.m_tensorInterface->createSimulationView(state.m_stageId, nullptr);
 
                 //  Finding target prims
                 const auto& targetPrims = db.inputs.targetPrims();
