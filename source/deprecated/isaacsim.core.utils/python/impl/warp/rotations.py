@@ -15,6 +15,7 @@
 
 """Warp-based utilities for rotation operations and quaternion conversions."""
 
+from __future__ import annotations
 
 from typing import Any
 

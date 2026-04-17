@@ -15,6 +15,7 @@
 
 """Utility functions for transforming USD prim locations, orientations, scales, and coordinate spaces."""
 
+from __future__ import annotations
 
 from pxr import Gf, Sdf, Usd, UsdGeom
 

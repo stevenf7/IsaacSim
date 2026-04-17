@@ -15,6 +15,8 @@
 
 """Utility functions for USD scene manipulation used by behavior scripts."""
 
+from __future__ import annotations
+
 import carb
 import carb.settings
 import omni.kit.app

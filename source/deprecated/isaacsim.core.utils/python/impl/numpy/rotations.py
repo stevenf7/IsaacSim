@@ -15,6 +15,7 @@
 
 """Provides NumPy-based functions for 3D rotation conversions between quaternions, Euler angles, rotation matrices, and rotation vectors."""
 
+from __future__ import annotations
 
 import numpy as np
 from pxr import Gf

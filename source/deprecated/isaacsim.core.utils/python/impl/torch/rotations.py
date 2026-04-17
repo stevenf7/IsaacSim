@@ -15,6 +15,7 @@
 
 """Provides PyTorch-based utilities for 3D rotations, quaternions, and coordinate transformations."""
 
+from __future__ import annotations
 
 import numpy as np
 from isaacsim.core.deprecation_manager import import_module
