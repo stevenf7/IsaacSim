@@ -289,15 +289,20 @@ Extensions
 
 |hr|
 
+Standalone Examples
+-------------------
+
 .. toctree::
    :maxdepth: 1
    :caption: Standalone Examples
 
    docs/api/source/standalone_examples_list
 
+Generic Model Output
+--------------------
+
 .. toctree::
    :maxdepth: 1
    :caption: Generic Model Output
 
    docs/source/generic_model_output/generic_model_output
-   docs/source/generic_model_output/python_package
