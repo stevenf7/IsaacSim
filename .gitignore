@@ -215,8 +215,8 @@ source/internal_extensions/**/*.pyi
 source/deprecated/**/*.pyi
 
 # Temp files for slack posting stuff
-pipeline_test_chart_heatmap.html
-pipeline_test_chart_heatmap.png
+pipeline_test_chart_*_heatmap.html
+pipeline_test_chart_*_heatmap.png
 regressions.txt
 tools/docker/.env
 

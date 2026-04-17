@@ -11,6 +11,9 @@ gitlab_project: "omniverse/isaac/omni_isaac_sim"
 
 # Cache subdirectory prefix used by fetch-gitlab and generate subcommands.
 # Branch dirs are stored as {namespace_prefix}_{branch_name}/ in the cache.
+# Also used to disambiguate the heatmap artifact filename
+# (pipeline_test_chart_{namespace_prefix}_heatmap.html/png) so that the IsaacSim
+# and IsaacLab Slack jobs do not overwrite each other's artifacts.
 namespace_prefix: isaaclab
 
 # ── Ingestion ────────────────────────────────────────────────────────────────

@@ -46,6 +46,23 @@ def _restore_repointed_prebundle(isaac_sim_path: str) -> None:
             print(f"[isaaclab-fixup] Warning: no .bak found at {nvidia_bak}", file=sys.stderr)
 
 
+def _reconcile_exit_code(process_rc: int, junit_path: str) -> int:
+    """Upgrade a zero ``process_rc`` to 1 when the junit report records failures/errors.
+
+    Pytest has been observed to exit 0 while the junit report still records failures or
+    errors (e.g. teardown errors, plugin quirks).  When that happens the junit file — which
+    the downstream dashboard already treats as authoritative — is a more reliable signal
+    than the process rc.  A non-zero ``process_rc`` is preserved as-is so the original
+    failure cause is not masked.
+    """
+    if process_rc != 0 or not os.path.exists(junit_path):
+        return process_rc
+    for suite in ET.parse(junit_path).getroot().iter("testsuite"):
+        if int(suite.get("failures", 0)) or int(suite.get("errors", 0)):
+            return 1
+    return process_rc
+
+
 def _combine_junit_xmls(xml_dir: str, output_path: str) -> None:
     """Combine individual JUnit XML files into a single <testsuites> report.
 
@@ -115,4 +132,4 @@ def main(args: argparse.Namespace) -> None:
     if not os.path.exists("tests/full_report.xml"):
         _combine_junit_xmls("tests", "tests/full_report.xml")
 
-    sys.exit(test_exit_code)
+    sys.exit(_reconcile_exit_code(test_exit_code, "tests/full_report.xml"))

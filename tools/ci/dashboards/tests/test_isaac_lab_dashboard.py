@@ -90,13 +90,20 @@ class TestWorstStatus:
 
 def _build_xml(suites):
     """Helper: build JUnit XML bytes from a list of (suite_name, cases) tuples.
-    cases is a list of (name, tag, message) where tag is None for pass.
+
+    Each case is a tuple of ``(name, tag, message)`` or
+    ``(name, tag, message, classname)``.  ``tag`` is ``None`` for a pass.
     """
     root = ET.Element("testsuites")
     for suite_name, cases in suites:
         suite = ET.SubElement(root, "testsuite", name=suite_name)
-        for case_name, tag, message in cases:
-            tc = ET.SubElement(suite, "testcase", name=case_name)
+        for case in cases:
+            case_name, tag, message = case[:3]
+            classname = case[3] if len(case) > 3 else ""
+            attrs = {"name": case_name}
+            if classname:
+                attrs["classname"] = classname
+            tc = ET.SubElement(suite, "testcase", **attrs)
             if tag:
                 child = ET.SubElement(tc, tag)
                 if message:
@@ -107,18 +114,20 @@ def _build_xml(suites):
 class TestParseJunitXml:
     def test_empty_testsuites(self):
         xml = b'<?xml version="1.0"?><testsuites></testsuites>'
-        summary, suites = parse_junit_xml(xml)
+        summary, sections = parse_junit_xml(xml)
         assert summary["total"] == 0
         assert summary["pass_rate"] == 0.0
-        assert suites == {}
+        assert sections == {}
 
     def test_single_pass(self):
         xml = _build_xml([("suite1", [("test_foo", None, "")])])
-        summary, suites = parse_junit_xml(xml)
+        summary, sections = parse_junit_xml(xml)
         assert summary["total"] == 1
         assert summary["passed"] == 1
         assert summary["failed"] == 0
         assert summary["pass_rate"] == 1.0
+        assert list(sections.keys()) == ["suite1"]
+        assert list(sections["suite1"]["suites"].keys()) == ["test_foo"]
 
     def test_fail(self):
         xml = _build_xml([("suite1", [("test_foo", "failure", "")])])
@@ -145,21 +154,26 @@ class TestParseJunitXml:
     def test_timeout_suite_promotes_errors(self):
         """Suite named timeout_* should promote 'error' status to 'timeout'."""
         xml = _build_xml([("timeout_tests", [("test_foo", "error", "generic error")])])
-        summary, suites = parse_junit_xml(xml)
+        summary, sections = parse_junit_xml(xml)
         assert summary["timed_out"] == 1
         assert summary["errored"] == 0
-        assert suites["timeout_tests"]["worst_status"] == "timeout"
+        assert sections["timeout_tests"]["summary"]["worst_status"] == "timeout"
+        assert sections["timeout_tests"]["suites"]["test_foo"]["worst_status"] == "timeout"
 
-    def test_multiple_suites_aggregate(self):
+    def test_multiple_testsuites_become_sections(self):
         xml = _build_xml([
             ("suite_a", [("pass1", None, ""), ("fail1", "failure", "")]),
             ("suite_b", [("pass2", None, "")]),
         ])
-        summary, suites = parse_junit_xml(xml)
+        summary, sections = parse_junit_xml(xml)
         assert summary["total"] == 3
         assert summary["passed"] == 2
         assert summary["failed"] == 1
-        assert len(suites) == 2
+        # One section per <testsuite>
+        assert set(sections.keys()) == {"suite_a", "suite_b"}
+        # One suite row per <testcase> inside a section
+        assert set(sections["suite_a"]["suites"].keys()) == {"pass1", "fail1"}
+        assert set(sections["suite_b"]["suites"].keys()) == {"pass2"}
 
     def test_pass_rate_with_mixed_results(self):
         xml = _build_xml([("s", [
@@ -170,14 +184,14 @@ class TestParseJunitXml:
         assert summary["total"] == 4
         assert round(summary["pass_rate"], 4) == 0.75
 
-    def test_suite_worst_status(self):
+    def test_section_summary_worst_status(self):
         xml = _build_xml([("s", [
             ("p1", None, ""),
             ("f1", "failure", ""),
             ("e1", "error", "msg"),
         ])])
-        _, suites = parse_junit_xml(xml)
-        assert suites["s"]["worst_status"] == "error"
+        _, sections = parse_junit_xml(xml)
+        assert sections["s"]["summary"]["worst_status"] == "error"
 
     def test_malformed_xml_raises(self):
         with pytest.raises(ET.ParseError):
@@ -186,9 +200,57 @@ class TestParseJunitXml:
     def test_root_testsuite_not_testsuites(self):
         """A bare <testsuite> root (not wrapped in <testsuites>) should be handled."""
         xml = b'<?xml version="1.0"?><testsuite name="s"><testcase name="t"/></testsuite>'
-        summary, suites = parse_junit_xml(xml)
+        summary, sections = parse_junit_xml(xml)
         assert summary["total"] == 1
-        assert "s" in suites
+        assert "s" in sections
+        assert "t" in sections["s"]["suites"]
+
+    def test_per_case_rows_preserve_every_case(self):
+        """Every <testcase> becomes its own heatmap row within the section."""
+        xml = _build_xml([("pytest", [
+            ("test_a1", None, "", "tests.foo.TestA"),
+            ("test_a2", "failure", "", "tests.foo.TestA"),
+            ("test_a3", None, "", "tests.foo.TestA"),
+            ("test_b1", None, "", "tests.foo.TestB"),
+            ("test_b2", "skipped", "", "tests.foo.TestB"),
+        ])])
+        summary, sections = parse_junit_xml(xml)
+        assert list(sections.keys()) == ["pytest"]
+        assert set(sections["pytest"]["suites"].keys()) == {
+            "test_a1", "test_a2", "test_a3", "test_b1", "test_b2",
+        }
+        assert sections["pytest"]["suites"]["test_a2"]["worst_status"] == "fail"
+        assert sections["pytest"]["suites"]["test_b2"]["worst_status"] == "skip"
+        assert summary["total"] == 5
+        assert summary["passed"] == 3
+        assert summary["failed"] == 1
+        assert summary["skipped"] == 1
+
+    def test_duplicate_case_names_in_section(self):
+        """Parametrized tests can repeat case names; every row must still be unique."""
+        xml = _build_xml([("pytest", [
+            ("test_param", None, "", "tests.foo.TestA"),
+            ("test_param", "failure", "", "tests.foo.TestA"),
+        ])])
+        _, sections = parse_junit_xml(xml)
+        rows = sections["pytest"]["suites"]
+        assert len(rows) == 2
+
+    def test_duplicate_testsuite_names(self):
+        """Sections with the same name are disambiguated with a numeric suffix."""
+        xml = _build_xml([
+            ("pytest", [("t1", None, "")]),
+            ("pytest", [("t2", None, "")]),
+        ])
+        _, sections = parse_junit_xml(xml)
+        assert set(sections.keys()) == {"pytest", "pytest#1"}
+
+    def test_missing_classname_still_uses_case_name_as_key(self):
+        """Row keys are driven by case name, so missing classname is fine."""
+        xml = _build_xml([("my_suite", [("t", None, "")])])
+        _, sections = parse_junit_xml(xml)
+        assert "my_suite" in sections
+        assert "t" in sections["my_suite"]["suites"]
 
 
 # ── parse_test_report_api ─────────────────────────────────────────────────────
@@ -325,6 +387,7 @@ sys.modules.setdefault("omni.repo.ci", _omni_repo_ci)
 sys.modules.setdefault("omni.repo.man", _omni_repo_man)
 _spec.loader.exec_module(_mod)
 _combine_junit_xmls = _mod._combine_junit_xmls
+_reconcile_exit_code = _mod._reconcile_exit_code
 
 
 class TestCombineJunitXmls:
@@ -384,3 +447,50 @@ class TestCombineJunitXmls:
             _combine_junit_xmls(d, out)
             root = ET.parse(out).getroot()
             assert len(root.findall("testsuite")) == 1
+
+
+# ── _reconcile_exit_code (from test_isaac_lab.py) ────────────────────────────
+
+class TestReconcileExitCode:
+    def _write_report(self, path, *, failures=0, errors=0, wrap=False):
+        suite = ET.Element("testsuite", name="suite", failures=str(failures), errors=str(errors))
+        ET.SubElement(suite, "testcase", name="t0")
+        root = ET.Element("testsuites") if wrap else suite
+        if wrap:
+            root.append(suite)
+        ET.ElementTree(root).write(path, encoding="utf-8", xml_declaration=True)
+
+    def test_upgrades_rc_when_suite_has_failures(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "r.xml")
+            self._write_report(p, failures=1)
+            assert _reconcile_exit_code(0, p) == 1
+
+    def test_upgrades_rc_when_suite_has_errors(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "r.xml")
+            self._write_report(p, errors=2)
+            assert _reconcile_exit_code(0, p) == 1
+
+    def test_handles_testsuites_wrapper(self):
+        """Combined reports use <testsuites> root; the helper must descend into children."""
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "r.xml")
+            self._write_report(p, errors=1, wrap=True)
+            assert _reconcile_exit_code(0, p) == 1
+
+    def test_passes_through_zero_when_all_pass(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "r.xml")
+            self._write_report(p)
+            assert _reconcile_exit_code(0, p) == 0
+
+    def test_preserves_nonzero_rc_even_when_junit_clean(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "r.xml")
+            self._write_report(p)
+            assert _reconcile_exit_code(3, p) == 3
+
+    def test_missing_junit_returns_rc_unchanged(self):
+        assert _reconcile_exit_code(0, "/nonexistent/path/r.xml") == 0
+        assert _reconcile_exit_code(5, "/nonexistent/path/r.xml") == 5
