@@ -140,6 +140,7 @@ class TestROS2SensorMsgRTX(ROS2TestCase):
         set_values = [
             ("PCLPublish.inputs:renderProductPath", self._render_product_path),
             ("PCLPublish.inputs:topicName", self._ros_topic),
+            ("PCLPublish.inputs:frameId", "my_custom_lidar_frame"),
             ("PCLPublish.inputs:resetSimulationTimeOnStop", True),
             ("PCLPublish.inputs:useSystemTime", use_system_time),
             ("PCLPublish.inputs:enableObjectIdMap", self._sensor_type == "lidar" and "objectId" in metadata),
@@ -372,6 +373,7 @@ class TestROS2PointCloudRTX(TestROS2SensorMsgRTX):
 
     async def _test_message_data(self, full_scan: bool = False, test_duration_s: float = 1.5, metadata: List[str] = []):
         self.assertIsNotNone(self._ros_msg_data)
+        self.assertEqual(self._ros_msg_data.header.frame_id, "my_custom_lidar_frame")
         message_timestamp = self._ros_msg_data.header.stamp.sec + self._ros_msg_data.header.stamp.nanosec / 1e9
         snap = self._get_closest_timestamp(message_timestamp)
 
@@ -527,6 +529,7 @@ class TestROS2LaserScanRTX(TestROS2SensorMsgRTX):
             return
 
         self.assertIsNotNone(self._ros_msg_data)
+        self.assertEqual(self._ros_msg_data.header.frame_id, "my_custom_lidar_frame")
         message_timestamp = self._ros_msg_data.header.stamp.sec + self._ros_msg_data.header.stamp.nanosec / 1e9
         snap = self._get_closest_timestamp(message_timestamp)
 

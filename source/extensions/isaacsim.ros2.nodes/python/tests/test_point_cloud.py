@@ -56,7 +56,8 @@ class TestRos2PointCloud(ROS2TestCase):
                         ("PublishPCL", "isaacsim.ros2.bridge.ROS2PublishPointCloud"),
                     ],
                     keys.SET_VALUES: [
-                        ("ReadLidarPCL.inputs:lidarPrim", [usdrt.Sdf.Path(robot_path + "/chassis_link/carter_lidar")])
+                        ("ReadLidarPCL.inputs:lidarPrim", [usdrt.Sdf.Path(robot_path + "/chassis_link/carter_lidar")]),
+                        ("PublishPCL.inputs:frameId", "my_custom_lidar_frame"),
                     ],
                     keys.CONNECT: [
                         ("OnPlaybackTick.outputs:tick", "ReadLidarPCL.inputs:execIn"),
@@ -96,6 +97,7 @@ class TestRos2PointCloud(ROS2TestCase):
 
         # If 3D point cloud (highLOD enabled)
         self.assertIsNotNone(self._point_cloud_data)
+        self.assertEqual(self._point_cloud_data.header.frame_id, "my_custom_lidar_frame")
         self.assertEqual(self._point_cloud_data.height, 1)
         self.assertGreater(self._point_cloud_data.width, 1)
         self.assertEqual(

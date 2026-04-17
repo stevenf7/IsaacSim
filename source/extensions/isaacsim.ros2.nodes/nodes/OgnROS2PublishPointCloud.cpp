@@ -52,7 +52,7 @@ public:
                     std::string(nodeObj.iNode->getPrimPath(nodeObj)),
                     collectNamespace(db.inputs.nodeNamespace(),
                                      stage->GetPrimAtPath(pxr::SdfPath(nodeObj.iNode->getPrimPath(nodeObj)))),
-                    db.inputs.topicName(), state.m_pub.getFrameId(), db.inputs.queueSize(), db.inputs.qosProfile(),
+                    db.inputs.topicName(), db.inputs.frameId(), db.inputs.queueSize(), db.inputs.qosProfile(),
                     db.inputs.context()))
             {
                 db.logError("Unable to create ROS2 publisher");
