@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.5] - 2026-04-16
+### Added
+- Add remote simulator support for articulation DOF target writes
+
 ## [1.7.4] - 2026-04-13
 ### Fixed
 - Fixed `XformPrim.__init__` raising `TypeError` for non-root articulation links (`raise carb.log_warn(...)` replaced with `carb.log_warn(...)`)

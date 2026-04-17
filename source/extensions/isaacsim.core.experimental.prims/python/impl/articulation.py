@@ -1504,6 +1504,14 @@ class Articulation(XformPrim):
             >>> prims.set_dof_position_targets([0.04], dof_indices=[7, 8])
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
+        # Check SimState mode for optional data mirroring/replacement
+        simstate_mode = backend_utils.get_simstate_mode()
+        if simstate_mode != backend_utils.SimStateMode.DISABLED:
+            self._write_dof_data_to_simstate("drive:DRIVE_TYPE:physics:targetPosition", positions, indices, dof_indices)
+            # Exclusive mode: write to SimState only, skip normal backend
+            if simstate_mode == backend_utils.SimStateMode.EXCLUSIVE:
+                return
+        # Normal backend processing (disabled mode, or mirror mode continuation)
         backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
@@ -1623,6 +1631,16 @@ class Articulation(XformPrim):
             >>> prims.set_dof_velocity_targets(np.random.uniform(low=-10, high=10, size=(3, 9)))
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
+        # Check SimState mode for optional data mirroring/replacement
+        simstate_mode = backend_utils.get_simstate_mode()
+        if simstate_mode != backend_utils.SimStateMode.DISABLED:
+            self._write_dof_data_to_simstate(
+                "drive:DRIVE_TYPE:physics:targetVelocity", velocities, indices, dof_indices
+            )
+            # Exclusive mode: write to SimState only, skip normal backend
+            if simstate_mode == backend_utils.SimStateMode.EXCLUSIVE:
+                return
+        # Normal backend processing (disabled mode, or mirror mode continuation)
         backend = self._check_for_tensor_backend(backend_utils.get_current_backend(["tensor", "usd"]))
         # Tensor API
         if backend == "tensor":
@@ -1741,7 +1759,14 @@ class Articulation(XformPrim):
         """
         assert self.valid, _MSG_PRIM_NOT_VALID
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
-        # Tensor API
+        # Check SimState mode for optional data mirroring/replacement
+        simstate_mode = backend_utils.get_simstate_mode()
+        if simstate_mode != backend_utils.SimStateMode.DISABLED:
+            self._write_dof_data_to_simstate("drive:effort", efforts, indices, dof_indices)
+            # Exclusive mode: write to SimState only, skip normal backend
+            if simstate_mode == backend_utils.SimStateMode.EXCLUSIVE:
+                return
+        # Tensor API (only backend supported for efforts)
         data = self._physics_articulation_view.get_dof_actuation_forces()  # shape: (N, max_dofs)
         indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
         dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
@@ -4517,6 +4542,100 @@ class Articulation(XformPrim):
                 )
             return fallback_backend
         return backend
+
+    def _get_simstate_storage(self) -> "sim_state_client.ISimStateStorage | None":
+        """Get or create the SimStateStorage instance.
+
+        Returns:
+            The SimStateStorage interface instance, or None if unavailable.
+        """
+        if not hasattr(self, "_simstate_storage") or self._simstate_storage is None:
+            try:
+                import isaacsim.mega.sim_state.client as sim_state_client
+
+                self._simstate_storage = sim_state_client.create_sim_state_storage()
+            except (ImportError, RuntimeError) as e:
+                carb.log_error(f"Failed to create SimStateStorage: {e}")
+                self._simstate_storage = None
+        return self._simstate_storage
+
+    def _write_dof_data_to_simstate(
+        self,
+        property_name: str,
+        values: float | list | np.ndarray | wp.array,
+        indices: int | list | np.ndarray | wp.array | None,
+        dof_indices: int | list | np.ndarray | wp.array | None,
+    ) -> None:
+        """Write DOF data to SimStateStorage.
+
+        Args:
+            property_name: The property name to store (e.g., "drive:angular:physics:targetPosition").
+                If the string contains "DRIVE_TYPE", it is replaced per-DOF with "angular" or "linear".
+            values: The values to store (shape ``(N, D)``).
+            indices: Indices of prims to process. If None, all wrapped prims are processed.
+            dof_indices: Indices of DOFs to process. If None, all DOFs are processed.
+        """
+        # Skip if remote push to SimState is disabled (e.g., in world simulator mode)
+        if not carb.settings.get_settings().get_as_bool("/isaacsim/mega/simstate/remote_push/enabled"):
+            return
+
+        storage = self._get_simstate_storage()
+        if storage is None:
+            return
+
+        # Resolve indices to CPU arrays
+        resolved_indices = ops_utils.resolve_indices(indices, count=len(self), device="cpu")
+        resolved_dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device="cpu")
+
+        # Broadcast values to the expected shape
+        values_array = ops_utils.broadcast_to(
+            values,
+            shape=(resolved_indices.shape[0], resolved_dof_indices.shape[0]),
+            dtype=wp.float32,
+            device="cpu",
+        ).numpy()
+
+        # Build paths and flat values for storage, grouped by final property name
+        paths_by_property: dict[str, list[str]] = {}
+        values_by_property: dict[str, list[float]] = {}
+        indices_np = resolved_indices.numpy()
+        dof_indices_np = resolved_dof_indices.numpy()
+        for i, idx in enumerate(indices_np):
+            for j, dof_idx in enumerate(dof_indices_np):
+                dof_path = self.dof_paths[idx][dof_idx]
+                value = values_array[i][j].item()
+                dof_type = self.dof_types[dof_idx]
+                resolved_property_name = property_name
+
+                if "DRIVE_TYPE" in property_name:
+                    if dof_type == omni.physics.tensors.DofType.Rotation:
+                        drive_type = "angular"
+                    elif dof_type == omni.physics.tensors.DofType.Translation:
+                        drive_type = "linear"
+                    else:
+                        carb.log_warn(f"Invalid DOF type ({dof_type}) at index {dof_idx}")
+                        continue
+                    resolved_property_name = property_name.replace("DRIVE_TYPE", drive_type)
+
+                # Convert radians to degrees for angular DOFs if this is a position/velocity target
+                if dof_type == omni.physics.tensors.DofType.Rotation:
+                    if "Position" in resolved_property_name or "Velocity" in resolved_property_name:
+                        value = np.rad2deg(value)
+
+                if resolved_property_name not in paths_by_property:
+                    paths_by_property[resolved_property_name] = []
+                    values_by_property[resolved_property_name] = []
+                paths_by_property[resolved_property_name].append(dof_path)
+                values_by_property[resolved_property_name].append(value)
+
+        # Write to storage
+        # Simultaneous write to storage and push from storage to remote is not yet supported
+        change_number = 0
+        for resolved_property_name in paths_by_property:
+            paths = paths_by_property[resolved_property_name]
+            flat_values = values_by_property[resolved_property_name]
+            if not storage.set_float32_column(change_number, paths, resolved_property_name, flat_values):
+                carb.log_warn(f"SimStateStorage: failed to write '{resolved_property_name}' for {len(paths)} prims")
 
     def _get_drive_api_and_type(self, index: int, dof_index: int) -> tuple[UsdPhysics.DriveAPI, str]:
         """Get the drive API and type for a given degree of freedom (DOF).

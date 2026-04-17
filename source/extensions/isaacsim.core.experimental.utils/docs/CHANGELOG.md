@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.16.1] - 2026-04-16
+### Added
+- Add `SimStateMode` enum and `get_simstate_mode()` for SimState backend selection
+
 ## [0.16.0] - 2026-04-03
 ### Changed
 - **Breaking:** `euler_angles_to_quaternion` and `euler_angles_to_rotation_matrix` now expect `[roll, pitch, yaw]` (XYZ) input order for both extrinsic and intrinsic conventions, enabling clean euler-to-quaternion-to-euler round trips
