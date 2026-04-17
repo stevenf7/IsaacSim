@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.3] - 2026-04-16
+### Fixed
+- Fix `OgnROS2PublishPointCloud` issue where the publisher was using its own uninitialized frame ID instead of `db.inputs.frameId()`
+
 ## [1.15.2] - 2026-04-15
 ### Changed
 - Updated tests to check fixed sized array edge-cases for publisher and subscriber.
