@@ -273,11 +273,11 @@ function get_ros2_extra(os_target, rel_path)
         -- Convert forward slashes to backslashes for Windows
         local win_rel_path = rel_path:gsub("/", "\\")
         return string.format([[
-set ROS_DISTRO=humble
+set ROS_DISTRO=jazzy
 set RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 set ROS_DOMAIN_ID=93
 pushd %%~dp0%sexts
-set basedir=%%cd%%\isaacsim.ros2.core\humble\lib
+set basedir=%%cd%%\isaacsim.ros2.core\jazzy\lib
 popd
 set PATH=%%PATH%%;%%basedir%%
 ]], win_rel_path)

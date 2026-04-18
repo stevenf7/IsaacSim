@@ -19,7 +19,7 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ISAAC_SIM_ROOT="$SCRIPT_DIR" 
 
-DEFAULT_ROS_DISTRO="humble"
+DEFAULT_ROS_DISTRO="jazzy"
 
 # Check Ubuntu version
 if [ -f /etc/os-release ]; then
