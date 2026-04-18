@@ -52,7 +52,7 @@ def update_location(
 
 def compute_coordinates(
     om: object, cell_size: float
-) -> tuple[tuple[float, float], tuple[float, float], tuple[float, float], tuple[float, float], np.matrix]:
+) -> tuple[tuple[float, float], tuple[float, float], tuple[float, float], tuple[float, float], np.ndarray]:
     """Computes the corner coordinates and image transformation for the occupancy map.
 
     Calculates the world coordinates of the four corners of the occupancy map image
@@ -84,7 +84,7 @@ def compute_coordinates(
     bottom_left = (max_b[0] - half_w, max_b[1] - half_w)
     bottom_right = (min_b[0] + half_w, max_b[1] - half_w)
 
-    image_coords = np.matrix([[0, 1], [-1, 0]]) * np.matrix([[-top_left[0]], [-top_left[1]]])
+    image_coords = np.array([[0, 1], [-1, 0]]) @ np.array([[-top_left[0]], [-top_left[1]]])
 
     return top_left, top_right, bottom_left, bottom_right, image_coords
 

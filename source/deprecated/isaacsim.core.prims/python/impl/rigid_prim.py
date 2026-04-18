@@ -1880,7 +1880,7 @@ class RigidPrim(XFormPrim):
         .. code-block:: python
 
             >>> # for the example the rigid bodies are in free fall
-            >>> state = prims.get_default_state()
+            >>> state = prims.get_current_dynamic_state()
             <isaacsim.core.utils.types.DynamicsViewState object at 0x7f182bd72590>
             >>> state
             >>> state.positions

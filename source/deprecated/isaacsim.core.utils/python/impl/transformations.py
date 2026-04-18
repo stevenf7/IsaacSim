@@ -35,7 +35,7 @@ def tf_matrix_from_pose(translation: Sequence[float], orientation: Sequence[floa
 
     Args:
         translation: The translation vector.
-        orientation: The orientation quaternion.
+        orientation: The orientation quaternion in scalar-first (w, x, y, z) order.
 
     Returns:
         A 4x4 matrix.

@@ -303,6 +303,7 @@ class SimulationManager:
             cls._engine = "physx"
             carb.log_warn("No physics engines found, defaulting to PhysX")
 
+    @staticmethod
     def _on_simulation_registry_event(event_type: SimulationRegistryEventType, simulation_id: int, name: str) -> None:
         """Handle simulation registry events to keep _engine in sync.
 
@@ -536,6 +537,7 @@ class SimulationManager:
     Internal callbacks.
     """
 
+    @staticmethod
     def _on_stage_opened(event: Any) -> None:
         """Handle stage opened events to reset simulation state and track asset loading."""
 
@@ -568,6 +570,7 @@ class SimulationManager:
             observer_name="SimulationManager._assets_loaded_callback",
         )
 
+    @staticmethod
     def _on_stage_closed(event: Any) -> None:
         """Handle stage closed events to reset all simulation resources."""
         SimulationManager._reset(
@@ -578,6 +581,7 @@ class SimulationManager:
             track_physics_scenes=True,
         )
 
+    @staticmethod
     def _on_play(event) -> None:
         """Handle timeline play events to initialize physics simulation."""
         if SimulationManager._carb_settings.get_as_bool(_SETTING_PLAY_SIMULATION):
@@ -607,6 +611,7 @@ class SimulationManager:
             else:
                 SimulationManager._message_bus.dispatch_event(SimulationEvent.SIMULATION_RESUMED.value, payload={})
 
+    @staticmethod
     def _on_stop(event: Any) -> None:
         """Handle timeline stop events to invalidate physics."""
         SimulationManager.invalidate_physics()

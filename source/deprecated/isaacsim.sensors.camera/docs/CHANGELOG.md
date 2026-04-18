@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.7.4] - 2026-04-17
+### Fixed
+- Fix `Camera.set_dt` rejecting valid sub-rendering-rate frequencies due to float modulo precision
+- Fix `Camera.get_dt` returning -1.0 when rendering frequency is unknown (now returns 0.0)
+- Fix `set_fisheye_polynomial_properties` silently skipping valid 0.0 values due to bare truthiness checks
+- Fix `set_kannala_brandt_properties` warning message saying "expecting 5" when guard enforces minimum 4
+- Fix case-sensitive `"pinhole"` substring check failing for `"opencvPinhole"` in 4 projection methods
+- Fix `set_lens_distortion_model("pinhole")` removing all applied schemas instead of only lens distortion schemas
+
 ## [1.7.3] - 2026-04-03
 ### Changed
 - Adapt test euler angles to new `[roll, pitch, yaw]` input convention

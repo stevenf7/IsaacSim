@@ -1,5 +1,11 @@
 # Changelog
 
+## [5.2.1] - 2026-04-17
+### Fixed
+- Fix `SimulationContext.is_stopped` docstring copy-pasted from `is_playing`
+- Fix `SimulationContext.__init__` docstring listing incorrect stage units default
+- Fix `PhysicsContext.get_physx_update_transformations_settings` return annotation from `tuple[bool, bool, bool, bool]` to `tuple[bool, bool, bool]`
+
 ## [5.2.0] - 2026-04-17
 ### Changed
 - Replace deprecated deformable body and cloth API implementations with error stubs since PhysX removed these features

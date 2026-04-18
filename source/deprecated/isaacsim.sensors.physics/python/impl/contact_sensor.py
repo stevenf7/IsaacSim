@@ -75,10 +75,12 @@ class ContactSensor(BaseSensor):
             raise Exception("Sensor Frequency and Sensor dt can't be both specified")
 
         if frequency is not None:
-            dt = int(1 / frequency)
+            dt = float(1 / frequency)
 
         self._body_prim_path = "/".join(prim_path.split("/")[:-1])
-        if is_prim_path_valid(prim_path) and not get_prim_at_path(self._body_prim_path).HasAPI(UsdPhysics.CollisionAPI):
+        if is_prim_path_valid(self._body_prim_path) and not get_prim_at_path(self._body_prim_path).HasAPI(
+            UsdPhysics.CollisionAPI
+        ):
             raise Exception("Contact Sensor needs to be created under another prim that has collision api enabled on.")
         self._sensor_name = prim_path.split("/")[-1]
         self._contact_sensor_interface = _sensor.acquire_contact_sensor_interface()

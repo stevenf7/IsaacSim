@@ -897,7 +897,7 @@ class SimulationContext:
         return self._timeline.is_playing()
 
     def is_stopped(self) -> bool:
-        """Check whether the simulation is playing.
+        """Check whether the simulation is stopped.
 
         Returns:
             True if the simulator is stopped.

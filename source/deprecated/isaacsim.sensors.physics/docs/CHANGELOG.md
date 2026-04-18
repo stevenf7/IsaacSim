@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.3] - 2026-04-17
+### Fixed
+- Fix `EffortSensor.change_buffer_size` creating aliased object references via `np.resize` on object-dtype array
+- Fix `EffortSensor.get_sensor_reading` `ZeroDivisionError` when `step_size` is 0 and timestamps are equal
+- Fix `ContactSensor.__init__` using `int(1/frequency)` which truncates to 0 for sub-Hz frequencies
+- Fix `ContactSensor.__init__` validating `prim_path` instead of `self._body_prim_path` for CollisionAPI check
+- Add scalar-first `(w, x, y, z)` quaternion convention to `IMUSensor.get_current_frame` docstring
+
 ## [1.1.2] - 2026-03-31
 ### Deprecated
 - Extension deprecated in favor of the Experimental extension `isaacsim.sensors.experimental.physics`

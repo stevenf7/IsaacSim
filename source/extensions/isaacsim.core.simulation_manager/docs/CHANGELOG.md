@@ -2,6 +2,7 @@
 
 ## [1.14.4] - 2026-04-17
 ### Fixed
+- Add missing `@staticmethod` decorator to 5 internal event callbacks (`_on_simulation_registry_event`, `_on_stage_opened`, `_on_stage_closed`, `_on_play`, `_on_stop`)
 - Fix simulation time using stale steps-per-second from physics runtime when the rate is changed between stop/play cycles. Read the authoritative value from the USD `PhysxSceneAPI::timeStepsPerSecond` attribute instead of relying on `IPhysicsSimulation::getSimulationTimeStepsPerSecond()` which can return a cached value from the previous session.
 
 ## [1.14.3] - 2026-04-17

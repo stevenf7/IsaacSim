@@ -1,4 +1,9 @@
 # Changelog
+## [8.2.5] - 2026-04-17
+### Fixed
+- Add missing `return None` after `carb.log_error` in `LulaCSpaceTrajectoryGenerator.compute_timestamped_c_space_trajectory` for invalid interpolation mode
+- Add missing `return None` after `carb.log_error` in `LulaTrajectory.get_joint_targets` for out-of-bounds time
+
 ## [8.2.4] - 2026-04-14
 ### Changed
 - Moved extension from `source/extensions` to `source/deprecated`.

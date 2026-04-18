@@ -260,11 +260,14 @@ class EffortSensor(SingleArticulation):
                 if self.sensor_reading_buffer[0].is_valid and self.sensor_reading_buffer[1].is_valid:
                     if interpolation_function is None:
                         if self.interpolation_buffer[1].time == self.interpolation_buffer[0].time:
-                            sensor_reading.value = self.lerp(
-                                self.interpolation_buffer[1].value,
-                                self.interpolation_buffer[0].value,
-                                float((sensor_reading.time - self.interpolation_buffer[1].time) / (self.step_size)),
-                            )
+                            if self.step_size == 0:
+                                sensor_reading.value = self.interpolation_buffer[0].value
+                            else:
+                                sensor_reading.value = self.lerp(
+                                    self.interpolation_buffer[1].value,
+                                    self.interpolation_buffer[0].value,
+                                    float((sensor_reading.time - self.interpolation_buffer[1].time) / (self.step_size)),
+                                )
                         else:
                             sensor_reading.value = self.lerp(
                                 self.interpolation_buffer[1].value,
@@ -316,6 +319,12 @@ class EffortSensor(SingleArticulation):
         Args:
             new_buffer_size: New size for the sensor data buffers.
         """
-        self.sensor_reading_buffer = np.resize(np.array(self.sensor_reading_buffer), new_buffer_size).tolist()
-        self.interpolation_buffer = np.resize(np.array(self.interpolation_buffer), new_buffer_size).tolist()
+        current = len(self.sensor_reading_buffer)
+        if new_buffer_size > current:
+            extra = new_buffer_size - current
+            self.sensor_reading_buffer = list(self.sensor_reading_buffer) + [EsSensorReading() for _ in range(extra)]
+            self.interpolation_buffer = list(self.interpolation_buffer) + [EsSensorReading() for _ in range(extra)]
+        elif new_buffer_size < current:
+            self.sensor_reading_buffer = list(self.sensor_reading_buffer)[:new_buffer_size]
+            self.interpolation_buffer = list(self.interpolation_buffer)[:new_buffer_size]
         self.data_buffer_size = new_buffer_size

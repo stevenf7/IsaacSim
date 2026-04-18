@@ -170,7 +170,7 @@ class SingleRigidPrim(_SinglePrimWrapper):
 
         .. warning::
 
-            This method will immediately set the articulation state
+            This method will immediately set the rigid body state
 
         Args:
             velocity: angular velocity to set the rigid prim to. Shape (3,).

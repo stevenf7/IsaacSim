@@ -186,7 +186,7 @@ class Articulation(XFormPrim):
         self._physics_view = None
 
     @property
-    def num_dof(self) -> int:
+    def num_dof(self) -> int | None:
         """Number of DOF of the articulations.
 
         Returns:
@@ -205,7 +205,7 @@ class Articulation(XFormPrim):
         return self._num_dof
 
     @property
-    def num_bodies(self) -> int:
+    def num_bodies(self) -> int | None:
         """Number of rigid bodies (links) of the articulations.
 
         Returns:
@@ -224,7 +224,7 @@ class Articulation(XFormPrim):
         return self._num_bodies
 
     @property
-    def num_shapes(self) -> int:
+    def num_shapes(self) -> int | None:
         """Number of rigid shapes of the articulations.
 
         Returns:
@@ -243,7 +243,7 @@ class Articulation(XFormPrim):
         return self._num_shapes
 
     @property
-    def num_joints(self) -> int:
+    def num_joints(self) -> int | None:
         """Number of joints of the articulations.
 
         Returns:
@@ -255,7 +255,7 @@ class Articulation(XFormPrim):
         return self._num_joints
 
     @property
-    def num_fixed_tendons(self) -> int:
+    def num_fixed_tendons(self) -> int | None:
         """Number of fixed tendons of the articulations.
 
         Returns:
@@ -274,7 +274,7 @@ class Articulation(XFormPrim):
         return self._num_fixed_tendons
 
     @property
-    def body_names(self) -> list[str]:
+    def body_names(self) -> list[str] | None:
         """List of prim names for each rigid body (link) of the articulations.
 
         Returns:
@@ -294,7 +294,7 @@ class Articulation(XFormPrim):
         return self._body_names
 
     @property
-    def dof_names(self) -> list[str]:
+    def dof_names(self) -> list[str] | None:
         """List of prim names for each DOF of the articulations.
 
         Returns:
@@ -314,7 +314,7 @@ class Articulation(XFormPrim):
         return self._dof_names
 
     @property
-    def joint_names(self) -> list[str]:
+    def joint_names(self) -> list[str] | None:
         """List of prim names for each joint of the articulations.
 
         Returns:
@@ -475,8 +475,7 @@ class Articulation(XFormPrim):
         """Get the articulations DOFs drive types.
 
         Returns:
-            degrees of freedom drive types.
-            Shape is (N, num_dof). For the last dimension, index 0 corresponds to lower limits and index 1 corresponds to upper limits
+            degrees of freedom drive types. Shape is (N, num_dof).
         """
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
