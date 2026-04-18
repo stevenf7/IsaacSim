@@ -80,6 +80,6 @@ args = [
 
 [documentation]
 pages = [
-    "docs/README.md",
+    "docs/Overview.md",
     "docs/CHANGELOG.md",
 ]
