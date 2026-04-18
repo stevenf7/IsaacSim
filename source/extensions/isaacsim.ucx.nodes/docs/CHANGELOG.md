@@ -1,4 +1,8 @@
 # Changelog
+## [1.4.1] - 2026-04-17
+### Fixed
+- Fixed crash during shutdown caused by async send request outliving the UCX listener, triggering a close callback on a destroyed mutex
+
 ## [1.4.0] - 2026-03-18
 ### Changed
 - Remove `targetPrim` input from `UCXPublishJointState`; node now accepts `jointPositions`, `jointVelocities`, and `jointEfforts` arrays from upstream nodes (e.g. Isaac Read Articulation State)

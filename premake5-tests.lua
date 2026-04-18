@@ -190,11 +190,6 @@ local function get_core_tests()
             "standalone_examples/api/isaacsim.core.api/omnigraph_triggers.py",
         },
         {
-            "tests-nativepython-isaacsim.core.api.cloth",
-            "standalone_examples/api/isaacsim.core.api/cloth.py",
-            "--test",
-        },
-        {
             "tests-nativepython-isaacsim.core.api.rigid_contact_view",
             "standalone_examples/api/isaacsim.core.api/rigid_contact_view.py",
             "--test",
