@@ -23,7 +23,7 @@ REM Remove trailing backslash from SCRIPT_DIR
 set SCRIPT_DIR=%SCRIPT_DIR:~0,-1%
 set ISAAC_SIM_ROOT=%SCRIPT_DIR%
 
-set DEFAULT_ROS_DISTRO=humble
+set DEFAULT_ROS_DISTRO=jazzy
 
 set BRIDGE_EXT_PATH=%ISAAC_SIM_ROOT%\exts\isaacsim.ros2.core
 

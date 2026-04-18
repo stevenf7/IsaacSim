@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.3] - 2026-04-17
+### Changed
+- Updated internal ROS 2 libraries to support latest simulation interfaces versions (v1.4.0 Humble and v1.5.0 Jazzy)
+
 ## [1.7.2] - 2026-04-15
 ### Fixed
 - Fixed handling for fixed-size array types in `ROS2DynamicMessage.cpp` when the input array length differs from the expected size

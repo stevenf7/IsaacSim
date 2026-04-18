@@ -15,14 +15,29 @@
 
 """Utility functions for entity management in ROS 2 simulation control."""
 
+import os
 import re
 
 import carb
 import isaacsim.core.experimental.utils.prim as prim_utils
 from geometry_msgs.msg import Accel, Point, Pose, Quaternion, Twist, Vector3
 from isaacsim.core.experimental.prims import RigidPrim, XformPrim
+from isaacsim.storage.native import is_local_path
 from simulation_interfaces.msg import EntityState, Result
 from std_msgs.msg import Header
+
+
+def resolve_source_path(src: str, assets_root_path: str | None) -> str:
+    """Resolve a user-supplied source path to a full URI.
+
+    Paths that look local (e.g. ``/Isaac/...``) but don't exist on the
+    local filesystem are treated as Nucleus-relative and prefixed with
+    *assets_root_path*.  Already-absolute Nucleus URIs and real local
+    paths are returned unchanged.
+    """
+    if assets_root_path and is_local_path(src) and not os.path.exists(src):
+        return assets_root_path + src if src.startswith("/") else assets_root_path + "/" + src
+    return src
 
 
 def get_filtered_entities(usdrt_stage: object, filter_pattern: str | None = None):

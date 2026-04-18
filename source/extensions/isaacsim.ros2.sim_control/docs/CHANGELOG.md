@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.0] - 2026-04-14
+### Added
+- `GetEntityBounds` service for retrieving axis-aligned bounding boxes of scene entities (feature request by [@Z3ZEL](https://github.com/Z3ZEL))
+- `SpawnEntities` batch spawning service
+- `GetSpawnables` service for discovering available USD assets for spawning
+- `GetSpawnables` defaults to ROS assets under /Isaac/Samples/ROS2/Robots path. Excludes `.thumbs` thumbnail assets from results
+- Shared `_resolve_source_path` helper so both `GetSpawnables` and `GetAvailableWorlds` resolve Nucleus-relative paths from user-supplied sources
+
 ## [1.5.0] - 2026-04-01
 ### Changed
 - Removed deprecated `isaacsim.core.utils` dependency

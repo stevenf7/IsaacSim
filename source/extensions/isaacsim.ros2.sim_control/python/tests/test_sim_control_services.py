@@ -240,8 +240,8 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
 
         self.assertIsNotNone(result)
 
-        # Assert specific expected values
-        expected_features = [0, 1, 10, 11, 12, 20, 23, 24, 25, 26, 31, 32, 33, 40, 42, 43, 44, 45]
+        # Assert specific expected values (order follows SimulatorFeatures.msg definition)
+        expected_features = [0, 1, 5, 6, 10, 11, 12, 14, 20, 23, 24, 25, 26, 31, 32, 33, 40, 42, 43, 44, 45, 50]
         expected_spawn_formats = ["usd"]
         expected_custom_info = "Control Isaac Sim via ROS2 Simulation Interfaces."
 
@@ -1960,6 +1960,230 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
             self.assertFalse(
                 is_remote, f"Offline-only should not return remote URLs. Found: {world.world_resource.uri}"
             )
+
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+    async def test_spawn_entities_batch_service(self):
+        """Test SpawnEntities batch spawn service.
+
+        Verifies that multiple entities can be spawned in a single call, that per-entity
+        results are returned, and that partial failures are reported correctly.
+        """
+        from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion
+        from isaacsim.core.experimental.prims import XformPrim
+
+        # fmt: off
+        from simulation_interfaces.msg import Resource, Result
+        from simulation_interfaces.msg import SpawnEntity as SpawnEntityMsg
+
+        # fmt: on
+        from simulation_interfaces.srv import SpawnEntities
+
+        self.create_test_stage()
+        await omni.kit.app.get_app().next_update_async()
+
+        assets_root_path = await get_assets_root_path_async()
+        self.assertIsNotNone(assets_root_path, "Could not find Isaac Sim assets folder")
+
+        stage = omni.usd.get_context().get_stage()
+
+        # --- Test 1: batch spawn two valid entities (one from URI, one empty xform) ---
+        request = SpawnEntities.Request()
+
+        spawn_req1 = SpawnEntityMsg()
+        spawn_req1.name = "BatchRobot"
+        spawn_req1.allow_renaming = False
+        spawn_req1.entity_resource = Resource()
+        spawn_req1.entity_resource.uri = assets_root_path + "/Isaac/Samples/ROS2/Robots/limo_ROS.usd"
+        spawn_req1.initial_pose = PoseStamped()
+        spawn_req1.initial_pose.pose = Pose(
+            position=Point(x=1.0, y=2.0, z=0.0),
+            orientation=Quaternion(w=1.0, x=0.0, y=0.0, z=0.0),
+        )
+
+        spawn_req2 = SpawnEntityMsg()
+        spawn_req2.name = "BatchXform"
+        spawn_req2.allow_renaming = False
+        spawn_req2.entity_resource = Resource()
+        spawn_req2.entity_resource.uri = ""
+        spawn_req2.initial_pose = PoseStamped()
+
+        request.spawn_requests = [spawn_req1, spawn_req2]
+
+        result = await self._call_service_async(SpawnEntities, "/spawn_entities", request)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result.result.result, Result.RESULT_OK)
+        self.assertEqual(len(result.results), 2)
+
+        self.assertEqual(result.results[0].result.result, Result.RESULT_OK)
+        self.assertEqual(result.results[0].entity_name, "/BatchRobot")
+        self.assertEqual(result.results[1].result.result, Result.RESULT_OK)
+        self.assertEqual(result.results[1].entity_name, "/BatchXform")
+
+        self.assertTrue(stage.GetPrimAtPath("/BatchRobot").IsValid(), "BatchRobot should exist in the stage")
+        self.assertTrue(stage.GetPrimAtPath("/BatchXform").IsValid(), "BatchXform should exist in the stage")
+
+        # Verify position of first entity
+        prim1 = XformPrim("/BatchRobot", reset_xform_op_properties=True)
+        positions, _ = prim1.get_world_poses()
+        pos_np = positions.numpy()[0]
+        self.assertAlmostEqual(pos_np[0], 1.0, delta=0.01)
+        self.assertAlmostEqual(pos_np[1], 2.0, delta=0.01)
+        self.assertAlmostEqual(pos_np[2], 0.0, delta=0.01)
+
+        # --- Test 2: mixed success/failure (one valid xform, one invalid URI) ---
+        request2 = SpawnEntities.Request()
+
+        spawn_ok = SpawnEntityMsg()
+        spawn_ok.name = "BatchValid"
+        spawn_ok.allow_renaming = False
+        spawn_ok.entity_resource = Resource()
+        spawn_ok.entity_resource.uri = ""
+        spawn_ok.initial_pose = PoseStamped()
+
+        spawn_bad = SpawnEntityMsg()
+        spawn_bad.name = "BatchInvalid"
+        spawn_bad.allow_renaming = False
+        spawn_bad.entity_resource = Resource()
+        spawn_bad.entity_resource.uri = "/invalid/nonexistent.usd"
+        spawn_bad.initial_pose = PoseStamped()
+
+        request2.spawn_requests = [spawn_ok, spawn_bad]
+
+        result2 = await self._call_service_async(SpawnEntities, "/spawn_entities", request2)
+
+        self.assertIsNotNone(result2)
+        self.assertEqual(result2.result.result, SpawnEntities.Response.ENTITIES_SPAWN_FAILED)
+        self.assertEqual(len(result2.results), 2)
+
+        self.assertEqual(result2.results[0].result.result, Result.RESULT_OK)
+        self.assertEqual(result2.results[0].entity_name, "/BatchValid")
+        self.assertNotEqual(result2.results[1].result.result, Result.RESULT_OK)
+
+        self.assertTrue(stage.GetPrimAtPath("/BatchValid").IsValid(), "BatchValid should exist despite partial failure")
+
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+    async def test_get_entity_bounds_service(self):
+        """Test GetEntityBounds service returns correct bounding boxes.
+
+        Verifies TYPE_BOX axis-aligned bounds for known geometry (cube and cone),
+        and that querying a nonexistent entity returns RESULT_NOT_FOUND.
+        """
+        # fmt: off
+        from simulation_interfaces.msg import Bounds, Result
+
+        # fmt: on
+        from simulation_interfaces.srv import GetEntityBounds
+
+        self.create_test_stage()
+        await omni.kit.app.get_app().next_update_async()
+
+        # --- Test bounds for DynamicCube (unit cube at (0, 0, 2)) ---
+        request = GetEntityBounds.Request()
+        request.entity = "/World/Objects/DynamicCube"
+
+        result = await self._call_service_async(GetEntityBounds, "/get_entity_bounds", request)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result.result.result, Result.RESULT_OK)
+        self.assertEqual(result.bounds.type, Bounds.TYPE_BOX)
+        self.assertEqual(len(result.bounds.points), 2)
+
+        min_pt = result.bounds.points[0]
+        max_pt = result.bounds.points[1]
+
+        # Unit cube (size=1.0) translated to (0, 0, 2) should span roughly (-0.5,-0.5,1.5) to (0.5,0.5,2.5)
+        self.assertAlmostEqual(min_pt.x, -0.5, delta=0.01)
+        self.assertAlmostEqual(min_pt.y, -0.5, delta=0.01)
+        self.assertAlmostEqual(min_pt.z, 1.5, delta=0.01)
+        self.assertAlmostEqual(max_pt.x, 0.5, delta=0.01)
+        self.assertAlmostEqual(max_pt.y, 0.5, delta=0.01)
+        self.assertAlmostEqual(max_pt.z, 2.5, delta=0.01)
+
+        # --- Test bounds for StaticCone (height=2, radius=0.5 at (2, 0, 1)) ---
+        request.entity = "/World/Objects/StaticCone"
+
+        result_cone = await self._call_service_async(GetEntityBounds, "/get_entity_bounds", request)
+
+        self.assertIsNotNone(result_cone)
+        self.assertEqual(result_cone.result.result, Result.RESULT_OK)
+        self.assertEqual(result_cone.bounds.type, Bounds.TYPE_BOX)
+        self.assertEqual(len(result_cone.bounds.points), 2)
+
+        cone_min = result_cone.bounds.points[0]
+        cone_max = result_cone.bounds.points[1]
+
+        # Cone with height=2, radius=0.5 at (2, 0, 1): spans roughly (1.5,-0.5,0) to (2.5,0.5,2)
+        self.assertAlmostEqual(cone_min.x, 1.5, delta=0.01)
+        self.assertAlmostEqual(cone_min.y, -0.5, delta=0.01)
+        self.assertAlmostEqual(cone_min.z, 0.0, delta=0.01)
+        self.assertAlmostEqual(cone_max.x, 2.5, delta=0.01)
+        self.assertAlmostEqual(cone_max.y, 0.5, delta=0.01)
+        self.assertAlmostEqual(cone_max.z, 2.0, delta=0.01)
+
+        # --- Test nonexistent entity ---
+        request.entity = "/World/NonExistentPrim"
+
+        result_missing = await self._call_service_async(GetEntityBounds, "/get_entity_bounds", request)
+
+        self.assertIsNotNone(result_missing)
+        self.assertEqual(result_missing.result.result, Result.RESULT_NOT_FOUND)
+
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+    async def test_get_spawnables_service(self):
+        """Test GetSpawnables service discovers available USD assets.
+
+        Verifies that default sources return spawnables, that each spawnable has
+        required fields, and that additional custom sources are searched.
+        """
+        # fmt: off
+        from simulation_interfaces.msg import Bounds, Result
+
+        # fmt: on
+        from simulation_interfaces.srv import GetSpawnables
+
+        self.create_test_stage()
+        await omni.kit.app.get_app().next_update_async()
+
+        # --- Test default sources (Robots + Props) ---
+        request = GetSpawnables.Request()
+
+        result = await self._call_service_async(GetSpawnables, "/get_spawnables", request)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result.result.result, Result.RESULT_OK)
+        self.assertGreater(len(result.spawnables), 0, "Should find at least some spawnables")
+
+        for spawnable in result.spawnables:
+            self.assertTrue(spawnable.uri != "", "Spawnable should have a non-empty URI")
+            self.assertTrue(spawnable.description != "", "Spawnable should have a non-empty description")
+            self.assertEqual(spawnable.spawn_bounds.type, Bounds.TYPE_EMPTY)
+            self.assertNotIn(".thumbs", spawnable.uri, "Thumbnail assets should be excluded from spawnables")
+
+        # --- Test with additional sources ---
+        assets_root_path = await get_assets_root_path_async()
+        self.assertIsNotNone(assets_root_path, "Could not find Isaac Sim assets folder")
+
+        request_with_sources = GetSpawnables.Request()
+        request_with_sources.sources = [assets_root_path + "/Isaac/Samples/ROS2/Robots"]
+
+        result_with_sources = await self._call_service_async(GetSpawnables, "/get_spawnables", request_with_sources)
+
+        self.assertIsNotNone(result_with_sources)
+        self.assertEqual(result_with_sources.result.result, Result.RESULT_OK)
+        self.assertGreater(len(result_with_sources.spawnables), 0, "Should find spawnables from additional sources")
+
+        # Verify at least one spawnable is a USD file
+        has_usd = any(
+            spawnable.uri.endswith((".usd", ".usda", ".usdc", ".usdz")) for spawnable in result_with_sources.spawnables
+        )
+        self.assertTrue(has_usd, "Should find at least one USD spawnable")
 
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()

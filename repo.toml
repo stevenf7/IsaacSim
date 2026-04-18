@@ -524,7 +524,7 @@ packages = ["isaac-sim*"]
   ],
   [
     "LD_LIBRARY_PATH",
-    "${root}/_build/${platform}/${config}/exts/isaacsim.ros2.core/humble/lib",
+    "${root}/_build/${platform}/${config}/exts/isaacsim.ros2.core/jazzy/lib",
   ],
 ]
 
