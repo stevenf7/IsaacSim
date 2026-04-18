@@ -34,7 +34,6 @@ isaacsim.core.api
 
 * ``add_cubes.py``
 * ``add_frankas.py``
-* ``cloth.py``
 * ``control_robot.py``
 * ``data_logging.py``
 * ``deformable.py``

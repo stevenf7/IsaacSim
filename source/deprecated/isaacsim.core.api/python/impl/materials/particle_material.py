@@ -134,9 +134,13 @@ class ParticleMaterial:
                 [gravity_scale], dtype="float32", device=self._device
             )
         if lift is not None:
-            lift = self._backend_utils.create_tensor_from_list([lift], dtype="float32", device=self._device)
+            carb.log_warn(
+                "ParticleMaterial: 'lift' parameter is ignored — physxPBDMaterial:lift was deprecated by PhysX."
+            )
         if drag is not None:
-            drag = self._backend_utils.create_tensor_from_list([drag], dtype="float32", device=self._device)
+            carb.log_warn(
+                "ParticleMaterial: 'drag' parameter is ignored — physxPBDMaterial:drag was deprecated by PhysX."
+            )
 
         self._particle_material_view = ParticleMaterialView(
             prim_paths_expr=prim_path,
@@ -152,8 +156,6 @@ class ParticleMaterial:
             particle_adhesion_scales=particle_adhesion_scale,
             adhesion_offset_scales=adhesion_offset_scale,
             gravity_scales=gravity_scale,
-            lifts=lift,
-            drags=drag,
         )
 
     """
@@ -403,30 +405,18 @@ class ParticleMaterial:
     def set_lift(self, value: float) -> None:
         """Sets the lift coefficient, i.e. basic aerodynamic lift model coefficient.
 
-        It is useful for cloth and inflatable particle objects.
-
-        Args:
-            value: The lift coefficient.
-                Range: [0, inf), Units: dimensionless
-
+        .. deprecated::
+            physxPBDMaterial:lift was deprecated by PhysX. This method is a no-op.
         """
-        if value < 0:
-            carb.log_error("The valid range of lift coefficient is [0. inf).")
-        self._particle_material_view.set_lifts(self._backend_utils.create_tensor_from_list([value], dtype="float32"))
+        carb.log_warn("ParticleMaterial.set_lift is a no-op — physxPBDMaterial:lift was removed by PhysX.")
 
     def set_drag(self, value: float) -> None:
         """Sets the drag coefficient, i.e. basic aerodynamic drag model coefficient.
 
-        It is useful for cloth and inflatable particle objects.
-
-        Args:
-            value: The drag coefficient.
-                Range: [0, inf), Units: dimensionless
-
+        .. deprecated::
+            physxPBDMaterial:drag was deprecated by PhysX. This method is a no-op.
         """
-        if value < 0:
-            carb.log_error("The valid range of drag coefficient is [0. inf).")
-        self._particle_material_view.set_drags(self._backend_utils.create_tensor_from_list([value], dtype="float32"))
+        carb.log_warn("ParticleMaterial.set_drag is a no-op — physxPBDMaterial:drag was removed by PhysX.")
 
     """
     Operations - Getters.
@@ -534,17 +524,15 @@ class ParticleMaterial:
     def get_lift(self) -> float:
         """Lift coefficient for the basic aerodynamic lift model.
 
-        Returns:
-            The lift coefficient, basic aerodynamic lift model coefficient.
-
+        .. deprecated::
+            physxPBDMaterial:lift was deprecated by PhysX. Always returns 0.0.
         """
-        return self._particle_material_view.get_lifts()[0]
+        return 0.0
 
     def get_drag(self) -> float:
         """Drag coefficient for the basic aerodynamic drag model.
 
-        Returns:
-            The drag coefficient, basic aerodynamic drag model coefficient.
-
+        .. deprecated::
+            physxPBDMaterial:drag was deprecated by PhysX. Always returns 0.0.
         """
-        return self._particle_material_view.get_drags()[0]
+        return 0.0
