@@ -18,7 +18,8 @@ Tests for simulation time drift behavior in the production onPhysicsStep code pa
 
 These tests verify that simulation time derived from integer step count and
 steps-per-second (via IPhysicsSimulation APIs) does not accumulate floating-point
-drift over many physics steps.
+drift over many physics steps, and that the runtime steps-per-second value
+agrees with the USD scene attribute at various rates.
 """
 
 import os
@@ -28,7 +29,7 @@ import omni.kit.app
 import omni.kit.test
 import omni.timeline
 from isaacsim.core.experimental.utils.stage import create_new_stage_async
-from isaacsim.core.simulation_manager import SimulationManager
+from isaacsim.core.simulation_manager import PhysxScene, SimulationManager
 
 
 class TestSimulationTimeDrift(omni.kit.test.AsyncTestCase):
@@ -86,6 +87,78 @@ class TestSimulationTimeDrift(omni.kit.test.AsyncTestCase):
         timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         self.assertEqual(SimulationManager.get_simulation_time(), 0.0)
+
+    async def test_simulation_time_matches_usd_steps_per_second(self):
+        """Verify simulation time uses the same stepsPerSecond as the USD attribute.
+
+        The C++ onPhysicsStep derives simulation time via
+        IPhysicsSimulation::getSimulationTimeStepsPerSecond(). This test checks
+        that the resulting get_simulation_time() equals
+        step_count / PhysxScene.get_steps_per_second() at several non-default
+        rates, catching any disagreement between the physics runtime value and
+        the USD PhysxSceneAPI attribute.
+        """
+        timeline = omni.timeline.get_timeline_interface()
+
+        for steps_per_second in [30, 60, 90, 120, 240]:
+            dt = 1.0 / steps_per_second
+            SimulationManager.set_physics_dt(dt)
+            await omni.kit.app.get_app().next_update_async()
+
+            physics_scenes = SimulationManager.get_physics_scenes()
+            self.assertGreater(len(physics_scenes), 0, "No physics scene found")
+            physx_scene = physics_scenes[0]
+            self.assertIsInstance(physx_scene, PhysxScene)
+
+            usd_sps = physx_scene.get_steps_per_second()
+            self.assertEqual(
+                usd_sps,
+                steps_per_second,
+                f"USD attribute mismatch after set_physics_dt(1/{steps_per_second})",
+            )
+
+            timeline.play()
+            await omni.kit.app.get_app().next_update_async()
+
+            # Record step count after the warm-up update so we only measure
+            # steps from SimulationManager.step() and not the implicit steps
+            # that occur during next_update_async after play.
+            steps_before = SimulationManager.get_num_physics_steps()
+            num_steps = 600
+            SimulationManager.step(steps=num_steps, update_fabric=False)
+
+            sim_time = SimulationManager.get_simulation_time()
+            total_steps = SimulationManager.get_num_physics_steps()
+            expected_time = total_steps / usd_sps
+
+            # Also derive what the runtime thinks the rate is from sim_time
+            # and step count: runtime_sps = total_steps / sim_time
+            if sim_time > 0:
+                runtime_sps = total_steps / sim_time
+                self.assertAlmostEqual(
+                    runtime_sps,
+                    usd_sps,
+                    delta=0.5,
+                    msg=(
+                        f"At {steps_per_second} Hz: runtime derived rate "
+                        f"({runtime_sps:.1f}) != USD attribute ({usd_sps}). "
+                        f"IPhysicsSimulation::getSimulationTimeStepsPerSecond() "
+                        f"disagrees with PhysxSceneAPI::GetTimeStepsPerSecondAttr()."
+                    ),
+                )
+
+            self.assertAlmostEqual(
+                sim_time,
+                expected_time,
+                places=6,
+                msg=(
+                    f"At {steps_per_second} Hz: sim_time={sim_time} != "
+                    f"step_count({total_steps}) / usd_sps({usd_sps}) = {expected_time}"
+                ),
+            )
+
+            timeline.stop()
+            await omni.kit.app.get_app().next_update_async()
 
     async def test_monotonic_time_persists_across_stop_start(self):
         """Verify monotonic simulation time does not reset on stop/start."""

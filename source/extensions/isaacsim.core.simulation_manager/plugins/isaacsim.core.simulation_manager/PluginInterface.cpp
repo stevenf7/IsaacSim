@@ -67,6 +67,7 @@ carb::events::ISubscriptionPtr g_physicsEventSubscription;
 omni::kit::StageUpdatePtr g_stageUpdate = nullptr;
 omni::kit::IRunLoopRunnerImpl* g_runLoopRunnerInterface = nullptr;
 
+isaacsim::core::simulation_manager::UsdNoticeListener* g_usdNoticeListener = nullptr;
 omni::fabric::UsdStageId g_stageId;
 double g_simulationTime = 0.0;
 double g_simulationTimeMonotonic = 0.0;
@@ -122,6 +123,7 @@ public:
      */
     SimulationManagerImpl() : m_usdNoticeListener(std::make_unique<UsdNoticeListener>())
     {
+        g_usdNoticeListener = m_usdNoticeListener.get();
         m_usdNoticeListenerKey =
             pxr::TfNotice::Register(pxr::TfCreateWeakPtr(m_usdNoticeListener.get()), &UsdNoticeListener::handle);
         _initializeStageEventSubscription();
@@ -134,6 +136,7 @@ public:
      */
     ~SimulationManagerImpl()
     {
+        g_usdNoticeListener = nullptr;
         m_usdNoticeListener.reset();
         m_stageEventSubscription.reset();
     }
@@ -653,6 +656,33 @@ void onResume(float currentTime, void* userData)
 }
 
 /**
+ * @brief Reads steps-per-second from the USD PhysxSceneAPI attribute.
+ * @details
+ * IPhysicsSimulation::getSimulationTimeStepsPerSecond() can return a stale
+ * value when the USD attribute is changed between simulation stop/play cycles.
+ * This helper reads the authoritative value directly from the USD scene.
+ *
+ * @return The steps-per-second from the first valid physics scene, or 0 if unavailable.
+ */
+uint32_t getStepsPerSecondFromUsd()
+{
+    if (!g_usdNoticeListener)
+    {
+        return 0;
+    }
+    for (const auto& [scenePath, sceneApi] : g_usdNoticeListener->getPhysicsScenes())
+    {
+        pxr::UsdAttribute attr = sceneApi.GetTimeStepsPerSecondAttr();
+        uint32_t v = 0;
+        if (attr && attr.Get(&v) && v > 0)
+        {
+            return v;
+        }
+    }
+    return 0;
+}
+
+/**
  * @brief Callback function for physics step events
  * @details
  * Updates simulation time values and writes them to time storage on each physics step.
@@ -664,10 +694,14 @@ void onPhysicsStep(float timeElapsed, const omni::physics::PhysicsStepContext& c
 {
     // Derive simulation time from integer step count and steps-per-second to avoid
     // accumulated floating-point drift from repeated addition of float dt.
-    // All physics backends must implement getSimulationStepCount() and
-    // getSimulationTimeStepsPerSecond() on IPhysicsSimulation.
-    uint32_t stepsPerSecond = g_physicsSimulationInterface->getSimulationTimeStepsPerSecond(
-        context.simulationId, g_stageId.id, context.scenePath);
+    // Read steps-per-second from the USD attribute (authoritative) and fall back
+    // to the runtime API if unavailable.
+    uint32_t stepsPerSecond = getStepsPerSecondFromUsd();
+    if (stepsPerSecond == 0)
+    {
+        stepsPerSecond = g_physicsSimulationInterface->getSimulationTimeStepsPerSecond(
+            context.simulationId, g_stageId.id, context.scenePath);
+    }
     uint64_t stepCount = g_physicsSimulationInterface->getSimulationStepCount(context.simulationId);
 
     g_simulationTime = static_cast<double>(stepCount) / static_cast<double>(stepsPerSecond);
