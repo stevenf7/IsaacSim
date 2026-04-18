@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.14.4] - 2026-04-17
+### Fixed
+- Fix simulation time using stale steps-per-second from physics runtime when the rate is changed between stop/play cycles. Read the authoritative value from the USD `PhysxSceneAPI::timeStepsPerSecond` attribute instead of relying on `IPhysicsSimulation::getSimulationTimeStepsPerSecond()` which can return a cached value from the previous session.
+
 ## [1.14.3] - 2026-04-17
 ### Changed
 - Update `PhysxScene` to use renamed PhysX attribute `GpuMaxDeformableVolumeContacts`
