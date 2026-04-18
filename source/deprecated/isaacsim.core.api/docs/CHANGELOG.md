@@ -1,10 +1,5 @@
 # Changelog
 
-## [5.2.2] - 2026-04-17
-### Changed
-- Make `ParticleMaterial` `lift`/`drag` parameters, setters, and getters no-ops with deprecation warnings (PhysX removed `physxPBDMaterial:lift` and `physxPBDMaterial:drag`)
-- Remove `cloth.py` standalone example (particle-based cloth is no longer supported by PhysX)
-
 ## [5.2.1] - 2026-04-17
 ### Fixed
 - Fix `SimulationContext.is_stopped` docstring copy-pasted from `is_playing`

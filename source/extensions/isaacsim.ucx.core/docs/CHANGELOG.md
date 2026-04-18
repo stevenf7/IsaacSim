@@ -1,8 +1,4 @@
 # Changelog
-## [1.3.2] - 2026-04-17
-### Fixed
-- Clear endpoint close callback during shutdown to prevent dangling pointer if external code holds stale endpoint references
-
 ## [1.3.1] - 2026-03-02
 ### Changed
 - Add Overview.md, public python_api.md and update docstrings

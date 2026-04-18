@@ -87,13 +87,6 @@ public:
      */
     virtual void reset() override
     {
-        // Clear any pending async send request before the listener is destroyed.
-        // The request may hold the last reference to the ucxx::Endpoint; destroying
-        // it after the UCXListener is gone would trigger a close callback on a
-        // dangling pointer, crashing in onEndpointClosed().
-        m_sendRequest.reset();
-        m_messageBuffer.clear();
-
         if (m_streamNotCreated == false)
         {
             isaacsim::core::includes::ScopedDevice scopedDev(m_streamDevice);

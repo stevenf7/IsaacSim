@@ -1,9 +1,5 @@
 # Changelog
 
-## [0.16.2] - 2026-04-17
-### Fixed
-- Fix docstring example in `get_simstate_mode()`
-
 ## [0.16.1] - 2026-04-16
 ### Added
 - Add `SimStateMode` enum and `get_simstate_mode()` for SimState backend selection

@@ -74,7 +74,7 @@ def get_simstate_mode() -> SimStateMode:
         >>> # Override with context manager for a specific block
         >>> with backend_utils.use_backend("simstate"):
         ...     # Forces EXCLUSIVE mode, regardless of the setting
-        ...     pass
+        ...     articulation.set_dof_position_targets(positions)
     """
     # Priority 1: Check if "simstate" backend is explicitly set via context manager.
     # This allows code to programmatically override the application setting for

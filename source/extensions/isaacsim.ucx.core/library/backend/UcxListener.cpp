@@ -151,9 +151,6 @@ void UCXListener::shutdown()
         std::lock_guard<std::mutex> lock(m_endpointMutex);
         if (m_endpoint)
         {
-            // Detach the close callback before releasing the endpoint to prevent
-            // it from firing with a dangling 'this' after the listener is destroyed.
-            m_endpoint->setCloseCallback(nullptr, nullptr);
             m_endpoint.reset();
         }
     }
