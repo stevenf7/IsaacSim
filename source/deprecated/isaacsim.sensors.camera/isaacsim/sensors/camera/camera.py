@@ -414,9 +414,10 @@ class Camera(BaseSensor):
             # Target rendering frequency is not known, processing all frames
             self._frequency = -1
         else:
-            if value % (1.0 / current_rendering_frequency) != 0:
-                raise Exception("dt of the camera sensor needs to be a multiple of the rendering frequency.")
-            self._frequency = 1.0 / value
+            freq_as_int = round(1.0 / value)
+            if current_rendering_frequency % freq_as_int != 0:
+                raise Exception("dt of the camera sensor needs to be a multiple of the rendering dt.")
+            self._frequency = freq_as_int
         return
 
     def get_dt(self) -> float:
@@ -426,6 +427,8 @@ class Camera(BaseSensor):
             The dt to acquire new data frames.
 
         """
+        if self._frequency < 0:
+            return 0.0
         return 1.0 / self._frequency
 
     def get_current_frame(self, clone: bool = False) -> dict:
@@ -1694,8 +1697,9 @@ class Camera(BaseSensor):
         """
         if value == "pinhole":
             for schema in self.prim.GetAppliedSchemas():
-                self.prim.RemoveAppliedSchema(schema)
-                carb.log_info(f"Removed schema {schema} from Camera {self.prim.GetPrimPath()}")
+                if schema.startswith("OmniLensDistortion"):
+                    self.prim.RemoveAppliedSchema(schema)
+                    carb.log_info(f"Removed schema {schema} from Camera {self.prim.GetPrimPath()}")
             if self.prim.HasAttribute("omni:lensdistortion:model"):
                 self.prim.RemoveProperty("omni:lensdistortion:model")
                 carb.log_info(f"Removed property omni:lensdistortion:model from Camera {self.prim.GetPrimPath()}")
@@ -1804,19 +1808,19 @@ class Camera(BaseSensor):
             raise Exception(
                 "fisheye projection type is not set to be able to use set_fisheye_polynomial_properties method."
             )
-        if nominal_width:
+        if nominal_width is not None:
             self.prim.CreateAttribute("fthetaWidth", Sdf.ValueTypeNames.Float, False).Set(nominal_width)
-        if nominal_height:
+        if nominal_height is not None:
             self.prim.CreateAttribute("fthetaHeight", Sdf.ValueTypeNames.Float, False).Set(nominal_height)
-        if optical_centre_x:
+        if optical_centre_x is not None:
             self.prim.CreateAttribute("fthetaCx", Sdf.ValueTypeNames.Float, False).Set(optical_centre_x)
-        if optical_centre_y:
+        if optical_centre_y is not None:
             self.prim.CreateAttribute("fthetaCy", Sdf.ValueTypeNames.Float, False).Set(optical_centre_y)
-        if max_fov:
+        if max_fov is not None:
             self.prim.CreateAttribute("fthetaMaxFov", Sdf.ValueTypeNames.Float, False).Set(max_fov)
         if polynomial is not None:
             for i in range(5):
-                if polynomial[i]:
+                if polynomial[i] is not None:
                     self.prim.CreateAttribute("fthetaPoly" + (chr(ord("A") + i)), Sdf.ValueTypeNames.Float, False).Set(
                         float(polynomial[i])
                     )
@@ -1959,7 +1963,7 @@ class Camera(BaseSensor):
         num_distortion_params = len(distortion_model)
         if num_distortion_params < 4:
             carb.log_warn(
-                f"set_kannala_brandt_properties: Insufficient distortion parameters provided ({num_distortion_params}), expecting 5 for fisheyeOpenCV projection type."
+                f"set_kannala_brandt_properties: Insufficient distortion parameters provided ({num_distortion_params}), expecting at least 4 for the Kannala-Brandt model (k1, k2, k3, k4)."
             )
             return
 
@@ -2075,7 +2079,7 @@ class Camera(BaseSensor):
             The intrinsics matrix of the camera (used for calibration)
 
         """
-        if "pinhole" not in self.get_lens_distortion_model():
+        if "pinhole" not in self.get_lens_distortion_model().lower():
             raise Exception("pinhole projection type is not set to be able to use get_intrinsics_matrix method.")
 
         # Determine backend utilities
@@ -2117,7 +2121,7 @@ class Camera(BaseSensor):
             2d points (u, v) corresponds to the pixel coordinates. shape is (n, 2) where n is the number of points.
 
         """
-        if "pinhole" not in self.get_lens_distortion_model():
+        if "pinhole" not in self.get_lens_distortion_model().lower():
             raise Exception(
                 "pinhole projection type is not set to be able to use get_image_coords_from_world_points method which use pinhole prespective projection."
             )
@@ -2147,7 +2151,7 @@ class Camera(BaseSensor):
                 +Z points forward (optical axis), +X right, +Y down
 
         """
-        if "pinhole" not in self.get_lens_distortion_model():
+        if "pinhole" not in self.get_lens_distortion_model().lower():
             raise Exception(
                 "pinhole projection type is not set to be able to use get_camera_points_from_image_coords method."
             )
@@ -2193,7 +2197,7 @@ class Camera(BaseSensor):
             (n, 3) 3d points (X, Y, Z) in world frame.
 
         """
-        if "pinhole" not in self.get_lens_distortion_model():
+        if "pinhole" not in self.get_lens_distortion_model().lower():
             raise Exception(
                 "pinhole projection type is not set to be able to use get_world_points_from_image_coords method."
             )

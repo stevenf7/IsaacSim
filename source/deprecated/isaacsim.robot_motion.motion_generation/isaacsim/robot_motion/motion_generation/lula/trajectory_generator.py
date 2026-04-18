@@ -75,6 +75,7 @@ class LulaTrajectory(Trajectory):
         """
         if time > self.end_time or time < self.start_time:
             carb.log_error("Could not compute joint targets because the provided time is out of bounds")
+            return None
         return self.trajectory.eval(time, 0), self.trajectory.eval(time, 1)
 
 
@@ -172,6 +173,7 @@ class LulaCSpaceTrajectoryGenerator:
             interp_mode = lula.CSpaceTrajectoryGenerator.InterpolationMode.LINEAR
         else:
             carb.log_error("Invalid interpolation mode specified.  The options are 'cubic_spline' and 'linear'")
+            return None
 
         trajectory = self._c_space_trajectory_generator.generate_time_stamped_trajectory(
             waypoint_positions.astype(np.float64), timestamps.astype(np.float64), interp_mode

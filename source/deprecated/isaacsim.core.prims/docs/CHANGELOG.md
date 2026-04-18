@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.11.1] - 2026-04-17
+### Fixed
+- Add `| None` to 8 `Articulation` property return annotations that can return `None` when uninitialized
+- Fix `Articulation.get_drive_types` docstring copy-pasted from `get_dof_limits`
+- Fix `SingleArticulation.get_enabled_self_collisions` return annotation from `int` to `np.uint8`
+- Fix `RigidPrim.get_current_dynamic_state` docstring example calling `get_default_state` instead of `get_current_dynamic_state`
+- Fix `SingleRigidPrim.set_angular_velocity` warning message referencing "articulation state" instead of "rigid body state"
+
 ## [0.11.0] - 2026-04-17
 ### Changed
 - Replace deprecated cloth and deformable prim implementations with error stubs since PhysX removed these features

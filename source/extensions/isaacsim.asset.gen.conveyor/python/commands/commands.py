@@ -99,7 +99,6 @@ class CreateConveyorBelt(omni.kit.commands.Command):
             self._prim_path = omni.usd.get_stage_next_free_path(
                 self._stage, base_path.AppendChild(pxr.Tf.MakeValidIdentifier(self._prim_name)), True
             )
-            print(self._prim_path)
             conveyor_node_name = "ConveyorNode"
             og.Controller.edit(
                 {"graph_path": self._prim_path, "evaluator_name": "execution"},

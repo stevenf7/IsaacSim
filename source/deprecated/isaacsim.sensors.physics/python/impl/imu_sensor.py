@@ -157,7 +157,7 @@ class IMUSensor(BaseSensor):
             Dictionary containing sensor data with keys:
             - 'lin_acc': Linear acceleration as a 3D tensor
             - 'ang_vel': Angular velocity as a 3D tensor
-            - 'orientation': Orientation quaternion as a 4D tensor
+            - 'orientation': Orientation quaternion in scalar-first (w, x, y, z) order as a 4D tensor
             - 'time': Sensor reading timestamp
             - 'physics_step': Current physics simulation step
         """

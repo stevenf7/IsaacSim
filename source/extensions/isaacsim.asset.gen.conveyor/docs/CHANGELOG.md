@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.1] - 2026-04-17
+### Fixed
+- Remove debug `print(self._prim_path)` left in `CreateConveyorBelt.do()` production code
+
 ## [1.1.0] - 2026-04-08
 ### Changed
 - Improve Python API documentation (`config/python_api.md` and/or module docstrings).

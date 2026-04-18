@@ -299,7 +299,7 @@ def destroy_all_viewports(usd_context_name: str = None, destroy_main_viewport: b
 
     Args:
         usd_context_name: usd context to use.
-        destroy_main_viewport: set to true to not destroy the default viewport.
+        destroy_main_viewport: set to False to not destroy the default viewport. Defaults to True (destroy all viewports including the default one).
     """
     from omni.kit.viewport.window import get_viewport_window_instances
 

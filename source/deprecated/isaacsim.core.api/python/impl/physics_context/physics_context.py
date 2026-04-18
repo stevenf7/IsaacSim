@@ -563,7 +563,7 @@ class PhysicsContext(object):
             set_carb_setting(self._carb_settings, "/physics/outputVelocitiesLocalSpace", output_velocities_local_space)
         return
 
-    def get_physx_update_transformations_settings(self) -> tuple[bool, bool, bool, bool]:
+    def get_physx_update_transformations_settings(self) -> tuple[bool, bool, bool]:
         """Get how physx syncs with the usd when transformations are updated.
 
         Returns:

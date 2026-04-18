@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.1.4] - 2026-04-17
+### Fixed
+- Fix `destroy_all_viewports` docstring for `destroy_main_viewport` parameter (inverted description)
+- Add scalar-first `(w, x, y, z)` quaternion convention to `tf_matrix_from_pose` docstring
+
 ## [4.1.3] - 2026-04-06
 ### Fixed
 - Fix negated Y-component in `math.cross()`

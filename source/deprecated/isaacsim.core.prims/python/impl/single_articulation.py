@@ -1092,7 +1092,7 @@ class SingleArticulation(_SinglePrimWrapper):
         self._articulation_view.set_enabled_self_collisions(flag)
         return
 
-    def get_enabled_self_collisions(self) -> int:
+    def get_enabled_self_collisions(self) -> np.uint8:
         """Get the enable self collisions flag (``physxArticulation:enabledSelfCollisions``).
 
         Returns:
