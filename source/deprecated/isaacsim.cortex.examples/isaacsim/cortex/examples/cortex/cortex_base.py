@@ -45,6 +45,7 @@ class CortexBase(base_sample.BaseSample):
             self.setup_scene()
         else:
             self._world = CortexWorld.instance()
+            self.setup_scene()
         self._current_tasks = self._world.get_current_tasks()
         await self._world.reset_async()
         await self._world.pause_async()

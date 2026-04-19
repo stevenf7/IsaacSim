@@ -146,7 +146,7 @@ class MotionCommand:
         self,
         target_pose: Optional[PosePq] = None,
         target_position: Optional[np.ndarray] = None,
-        approach_params: Optional[np.ndarray] = None,
+        approach_params: Optional[ApproachParams] = None,
         posture_config: Optional[np.ndarray] = None,
     ) -> None:
         if target_pose is not None:

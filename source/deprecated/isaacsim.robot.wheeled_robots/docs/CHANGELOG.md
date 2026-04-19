@@ -1,4 +1,9 @@
 # Changelog
+## [5.2.2] - 2026-04-17
+### Fixed
+- Add validation for `wheel_radius` in `DifferentialController.__init__` to reject zero/negative values (division by zero)
+- Document `stanley_control` PID parameters (`p`, `i`, `d`) as unused/reserved to match experimental version
+
 ## [5.2.1] - 2026-04-06
 ### Fixed
 - Fix incorrect unit label in `DifferentialController` docstring: "cms" changed to "meters"

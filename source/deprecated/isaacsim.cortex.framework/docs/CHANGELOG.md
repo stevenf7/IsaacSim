@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.16] - 2026-04-17
+### Fixed
+- Fix `MotionCommand.__init__` type annotation: `approach_params` changed from `Optional[np.ndarray]` to `Optional[ApproachParams]`
+
 ## [1.0.15] - 2026-04-13
 ### Deprecated
 - Extension deprecated. Will be replaced in 7.0 with simple examples and open source equivalents.

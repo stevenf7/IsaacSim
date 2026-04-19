@@ -366,7 +366,17 @@ class Extension(omni.ext.IExt):
                             )
                         else:
                             self._plot = False
-                            self._plot_pattern(self._point_cloud_data)
+                            import threading
+
+                            data = self._point_cloud_data
+                            cube_scale = self.cubePrim.GetAttribute("xformOp:scale").Get()
+                            cube_pos = self.cubePrim.GetAttribute("xformOp:translate").Get()
+                            filepath = self._filepath.get_value_as_string()
+                            threading.Thread(
+                                target=self._plot_pattern,
+                                args=(data, cube_scale, cube_pos, filepath),
+                                daemon=True,
+                            ).start()
                 else:
                     print("sensor not added or pattern not set")
 
@@ -384,7 +394,7 @@ class Extension(omni.ext.IExt):
         self._plot = True
         self._record_start = time.perf_counter()
 
-    def _plot_pattern(self, data: object) -> None:
+    def _plot_pattern(self, data: object, cube_scale: object, cube_pos: object, filepath: str) -> None:
         """Creates and saves a visual representation of the sensor scanning pattern.
 
         Processes the collected point cloud data to generate a 2D image showing where the sensor rays hit the wall,
@@ -392,6 +402,9 @@ class Extension(omni.ext.IExt):
 
         Args:
             data: Point cloud data array containing the sensor hit points.
+            cube_scale: Pre-fetched xformOp:scale from the wall prim.
+            cube_pos: Pre-fetched xformOp:translate from the wall prim.
+            filepath: Output directory path string.
         """
         import PIL.Image as Image
         import PIL.ImageDraw as ImageDraw
@@ -402,13 +415,12 @@ class Extension(omni.ext.IExt):
         origin = [window_length / 2.0, window_height / 2.0]
 
         # scale data with the wall size
-        cube_size = self.cubePrim.GetAttribute("xformOp:scale").Get()
-        height_ratio = window_height / float(cube_size[2])
-        length_ratio = window_length / float(cube_size[1])
+        height_ratio = window_height / float(cube_scale[2])
+        length_ratio = window_length / float(cube_scale[1])
         plot_scale = min(height_ratio, length_ratio)
 
         # get data that's hit the wall
-        hit_yz = self.data_processing(data)
+        hit_yz = self._data_processing(data, cube_scale, cube_pos)
 
         # scale, axis_align, and center data to plot on PIL coordinate
         hit_yz = plot_scale * hit_yz
@@ -422,8 +434,31 @@ class Extension(omni.ext.IExt):
         im = Image.new("RGB", (window_length, window_height))
         draw = ImageDraw.Draw(im)
         draw.point(xy.tolist(), fill=255)
-        filename = self._filepath.get_value_as_string() + "sensor_pattern.png"
+        filename = filepath + "sensor_pattern.png"
         im.save(filename)
+
+    @staticmethod
+    def _data_processing(data: object, cube_scale: object, cube_pos: object):
+        """Filters point cloud data to extract points that hit the wall surface.
+
+        Args:
+            data: Point cloud data array containing sensor hit points.
+            cube_scale: Pre-fetched xformOp:scale from the wall prim.
+            cube_pos: Pre-fetched xformOp:translate from the wall prim.
+
+        Returns:
+            Array of Y-Z coordinates for points that hit the wall, or empty array if no hits are found.
+        """
+        wall_loc = cube_pos[0] - np.sign(cube_pos[0]) * cube_scale[0] / 2
+
+        # find in data the group that has the right offset
+        hit_idx = np.where(np.isclose(data[:, 0], wall_loc, rtol=1e2))
+        if len(hit_idx) == 0:
+            print("no ray hit the wall")
+            return np.array([])
+        else:
+            hit_pts = np.squeeze(data[hit_idx, 1:3])
+            return hit_pts
 
     def data_processing(self, data: object):
         """Filters point cloud data to extract points that hit the wall surface.
@@ -437,20 +472,9 @@ class Extension(omni.ext.IExt):
         Returns:
             Array of Y-Z coordinates for points that hit the wall, or empty array if no hits are found.
         """
-        # only plotting when the wall is offsetted x as in the example no rotation or other axial offsets.
-        # find where is the surface of the wall
         cube_pos = self.cubePrim.GetAttribute("xformOp:translate").Get()
-        cube_size = self.cubePrim.GetAttribute("xformOp:scale").Get()
-        wall_loc = cube_pos[0] - np.sign(cube_pos[0]) * cube_size[0] / 2
-
-        # find in data the group that has the right offset
-        hit_idx = np.where(np.isclose(data[:, 0], wall_loc, rtol=1e2))
-        if len(hit_idx) == 0:
-            print("no ray hit the wall")
-            return np.array([])
-        else:
-            hit_pts = np.squeeze(data[hit_idx, 1:3])
-            return hit_pts
+        cube_scale = self.cubePrim.GetAttribute("xformOp:scale").Get()
+        return self._data_processing(data, cube_scale, cube_pos)
 
 
 __all__ = []
