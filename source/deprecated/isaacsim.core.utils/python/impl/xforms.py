@@ -101,13 +101,23 @@ def _get_world_pose_transform_w_scale(prim_path: str, fabric: bool = False) -> u
         raise Exception("Prim path is not valid")
 
     def _get_from_usd_prim(prim_path: str) -> usdrt.Gf.Matrix4d:
-        usd_prim = get_prim_at_path(prim_path=prim_path, fabric=False)
-        local_transform = usdrt.Gf.Matrix4d(UsdGeom.Xformable(usd_prim).GetLocalTransformation(Usd.TimeCode.Default()))
-        parent_prim = get_prim_parent(get_prim_at_path(prim_path=prim_path, fabric=False))
-        parent_world_transform = usdrt.Gf.Matrix4d(1.0)
-        if parent_prim:
-            parent_world_transform = _get_world_pose_transform_w_scale(get_prim_path(parent_prim), fabric=False)
-        return local_transform * parent_world_transform
+        chain = []
+        current_path = prim_path
+        while current_path:
+            usd_prim = get_prim_at_path(prim_path=current_path, fabric=False)
+            local_transform = usdrt.Gf.Matrix4d(
+                UsdGeom.Xformable(usd_prim).GetLocalTransformation(Usd.TimeCode.Default())
+            )
+            chain.append(local_transform)
+            parent_prim = get_prim_parent(usd_prim)
+            if parent_prim:
+                current_path = get_prim_path(parent_prim)
+            else:
+                break
+        result = usdrt.Gf.Matrix4d(1.0)
+        for transform in reversed(chain):
+            result = transform * result
+        return result
 
     if not fabric:
         return _get_from_usd_prim(prim_path)

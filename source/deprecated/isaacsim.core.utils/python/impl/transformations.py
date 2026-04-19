@@ -200,6 +200,7 @@ def get_transform_with_normalized_rotation(transform: np.ndarray) -> np.ndarray:
     rotation_matrix = transform[:3, :3]
 
     column_magnitudes = np.linalg.norm(rotation_matrix, axis=0)
+    column_magnitudes = np.where(column_magnitudes == 0, 1.0, column_magnitudes)
     normalized_rotation = rotation_matrix / column_magnitudes
 
     transform_without_scale[:3, :3] = normalized_rotation

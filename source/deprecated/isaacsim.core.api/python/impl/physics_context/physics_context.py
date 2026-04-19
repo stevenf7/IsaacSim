@@ -174,7 +174,10 @@ class PhysicsContext(object):
             if "gpu_collision_stack_size" in sim_params:
                 self.set_gpu_collision_stack_size(sim_params["gpu_collision_stack_size"])
             if "solver_type" in sim_params:
-                if sim_params["solver_type"] == 0:
+                solver_val = sim_params["solver_type"]
+                if isinstance(solver_val, str):
+                    self.set_solver_type(solver_val)
+                elif solver_val == 0:
                     self.set_solver_type("PGS")
                 else:
                     self.set_solver_type("TGS")
@@ -379,7 +382,7 @@ class PhysicsContext(object):
         """
         return SimulationManager.is_ccd_enabled()
 
-    def enable_stablization(self, flag: bool) -> None:
+    def enable_stabilization(self, flag: bool) -> None:
         """Enable additional stabilization pass in the solver.
 
         Args:
@@ -396,6 +399,21 @@ class PhysicsContext(object):
         else:
             self._physx_scene_api.GetEnableStabilizationAttr().Set(flag)
         return
+
+    def enable_stablization(self, flag: bool) -> None:
+        """Enable additional stabilization pass in the solver.
+
+        .. deprecated::
+            Use :meth:`enable_stabilization` instead.
+
+        Args:
+            flag: Enables or disables stabilization on the PhysicsScene
+
+        Raises:
+            Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
+
+        """
+        return self.enable_stabilization(flag)
 
     def is_stablization_enabled(self) -> bool:
         """Check if stabilization is enabled.
@@ -464,14 +482,17 @@ class PhysicsContext(object):
         """Solver used for simulation.
 
         Args:
-            solver_type: can be "TGS" or "PGS". for references look at..
+            solver_type: can be "TGS" or "PGS".
 
         Raises:
             Exception: If the prim path registered in context doesn't correspond to a valid prim path currently.
+            ValueError: If solver_type is not "TGS" or "PGS".
 
         """
         if not is_prim_path_valid(self._prim_path):
             raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
+        if solver_type not in ("TGS", "PGS"):
+            raise ValueError(f"solver_type must be 'TGS' or 'PGS', got '{solver_type}'")
         if self._physx_scene_api.GetSolverTypeAttr().Get() is None:
             self._physx_scene_api.CreateSolverTypeAttr(solver_type)
         else:
@@ -504,9 +525,9 @@ class PhysicsContext(object):
         """
         if not is_prim_path_valid(self._prim_path):
             raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
-        if value < 0:
+        if value <= 0:
             z_dir = -1
-            magnitude = value * -1
+            magnitude = abs(value)
         else:
             z_dir = 1
             magnitude = value
@@ -536,10 +557,13 @@ class PhysicsContext(object):
         """
         if not is_prim_path_valid(self._prim_path):
             raise Exception("The Physics Context's physics scene path is invalid, you need to reinit Physics Context")
-        return (
-            list(self._physics_scene.GetGravityDirectionAttr().Get()),
-            self._physics_scene.GetGravityMagnitudeAttr().Get(),
-        )
+        direction = self._physics_scene.GetGravityDirectionAttr().Get()
+        magnitude = self._physics_scene.GetGravityMagnitudeAttr().Get()
+        if direction is None:
+            direction = Gf.Vec3f(0.0, 0.0, -1.0)
+        if magnitude is None:
+            magnitude = 0.0
+        return (list(direction), magnitude)
 
     def set_physx_update_transformations_settings(
         self,
@@ -592,7 +616,7 @@ class PhysicsContext(object):
                     from omni.physxfabric import get_physx_fabric_interface
 
                     self._physx_fabric_interface = get_physx_fabric_interface()
-            else:
+            if self._physx_fabric_interface is not None:
                 self._physx_fabric_interface.update(current_time, self.get_physics_dt())
 
     def set_invert_collision_group_filter(self, invert_collision_group_filter: bool) -> None:

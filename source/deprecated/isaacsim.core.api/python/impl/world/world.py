@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import gc
 
+import carb
 from isaacsim.core.api.loggers import DataLogger
 from isaacsim.core.api.scenes.scene import Scene
 
@@ -109,6 +110,10 @@ class World(SimulationContext):
             device=device,
         )
         if World._world_initialized:
+            carb.log_warn(
+                "World is already initialized. Constructor parameters are ignored on subsequent calls. "
+                "Call World.clear_instance() first to re-initialize with new parameters."
+            )
             return
         World._world_initialized = True
         self._task_scene_built = False
@@ -273,7 +278,7 @@ class World(SimulationContext):
 
         """
         if task_name is not None:
-            return self._current_tasks[task_name].get_observations()
+            return self.get_task(task_name).get_observations()
         else:
             observations = {}
             for task in self._current_tasks.values():
@@ -298,7 +303,7 @@ class World(SimulationContext):
 
         """
         if task_name is not None:
-            return self._current_tasks[task_name].calculate_metrics()
+            return self.get_task(task_name).calculate_metrics()
         else:
             metrics = {}
             for task in self._current_tasks.values():
@@ -323,7 +328,7 @@ class World(SimulationContext):
 
         """
         if task_name is not None:
-            return self._current_tasks[task_name].is_done()
+            return self.get_task(task_name).is_done()
         else:
             result = [task.is_done() for task in self._current_tasks.values()]
             return all(result)

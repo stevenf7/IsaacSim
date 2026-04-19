@@ -93,5 +93,5 @@ class BaseSensor(SingleXFormPrim):
 
     def post_reset(self) -> None:
         """Resets the sensor to its initial state after a simulation reset."""
-        # SingleXFormPrim.post_reset(self)
+        SingleXFormPrim.post_reset(self)
         return

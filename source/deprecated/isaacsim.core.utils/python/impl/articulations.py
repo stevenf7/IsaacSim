@@ -100,10 +100,13 @@ def find_all_articulation_base_paths() -> list:
             base_path_split = str(bodies[0]).split("/")[1:]
             for body in bodies[1:]:
                 body_path_split = str(body).split("/")[1:]
-                for i in range(len(base_path_split)):
-                    if len(body_path_split) < i or base_path_split[i] != body_path_split[i]:
+                common_len = min(len(base_path_split), len(body_path_split))
+                for i in range(common_len):
+                    if base_path_split[i] != body_path_split[i]:
                         base_path_split = base_path_split[:i]
                         break
+                else:
+                    base_path_split = base_path_split[:common_len]
             articulation_candidates.add(tuple(base_path_split))
 
     # Only keep candidates that have exactly one Articulation Root in their subtree.
@@ -111,13 +114,14 @@ def find_all_articulation_base_paths() -> list:
     included_roots = set()
     for c in articulation_candidates:
         subtree_root_count = 0
+        matched_root = None
         for root in articulation_root_paths:
             if len(root) >= len(c) and root[: len(c)] == c:
                 subtree_root_count += 1
-                r = root
+                matched_root = root
         if subtree_root_count == 1:
             tmp.add(c)
-            included_roots.add(r)
+            included_roots.add(matched_root)
     articulation_candidates = tmp
 
     # Only keep candidates whose path is not a subset of another candidate's path

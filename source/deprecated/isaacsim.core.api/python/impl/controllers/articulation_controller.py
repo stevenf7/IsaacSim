@@ -51,9 +51,11 @@ class ArticulationController(object):
             control_actions: Actions to be applied for next physics step.
 
         Raises:
-            Exception: If the articulation view is not initialized.
+            RuntimeError: If the articulation view is not initialized.
 
         """
+        if self._articulation_view is None:
+            raise RuntimeError("ArticulationController is not initialized. Call initialize() first.")
         applied_actions = self.get_applied_action()
         joint_positions = control_actions.joint_positions
         if control_actions.joint_indices is None:
@@ -80,7 +82,9 @@ class ArticulationController(object):
             )
             joint_velocities = self._articulation_view._backend_utils.expand_dims(joint_velocities, 0)
             for i in range(control_actions.get_length()):
-                if joint_velocities[0][i] is None or np.isnan(joint_velocities[0][i]):
+                if joint_velocities[0][i] is None or np.isnan(
+                    self._articulation_view._backend_utils.to_numpy(joint_velocities[0][i])
+                ):
                     joint_velocities[0][i] = applied_actions.joint_velocities[joint_indices[i]]
         joint_efforts = control_actions.joint_efforts
         if control_actions.joint_efforts is not None:
@@ -89,8 +93,10 @@ class ArticulationController(object):
             )
             joint_efforts = self._articulation_view._backend_utils.expand_dims(joint_efforts, 0)
             for i in range(control_actions.get_length()):
-                if joint_efforts[0][i] is None or np.isnan(joint_efforts[0][i]):
-                    joint_efforts[0][i] = 0
+                if joint_efforts[0][i] is None or np.isnan(
+                    self._articulation_view._backend_utils.to_numpy(joint_efforts[0][i])
+                ):
+                    joint_efforts[0][i] = applied_actions.joint_efforts[joint_indices[i]]
         self._articulation_view.apply_action(
             ArticulationActions(
                 joint_positions=joint_positions,

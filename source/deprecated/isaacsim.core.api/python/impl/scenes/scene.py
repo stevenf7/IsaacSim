@@ -184,7 +184,7 @@ class Scene(object):
         elif isinstance(obj, XFormPrim):
             self._scene_registry.add_xform_view(name=obj.name, xform_prim_view=obj)
         else:
-            raise Exception("object type is not supported yet")
+            raise TypeError(f"object type {type(obj).__name__} is not supported")
         return obj
 
     def add_ground_plane(
@@ -283,6 +283,7 @@ class Scene(object):
         assets_root_path = get_assets_root_path()
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
+            return None
         usd_path = assets_root_path + "/Isaac/Environments/Grid/default_environment.usd"
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
         physics_material_path = find_unique_string_name(
@@ -314,10 +315,13 @@ class Scene(object):
             self._scene_registry.rigid_contact_views,
             self._scene_registry.geometry_prim_views,
             self._scene_registry._articulated_systems,
+            self._scene_registry._articulated_views,
             self._scene_registry._robots,
             self._scene_registry._sensors,
             self._scene_registry.xforms,
+            self._scene_registry._xform_prim_views,
             self._scene_registry._robot_views,
+            self._scene_registry.rigid_prim_views,
             self._scene_registry._cloth_prims,
             self._scene_registry._particle_systems,
             self._scene_registry._particle_materials,
@@ -434,7 +438,7 @@ class Scene(object):
                 if is_prim_path_valid(prim_path) and not is_prim_ancestral(prim_path):
                     omni.usd.commands.DeletePrimsCommand([get_prim_path(current_prim)]).do()
             # update the stage
-            if builtins.ISAAC_LAUNCHED_FROM_TERMINAL is False:
+            if not getattr(builtins, "ISAAC_LAUNCHED_FROM_TERMINAL", True):
                 update_stage()
         self._scene_registry.remove_object(name=name)
         del prim_object
@@ -584,8 +588,7 @@ class Scene(object):
             raise Exception("bounding box computations should be enabled before querying AABB of an object")
         prim_object = self.get_object(name)
         if not hasattr(prim_object, "prim"):
-            carb.log_error("Computing AABB bounds supported only for single classes.")
-            return None
+            raise ValueError(f"Computing AABB bounds supported only for single classes, but '{name}' is a view class.")
         bounds = self._bbox_cache.ComputeWorldBound(prim_object.prim)
         prim_range = bounds.ComputeAlignedRange()
         return np.array([np.array(prim_range.GetMin()), np.array(prim_range.GetMax())])

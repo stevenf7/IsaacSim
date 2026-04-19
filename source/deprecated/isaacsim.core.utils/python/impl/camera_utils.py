@@ -62,6 +62,8 @@ class SpringDamperFollower:
             step: Time step for the simulation update.
         """
         d = self.target - self.current
+        if self.m == 0:
+            return
         a = (self.k * d - self.c * self.v) / self.m
         self.v = self.v + a * step
         self.current = self.current + self.v * step

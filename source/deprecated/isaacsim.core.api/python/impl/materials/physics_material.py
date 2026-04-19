@@ -57,11 +57,11 @@ class PhysicsMaterial(object):
         else:
             self._material_api = UsdPhysics.MaterialAPI.Apply(self._prim)
         if static_friction is not None:
-            self._material_api.CreateStaticFrictionAttr().Set(static_friction)
+            self.set_static_friction(static_friction)
         if dynamic_friction is not None:
-            self._material_api.CreateDynamicFrictionAttr().Set(dynamic_friction)
+            self.set_dynamic_friction(dynamic_friction)
         if restitution is not None:
-            self._material_api.CreateRestitutionAttr().Set(restitution)
+            self.set_restitution(restitution)
         return
 
     @property
@@ -111,10 +111,11 @@ class PhysicsMaterial(object):
             friction: The dynamic friction coefficient value.
 
         """
-        if self._material_api.GetDynamicFrictionAttr().Get() is None:
+        attr = self._material_api.GetDynamicFrictionAttr()
+        if attr.Get() is None:
             self._material_api.CreateDynamicFrictionAttr().Set(friction)
         else:
-            self._material_api.GetDynamicFrictionAttr().Set(friction)
+            attr.Set(friction)
         return
 
     def get_dynamic_friction(self) -> float:
@@ -124,11 +125,12 @@ class PhysicsMaterial(object):
             The dynamic friction coefficient value.
 
         """
-        if self._material_api.GetDynamicFrictionAttr().Get() is None:
+        attr = self._material_api.GetDynamicFrictionAttr()
+        value = attr.Get()
+        if value is None:
             carb.log_warn("A dynamic friction attribute is not set yet")
             return None
-        else:
-            return self._material_api.GetDynamicFrictionAttr().Get()
+        return value
 
     def set_static_friction(self, friction: float) -> None:
         """Set the static friction coefficient.
@@ -137,10 +139,11 @@ class PhysicsMaterial(object):
             friction: The static friction coefficient value.
 
         """
-        if self._material_api.GetStaticFrictionAttr().Get() is None:
+        attr = self._material_api.GetStaticFrictionAttr()
+        if attr.Get() is None:
             self._material_api.CreateStaticFrictionAttr().Set(friction)
         else:
-            self._material_api.GetStaticFrictionAttr().Set(friction)
+            attr.Set(friction)
         return
 
     def get_static_friction(self) -> float:
@@ -150,11 +153,12 @@ class PhysicsMaterial(object):
             The static friction coefficient value.
 
         """
-        if self._material_api.GetStaticFrictionAttr().Get() is None:
+        attr = self._material_api.GetStaticFrictionAttr()
+        value = attr.Get()
+        if value is None:
             carb.log_warn("A static friction attribute is not set yet")
             return None
-        else:
-            return self._material_api.GetStaticFrictionAttr().Get()
+        return value
 
     def set_restitution(self, restitution: float) -> None:
         """Set the restitution (bounciness) coefficient.
@@ -163,10 +167,11 @@ class PhysicsMaterial(object):
             restitution: The restitution coefficient value.
 
         """
-        if self._material_api.GetRestitutionAttr().Get() is None:
+        attr = self._material_api.GetRestitutionAttr()
+        if attr.Get() is None:
             self._material_api.CreateRestitutionAttr().Set(restitution)
         else:
-            self._material_api.GetRestitutionAttr().Set(restitution)
+            attr.Set(restitution)
         return
 
     def get_restitution(self) -> float:
@@ -176,8 +181,9 @@ class PhysicsMaterial(object):
             The restitution coefficient value.
 
         """
-        if self._material_api.GetRestitutionAttr().Get() is None:
+        attr = self._material_api.GetRestitutionAttr()
+        value = attr.Get()
+        if value is None:
             carb.log_warn("A restitution attribute is not set yet")
             return None
-        else:
-            return self._material_api.GetRestitutionAttr().Get()
+        return value

@@ -38,7 +38,7 @@ def _standardize_transform_matrix(t1: np.ndarray | Gf.Matrix4d) -> np.ndarray:
         Standardized 4x4 matrix.
     """
     if np.shape(t1) != (4, 4):
-        carb.log_error(f"Input transformation matrix has the wrong shape: {np.shape(t1)} != (4, 4).")
+        raise ValueError(f"Input transformation matrix has the wrong shape: {np.shape(t1)} != (4, 4).")
 
     if isinstance(t1, Gf.Matrix4d):
         t1 = np.array(t1).T
@@ -68,7 +68,7 @@ def _standardize_rotation_matrix(r1: np.ndarray | Gf.Matrix3d | Gf.Matrix4d) -> 
         return r1[:3, :3]
 
     if np.shape(r1) != (3, 3):
-        carb.log_error(f"Rotation matrix has the wrong shape: {np.shape(r1)} != (3, 3).")
+        raise ValueError(f"Rotation matrix has the wrong shape: {np.shape(r1)} != (3, 3).")
 
     if isinstance(r1, Gf.Matrix3d):
         r1 = np.array(r1).T
@@ -97,7 +97,7 @@ def _standardize_translation_vector(t1: np.ndarray | Gf.Matrix4d) -> np.ndarray:
     t1 = np.array(t1).flatten()
 
     if t1.shape != (3,):
-        carb.log_error(f"Translation vector has the wrong shape: {np.shape(t1)} != (3,).")
+        raise ValueError(f"Translation vector has the wrong shape: {np.shape(t1)} != (3,).")
 
     return t1
 
@@ -223,8 +223,12 @@ def rotational_distance_single_axis(
     r2 = _standardize_rotation_matrix(r2)
 
     if len(axis) != 3:
-        carb.log_error(f"Rotation axis has the wrong shape: {len(axis)} != 3.")
+        raise ValueError(f"Rotation axis has the wrong shape: {len(axis)} != 3.")
 
-    axis = np.array(axis) / np.linalg.norm(axis)
+    axis = np.array(axis, dtype=float)
+    axis_norm = np.linalg.norm(axis)
+    if axis_norm == 0:
+        raise ValueError("Rotation axis has zero magnitude.")
+    axis = axis / axis_norm
 
     return np.arccos(np.clip(np.dot(r1 @ axis, r2 @ axis), -1, 1))

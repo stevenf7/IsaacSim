@@ -34,11 +34,11 @@ def find_unique_string_name(initial_name: str, is_unique_fn: Callable[[str], boo
     if is_unique_fn(initial_name):
         return initial_name
     iterator = 1
-    result = initial_name + "_" + str(iterator)
-    while not is_unique_fn(result):
+    while True:
         result = initial_name + "_" + str(iterator)
+        if is_unique_fn(result):
+            return result
         iterator += 1
-    return result
 
 
 def find_root_prim_path_from_regex(prim_path_regex: str) -> tuple[str, int]:

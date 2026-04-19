@@ -133,7 +133,7 @@ class Stacking(ABC, BaseTask):
         if stack_target_position is not None:
             self._stack_target_position = stack_target_position
         if cube_name is not None:
-            self._task_objects[cube_name].set_local_pose(position=cube_position, orientation=cube_orientation)
+            self._task_objects[cube_name].set_local_pose(translation=cube_position, orientation=cube_orientation)
         return
 
     def get_params(self) -> dict:

@@ -118,7 +118,7 @@ async def simulate_async(seconds: float, steps_per_sec: int = 60, callback: Call
         ...
         >>> run_coroutine(task())
     """
-    for _ in range(int(steps_per_sec * seconds)):
+    for _ in range(round(steps_per_sec * seconds)):
         await omni.kit.app.get_app().next_update_async()
         if callback is not None:
             callback()
