@@ -49,10 +49,8 @@ def get_type(dtype: str) -> Any:
         return wp.int64
     elif dtype == "uint8":
         return wp.uint8
-    elif dtype == "bool":
-        return wp.uint8  # use uint8 as bool
     else:
-        print(f"Type {dtype} not supported.")
+        raise ValueError(f"Type {dtype} not supported.")
 
 
 def convert(data: object, device: object, dtype: str = "float32", indexed: bool = False) -> wp.array | wp.indexedarray:
@@ -209,6 +207,8 @@ def move_data(data: object, device: object) -> wp.array | wp.indexedarray:
             return wp.indexedarray(data.contiguous().to(device), indices=[None])
         else:
             return data.to(device)
+    else:
+        raise TypeError(f"Unsupported data type {type(data)} for move_data. Expected wp.array or wp.indexedarray.")
 
 
 def tensor_cat(data: list, device: str | None = None, dim: int = -1) -> wp.array:

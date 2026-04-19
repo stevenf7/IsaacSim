@@ -20,6 +20,7 @@ from __future__ import annotations
 # python
 import typing
 
+import carb
 import numpy as np
 import omni.kit
 import omni.usd
@@ -116,7 +117,10 @@ def get_prim_attribute_names(prim_path: str, fabric: bool = False) -> list[str]:
         ['doubleSided', 'extent', 'orientation', 'primvars:displayColor', 'primvars:displayOpacity',
          'purpose', 'size', 'visibility', 'xformOp:orient', 'xformOp:scale', 'xformOp:translate', 'xformOpOrder']
     """
-    return [attr.GetName() for attr in get_prim_at_path(prim_path=prim_path, fabric=fabric).GetAttributes()]
+    prim = get_prim_at_path(prim_path=prim_path, fabric=fabric)
+    if prim is None or not prim.IsValid():
+        raise ValueError(f"Prim at path '{prim_path}' is not valid or no USD stage is currently open.")
+    return [attr.GetName() for attr in prim.GetAttributes()]
 
 
 def get_prim_attribute_value(prim_path: str, attribute_name: str, fabric: bool = False) -> typing.Any:
@@ -180,10 +184,13 @@ def set_prim_attribute_value(prim_path: str, attribute_name: str, value: typing.
         value = value.tolist()
     if type_name in SDF_type_to_Gf:
         value = np.array(value).flatten().tolist()
+        gf_type_str = SDF_type_to_Gf[type_name]
+        module_name, class_name = gf_type_str.split(".", 1)
         if fabric:
-            eval("attr.Set(usdrt." + SDF_type_to_Gf[type_name] + "(*value))")
+            gf_type = getattr(usdrt, class_name, None) or getattr(getattr(usdrt, module_name), class_name)
         else:
-            eval("attr.Set(" + SDF_type_to_Gf[type_name] + "(*value))")
+            gf_type = getattr(Gf, class_name)
+        attr.Set(gf_type(*value))
     else:
         attr.Set(value)
 
@@ -218,7 +225,7 @@ def define_prim(prim_path: str, prim_type: str = "Xform", fabric: bool = False) 
         Usd.Prim(</World/Shapes>)
     """
     if is_prim_path_valid(prim_path, fabric=fabric):
-        raise Exception(f"A prim already exists at prim path: {prim_path}")
+        raise ValueError(f"A prim already exists at prim path: {prim_path}")
     return get_current_stage(fabric=fabric).DefinePrim(prim_path, prim_type)
 
 
@@ -297,16 +304,15 @@ def get_first_matching_child_prim(
         >>> prims_utils.get_first_matching_child_prim("/", predicate)
         Usd.Prim(</World/Cube>)
     """
+    from collections import deque
+
     prim = get_current_stage(fabric=fabric).GetPrimAtPath(prim_path)
-    children_stack = [prim]
-    out = prim.GetChildren()
-    while len(children_stack) > 0:
-        prim = children_stack.pop(0)
+    children_stack = deque([prim])
+    while children_stack:
+        prim = children_stack.popleft()
         if predicate(get_prim_path(prim)):
             return prim
-        children = prim.GetChildren()
-        children_stack = children_stack + children
-        out = out + children
+        children_stack.extend(prim.GetChildren())
     return None
 
 
@@ -368,25 +374,31 @@ def get_all_matching_child_prims(
          Usd.Prim(</OmniverseKit_Right>),
          Usd.Prim(</Render>)]
     """
+    from collections import deque
+
     prim = get_prim_at_path(prim_path)
-    traversal_queue = [(prim, 0)]
+    traversal_queue = deque([(prim, 0)])
     out = []
-    while len(traversal_queue) > 0:
-        prim, current_depth = traversal_queue.pop(0)
+    while traversal_queue:
+        prim, current_depth = traversal_queue.popleft()
         if is_prim_path_valid(get_prim_path(prim)):
             if predicate(get_prim_path(prim)):
                 out.append(prim)
             if depth is None or current_depth < depth:
                 children = get_prim_children(prim)
-                traversal_queue = traversal_queue + [(child, current_depth + 1) for child in children]
+                traversal_queue.extend((child, current_depth + 1) for child in children)
     return out
 
 
 def find_matching_prim_paths(prim_path_regex: str, prim_type: str | None = None) -> list[str]:
     """Find all the matching prim paths in the stage based on Regex expression.
 
+    .. note::
+        Only ``.*`` is supported as a regex wildcard (converted to glob ``*`` internally).
+        Full regex syntax is not supported.
+
     Args:
-        prim_path_regex: The Regex expression for prim path.
+        prim_path_regex: The prim path pattern. Use ``.*`` as a wildcard for any segment.
         prim_type: The type of the prims to filter, only supports articulation and rigid_body currently.
 
     Returns:
@@ -477,8 +489,10 @@ def query_parent_path(prim_path: str, predicate: typing.Callable[[str], bool]) -
         >>> prims_utils.query_parent_path("/World/Cube", predicate)
         True
     """
+    if is_prim_root_path(prim_path):
+        return False
     current_prim_path = get_prim_path(get_prim_parent(get_prim_at_path(prim_path)))
-    while not is_prim_root_path(current_prim_path):
+    while current_prim_path is not None and not is_prim_root_path(current_prim_path):
         if predicate(current_prim_path):
             return True
         current_prim_path = get_prim_path(get_prim_parent(get_prim_at_path(current_prim_path)))
@@ -564,12 +578,12 @@ def is_prim_no_delete(prim_path: str) -> bool:
         >>>
         >>> # prim without the 'no_delete' metadata
         >>> prims_utils.is_prim_no_delete("/World/Cube")
-        None
+        False
         >>> # prim with the 'no_delete' metadata set to True
         >>> prims_utils.is_prim_no_delete("/World/Cube")
         True
     """
-    return get_prim_at_path(prim_path).GetMetadata("no_delete")
+    return bool(get_prim_at_path(prim_path).GetMetadata("no_delete"))
 
 
 def is_prim_hidden_in_stage(prim_path: str) -> bool:
@@ -594,12 +608,12 @@ def is_prim_hidden_in_stage(prim_path: str) -> bool:
         >>>
         >>> # prim without the 'hide_in_stage_window' metadata
         >>> prims_utils.is_prim_hidden_in_stage("/World/Cube")
-        None
+        False
         >>> # prim with the 'hide_in_stage_window' metadata set to True
         >>> prims_utils.is_prim_hidden_in_stage("/World/Cube")
         True
     """
-    return get_prim_at_path(prim_path).GetMetadata("hide_in_stage_window")
+    return bool(get_prim_at_path(prim_path).GetMetadata("hide_in_stage_window"))
 
 
 def get_prim_path(prim: Usd.Prim) -> str:
@@ -730,7 +744,11 @@ def create_prim(
     # apply attributes into prim
     if attributes is not None:
         for k, v in attributes.items():
-            prim.GetAttribute(k).Set(v)
+            attr = prim.GetAttribute(k)
+            if attr.IsValid():
+                attr.Set(v)
+            else:
+                carb.log_warn(f"Attribute '{k}' is not valid for prim at '{prim_path}', skipping.")
     # add reference to USD file
     if usd_path is not None:
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)

@@ -62,9 +62,14 @@ def transpose_2d(data: np.ndarray) -> np.ndarray:
     Args:
         data: Input 2D array to transpose.
 
+    Raises:
+        ValueError: If input array has more than 2 dimensions.
+
     Returns:
         The transposed array.
     """
+    if data.ndim > 2:
+        raise ValueError(f"transpose_2d expects a 1D or 2D array, got {data.ndim}D array.")
     return np.transpose(data)
 
 

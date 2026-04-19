@@ -404,16 +404,15 @@ def set_intrinsics_matrix(viewport_api: Any, intrinsics_matrix: np.ndarray, foca
     cy = intrinsics_matrix[1, 2]
 
     stage = get_current_stage()
-    prim = UsdGeom.Camera(stage.GetPrimAtPath(viewport_api.get_active_camera()))
-    print(prim)
-    if prim is None:
+    camera_prim = stage.GetPrimAtPath(viewport_api.get_active_camera())
+    if not camera_prim or not camera_prim.IsValid():
         raise ValueError("Viewport does not have a valid camera prim")
+    prim = UsdGeom.Camera(camera_prim)
 
     (width, height) = viewport_api.get_texture_resolution()
 
     horizontal_aperture = width * focal_length / fx
-    vertical_aperture = horizontal_aperture * (height / width)
-    print(vertical_aperture)
+    vertical_aperture = height * focal_length / fy
     # TODO: this should be set_attr_val
     # We have to do it this way because the camera might be on a different layer (default cameras are on session layer),
     # and this is the simplest way to set the property on the right layer.
