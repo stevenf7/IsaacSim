@@ -85,7 +85,7 @@ class RobotView(Articulation):
     def __init__(
         self,
         prim_paths_expr: str,
-        name: str = "rigid_prim_view",
+        name: str = "robot_view",
         positions: np.ndarray | torch.Tensor | None = None,
         translations: np.ndarray | torch.Tensor | None = None,
         orientations: np.ndarray | torch.Tensor | None = None,

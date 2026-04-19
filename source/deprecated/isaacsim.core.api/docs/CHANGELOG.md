@@ -1,5 +1,48 @@
 # Changelog
 
+## [5.2.3] - 2026-04-18
+### Fixed
+- Fix `ArticulationController.apply_action` raising `RuntimeError` when called before `initialize()` (6034969)
+- Fix `ArticulationController.apply_action` failing with non-numpy backends by wrapping velocity/effort NaN checks in `to_numpy()` (6035080)
+- Fix `ArticulationController.apply_action` replacing NaN effort with zero instead of preserving the previously applied effort (6035895)
+- Fix `PhysicsContext.set_gravity` rejecting zero magnitude (should preserve downward direction) (6014961)
+- Fix `PhysicsContext._step` fabric branch never executing on first call due to else-clause (6036062)
+- Fix `PhysicsContext` sim_params solver_type not handling string values (6036074)
+- Fix `PhysicsContext.get_gravity` crashing when physics scene or gravity attribute is None (6036079)
+- Fix `PhysicsContext.set_solver_type` accepting invalid solver type strings (6036084)
+- Fix `PhysicsContext` missing correctly-spelled `enable_stabilization` method (6060122)
+- Fix `SimulationContext.__init__` silently reinitializing singleton instead of warning (6035567)
+- Fix `SimulationContext.__init__` division-by-zero when `rendering_dt=0` (6035929)
+- Fix `SimulationContext.render` skipping fabric initialization when `current_time == 0` (6035943)
+- Fix `SimulationContext.add_physics_callback` registering callbacks as post-step instead of pre-step (6035957)
+- Fix `Scene.add_default_ground_plane` not returning early when asset path is unavailable (6035361)
+- Fix `Scene.add` raising generic `Exception` instead of `TypeError` with unhelpful message (6035733)
+- Fix `Scene.post_reset` not resetting `_articulated_views`, `_xform_prim_views`, and `rigid_prim_views` registries (6035818)
+- Fix `Scene.compute_object_AABB` logging error and returning None instead of raising on invalid name (6035879)
+- Fix `Scene.remove_object` raising `AttributeError` when `builtins.ISAAC_LAUNCHED_FROM_TERMINAL` is unset (6035891)
+- Fix `World.__init__` silently reinitializing singleton instead of warning (6035365)
+- Fix `World.get_observations`/`calculate_metrics`/`is_done` using dict access instead of `get_task()` (6035622)
+- Fix `BaseTask.__init__` crashing with `AttributeError` when `SimulationContext` is None (6035199)
+- Fix `BaseTask._move_task_objects_to_their_frame` not passing orientation to `set_world_pose`/`set_default_state` (6035779)
+- Fix `FollowTarget.set_params` using wrong keyword `position=` instead of `translation=` for `set_local_pose` (6035204)
+- Fix `FollowTarget.set_params` not guarding against `self._target` being None before update (6035792)
+- Fix `FollowTarget.get_observations` mutating target position array in-place during ground-plane clamping (6035799)
+- Fix `FollowTarget.remove_obstacle`/`get_obstacle_to_delete` raising `IndexError` on empty obstacle dict (6035250)
+- Fix `Stacking.set_params` using wrong keyword `position=` instead of `translation=` for `set_local_pose` (6035204, 6035808)
+- Fix `PickPlace.get_observations` crashing with `AttributeError` when robot lacks `end_effector` (6042906)
+- Fix `OmniPBR.__init__` unconditionally overwriting shader attributes on existing material prims (6020189)
+- Fix `OmniPBR.__init__` logging wrong path in `elif` branch for capitalized Shader prim
+- Fix `PhysicsMaterial` setters calling `GetXxxAttr()` twice per invocation (6035725)
+- Fix `PhysicsMaterial.__init__` using `CreateXxxAttr()` instead of reusing setter methods (6035728)
+- Fix `BaseSensor.post_reset` not calling `SingleXFormPrim.post_reset` (6014955)
+- Fix `RigidContactView.__init__` missing `disable_stabilization` parameter (6042901)
+- Fix `RigidContactView._process_filter_paths` overwriting accumulated filter paths on each iteration (6035422)
+- Fix `RobotView` default name `"rigid_prim_view"` instead of `"robot_view"` (6025527)
+- Fix `Robot.__init__` defaulting `visible=True` instead of `None` (6035611)
+- Fix `Cone.__init__` raising generic `Exception` instead of `TypeError` (6035562)
+- Fix `Cuboid.set_collision_approximation_type` calling `set_collision_enabled` instead of `set_collision_approximation` (6035797)
+- Fix `ParticleMaterial.set_cohesion` logging "adhesion" instead of "cohesion" (6035785)
+
 ## [5.2.2] - 2026-04-17
 ### Changed
 - Make `ParticleMaterial` `lift`/`drag` parameters, setters, and getters no-ops with deprecation warnings (PhysX removed `physxPBDMaterial:lift` and `physxPBDMaterial:drag`)

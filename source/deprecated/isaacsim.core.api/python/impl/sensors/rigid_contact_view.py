@@ -104,7 +104,8 @@ class RigidContactView(object):
         filter_paths_expr: list[str] | list[list[str]],
         name: str = "rigid_contact_view",
         prepare_contact_sensors: bool = True,
-        disable_stablization: bool = True,
+        disable_stablization: bool = True,  # noqa: N803 — kept for backward compatibility
+        disable_stabilization: bool | None = None,
         max_contact_count: int = 0,
     ) -> None:
         self._name = name
@@ -122,12 +123,13 @@ class RigidContactView(object):
         self._num_filters = None
         self.max_contact_count = max_contact_count
 
+        _disable_stab = disable_stabilization if disable_stabilization is not None else disable_stablization
         if SimulationContext.instance() is not None:
             self._backend = SimulationContext.instance().backend
             self._device = SimulationContext.instance().device
             self._backend_utils = SimulationContext.instance().backend_utils
-            if disable_stablization:
-                SimulationContext.instance().get_physics_context().enable_stablization(False)
+            if _disable_stab:
+                SimulationContext.instance().get_physics_context().enable_stabilization(False)
         else:
             import isaacsim.core.utils.numpy as np_utils
 
@@ -142,10 +144,12 @@ class RigidContactView(object):
             for path in self._prim_paths:
                 self._prepare_contact_reporter(get_prim_at_path(path))
 
+            self._filter_paths = []
             for expr in filter_paths_expr:
                 for group_expr in expr:
-                    self._filter_paths = find_matching_prim_paths(group_expr)
-                    for path in self._filter_paths:
+                    matched = find_matching_prim_paths(group_expr)
+                    self._filter_paths.extend(matched)
+                    for path in matched:
                         self._prepare_contact_reporter(get_prim_at_path(path))
         return
 

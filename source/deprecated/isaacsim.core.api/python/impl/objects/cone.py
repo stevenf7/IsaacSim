@@ -92,7 +92,7 @@ class VisualCone(SingleGeometryPrim):
         if is_prim_path_valid(prim_path):
             prim = get_prim_at_path(prim_path)
             if not prim.IsA(UsdGeom.Cone):
-                raise Exception(f"The prim at path {prim_path} cannot be parsed as a Cone object")
+                raise TypeError(f"The prim at path {prim_path} cannot be parsed as a Cone object")
             cone_geom = UsdGeom.Cone(prim)
         else:
             cone_geom = UsdGeom.Cone.Define(get_current_stage(), prim_path)

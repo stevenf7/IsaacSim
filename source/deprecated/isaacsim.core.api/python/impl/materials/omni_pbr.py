@@ -56,15 +56,17 @@ class OmniPBR(VisualMaterial):
         else:
             material = UsdShade.Material.Define(stage, prim_path)
 
+        _new_shader = False
         if shader is None:
             if is_prim_path_valid(prim_path=f"{prim_path}/shader"):
                 carb.log_info("Shader Prim already defined at path: {}".format(f"{prim_path}/shader"))
                 shader = UsdShade.Shader(get_prim_at_path(f"{prim_path}/shader"))
             elif is_prim_path_valid(f"{prim_path}/Shader"):
-                carb.log_info("Shader Prim already defined at path: {}".format(f"{prim_path}/shader"))
+                carb.log_info("Shader Prim already defined at path: {}".format(f"{prim_path}/Shader"))
                 shader = UsdShade.Shader(get_prim_at_path(f"{prim_path}/Shader"))
             else:
                 shader = UsdShade.Shader.Define(stage, f"{prim_path}/shader")
+                _new_shader = True
         VisualMaterial.__init__(
             self,
             prim_path=prim_path,
@@ -73,21 +75,22 @@ class OmniPBR(VisualMaterial):
             material=material,
             name=name,
         )
-        shader_out = shader.CreateOutput("out", Sdf.ValueTypeNames.Token)
-        shader.CreateIdAttr("OmniPBR")
-        shader.CreateInput("diffuse_color_constant", Sdf.ValueTypeNames.Color3f)
-        shader.CreateInput("reflection_roughness_constant", Sdf.ValueTypeNames.Float)
-        shader.CreateInput("metallic_constant", Sdf.ValueTypeNames.Float)
-        shader.CreateInput("diffuse_texture", Sdf.ValueTypeNames.Asset)
-        shader.CreateInput("project_uvw", Sdf.ValueTypeNames.Bool)
-        shader.CreateInput("texture_scale", Sdf.ValueTypeNames.Float2)
-        shader.CreateInput("texture_translate", Sdf.ValueTypeNames.Float2)
-        material.CreateSurfaceOutput("mdl").ConnectToSource(shader_out)
-        material.CreateVolumeOutput("mdl").ConnectToSource(shader_out)
-        material.CreateDisplacementOutput("mdl").ConnectToSource(shader_out)
-        shader.GetImplementationSourceAttr().Set(UsdShade.Tokens.sourceAsset)
-        shader.SetSourceAsset(Sdf.AssetPath("OmniPBR.mdl"), "mdl")
-        shader.SetSourceAssetSubIdentifier("OmniPBR", "mdl")
+        if _new_shader:
+            shader_out = shader.CreateOutput("out", Sdf.ValueTypeNames.Token)
+            shader.CreateIdAttr("OmniPBR")
+            shader.CreateInput("diffuse_color_constant", Sdf.ValueTypeNames.Color3f)
+            shader.CreateInput("reflection_roughness_constant", Sdf.ValueTypeNames.Float)
+            shader.CreateInput("metallic_constant", Sdf.ValueTypeNames.Float)
+            shader.CreateInput("diffuse_texture", Sdf.ValueTypeNames.Asset)
+            shader.CreateInput("project_uvw", Sdf.ValueTypeNames.Bool)
+            shader.CreateInput("texture_scale", Sdf.ValueTypeNames.Float2)
+            shader.CreateInput("texture_translate", Sdf.ValueTypeNames.Float2)
+            material.CreateSurfaceOutput("mdl").ConnectToSource(shader_out)
+            material.CreateVolumeOutput("mdl").ConnectToSource(shader_out)
+            material.CreateDisplacementOutput("mdl").ConnectToSource(shader_out)
+            shader.GetImplementationSourceAttr().Set(UsdShade.Tokens.sourceAsset)
+            shader.SetSourceAsset(Sdf.AssetPath("OmniPBR.mdl"), "mdl")
+            shader.SetSourceAssetSubIdentifier("OmniPBR", "mdl")
         if color is not None:
             self.set_color(color)
         if texture_path is not None:
@@ -96,8 +99,9 @@ class OmniPBR(VisualMaterial):
             self.set_texture_scale(texture_scale[0], texture_scale[1])
         if texture_translate is not None:
             self.set_texture_translate(texture_translate[0], texture_translate[1])
-        self.set_project_uvw(True)
-        self.set_reflection_roughness(0.5)
+        if _new_shader:
+            self.set_project_uvw(True)
+            self.set_reflection_roughness(0.5)
         return
 
     def set_color(self, color: np.ndarray) -> None:

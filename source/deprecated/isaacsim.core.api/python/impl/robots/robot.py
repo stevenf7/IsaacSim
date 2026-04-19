@@ -74,7 +74,7 @@ class Robot(SingleArticulation):
         translation: Sequence[float] | None = None,
         orientation: Sequence[float] | None = None,
         scale: Sequence[float] | None = None,
-        visible: bool = True,
+        visible: bool | None = None,
         articulation_controller: ArticulationController | None = None,
     ) -> None:
         SingleArticulation.__init__(

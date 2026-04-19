@@ -151,17 +151,19 @@ class PickPlace(ABC, BaseTask):
         """
         joints_state = self._robot.get_joints_state()
         cube_position, cube_orientation = self._cube.get_local_pose()
-        end_effector_position, _ = self._robot.end_effector.get_local_pose()
+        robot_obs = {
+            "joint_positions": joints_state.positions,
+        }
+        if hasattr(self._robot, "end_effector") and self._robot.end_effector is not None:
+            end_effector_position, _ = self._robot.end_effector.get_local_pose()
+            robot_obs["end_effector_position"] = end_effector_position
         return {
             self._cube.name: {
                 "position": cube_position,
                 "orientation": cube_orientation,
                 "target_position": self._target_position,
             },
-            self._robot.name: {
-                "joint_positions": joints_state.positions,
-                "end_effector_position": end_effector_position,
-            },
+            self._robot.name: robot_obs,
         }
 
     def pre_step(self, time_step_index: int, simulation_time: float) -> None:

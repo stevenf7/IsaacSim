@@ -111,6 +111,10 @@ class SimulationContext:
         stage: Usd.Stage | None = None,
     ) -> None:
         if SimulationContext._sim_context_initialized:
+            carb.log_warn(
+                "SimulationContext is already initialized. Constructor parameters are ignored on subsequent calls. "
+                "Call SimulationContext.clear_instance() first to re-initialize with new parameters."
+            )
             return
         SimulationContext._sim_context_initialized = True
         self._app = omni.kit.app.get_app_interface()
@@ -473,9 +477,10 @@ class SimulationContext:
         if get_carb_setting(self._settings, "/app/runLoops/main/rateLimitEnabled"):
             set_carb_setting(self._settings, "/app/runLoops/main/rateLimitFrequency", rendering_hz)
             self._timeline.set_target_framerate(rendering_hz)
-        with Usd.EditContext(get_current_stage(), get_current_stage().GetRootLayer()):
-            get_current_stage().SetTimeCodesPerSecond(rendering_hz)
-        self._timeline.set_time_codes_per_second(rendering_hz)
+        if rendering_hz > 0:
+            with Usd.EditContext(get_current_stage(), get_current_stage().GetRootLayer()):
+                get_current_stage().SetTimeCodesPerSecond(rendering_hz)
+            self._timeline.set_time_codes_per_second(rendering_hz)
         self._rendering_dt = rendering_dt
         # The isaac sim loop runner is enabled by default in isaac sim apps, but in case we are in an app with the kit loop runner, protect against this
         try:
@@ -768,7 +773,7 @@ class SimulationContext:
         ):
             self.physics_sim_view.update_articulations_kinematic()
         if self._physx_fabric_interface is None:
-            if self.current_time > 0 and self._extension_manager.is_extension_enabled("omni.physx.fabric"):
+            if self._extension_manager.is_extension_enabled("omni.physx.fabric"):
                 from omni.physxfabric import get_physx_fabric_interface
 
                 self._physx_fabric_interface = get_physx_fabric_interface()
@@ -808,7 +813,7 @@ class SimulationContext:
             self.physics_sim_view.update_articulations_kinematic()
 
         if self._physx_fabric_interface is None:
-            if self.current_time > 0 and self._extension_manager.is_extension_enabled("omni.physx.fabric"):
+            if self._extension_manager.is_extension_enabled("omni.physx.fabric"):
                 from omni.physxfabric import get_physx_fabric_interface
 
                 self._physx_fabric_interface = get_physx_fabric_interface()
@@ -1062,7 +1067,7 @@ class SimulationContext:
             return
         self._physics_callback_functions[callback_name] = (
             self._physics_context._physics_sim_interface.subscribe_physics_on_step_events(
-                pre_step=False, order=0, on_update=lambda step_dt, context: callback_fn(step_dt)
+                pre_step=True, order=0, on_update=lambda step_dt, context: callback_fn(step_dt)
             )
         )
         self._physics_functions[callback_name] = callback_fn
@@ -1572,6 +1577,6 @@ class SimulationContext:
         for callback_name, callback_function in self._physics_functions.items():
             self._physics_callback_functions[callback_name] = (
                 self._physics_context._physics_sim_interface.subscribe_physics_on_step_events(
-                    pre_step=False, order=0, on_update=lambda step_dt, context: callback_function(step_dt)
+                    pre_step=True, order=0, on_update=lambda step_dt, context: callback_function(step_dt)
                 )
             )

@@ -329,7 +329,7 @@ class ParticleMaterial:
 
         """
         if value < 0:
-            carb.log_error("The valid range of adhesion is [0. inf).")
+            carb.log_error("The valid range of cohesion is [0. inf).")
         self._particle_material_view.set_cohesions(
             self._backend_utils.create_tensor_from_list([value], dtype="float32")
         )

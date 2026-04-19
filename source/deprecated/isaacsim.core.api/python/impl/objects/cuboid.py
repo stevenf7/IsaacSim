@@ -241,7 +241,7 @@ class FixedCuboid(VisualCuboid):
             visual_material=visual_material,
         )
         SingleGeometryPrim.set_collision_enabled(self, True)
-        SingleGeometryPrim.set_collision_enabled(self, "boundingCube")
+        SingleGeometryPrim.set_collision_approximation(self, "boundingCube")
         if physics_material is not None:
             FixedCuboid.apply_physics_material(self, physics_material)
         if set_offsets:

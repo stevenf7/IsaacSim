@@ -44,6 +44,7 @@ class BaseTask(object):
         if self._offset is None:
             self._offset = np.array([0.0, 0.0, 0.0])
 
+        self._device = None
         if SimulationContext.instance() is not None:
             self._device = SimulationContext.instance().device
         return
@@ -102,8 +103,8 @@ class BaseTask(object):
         #     current_position, current_orientation = task_object.get_world_pose()
         for object_name, task_object in self._task_objects.items():
             current_position, current_orientation = task_object.get_world_pose()
-            task_object.set_world_pose(position=current_position + self._offset)
-            task_object.set_default_state(position=current_position + self._offset)
+            task_object.set_world_pose(position=current_position + self._offset, orientation=current_orientation)
+            task_object.set_default_state(position=current_position + self._offset, orientation=current_orientation)
         return
 
     def get_task_objects(self) -> dict:

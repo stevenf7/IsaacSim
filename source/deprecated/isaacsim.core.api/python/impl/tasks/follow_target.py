@@ -153,7 +153,9 @@ class FollowTarget(ABC, BaseTask):
                 if hasattr(self._target_visual_material, "set_color"):
                     self._target_visual_material.set_color(np.array([1, 0, 0]))
         else:
-            self._target.set_local_pose(position=target_position, orientation=target_orientation)
+            if self._target is None:
+                raise RuntimeError("Cannot update target pose before set_up_scene() has been called.")
+            self._target.set_local_pose(translation=target_position, orientation=target_orientation)
         return
 
     def get_params(self) -> dict:
@@ -182,16 +184,17 @@ class FollowTarget(ABC, BaseTask):
         joints_state = self._robot.get_joints_state()
         target_position, target_orientation = self._target.get_local_pose()
 
-        # The target cannot be below the ground plane
-        if target_position[2] <= (0.035 / get_stage_units()):
-            target_position[2] = 0.035 / get_stage_units()
+        # The target cannot be below the ground plane; use a copy to avoid mutating the prim's data
+        clamped_position = np.array(target_position)
+        if clamped_position[2] <= (0.035 / get_stage_units()):
+            clamped_position[2] = 0.035 / get_stage_units()
 
         return {
             self._robot.name: {
                 "joint_positions": np.array(joints_state.positions),
                 "joint_velocities": np.array(joints_state.velocities),
             },
-            self._target.name: {"position": np.array(target_position), "orientation": np.array(target_orientation)},
+            self._target.name: {"position": clamped_position, "orientation": np.array(target_orientation)},
         }
 
     def calculate_metrics(self) -> dict:
@@ -293,6 +296,8 @@ class FollowTarget(ABC, BaseTask):
             self.scene.remove_object(name)
             del self._obstacle_cubes[name]
         else:
+            if not self._obstacle_cubes:
+                raise IndexError("No obstacles to remove.")
             obstacle_to_delete = list(self._obstacle_cubes.keys())[-1]
             self.scene.remove_object(obstacle_to_delete)
             del self._obstacle_cubes[obstacle_to_delete]
@@ -305,6 +310,8 @@ class FollowTarget(ABC, BaseTask):
             The obstacle object to be deleted.
 
         """
+        if not self._obstacle_cubes:
+            raise IndexError("No obstacles exist.")
         obstacle_to_delete = list(self._obstacle_cubes.keys())[-1]
         return self.scene.get_object(obstacle_to_delete)
 
