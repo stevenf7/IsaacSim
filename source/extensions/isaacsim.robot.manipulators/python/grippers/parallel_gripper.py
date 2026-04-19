@@ -214,7 +214,8 @@ class ParallelGripper(Gripper):
     def post_reset(self):
         """Reset the gripper to its default state."""
         Gripper.post_reset(self)
-        self._set_joint_positions_func(positions=self._default_state, joint_indices=self.active_joint_indices)
+        if self._set_joint_positions_func is not None:
+            self._set_joint_positions_func(positions=self._default_state, joint_indices=self.active_joint_indices)
         return
 
     def set_joint_positions(self, positions: np.ndarray):

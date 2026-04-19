@@ -1,4 +1,8 @@
 # Changelog
+## [2.4.1] - 2026-04-17
+### Fixed
+- Run `_plot_pattern` in a background thread to avoid blocking Kit's main event loop
+
 ## [2.4.0] - 2026-03-04
 ### Changed
 - Added Overview.md and python_api.md and updated docstrings

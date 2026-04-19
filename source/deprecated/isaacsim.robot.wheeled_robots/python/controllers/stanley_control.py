@@ -132,9 +132,9 @@ def stanley_control(
         cy: Y-coordinates of the reference path.
         cyaw: Yaw angles of the reference path.
         last_target_idx: Previous target index in the trajectory.
-        p: Proportional gain parameter.
-        i: Integral gain parameter.
-        d: Derivative gain parameter.
+        p: Proportional gain (unused, reserved for future PID extension).
+        i: Integral gain (unused, reserved for future PID extension).
+        d: Derivative gain (unused, reserved for future PID extension).
         k: Cross track error gain.
 
     Returns:

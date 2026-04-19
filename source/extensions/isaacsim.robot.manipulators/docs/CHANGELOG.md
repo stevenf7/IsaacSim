@@ -1,4 +1,8 @@
 # Changelog
+## [3.4.2] - 2026-04-17
+### Fixed
+- Add None guard in `ParallelGripper.post_reset` to prevent crash when called before `initialize()`
+
 ## [3.4.1] - 2026-03-26
 ### Changed
 - Updated Python bindings import paths for consistency
