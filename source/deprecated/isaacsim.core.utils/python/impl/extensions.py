@@ -81,8 +81,11 @@ def get_extension_path_from_name(extension_name: str) -> str:
         >>> extensions_utils.get_extension_path_from_name("omni.kit.window.stage")
         /home/user/.local/share/ov/pkg/isaac_sim-<version>/kit/exts/omni.kit.window.stage
     """
+    ext_id = get_extension_id(extension_name)
+    if not ext_id:
+        raise RuntimeError(f"Extension '{extension_name}' is not enabled or could not be found.")
     extension_manager = omni.kit.app.get_app().get_extension_manager()
-    return extension_manager.get_extension_path(get_extension_id(extension_name))
+    return extension_manager.get_extension_path(ext_id)
 
 
 def enable_extension(extension_name: str) -> bool:

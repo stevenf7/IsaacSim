@@ -242,7 +242,10 @@ def lookat_to_quatf(camera: Gf.Vec3f, target: Gf.Vec3f, up: Gf.Vec3f) -> Gf.Quat
     Returns:
         Pxr quaternion object representing the look-at rotation.
     """
-    F = (target - camera).GetNormalized()
+    direction = target - camera
+    if direction.GetLength() < 1e-10:
+        return Gf.Quatf(1.0, Gf.Vec3f(0, 0, 0))
+    F = direction.GetNormalized()
     R = Gf.Cross(up, F).GetNormalized()
     U = Gf.Cross(F, R)
 

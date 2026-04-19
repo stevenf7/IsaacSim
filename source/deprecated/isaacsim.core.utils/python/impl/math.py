@@ -34,7 +34,7 @@ def radians_to_degrees(rad_angles: np.ndarray) -> np.ndarray:
     return rad_angles * (180.0 / np.pi)
 
 
-def cross(a: np.ndarray | list, b: np.ndarray | list) -> list:
+def cross(a: np.ndarray | list, b: np.ndarray | list) -> np.ndarray:
     """Computes the cross-product between two 3-dimensional vectors.
 
     Args:
@@ -44,7 +44,7 @@ def cross(a: np.ndarray | list, b: np.ndarray | list) -> list:
     Returns:
         Cross product between input vectors.
     """
-    return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
+    return np.array([a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]])
 
 
 def normalize(v: np.ndarray) -> np.ndarray:
@@ -56,7 +56,10 @@ def normalize(v: np.ndarray) -> np.ndarray:
     Returns:
         The normalized vector.
     """
-    v /= np.linalg.norm(v)
+    norm = np.linalg.norm(v)
+    if norm == 0:
+        return v
+    v /= norm
     return v
 
 

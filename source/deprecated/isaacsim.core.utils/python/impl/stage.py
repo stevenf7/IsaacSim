@@ -271,7 +271,7 @@ def clear_stage(predicate: typing.Callable[[str], bool] | None = None) -> None:
 
 
 def print_stage_prim_paths(fabric: bool = False) -> None:
-    """Traverses the stage and prints all prim (hidden or not) paths.
+    """Traverses the stage and logs all prim (hidden or not) paths via carb.log_info.
 
     Args:
         fabric: True to get the fabric stage. False to get the USD stage.
@@ -283,23 +283,15 @@ def print_stage_prim_paths(fabric: bool = False) -> None:
         >>> import isaacsim.core.utils.stage as stage_utils
         >>>
         >>> # given the stage: /World/Cube, /World/Cube_01, /World/Cube_02.
+        >>> # prim paths are logged via carb.log_info
         >>> stage_utils.print_stage_prim_paths()
-        /Render
-        /World
-        /World/Cube
-        /World/Cube_01
-        /World/Cube_02
-        /OmniverseKit_Persp
-        /OmniverseKit_Front
-        /OmniverseKit_Top
-        /OmniverseKit_Right
     """
     # Note: Need to import this here to prevent circular dependencies.
     from isaacsim.core.utils.prims import get_prim_path
 
     for prim in traverse_stage(fabric=fabric):
         prim_path = get_prim_path(prim)
-        print(prim_path)
+        carb.log_info(prim_path)
 
 
 def add_reference_to_stage(usd_path: str, prim_path: str, prim_type: str = "Xform") -> Usd.Prim:
@@ -338,11 +330,13 @@ def add_reference_to_stage(usd_path: str, prim_path: str, prim_type: str = "Xfor
     prim = stage.GetPrimAtPath(prim_path)
     if not prim.IsValid():
         prim = stage.DefinePrim(prim_path, prim_type)
+    if not usd_path:
+        return prim
     carb.log_info(f"Loading Asset from path {usd_path} ")
     # Handle units
     sdf_layer = Sdf.Layer.FindOrOpen(usd_path)
     if not sdf_layer:
-        carb.log_info(f"Could not get Sdf layer for {usd_path}")
+        raise FileNotFoundError(f"The usd file at path {usd_path} provided wasn't found")
     else:
         stage_id = UsdUtils.StageCache.Get().GetId(stage).ToLongInt()
         ret_val = get_metrics_assembler_interface().check_layers(
@@ -518,12 +512,27 @@ def save_stage(usd_path: str, save_and_reload_in_place: bool = True) -> bool:
     if not Usd.Stage.IsSupportedFile(usd_path):
         raise ValueError("Only USD files can be saved with this method")
 
-    layer = Sdf.Layer.CreateNew(usd_path)
-    root_layer = get_current_stage().GetRootLayer()
-    layer.TransferContent(root_layer)
-    omni.usd.resolve_paths(root_layer.identifier, layer.identifier)
-    result = layer.Save()
-    if save_and_reload_in_place:
+    import os
+    import tempfile
+
+    dir_name = os.path.dirname(usd_path) or "."
+    tmp_fd, tmp_path = tempfile.mkstemp(suffix=os.path.splitext(usd_path)[1], dir=dir_name)
+    os.close(tmp_fd)
+    try:
+        layer = Sdf.Layer.CreateNew(tmp_path)
+        root_layer = get_current_stage().GetRootLayer()
+        layer.TransferContent(root_layer)
+        omni.usd.resolve_paths(root_layer.identifier, layer.identifier)
+        result = layer.Save()
+        if result:
+            os.replace(tmp_path, usd_path)
+        else:
+            os.remove(tmp_path)
+    except Exception:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+        raise
+    if result and save_and_reload_in_place:
         open_stage(usd_path)
 
     return result

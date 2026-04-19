@@ -56,7 +56,10 @@ def recompute_extents(
             bounds = []
             mesh = UsdGeom.Mesh(compute_prim)
             if mesh:
-                bounds = mesh.ComputeExtent(mesh.GetPointsAttr().Get())
+                points = mesh.GetPointsAttr().Get()
+                if points is None:
+                    return
+                bounds = mesh.ComputeExtent(points)
             else:
                 bounds = UsdGeom.Boundable.ComputeExtentFromPlugins(compute_prim, time)
 
@@ -72,7 +75,7 @@ def recompute_extents(
             try:
                 update_extents(p, time)
             except ValueError:
-                carb.log_info(f"Skipping {p}, not boundable")
+                carb.log_warn(f"Skipping {p}, not boundable")
     else:
         update_extents(prim, time)
 
@@ -130,6 +133,8 @@ def compute_aabb(bbox_cache: UsdGeom.BBoxCache, prim_path: str, include_children
     """
     total_bounds = Gf.BBox3d()
     prim = get_prim_at_path(prim_path)
+    if not prim or not prim.IsValid():
+        raise ValueError(f"No valid prim at path: {prim_path}")
     if include_children:
         for p in Usd.PrimRange(prim):
             total_bounds = Gf.BBox3d.Combine(
@@ -138,8 +143,8 @@ def compute_aabb(bbox_cache: UsdGeom.BBoxCache, prim_path: str, include_children
     else:
         total_bounds = Gf.BBox3d(bbox_cache.ComputeWorldBound(prim).ComputeAlignedRange())
 
-    range = total_bounds.GetRange()
-    return np.array([*range.GetMin(), *range.GetMax()])
+    bbox_range = total_bounds.GetRange()
+    return np.array([*bbox_range.GetMin(), *bbox_range.GetMax()])
 
 
 def compute_combined_aabb(bbox_cache: UsdGeom.BBoxCache, prim_paths: list[str]) -> np.array:
@@ -164,13 +169,15 @@ def compute_combined_aabb(bbox_cache: UsdGeom.BBoxCache, prim_paths: list[str]) 
         >>> bounds_utils.compute_combined_aabb(cache, prim_paths=["/World/Cube", "/World/Sphere"])
         [-1.  -0.5 -0.5  0.5  1.   1. ]
     """
+    if not prim_paths:
+        raise ValueError("prim_paths list is empty.")
     total_bounds = Gf.BBox3d()
     for prim_path in prim_paths:
         prim = get_prim_at_path(prim_path)
         bounds = bbox_cache.ComputeWorldBound(prim)
         total_bounds = Gf.BBox3d.Combine(total_bounds, Gf.BBox3d(bounds.ComputeAlignedRange()))
-    range = total_bounds.GetRange()
-    return np.array([*range.GetMin(), *range.GetMax()])
+    bbox_range = total_bounds.GetRange()
+    return np.array([*bbox_range.GetMin(), *bbox_range.GetMax()])
 
 
 def compute_obb(bbox_cache: UsdGeom.BBoxCache, prim_path: str) -> tuple[np.ndarray, np.ndarray, np.ndarray]:

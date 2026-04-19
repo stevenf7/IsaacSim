@@ -211,9 +211,14 @@ def transpose_2d(data: object) -> object:
     Args:
         data: Input 2D tensor to transpose.
 
+    Raises:
+        ValueError: If input tensor has more than 2 dimensions.
+
     Returns:
         Transposed tensor with dimensions swapped.
     """
+    if data.dim() > 2:
+        raise ValueError(f"transpose_2d expects a 1D or 2D tensor, got {data.dim()}D tensor.")
     return torch.transpose(data, 1, 0)
 
 

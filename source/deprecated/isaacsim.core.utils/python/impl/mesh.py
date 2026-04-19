@@ -59,6 +59,8 @@ def get_mesh_vertices_relative_to(mesh_prim: UsdGeom.Mesh, coord_prim: Usd.Prim)
     """
     # Vertices of the mesh in the mesh's coordinate system
     vertices_vec3f = UsdGeom.Mesh(mesh_prim).GetPointsAttr().Get()
+    if vertices_vec3f is None:
+        return np.empty((0, 3), dtype=np.float64)
     vertices = np.array(vertices_vec3f)
     vertices_tf_row_major = np.pad(vertices, ((0, 0), (0, 1)), constant_values=1.0)
 
