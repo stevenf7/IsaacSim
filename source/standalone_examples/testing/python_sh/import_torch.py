@@ -15,6 +15,11 @@
 
 """Verify torch is imported from the expected path and CUDA is available."""
 
+from isaacsim import SimulationApp
+
+# instantiate SimulationApp first as omni.isaac.ml_archive has been removed from PYTHONPATH
+simulation_app = SimulationApp({"headless": True})
+
 import torch
 
 print(torch.__path__[0])
@@ -34,3 +39,5 @@ b = torch.ones((10, 2), device="cuda:0")
 c = add(a, b)
 d = a + b
 assert torch.allclose(c, d)
+
+simulation_app.close()

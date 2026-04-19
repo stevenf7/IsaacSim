@@ -141,7 +141,6 @@ vscode.python_env.PYTHONPATH = [
   "$root/_build/$platform/$config/exts/omni.isaac.core_archive/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.pip.compute/pip_prebundle",
   "$root/_build/$platform/$config/exts/omni.pip.cloud/pip_prebundle",
-  "$root/_build/$platform/$config/extsDeprecated/omni.isaac.ml_archive/pip_prebundle",
 ]
 
 vscode.python_env.PATH = [
