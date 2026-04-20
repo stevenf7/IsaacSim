@@ -83,11 +83,53 @@ if os.target() == "linux" then
         { "python/*.py", ext.target_dir .. "/isaacsim/ucx/core" },
     }
 
+    repo_build.prebuild_link {
+        { "python/tests", ext.target_dir .. "/isaacsim/ucx/core/tests" },
+    }
+
     repo_build.prebuild_copy {
         { "%{root}/_build/target-deps/pip_ucx_prebundle/librmm/lib64/lib**", ext.bin_dir .. "/" },
         { "%{root}/_build/target-deps/pip_ucx_prebundle/libucx/lib/lib**", ext.bin_dir .. "/" },
         { "%{root}/_build/target-deps/pip_ucx_prebundle/libucxx/lib64/lib**", ext.bin_dir .. "/" },
         { "%{root}/_build/target-deps/pip_ucx_prebundle/rapids_logger/lib64/lib**", ext.bin_dir .. "/" },
+    }
+
+    -- Python Bindings
+    project_ext_bindings {
+        ext = ext,
+        project_name = "isaacsim.ucx.core.python",
+        module = "_ucx_core",
+        src = "bindings",
+        target_subdir = "isaacsim/ucx/core/bindings",
+    }
+    add_files("bindings", "bindings/*.*")
+
+    includedirs {
+        "%{root}/source/extensions/isaacsim.ucx.core/include",
+        "%{root}/source/extensions/isaacsim.core.includes/include",
+        "%{root}/_build/target-deps/pip_ucx_prebundle/librmm/include",
+        "%{root}/_build/target-deps/pip_ucx_prebundle/libucx/include",
+        "%{root}/_build/target-deps/pip_ucx_prebundle/libucxx/include",
+        "%{root}/_build/target-deps/pip_ucx_prebundle/rapids_logger/include",
+    }
+
+    libdirs {
+        ext.bin_dir,
+        "%{root}/_build/target-deps/pip_ucx_prebundle/librmm/lib64",
+        "%{root}/_build/target-deps/pip_ucx_prebundle/libucx/lib",
+        "%{root}/_build/target-deps/pip_ucx_prebundle/libucxx/lib64",
+        "%{root}/_build/target-deps/pip_ucx_prebundle/rapids_logger/lib64",
+    }
+
+    links {
+        "isaacsim.ucx.core",
+        "ucxx",
+        "ucp",
+        "ucs",
+        "uct",
+        "ucm",
+        "rmm",
+        "rapids_logger",
     }
 
     -- Build the C++ plugin that will be loaded by the tests
