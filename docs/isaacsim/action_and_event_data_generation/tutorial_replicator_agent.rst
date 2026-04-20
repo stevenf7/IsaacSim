@@ -20,7 +20,7 @@ This framework also provides control over actor behaviors, environments, and sen
 
 This framework simplifies simulation customization with features like:
 
-* **Codeless Interaction**: Configurations are expressed in yaml file. No code is needed to get synthetic data.
+* **Codeless Interaction**: Configurations are expressed in YAML file. No code is needed to get synthetic data.
 * **Simplified Setup**: Included in Isaac Sim, it offers both GUI and scripting interfaces for interactive and headless workflows.
 * **High-Fidelity Data**: Leverages Omniverse's SimReady assets, physics, and rendering to produce realistic imagery and accurate annotations essential for AI training.
 * **Seamless Integration**: As part of Kit extensions, it works natively with ``omni.anim.behavior``, ``omni.anim.navigation``, and ``omni.replicator.core``.
@@ -38,7 +38,7 @@ Before enabling this extension, read :doc:`What Is Isaac Sim? </overview/overvie
 
 Enable Extensions
 ----------------------------------
-1. Follow the `Omniverse Extension Manager guide <https://docs.omniverse.nvidia.com/extensions/latest/ext_core/ext_extension-manager.html>`_ to enable the ``Omni.Metropolis.Pipeline``, ``Isaacsim.Anim.Robot.Core`` and ``Isaacsim.Replicator.Agent.Core & UI``.
+1. Follow the `Omniverse Extension Manager guide <https://docs.omniverse.nvidia.com/extensions/latest/ext_core/ext_extension-manager.html>`_ to enable the ``Omni.Metropolis.Pipeline``, ``Isaacsim.Anim.Robot.Core``, and ``Isaacsim.Replicator.Agent.Core & UI``.
 
     * The extensions fetch sample assets from Isaac Sim Assets during start. Refer to :doc:`Isaac Sim Assets </assets/usd_assets_overview>` if you encounter issues for loading assets.
     * If loading the UI appears to be hanging, try starting Isaac Sim with the flag ``--/persistent/isaac/asset_root/timeout=1.0``.
@@ -58,9 +58,9 @@ Enable Extensions
 
 .. _actor_sim_getting_started:
 
-Getting Started in UI
------------------------
-It is recommended to use UI for first-time users. Please refer to :ref:`Running from script <actor_sim_running_from_script>` section for running with Python script in IsaacSim headless mode.
+Getting Started in the UI
+-------------------------
+For first-time users, it is recommended that you use the UI. Refer to :ref:`Running from script <actor_sim_running_from_script>` section for running with Python script in IsaacSim headless mode.
 
 1. Follow the :ref:`Enable Extensions <actor_sim_getting_started>` and open the UI panel.
 
@@ -83,7 +83,7 @@ It is recommended to use UI for first-time users. Please refer to :ref:`Running 
 
 4. Click the **Set Up Simulation** button from the top of the UI and it will start loading simulation assets (scene, cameras, actors) according to the UI.
 
-    * The scene requires a NavMesh to spawn assets and control them correctly. The scenes in the example config has NavMesh set up in advance. If you are using a external scene, please refer to :doc:`Navigation Mesh<extensions:ext_navigation-mesh>` for NavMesh set up.
+    * The scene requires a NavMesh to spawn assets and control them correctly. The scenes in the example config has NavMesh set up in advance. If you are using a external scene, refer to :doc:`Navigation Mesh<extensions:ext_navigation-mesh>` for NavMesh set up.
     * You can also go to **Window > Navigation > NavMesh** and turn off **Auto-Bake** in the NavMesh settings. Turning it off can increase the performance.
 
     .. note::
@@ -248,7 +248,7 @@ The actor USD API schema defines basic information of the actor:
 - seed
 - a routine reference slot and a trigger reference slot
 
-At play, the name, group and seed will be combined and hashed into a single seed as ``actor global seed``. This seed will be used for all the "randomness" of the actor, including random routine picking for the actor itself and the picking within each behavior such as picking a speed from speed range.
+At play, the name, group, and seed will be combined and hashed into a single seed as ``actor global seed``. This seed will be used for all the "randomness" of the actor, including random routine picking for the actor itself and the picking within each behavior such as picking a speed from speed range.
 This also means the same ``actor global seed`` will display same result if other settings and the environment don't change.
 
 Each type of actor behavior is represented by a USD Prim type. It defines the configuration of the behavior:
@@ -262,13 +262,51 @@ For human characters, the behavior prim types follows ``CharacterXXXBehavior`` n
 Each actor trigger is also a USD Prim. It defines the trigger priority and has a reference of behavior list to be executed sequentially when this trigger activates.
 Human characters and anim robots share the same trigger types that's defined in OMP with naming ``MetroXXXTrigger``.
 
-In addition, actors leverage ``omni.behavior.behavior`` (Human characters) and ``isaacsim.anim.robot.core`` (Animated robots) as their animation implementation.
+In addition, the actors leverage ``omni.behavior.behavior`` (Human characters) and ``isaacsim.anim.robot.core`` (Animated robots) as their animation implementation.
 For more information about them, refer to the following documents:
 
 .. toctree::
     :maxdepth: 1
 
     ./ext_replicator-agent/ext_isaacsim_anim_robot.rst
+
+Behavior Tree (Experimental)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. warning::
+    Behavior tree character support is **experimental** and may change in future releases.
+
+In addition to the routine-trigger behavior system described above, IRA 1.3.0 introduces support for driving character behavior through **behavior trees**. Behavior trees are authored with the ``omni.behavior.tree.core`` and ``omni.anim.behavior.tree`` extensions.
+
+.. TODO: Add links to omni.behavior.tree.core and omni.anim.behavior.tree extension docs when available.
+
+**What is a Behavior Tree?**
+
+A behavior tree is a hierarchical model for decision-making. It is composed of different node types that work together:
+
+-   **Action nodes** are the leaf-level nodes where characters perform concrete actions (for example, ``MoveTo``, ``Wait``).
+-   **Composite nodes** control logic and execution flow. For example, a ``Sequence`` node runs its children in order, while a ``Selector`` node tries children until one succeeds.
+-   **Modifiers and Decorators** wrap other nodes to alter their behavior, such as ``Repeat`` (loop a subtree) or ``RandomNavMeshPoint`` (supply a random destination).
+
+By combining these node types, you can compose arbitrarily complex behaviors. Behaviors from simple wander loops to multi-step conditional sequences, that are all within a single tree definition, without writing code. Compared to the IRA routine system, which picks behaviors randomly by weight, a behavior tree gives full deterministic control over ordering, branching, and looping.
+
+**Relationship to Routines and Triggers**
+
+.. note::
+    **Triggers are not currently supported** for behavior-tree character groups. Any reactive or conditional logic must be authored as nodes inside the behavior tree itself.
+
+Behavior tree mode is an alternative to the routine-trigger system. Each character group in the configuration uses **one or the other**: a group either defines ``routines`` and ``triggers`` (IRA-style) or references a ``behavior_tree``. However, a single configuration file can contain multiple groups, so IRA-style and behavior-tree groups can coexist side by side.
+
+**Workflow**
+
+1.  Author a behavior tree using ``omni.behavior.tree.ui`` and save it as a JSON file. The tree references node libraries ``omni.behavior.tree.core`` and ``omni.anim.behavior.tree`` for its action, composite, and modifier nodes. Refer to the `Behavior Tree's User Guide <https://docs.omniverse.nvidia.com/kit/docs/behavior-tree/latest/user-guide.html>`_ on how to author a behavior tree.
+2.  In the IRA configuration YAML, create a character group with a ``behavior_tree`` field pointing to the JSON file. Optionally provide an ``overrides`` field to assign node parameters for different character groups without modifying the tree file.
+3.  Run the simulation as usual. The behavior-tree characters share the same spawning, NavMesh, and data-generation pipeline as IRA characters.
+
+Some sample config files with behavior tree character groups are provided in the ``[Isaac Sim Assets Path]/Samples/BehaviorTree`` folder as well as bundled in the ``data/sample_configs`` folder in the ``isaacsim.replicator.agent.core`` extension. For configuration details, parameter reference, and YAML examples, refer to :ref:`Behavior Tree Character Group (Experimental) <ira_bt_character_group>` in the Configuration File Guide.
+
+.. warning::
+    Behavior tree characters set up by IRA still have the ``IRACharacterAPI`` schema applied, but this is only used for data-generation identification (name, group, semantic labels, etc.). The character's behavior is entirely controlled by the behavior tree through ``omni.behavior.tree.core`` (OBT). IRA-level settings such as ``seed`` have no effect on behavior-tree characters.
 
 Terminology
 -------------
@@ -286,7 +324,7 @@ Terminology
 
 .. dropdown:: Actor
 
-    Actors are controlled by the respective controllers (``omni.behavior.composer`` and ``isaacsim.anim.robot``) and perform actions in the simulation. The extension supports human characters and robots (Nova Carter, iw.hub) as actors. The terms "actor" and "agent" are used interchangeably in this documentation.
+    Actors are controlled by the respective controllers (``omni.behavior.tree`` and ``isaacsim.anim.robot``) and perform actions in the simulation. The extension supports human characters and robots (Nova Carter, iw.hub) as actors. The terms "actor" and "agent" are used interchangeably in this documentation.
 
 .. dropdown:: Seed
 
@@ -295,3 +333,7 @@ Terminology
 .. dropdown:: Replicator (Omni.Replicator.Core)
 
     The data capturing extension that our extension is based on. More information about the Replicator extension can be found in :doc:`Replicator Official Documentation</replicator_tutorials/index>`.
+
+.. dropdown:: Behavior Tree
+
+    A hierarchical data model for organizing decision-making and actions. A behavior tree is defined as a JSON file and referenced from the IRA configuration. It provides an alternative to the routine-trigger system for controlling character behavior. Refer to the `Behavior Tree documentation <https://docs.omniverse.nvidia.com/kit/docs/behavior-tree/latest/index.html>`_ for more information.

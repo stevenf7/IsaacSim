@@ -17,7 +17,7 @@ Workflow Overview
 1.  **Environment Setup**: Define the static 3D environment where the simulation takes place.
 2.  **Agent & Sensor Definition**: Configure characters, robots, and cameras (sensors) to populate the environment.
 3.  **Behavior Configuration**: Assign routines (weighted random actions like walking, idling) and triggers (reactive behaviors like when a collision occurs) to actors.
-4.  **Data Generation**: Configure the Replicator writers to generate ground-truth data (RGB, segmentation, etc.).
+4.  **Data Generation**: Configure the Replicator writers to generate ground-truth data (RGB, segmentation).
 
 Key Concepts
 ^^^^^^^^^^^^
@@ -164,7 +164,7 @@ Each actor can specify a list of triggers to listen to.
 
     **Authoring a specific sequence of actions**
 
-    Routines select behaviors randomly based on weights, so they are not suited for deterministic sequences. If you need actors to perform actions in a specific order (for example, walk to point A, idle for 5 seconds, then walk to point B), use a **trigger** instead. A trigger's ``behavior`` list is always executed in order, making it the right tool for scripted sequences. Use a ``time_trigger`` with ``time: 0`` to start the sequence immediately when the simulation begins.
+    Routines select behaviors randomly based on weights, so they are not suited for deterministic sequences. If you need actors to perform actions in a specific order (for example, walk to point A, idle for five seconds, then walk to point B), use a **trigger** instead. A trigger's ``behavior`` list is always executed in order, making it the right tool for scripted sequences. Use a ``time_trigger`` with ``time: 0`` to start the sequence immediately when the simulation begins.
 
 **Trigger Types:**
 
@@ -225,6 +225,93 @@ Each actor can specify a list of triggers to listen to.
                       path_points:
                         - [0, 0, 0]
                         - [0, -5, 0]
+
+.. _ira_bt_character_group:
+
+Behavior Tree Character Group (Experimental)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. warning::
+    Behavior tree character support is **experimental** and may change in future releases.
+
+When a character group contains a ``behavior_tree`` key instead of ``routines`` and ``triggers``, IRA treats it as a **behavior-tree character group**. In this mode, all behavior logic is defined inside the referenced behavior tree rather than through the IRA routine-trigger system.
+
+A single configuration can mix both group types. For example, one group using IRA routines and another using a behavior tree.
+
+.. note::
+    ``routines`` and ``triggers`` fields are **not available** for behavior-tree groups. Any reactive or conditional logic must be authored as nodes inside the behavior tree itself.
+
+**Behavior-Tree-Specific Parameters:**
+
+-   ``behavior_tree`` (required): Path or URL to a JSON behavior tree asset. Supports Isaac asset-root-relative paths (for example, ``Isaac/...``), absolute filesystem paths, and paths relative to the config file directory. The tree must reference node libraries such as ``omni.behavior.tree.core`` and ``omni.anim.behavior.tree``.
+-   ``overrides`` (optional): A YAML multi-line string containing JSON that overrides node port values at runtime without modifying the original tree file. The JSON follows the ``omni.behavior.tree`` override schema with ``schemaVersion`` and ``instanceOverrides`` keys. Refer to the `Behavior Tree's User Guide <https://docs.omniverse.nvidia.com/kit/docs/behavior-tree/latest/user-guide.html#instance-overrides>`_ for more details on instance overrides.
+
+**Shared Parameters (same as IRA character groups):**
+
+-   ``num`` (required): Number of characters to spawn (>= 0).
+-   ``asset_path`` (optional): USD path to character assets. Default: ``Isaac/People/Characters/``.
+-   ``spawn_areas`` (optional): List of NavMesh area names where characters can spawn.
+-   ``semantic_labels`` (optional): List of ``[type, data]`` pairs. Default: ``[["class", "character"]]``.
+-   ``motion_library_path`` (optional): Path to a custom motion library file.
+-   ``colliders`` (optional): List of collider objects for the character group.
+
+**Minimal Example:**
+
+.. code-block:: yaml
+
+    character:
+      groups:
+        bt_workers:
+          num: 3
+          asset_path: "Isaac/People/Characters/"
+          behavior_tree: ../sample_behavior_tree/character_wander.json
+
+**Example with Overrides:**
+
+The ``overrides`` field is a JSON string (written as a YAML multi-line block scalar with ``|``) that lets you adjust node parameters per-group without editing the tree file. The JSON structure has two keys:
+
+-   ``schemaVersion`` (required): Must be ``"2.0.0"``.
+-   ``instanceOverrides`` (required): A dictionary mapping **node paths** (for example, ``/Root/MoveTo:RandomNavMeshPoint``) to **port overrides**, which isa dictionary of port name to its type and overriden value.
+
+For example, to change the wander radius of a ``RandomNavMeshPoint`` modifier node:
+
+.. code-block:: yaml
+
+    character:
+      groups:
+        bt_workers:
+          num: 3
+          asset_path: "Isaac/People/Characters/"
+          behavior_tree: ../sample_behavior_tree/character_wander.json
+          overrides: |
+            {
+              "schemaVersion": "2.0.0",
+              "instanceOverrides": {
+                "/Root/MoveTo:RandomNavMeshPoint": {
+                  "radius": {
+                    "type": "carb::Float2",
+                    "value": [2.0, 10.0]
+                  }
+                }
+              }
+            }
+
+**Mixed Configuration Example (IRA + Behavior Tree):**
+
+.. code-block:: yaml
+
+    character:
+      root_prim_path: "/World/Characters"
+      groups:
+        ira_wanderers:
+          num: 5
+          routines:
+            - wander:
+                walk:
+                  speed_range: [0.8, 1.5]
+        bt_patrol_group:
+          num: 3
+          behavior_tree: ../sample_behavior_tree/character_wander.json
 
 Robot
 -----
