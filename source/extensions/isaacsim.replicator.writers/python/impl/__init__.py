@@ -20,3 +20,5 @@ Everything else is explicitly imported for visibility in the omni.graph.examples
 """
 # One line per import is used to make them easier to read and find, grouped by originating file
 from .extension import Extension
+
+__all__ = []

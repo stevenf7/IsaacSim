@@ -58,13 +58,13 @@ VERBOSE_CHECKBOX = f"{_CTRL_PARAMS}/HStack[1]/CheckBox[1]"
 class TestRecorderUI(omni.kit.test.AsyncTestCase):
     """Test the Synthetic Data Recorder through UI interactions."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up a new stage before each test."""
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Stop timeline, close stage, and wait for assets after each test."""
         timeline = omni.timeline.get_timeline_interface()
         if timeline.is_playing():
@@ -77,7 +77,7 @@ class TestRecorderUI(omni.kit.test.AsyncTestCase):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
-    async def test_ui_record_rgb_no_control_timeline(self):
+    async def test_ui_record_rgb_no_control_timeline(self) -> None:
         """Test recording RGB output through UI without timeline control."""
         out_dir = os.path.join(os.getcwd(), OUT_DIR_RGB_NO_CONTROL_TIMELINE)
         if os.path.exists(out_dir):
@@ -193,7 +193,7 @@ class TestRecorderUI(omni.kit.test.AsyncTestCase):
             f"Expected {NUM_FRAMES} png files in {out_dir}",
         )
 
-    async def test_ui_record_depth_control_timeline(self):
+    async def test_ui_record_depth_control_timeline(self) -> None:
         """Test recording depth output through UI with timeline control enabled."""
         # This test mirrors the RGB test with only two intentional differences:
         # - control timeline enabled

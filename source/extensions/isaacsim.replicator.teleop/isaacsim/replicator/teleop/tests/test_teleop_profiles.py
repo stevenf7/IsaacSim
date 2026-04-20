@@ -42,7 +42,8 @@ from isaacsim.replicator.teleop import (
 class TestTeleopProfiles(omni.kit.test.AsyncTestCase):
     """Verify teleop profiles round-trip through YAML."""
 
-    async def test_teleop_profile_round_trip(self):
+    async def test_teleop_profile_round_trip(self) -> None:
+        """Verify a fully populated TeleopProfile round-trips through YAML."""
         profile = TeleopProfile(
             session=TeleopSettingsProfile(
                 coordinate_system="raw",
@@ -121,9 +122,8 @@ class TestTeleopProfiles(omni.kit.test.AsyncTestCase):
             self.assertEqual(loaded.grasp.left.config_path, "builtin://xarm_grasp")
             self.assertEqual(loaded.locomotion.settings["prim_path"], "/World/Base")
 
-    async def test_extra_keys_are_ignored(self):
+    async def test_extra_keys_are_ignored(self) -> None:
         """Files with unknown keys (e.g. from a newer schema) load without error."""
-
         data = {
             "future_field": True,
             "session": {"coordinate_system": "raw", "unknown_knob": 42},
@@ -142,9 +142,8 @@ class TestTeleopProfiles(omni.kit.test.AsyncTestCase):
             self.assertTrue(loaded.floating.left.enabled)
             self.assertFalse(loaded.locomotion.enabled)
 
-    async def test_missing_keys_use_defaults(self):
+    async def test_missing_keys_use_defaults(self) -> None:
         """A minimal YAML file still produces a fully populated profile."""
-
         data = {"locomotion": {"enabled": True}}
         with TemporaryDirectory() as tmp_dir:
             path = os.path.join(tmp_dir, "minimal.yaml")
@@ -159,9 +158,8 @@ class TestTeleopProfiles(omni.kit.test.AsyncTestCase):
             self.assertFalse(loaded.floating.left.enabled)
             self.assertEqual(loaded.session.anchor_x, 0.0)
 
-    async def test_builtin_grasp_config_paths_are_portable(self):
+    async def test_builtin_grasp_config_paths_are_portable(self) -> None:
         """Built-in grasp configs should round-trip through a stable symbolic URI."""
-
         builtin_configs = dict(get_builtin_grasp_configs())
         self.assertIn("xarm_grasp", builtin_configs)
         builtin_uri = builtin_configs["xarm_grasp"]

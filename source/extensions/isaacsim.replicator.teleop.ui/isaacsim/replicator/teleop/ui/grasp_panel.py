@@ -54,7 +54,8 @@ _PANEL_NAME = "Grasp Controller"
 _LOG_NAMESPACE = "Grasp"
 
 
-def set_status(label, text, color=CLR_DIM, emit_terminal: bool = False):
+def set_status(label: ui.Label | None, text: str, color: int = CLR_DIM, emit_terminal: bool = False) -> None:
+    """Set the status label text and color for this panel."""
     _set_status_base(label, text, color, source=_LOG_NAMESPACE, emit_terminal=emit_terminal)
 
 
@@ -85,7 +86,7 @@ class GraspPanel:
         grasp_controller: GraspController,
         teleop_manager: TeleopManager,
         collapsed_states: dict,
-    ):
+    ) -> None:
         self._gc = grasp_controller
         self._tm = teleop_manager
         self._collapsed = collapsed_states
@@ -114,6 +115,7 @@ class GraspPanel:
         return self._settings.get_as_string(f"{_SETTINGS_PREFIX}/{side}/{key}") or ""
 
     def build(self) -> None:
+        """Build the grasp controller panel UI."""
         self._builtin_configs = get_builtin_grasp_configs()
 
         frame = ui.CollapsableFrame(
@@ -222,7 +224,7 @@ class GraspPanel:
         else:
             set_status(ss.status_label, "", CLR_DIM)
 
-    def _on_combo_changed(self, side: str, model) -> None:
+    def _on_combo_changed(self, side: str, model: object) -> None:
         if self._is_playing:
             return
         ss = self._ss(side)
@@ -279,7 +281,7 @@ class GraspPanel:
             emit_terminal=emit_terminal,
         )
 
-    def _on_timeline_event(self, event) -> None:
+    def _on_timeline_event(self, event: object) -> None:
         if event.type == int(omni.timeline.TimelineEventType.PLAY):
             self._is_playing = True
             for side in ("left", "right"):
@@ -362,7 +364,7 @@ class GraspPanel:
         self._sync_side_controls(side)
 
     def _on_clear(self, side: str) -> None:
-        """Destroys grasp resources for a side (paths preserved)."""
+        """Destroy grasp resources for a side (paths preserved)."""
         if self._is_playing:
             return
         ss = self._ss(side)
@@ -399,7 +401,6 @@ class GraspPanel:
 
     def apply_profile(self, profile: GraspControllerProfile, resolve_stage: bool) -> None:
         """Apply a grasp-controller teleop profile section."""
-
         for side, side_profile in (("left", profile.left), ("right", profile.right)):
             ss = self._ss(side)
             self._gc.set_side_tracking_enabled(side, False)
@@ -470,6 +471,7 @@ class GraspPanel:
                 set_status(ss.status_label, "Standby", CLR_YELLOW, emit_terminal=True)
 
     def reset_ui(self) -> None:
+        """Reset all UI widgets to idle state."""
         self._is_playing = False
         self._tm.set_grasp_tracking(False)
         for side in ("left", "right"):
@@ -484,7 +486,6 @@ class GraspPanel:
 
     def on_stage_closed(self) -> None:
         """Clear stage-bound runtime state while preserving the configured profile in the UI."""
-
         self._is_playing = False
         self._tm.set_grasp_tracking(False)
         for side in ("left", "right"):
@@ -502,4 +503,5 @@ class GraspPanel:
                     set_status(ss.status_label, "", CLR_DIM)
 
     def destroy(self) -> None:
+        """Release the timeline subscription."""
         self._timeline_sub = None

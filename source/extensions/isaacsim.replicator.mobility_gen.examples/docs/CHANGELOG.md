@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.2] - 2026-04-18
+### Changed
+- Added return type annotations, `from __future__ import annotations`, and imperative-mood docstrings
+
 ## [0.2.1] - 2026-03-19
 ### Changed
 - Migrate to use `isaacsim.core.experimental.prims` (`Articulation`) in place of `isaacsim.core.prims`

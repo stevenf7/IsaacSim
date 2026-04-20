@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Data types for 2D and 3D pose representation."""
 
 from dataclasses import dataclass
 
@@ -21,16 +22,22 @@ import numpy as np
 
 @dataclass
 class Point2d:
+    """A 2D point with x and y coordinates."""
+
     x: float
     y: float
 
 
 @dataclass
 class Pose2d(Point2d):
+    """A 2D pose with position (x, y) and heading angle theta."""
+
     theta: float
 
 
 @dataclass
 class Pose3d:
+    """A 3D pose with position and orientation arrays."""
+
     position: np.ndarray
     orientation: np.ndarray

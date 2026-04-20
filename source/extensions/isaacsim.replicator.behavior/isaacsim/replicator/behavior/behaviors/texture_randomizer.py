@@ -15,7 +15,10 @@
 
 """Behavior script that randomly applies texture materials to visual prims."""
 
+from __future__ import annotations
+
 import string
+from typing import Any
 
 import carb
 import numpy as np
@@ -93,7 +96,7 @@ class TextureRandomizer(BehaviorScript):
         },
     ]
 
-    def on_init(self):
+    def on_init(self) -> None:
         """Called when the script is assigned to a prim."""
         self._rng = None
         self._update_counter = 0
@@ -109,7 +112,7 @@ class TextureRandomizer(BehaviorScript):
         # Refresh the property windows to show the exposed variables
         omni.kit.window.property.get_window().request_rebuild()
 
-    def on_destroy(self):
+    def on_destroy(self) -> None:
         """Called when the script is unassigned from a prim."""
         self._reset()
         # Exposed variables should be removed if the script is no longer assigned to the prim
@@ -117,26 +120,23 @@ class TextureRandomizer(BehaviorScript):
             remove_exposed_variables(self.prim, EXPOSED_ATTR_NS, self.BEHAVIOR_NS, self.VARIABLES_TO_EXPOSE)
             omni.kit.window.property.get_window().request_rebuild()
 
-    def on_play(self):
+    def on_play(self) -> None:
         """Called when `play` is pressed."""
         self._setup()
         # Make sure the initial behavior is applied if the interval is larger than 0
         if self._interval > 0:
             self._apply_behavior()
 
-    def on_stop(self):
+    def on_stop(self) -> None:
         """Called when `stop` is pressed."""
         self._reset()
 
-    def on_update(self, current_time: float, delta_time: float):
+    def on_update(self, current_time: float, delta_time: float) -> None:
         """Called on per frame update events that occur when `playing`.
 
         Args:
             current_time: The current simulation time.
             delta_time: The time elapsed since the last update.
-
-        Returns:
-            None.
         """
         if delta_time <= 0:
             return
@@ -148,7 +148,7 @@ class TextureRandomizer(BehaviorScript):
                 self._apply_behavior()
                 self._update_counter = 0
 
-    def _setup(self):
+    def _setup(self) -> None:
         # Fetch the exposed attributes
         include_children = self._get_exposed_variable("includeChildren")
         self._interval = self._get_exposed_variable("interval")
@@ -203,7 +203,7 @@ class TextureRandomizer(BehaviorScript):
                     texture_url = "/" + texture_url
                 self._texture_urls.append(assets_root_path + texture_url)
 
-    def _reset(self):
+    def _reset(self) -> None:
         # Bind the original materials back to the prims
         self._restore_original_materials()
 
@@ -221,7 +221,7 @@ class TextureRandomizer(BehaviorScript):
         self._update_counter = 0
         self._rng = None
 
-    def _apply_behavior(self):
+    def _apply_behavior(self) -> None:
         # Randomize the textures and parameters for each material
         for mat in self._texture_materials:
             shader = UsdShade.Shader(omni.usd.get_shader_from_material(mat.GetPrim(), get_prim=True))
@@ -237,7 +237,7 @@ class TextureRandomizer(BehaviorScript):
             texture_rotate = self._rng.uniform(self._texture_rotate_range[0], self._texture_rotate_range[1])
             shader.GetInput("texture_rotate").Set(texture_rotate)
 
-    def _create_materials(self):
+    def _create_materials(self) -> None:
         if not self.stage:
             carb.log_warn(f"[{self.prim_path}] Stage is not valid to create materials.")
             return
@@ -260,11 +260,11 @@ class TextureRandomizer(BehaviorScript):
             # Cache the material for randomization
             self._texture_materials.append(material)
 
-    def _get_exposed_variable(self, attr_name):
+    def _get_exposed_variable(self, attr_name: str) -> Any:
         full_attr_name = f"{EXPOSED_ATTR_NS}:{self.BEHAVIOR_NS}:{attr_name}"
         return get_exposed_variable(self.prim, full_attr_name)
 
-    def _restore_original_materials(self):
+    def _restore_original_materials(self) -> None:
         for prim in self._valid_prims:
             orig_mat = self._initial_materials.get(prim)
             if orig_mat:
@@ -273,14 +273,14 @@ class TextureRandomizer(BehaviorScript):
                 UsdShade.MaterialBindingAPI(prim).UnbindAllBindings()
         self._initial_materials.clear()
 
-    def _remove_texture_materials(self):
+    def _remove_texture_materials(self) -> None:
         for mat in self._texture_materials:
             # Unbind from any still bound prims
             UsdShade.MaterialBindingAPI(mat.GetPrim()).UnbindAllBindings()
             self.stage.RemovePrim(mat.GetPath())
         self._texture_materials.clear()
 
-    def set_rng(self, rng: np.random.Generator | None = None):
+    def set_rng(self, rng: np.random.Generator | None = None) -> None:
         """Set the random number generator, overriding the USD seed attribute.
 
         Args:

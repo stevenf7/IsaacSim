@@ -35,7 +35,7 @@ class GraspingUIExtension(omni.ext.IExt, MenuHelperExtensionFull):
     MENU_GROUP = "Tools/Replicator"
     """Menu group path where the grasping window appears in the interface."""
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the Grasping extension UI.
 
         Sets up the menu item and window for the Grasping tool in the Tools/Replicator menu group.
@@ -50,7 +50,7 @@ class GraspingUIExtension(omni.ext.IExt, MenuHelperExtensionFull):
             self.MENU_GROUP,
         )
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up the Grasping extension UI.
 
         Removes the menu item and closes any open Grasping windows.

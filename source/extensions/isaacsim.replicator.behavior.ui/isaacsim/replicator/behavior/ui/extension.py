@@ -32,7 +32,7 @@ class Extension(omni.ext.IExt):
     The extension integrates with the Property window by adding an ExposedVariablesPropertyWidget that filters and displays attributes based on the exposed attribute namespace, providing a streamlined interface for behavior parameter management.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._registered = False
 
@@ -44,13 +44,13 @@ class Extension(omni.ext.IExt):
         """
         self._register_widget()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Called when the extension is shutting down."""
         if self._registered:
             self._unregister_widget()
 
-    def _register_widget(self):
-        """Registers the exposed variables property widget with the property window."""
+    def _register_widget(self) -> None:
+        """Register the exposed variables property widget with the property window."""
         property_window = omni.kit.window.property.get_window()
         if property_window:
             property_window.register_widget(
@@ -60,8 +60,8 @@ class Extension(omni.ext.IExt):
             )
             self._registered = True
 
-    def _unregister_widget(self):
-        """Unregisters the exposed variables property widget from the property window."""
+    def _unregister_widget(self) -> None:
+        """Unregister the exposed variables property widget from the property window."""
         property_window = omni.kit.window.property.get_window()
         if property_window:
             property_window.unregister_widget("prim", WIDGET_NAME)

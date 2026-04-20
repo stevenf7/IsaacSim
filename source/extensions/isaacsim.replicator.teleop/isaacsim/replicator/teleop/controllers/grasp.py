@@ -60,7 +60,7 @@ class JointMapping:
     target_range: tuple[float, float] = (0.0, 1.0)
 
     def compute_target(self, input_value: float) -> float:
-        """Computes drive target for a given trigger input value.
+        """Compute drive target for a given trigger input value.
 
         Below input_range[0] returns target_range[0].
         Above input_range[1] returns target_range[1].
@@ -142,13 +142,11 @@ def _get_builtin_grasp_configs_dir() -> Path | None:
 
 def get_builtin_grasp_config_uri(name: str) -> str:
     """Return the symbolic URI for a built-in grasp config name."""
-
     return f"{BUILTIN_GRASP_CONFIG_SCHEME}{name.strip()}"
 
 
 def normalize_grasp_config_path(path: str) -> str:
     """Normalize grasp config references to a portable built-in URI when possible."""
-
     raw_path = path.strip()
     if not raw_path:
         return ""
@@ -173,7 +171,6 @@ def normalize_grasp_config_path(path: str) -> str:
 
 def resolve_grasp_config_path(path: str) -> str:
     """Resolve a grasp config reference to a filesystem path when possible."""
-
     normalized = normalize_grasp_config_path(path)
     if not normalized:
         return ""
@@ -197,7 +194,7 @@ def resolve_grasp_config_path(path: str) -> str:
 
 
 def load_grasp_config(path: str) -> tuple[GraspConfig | None, list[str]]:
-    """Loads a grasp configuration from a YAML file.
+    """Load a grasp configuration from a YAML file.
 
     Args:
         path: Filesystem path to the YAML file.
@@ -268,7 +265,7 @@ def load_grasp_config(path: str) -> tuple[GraspConfig | None, list[str]]:
 
 
 def get_builtin_grasp_configs() -> list[tuple[str, str]]:
-    """Returns (display_name, portable_config_path) pairs for built-in grasp configs.
+    """Return (display_name, portable_config_path) pairs for built-in grasp configs.
 
     Scans the extension's ``data/grasp_configs/`` directory.
     """
@@ -296,7 +293,7 @@ class GraspController:
     own prim path and config, supporting different end effectors.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._sides: dict[str, _GraspState] = {
             "left": _GraspState(),
             "right": _GraspState(),
@@ -310,7 +307,7 @@ class GraspController:
     # ── Validation ───────────────────────────────────────────────────
 
     def validate_prim(self, prim_path: str) -> GraspValidationResult:
-        """Validates whether a prim has controllable drive joints.
+        """Validate whether a prim has controllable drive joints.
 
         A valid prim must have at least one joint with DriveAPI that is not
         a mimic joint.
@@ -364,7 +361,7 @@ class GraspController:
     # ── Configure ─────────────────────────────────────────────────────
 
     def configure(self, prim_path: str, side: str, config: GraspConfig) -> bool:
-        """Configures grasp control for a side.
+        """Configure grasp control for a side.
 
         Matches YAML joint names in the config to USD drive joints under
         the given prim path.
@@ -483,7 +480,7 @@ class GraspController:
     # ── Runtime ──────────────────────────────────────────────────────
 
     def set_input(self, side: str, input_value: float) -> None:
-        """Sets trigger input for a side and applies to joints.
+        """Set trigger input for a side and applies to joints.
 
         Args:
             side: "left" or "right".
@@ -496,7 +493,7 @@ class GraspController:
         self._apply_input(state)
 
     def _apply_input(self, state: _GraspState) -> None:
-        """Applies current input to all matched joints.
+        """Apply current input to all matched joints.
 
         Uses the Articulation tensor API when available (required for
         assembled robots where another controller owns the articulation).
@@ -535,7 +532,7 @@ class GraspController:
                 target_attr.Set(target)
 
     def remove(self, side: str) -> None:
-        """Clears grasp configuration for one side."""
+        """Clear grasp configuration for one side."""
         side = side.lower()
         state = self._sides.get(side)
         if state is None:
@@ -551,7 +548,7 @@ class GraspController:
             self._enabled = False
 
     def remove_all(self) -> None:
-        """Clears all grasp configurations for both sides."""
+        """Clear all grasp configurations for both sides."""
         for side in list(self._sides):
             self.remove(side)
         print("[Teleop][Grasp] Controllers removed.")
@@ -585,10 +582,10 @@ class GraspController:
 
     @property
     def left_prim_path(self) -> str | None:
-        """Returns the left side prim path."""
+        """Return the left side prim path."""
         return self._side("left").prim_path
 
     @property
     def right_prim_path(self) -> str | None:
-        """Returns the right side prim path."""
+        """Return the right side prim path."""
         return self._side("right").prim_path

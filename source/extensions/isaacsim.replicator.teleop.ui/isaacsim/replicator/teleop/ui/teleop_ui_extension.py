@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Extension entry point for the Isaac Sim Teleop UI window."""
 
 import omni.ext
 from omni.kit.menu.utils import MenuHelperExtensionFull
@@ -26,7 +27,8 @@ class TeleopUIExtension(omni.ext.IExt, MenuHelperExtensionFull):
     WINDOW_NAME = "Teleop"
     MENU_GROUP = "Tools/Replicator"
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
+        """Initialize the extension."""
         self.menu_startup(
             lambda: TeleopWindow(title=self.WINDOW_NAME),
             self.WINDOW_NAME,
@@ -34,5 +36,6 @@ class TeleopUIExtension(omni.ext.IExt, MenuHelperExtensionFull):
             self.MENU_GROUP,
         )
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
+        """Clean up resources."""
         self.menu_shutdown()

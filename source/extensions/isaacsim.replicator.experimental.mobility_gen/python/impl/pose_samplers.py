@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Pose samplers for generating robot spawn poses from occupancy maps."""
+
 
 import math
 import random
@@ -37,15 +39,13 @@ class PoseSampler:
         implementations.
 
         Args:
-            occupancy_map (OccupancyMap): An occupancy map that the
-                pose sampler may use.
+            occupancy_map: An occupancy map that the pose sampler may use.
 
         Raises:
             NotImplementedError: The method is not implemented.
 
         Returns:
-            Pose2d: The sampled pose in (x, y) pixel and (theta)
-                world coordinates.
+            The sampled pose in (x, y) pixel and (theta) world coordinates.
         """
         raise NotImplementedError
 
@@ -53,11 +53,10 @@ class PoseSampler:
         """Sample a 2D pose in world coordinates.
 
         Args:
-            occupancy_map (OccupancyMap): An occupancy map that the
-                pose sampler may use.
+            occupancy_map: An occupancy map that the pose sampler may use.
 
         Returns:
-            Pose2d: The sampled 2D pose.
+            The sampled 2D pose.
         """
         pose_px = self.sample_px(occupancy_map)
         world_pt = occupancy_map.pixel_to_world(Point2d(pose_px.x, pose_px.y))
@@ -72,6 +71,14 @@ class UniformPoseSampler(PoseSampler):
     """
 
     def sample_px(self, occupancy_map: OccupancyMap) -> Pose2d:
+        """Sample a 2D pose uniformly from freespace, with (x, y) in pixel coordinates.
+
+        Args:
+            occupancy_map: An occupancy map to sample freespace from.
+
+        Returns:
+            The sampled pose in pixel coordinates with a random heading.
+        """
         freespace = occupancy_map.freespace_mask()
         coords = np.argwhere(freespace)
         random_index = np.random.randint(0, len(coords))
@@ -94,10 +101,18 @@ class GridPoseSampler(PoseSampler):
 
     grid_size_meters: float
 
-    def __init__(self, grid_size_meters: float):
+    def __init__(self, grid_size_meters: float) -> None:
         self.grid_size_meters = grid_size_meters
 
     def sample_px(self, occupancy_map: OccupancyMap) -> Pose2d:
+        """Sample a 2D pose from a random grid cell, with (x, y) in pixel coordinates.
+
+        Args:
+            occupancy_map: An occupancy map to sample freespace from.
+
+        Returns:
+            The sampled pose in pixel coordinates with a random heading.
+        """
         num_grid_x = math.ceil(occupancy_map.width_meters() / self.grid_size_meters)
         num_grid_y = math.ceil(occupancy_map.height_meters() / self.grid_size_meters)
 

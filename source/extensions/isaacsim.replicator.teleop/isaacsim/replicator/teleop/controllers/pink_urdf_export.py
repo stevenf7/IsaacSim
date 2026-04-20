@@ -20,6 +20,7 @@ from __future__ import annotations
 import os
 import tempfile
 import xml.etree.ElementTree as ET
+from typing import Any
 
 import numpy as np
 
@@ -29,7 +30,7 @@ def _is_path_in_scope(path: str, root_path: str) -> bool:
     return path == root_path or path.startswith(f"{root_path}/")
 
 
-def _resolve_converter_root(stage, articulation_path: str) -> str:
+def _resolve_converter_root(stage: Any, articulation_path: str) -> str:
     """Resolve a stable robot subtree root for PINK URDF export.
 
     ``Articulation.fetch_articulation_root_api_prim_paths`` may return a
@@ -86,7 +87,7 @@ def _build_export_name_map(paths: list[str], root_path: str) -> dict[str, str]:
     return name_map
 
 
-def _quat_to_rpy_xyz(quat) -> tuple[float, float, float]:
+def _quat_to_rpy_xyz(quat: Any) -> tuple[float, float, float]:
     """Convert a USD quaternion to URDF XYZ fixed-axis roll/pitch/yaw."""
     imag = quat.GetImaginary()
     x = float(imag[0])
@@ -110,7 +111,7 @@ def _quat_to_rpy_xyz(quat) -> tuple[float, float, float]:
     return roll, pitch, yaw
 
 
-def _joint_origin_from_parent(joint) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+def _joint_origin_from_parent(joint: Any) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
     """Read a joint origin in the parent-link frame from USD joint local attrs."""
     pos_attr = joint.GetLocalPos0Attr()
     rot_attr = joint.GetLocalRot0Attr()
@@ -123,7 +124,7 @@ def _joint_origin_from_parent(joint) -> tuple[tuple[float, float, float], tuple[
     return xyz, rpy
 
 
-def _axis_attr_to_xyz(axis_value) -> tuple[float, float, float]:
+def _axis_attr_to_xyz(axis_value: Any) -> tuple[float, float, float]:
     """Map USD axis tokens to URDF axis vectors."""
     axis_map = {
         "X": (1.0, 0.0, 0.0),
@@ -136,7 +137,7 @@ def _axis_attr_to_xyz(axis_value) -> tuple[float, float, float]:
     return axis_map.get(str(axis_value), (1.0, 0.0, 0.0))
 
 
-def _joint_type_and_limits(joint_prim) -> tuple[str, tuple[float, float, float] | None, dict[str, str] | None]:
+def _joint_type_and_limits(joint_prim: Any) -> tuple[str, tuple[float, float, float] | None, dict[str, str] | None]:
     """Convert a USD joint prim into URDF joint metadata."""
     from pxr import UsdPhysics
 
@@ -183,7 +184,7 @@ def _joint_type_and_limits(joint_prim) -> tuple[str, tuple[float, float, float] 
     return "fixed", None, None
 
 
-def _collect_minimal_urdf_graph(stage, export_root_path: str) -> tuple[str, list[str], list[dict], dict[str, str]]:
+def _collect_minimal_urdf_graph(stage: Any, export_root_path: str) -> tuple[str, list[str], list[dict], dict[str, str]]:
     """Collect an in-scope kinematic graph for minimal URDF export."""
     from pxr import Usd, UsdPhysics
 

@@ -15,6 +15,10 @@
 
 """Utility functions for managing exposed behavior variables on USD prims."""
 
+from __future__ import annotations
+
+from typing import Any
+
 import carb
 import carb.events
 import omni.kit.app
@@ -25,7 +29,7 @@ from pxr import Sdf, Usd
 def create_exposed_variable(
     prim: Usd.Prim, full_attr_name: str, attr_type: Sdf.ValueTypeName, default_value: object, doc: str = None
 ) -> Usd.Attribute:
-    """Creates a USD attribute on the prim to expose the variable to the UI, if the variable exits it returns it.
+    """Create a USD attribute on the prim to expose the variable to the UI, if the variable exits it returns it.
 
     Args:
         prim: The USD prim to create the attribute on.
@@ -75,7 +79,7 @@ def create_exposed_variables(prim: Usd.Prim, exposed_attr_ns: str, behavior_ns: 
     asyncio.ensure_future(lock_exposed_variables(attr_to_lock))
 
 
-async def lock_exposed_variables(attr_paths: object):
+async def lock_exposed_variables(attr_paths: object) -> None:
     """Lock exposed variables to prevent editing in the UI.
 
     Args:
@@ -158,8 +162,8 @@ def remove_exposed_variables(prim: Usd.Prim, exposed_attr_ns: str, behavior_ns: 
         remove_exposed_variable(prim, full_attr_name)
 
 
-def get_exposed_variable(prim: Usd.Prim, full_attr_name: str):
-    """Helper function to get the value of an exposed attribute.
+def get_exposed_variable(prim: Usd.Prim, full_attr_name: str) -> Any:
+    """Get the value of an exposed attribute.
 
     Args:
         prim: The USD prim to get the attribute from.
@@ -179,7 +183,7 @@ def get_exposed_variable(prim: Usd.Prim, full_attr_name: str):
 
 
 def set_exposed_variables(prim: Usd.Prim, exposed_variables: dict) -> None:
-    """Sets exposed variables based on the provided data dictionary.
+    """Set exposed variables based on the provided data dictionary.
 
     Args:
         prim: The USD prim to set attributes on.
@@ -217,7 +221,7 @@ def remove_empty_scopes(prim: Usd.Prim, stage: Usd.Stage) -> None:
 
 
 def add_behavior_script(prim: Usd.Prim, script_path: str, allow_duplicates: bool = False) -> None:
-    """Adds a behavior script to the prim avoiding duplicates by default.
+    """Add a behavior script to the prim avoiding duplicates by default.
 
     Args:
         prim: The USD prim to add the script to.
@@ -246,7 +250,7 @@ def add_behavior_script(prim: Usd.Prim, script_path: str, allow_duplicates: bool
 
 
 async def add_behavior_script_with_parameters_async(
-    prim: Usd.Prim, script_path: str, exposed_variables: dict = {}, allow_duplicates: bool = False
+    prim: Usd.Prim, script_path: str, exposed_variables: dict | None = None, allow_duplicates: bool = False
 ) -> None:
     """Add a behavior script to a prim and set its parameters.
 
@@ -268,7 +272,7 @@ async def add_behavior_script_with_parameters_async(
         await omni.kit.app.get_app().next_update_async()
 
     # Set the behavior script parameters
-    set_exposed_variables(prim, exposed_variables)
+    set_exposed_variables(prim, exposed_variables or {})
 
 
 async def publish_event_and_wait_for_completion_async(
@@ -279,7 +283,7 @@ async def publish_event_and_wait_for_completion_async(
     max_wait_updates: int,
     verbose: bool = True,
 ) -> bool:
-    """Publishes an event and waits for a response that matches the expected payload.
+    """Publish an event and waits for a response that matches the expected payload.
 
     Args:
         publish_payload: The payload to publish.
@@ -297,7 +301,7 @@ async def publish_event_and_wait_for_completion_async(
 
     # Callback to listen to incoming events
     def on_event_received(event: carb.events.IEvent) -> None:
-        """Checks if the event payload matches the expected key-value pairs.
+        """Check if the event payload matches the expected key-value pairs.
 
         Args:
             event: The incoming event to check.

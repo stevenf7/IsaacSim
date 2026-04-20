@@ -76,7 +76,7 @@ class MobilityGenExtension(omni.ext.IExt):
     - Physics-based simulation with configurable time steps
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the MobilityGen extension.
 
         Sets up keyboard and gamepad drivers, UI windows for occupancy map visualization and teleop controls,
@@ -167,7 +167,7 @@ class MobilityGenExtension(omni.ext.IExt):
             ok_handler=lambda dialog: dialog.hide(),
         )
 
-    def build_occ_map_frame(self):
+    def build_occ_map_frame(self) -> None:
         """Build the occupancy map visualization frame.
 
         Creates an image widget to display the occupancy map visualization if a scenario is active.
@@ -176,7 +176,7 @@ class MobilityGenExtension(omni.ext.IExt):
             with ui.VStack():
                 image_widget = ui.ImageWithProvider(self._occupancy_map_image_provider)
 
-    def draw_visualization_image(self):
+    def draw_visualization_image(self) -> None:
         """Update the occupancy map visualization image.
 
         Retrieves the current visualization image from the scenario and updates the image provider for display
@@ -188,7 +188,7 @@ class MobilityGenExtension(omni.ext.IExt):
             self._occupancy_map_image_provider.set_bytes_data(data, [image.width, image.height])
             self._occ_map_frame.rebuild()
 
-    def update_recording_count(self):
+    def update_recording_count(self) -> None:
         """Update the recording count display.
 
         Counts the number of existing recordings in the recordings directory and updates the UI label.
@@ -211,7 +211,7 @@ class MobilityGenExtension(omni.ext.IExt):
         )
         return config
 
-    def scenario_type(self):
+    def scenario_type(self) -> type:
         """Get the currently selected scenario type.
 
         Returns:
@@ -220,7 +220,7 @@ class MobilityGenExtension(omni.ext.IExt):
         index = self.scenario_combo_box.model.get_item_value_model().get_value_as_int()
         return SCENARIOS.get_index(index)
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up resources when the extension shuts down.
 
         Disconnects input drivers and removes physics callbacks from the world.
@@ -231,7 +231,7 @@ class MobilityGenExtension(omni.ext.IExt):
             SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
 
-    def start_new_recording(self):
+    def start_new_recording(self) -> None:
         """Start a new recording session.
 
         Creates a timestamped recording directory, initializes the writer with config and occupancy map data,
@@ -250,7 +250,7 @@ class MobilityGenExtension(omni.ext.IExt):
         self.writer = writer
         self.update_recording_count()
 
-    def clear_recording(self):
+    def clear_recording(self) -> None:
         """Clear the current recording session.
 
         Resets the writer and clears recording display labels.
@@ -259,7 +259,7 @@ class MobilityGenExtension(omni.ext.IExt):
         self.recording_name_label.text = "Current recording name: "
         self.recording_step_label.text = "Current recording duration: "
 
-    def clear_scenario(self):
+    def clear_scenario(self) -> None:
         """Clear the current scenario.
 
         Resets the scenario instance and cached stage path.
@@ -267,7 +267,7 @@ class MobilityGenExtension(omni.ext.IExt):
         self.scenario = None
         self.cached_stage_path = None
 
-    def enable_recording(self):
+    def enable_recording(self) -> None:
         """Enable data recording for the current scenario.
 
         Starts a new recording session if a scenario is active and recording is not already enabled.
@@ -277,12 +277,12 @@ class MobilityGenExtension(omni.ext.IExt):
                 self.start_new_recording()
             self.recording_enabled = True
 
-    def disable_recording(self):
+    def disable_recording(self) -> None:
         """Disable data recording and clear the current recording session."""
         self.recording_enabled = False
         self.clear_recording()
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the scenario to its initial state.
 
         Clears the current recording writer, resets the scenario, and starts a new recording if recording is enabled.
@@ -293,7 +293,7 @@ class MobilityGenExtension(omni.ext.IExt):
             self.start_new_recording()
         self.draw_visualization_image()
 
-    def on_physics(self, step_size: int, context=None):
+    def on_physics(self, step_size: int, context: object = None) -> None:
         """Physics step callback that advances the scenario and handles recording.
 
         Args:
@@ -338,13 +338,13 @@ class MobilityGenExtension(omni.ext.IExt):
 
         return True
 
-    def build_scenario(self):
+    def build_scenario(self) -> None:
         """Build and initialize a new mobility generation scenario based on UI parameters.
 
         Asynchronously creates a scenario using the selected robot type, scenario type, stage file, and occupancy map.
         """
 
-        async def _build_scenario_async():
+        async def _build_scenario_async() -> None:
 
             self.clear_recording()
             self.clear_scenario()

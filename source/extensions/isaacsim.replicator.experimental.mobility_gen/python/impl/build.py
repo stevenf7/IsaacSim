@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Build utilities for loading MobilityGen scenarios from recorded data."""
+
 import os
 import tempfile
 
@@ -35,6 +37,14 @@ _SDG_PATHS = (
 
 
 def load_scenario(path: str) -> MobilityGenScenario:
+    """Load a MobilityGen scenario from a recorded data directory.
+
+    Args:
+        path: The path to the recorded data directory.
+
+    Returns:
+        The loaded MobilityGen scenario.
+    """
     reader = MobilityGenReader(path)
     config = reader.read_config()
     robot_type = ROBOTS.get(config.robot_type)

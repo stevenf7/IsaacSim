@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.2] - 2026-04-18
+### Changed
+- Added return type annotations, imperative-mood docstrings, and `__all__` definitions
+
 ## [1.2.1] - 2026-04-10
 ### Removed
 - Remove the `omni.isaac.ml_archive` dependency

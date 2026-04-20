@@ -15,9 +15,9 @@
 
 """Provides pre-configured robot implementations for mobility generation scenarios in Isaac Sim."""
 
+from __future__ import annotations
 
 import math
-from typing import List, Tuple, Union
 
 import numpy as np
 from isaacsim.core.deprecation_manager import import_module
@@ -57,7 +57,7 @@ class WheeledMobilityGenRobot(MobilityGenRobot):
     """
 
     # Wheeled robot parameters
-    wheel_dof_names: List[str]
+    wheel_dof_names: list[str]
     usd_url: str
     chassis_subpath: str
     wheel_radius: float
@@ -69,14 +69,14 @@ class WheeledMobilityGenRobot(MobilityGenRobot):
         articulation: Articulation,
         controller: DifferentialController,
         front_camera: Module | None = None,
-    ):
+    ) -> None:
         super().__init__(prim_path=prim_path, articulation=articulation, front_camera=front_camera)
         self.controller = controller
         self._wheel_indices = None  # cached after first physics-ready call
 
     @classmethod
     def build(cls, prim_path: str) -> "WheeledRobot":
-        """Creates and configures a wheeled robot instance with necessary components.
+        """Create and configures a wheeled robot instance with necessary components.
 
         Constructs a wheeled robot by creating the robot prim, articulation view, differential controller,
         and front camera, then adds them to the world scene.
@@ -98,8 +98,8 @@ class WheeledMobilityGenRobot(MobilityGenRobot):
 
         return cls(prim_path=prim_path, articulation=articulation, controller=controller, front_camera=camera)
 
-    def write_action(self, step_size: float):
-        """Applies wheel actions to the robot based on current controller commands.
+    def write_action(self, step_size: float) -> None:
+        """Apply wheel actions to the robot based on current controller commands.
 
         Uses the differential controller to convert the stored action into wheel commands
         and applies them to the robot's wheels.
@@ -141,16 +141,16 @@ class PolicyMobilityGenRobot(MobilityGenRobot):
         self,
         prim_path: str,
         articulation: Articulation,
-        controller: Union[H1FlatTerrainPolicy, SpotFlatTerrainPolicy],
+        controller: H1FlatTerrainPolicy | SpotFlatTerrainPolicy,
         front_camera: Module | None = None,
-    ):
+    ) -> None:
         super().__init__(prim_path, articulation, front_camera)
         self.controller = controller
         self._controller_initialized = False
 
     @classmethod
-    def build_policy(cls, prim_path: str):
-        """Builds the policy controller for the robot.
+    def build_policy(cls, prim_path: str) -> H1FlatTerrainPolicy | SpotFlatTerrainPolicy:
+        """Build the policy controller for the robot.
 
         Args:
             prim_path: USD prim path for the robot.
@@ -158,8 +158,8 @@ class PolicyMobilityGenRobot(MobilityGenRobot):
         raise NotImplementedError
 
     @classmethod
-    def build(cls, prim_path: str):
-        """Creates and configures a policy-controlled mobility generation robot instance.
+    def build(cls, prim_path: str) -> PolicyMobilityGenRobot:
+        """Create and configure a policy-controlled mobility generation robot instance.
 
         Args:
             prim_path: USD prim path for the robot.
@@ -178,8 +178,8 @@ class PolicyMobilityGenRobot(MobilityGenRobot):
 
         return cls(prim_path=prim_path, articulation=controller.robot, controller=controller, front_camera=camera)
 
-    def write_action(self, step_size: float):
-        """Applies the current action to the robot using the policy controller.
+    def write_action(self, step_size: float) -> None:
+        """Apply the current action to the robot using the policy controller.
 
         Args:
             step_size: Time step size for the action.
@@ -194,8 +194,8 @@ class PolicyMobilityGenRobot(MobilityGenRobot):
         command = torch.tensor([action[0], 0.0, action[1]], dtype=torch.float32, device=device)
         self.controller.forward(step_size, command)
 
-    def set_pose_2d(self, pose: Pose2d):
-        """Sets the robot's 2D pose and reinitializes the controller.
+    def set_pose_2d(self, pose: Pose2d) -> None:
+        """Set the robot's 2D pose and reinitialize the controller.
 
         Args:
             pose: The 2D pose to set for the robot.
@@ -276,9 +276,9 @@ class JetbotRobot(WheeledMobilityGenRobot):
     gamepad_angular_velocity_gain: float = 1.0
     """Gain multiplier for angular velocity when using gamepad controls."""
 
-    random_action_linear_velocity_range: Tuple[float, float] = (-0.3, 0.25)
+    random_action_linear_velocity_range: tuple[float, float] = (-0.3, 0.25)
     """Range (min, max) for random linear velocity actions."""
-    random_action_angular_velocity_range: Tuple[float, float] = (-0.75, 0.75)
+    random_action_angular_velocity_range: tuple[float, float] = (-0.75, 0.75)
     """Range (min, max) for random angular velocity actions."""
     random_action_linear_acceleration_std: float = 1.0
     """Standard deviation for random linear acceleration noise."""
@@ -298,7 +298,7 @@ class JetbotRobot(WheeledMobilityGenRobot):
     path_following_target_point_offset_meters: float = 1.0
     """Distance offset for target point selection during path following."""
 
-    wheel_dof_names: List[str] = ["left_wheel_joint", "right_wheel_joint"]
+    wheel_dof_names: list[str] = ["left_wheel_joint", "right_wheel_joint"]
     """Names of the wheel degree-of-freedom joints."""
     usd_url: str = get_assets_root_path() + "/Isaac/Robots/NVIDIA/Jetbot/jetbot.usd"
     """URL path to the USD file containing the robot's 3D model."""
@@ -374,9 +374,9 @@ class CarterRobot(WheeledMobilityGenRobot):
     gamepad_angular_velocity_gain: float = 1.0
     """Gain multiplier for gamepad angular velocity input."""
 
-    random_action_linear_velocity_range: Tuple[float, float] = (-0.3, 1.0)
+    random_action_linear_velocity_range: tuple[float, float] = (-0.3, 1.0)
     """Range of linear velocities for random action generation (min, max)."""
-    random_action_angular_velocity_range: Tuple[float, float] = (-0.75, 0.75)
+    random_action_angular_velocity_range: tuple[float, float] = (-0.75, 0.75)
     """Range of angular velocities for random action generation (min, max)."""
     random_action_linear_acceleration_std: float = 5.0
     """Standard deviation for linear acceleration noise in random actions."""
@@ -396,7 +396,7 @@ class CarterRobot(WheeledMobilityGenRobot):
     path_following_target_point_offset_meters: float = 1.0
     """Offset distance for target point selection in path following."""
 
-    wheel_dof_names: List[str] = ["joint_wheel_left", "joint_wheel_right"]
+    wheel_dof_names: list[str] = ["joint_wheel_left", "joint_wheel_right"]
     """Names of the wheel degree-of-freedom joints."""
     usd_url: str = get_assets_root_path() + "/Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd"
     """USD file path for the robot asset."""
@@ -461,9 +461,9 @@ class H1Robot(PolicyMobilityGenRobot):
     gamepad_angular_velocity_gain: float = 1.0
     """Multiplier for gamepad input angular velocity commands."""
 
-    random_action_linear_velocity_range: Tuple[float, float] = (-0.3, 1.0)
+    random_action_linear_velocity_range: tuple[float, float] = (-0.3, 1.0)
     """Range (min, max) for random linear velocity actions."""
-    random_action_angular_velocity_range: Tuple[float, float] = (-0.75, 0.75)
+    random_action_angular_velocity_range: tuple[float, float] = (-0.75, 0.75)
     """Range (min, max) for random angular velocity actions."""
     random_action_linear_acceleration_std: float = 5.0
     """Standard deviation for random linear acceleration noise."""
@@ -491,8 +491,8 @@ class H1Robot(PolicyMobilityGenRobot):
     """Vertical offset applied to the robot controller's position."""
 
     @classmethod
-    def build_policy(cls, prim_path: str):
-        """Creates and configures a flat terrain policy for the H1 robot.
+    def build_policy(cls, prim_path: str) -> H1FlatTerrainPolicy:
+        """Create and configure a flat terrain policy for the H1 robot.
 
         Args:
             prim_path: USD prim path where the robot is located.
@@ -559,9 +559,9 @@ class SpotRobot(PolicyMobilityGenRobot):
     gamepad_angular_velocity_gain: float = 1.0
     """Scaling factor for angular velocity commands from gamepad input."""
 
-    random_action_linear_velocity_range: Tuple[float, float] = (-0.3, 1.0)
+    random_action_linear_velocity_range: tuple[float, float] = (-0.3, 1.0)
     """Range (min, max) for random linear velocity commands in meters per second."""
-    random_action_angular_velocity_range: Tuple[float, float] = (-0.75, 0.75)
+    random_action_angular_velocity_range: tuple[float, float] = (-0.75, 0.75)
     """Range (min, max) for random angular velocity commands in radians per second."""
     random_action_linear_acceleration_std: float = 5.0
     """Standard deviation for random linear acceleration noise."""
@@ -590,7 +590,7 @@ class SpotRobot(PolicyMobilityGenRobot):
 
     @classmethod
     def build_policy(cls, prim_path: str) -> SpotFlatTerrainPolicy:
-        """Creates and initializes a SpotFlatTerrainPolicy controller for the Spot robot.
+        """Create and initializes a SpotFlatTerrainPolicy controller for the Spot robot.
 
         Args:
             prim_path: USD prim path where the Spot robot is located in the stage.

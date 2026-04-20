@@ -301,7 +301,7 @@ def tf_matrix_from_pose(translation: list[float], orientation: list[float]) -> n
 
 
 def pose_from_tf_matrix(transformation: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """Gets pose corresponding to input transformation matrix.
+    """Get pose corresponding to input transformation matrix.
 
     Args:
         transformation: Column-major transformation matrix. shape is (4, 4).

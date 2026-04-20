@@ -67,7 +67,7 @@ def transform_pose_openxr_to_isaacsim(
     position: tuple[float, float, float],
     orientation: tuple[float, float, float, float] | None = None,
 ) -> tuple[tuple[float, float, float], tuple[float, float, float, float] | None]:
-    """Transforms pose from OpenXR (Y-up) to Isaac Sim (Z-up) coordinate system.
+    """Transform pose from OpenXR (Y-up) to Isaac Sim (Z-up) coordinate system.
 
     OpenXR: X+ = right, Y+ = up, Z- = forward
     Isaac Sim: X+ = forward, Y+ = left, Z+ = up
@@ -115,7 +115,7 @@ def transform_pose(
     orientation: tuple[float, float, float, float] | None,
     target_system: CoordinateSystem,
 ) -> tuple[tuple[float, float, float], tuple[float, float, float, float] | None]:
-    """Transforms raw VR pose data to the target coordinate system.
+    """Transform raw VR pose data to the target coordinate system.
 
     Input is always raw OpenXR (Y-up). The target determines which conversion
     is applied.

@@ -77,7 +77,7 @@ def _to_backend_indices(indices, count, backend_utils, device):
 
 
 class _FrontendBridge:
-    """Wraps a physx tensor view so that warp / numpy arguments are automatically.
+    """Wrap a physx tensor view so that warp / numpy arguments are automatically.
 
     converted to the type expected by its frontend (torch or numpy)."""
 
@@ -127,7 +127,7 @@ class _FrontendBridge:
 
 
 class _LegacyRigidPrimAdapter:
-    """Wraps a legacy ``isaacsim.core.prims.RigidPrim`` to expose the experimental API.
+    """Wrap a legacy ``isaacsim.core.prims.RigidPrim`` to expose the experimental API.
 
     expected by the OGN nodes (attribute names and method signatures)."""
 
@@ -165,7 +165,7 @@ class _LegacyRigidPrimAdapter:
 
 
 class _LegacyArticulationAdapter:
-    """Wraps a legacy ``isaacsim.core.prims.Articulation`` to expose the experimental API.
+    """Wrap a legacy ``isaacsim.core.prims.Articulation`` to expose the experimental API.
 
     expected by the OGN nodes."""
 

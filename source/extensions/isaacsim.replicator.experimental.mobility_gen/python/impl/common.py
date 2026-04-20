@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Core buffer and module primitives for the MobilityGen state machine."""
+
+from __future__ import annotations
 
 from collections import OrderedDict
 
@@ -20,50 +23,56 @@ __all__ = ["Buffer", "Module"]
 
 
 class Buffer:
+    """A named value container with optional tags for filtering.
 
-    def __init__(self, value=None, tags: list[str] | None = None):
+    Args:
+        value: The initial value of the buffer. Defaults to None.
+        tags: Optional list of string tags for filtering. Defaults to None.
+    """
+
+    def __init__(self, value: object | None = None, tags: list[str] | None = None) -> None:
         self.value = value
         if tags is None:
             tags = []
         self.tags = tags
 
-    def get_value(self):
+    def get_value(self) -> object:
         """Get the buffer value.
 
         Returns:
-            any: The value of the buffer.
+            The value of the buffer.
         """
         return self.value
 
-    def set_value(self, value):
+    def set_value(self, value: object) -> None:
         """Set the buffer value.
 
         Args:
-            value (any): The value of the buffer.
+            value: The new value of the buffer.
         """
         self.value = value
 
-    def includes_tags(self, tags: list[str]):
+    def includes_tags(self, tags: list[str]) -> bool:
         """Check if the buffer includes a set of tags.
 
         Args:
-            tags (list[str]): The set of tags the buffer must include.
+            tags: The set of tags the buffer must include.
 
         Returns:
-            bool: True if the buffer includes all tags.
+            True if the buffer includes all tags.
         """
         tags_a = set(self.tags)
         tags_b = set(tags)
         return tags_a.issuperset(tags_b)
 
-    def excludes_tags(self, tags: list[str]):
+    def excludes_tags(self, tags: list[str]) -> bool:
         """Check if the buffer excludes a set of tags.
 
         Args:
-            tags (list[str]): The set of tags the buffer must exclude.
+            tags: The set of tags the buffer must exclude.
 
         Returns:
-            bool: True if the buffer excludes all tags.
+            True if the buffer excludes all tags.
         """
         tags_a = set(self.tags)
         tags_b = set(tags)
@@ -71,12 +80,13 @@ class Buffer:
 
 
 class Module:
+    """A composable container of Buffers and child Modules."""
 
     def children(self) -> dict[str, "Module"]:
         """Get the immediate children attached to the module.
 
         Returns:
-            dict[str, Module]: A dictionary of all immediate children.
+            A dictionary of all immediate children.
         """
         children = OrderedDict()
         for k, v in self.__dict__.items():
@@ -88,7 +98,7 @@ class Module:
         """Get the buffers directly attached to the module.
 
         Returns:
-            dict[str, Buffer]: A dictionary of all directly attached buffers.
+            A dictionary of all directly attached buffers.
         """
         buffers = OrderedDict()
         for k, v in self.__dict__.items():
@@ -100,7 +110,7 @@ class Module:
         """Get a dictionary of all nested modules.
 
         Returns:
-            dict[str, Module]: The dictionary of all nested modules with
+            The dictionary of all nested modules with
                 expanded names as keys.
         """
         named_modules = OrderedDict()
@@ -123,7 +133,7 @@ class Module:
         """Get a dictionary of all nested buffers.
 
         Returns:
-            dict[str, Buffer]: The dictionary of all nested buffers with
+            The dictionary of all nested buffers with
                 expanded names as keys.
         """
         named_buffers = OrderedDict()
@@ -150,19 +160,19 @@ class Module:
         """Get the state dictionary of the module.
 
         Args:
-            prefix (str, optional): A prefix for state value names. Defaults to "".
-            include_tags (list[str] | None, optional): A set of tags that each buffer must include. Defaults to None.
-            exclude_tags (list[str] | None, optional): A set of tags that each buffer must exclude. Defaults to None.
+            prefix: A prefix for state value names. Defaults to "".
+            include_tags: A set of tags that each buffer must include. Defaults to None.
+            exclude_tags: A set of tags that each buffer must exclude. Defaults to None.
 
         Returns:
-            dict[str, object]: The module's state dictionary.
+            The module's state dictionary.
         """
         named_values = OrderedDict()
         for name, buffer in self.named_buffers(prefix, include_tags, exclude_tags).items():
             named_values[name] = buffer.value
         return named_values
 
-    def state_dict_common(self, prefix: str = ""):
+    def state_dict_common(self, prefix: str = "") -> dict[str, object]:
         """Get the state dictionary, including only common types (no images).
 
         This method gets the state dictionary, but excludes any state values
@@ -171,58 +181,58 @@ class Module:
         to np.save(...).
 
         Args:
-            prefix (str, optional): A prefix for state value names. Defaults to "".
+            prefix: A prefix for state value names. Defaults to "".
 
         Returns:
-            _type_: The module's state dictionary, including only common types.
+            The module's state dictionary, including only common types.
         """
         return self.state_dict(prefix, exclude_tags=["rgb", "segmentation", "depth", "normals"])
 
-    def state_dict_rgb(self, prefix: str = ""):
-        """Get the state dictionary, including only values tagged "rgb"
+    def state_dict_rgb(self, prefix: str = "") -> dict[str, object]:
+        """Get the state dictionary, including only values tagged "rgb".
 
         Args:
-            prefix (str, optional): A prefix for state value names. Defaults to "".
+            prefix: A prefix for state value names. Defaults to "".
 
         Returns:
-            _type_: The module's state dictionary, including only values tagged "rgb".
+            The module's state dictionary, including only values tagged "rgb".
         """
         return self.state_dict(prefix, include_tags=["rgb"])
 
-    def state_dict_segmentation(self, prefix: str = ""):
-        """Get the state dictionary, including only values tagged "segmentation"
+    def state_dict_segmentation(self, prefix: str = "") -> dict[str, object]:
+        """Get the state dictionary, including only values tagged "segmentation".
 
         Args:
-            prefix (str, optional): A prefix for state value names. Defaults to "".
+            prefix: A prefix for state value names. Defaults to "".
 
         Returns:
-            _type_: The module's state dictionary, including only values tagged "segmentation".
+            The module's state dictionary, including only values tagged "segmentation".
         """
         return self.state_dict(prefix, include_tags=["segmentation"])
 
-    def state_dict_depth(self, prefix: str = ""):
-        """Get the state dictionary, including only values tagged "depth"
+    def state_dict_depth(self, prefix: str = "") -> dict[str, object]:
+        """Get the state dictionary, including only values tagged "depth".
 
         Args:
-            prefix (str, optional): A prefix for state value names. Defaults to "".
+            prefix: A prefix for state value names. Defaults to "".
 
         Returns:
-            _type_: The module's state dictionary, including only values tagged "depth".
+            The module's state dictionary, including only values tagged "depth".
         """
         return self.state_dict(prefix, include_tags=["depth"])
 
-    def state_dict_normals(self, prefix: str = ""):
-        """Get the state dictionary, including only values tagged "normals"
+    def state_dict_normals(self, prefix: str = "") -> dict[str, object]:
+        """Get the state dictionary, including only values tagged "normals".
 
         Args:
-            prefix (str, optional): A prefix for state value names. Defaults to "".
+            prefix: A prefix for state value names. Defaults to "".
 
         Returns:
-            _type_: The module's state dictionary, including only values tagged "normals".
+            The module's state dictionary, including only values tagged "normals".
         """
         return self.state_dict(prefix, include_tags=["normals"])
 
-    def enable_rgb_rendering(self):
+    def enable_rgb_rendering(self) -> None:
         """Enable RGB rendering for this module.
 
         This class only needs to be overwritten for Camera implementations, which
@@ -232,7 +242,7 @@ class Module:
         for child in self.children().values():
             child.enable_rgb_rendering()
 
-    def enable_segmentation_rendering(self):
+    def enable_segmentation_rendering(self) -> None:
         """Enable segmentation rendering for this module.
 
         This class only needs to be overwritten for Camera implementations, which
@@ -242,7 +252,7 @@ class Module:
         for child in self.children().values():
             child.enable_segmentation_rendering()
 
-    def enable_depth_rendering(self):
+    def enable_depth_rendering(self) -> None:
         """Enable depth rendering for this module.
 
         This class only needs to be overwritten for Camera implementations, which
@@ -252,7 +262,7 @@ class Module:
         for child in self.children().values():
             child.enable_depth_rendering()
 
-    def enable_instance_id_segmentation_rendering(self):
+    def enable_instance_id_segmentation_rendering(self) -> None:
         """Enable instance ID segmentation rendering for this module.
 
         This class only needs to be overwritten for Camera implementations, which
@@ -262,7 +272,7 @@ class Module:
         for child in self.children().values():
             child.enable_instance_id_segmentation_rendering()
 
-    def enable_normals_rendering(self):
+    def enable_normals_rendering(self) -> None:
         """Enable normals rendering for this module.
 
         This class only needs to be overwritten for Camera implementations, which
@@ -272,7 +282,7 @@ class Module:
         for child in self.children().values():
             child.enable_normals_rendering()
 
-    def finalize_rendering(self):
+    def finalize_rendering(self) -> None:
         """Re-enable hydra texture updates after all annotators have been attached.
 
         Call this once after all enable_*_rendering() calls to unblock the render
@@ -283,7 +293,7 @@ class Module:
         for child in self.children().values():
             child.finalize_rendering()
 
-    def disable_rendering(self):
+    def disable_rendering(self) -> None:
         """Disable rendering and release all render products and annotators.
 
         This class only needs to be overwritten for Camera implementations, which
@@ -293,8 +303,8 @@ class Module:
         for child in self.children().values():
             child.disable_rendering()
 
-    def write_replay_data(self):
-        """Write module state to Isaac Sim for replay
+    def write_replay_data(self) -> None:
+        """Write module state to Isaac Sim for replay.
 
         This method writes the module state to Isaac Sim for replaying.
         It is intended to be used along with module.load_state_dict(...)
@@ -324,8 +334,8 @@ class Module:
         for child in self.children().values():
             child.write_replay_data()
 
-    def update_state(self):
-        """Update the module state by reading data from Isaac Sim
+    def update_state(self) -> None:
+        """Update the module state by reading data from Isaac Sim.
 
         This method reads data from Isaac Sim to update the module state.
 
@@ -341,7 +351,7 @@ class Module:
         for child in self.children().values():
             child.update_state()
 
-    def load_state_dict(self, state_dict):
+    def load_state_dict(self, state_dict: dict) -> None:
         """Load a state dictionary.
 
         This method updates all state buffers by reading the state dictionary.

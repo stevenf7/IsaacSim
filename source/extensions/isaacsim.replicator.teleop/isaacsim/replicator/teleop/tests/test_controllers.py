@@ -15,6 +15,8 @@
 
 """Test controller instantiation."""
 
+from __future__ import annotations
+
 import omni.kit.app
 import omni.kit.test
 from isaacsim.replicator.teleop import (
@@ -28,24 +30,30 @@ from isaacsim.replicator.teleop import (
 class TestControllerInstantiation(omni.kit.test.AsyncTestCase):
     """Verify all controllers can be created without a stage or VR."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Set up test environment."""
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Tear down test environment."""
         await omni.kit.app.get_app().next_update_async()
 
-    async def test_floating_controller(self):
+    async def test_floating_controller(self) -> None:
+        """Verify FloatingRigidBodyController can be created without a stage."""
         ctrl = FloatingRigidBodyController()
         self.assertIsNotNone(ctrl)
 
-    async def test_ik_controller(self):
+    async def test_ik_controller(self) -> None:
+        """Verify RobotIKController can be created without a stage."""
         ctrl = RobotIKController()
         self.assertIsNotNone(ctrl)
 
-    async def test_grasp_controller(self):
+    async def test_grasp_controller(self) -> None:
+        """Verify GraspController can be created without a stage."""
         ctrl = GraspController()
         self.assertIsNotNone(ctrl)
 
-    async def test_locomotion_controller(self):
+    async def test_locomotion_controller(self) -> None:
+        """Verify LocomotionController can be created without a stage."""
         ctrl = LocomotionController()
         self.assertIsNotNone(ctrl)

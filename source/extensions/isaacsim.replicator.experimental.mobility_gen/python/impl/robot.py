@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""MobilityGen robot base class, front-camera utilities, and robot registry."""
+
+from __future__ import annotations
 
 import math
 
@@ -48,7 +51,7 @@ def _join_sdf_paths(*subpaths: str) -> str:
 
 
 class MobilityGenRobot(Module):
-    """Abstract base class for robots
+    """Abstract base class for robots.
 
     This class defines an abstract base class for robots.
 
@@ -57,7 +60,6 @@ class MobilityGenRobot(Module):
 
     The two main abstract methods subclasses must define are the build() and write_action()
     methods.
-
     """
 
     physics_dt: float
@@ -147,7 +149,7 @@ class MobilityGenRobot(Module):
     """The offset distance used to generate the 'target point' that the robot will follow in the path following scenario.
     A larger offset results in smoother motion, but too large may cause the robot to cut corners during turns."""
 
-    def __init__(self, prim_path: str, articulation: Articulation, front_camera: Module):
+    def __init__(self, prim_path: str, articulation: Articulation, front_camera: Module) -> None:
         self.prim_path = prim_path
         self.articulation = articulation
 
@@ -161,8 +163,15 @@ class MobilityGenRobot(Module):
         self.front_camera = front_camera
 
     @classmethod
-    def build_front_camera(cls, prim_path):
+    def build_front_camera(cls, prim_path: str) -> Module:
+        """Build and attach the front camera at the given prim path.
 
+        Args:
+            prim_path: The USD prim path under which to spawn the camera.
+
+        Returns:
+            The built front camera module.
+        """
         camera_path = _join_sdf_paths(prim_path, cls.front_camera_base_path)
         stage = get_current_stage(backend="usd")
         if not stage.GetPrimAtPath(camera_path).IsValid():
@@ -179,7 +188,11 @@ class MobilityGenRobot(Module):
         return cls.front_camera_type.build(prim_path=camera_path)
 
     def build_chase_camera(self) -> str:
+        """Build the chase (third-person) camera and return its USD path.
 
+        Returns:
+            The USD prim path of the created chase camera.
+        """
         camera_path = _join_sdf_paths(self.prim_path, self.chase_camera_base_path, "chase_camera")
 
         camera = Camera(camera_path)
@@ -199,15 +212,34 @@ class MobilityGenRobot(Module):
 
     @classmethod
     def build(cls, prim_path: str) -> "MobilityGenRobot":
+        """Build the robot at the given prim path.
+
+        Args:
+            prim_path: The USD prim path at which to spawn the robot.
+
+        Returns:
+            The constructed robot instance.
+        """
         raise NotImplementedError
 
-    def write_action(self, step_size: float):
+    def write_action(self, step_size: float) -> None:
+        """Write the current action to the robot actuators.
+
+        Args:
+            step_size: The physics timestep size in seconds.
+        """
         raise NotImplementedError
 
     def is_physics_ready(self) -> bool:
+        """Return True if the physics tensor entity is valid and ready.
+
+        Returns:
+            True if the articulation physics tensor entity is valid.
+        """
         return self.articulation.is_physics_tensor_entity_valid()
 
-    def update_state(self):
+    def update_state(self) -> None:
+        """Update all robot state buffers from the physics simulation."""
         if not self.articulation.is_physics_tensor_entity_valid():
             return
         positions, orientations = self.articulation.get_world_poses()
@@ -220,14 +252,20 @@ class MobilityGenRobot(Module):
         self.angular_velocity.set_value(angular_vels.numpy()[0])
         super().update_state()
 
-    def write_replay_data(self):
+    def write_replay_data(self) -> None:
+        """Write pose and joint positions back to the simulation for replay."""
         position = self.position.get_value()
         orientation = self.orientation.get_value()
         self.articulation.set_world_poses(position[np.newaxis], orientation[np.newaxis])
         self.articulation.set_dof_positions(self.joint_positions.get_value()[np.newaxis])
         super().write_replay_data()
 
-    def set_pose_2d(self, pose: Pose2d):
+    def set_pose_2d(self, pose: Pose2d) -> None:
+        """Set the robot's 2D pose in the world frame.
+
+        Args:
+            pose: The target 2D pose (x, y, theta).
+        """
         if self.is_physics_ready():
             self.articulation.set_velocities(linear_velocities=np.zeros((1, 3)), angular_velocities=np.zeros((1, 3)))
         positions, orientations = self.articulation.get_world_poses()
@@ -239,6 +277,11 @@ class MobilityGenRobot(Module):
         self.articulation.set_world_poses(position[np.newaxis], orientation[np.newaxis])
 
     def get_pose_2d(self) -> Pose2d:
+        """Get the robot's current 2D pose from the physics simulation.
+
+        Returns:
+            The current 2D pose (x, y, theta) of the robot.
+        """
         positions, orientations = self.articulation.get_world_poses()
         position = positions.numpy()[0]
         # extrinsic=True (default): output order [X,Y,Z] = [roll, pitch, yaw], so [2] is yaw

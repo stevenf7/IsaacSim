@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Defines a Replicator writer that converts RGB data to PyTorch tensor batches and sends them to a listener."""
+"""Define a Replicator writer that converts RGB data to PyTorch tensor batches and sends them to a listener."""
 
 from __future__ import annotations
 
@@ -70,7 +70,7 @@ class PytorchWriter(Writer):
         self.version = __version__
 
     def write(self, data: dict):
-        """Sends data captured by the attached render products to the PytorchListener and will write data to.
+        """Send data captured by the attached render products to the PytorchListener and will write data to.
 
         the output directory if specified during initialization.
 
@@ -91,7 +91,7 @@ class PytorchWriter(Writer):
 
     @carb.profiler.profile
     def _write_rgb(self, data: dict, rp_info: dict):
-        """Writes RGB data to the output directory as PNG files.
+        """Write RGB data to the output directory as PNG files.
 
         Args:
             data: Dictionary containing annotator data with RGB information.
@@ -113,7 +113,7 @@ class PytorchWriter(Writer):
 
     @carb.profiler.profile
     def _convert_to_pytorch(self, data: dict, rp_info: dict) -> "torch.Tensor":
-        """Converts annotator data to a PyTorch tensor batch.
+        """Convert annotator data to a PyTorch tensor batch.
 
         Args:
             data: Dictionary containing annotator data to convert.

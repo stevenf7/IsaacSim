@@ -15,6 +15,8 @@
 
 """Basic functionality tests for behavior scripts."""
 
+from __future__ import annotations
+
 import importlib
 import os
 
@@ -35,19 +37,19 @@ SCRIPTS_ATTR = "omni:scripting:scripts"
 class TestBehaviorsBasic(omni.kit.test.AsyncTestCase):
     """Test the basic functionality of the behavior scripts."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up a new stage before each test."""
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Close the stage after each test."""
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
 
-    async def check_exposed_variables(self, behavior_class):
+    async def check_exposed_variables(self, behavior_class: type) -> None:
         """Verify exposed variables are correctly created and removed for a behavior class."""
         # Make sure behavior_class is of type BehaviorScript
         self.assertTrue(
@@ -166,7 +168,7 @@ class TestBehaviorsBasic(omni.kit.test.AsyncTestCase):
                 f"Attribute '{attr_full_name}' with {attribute.Get()} not removed from prim: {root_prim_path}",
             )
 
-    async def test_exposed_variables(self):
+    async def test_exposed_variables(self) -> None:
         """Test that all behavior classes correctly expose and remove their variables."""
         # Get the behavior classes to test from the behaviors module __all__ list
         BEHAVIOR_CLASSES = [getattr(behaviors_module, class_name) for class_name in behaviors_module.__all__]

@@ -53,13 +53,13 @@ class KeyboardTeleoperationScenario(MobilityGenScenario):
         occupancy_map: The occupancy map defining the navigable environment and obstacles.
     """
 
-    def __init__(self, robot: MobilityGenRobot, occupancy_map: OccupancyMap):
+    def __init__(self, robot: MobilityGenRobot, occupancy_map: OccupancyMap) -> None:
         super().__init__(robot, occupancy_map)
         self.keyboard = Keyboard()
         self.pose_sampler = UniformPoseSampler()
 
-    def reset(self):
-        """Resets the scenario by placing the robot at a random pose and updating the state.
+    def reset(self) -> None:
+        """Reset the scenario by placing the robot at a random pose and updating the state.
 
         Samples a new pose using the uniform pose sampler and sets the robot to that position.
         """
@@ -67,8 +67,8 @@ class KeyboardTeleoperationScenario(MobilityGenScenario):
         self.robot.set_pose_2d(pose)
         self.update_state()
 
-    def step(self, step_size: float):
-        """Executes one step of keyboard teleoperation control.
+    def step(self, step_size: float) -> bool:
+        """Execute one step of keyboard teleoperation control.
 
         Reads keyboard input for WASD keys to control robot movement, calculates linear and angular velocities based on the input, and applies the action to the robot.
 
@@ -119,13 +119,13 @@ class GamepadTeleoperationScenario(MobilityGenScenario):
         occupancy_map: The occupancy map defining the environment boundaries and obstacles.
     """
 
-    def __init__(self, robot: MobilityGenRobot, occupancy_map: OccupancyMap):
+    def __init__(self, robot: MobilityGenRobot, occupancy_map: OccupancyMap) -> None:
         super().__init__(robot, occupancy_map)
         self.gamepad = Gamepad()
         self.pose_sampler = UniformPoseSampler()
 
-    def reset(self):
-        """Resets the scenario by randomly placing the robot and updating its state.
+    def reset(self) -> None:
+        """Reset the scenario by randomly placing the robot and updating its state.
 
         Samples a random pose from free space and sets the robot to that position.
         """
@@ -134,7 +134,7 @@ class GamepadTeleoperationScenario(MobilityGenScenario):
         self.update_state()
 
     def step(self, step_size: float) -> bool:
-        """Executes one simulation step using gamepad input to control the robot.
+        """Execute one simulation step using gamepad input to control the robot.
 
         Reads gamepad axes values, converts them to linear and angular velocities based on
         configured gains, and applies the resulting action to the robot.
@@ -178,14 +178,14 @@ class RandomAccelerationScenario(MobilityGenScenario):
         occupancy_map: The occupancy map defining the environment boundaries and obstacles.
     """
 
-    def __init__(self, robot: MobilityGenRobot, occupancy_map: OccupancyMap):
+    def __init__(self, robot: MobilityGenRobot, occupancy_map: OccupancyMap) -> None:
         super().__init__(robot, occupancy_map)
         self.pose_sampler = GridPoseSampler(robot.random_action_grid_pose_sampler_grid_size)
         self.is_alive = True
         self.collision_occupancy_map = occupancy_map.buffered(robot.occupancy_map_collision_radius)
 
-    def reset(self):
-        """Resets the robot to a new random pose and initializes the scenario state.
+    def reset(self) -> None:
+        """Reset the robot to a new random pose and initialize the scenario state.
 
         Sets the robot's action to zero velocity, samples a new pose from the grid pose sampler,
         positions the robot at that pose, and marks the robot as alive.
@@ -197,7 +197,7 @@ class RandomAccelerationScenario(MobilityGenScenario):
         self.update_state()
 
     def step(self, step_size: float) -> bool:
-        """Executes one simulation step with random acceleration applied to the robot.
+        """Execute one simulation step with random acceleration applied to the robot.
 
         Updates the robot's velocity by adding random acceleration noise to the current action,
         clamps the velocities within configured ranges, and checks for collisions or out-of-bounds conditions.
@@ -269,7 +269,7 @@ class RandomPathFollowingScenario(MobilityGenScenario):
             planning, collision detection, and pose sampling within navigable areas.
     """
 
-    def __init__(self, robot: MobilityGenRobot, occupancy_map: OccupancyMap):
+    def __init__(self, robot: MobilityGenRobot, occupancy_map: OccupancyMap) -> None:
         super().__init__(robot, occupancy_map)
         self.pose_sampler = UniformPoseSampler()
         self.is_alive = True
@@ -277,7 +277,7 @@ class RandomPathFollowingScenario(MobilityGenScenario):
         self.collision_occupancy_map = occupancy_map.buffered(robot.occupancy_map_collision_radius)
 
     def _vector_angle(self, w: np.ndarray, v: np.ndarray) -> float:
-        """Calculates the angle between two 2D vectors.
+        """Calculate the angle between two 2D vectors.
 
         Args:
             w: First 2D vector.
@@ -289,8 +289,8 @@ class RandomPathFollowingScenario(MobilityGenScenario):
         delta_angle = np.arctan2(w[1] * v[0] - w[0] * v[1], w[0] * v[0] + w[1] * v[1])
         return delta_angle
 
-    def set_random_target_path(self):
-        """Generates a random target path from the robot's current position to a random freespace endpoint."""
+    def set_random_target_path(self) -> None:
+        """Generate a random target path from the robot's current position to a random freespace endpoint."""
         current_pose = self.robot.get_pose_2d()
 
         start_px = self.occupancy_map.world_to_pixel_numpy(np.array([[current_pose.x, current_pose.y]]))
@@ -307,8 +307,8 @@ class RandomPathFollowingScenario(MobilityGenScenario):
         self.target_path.set_value(path)
         self.target_path_helper = PathHelper(path)
 
-    def reset(self):
-        """Resets the scenario by placing the robot at a random pose and generating a new target path."""
+    def reset(self) -> None:
+        """Reset the scenario by placing the robot at a random pose and generating a new target path."""
         self.robot.action.set_value(np.zeros(2))
         pose = self.pose_sampler.sample(self.buffered_occupancy_map)
         self.robot.set_pose_2d(pose)
@@ -317,7 +317,7 @@ class RandomPathFollowingScenario(MobilityGenScenario):
         self.update_state()
 
     def step(self, step_size: float) -> bool:
-        """Executes one simulation step by updating robot controls to follow the target path.
+        """Execute one simulation step by updating robot controls to follow the target path.
 
         The robot follows the path using proportional control for steering and stops when reaching
         the target or encountering collisions.
@@ -370,7 +370,7 @@ class RandomPathFollowingScenario(MobilityGenScenario):
         return self.is_alive
 
     def get_visualization_image(self) -> PIL.Image.Image:
-        """Creates a visualization image showing the occupancy map with the target path overlaid.
+        """Create a visualization image showing the occupancy map with the target path overlaid.
 
         Returns:
             RGBA image with the occupancy map and target path drawn in green.

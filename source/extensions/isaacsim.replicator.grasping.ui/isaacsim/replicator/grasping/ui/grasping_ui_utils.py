@@ -43,7 +43,7 @@ def get_selected_prim_path() -> str | None:
     return selected_prim_paths[0]
 
 
-def select_prim_in_stage(path: str):
+def select_prim_in_stage(path: str) -> None:
     """Select/highlight a prim in the stage by its path.
 
     Args:
@@ -113,7 +113,7 @@ def draw_grasp_samples_as_lines(
     line_length: float = 0.02,
     line_opacity: float = 0.5,
     clear_existing: bool = True,
-):
+) -> None:
     """Draw grasp samples in the viewport.
 
     Args:
@@ -138,7 +138,7 @@ def draw_grasp_samples_as_lines(
     draw_lines_colors = []
     num_poses = len(grasp_poses)
 
-    def simple_colormap(t):
+    def simple_colormap(t: float) -> tuple[float, float, float, float]:
         # Linear interpolation from blue (0,0,1) to red (1,0,0)
         r = t
         g = 0.0
@@ -171,7 +171,7 @@ def draw_grasp_samples_as_axes(
     line_thickness: float = 2,
     line_opacity: float = 0.5,
     clear_existing: bool = True,
-):
+) -> None:
     """Draw grasp samples as oriented frames (axes) in the viewport.
 
     Args:
@@ -219,7 +219,7 @@ def draw_grasp_samples_as_axes(
     draw_iface.draw_lines(start_points, end_points, colors, thicknesses)
 
 
-def draw_trimesh(prim: Usd.Prim, world_frame: bool = False, clear_existing: bool = True, verbose: bool = False):
+def draw_trimesh(prim: Usd.Prim, world_frame: bool = False, clear_existing: bool = True, verbose: bool = False) -> None:
     """Draw the mesh vertices and edges for the given prim using the debug draw interface.
 
     Args:
@@ -266,7 +266,7 @@ def draw_trimesh(prim: Usd.Prim, world_frame: bool = False, clear_existing: bool
     draw_iface.draw_lines(start_points, end_points, [edge_color] * len(edges), [1] * len(edges))
 
 
-def clear_debug_draw():
+def clear_debug_draw() -> None:
     """Clear all debug draw points and lines from the viewport."""
     draw_iface = _debug_draw.acquire_debug_draw_interface()
     draw_iface.clear_points()

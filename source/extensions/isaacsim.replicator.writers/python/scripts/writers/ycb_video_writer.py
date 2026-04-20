@@ -131,7 +131,7 @@ class YCBVideoWriter(Writer):
         self._create_train_text_file()
 
     def register_pose_annotator(config_data: dict):
-        """Registers the annotators for the specific writer.
+        """Register the annotators for the specific writer.
 
         Args:
             config_data: A dictionary containing the configuration data for the current writer.
@@ -295,7 +295,7 @@ class YCBVideoWriter(Writer):
         np.savetxt(file_path, points, fmt="%.6f", delimiter=" ", newline="\n")
 
     def _write_rgb(self, data: dict, render_product_path: str, annotator: str):
-        """Saves a RGB image for the YCB Video Dataset.
+        """Save a RGB image for the YCB Video Dataset.
 
         Args:
             data (dict): A dictionary containing the annotator data for the current frame.
@@ -311,7 +311,7 @@ class YCBVideoWriter(Writer):
         self._backend.write_image(file_path, data[annotator])
 
     def _write_distance_to_image_plane(self, data: dict, render_product_path: str, annotator: str):
-        """Saves a depth image for the YCB Video Dataset. Note: Depth images are only for visualization and testing, and.
+        """Save a depth image for the YCB Video Dataset. Note: Depth images are only for visualization and testing, and.
 
            would need to be adapted to conform to the exact format used in the YCB Video Dataset.
 
@@ -346,7 +346,7 @@ class YCBVideoWriter(Writer):
         self._backend.write_image(file_path, depth_img)
 
     def _write_semantic_segmentation(self, data: dict, render_product_path: str, annotator: str):
-        """Saves a segmentation label image file for the YCB Video Dataset. Segmentation label is saved as a grayscale.
+        """Save a segmentation label image file for the YCB Video Dataset. Segmentation label is saved as a grayscale.
 
            image.
 
@@ -390,7 +390,7 @@ class YCBVideoWriter(Writer):
         self._backend.write_image(file_path, img)
 
     def _write_bounding_box_data(self, data: dict, render_product_path: str, annotator: str):
-        """Saves a text file describing bounding boxes of semantically-labeled objects in view for the YCB Video.
+        """Save a text file describing bounding boxes of semantically-labeled objects in view for the YCB Video.
 
            Dataset. Note: Lines of the bounding box text file consist of a class name and the position of the bounding
            box. The positions of the bounding boxes are represented by the upper-left coordinate, followed by the
@@ -496,7 +496,7 @@ class YCBVideoWriter(Writer):
         self._backend.write_blob(file_path, buf.getvalue())
 
     def _create_output_folders(self):
-        """Creates an output directory structure (if necessary), similar to that used in the YCB Video Dataset. Note: A.
+        """Create an output directory structure (if necessary), similar to that used in the YCB Video Dataset. Note: A.
 
         single video directory is used to hold all the generated synthetic data, rather than several directories
         (each representing a separate video file, as in the YCB Video Dataset).
@@ -522,7 +522,7 @@ class YCBVideoWriter(Writer):
             os.mkdir(self.vid_dir)
 
     def _create_train_text_file(self):
-        """Creates a text file to specify the set of YCB Video Dataset samples to be used during training of a model.
+        """Create a text file to specify the set of YCB Video Dataset samples to be used during training of a model.
 
         Lines include the video basename corresponding to the video that the sample is from, and the image ID of the
         sample. Training samples are written as if a single video is being used (see the note in
@@ -553,7 +553,7 @@ class YCBVideoWriter(Writer):
         return self._last_frame_is_valid
 
     def is_last_frame_valid(self) -> bool:
-        """Checks if the last frame was valid (training data was present).
+        """Check if the last frame was valid (training data was present).
 
         Returns:
             True if the last frame was valid, False otherwise.

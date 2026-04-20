@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Occupancy map representation and utilities for robot navigation."""
+
 
 import enum
 import os
@@ -33,12 +35,21 @@ OCCUPANCY_MAP_DEFAULT_CELL_SIZE = 0.05
 
 
 class OccupancyMapDataValue(enum.IntEnum):
+    """Integer enum representing the three possible occupancy states of a map cell."""
+
     UNKNOWN = 0
     FREESPACE = 1
     OCCUPIED = 2
 
     def ros_image_value(self, negate: bool = False) -> int:
+        """Return the ROS grayscale pixel value for this occupancy state.
 
+        Args:
+            negate: Whether to invert the value mapping. Defaults to False.
+
+        Returns:
+            The grayscale pixel value in the range [0, 255].
+        """
         values = [0, 127, 255]
 
         if negate:
@@ -53,6 +64,13 @@ class OccupancyMapDataValue(enum.IntEnum):
 
 
 class OccupancyMap:
+    """A 2D grid map that encodes freespace, occupied, and unknown regions.
+
+    Args:
+        data: The occupancy grid as a uint8 numpy array using OccupancyMapDataValue values.
+        resolution: The resolution of the map in meters per pixel.
+        origin: The (x, y, yaw) world coordinates of the bottom-left corner of the map.
+    """
 
     ROS_IMAGE_FILENAME = "map.png"
     ROS_YAML_FILENAME = "map.yaml"
@@ -65,7 +83,7 @@ occupied_thresh: {occupied_thresh}
 free_thresh: {free_thresh}
 """
 
-    def __init__(self, data: np.ndarray, resolution: int, origin: tuple[int, int, int]):
+    def __init__(self, data: np.ndarray, resolution: int, origin: tuple[int, int, int]) -> None:
         self.data = data
         self.resolution = resolution  # meters per pixel
         self.origin = origin  # x, y, yaw.  where (x, y) is the bottom-left of image
@@ -76,7 +94,7 @@ free_thresh: {free_thresh}
         """Get a binary mask representing the freespace of the occupancy map.
 
         Returns:
-            np.ndarray: The binary mask representing freespace of the occupancy map.
+            The binary mask representing freespace of the occupancy map.
         """
         return self.data == OccupancyMapDataValue.FREESPACE
 
@@ -84,7 +102,7 @@ free_thresh: {free_thresh}
         """Get a binary mask representing the unknown area of the occupancy map.
 
         Returns:
-            np.ndarray: The binary mask representing unknown area of the occupancy map.
+            The binary mask representing unknown area of the occupancy map.
         """
         return self.data == OccupancyMapDataValue.UNKNOWN
 
@@ -92,7 +110,7 @@ free_thresh: {free_thresh}
         """Get a binary mask representing the occupied area of the occupancy map.
 
         Returns:
-            np.ndarray: The binary mask representing occupied area of the occupancy map.
+            The binary mask representing occupied area of the occupancy map.
         """
         return self.data == OccupancyMapDataValue.OCCUPIED
 
@@ -100,10 +118,10 @@ free_thresh: {free_thresh}
         """Get the ROS image for the occupancy map.
 
         Args:
-            negate (bool, optional): See "negate" in ROS occupancy map documentation. Defaults to False.
+            negate: See "negate" in ROS occupancy map documentation. Defaults to False.
 
         Returns:
-            PIL.Image.Image: The ROS image for the occupancy map as a PIL image.
+            The ROS image for the occupancy map as a PIL image.
         """
         occupied_mask = self.occupied_mask()
         ros_image = np.zeros(self.occupied_mask().shape, dtype=np.uint8)
@@ -117,10 +135,10 @@ free_thresh: {free_thresh}
         """Get the ROS occupancy map YAML file content.
 
         Args:
-            negate (bool, optional): See "negate" in ROS occupancy map documentation. Defaults to False.
+            negate: See "negate" in ROS occupancy map documentation. Defaults to False.
 
         Returns:
-            str: The ROS occupancy map YAML file contents.
+            The ROS occupancy map YAML file contents.
         """
         return self.ROS_YAML_TEMPLATE.format(
             image_filename=self.ROS_IMAGE_FILENAME,
@@ -131,14 +149,14 @@ free_thresh: {free_thresh}
             free_thresh=ROS_FREESPACE_THRESH_DEFAULT,
         )
 
-    def save_ros(self, path: str):
+    def save_ros(self, path: str) -> None:
         """Save the occupancy map to a folder in ROS format.
 
         This method saves both the ROS formatted PNG image, as well
         as the corresponding YAML file.
 
         Args:
-            path (str): The output path to save the occupancy map.
+            path: The output path to save the occupancy map.
         """
         if not os.path.exists(path):
             os.makedirs(path)
@@ -157,12 +175,12 @@ free_thresh: {free_thresh}
         the image exists at the specified path.
 
         Args:
-            ros_yaml_path (str): The path to the ROS yaml file.
+            ros_yaml_path: The path to the ROS yaml file.
 
         Returns:
-            _type_: OccupancyMap
+            OccupancyMap
         """
-        with open(ros_yaml_path, "r") as f:
+        with open(ros_yaml_path) as f:
             yaml_data = yaml.safe_load(f)
         yaml_dir = os.path.dirname(ros_yaml_path)
         image_path = os.path.join(yaml_dir, yaml_data["image"])
@@ -192,17 +210,17 @@ free_thresh: {free_thresh}
         but not necessarily useful for end use cases.
 
         Args:
-            ros_image (PIL.Image.Image): The ROS formatted PIL image.
-            resolution (int): The resolution (meter/px) of the occupancy map.
-            origin (tuple[float, float, float]): The origin of the occupancy map in world coordinates.
-            negate (bool, optional): See "negate" in ROS occupancy map documentation. Defaults to False.
-            occupied_thresh (float, optional): The threshold to consider a value occupied.
+            ros_image: The ROS formatted PIL image.
+            resolution: The resolution (meter/px) of the occupancy map.
+            origin: The origin of the occupancy map in world coordinates.
+            negate: See "negate" in ROS occupancy map documentation. Defaults to False.
+            occupied_thresh: The threshold to consider a value occupied.
                 Defaults to ROS_OCCUPIED_THRESH_DEFAULT.
-            free_thresh (float, optional): The threshold to consider a value free. Defaults to
+            free_thresh: The threshold to consider a value free. Defaults to
                 ROS_FREESPACE_THRESH_DEFAULT.
 
         Returns:
-            OccupancyMap: The occupancy map.
+            The occupancy map.
         """
         ros_image = ros_image.convert("L")
 
@@ -225,19 +243,19 @@ free_thresh: {free_thresh}
     def from_masks(
         freespace_mask: np.ndarray, occupied_mask: np.ndarray, resolution: int, origin: tuple[float, float, float]
     ) -> "OccupancyMap":
-        """Creates an occupancy map from binary masks and other data
+        """Create an occupancy map from binary masks and other data.
 
         This method is intended as a utility by other methods, but not necessarily
         useful for end use cases.
 
         Args:
-            freespace_mask (np.ndarray): Binary mask for the freespace region.
-            occupied_mask (np.ndarray): Binary mask for the occupied region.
-            resolution (int): The resolution of the map (meters/px).
-            origin (tuple[float, float, float]): The origin of the map in world coordinates.
+            freespace_mask: Binary mask for the freespace region.
+            occupied_mask: Binary mask for the occupied region.
+            resolution: The resolution of the map (meters/px).
+            origin: The origin of the map in world coordinates.
 
         Returns:
-            OccupancyMap: The occupancy map.
+            The occupancy map.
         """
         data = np.zeros(freespace_mask.shape, dtype=np.uint8)
         data[...] = OccupancyMapDataValue.UNKNOWN
@@ -252,7 +270,7 @@ free_thresh: {free_thresh}
         """Get the width of the occupancy map in pixels.
 
         Returns:
-            int: The width in pixels.
+            The width in pixels.
         """
         return self._width_pixels
 
@@ -260,23 +278,23 @@ free_thresh: {free_thresh}
         """Get the height of the occupancy map in pixels.
 
         Returns:
-            int: The height in pixels.
+            The height in pixels.
         """
         return self._height_pixels
 
-    def width_meters(self):
+    def width_meters(self) -> float:
         """Get the width of the occupancy map in meters.
 
         Returns:
-            _type_: The width in meters.
+            The width in meters.
         """
         return self.resolution * self.width_pixels()
 
-    def height_meters(self):
+    def height_meters(self) -> float:
         """Get the height of the occupancy map in meters.
 
         Returns:
-            _type_: The height in meters.
+            The height in meters.
         """
         return self.resolution * self.height_pixels()
 
@@ -284,7 +302,7 @@ free_thresh: {free_thresh}
         """Get the world coordinates of the bottom left pixel.
 
         Returns:
-            tuple[float, float]: The (x, y) world coordinates of the
+            The (x, y) world coordinates of the
                 bottom left pixel in the occupancy map.
         """
         return (self.origin[0], self.origin[1])
@@ -293,7 +311,7 @@ free_thresh: {free_thresh}
         """Get the world coordinates of the top left pixel.
 
         Returns:
-            tuple[float, float]: The (x, y) world coordinates of the
+            The (x, y) world coordinates of the
                 top left pixel in the occupancy map.
         """
         return (self.origin[0], self.origin[1] + self.height_meters())
@@ -302,7 +320,7 @@ free_thresh: {free_thresh}
         """Get the world coordinates of the bottom right pixel.
 
         Returns:
-            tuple[float, float]: The (x, y) world coordinates of the
+            The (x, y) world coordinates of the
                 bottom right pixel in the occupancy map.
         """
         return (self.origin[0] + self.width_meters(), self.origin[1])
@@ -311,7 +329,7 @@ free_thresh: {free_thresh}
         """Get the world coordinates of the top right pixel.
 
         Returns:
-            tuple[float, float]: The (x, y) world coordinates of the
+            The (x, y) world coordinates of the
                 top right pixel in the occupancy map.
         """
         return (self.origin[0] + self.width_meters(), self.origin[1] + self.height_meters())
@@ -328,10 +346,10 @@ free_thresh: {free_thresh}
         that the robot has a circular collision profile.
 
         Args:
-            buffer_distance_pixels (int): The buffer radius / distance in pixels.
+            buffer_distance_pixels: The buffer radius / distance in pixels.
 
         Returns:
-            OccupancyMap: The buffered (aka: dilated / padded) occupancy map.
+            The buffered (aka: dilated / padded) occupancy map.
         """
         buffer_distance_pixels = int(buffer_distance_pixels)
 
@@ -355,22 +373,22 @@ free_thresh: {free_thresh}
         See OccupancyMap.buffer() for more details.
 
         Args:
-            buffer_distance_meters (int): The buffer radius / distance in pixels.
+            buffer_distance_meters: The buffer radius / distance in pixels.
 
         Returns:
-            OccupancyMap: The buffered (aka: dilated / padded) occupancy map.
+            The buffered (aka: dilated / padded) occupancy map.
         """
         buffer_distance_pixels = int(buffer_distance_meters / self.resolution)
         return self.buffered(buffer_distance_pixels)
 
-    def pixel_to_world(self, point: Point2d):
+    def pixel_to_world(self, point: Point2d) -> Point2d:
         """Convert a pixel coordinate to world coordinates.
 
         Args:
-            point (Point2d): The pixel coordinate.
+            point: The pixel coordinate.
 
         Returns:
-            _type_: The world coordinate.
+            The world coordinate.
         """
         # currently doesn't handle rotations
         bot_left = self.bottom_left_pixel_world_coords()
@@ -380,14 +398,14 @@ free_thresh: {free_thresh}
         y_world = v * self.height_meters() + bot_left[1]
         return Point2d(x=x_world, y=y_world)
 
-    def pixel_to_world_numpy(self, points: np.ndarray):
+    def pixel_to_world_numpy(self, points: np.ndarray) -> np.ndarray:
         """Convert an array of pixel coordinates to world coordinates.
 
         Args:
-            points (np.ndarray): The Nx2 numpy array of pixel coordinates.
+            points: The Nx2 numpy array of pixel coordinates.
 
         Returns:
-            _type_: The Nx2 numpy array of world coordinates.
+            The Nx2 numpy array of world coordinates.
         """
         bot_left = self.bottom_left_pixel_world_coords()
         u = points[:, 0] / self.width_pixels()
@@ -396,14 +414,14 @@ free_thresh: {free_thresh}
         y_world = v * self.height_meters() + bot_left[1]
         return np.concatenate([x_world[:, None], y_world[:, None]], axis=-1)
 
-    def world_to_pixel_numpy(self, points: np.ndarray):
+    def world_to_pixel_numpy(self, points: np.ndarray) -> np.ndarray:
         """Convert an array of world coordinates to pixel coordinates.
 
         Args:
-            points (np.ndarray): The Nx2 numpy array of world coordinates.
+            points: The Nx2 numpy array of world coordinates.
 
         Returns:
-            _type_: The Nx2 numpy array of pixel coordinates.
+            The Nx2 numpy array of pixel coordinates.
         """
         bot_left_world = self.bottom_left_pixel_world_coords()
         u = (points[:, 0] - bot_left_world[0]) / self.width_meters()
@@ -416,10 +434,10 @@ free_thresh: {free_thresh}
         """Check if a world coordinate is inside the bounds of the occupancy map.
 
         Args:
-            point (Point2d): The world coordinate.
+            point: The world coordinate.
 
         Returns:
-            bool: True if the coordinate is inside the bounds of
+            True if the coordinate is inside the bounds of
                 the occupancy map.  False otherwise.
         """
         pixel = self.world_to_pixel_numpy(np.array([[point.x, point.y]]))
@@ -438,13 +456,13 @@ free_thresh: {free_thresh}
         return True
 
     def check_world_point_in_freespace(self, point: Point2d) -> bool:
-        """Check if a world coordinate is inside the freespace region of the occupancy map
+        """Check if a world coordinate is inside the freespace region of the occupancy map.
 
         Args:
-            point (Point2d): The world coordinate.
+            point: The world coordinate.
 
         Returns:
-            bool: True if the world coordinate is inside the freespace region of the occupancy map.
+            True if the world coordinate is inside the freespace region of the occupancy map.
                 False otherwise.
         """
         if not self.check_world_point_in_bounds(point):

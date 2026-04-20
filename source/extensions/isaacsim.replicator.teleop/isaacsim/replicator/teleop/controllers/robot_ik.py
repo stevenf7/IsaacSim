@@ -29,11 +29,11 @@ replacement - just match the same interface.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Callable, Literal
+from typing import Literal
 
-import numpy as np
 import omni.timeline
 from isaacsim.core.experimental.prims import Articulation, RigidPrim
 
@@ -69,6 +69,7 @@ class IKMethod(Enum):
 
     @property
     def description(self) -> str:
+        """Return a human-readable description of this IK method."""
         return {
             IKMethod.DAMPED_LEAST_SQUARES: "Most stable default; damped near singularities.",
             IKMethod.PSEUDOINVERSE: "Direct tracking, can be unstable near singularities.",
@@ -349,7 +350,7 @@ class RobotIKController:
     - Number of arm DOFs to control (e.g. 7 for Franka, excludes gripper)
     """
 
-    def __init__(self, target_coordinate_system: CoordinateSystem = CoordinateSystem.ISAAC_SIM):
+    def __init__(self, target_coordinate_system: CoordinateSystem = CoordinateSystem.ISAAC_SIM) -> None:
         self._target_coordinate_system = target_coordinate_system
         self._arms: dict[str, _ArmState] = {
             "left": _ArmState(),
@@ -372,6 +373,7 @@ class RobotIKController:
         self._on_status_changed = callback
 
     def set_coordinate_system(self, target_coordinate_system: CoordinateSystem) -> None:
+        """Set the source coordinate system for input VR wrist pose data."""
         self._target_coordinate_system = target_coordinate_system
 
     # ------------------------------------------------------------------
@@ -379,6 +381,7 @@ class RobotIKController:
     # ------------------------------------------------------------------
 
     def set_articulation_path(self, side: Literal["left", "right"], prim_path: str | None) -> None:
+        """Set the articulation prim path for one side."""
         arm = self._arm(side)
         if arm.path == prim_path:
             return
@@ -386,6 +389,7 @@ class RobotIKController:
         arm.path = prim_path
 
     def set_ee_link_name(self, side: Literal["left", "right"], name: str) -> None:
+        """Set the end-effector link name for one side."""
         self._arm(side).ee_link_name = name or ""
 
     def set_ee_rotation_offsets(
@@ -395,6 +399,7 @@ class RobotIKController:
         y_deg: float = DEFAULT_ROTATION_OFFSET_DEG,
         z_deg: float = DEFAULT_ROTATION_OFFSET_DEG,
     ) -> None:
+        """Set the local-frame XYZ end-effector rotation offsets for one side."""
         arm = self._arm(side)
         arm.ee_rot_x_deg = float(x_deg)
         arm.ee_rot_y_deg = float(y_deg)
@@ -412,21 +417,26 @@ class RobotIKController:
         return _count_chain_dofs(arm.resolved_path, arm.ee_link_name)
 
     def set_num_arm_dofs(self, side: Literal["left", "right"], n: int) -> None:
+        """Set the number of arm DOFs to control for one side."""
         self._arm(side).num_arm_dofs = max(1, n)
 
     def set_ik_method(self, side: Literal["left", "right"], method: IKMethod) -> None:
+        """Set the differential IK method for one side."""
         arm = self._arm(side)
         arm.ik_method = method
         if arm.ctrl is not None and arm.solver_type.supports_method:
             arm.ctrl.method = method.value
 
     def get_ik_method(self, side: Literal["left", "right"]) -> IKMethod:
+        """Return the current IK method for one side."""
         return self._arm(side).ik_method
 
     def set_scale(self, side: Literal["left", "right"], scale: float) -> None:
+        """Set the IK step scale factor for one side."""
         self._arm(side).scale = scale
 
     def set_damping(self, side: Literal["left", "right"], damping: float) -> None:
+        """Set the DLS damping factor for one side."""
         arm = self._arm(side)
         arm.damping = damping
         if arm.ctrl is not None and hasattr(arm.ctrl, "damping"):
@@ -474,17 +484,18 @@ class RobotIKController:
         return True, f"Switched to {solver_type.value}"
 
     def get_solver_type(self, side: Literal["left", "right"]) -> IKSolverType:
+        """Return the current IK solver type for one side."""
         return self._arm(side).solver_type
 
     @staticmethod
     def get_solver_availability(solver_type: IKSolverType) -> tuple[bool, str]:
-        """Returns whether the requested solver backend is currently available."""
+        """Return whether the requested solver backend is currently available."""
         if solver_type == IKSolverType.PINK:
             return PinkIKController.get_backend_status()
         return True, ""
 
     def set_gain(self, side: Literal["left", "right"], value: float) -> None:
-        """Sets the gain for solvers that support it. Applied live if running."""
+        """Set the gain for solvers that support it. Applied live if running."""
         clamped = max(0.01, value)
         arm = self._arm(side)
         arm.gain = clamped
@@ -492,6 +503,7 @@ class RobotIKController:
             arm.ctrl.gain = clamped
 
     def get_gain(self, side: Literal["left", "right"]) -> float:
+        """Return the current gain value for one side."""
         return self._arm(side).gain
 
     def set_pink_task_gain(self, side: Literal["left", "right"], value: float) -> None:
@@ -503,6 +515,7 @@ class RobotIKController:
             arm.ctrl.task_gain = clamped
 
     def get_pink_task_gain(self, side: Literal["left", "right"]) -> float:
+        """Return the PINK FrameTask gain for one side."""
         return self._arm(side).pink_task_gain
 
     def set_pink_qp_solver(self, side: Literal["left", "right"], solver_name: str) -> tuple[bool, str]:
@@ -523,14 +536,17 @@ class RobotIKController:
         return True, f"PINK QP solver set to {normalized}"
 
     def get_pink_qp_solver(self, side: Literal["left", "right"]) -> str:
+        """Return the PINK QP solver name for one side."""
         return self._arm(side).pink_qp_solver
 
     @staticmethod
     def get_pink_qp_solver_names() -> tuple[str, ...]:
+        """Return the names of all supported PINK QP solver backends."""
         return PinkIKController.supported_qp_solvers()
 
     @staticmethod
     def get_pink_qp_solver_availability(solver_name: str) -> tuple[bool, str]:
+        """Return availability status of a PINK QP solver backend."""
         return PinkIKController.get_qp_solver_status(solver_name)
 
     def set_pink_posture_cost(self, side: Literal["left", "right"], value: float) -> None:
@@ -542,6 +558,7 @@ class RobotIKController:
             arm.ctrl.posture_cost = clamped
 
     def get_pink_posture_cost(self, side: Literal["left", "right"]) -> float:
+        """Return the PINK posture regularisation cost for one side."""
         return self._arm(side).pink_posture_cost
 
     def set_pink_lm_damping(self, side: Literal["left", "right"], value: float) -> None:
@@ -553,6 +570,7 @@ class RobotIKController:
             arm.ctrl.lm_damping = clamped
 
     def get_pink_lm_damping(self, side: Literal["left", "right"]) -> float:
+        """Return the PINK Levenberg-Marquardt damping for one side."""
         return self._arm(side).pink_lm_damping
 
     # ------------------------------------------------------------------
@@ -560,7 +578,7 @@ class RobotIKController:
     # ------------------------------------------------------------------
 
     def validate(self, side: Literal["left", "right"]) -> IKValidationResult:
-        """Validates and discovers the articulation under the given prim path.
+        """Validate and discovers the articulation under the given prim path.
 
         Searches the prim and its descendants for the first ArticulationRootAPI.
         On success, populates link_names, dof_names, and num_dofs so the UI can
@@ -618,7 +636,9 @@ class RobotIKController:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _create_solver(arm: _ArmState):
+    def _create_solver(
+        arm: _ArmState,
+    ) -> PositionBasedIKController | VelocityBasedIKController | LMIKController | PinkIKController:
         """Instantiate a solver from the current arm config via the factory registry."""
         factory = _SOLVER_FACTORY.get(arm.solver_type)
         if factory is None:
@@ -626,7 +646,7 @@ class RobotIKController:
         return factory(arm)
 
     def configure(self, side: Literal["left", "right"]) -> bool:
-        """Validates the articulation and creates the IK solver.
+        """Validate the articulation and creates the IK solver.
 
         Heavy operation: validates the prim, creates ``Articulation`` and
         ``RigidPrim`` wrappers, and instantiates the solver.  Call once after
@@ -663,7 +683,7 @@ class RobotIKController:
         return True
 
     def enable(self, side: Literal["left", "right"]) -> bool:
-        """Enables IK tracking for the given side.
+        """Enable IK tracking for the given side.
 
         If the solver has not been created yet (no prior :meth:`configure`),
         ``configure`` is called automatically.  Otherwise this is a lightweight
@@ -681,7 +701,7 @@ class RobotIKController:
         return True
 
     def disable(self, side: Literal["left", "right"]) -> None:
-        """Disables IK tracking without destroying the solver.
+        """Disable IK tracking without destroying the solver.
 
         The solver and articulation wrapper stay alive so that
         :meth:`enable` can resume instantly without re-validation.
@@ -709,6 +729,7 @@ class RobotIKController:
         return self._arm(side).ctrl is not None
 
     def is_running(self, side: Literal["left", "right"]) -> bool:
+        """Return True if IK tracking is active for one side."""
         return self._arm(side).running
 
     def is_reachable(self, side: Literal["left", "right"]) -> bool:
@@ -754,7 +775,7 @@ class RobotIKController:
                         self._on_status_changed(side, reachable)
 
     def _apply_ik_result(self, arm: _ArmState) -> None:
-        """Computes IK and applies joint positions to the articulation."""
+        """Compute IK and applies joint positions to the articulation."""
         if arm.robot is None or arm.ctrl is None:
             return
 

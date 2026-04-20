@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""MobilityGen scenario base class and registry."""
 
 from PIL import Image
 
@@ -23,23 +24,52 @@ from .utils.registry import Registry
 
 
 class MobilityGenScenario(Module):
+    """Abstract base class for MobilityGen scenarios.
 
-    def __init__(self, robot: MobilityGenRobot, occupancy_map: OccupancyMap):
+    Args:
+        robot: The robot for this scenario.
+        occupancy_map: The occupancy map for this scenario.
+    """
+
+    def __init__(self, robot: MobilityGenRobot, occupancy_map: OccupancyMap) -> None:
         self.robot = robot
         self.occupancy_map = occupancy_map
         self.buffered_occupancy_map = occupancy_map.buffered_meters(self.robot.occupancy_map_radius)
 
     @classmethod
-    def from_robot_occupancy_map(cls, robot: MobilityGenRobot, occupancy_map: OccupancyMap):
+    def from_robot_occupancy_map(cls, robot: MobilityGenRobot, occupancy_map: OccupancyMap) -> "MobilityGenScenario":
+        """Create a scenario from a robot and occupancy map.
+
+        Args:
+            robot: The robot for this scenario.
+            occupancy_map: The occupancy map for this scenario.
+
+        Returns:
+            The created scenario.
+        """
         return cls(robot, occupancy_map)
 
-    def reset(self):
+    def reset(self) -> None:
+        """Reset the scenario to its initial state."""
         raise NotImplementedError
 
     def step(self, step_size: float) -> bool:
+        """Step the scenario forward by one timestep.
+
+        Args:
+            step_size: The physics timestep size in seconds.
+
+        Returns:
+            True if the episode is still active, False if it has ended.
+        """
         raise NotImplementedError
 
-    def get_visualization_image(self) -> Image:
+    def get_visualization_image(self) -> Image.Image:
+        """Get a visualization image of the current scenario state.
+
+        Returns:
+            A PIL image representing the current state.
+        """
         image = self.occupancy_map.ros_image()
         return image
 

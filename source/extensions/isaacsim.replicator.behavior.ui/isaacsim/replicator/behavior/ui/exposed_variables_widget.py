@@ -42,7 +42,7 @@ class ExposedVariablesPropertyWidget(UsdPropertiesWidget):
         collapsed: Whether the widget should start in a collapsed state.
     """
 
-    def __init__(self, title: str, attribute_namespace_filter: list, collapsed: bool = False):
+    def __init__(self, title: str, attribute_namespace_filter: list, collapsed: bool = False) -> None:
         # Set multi_edit=False to handle each prim individually
         super().__init__(title, collapsed, multi_edit=False)
 
@@ -56,7 +56,7 @@ class ExposedVariablesPropertyWidget(UsdPropertiesWidget):
         self._multiple_selection = False
 
     def on_new_payload(self, payload: list) -> bool:
-        """Handles new payloads to refresh UI or update models.
+        """Handle new payloads to refresh UI or update models.
 
         Args:
             payload: The new payload to be handled by the widget.

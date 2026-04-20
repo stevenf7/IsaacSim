@@ -61,7 +61,8 @@ _PANEL_NAME = "Floating Controller"
 _LOG_NAMESPACE = "Floating"
 
 
-def set_status(label, text, color=CLR_DIM, emit_terminal: bool = False):
+def set_status(label: ui.Label | None, text: str, color: int = CLR_DIM, emit_terminal: bool = False) -> None:
+    """Set the status label text and color for this panel."""
     _set_status_base(label, text, color, source=_LOG_NAMESPACE, emit_terminal=emit_terminal)
 
 
@@ -76,7 +77,7 @@ class FloatingPanel:
 
     def __init__(
         self, floating_controller: FloatingRigidBodyController, teleop_manager: TeleopManager, collapsed_states: dict
-    ):
+    ) -> None:
         self._fc = floating_controller
         self._tm = teleop_manager
         self._collapsed = collapsed_states
@@ -103,7 +104,7 @@ class FloatingPanel:
     # Persistent settings helpers
     # ------------------------------------------------------------------
 
-    def _save(self, side: str, key: str, value) -> None:
+    def _save(self, side: str, key: str, value: object) -> None:
         path = f"{_SETTINGS_PREFIX}/{side}/{key}"
         if isinstance(value, str):
             self._settings.set_string(path, value)
@@ -123,6 +124,7 @@ class FloatingPanel:
     # ------------------------------------------------------------------
 
     def build(self) -> None:
+        """Build the floating controller panel UI."""
         frame = ui.CollapsableFrame(
             _PANEL_NAME, height=0, collapsed=self._collapsed.get(_PANEL_NAME, True), style=get_style()
         )
@@ -277,7 +279,6 @@ class FloatingPanel:
 
     def collect_profile(self) -> BimanualControllerProfile:
         """Collect the current floating-controller state into a teleop profile section."""
-
         return BimanualControllerProfile(
             left=ControllerSideProfile(
                 enabled=self._desired_enabled["left"],
@@ -291,7 +292,6 @@ class FloatingPanel:
 
     def apply_profile(self, profile: BimanualControllerProfile, resolve_stage: bool) -> None:
         """Apply a floating-controller teleop profile section."""
-
         for side, side_profile in (("left", profile.left), ("right", profile.right)):
             self._fc.destroy(side)
             self._tm.clear_floating_side(side)
@@ -320,7 +320,8 @@ class FloatingPanel:
     # Helpers
     # ------------------------------------------------------------------
 
-    def _get_field(self, side: str, key: str):
+    def _get_field(self, side: str, key: str) -> object:
+        """Return the widget stored under the given key for this side."""
         return self._widgets[side].get(key)
 
     def _get_path(self, side: str) -> str:
@@ -372,7 +373,7 @@ class FloatingPanel:
     # Timeline-driven UI locking
     # ------------------------------------------------------------------
 
-    def _on_timeline_event(self, event) -> None:
+    def _on_timeline_event(self, event: object) -> None:
         if event.type == int(omni.timeline.TimelineEventType.PLAY):
             self._is_playing = True
             for side in ("left", "right"):
@@ -434,7 +435,7 @@ class FloatingPanel:
         self._sync_side_controls(side)
 
     def _on_clear(self, side: str) -> None:
-        """Destroys controller resources for a side (path is preserved)."""
+        """Destroy controller resources for a side (path is preserved)."""
         if self._is_playing:
             return
         self._fc.destroy(side)
@@ -498,7 +499,7 @@ class FloatingPanel:
             self._sync_side_controls(side)
 
     def reset_ui(self) -> None:
-        """Resets all UI widgets to idle state (e.g. after stage close)."""
+        """Reset all UI widgets to idle state (e.g. after stage close)."""
         self._is_playing = False
         self._configured = {"left": False, "right": False}
         self._desired_enabled = {"left": False, "right": False}
@@ -510,7 +511,6 @@ class FloatingPanel:
 
     def on_stage_closed(self) -> None:
         """Clear stage-bound runtime state while preserving the configured profile in the UI."""
-
         self._is_playing = False
         self._configured = {"left": False, "right": False}
         for side in ("left", "right"):

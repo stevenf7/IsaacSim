@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.1] - 2026-04-18
+### Changed
+- Added return type annotations
+
 ## [0.4.0] - 2026-04-08
 ### Changed
 - Migrate from deprecated `isaacsim.replicator.mobility_gen` to `isaacsim.replicator.experimental.mobility_gen`

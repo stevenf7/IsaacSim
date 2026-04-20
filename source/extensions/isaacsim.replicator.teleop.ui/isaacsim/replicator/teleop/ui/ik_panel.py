@@ -60,7 +60,8 @@ _PANEL_NAME = "IK Controller"
 _LOG_NAMESPACE = "IK"
 
 
-def set_status(label, text, color=CLR_DIM, emit_terminal: bool = False):
+def set_status(label: ui.Label | None, text: str, color: int = CLR_DIM, emit_terminal: bool = False) -> None:
+    """Set the status label text and color for this panel."""
     _set_status_base(label, text, color, source=_LOG_NAMESPACE, emit_terminal=emit_terminal)
 
 
@@ -75,7 +76,7 @@ class IKPanel:
         ik_controller: RobotIKController,
         teleop_manager: TeleopManager,
         collapsed_states: dict,
-    ):
+    ) -> None:
         self._ik = ik_controller
         self._tm = teleop_manager
         self._collapsed = collapsed_states
@@ -116,7 +117,7 @@ class IKPanel:
     # Persistent settings helpers
     # ------------------------------------------------------------------
 
-    def _save(self, side: str, key: str, value) -> None:
+    def _save(self, side: str, key: str, value: object) -> None:
         path = f"{_SETTINGS_PREFIX}/{side}/{key}"
         if isinstance(value, str):
             self._settings.set_string(path, value)
@@ -134,6 +135,7 @@ class IKPanel:
     # ------------------------------------------------------------------
 
     def build(self) -> None:
+        """Build the IK controller panel UI."""
         frame = ui.CollapsableFrame(
             _PANEL_NAME,
             height=0,
@@ -151,7 +153,7 @@ class IKPanel:
     # ------------------------------------------------------------------
 
     def _build_arm_section(self, side: str) -> None:
-        """Builds one arm section with all controls."""
+        """Build one arm section with all controls."""
         w = self._widgets[side]
         side_key = f"{_PANEL_NAME}:{side}"
         with ui.CollapsableFrame(
@@ -402,7 +404,8 @@ class IKPanel:
     # Helpers
     # ------------------------------------------------------------------
 
-    def _get_field(self, side: str, key: str):
+    def _get_field(self, side: str, key: str) -> object:
+        """Return the widget stored under the given key for this side."""
         return self._widgets[side].get(key)
 
     def _get_path(self, side: str) -> str:
@@ -419,7 +422,7 @@ class IKPanel:
             return names[idx]
         return ""
 
-    def _set_combo_silent(self, side: str, guard_key: str, combo, value: int) -> None:
+    def _set_combo_silent(self, side: str, guard_key: str, combo: object, value: int) -> None:
         """Set a combo box value without triggering its change callback."""
         guard = f"_updating_{guard_key}"
         flags = getattr(self, guard, None)
@@ -492,7 +495,7 @@ class IKPanel:
     # Timeline-driven UI locking
     # ------------------------------------------------------------------
 
-    def _on_timeline_event(self, event) -> None:
+    def _on_timeline_event(self, event: object) -> None:
         if event.type == int(omni.timeline.TimelineEventType.PLAY):
             self._is_playing = True
             for side in ("left", "right"):
@@ -815,7 +818,6 @@ class IKPanel:
 
     def collect_profile(self) -> BimanualControllerProfile:
         """Collect the current IK-controller state into a teleop profile section."""
-
         return BimanualControllerProfile(
             left=ControllerSideProfile(
                 enabled=self._desired_enabled["left"],
@@ -829,7 +831,6 @@ class IKPanel:
 
     def apply_profile(self, profile: BimanualControllerProfile, resolve_stage: bool) -> None:
         """Apply an IK-controller teleop profile section."""
-
         for side, side_profile in (("left", profile.left), ("right", profile.right)):
             self._ik.disable(side)
             self._ik.destroy(side)
@@ -917,7 +918,7 @@ class IKPanel:
         self._sync_side_controls(side)
 
     def _on_clear(self, side: str) -> None:
-        """Disables (if running) and destroys solver and articulation resources."""
+        """Disable (if running) and destroys solver and articulation resources."""
         if self._is_playing:
             return
         self._ik.disable(side)
@@ -1027,7 +1028,7 @@ class IKPanel:
             set_status(status, "Out of reach", CLR_YELLOW, emit_terminal=True)
 
     def reset_ui(self) -> None:
-        """Resets all UI widgets to idle state (e.g. after stage close)."""
+        """Reset all UI widgets to idle state (e.g. after stage close)."""
         self._is_playing = False
         self._configured = {"left": False, "right": False}
         self._desired_enabled = {"left": False, "right": False}
@@ -1039,7 +1040,6 @@ class IKPanel:
 
     def on_stage_closed(self) -> None:
         """Clear stage-bound runtime state while preserving the configured profile in the UI."""
-
         self._is_playing = False
         self._configured = {"left": False, "right": False}
         for side in ("left", "right"):

@@ -115,7 +115,7 @@ def _get_semantics(
 
 
 class OgnDope:
-    """Gets pose information of assets with semantic labels. Information is used to train a DOPE model."""
+    """Get pose information of assets with semantic labels. Information is used to train a DOPE model."""
 
     @staticmethod
     def compute(db) -> bool:

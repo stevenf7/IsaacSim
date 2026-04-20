@@ -20,6 +20,7 @@ controller does not modify articulations or create physics bodies at runtime.
 """
 
 import math
+from collections.abc import Generator
 
 import numpy as np
 from isaacsim.core.experimental.prims import RigidPrim
@@ -43,8 +44,8 @@ class FloatingRigidBodyController:
     but this controller only commands the rigid body itself.
     """
 
-    def __init__(self, target_coordinate_system: CoordinateSystem = CoordinateSystem.ISAAC_SIM):
-        """Initializes the FloatingRigidBodyController.
+    def __init__(self, target_coordinate_system: CoordinateSystem = CoordinateSystem.ISAAC_SIM) -> None:
+        """Initialize the FloatingRigidBodyController.
 
         Args:
             target_coordinate_system: Coordinate system of input VR wrist pose data.
@@ -99,7 +100,7 @@ class FloatingRigidBodyController:
     # =========================================================================
 
     def set_coordinate_system(self, target_coordinate_system: CoordinateSystem) -> None:
-        """Sets the source coordinate system for input VR wrist pose data."""
+        """Set the source coordinate system for input VR wrist pose data."""
         self._target_coordinate_system = target_coordinate_system
 
     def set_target_rotation_offsets(
@@ -109,7 +110,7 @@ class FloatingRigidBodyController:
         y_deg: float = DEFAULT_ROTATION_OFFSET_DEG,
         z_deg: float = DEFAULT_ROTATION_OFFSET_DEG,
     ) -> None:
-        """Sets the local-frame XYZ target rotation offsets for one side."""
+        """Set the local-frame XYZ target rotation offsets for one side."""
         side = side.lower()
         if side == "right":
             self._right_target_rot_x_deg = float(x_deg)
@@ -129,7 +130,7 @@ class FloatingRigidBodyController:
     def _capture_world_pose(
         prim: Usd.Prim,
     ) -> tuple[tuple[float, float, float], tuple[float, float, float, float]]:
-        """Extracts position and orientation (xyzw) from a prim's world transform."""
+        """Extract position and orientation (xyzw) from a prim's world transform."""
         pos_arr, quat_arr = read_world_pose_arrays(prim)
         pos = pos_arr.reshape(-1, 3)[0]
         quat = quat_arr.reshape(-1, 4)[0]
@@ -157,7 +158,7 @@ class FloatingRigidBodyController:
     def _apply_target_rotation_offsets(
         self, orient: tuple[float, float, float, float] | None, side: str
     ) -> tuple[float, float, float, float] | None:
-        """Applies the configured local-frame XYZ rotation offsets to the target orientation."""
+        """Apply the configured local-frame XYZ rotation offsets to the target orientation."""
         if orient is None:
             return None
         rot_x_deg, rot_y_deg, rot_z_deg = self._get_target_rotation_offsets(side)
@@ -178,7 +179,7 @@ class FloatingRigidBodyController:
         orientation_kd: float = 0.2,
         side: str | None = None,
     ) -> None:
-        """Sets the PD control gains."""
+        """Set the PD control gains."""
         if side is None:
             self._set_side_gains("left", position_kp, position_kd, orientation_kp, orientation_kd)
             self._set_side_gains("right", position_kp, position_kd, orientation_kp, orientation_kd)
@@ -256,7 +257,7 @@ class FloatingRigidBodyController:
         return self._left_rigid_prim if side == "left" else self._right_rigid_prim
 
     def _ensure_runtime_handle(self, side: str) -> RigidPrim | None:
-        """Creates the runtime ``RigidPrim`` lazily after physics is live."""
+        """Create the runtime ``RigidPrim`` lazily after physics is live."""
         existing = self._get_runtime_handle(side)
         if existing is not None:
             return existing
@@ -282,7 +283,7 @@ class FloatingRigidBodyController:
     # =========================================================================
 
     def _prepare_side(self, stage: Usd.Stage, prim_path: str, side: str) -> bool:
-        """Validates the rigid body selection and caches its initial world pose."""
+        """Validate the rigid body selection and caches its initial world pose."""
         prim = stage.GetPrimAtPath(prim_path)
         if not prim or not prim.IsValid():
             print(f"[Teleop][FloatingRigidBody] Control rigid body not found: '{prim_path}'")
@@ -317,7 +318,7 @@ class FloatingRigidBodyController:
     # =========================================================================
 
     def set_prim_path(self, side: str, path: str | None) -> None:
-        """Sets the prim path for a side. Destroys existing controller if path changed."""
+        """Set the prim path for a side. Destroys existing controller if path changed."""
         side = side.lower()
         current = self._left_end_effector_path if side == "left" else self._right_end_effector_path
         if current == path:
@@ -329,11 +330,11 @@ class FloatingRigidBodyController:
             self._right_end_effector_path = path
 
     def get_prim_path(self, side: str) -> str | None:
-        """Returns the stored prim path for a side."""
+        """Return the stored prim path for a side."""
         return self._left_end_effector_path if side.lower() == "left" else self._right_end_effector_path
 
     def validate(self, side: str) -> tuple[bool, str]:
-        """Validates the stored prim path for the rigid-body controller.
+        """Validate the stored prim path for the rigid-body controller.
 
         The selected rigid body may carry an attached articulation payload; the
         controller only validates and drives the selected rigid body itself.
@@ -370,7 +371,7 @@ class FloatingRigidBodyController:
         return True, f"Valid: {path}"
 
     def configure(self, side: str) -> bool:
-        """Prepares a side by validating and caching the rigid-body handle pose."""
+        """Prepare a side by validating and caching the rigid-body handle pose."""
         side = side.lower()
         self.destroy(side)
         valid, _msg = self.validate(side)
@@ -485,7 +486,7 @@ class FloatingRigidBodyController:
         right_wrist_position: tuple[float, float, float] | None = None,
         right_wrist_orientation: tuple[float, float, float, float] | None = None,
     ) -> None:
-        """Sets target poses for velocity tracking.
+        """Set target poses for velocity tracking.
 
         Positions and orientations must already be in Isaac Sim coordinates
         (Z-up). Coordinate conversion is handled upstream.
@@ -506,7 +507,7 @@ class FloatingRigidBodyController:
     # =========================================================================
 
     def apply_tracking(self) -> None:
-        """Applies velocity tracking to the active rigid-body handles."""
+        """Apply velocity tracking to the active rigid-body handles."""
         if not self._enabled:
             return
 
@@ -560,8 +561,12 @@ class FloatingRigidBodyController:
     # Helpers
     # =========================================================================
 
-    def _iter_active_sides(self):
-        """Yields active rigid-body handles whose prims still exist."""
+    def _iter_active_sides(
+        self,
+    ) -> Generator[
+        tuple[str, RigidPrim, tuple[float, float, float], tuple[float, float, float, float] | None], None, None
+    ]:
+        """Yield active rigid-body handles whose prims still exist."""
         for side, active, target_pos, target_orient in (
             ("left", self._left_active, self._left_target_pos, self._left_target_orient),
             ("right", self._right_active, self._right_target_pos, self._right_target_orient),
@@ -583,7 +588,7 @@ class FloatingRigidBodyController:
 
     @staticmethod
     def _get_pose(control_prim: RigidPrim) -> tuple[tuple[float, float, float], tuple[float, float, float, float]]:
-        """Gets current world pose from the active control handle."""
+        """Get current world pose from the active control handle."""
         positions, orientations = control_prim.get_world_poses()
         pos = positions.numpy()[0]
         orient_wxyz = orientations.numpy()[0]
@@ -594,7 +599,7 @@ class FloatingRigidBodyController:
 
     @staticmethod
     def _get_velocities(control_prim: RigidPrim) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
-        """Gets current velocities from the active control handle."""
+        """Get current velocities from the active control handle."""
         lin_vels, ang_vels = control_prim.get_velocities()
         lin = lin_vels.numpy()[0]
         ang = ang_vels.numpy()[0]
@@ -607,7 +612,7 @@ class FloatingRigidBodyController:
     def _position_error(
         current: tuple[float, float, float], target: tuple[float, float, float]
     ) -> tuple[float, float, float]:
-        """Computes position error (target - current)."""
+        """Compute position error (target - current)."""
         return (target[0] - current[0], target[1] - current[1], target[2] - current[2])
 
     @staticmethod
@@ -615,7 +620,7 @@ class FloatingRigidBodyController:
         current_orient: tuple[float, float, float, float] | None,
         target_orient: tuple[float, float, float, float] | None,
     ) -> tuple[float, float, float]:
-        """Computes orientation error as axis-angle using the shortest quaternion path."""
+        """Compute orientation error as axis-angle using the shortest quaternion path."""
         if current_orient is None or target_orient is None:
             return (0.0, 0.0, 0.0)
 
@@ -652,7 +657,7 @@ class FloatingRigidBodyController:
         return (math.degrees(roll), math.degrees(pitch), math.degrees(yaw))
 
     def reset_targets(self) -> None:
-        """Resets all controller targets to origin/identity."""
+        """Reset all controller targets to origin/identity."""
         self._left_target_pos = (0.0, 0.0, 0.0)
         self._left_target_orient = (0.0, 0.0, 0.0, 1.0)
         self._right_target_pos = (0.0, 0.0, 0.0)
@@ -684,15 +689,15 @@ class FloatingRigidBodyController:
 
     @property
     def is_enabled(self) -> bool:
-        """Returns True if floating rigid-body tracking is active."""
+        """Return True if floating rigid-body tracking is active."""
         return self._enabled
 
     @property
     def left_end_effector_path(self) -> str | None:
-        """Returns the path to the left control rigid body."""
+        """Return the path to the left control rigid body."""
         return self._left_end_effector_path
 
     @property
     def right_end_effector_path(self) -> str | None:
-        """Returns the path to the right control rigid body."""
+        """Return the path to the right control rigid body."""
         return self._right_end_effector_path
