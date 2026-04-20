@@ -64,7 +64,7 @@ The core functionality is provided by a set of application-level extensions and 
      - Description
    * - Actor Simulation and SDG
      - ``isaacsim.replicator.agent.core``
-     - The **Isaac Sim Replicator Agent (IRA)** extension simulates intelligent actors in 3D environments. It handles complex human and robot behaviors, from large-scale routines like warehouse operations (e.g., workers patrolling, forklifts roaming) to specific reactions to dynamic events. It captures diverse data and action metadata.
+     - The **Isaac Sim Replicator Agent (IRA)** extension simulates intelligent actors in 3D environments. It handles complex human and robot behaviors, from large-scale routines like warehouse operations (for example, workers patrolling, forklifts roaming) to specific reactions to dynamic events. It captures diverse data and action metadata.
    * - Object Simulation and SDG
      - ``isaacsim.replicator.object.core``
      - The **Isaac Sim Replicator Object (IRO)** extension allows you to programmatically create and place objects at scale. It can procedurally generate unique shapes, automatically stack racks, and pack boxes before applying physics to settle the scene realistically.
@@ -80,9 +80,6 @@ The core functionality is provided by a set of application-level extensions and 
    * - RTX Sensor Calibration
      - ``isaacsim.sensors.rtx.calibration``
      - The **RTX Sensor Calibration (ISC)** extension generates camera calibration data for deployed cameras in the scene.
-   * - Behavior Composer
-     - ``omni.behavior.composer``
-     - The **Behavior Composer (OBC)** extension implements the classic behavior tree system for Omniverse Kit applications. It provides tools and APIs to author entity behaviors using OpenUSD and a standalone C++ core runtime API to power simulation engines.
    * - Behavior tree generation
      - ``omni.ai.behavior_tree_gen.core`` and ``omni.ai.behavior_tree_gen.bridge``
      - The **Behavior Tree Generation** workflow converts natural-language scenarios into behavior tree outputs. ``omni.ai.behavior_tree_gen.core`` provides the reusable pipeline and scripted API, while ``omni.ai.behavior_tree_gen.bridge`` provides the Kit UI, example loaders, and interactive workflow orchestration.
