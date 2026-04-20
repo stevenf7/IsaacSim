@@ -117,7 +117,6 @@ class SdfShapePrim(GeometryPrim):
                     carb.log_error(f"prim at path'{path}' is not a UsdGeom.Mesh and cannot provide sdf information!")
                 else:
                     self._apply_sdf_schema(get_prim_at_path(path))
-                    self._prims.append(prim)
 
         self._sdf_collision_apis = [None] * self._count
 
@@ -142,6 +141,8 @@ class SdfShapePrim(GeometryPrim):
             UsdPhysics.CollisionAPI.Apply(prim_at_path)
         if not prim_at_path.HasAPI(UsdPhysics.MeshCollisionAPI):
             meshcollisionAPI = UsdPhysics.MeshCollisionAPI.Apply(prim_at_path)
+        else:
+            meshcollisionAPI = UsdPhysics.MeshCollisionAPI(prim_at_path)
         meshcollisionAPI.CreateApproximationAttr().Set("sdf")
 
         if not prim_at_path.HasAPI(PhysxSchema.PhysxSDFMeshCollisionAPI):

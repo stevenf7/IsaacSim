@@ -493,7 +493,9 @@ class XFormPrim(Prim):
                     if self._prims[i].HasAPI(UsdShade.MaterialBindingAPI):
                         self._binding_apis[i] = UsdShade.MaterialBindingAPI(self._prims[i])
                     else:
-                        self._binding_apis[i] = UsdShade.MaterialBindingAPI.Apply(self._prims[i])
+                        result[write_idx] = None
+                        write_idx += 1
+                        continue
                 if self._applied_visual_materials[i] is not None:
                     result[write_idx] = self._applied_visual_materials[i]
                     write_idx += 1
@@ -757,10 +759,9 @@ class XFormPrim(Prim):
                     if positions is not None:
                         matrix.SetTranslateOnly(usdrt.Gf.Vec3d(*positions[i]))
                     if orientations is not None:
+                        existing_scale = usdrt.Gf.Transform(matrix).GetScale()
                         matrix.SetRotateOnly(usdrt.Gf.Quatd(*orientations[i]))
-                        scaling_matrix = (
-                            usdrt.Gf.Matrix4d().SetIdentity().SetScale(usdrt.Gf.Transform(matrix).GetScale())
-                        )
+                        scaling_matrix = usdrt.Gf.Matrix4d().SetIdentity().SetScale(existing_scale)
                         matrix = scaling_matrix * matrix
                     fabric_hierarchy.set_world_xform(path, matrix)
             else:
@@ -908,6 +909,8 @@ class XFormPrim(Prim):
                         carb.log_error(
                             f"Translate property needs to be set for {self.name} before setting its position"
                         )
+                        write_idx += 1
+                        continue
                     xform_op = self._prims[i].GetAttribute("xformOp:translate")
                     xform_op.Set(translation)
                     write_idx += 1
@@ -920,6 +923,8 @@ class XFormPrim(Prim):
                         carb.log_error(
                             f"Orient property needs to be set for {self.name} before setting its orientation"
                         )
+                        write_idx += 1
+                        continue
                     xform_op = self._prims[i].GetAttribute("xformOp:orient")
                     if xform_op.GetTypeName() == "quatf":
                         rotq = Gf.Quatf(*orientations[write_idx])
@@ -1060,7 +1065,12 @@ class XFormPrim(Prim):
             write_idx = 0
             indices = self._backend_utils.to_list(indices)
             for i in indices:
-                scales[write_idx] = np.array(self._prims[i].GetAttribute("xformOp:scale").Get(), dtype="float32")
+                scale_attr = self._prims[i].GetAttribute("xformOp:scale")
+                scale_val = scale_attr.Get() if scale_attr else None
+                if scale_val is not None:
+                    scales[write_idx] = np.array(scale_val, dtype="float32")
+                else:
+                    scales[write_idx] = np.array([1.0, 1.0, 1.0], dtype="float32")
                 write_idx += 1
             scales = self._backend_utils.convert(scales, dtype="float32", device=self._device, indexed=True)
             return scales
@@ -1143,8 +1153,6 @@ class XFormPrim(Prim):
             result = interops_utils.torch2warp(data).to(self._device)
         elif self._backend == "numpy":
             result = interops_utils.numpy2warp(data).to(self._device)
-        elif self._backend == "numpy":
-            result = interops_utils.numpy2torch(data).to(self._device)
         else:
             raise Exception("utils to convert the specified backend arrays to warp doesn't exist")
         if dtype is not None:

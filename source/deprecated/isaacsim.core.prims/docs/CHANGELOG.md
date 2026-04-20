@@ -1,5 +1,57 @@
 # Changelog
 
+## [0.11.2] - 2026-04-19
+### Fixed
+- Fix `RigidPrim.get_linear_velocities` UnboundLocalError when `clone=False` (used wrong variable name)
+- Fix `RigidPrim.get_angular_velocities` ignoring `clone` parameter (cloned into unused variable)
+- Fix `RigidPrim.get_masses` getter silently applying `UsdPhysics.MassAPI` as side effect
+- Fix `RigidPrim.get_densities` getter silently applying `UsdPhysics.MassAPI` as side effect
+- Fix `RigidPrim.get_sleep_thresholds` getter silently applying `PhysxSchema.PhysxRigidBodyAPI` as side effect
+- Fix `RigidPrim.enable_gravities` USD fallback setting `DisableGravity=True` (inverted boolean)
+- Fix `RigidPrim.disable_gravities` USD fallback setting `DisableGravity=False` (inverted boolean)
+- Fix `RigidPrim.enable_rigid_body_physics` and related methods using `len()` on warp arrays (use `shape[0]`)
+- Fix `RigidPrim.set_masses` calling `resolve_indices` twice (redundant second call in USD fallback)
+- Fix `RigidPrim.set_coms` `IndexError` on 2D orientation input (use `wxyz2xyzw` instead of manual reorder)
+- Fix `RigidPrim.set_default_state` calling `resolve_indices` 4 times (once per field); resolve once
+- Fix `Articulation.get_friction_coefficients` skipping zero-valued joints (Python truthiness check)
+- Fix `Articulation.get_armatures` skipping zero-valued joints (Python truthiness check)
+- Fix `Articulation.switch_control_mode("velocity")` passing `_default_kps` instead of `_default_kds` for warp backend
+- Fix `Articulation.set_gains` applying `UsdPhysics.DriveAPI` when both `kps=None` and `kds=None` (early return)
+- Fix `Articulation.get_effort_modes` getter silently applying `UsdPhysics.DriveAPI` as side effect
+- Fix `Articulation.get_max_efforts` getter silently applying `UsdPhysics.DriveAPI` as side effect
+- Fix `Articulation.get_gains` getter silently applying `UsdPhysics.DriveAPI` as side effect in USD fallback
+- Fix `Articulation.set_effort_modes` dead code (`if not drive.GetTypeAttr()` always False)
+- Fix `Articulation.set_velocities` missing return after not-initialized guard
+- Fix `Articulation.get_velocities` missing return after not-initialized guard
+- Fix `Articulation.get_linear_velocities` missing return after not-initialized guard
+- Fix `Articulation.set_angular_velocities` missing return after not-initialized guard
+- Fix `Articulation.get_angular_velocities` missing return after not-initialized guard
+- Fix `Articulation.get_joints_state` missing return after not-initialized guard
+- Fix `Articulation.set_joint_efforts` zeroing unspecified joints when partial `joint_indices` passed
+- Fix `Articulation.apply_action` zeroing joint efforts for unspecified joints when partial `joint_indices` passed
+- Fix `Articulation.set_local_poses` raising `ValueError` when `orientations=None` with subset indices
+- Fix `XFormPrim.set_local_poses` raising `pxr.ErrorException` (missing continue after error log)
+- Fix `XFormPrim._backend2warp` duplicate `elif self._backend == "numpy"` branch (dead code)
+- Fix `XFormPrim.get_applied_visual_materials` getter silently applying `MaterialBindingAPI` as side effect
+- Fix `XFormPrim.set_world_poses(usd=False)` destroying non-uniform scale (extract scale before `SetRotateOnly`)
+- Fix `XFormPrim.get_local_scales` returning NaN when prim has no `xformOp:scale`
+- Fix `Prim._on_prim_deletion` falsely invalidating wildcard views (`.*` matches `/` in regex)
+- Fix `GeometryPrim.__init__` redundant `to_list(collisions)` conversion inside per-prim loop
+- Fix `GeometryPrim.__init__` `IndexError` when collisions array shorter than prim count
+- Fix `GeometryPrim.get_contact_offsets` getter silently applying `PhysxCollisionAPI` as side effect
+- Fix `GeometryPrim.get_rest_offsets` getter silently applying `PhysxCollisionAPI` as side effect
+- Fix `GeometryPrim.get_torsional_patch_radii` getter silently applying `PhysxCollisionAPI` as side effect
+- Fix `GeometryPrim.get_min_torsional_patch_radii` getter silently applying `PhysxCollisionAPI` and per-iteration tensor creation
+- Fix `GeometryPrim.get_collision_approximations` getter silently applying `MeshCollisionAPI` as side effect
+- Fix `GeometryPrim.get_applied_physics_materials` getter silently applying `MaterialBindingAPI` as side effect
+- Fix `GeometryPrim` 4 contact-force method return annotations missing `| None`
+- Fix `SdfShapePrim._apply_sdf_schema` `UnboundLocalError` when `MeshCollisionAPI` already applied
+- Fix `SdfShapePrim.__init__` double-appending prims (parent `Prim.__init__` + subclass loop)
+- Fix `ParticleSystem.__init__` silently discarding device setting (add warning on non-cpu fallback)
+- Fix `SingleArticulation.dof_properties` `hasLimits` returning False for locked joints (lower==upper!=0)
+- Fix `SingleArticulation.dof_properties` dead DC-API migration artifacts (4 commented-out lines)
+- Fix `SingleArticulation` 3 methods with dead `is_physics_handle_valid() is None` guard
+
 ## [0.11.1] - 2026-04-17
 ### Fixed
 - Add `| None` to 8 `Articulation` property return annotations that can return `None` when uninitialized

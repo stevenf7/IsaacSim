@@ -37,7 +37,7 @@ from omni.usd.commands import DeletePrimsCommand, MovePrimCommand
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics  # noqa: F401 -- Gf is used inside eval() in set_prim_attribute_value
 
 
-def get_prim_at_path(prim_path: str, fabric: bool = False) -> Usd.Prim | usdrt.Usd._Usd.Prim:
+def get_prim_at_path(prim_path: str, fabric: bool = False) -> Usd.Prim | usdrt.Usd._Usd.Prim | None:
     """Get the USD or Fabric Prim at a given path string.
 
     Args:
@@ -616,7 +616,7 @@ def is_prim_hidden_in_stage(prim_path: str) -> bool:
     return bool(get_prim_at_path(prim_path).GetMetadata("hide_in_stage_window"))
 
 
-def get_prim_path(prim: Usd.Prim) -> str:
+def get_prim_path(prim: Usd.Prim) -> str | None:
     """Get the path of a given USD prim.
 
     Args:
