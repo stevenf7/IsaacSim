@@ -18,9 +18,8 @@ import json
 import os
 import re
 import sys
-import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
+from datetime import datetime
 
 try:
     import gitlab as _gitlab
@@ -551,12 +550,88 @@ plot.on('plotly_click', function(data) {{
     if _kaleido is not None:
         fig.update_xaxes(ticktext=pipeline_labels_png, row=num_rows, col=1)
         png_file = output_file.replace(".html", ".png")
+        # Chrome/kaleido reliably renders up to ~8k pixels tall; a full-resolution
+        # heatmap with hundreds of failing tests (e.g. IsaacLab) can blow past
+        # that and fail silently with an empty error.  Cap the PNG height —
+        # the interactive HTML still shows every row at full resolution.
+        PNG_MAX_HEIGHT = 8000
+        original_height = fig.layout.height
+        if original_height and original_height > PNG_MAX_HEIGHT:
+            fig.update_layout(height=PNG_MAX_HEIGHT)
         try:
             fig.write_image(png_file, scale=1)
             if not quiet:
                 print(f"Chart saved to: {png_file}")
         except Exception as exc:
-            print(f"Warning: PNG export failed: {exc}", file=sys.stderr)
+            import traceback
+            print(f"Warning: PNG export failed: {type(exc).__name__}: {exc!r}",
+                  file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
+        finally:
+            if original_height and original_height > PNG_MAX_HEIGHT:
+                fig.update_layout(height=original_height)
+
+
+def run_heatmap_mode(args, config: dict) -> None:
+    """Generate the heatmap HTML (and PNG) for the dashboard output directory.
+
+    Reads job include/exclude patterns and ``limit`` from
+    ``config.slack.heatmap`` and writes
+    ``pipeline_test_chart_{namespace_prefix}_heatmap.html/.png`` to
+    ``args.output_dir``.
+    """
+    from pathlib import Path
+    from .regression import PipelineType, detect_pipeline_type
+
+    hcfg = config.get("slack", {}).get("heatmap", {})
+    excl = list(hcfg.get("exclude_job_patterns") or [])
+    incl = list(hcfg.get("include_job_patterns") or [])
+
+    prefix = config.get("namespace_prefix", "heatmap")
+    out_dir = Path(args.output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    # run_pipeline_test_stats appends "_heatmap.html" to the chart stem, so pass
+    # the base name (without the "_heatmap" suffix) here.
+    output_chart = str(out_dir / f"pipeline_test_chart_{prefix}.html")
+
+    branch = (args.branch
+              or os.getenv("CI_MERGE_REQUEST_TARGET_BRANCH_NAME")
+              or os.getenv("CI_COMMIT_REF_NAME")
+              or "develop")
+
+    # Kit-downstream pipelines run as source=pipeline; filtering by source=push
+    # would drop them entirely, so match on UPSTREAM_PIPELINE_SOURCE instead.
+    pipeline_type = detect_pipeline_type(os.getenv("CI_PIPELINE_SOURCE", ""))
+    if pipeline_type in (PipelineType.KIT_NIGHTLY, PipelineType.KIT_POST_MERGE):
+        variable_filters: dict | None = {"UPSTREAM_PIPELINE_SOURCE": ["nightly", "post_merge"]}
+        pipeline_sources: list[str] | None = None
+    else:
+        variable_filters = None
+        pipeline_sources = ["push"]
+
+    pid = args.include_pipeline_id or os.getenv("CI_PIPELINE_ID")
+    include_pipeline_id: int | None = None
+    if pid:
+        try:
+            include_pipeline_id = int(pid)
+        except (TypeError, ValueError):
+            include_pipeline_id = None
+
+    subtitle = f"Pipeline for branch {branch} on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+
+    run_pipeline_test_stats(
+        heatmap=True,
+        quiet=False,
+        output_chart=output_chart,
+        exclude_patterns=excl or None,
+        include_patterns=incl or None,
+        limit=hcfg.get("limit", 100),
+        branch=branch,
+        pipeline_sources=pipeline_sources,
+        variable_filters=variable_filters,
+        heatmap_subtitle=subtitle,
+        include_pipeline_id=include_pipeline_id,
+    )
 
 
 def run_pipeline_test_stats(

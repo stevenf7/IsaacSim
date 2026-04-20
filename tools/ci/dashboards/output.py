@@ -209,11 +209,18 @@ def _generate_from_cache(data_dir: str | Path, output_dir: str | Path,
     if extra_branches:
         branch_runs = _add_branch_placeholders(branch_runs, extra_branches, prefix=prefix)
     github_cfg = cfg.get("ingestion", {}).get("github", {})
+    namespace = cfg.get("namespace_prefix", "")
     meta = {
         "gitlab_url": cfg.get("gitlab_url", "https://gitlab-master.nvidia.com"),
         "gitlab_project": cfg.get("gitlab_project", "omniverse/isaac/omni_isaac_sim"),
         "dashboard_title": cfg.get("dashboard_title", ""),
         "github_repo": github_cfg.get("repo", ""),
+        # Canonical heatmap artifact name produced by the `heatmap` subcommand.
+        # The dashboard's "Open heatmap" link resolves this relative to the
+        # dashboard HTML so both files must live in the same directory.
+        "heatmap_filename": (
+            f"pipeline_test_chart_{namespace}_heatmap.html" if namespace else ""
+        ),
     }
     generate_output(
         branch_runs, output_dir,
