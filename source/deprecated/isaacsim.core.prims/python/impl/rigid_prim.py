@@ -632,8 +632,8 @@ class RigidPrim(XFormPrim):
         if self.is_physics_handle_valid():
             linear_velocities = self._physics_view.get_velocities()
             if clone:
-                velocities = self._backend_utils.clone_tensor(linear_velocities, device=self._device)
-            return velocities[indices, 0:3]
+                linear_velocities = self._backend_utils.clone_tensor(linear_velocities, device=self._device)
+            return linear_velocities[indices, 0:3]
         else:
             linear_velocities = np.zeros(shape=(indices.shape[0], 3), dtype=np.float32)
             write_idx = 0
@@ -762,7 +762,7 @@ class RigidPrim(XFormPrim):
         if self.is_physics_handle_valid():
             angular_velocities = self._physics_view.get_velocities()
             if clone:
-                velocities = self._backend_utils.clone_tensor(angular_velocities, device=self._device)
+                angular_velocities = self._backend_utils.clone_tensor(angular_velocities, device=self._device)
             return angular_velocities[indices, 3:6]
         else:
             angular_velocities = np.zeros(shape=(indices.shape[0], 3), dtype=np.float32)
@@ -1043,7 +1043,8 @@ class RigidPrim(XFormPrim):
                     if self._prims[i].HasAPI(UsdPhysics.MassAPI):
                         self._mass_apis[i] = UsdPhysics.MassAPI(self._prims[i])
                     else:
-                        self._mass_apis[i] = UsdPhysics.MassAPI.Apply(self._prims[i])
+                        write_idx += 1
+                        continue
                 masses[write_idx] = self._mass_apis[i].GetMassAttr().Get()
                 write_idx += 1
             masses = self._backend_utils.convert(masses, dtype="float32", device=self._device, indexed=True)
@@ -1280,7 +1281,6 @@ class RigidPrim(XFormPrim):
             data = self._backend_utils.assign(self._backend_utils.move_data(masses, device="cpu"), data, indices)
             self._physics_view.set_masses(data, indices)
         else:
-            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             read_idx = 0
             indices = self._backend_utils.to_list(indices)
             masses = self._backend_utils.to_list(masses)
@@ -1385,7 +1385,7 @@ class RigidPrim(XFormPrim):
                     )
                 else:
                     coms[self._backend_utils.expand_dims(indices, 1), 3:7] = self._backend_utils.move_data(
-                        orientations[:, :, [1, 2, 3, 0]], device="cpu"
+                        self._backend_utils.wxyz2xyzw(orientations), device="cpu"
                     )
             self._physics_view.set_coms(coms, indices)
         else:
@@ -1467,7 +1467,8 @@ class RigidPrim(XFormPrim):
                 if self._prims[i].HasAPI(UsdPhysics.MassAPI):
                     self._mass_apis[i] = UsdPhysics.MassAPI(self._prims[i])
                 else:
-                    self._mass_apis[i] = UsdPhysics.MassAPI.Apply(self._prims[i])
+                    write_idx += 1
+                    continue
             densities[write_idx] = self._mass_apis[i].GetDensityAttr().Get()
             write_idx += 1
         densities = self._backend_utils.convert(densities, dtype="float32", device=self._device, indexed=True)
@@ -1556,11 +1557,10 @@ class RigidPrim(XFormPrim):
         for i in indices:
             if self._physx_rigid_body_apis[i] is None:
                 if self._prims[i].HasAPI(PhysxSchema.PhysxRigidBodyAPI):
-                    rigid_api = PhysxSchema.PhysxRigidBodyAPI(self._prims[i])
+                    self._physx_rigid_body_apis[i] = PhysxSchema.PhysxRigidBodyAPI(self._prims[i])
                 else:
-                    rigid_api = PhysxSchema.PhysxRigidBodyAPI.Apply(self._prims[i])
-                self._physx_rigid_body_apis[i] = rigid_api
-
+                    write_idx += 1
+                    continue
             thresholds[write_idx] = self._physx_rigid_body_apis[i].GetSleepThresholdAttr().Get()
             write_idx += 1
         thresholds = self._backend_utils.convert(thresholds, dtype="float32", device=self._device, indexed=True)
@@ -1588,15 +1588,14 @@ class RigidPrim(XFormPrim):
         """
         if not self._is_valid:
             raise Exception(f"prim view {self._regex_prim_paths} is not a valid view")
+        indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
         if self.is_physics_handle_valid():
-            indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             data = self._physics_view.get_disable_simulations().reshape(self._count)
             data = self._backend_utils.assign(
-                self._backend_utils.create_tensor_from_list([False] * len(indices), dtype="uint8"), data, indices
+                self._backend_utils.create_tensor_from_list([False] * indices.shape[0], dtype="uint8"), data, indices
             )
             self._physics_view.set_disable_simulations(data, indices)
         else:
-            indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             indices = self._backend_utils.to_list(indices)
             for i in indices:
                 if self._rigid_body_apis[i] is None:
@@ -1634,7 +1633,7 @@ class RigidPrim(XFormPrim):
         if self.is_physics_handle_valid():
             data = self._physics_view.get_disable_simulations().reshape(self._count)
             data = self._backend_utils.assign(
-                self._backend_utils.create_tensor_from_list([True] * len(indices), dtype="uint8"), data, indices
+                self._backend_utils.create_tensor_from_list([True] * indices.shape[0], dtype="uint8"), data, indices
             )
             self._physics_view.set_disable_simulations(data, indices)
         else:
@@ -1673,7 +1672,7 @@ class RigidPrim(XFormPrim):
             indices = self._backend_utils.resolve_indices(indices, self.count, "cpu")
             data = self._physics_view.get_disable_gravities().reshape(self._count)
             data = self._backend_utils.assign(
-                self._backend_utils.create_tensor_from_list([False] * len(indices), dtype="uint8"), data, indices
+                self._backend_utils.create_tensor_from_list([False] * indices.shape[0], dtype="uint8"), data, indices
             )
             self._physics_view.set_disable_gravities(data, indices)
         else:
@@ -1686,7 +1685,7 @@ class RigidPrim(XFormPrim):
                     else:
                         rigid_api = PhysxSchema.PhysxRigidBodyAPI.Apply(self._prims[i])
                     self._physx_rigid_body_apis[i] = rigid_api
-                self._physx_rigid_body_apis[i].GetDisableGravityAttr().Set(True)
+                self._physx_rigid_body_apis[i].GetDisableGravityAttr().Set(False)
 
     def disable_gravities(self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None) -> None:
         """Disable gravity on rigid bodies (enabled by default).
@@ -1712,7 +1711,7 @@ class RigidPrim(XFormPrim):
         if self.is_physics_handle_valid():
             data = self._physics_view.get_disable_gravities().reshape(self._count)
             data = self._backend_utils.assign(
-                self._backend_utils.create_tensor_from_list([True] * len(indices), dtype="uint8"), data, indices
+                self._backend_utils.create_tensor_from_list([True] * indices.shape[0], dtype="uint8"), data, indices
             )
             self._physics_view.set_disable_gravities(data, indices)
         else:
@@ -1725,7 +1724,7 @@ class RigidPrim(XFormPrim):
                     else:
                         rigid_api = PhysxSchema.PhysxRigidBodyAPI.Apply(self._prims[i])
                     self._physx_rigid_body_apis[i] = rigid_api
-                self._physx_rigid_body_apis[i].GetDisableGravityAttr().Set(False)
+                self._physx_rigid_body_apis[i].GetDisableGravityAttr().Set(True)
             return
 
     def set_default_state(
@@ -1781,11 +1780,12 @@ class RigidPrim(XFormPrim):
         XFormPrim.set_default_state(self, positions=positions, orientations=orientations)
         if self._non_root_link:
             return
+        if indices is not None:
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if positions is not None:
             if indices is None:
                 self._dynamics_default_state.positions = positions
             else:
-                indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
                 if self._backend == "warp":
                     self._dynamics_default_state.positions = self._backend_utils.assign(
                         positions, self._dynamics_default_state.positions, indices
@@ -1796,7 +1796,6 @@ class RigidPrim(XFormPrim):
             if indices is None:
                 self._dynamics_default_state.orientations = orientations
             else:
-                indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
                 if self._backend == "warp":
                     self._dynamics_default_state.orientations = self._backend_utils.assign(
                         orientations, self._dynamics_default_state.orientations, indices
@@ -1807,7 +1806,6 @@ class RigidPrim(XFormPrim):
             if indices is None:
                 self._dynamics_default_state.linear_velocities = linear_velocities
             else:
-                indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
                 if self._backend == "warp":
                     self._dynamics_default_state.linear_velocities = self._backend_utils.assign(
                         linear_velocities, self._dynamics_default_state.linear_velocities, indices
@@ -1818,7 +1816,6 @@ class RigidPrim(XFormPrim):
             if indices is None:
                 self._dynamics_default_state.angular_velocities = angular_velocities
             else:
-                indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
                 if self._backend == "warp":
                     self._dynamics_default_state.angular_velocities = self._backend_utils.assign(
                         angular_velocities, self._dynamics_default_state.angular_velocities, indices

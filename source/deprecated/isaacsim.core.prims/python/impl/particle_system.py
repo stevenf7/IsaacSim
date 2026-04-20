@@ -112,8 +112,12 @@ class ParticleSystem:
         self._backend = SimulationManager.get_backend()
         self._device = SimulationManager.get_physics_sim_device()
         self._backend_utils = SimulationManager._get_backend_utils()
-        # TODO: particleSystemView is currently supported only on the host
-        self._device = "cpu"
+        if self._device != "cpu":
+            carb.log_warn(
+                f"ParticleSystem view requested device '{self._device}' but only 'cpu' is currently supported. "
+                "Falling back to 'cpu'."
+            )
+            self._device = "cpu"
 
         # set properties
         if particle_systems_enabled is not None:

@@ -249,9 +249,12 @@ class Prim(object):
             self._callbacks = []
             return
         for regex_prim_paths in self._regex_prim_paths:
-            result = re.match(
-                pattern="^" + "/".join(regex_prim_paths.split("/")[: prim_path.count("/") + 1]) + "$", string=prim_path
-            )
+            truncated_parts = regex_prim_paths.split("/")[: prim_path.count("/") + 1]
+            safe_pattern = "/".join(part.replace(".*", "[^/]*") for part in truncated_parts)
+            try:
+                result = re.match(pattern="^" + safe_pattern + "$", string=prim_path)
+            except re.error:
+                result = None
             if result:
                 self._is_valid = False
                 for callback_id in self._callbacks:

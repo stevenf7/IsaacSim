@@ -156,6 +156,8 @@ class GeometryPrim(XFormPrim):
         self._collision_apis = [None] * self._count
         self._mesh_collision_apis = [None] * self._count
         self._physx_collision_apis = [None] * self._count
+        if collisions is not None:
+            collisions = self._backend_utils.to_list(collisions)
         for i in range(self.count):
             prim = self._prims[i]
             if prim.IsA(UsdGeom.Cube):
@@ -173,8 +175,7 @@ class GeometryPrim(XFormPrim):
             else:
                 self._geoms[i] = UsdGeom.Gprim(prim)
 
-            if collisions is not None:
-                collisions = self._backend_utils.to_list(collisions)
+            if collisions is not None and i < len(collisions):
                 if collisions[i]:
                     self.apply_collision_apis([i])
 
@@ -320,11 +321,9 @@ class GeometryPrim(XFormPrim):
         for i in indices:
             if self._physx_collision_apis[i] is None:
                 if self._prims[i].HasAPI(PhysxSchema.PhysxCollisionAPI):
-                    collision_api = PhysxSchema.PhysxCollisionAPI(self.prims[i])
-                else:
-                    collision_api = PhysxSchema.PhysxCollisionAPI.Apply(self._prims[i])
-                self._physx_collision_apis[i] = collision_api
-            offsets[write_idx] = self._physx_collision_apis[i].GetContactOffsetAttr().Get()
+                    self._physx_collision_apis[i] = PhysxSchema.PhysxCollisionAPI(self.prims[i])
+            if self._physx_collision_apis[i] is not None:
+                offsets[write_idx] = self._physx_collision_apis[i].GetContactOffsetAttr().Get()
             write_idx += 1
         offsets = self._backend_utils.convert(offsets, dtype="float32", device=self._device, indexed=True)
         return offsets
@@ -415,11 +414,9 @@ class GeometryPrim(XFormPrim):
         for i in indices:
             if self._physx_collision_apis[i] is None:
                 if self._prims[i].HasAPI(PhysxSchema.PhysxCollisionAPI):
-                    collision_api = PhysxSchema.PhysxCollisionAPI(self.prims[i])
-                else:
-                    collision_api = PhysxSchema.PhysxCollisionAPI.Apply(self._prims[i])
-                self._physx_collision_apis[i] = collision_api
-            offsets[write_idx] = self._physx_collision_apis[i].GetRestOffsetAttr().Get()
+                    self._physx_collision_apis[i] = PhysxSchema.PhysxCollisionAPI(self.prims[i])
+            if self._physx_collision_apis[i] is not None:
+                offsets[write_idx] = self._physx_collision_apis[i].GetRestOffsetAttr().Get()
             write_idx += 1
         offsets = self._backend_utils.convert(offsets, dtype="float32", device=self._device, indexed=True)
         return offsets
@@ -499,11 +496,9 @@ class GeometryPrim(XFormPrim):
         for i in indices:
             if self._physx_collision_apis[i] is None:
                 if self._prims[i].HasAPI(PhysxSchema.PhysxCollisionAPI):
-                    collision_api = PhysxSchema.PhysxCollisionAPI(self.prims[i])
-                else:
-                    collision_api = PhysxSchema.PhysxCollisionAPI.Apply(self._prims[i])
-                self._physx_collision_apis[i] = collision_api
-            radii[write_idx] = self._physx_collision_apis[i].GetTorsionalPatchRadiusAttr().Get()
+                    self._physx_collision_apis[i] = PhysxSchema.PhysxCollisionAPI(self.prims[i])
+            if self._physx_collision_apis[i] is not None:
+                radii[write_idx] = self._physx_collision_apis[i].GetTorsionalPatchRadiusAttr().Get()
             write_idx += 1
         radii = self._backend_utils.convert(radii, dtype="float32", device=self._device, indexed=True)
         return radii
@@ -577,21 +572,17 @@ class GeometryPrim(XFormPrim):
             [0. 0. 0.]
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
-        radii = self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
+        radii = np.zeros(indices.shape[0], dtype=np.float32)
         write_idx = 0
+        indices = self._backend_utils.to_list(indices)
         for i in indices:
-            if self._physx_collision_apis[i.tolist()] is None:
-                if self._prims[i.tolist()].HasAPI(PhysxSchema.PhysxCollisionAPI):
-                    collision_api = PhysxSchema.PhysxCollisionAPI(self.prims[i])
-                else:
-                    collision_api = PhysxSchema.PhysxCollisionAPI.Apply(self._prims[i.tolist()])
-                self._physx_collision_apis[i.tolist()] = collision_api
-            radii[write_idx] = self._backend_utils.create_tensor_from_list(
-                self._physx_collision_apis[i.tolist()].GetMinTorsionalPatchRadiusAttr().Get(),
-                dtype="float32",
-                device=self._device,
-            )
+            if self._physx_collision_apis[i] is None:
+                if self._prims[i].HasAPI(PhysxSchema.PhysxCollisionAPI):
+                    self._physx_collision_apis[i] = PhysxSchema.PhysxCollisionAPI(self.prims[i])
+            if self._physx_collision_apis[i] is not None:
+                radii[write_idx] = self._physx_collision_apis[i].GetMinTorsionalPatchRadiusAttr().Get()
             write_idx += 1
+        radii = self._backend_utils.convert(radii, dtype="float32", device=self._device, indexed=True)
         return radii
 
     def set_collision_approximations(
@@ -724,11 +715,11 @@ class GeometryPrim(XFormPrim):
         for i in indices:
             if self._mesh_collision_apis[i] is None:
                 if self._prims[i].HasAPI(UsdPhysics.MeshCollisionAPI):
-                    collision_api = UsdPhysics.MeshCollisionAPI(self.prims[i])
-                else:
-                    collision_api = UsdPhysics.MeshCollisionAPI.Apply(self._prims[i])
-                self._mesh_collision_apis[i] = collision_api
-            approximation_types[write_idx] = self._mesh_collision_apis[i].GetApproximationAttr().Get()
+                    self._mesh_collision_apis[i] = UsdPhysics.MeshCollisionAPI(self.prims[i])
+            if self._mesh_collision_apis[i] is not None:
+                approximation_types[write_idx] = self._mesh_collision_apis[i].GetApproximationAttr().Get()
+            else:
+                approximation_types[write_idx] = "none"
             write_idx += 1
         return approximation_types
 
@@ -1006,7 +997,9 @@ class GeometryPrim(XFormPrim):
                 if self._prims[i].HasAPI(UsdShade.MaterialBindingAPI):
                     self._binding_apis[i] = UsdShade.MaterialBindingAPI(self._prims[i])
                 else:
-                    self._binding_apis[i] = UsdShade.MaterialBindingAPI.Apply(self._prims[i])
+                    result[write_idx] = None
+                    write_idx += 1
+                    continue
             if self._applied_physics_materials[i] is not None:
                 result[write_idx] = self._applied_physics_materials[i]
                 write_idx += 1
@@ -1028,7 +1021,7 @@ class GeometryPrim(XFormPrim):
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
-    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray | None:
         """If contact forces of the prims in the view are tracked, this method returns the net contact forces on prims.
 
         i.e., a matrix of dimension (self.count, 3).
@@ -1041,7 +1034,7 @@ class GeometryPrim(XFormPrim):
             dt: time step multiplier to convert the underlying impulses to forces. If the default value is used then the forces are in fact contact impulses
 
         Returns:
-            Net contact forces of the prims with shape (M,3).
+            Net contact forces of the prims with shape (M,3). None if contact tracking is not enabled.
         """
         if self._track_contact_forces:
             return self._contact_view.get_net_contact_forces(indices, clone, dt)
@@ -1056,7 +1049,7 @@ class GeometryPrim(XFormPrim):
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
-    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray | None:
         """If the object is initialized with filter_paths_expr list, this method returns the contact forces between the prims.
 
         in the view and the filter prims. i.e., a matrix of dimension (self.count, self._contact_view.num_filters, 3)
@@ -1070,7 +1063,7 @@ class GeometryPrim(XFormPrim):
             dt: time step multiplier to convert the underlying impulses to forces. If the default value is used then the forces are in fact contact impulses
 
         Returns:
-            Net contact forces of the prims with shape (M, self._contact_view.num_filters, 3).
+            Net contact forces of the prims with shape (M, self._contact_view.num_filters, 3). None if no contact filter is specified.
         """
         if len(self._contact_filter_prim_paths_expr) != 0:
             return self._contact_view.get_contact_force_matrix(indices, clone, dt)
@@ -1085,14 +1078,17 @@ class GeometryPrim(XFormPrim):
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
-    ) -> tuple[
-        np.ndarray | torch.Tensor | wp.indexedarray,
-        np.ndarray | torch.Tensor | wp.indexedarray,
-        np.ndarray | torch.Tensor | wp.indexedarray,
-        np.ndarray | torch.Tensor | wp.indexedarray,
-        np.ndarray | torch.Tensor | wp.indexedarray,
-        np.ndarray | torch.Tensor | wp.indexedarray,
-    ]:
+    ) -> (
+        tuple[
+            np.ndarray | torch.Tensor | wp.indexedarray,
+            np.ndarray | torch.Tensor | wp.indexedarray,
+            np.ndarray | torch.Tensor | wp.indexedarray,
+            np.ndarray | torch.Tensor | wp.indexedarray,
+            np.ndarray | torch.Tensor | wp.indexedarray,
+            np.ndarray | torch.Tensor | wp.indexedarray,
+        ]
+        | None
+    ):
         """Get more detailed contact information between the prims in the view and the filter prims. Specifically, this method provides individual.
 
         contact normals, contact points, contact separations as well as contact forces for each pair
@@ -1127,12 +1123,15 @@ class GeometryPrim(XFormPrim):
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
-    ) -> tuple[
-        np.ndarray | torch.Tensor | wp.indexedarray,
-        np.ndarray | torch.Tensor | wp.indexedarray,
-        np.ndarray | torch.Tensor | wp.indexedarray,
-        np.ndarray | torch.Tensor | wp.indexedarray,
-    ]:
+    ) -> (
+        tuple[
+            np.ndarray | torch.Tensor | wp.indexedarray,
+            np.ndarray | torch.Tensor | wp.indexedarray,
+            np.ndarray | torch.Tensor | wp.indexedarray,
+            np.ndarray | torch.Tensor | wp.indexedarray,
+        ]
+        | None
+    ):
         """Gets friction data between the prims in the view and the filter prims. Specifically, this method provides frictional contact forces,.
 
         and points. The data in reported for number of anchor points that includes tangential forces in a single tangent direction to contact normal.

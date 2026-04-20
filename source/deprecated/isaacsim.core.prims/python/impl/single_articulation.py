@@ -265,17 +265,15 @@ class SingleArticulation(_SinglePrimWrapper):
         properties["type"] = self._articulation_view.get_dof_types()[0]
         properties["lower"] = self._articulation_view.get_dof_limits()[0][:, 0]
         properties["upper"] = self._articulation_view.get_dof_limits()[0][:, 1]
-        properties["hasLimits"] = properties["lower"] < properties["upper"]
+        properties["hasLimits"] = (properties["lower"] < properties["upper"]) | (
+            (properties["lower"] == properties["upper"]) & (properties["lower"] != 0)
+        )
         properties["driveMode"] = self._articulation_view.get_drive_types()[0]
         properties["maxEffort"] = self._articulation_view.get_max_efforts()[0]
         properties["maxVelocity"] = self._articulation_view.get_joint_max_velocities()[0]
         stiffnesses, dampings = self._articulation_view.get_gains()
         properties["stiffness"] = stiffnesses[0]
         properties["damping"] = dampings[0]
-        # properties = self._dc_interface.get_articulation_dof_properties(self._handle)
-        # properties["lower"] = self._articulation_view.get_dof_limits()[0][:, 0]
-        # properties["upper"] = self._articulation_view.get_dof_limits()[0][:, 1]
-        # print(properties)
         return properties
 
     @property
@@ -596,7 +594,7 @@ class SingleArticulation(_SinglePrimWrapper):
             >>> prim.get_measured_joint_efforts(joint_indices=np.array([7, 8]))
             [ 0.0003234  -0.00032044]
         """
-        if self._articulation_view.is_physics_handle_valid() is None:
+        if not self._articulation_view.is_physics_handle_valid():
             raise Exception("handles are not initialized yet")
         if joint_indices is not None:
             joint_indices = self._backend_utils.expand_dims(joint_indices, 0)
@@ -630,7 +628,7 @@ class SingleArticulation(_SinglePrimWrapper):
             >>> prim.get_applied_joint_efforts(joint_indices=np.array([7, 8]))
             [0.  0.]
         """
-        if self._articulation_view.is_physics_handle_valid() is None:
+        if not self._articulation_view.is_physics_handle_valid():
             raise Exception("handles are not initialized yet")
         if joint_indices is not None:
             joint_indices = self._backend_utils.expand_dims(joint_indices, 0)
@@ -698,7 +696,7 @@ class SingleArticulation(_SinglePrimWrapper):
             [[ 5.1680198e-03 -9.7754575e-02 -9.7093947e-02 -8.4155556e-12 -1.2910691e-12 -1.9347857e-11]
              [-5.1910793e-03  9.7588278e-02 -9.7106412e-02  8.4155573e-12  1.2910637e-12 -1.9347855e-11]]
         """
-        if self._articulation_view.is_physics_handle_valid() is None:
+        if not self._articulation_view.is_physics_handle_valid():
             raise Exception("handles are not initialized yet")
         if joint_indices is not None:
             joint_indices = self._backend_utils.expand_dims(joint_indices, 0)

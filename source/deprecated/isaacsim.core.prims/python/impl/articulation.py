@@ -658,7 +658,7 @@ class Articulation(XFormPrim):
                 dof_write_idx = 0
                 for dof_index in joint_indices:
                     prim = PhysxSchema.PhysxJointAPI(get_prim_at_path(self._dof_paths[i][dof_index]))
-                    if prim.GetJointFrictionAttr().Get():
+                    if prim.GetJointFrictionAttr().Get() is not None:
                         values[articulation_write_idx][dof_write_idx] = prim.GetJointFrictionAttr().Get()
                     dof_write_idx += 1
                 articulation_write_idx += 1
@@ -811,7 +811,7 @@ class Articulation(XFormPrim):
                 dof_write_idx = 0
                 for dof_index in joint_indices:
                     prim = PhysxSchema.PhysxJointAPI(get_prim_at_path(self._dof_paths[i][dof_index]))
-                    if prim.GetArmatureAttr().Get():
+                    if prim.GetArmatureAttr().Get() is not None:
                         values[articulation_write_idx, dof_write_idx] = prim.GetArmatureAttr().Get()
                     dof_write_idx += 1
                 articulation_write_idx += 1
@@ -1164,9 +1164,8 @@ class Articulation(XFormPrim):
         if self.is_physics_handle_valid():
             indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
-            # TODO: missing get_dof efforts/ forces?
-            new_dof_efforts = self._backend_utils.create_zeros_tensor(
-                shape=[self.count, self.num_dof], dtype="float32", device=self._device
+            new_dof_efforts = self._backend_utils.move_data(
+                self._physics_view.get_dof_actuation_forces(), device=self._device
             )
             new_dof_efforts = self._backend_utils.assign(
                 self._backend_utils.move_data(efforts, device=self._device),
@@ -1645,10 +1644,8 @@ class Articulation(XFormPrim):
                 )
                 self._physics_view.set_dof_velocity_targets(action, indices)
             if control_actions.joint_efforts is not None:
-                # TODO: optimize this operation
-                # action = self._backend_utils.clone_tensor(self._physics_view.get_dof_actuation_forces(), device=self._device)
-                action = self._backend_utils.create_zeros_tensor(
-                    (self.count, self.num_dof), dtype="float32", device=self._device
+                action = self._backend_utils.move_data(
+                    self._physics_view.get_dof_actuation_forces(), device=self._device
                 )
                 action = self._backend_utils.assign(
                     self._backend_utils.move_data(control_actions.joint_efforts, device=self._device),
@@ -1967,13 +1964,13 @@ class Articulation(XFormPrim):
             >>> prims.set_local_poses(positions, orientations, indices=np.array([0, 2, 4]))
         """
         if self.is_physics_handle_valid():
+            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             if translations is None or orientations is None:
-                current_translations, current_orientations = Articulation.get_local_poses(self)
+                current_translations, current_orientations = Articulation.get_local_poses(self, indices=indices)
                 if translations is None:
                     translations = current_translations
                 if orientations is None:
                     orientations = current_orientations
-            indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
             parent_transforms = np.zeros(shape=(indices.shape[0], 4, 4), dtype="float32")
             write_idx = 0
             indices = self._backend_utils.to_list(indices)
@@ -2037,6 +2034,7 @@ class Articulation(XFormPrim):
         """
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
+            return
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if self.is_physics_handle_valid():
             root_vel = self._physics_view.get_root_velocities()
@@ -2083,6 +2081,7 @@ class Articulation(XFormPrim):
         """
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
+            return None
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if self.is_physics_handle_valid():
             velocities = self._physics_view.get_root_velocities()
@@ -2188,6 +2187,7 @@ class Articulation(XFormPrim):
         """
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
+            return None
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if self.is_physics_handle_valid():
             linear_velocities = self._physics_view.get_root_velocities()
@@ -2238,6 +2238,7 @@ class Articulation(XFormPrim):
         """
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
+            return
         if self._device is not None and "cuda" in self._device:
             carb.log_warn(
                 "set_angular_velocities function is not supported for the gpu pipeline, use set_velocities instead."
@@ -2292,6 +2293,7 @@ class Articulation(XFormPrim):
         """
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
+            return None
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         if self.is_physics_handle_valid():
             angular_velocities = self._physics_view.get_root_velocities()
@@ -2421,6 +2423,7 @@ class Articulation(XFormPrim):
         """
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
+            return None
         # TODO: implement effort part
         if self.is_physics_handle_valid():
             return JointsState(
@@ -2487,9 +2490,9 @@ class Articulation(XFormPrim):
                 prim = get_prim_at_path(self._dof_paths[i][dof_index])
                 if prim.HasAPI(UsdPhysics.DriveAPI):
                     drive = UsdPhysics.DriveAPI(prim, drive_type)
+                    result[articulation_write_idx][dof_write_idx] = drive.GetTypeAttr().Get()
                 else:
-                    drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
-                result[articulation_write_idx][dof_write_idx] = drive.GetTypeAttr().Get()
+                    result[articulation_write_idx][dof_write_idx] = "acceleration"
                 dof_write_idx += 1
             articulation_write_idx += 1
         return result
@@ -2547,10 +2550,7 @@ class Articulation(XFormPrim):
                     drive = UsdPhysics.DriveAPI(prim, drive_type)
                 else:
                     drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
-                if not drive.GetTypeAttr():
-                    drive.CreateTypeAttr().Set(mode)
-                else:
-                    drive.GetTypeAttr().Set(mode)
+                drive.GetTypeAttr().Set(mode)
         return
 
     def set_max_efforts(
@@ -2712,9 +2712,8 @@ class Articulation(XFormPrim):
                     prim = get_prim_at_path(self._dof_paths[i][dof_index])
                     if prim.HasAPI(UsdPhysics.DriveAPI):
                         drive = UsdPhysics.DriveAPI(prim, drive_type)
-                    else:
-                        drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
-                    max_efforts[articulation_write_idx][dof_write_idx] = drive.GetMaxForceAttr().Get()
+                        max_efforts[articulation_write_idx][dof_write_idx] = drive.GetMaxForceAttr().Get()
+
                     dof_write_idx += 1
                 articulation_write_idx += 1
             max_efforts = self._backend_utils.convert(max_efforts, dtype="float32", device=self._device, indexed=True)
@@ -2851,6 +2850,8 @@ class Articulation(XFormPrim):
         """
         if not self._is_initialized:
             carb.log_warn("Articulation needs to be initialized.")
+            return
+        if kps is None and kds is None:
             return
         if joint_names is not None and joint_indices is not None:
             raise Exception("joint indices and joint names can't be both specified")
@@ -3043,20 +3044,18 @@ class Articulation(XFormPrim):
                     prim = get_prim_at_path(self._dof_paths[i][dof_index])
                     if prim.HasAPI(UsdPhysics.DriveAPI):
                         drive = UsdPhysics.DriveAPI(prim, drive_type)
-                    else:
-                        drive = UsdPhysics.DriveAPI.Apply(prim, drive_type)
-                    if drive.GetStiffnessAttr().Get() == 0.0 or drive_type == "linear":
-                        kps[articulation_write_idx][dof_write_idx] = drive.GetStiffnessAttr().Get()
-                    else:
-                        kps[articulation_write_idx][dof_write_idx] = 1.0 / numpy_utils.deg2rad(
-                            float(1.0 / drive.GetStiffnessAttr().Get())
-                        )
-                    if drive.GetDampingAttr().Get() == 0.0 or drive_type == "linear":
-                        kds[articulation_write_idx][dof_write_idx] = drive.GetDampingAttr().Get()
-                    else:
-                        kds[articulation_write_idx][dof_write_idx] = 1.0 / numpy_utils.deg2rad(
-                            float(1.0 / drive.GetDampingAttr().Get())
-                        )
+                        if drive.GetStiffnessAttr().Get() == 0.0 or drive_type == "linear":
+                            kps[articulation_write_idx][dof_write_idx] = drive.GetStiffnessAttr().Get()
+                        else:
+                            kps[articulation_write_idx][dof_write_idx] = 1.0 / numpy_utils.deg2rad(
+                                float(1.0 / drive.GetStiffnessAttr().Get())
+                            )
+                        if drive.GetDampingAttr().Get() == 0.0 or drive_type == "linear":
+                            kds[articulation_write_idx][dof_write_idx] = drive.GetDampingAttr().Get()
+                        else:
+                            kds[articulation_write_idx][dof_write_idx] = 1.0 / numpy_utils.deg2rad(
+                                float(1.0 / drive.GetDampingAttr().Get())
+                            )
                     dof_write_idx += 1
                 articulation_write_idx += 1
             result_kps = self._backend_utils.convert(kps, dtype="float32", device=self._device, indexed=True)
@@ -3131,7 +3130,7 @@ class Articulation(XFormPrim):
                 kds=(
                     self._default_kds[indices][:, joint_indices]
                     if self._backend != "warp"
-                    else self._default_kps.data[indices, joint_indices]
+                    else self._default_kds.data[indices, joint_indices]
                 ),
                 indices=indices,
                 joint_indices=joint_indices,

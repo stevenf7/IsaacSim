@@ -232,7 +232,7 @@ class ArticulationController(object):
         else:
             return None
 
-    def get_joint_limits(self) -> tuple[np.ndarray, np.ndarray]:
+    def get_joint_limits(self) -> np.ndarray | None:
         """Get the joint limits for all DOFs.
 
         Raises:
