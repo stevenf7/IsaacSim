@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.1] - 2026-04-18
+### Changed
+- Added imperative-mood docstrings and `__all__` definitions
+
 ## [1.5.0] - 2026-04-13
 ### Changed
 - Migrate extension implementation to core experimental API

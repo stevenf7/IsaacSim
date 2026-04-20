@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Teleop profile data classes and file I/O utilities."""
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field, fields, is_dataclass
@@ -98,17 +100,15 @@ class TeleopProfile:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a YAML-serializable representation."""
-
         return asdict(self)
 
 
-def _from_dict(cls, data: Any):
+def _from_dict(cls: type, data: Any) -> Any:
     """Reconstruct a dataclass from a plain dict, recursing into nested dataclasses.
 
     Missing keys use the dataclass defaults.  Extra keys are silently ignored.
     This keeps the YAML format in lockstep with the dataclass definitions.
     """
-
     if not isinstance(data, dict):
         return cls()
 
@@ -131,7 +131,6 @@ def _from_dict(cls, data: Any):
 
 def get_builtin_teleop_profiles_dir() -> str:
     """Return the absolute path to the built-in teleop profile directory."""
-
     try:
         import omni.kit.app
 
@@ -146,7 +145,6 @@ def get_builtin_teleop_profiles_dir() -> str:
 
 def get_last_teleop_profile_path() -> str:
     """Return the extension-managed path for the auto-saved last profile."""
-
     profiles_dir = get_builtin_teleop_profiles_dir()
     if not profiles_dir:
         return ""
@@ -155,7 +153,6 @@ def get_last_teleop_profile_path() -> str:
 
 def scan_teleop_profiles(directory: str) -> list[tuple[str, str]]:
     """Return available YAML teleop profiles from a directory."""
-
     profiles_dir = Path(directory)
     if not profiles_dir.is_dir():
         return []
@@ -169,7 +166,6 @@ def scan_teleop_profiles(directory: str) -> list[tuple[str, str]]:
 
 def save_teleop_profile(path: str, profile: TeleopProfile) -> tuple[bool, str]:
     """Write a unified teleop profile to YAML."""
-
     import yaml
 
     try:
@@ -190,7 +186,6 @@ def load_teleop_profile(path: str) -> tuple[TeleopProfile | None, list[str]]:
     keys fall back to the dataclass defaults, so this function stays
     compatible with both older and newer profile files automatically.
     """
-
     import yaml
 
     try:

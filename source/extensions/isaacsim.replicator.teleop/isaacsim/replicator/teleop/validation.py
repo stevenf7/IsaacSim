@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Validation utilities for teleop controllers and UI.
-"""
+"""Validation utilities for teleop controllers and UI."""
 
 from __future__ import annotations
 
@@ -35,6 +33,7 @@ class ValidationResult:
 
     @property
     def is_valid(self) -> bool:
+        """Return True when no errors are present."""
         return not self.errors
 
 
@@ -58,7 +57,7 @@ def _validate_prim_exists(prim_path: str) -> tuple[Usd.Prim | None, ValidationRe
 
 
 def validate_floating_end_effector(prim_path: str) -> ValidationResult:
-    """Validates a prim for floating rigid-body controller usage."""
+    """Validate a prim for floating rigid-body controller usage."""
     prim, result = _validate_prim_exists(prim_path)
     if not prim:
         return result
@@ -80,7 +79,7 @@ def validate_floating_end_effector(prim_path: str) -> ValidationResult:
 
 
 def validate_marker_path(prim_path: str) -> ValidationResult:
-    """Validates a marker path for live tracking."""
+    """Validate a marker path for live tracking."""
     prim, result = _validate_prim_exists(prim_path)
     if not prim:
         return result

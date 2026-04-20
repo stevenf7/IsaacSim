@@ -13,13 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Teleop profile validation against USD stage state."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 import omni.usd
 from isaacsim.core.experimental.prims import Articulation
-from pxr import Sdf, UsdGeom, UsdPhysics
+from pxr import Sdf, Usd, UsdGeom, UsdPhysics
 
 from .controllers.grasp import load_grasp_config
 from .coordinate_utils import CoordinateSystem
@@ -55,25 +58,21 @@ class TeleopResolutionReport:
     @property
     def error_count(self) -> int:
         """Return the number of errors in the report."""
-
         return sum(issue.severity == SEVERITY_ERROR for issue in self.issues)
 
     @property
     def warning_count(self) -> int:
         """Return the number of warnings in the report."""
-
         return sum(issue.severity == SEVERITY_WARNING for issue in self.issues)
 
     @property
     def ready(self) -> bool:
         """Return whether the current stage is ready and no errors remain."""
-
         return self.stage_state == STAGE_STATE_READY and self.error_count == 0
 
 
 def resolve_teleop_profile(profile: TeleopProfile) -> TeleopResolutionReport:
     """Resolve a teleop profile against the current USD stage."""
-
     usd_context = omni.usd.get_context()
     stage = usd_context.get_stage()
     if stage is None:
@@ -101,7 +100,7 @@ def resolve_teleop_profile(profile: TeleopProfile) -> TeleopResolutionReport:
     return report
 
 
-def _validate_session_settings(profile: TeleopProfile, stage, report: TeleopResolutionReport) -> None:
+def _validate_session_settings(profile: TeleopProfile, stage: Usd.Stage, report: TeleopResolutionReport) -> None:
     coordinate_system = profile.session.coordinate_system
     if coordinate_system not in {member.value for member in CoordinateSystem}:
         report.issues.append(
@@ -161,7 +160,7 @@ def _validate_session_settings(profile: TeleopProfile, stage, report: TeleopReso
         )
 
 
-def _validate_floating_profile(profile: TeleopProfile, stage, report: TeleopResolutionReport) -> None:
+def _validate_floating_profile(profile: TeleopProfile, stage: Usd.Stage, report: TeleopResolutionReport) -> None:
     for side_name, side in (("Left", profile.floating.left), ("Right", profile.floating.right)):
         prim_path = str(side.settings.get("prim_path", "")).strip()
         if not prim_path:
@@ -313,7 +312,7 @@ def _validate_grasp_profile(profile: TeleopProfile, report: TeleopResolutionRepo
             )
 
 
-def _validate_locomotion_profile(profile: TeleopProfile, stage, report: TeleopResolutionReport) -> None:
+def _validate_locomotion_profile(profile: TeleopProfile, stage: Usd.Stage, report: TeleopResolutionReport) -> None:
     prim_path = str(profile.locomotion.settings.get("prim_path", "")).strip()
     if not prim_path:
         if profile.locomotion.enabled:
@@ -329,7 +328,7 @@ def _validate_locomotion_profile(profile: TeleopProfile, stage, report: TeleopRe
     _validate_xformable_path(stage, "Locomotion", prim_path, report)
 
 
-def _validate_xformable_path(stage, source: str, path: str, report: TeleopResolutionReport) -> None:
+def _validate_xformable_path(stage: Usd.Stage, source: str, path: str, report: TeleopResolutionReport) -> None:
     if not path or not Sdf.Path.IsValidPathString(path):
         report.issues.append(
             TeleopResolverIssue(
@@ -354,7 +353,7 @@ def _validate_xformable_path(stage, source: str, path: str, report: TeleopResolu
         )
 
 
-def _get_stage_prim(stage, path: str, source: str, report: TeleopResolutionReport):
+def _get_stage_prim(stage: Usd.Stage, path: str, source: str, report: TeleopResolutionReport) -> Any:
     if not Sdf.Path.IsValidPathString(path):
         report.issues.append(
             TeleopResolverIssue(

@@ -30,13 +30,15 @@ MENU_PATH = f"{TeleopUIExtension.MENU_GROUP}/{TeleopUIExtension.WINDOW_NAME}"
 class TestTeleopUIWindow(OmniUiTest):
     """Test the Teleop UI window lifecycle."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Set up test environment."""
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Tear down test environment."""
         await omni.kit.app.get_app().next_update_async()
 
-    async def test_window_open_close(self):
+    async def test_window_open_close(self) -> None:
         """Window can be opened via the menu and closed without errors."""
         await menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
         for _ in range(5):

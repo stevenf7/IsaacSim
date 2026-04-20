@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Teleop profile panel for saving, loading, and validating unified teleop profiles."""
+
 from __future__ import annotations
 
 import os
-from typing import Callable
+from collections.abc import Callable
 
 import carb.settings
 import omni.ui as ui
@@ -53,7 +55,8 @@ _LOG_NAMESPACE = "Profiles"
 _SETTINGS_PREFIX = "/persistent/exts/isaacsim.replicator.teleop/teleop_profiles"
 
 
-def set_status(label, text, color=CLR_DIM, emit_terminal: bool = False):
+def set_status(label: ui.Label | None, text: str, color: int = CLR_DIM, emit_terminal: bool = False) -> None:
+    """Set the status label text and color for this panel."""
     _set_status_base(label, text, color, source=_LOG_NAMESPACE, emit_terminal=emit_terminal)
 
 
@@ -65,7 +68,7 @@ class TeleopProfilePanel:
         collect_profile: Callable[[], TeleopProfile],
         apply_profile: Callable[[TeleopProfile], tuple[bool, str]],
         collapsed_states: dict,
-    ):
+    ) -> None:
         self._collect_profile = collect_profile
         self._apply_profile = apply_profile
         self._collapsed = collapsed_states
@@ -84,6 +87,7 @@ class TeleopProfilePanel:
         self._settings.set_default_string(f"{_SETTINGS_PREFIX}/last_profile", "")
 
     def build(self) -> None:
+        """Build the profile panel UI."""
         frame = ui.CollapsableFrame(
             _PANEL_NAME,
             height=0,
@@ -220,7 +224,6 @@ class TeleopProfilePanel:
 
     def remember_last_profile(self, filepath: str) -> None:
         """Store the most recent profile path and refresh the profile list."""
-
         if not filepath:
             return
         self._settings.set_string(f"{_SETTINGS_PREFIX}/last_profile", filepath)

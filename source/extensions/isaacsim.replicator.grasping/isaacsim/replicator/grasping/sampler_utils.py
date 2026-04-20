@@ -156,7 +156,7 @@ def usd_mesh_to_trimesh(usd_mesh: UsdGeom.Mesh, apply_scale: bool = True, verbos
     return trimesh.Trimesh(vertices=vertices, faces=faces, process=False)
 
 
-def sample_antipodal(object_mesh: trimesh.Trimesh, **kwargs) -> list[np.ndarray]:
+def sample_antipodal(object_mesh: trimesh.Trimesh, **kwargs: object) -> list[np.ndarray]:
     """Sample antipodal grasp poses for a given mesh.
 
     Args:

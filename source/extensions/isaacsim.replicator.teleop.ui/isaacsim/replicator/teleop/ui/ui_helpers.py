@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import omni.ui as ui
 import omni.usd
 
@@ -46,7 +48,7 @@ GLYPHS = {
 
 
 def get_selected_prim_path() -> str | None:
-    """Returns the first selected prim path in the stage, or None."""
+    """Return the first selected prim path in the stage, or None."""
     selection = omni.usd.get_context().get_selection()
     paths = selection.get_selected_prim_paths()
     if not paths:
@@ -62,8 +64,8 @@ def set_status(
     color: int = CLR_DIM,
     source: str = "",
     emit_terminal: bool = False,
-):
-    """Sets a status label's text and color, and optionally prints the change to terminal.
+) -> None:
+    """Set a status label's text and color, and optionally prints the change to terminal.
 
     Skips redundant updates when the label already shows the same text.
     """
@@ -80,15 +82,20 @@ def set_status(
 def build_prim_path_row(
     label: str,
     tooltip: str = "",
-    on_apply_clicked=None,
+    on_apply_clicked: Callable | None = None,
     apply_label: str = "Apply",
     apply_tooltip: str = "Validate and apply this prim path",
     buttons_out: dict | None = None,
     label_width: int = 65,
 ) -> ui.StringField:
-    """Creates a prim path row with +/clear and optional apply button.
+    """Create a prim path row with +/clear and optional apply button.
 
     Args:
+        label: Text for the row label widget.
+        tooltip: Tooltip shown on the label widget.
+        on_apply_clicked: Optional callback invoked when the Apply button is clicked.
+        apply_label: Button label for the apply action.
+        apply_tooltip: Tooltip for the apply button.
         buttons_out: If provided, populated with ``"plus"``, ``"delete"``,
             and ``"apply"`` keys referencing the created ``ui.Button`` widgets
             so callers can enable/disable them.
@@ -118,7 +125,7 @@ def build_prim_path_row(
     return field
 
 
-def _set_field_from_selection(model):
+def _set_field_from_selection(model: object) -> None:
     path = get_selected_prim_path()
     if path:
         model.set_value(path)

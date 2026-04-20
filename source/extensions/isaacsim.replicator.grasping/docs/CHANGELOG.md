@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.2] - 2026-04-18
+### Changed
+- Added return type annotations, `from __future__ import annotations`, and imperative-mood docstrings
+
 ## [1.1.1] - 2026-03-05
 ### Changed
 - Migrate extension implementation to core experimental API

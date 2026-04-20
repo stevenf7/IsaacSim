@@ -122,7 +122,7 @@ class NumpyEncoder(json.JSONEncoder):
     """JSON encoder that handles numpy arrays."""
 
     def default(self, obj):
-        """Converts numpy arrays to JSON-serializable format.
+        """Convert numpy arrays to JSON-serializable format.
 
         Args:
             obj: Object to be serialized. If it's a numpy array, converts it to a list.

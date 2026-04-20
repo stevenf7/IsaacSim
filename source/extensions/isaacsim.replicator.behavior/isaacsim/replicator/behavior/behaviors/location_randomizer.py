@@ -15,6 +15,10 @@
 
 """Behavior script that randomizes prim locations within specified bounds."""
 
+from __future__ import annotations
+
+from typing import Any
+
 import carb
 import numpy as np
 import omni.kit.window.property
@@ -82,7 +86,7 @@ class LocationRandomizer(BehaviorScript):
         },
     ]
 
-    def on_init(self):
+    def on_init(self) -> None:
         """Called when the script is assigned to a prim."""
         self._rng = None
         self._min_position = Gf.Vec3d(-1.0, -1.0, -1.0)
@@ -101,7 +105,7 @@ class LocationRandomizer(BehaviorScript):
         # Refresh the property windows to show the exposed variables
         omni.kit.window.property.get_window().request_rebuild()
 
-    def on_destroy(self):
+    def on_destroy(self) -> None:
         """Called when the script is unassigned from a prim."""
         self._reset()
         # Exposed variables should be removed if the script is no longer assigned to the prim
@@ -109,26 +113,23 @@ class LocationRandomizer(BehaviorScript):
             remove_exposed_variables(self.prim, EXPOSED_ATTR_NS, self.BEHAVIOR_NS, self.VARIABLES_TO_EXPOSE)
             omni.kit.window.property.get_window().request_rebuild()
 
-    def on_play(self):
+    def on_play(self) -> None:
         """Called when `play` is pressed."""
         self._setup()
         # Make sure the initial behavior is applied if the interval is larger than 0
         if self._interval > 0:
             self._apply_behavior()
 
-    def on_stop(self):
+    def on_stop(self) -> None:
         """Called when `stop` is pressed."""
         self._reset()
 
-    def on_update(self, current_time: float, delta_time: float):
+    def on_update(self, current_time: float, delta_time: float) -> None:
         """Called on per frame update events that occur when `playing`.
 
         Args:
             current_time: The current simulation time.
             delta_time: The time elapsed since the last update.
-
-        Returns:
-            None.
         """
         if delta_time <= 0:
             return
@@ -140,7 +141,7 @@ class LocationRandomizer(BehaviorScript):
                 self._apply_behavior()
                 self._update_counter = 0
 
-    def _setup(self):
+    def _setup(self) -> None:
         # Fetch the exposed attributes
         self._min_position = self._get_exposed_variable("range:minPosition")
         self._max_position = self._get_exposed_variable("range:maxPosition")
@@ -184,7 +185,7 @@ class LocationRandomizer(BehaviorScript):
             if self._target_prim:
                 self._target_offsets[prim] = self._initial_locations[prim] - get_world_location(self._target_prim)
 
-    def _reset(self):
+    def _reset(self) -> None:
         # Set prims back to their initial locations
         for prim, location in self._initial_locations.items():
             self._set_location(prim, location)
@@ -197,16 +198,16 @@ class LocationRandomizer(BehaviorScript):
         self._update_counter = 0
         self._rng = None
 
-    def _apply_behavior(self):
+    def _apply_behavior(self) -> None:
         # Run the randomization for each valid prim
         for prim in self._valid_prims:
             self._randomize_location(prim)
 
-    def _get_exposed_variable(self, attr_name):
+    def _get_exposed_variable(self, attr_name: str) -> Any:
         full_attr_name = f"{EXPOSED_ATTR_NS}:{self.BEHAVIOR_NS}:{attr_name}"
         return get_exposed_variable(self.prim, full_attr_name)
 
-    def _get_location(self, prim):
+    def _get_location(self, prim: Usd.Prim) -> Gf.Vec3d:
         # Get the location of the prim based on the available xformOps, create a default translation if none exists
         xformable = UsdGeom.Xformable(prim)
         xform_ops = xformable.GetOrderedXformOps()
@@ -225,7 +226,7 @@ class LocationRandomizer(BehaviorScript):
         translate_op.Set(default_translation)
         return default_translation
 
-    def _set_location(self, prim, location: Gf.Vec3d):
+    def _set_location(self, prim: Usd.Prim, location: Gf.Vec3d) -> None:
         # Set the location of the prim based on the available xformOps
         xformable = UsdGeom.Xformable(prim)
         xform_ops = xformable.GetOrderedXformOps()
@@ -245,7 +246,7 @@ class LocationRandomizer(BehaviorScript):
 
         carb.log_warn(f"No valid location op found on {prim.GetPath()}")
 
-    def _randomize_location(self, prim):
+    def _randomize_location(self, prim: Usd.Prim) -> None:
         # Generate a random offset within the bounds
         random_offset = Gf.Vec3d(
             self._rng.uniform(self._min_position[0], self._max_position[0]),
@@ -274,7 +275,7 @@ class LocationRandomizer(BehaviorScript):
         # Set the randomized location to the prim
         self._set_location(prim, loc)
 
-    def set_rng(self, rng: np.random.Generator | None = None):
+    def set_rng(self, rng: np.random.Generator | None = None) -> None:
         """Set the random number generator, overriding the USD seed attribute.
 
         Args:

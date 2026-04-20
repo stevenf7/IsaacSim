@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.1] - 2026-04-18
+### Changed
+- Added return type annotations and imperative-mood docstrings
+
 ## [1.1.0] - 2026-03-04
 ### Changed
 - Added Overview.md, python_api.md and updated docstrings

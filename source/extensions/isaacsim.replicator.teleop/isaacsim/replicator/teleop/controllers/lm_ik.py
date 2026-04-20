@@ -61,7 +61,7 @@ class LMIKController:
         convergence_threshold: float = 1e-4,
         vr_target_filter: float = 0.0,
         max_joint_step_rad: float = 0.0,
-    ):
+    ) -> None:
         self._robot = robot
         self._ee_link = ee_link
         self._ee_link_index = ee_link_index
@@ -98,18 +98,22 @@ class LMIKController:
 
     @property
     def vr_target_filter(self) -> float:
+        """Return the EMA low-pass filter strength for VR targets."""
         return float(self._vr_target_filter)
 
     @vr_target_filter.setter
     def vr_target_filter(self, value: float) -> None:
+        """Set the EMA low-pass filter strength for VR targets."""
         self._vr_target_filter = np.clip(value, 0.0, 0.99)
 
     @property
     def max_joint_step_rad(self) -> float:
+        """Return the maximum allowed joint change per step in radians."""
         return float(self._max_joint_step_rad)
 
     @max_joint_step_rad.setter
     def max_joint_step_rad(self, value: float) -> None:
+        """Set the maximum allowed joint change per step in radians."""
         self._max_joint_step_rad = max(0.0, value)
 
     # ------------------------------------------------------------------

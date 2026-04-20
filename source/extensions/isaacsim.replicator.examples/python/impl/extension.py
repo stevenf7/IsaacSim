@@ -27,12 +27,12 @@ class Extension(omni.ext.IExt):
     synthetic data generation capabilities for robotics simulation and machine learning workflows.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Called when the extension is starting up.
 
         Args:
             ext_id: The extension identifier.
         """
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Called when the extension is shutting down."""

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Extension entry point for isaacsim.replicator.teleop."""
 
 import omni.ext
 
@@ -20,8 +21,15 @@ from ._backend import reset_teleop_backend
 
 
 class Extension(omni.ext.IExt):
-    def on_startup(self, ext_id):
-        pass
+    """Isaac Sim teleop extension entry point."""
 
-    def on_shutdown(self):
+    def on_startup(self, ext_id: str) -> None:
+        """Initialize the extension when it is loaded.
+
+        Args:
+            ext_id: Extension identifier provided by the extension manager.
+        """
+
+    def on_shutdown(self) -> None:
+        """Clean up resources when the extension is unloaded."""
         reset_teleop_backend()

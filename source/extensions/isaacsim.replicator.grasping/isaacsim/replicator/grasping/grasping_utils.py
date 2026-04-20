@@ -79,7 +79,7 @@ def get_physics_scene(stage: Usd.Stage, path: str) -> UsdPhysics.Scene | None:
 
 
 def remove_physics_scene(stage: Usd.Stage, physics_scene_path: str) -> bool:
-    """Removes a UsdPhysics.Scene prim at the specified path.
+    """Remove a UsdPhysics.Scene prim at the specified path.
 
     Args:
         stage: The USD stage.
@@ -99,8 +99,8 @@ def remove_physics_scene(stage: Usd.Stage, physics_scene_path: str) -> bool:
 
 def set_rigid_body_simulation_owner(
     prims: list[Usd.Prim] | Usd.Prim, physics_scene_prim: UsdPhysics.Scene, include_descendants: bool = True
-):
-    """Sets the simulationOwner for a prim and all its descendants to the given physics scene.
+) -> list[Usd.Prim]:
+    """Set the simulationOwner for a prim and all its descendants to the given physics scene.
 
     Args:
         prims: The prim or list of prims to set the simulation owner for.
@@ -144,8 +144,8 @@ def set_rigid_body_simulation_owner(
 
 def remove_rigid_body_simulation_owner(
     prims: list[Usd.Prim] | Usd.Prim, physics_scene_prim: UsdPhysics.Scene, include_descendants: bool = True
-):
-    """Removes the simulationOwner for a prim and all its descendants from the given physics scene.
+) -> list[Usd.Prim]:
+    """Remove the simulationOwner for a prim and all its descendants from the given physics scene.
 
     Args:
         prims: The prim or list of prims to remove the simulation owner for.
@@ -273,7 +273,7 @@ def set_joint_drive_parameters(
     return True
 
 
-def set_joint_state(joint_prim: Usd.Prim, position_value: float = 0.0, velocity_value: float = 0.0):
+def set_joint_state(joint_prim: Usd.Prim, position_value: float = 0.0, velocity_value: float = 0.0) -> bool:
     """Set the joint state parameters for a joint. Applies PhysxSchema.JointStateAPI if missing.
 
     Args:
@@ -374,7 +374,7 @@ def get_joint_state(joint_prim: Usd.Prim) -> tuple[float, float]:
 
 async def simulate_physics_async(
     num_frames: int, step_dt: float, physics_scene: UsdPhysics.Scene | None = None, render: bool = False
-):
+) -> None:
     """Simulate physics for a fixed number of frames asynchronously.
 
     Args:
@@ -426,7 +426,7 @@ async def simulate_physics_with_forces_async(
     physx_dt: float,
     physics_scene: UsdPhysics.Scene | None = None,
     render: bool = True,
-):
+) -> None:
     """Apply forces to assets at specified positions and simulate physics asynchronously.
 
     Can simulate either the default physics context or a specific physics scene.
@@ -491,13 +491,13 @@ async def simulate_physics_with_forces_async(
         await omni.kit.app.get_app().next_update_async()
 
 
-def reset_physics_simulation():
-    """Resets the simulation to its initial state."""
+def reset_physics_simulation() -> None:
+    """Reset the simulation to its initial state."""
     physx_interface = omni.physx.get_physx_interface()
     physx_interface.reset_simulation()
 
 
-async def advance_timeline_async(num_frames: int, render: bool = False):
+async def advance_timeline_async(num_frames: int, render: bool = False) -> None:
     """Simulate by advancing the main Omniverse timeline for a fixed number of frames.
 
     Args:
@@ -523,8 +523,8 @@ async def advance_timeline_async(num_frames: int, render: bool = False):
     await omni.kit.app.get_app().next_update_async()
 
 
-def stop_timeline():
-    """Resets the simulation to its initial state and stops the timeline."""
+def stop_timeline() -> None:
+    """Reset the simulation to its initial state and stops the timeline."""
     timeline = omni.timeline.get_timeline_interface()
     timeline.stop()
 
@@ -642,7 +642,7 @@ def get_gripper_joints_info(gripper_prim_path: str) -> list[dict]:
 
 
 def apply_joint_pregrasp_state(joint_path: str, position_value: float) -> None:
-    """Applies the pregrasp state to the given joint prim.
+    """Apply the pregrasp state to the given joint prim.
 
     Args:
         joint_path: The stage path to the joint prim.
@@ -669,8 +669,8 @@ def apply_joint_pregrasp_state(joint_path: str, position_value: float) -> None:
         carb.log_warn(f"Failed to apply pregrasp state to joint {joint_path}.")
 
 
-def apply_joint_pregrasp_states(joint_pregrasp_states: dict[str, float]):
-    """Applies the pregrasp states to the given joint prims.
+def apply_joint_pregrasp_states(joint_pregrasp_states: dict[str, float]) -> None:
+    """Apply the pregrasp states to the given joint prims.
 
     Args:
         joint_pregrasp_states: Dictionary mapping joint paths to their position values.
@@ -680,7 +680,7 @@ def apply_joint_pregrasp_states(joint_pregrasp_states: dict[str, float]):
 
 
 def isolate_prims_to_scene(prims_to_isolate: list[Usd.Prim], physics_scene: UsdPhysics.Scene) -> list[Usd.Prim]:
-    """Sets the simulation owner for the given prims (and their descendants) to the specified physics scene.
+    """Set the simulation owner for the given prims (and their descendants) to the specified physics scene.
 
     Args:
         prims_to_isolate: List of prims to set the simulation owner for.
@@ -712,7 +712,7 @@ def isolate_prims_to_scene(prims_to_isolate: list[Usd.Prim], physics_scene: UsdP
 
 
 def clear_isolated_simulation_owners(rigid_body_prims: list[Usd.Prim], physics_scene: UsdPhysics.Scene | None) -> None:
-    """Clears the simulation owners for the given rigid body prims from the specified physics scene.
+    """Clear the simulation owners for the given rigid body prims from the specified physics scene.
 
     Args:
         rigid_body_prims: List of rigid body prims to remove from the physics scene.
@@ -791,7 +791,7 @@ def generate_grasp_poses_from_config(
 
 
 def get_gripper_joint_states(gripper_base_path: str) -> dict[str, float] | None:
-    """Retrieves the current position state of all valid joints under a gripper prim.
+    """Retrieve the current position state of all valid joints under a gripper prim.
 
     Args:
         gripper_base_path: The stage path to the base prim of the gripper.
@@ -841,7 +841,7 @@ def get_gripper_joint_states(gripper_base_path: str) -> dict[str, float] | None:
 
 
 def populate_joint_pregrasp_states_from_current(joint_paths: list[str]) -> dict[str, float]:
-    """Populates a dictionary with current joint positions for the given joint paths.
+    """Populate a dictionary with current joint positions for the given joint paths.
 
     Retrieves the current position for each valid joint prim found at the provided paths
     and returns a dictionary mapping the absolute joint path to its position.
@@ -951,7 +951,7 @@ def read_yaml_config(file_path: str) -> dict | None:
         return None
 
     try:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             config_data = yaml.safe_load(f)
         if not isinstance(config_data, dict):
             carb.log_warn(f"Error: Invalid configuration file format in '{file_path}'. Expected a dictionary.")

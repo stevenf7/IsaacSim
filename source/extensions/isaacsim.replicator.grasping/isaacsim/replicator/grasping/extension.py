@@ -27,12 +27,12 @@ class Extension(omni.ext.IExt):
     generation of diverse grasping data for training and validation of robotic manipulation models.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Called when the extension is starting up.
 
         Args:
             ext_id: The unique identifier of the extension being started.
         """
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Called when the extension is shutting down."""

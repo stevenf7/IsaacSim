@@ -71,7 +71,7 @@ def _differential_ik(
 
     if method == "singular-value-decomposition":
         U, S, Vh = np.linalg.svd(jacobian_ee)
-        inv_s = np.where(S > min_singular_value, 1.0 / S, np.zeros_like(S))
+        inv_s = np.where(min_singular_value < S, 1.0 / S, np.zeros_like(S))
         inv_s_diag = np.zeros((*inv_s.shape, inv_s.shape[-1]), dtype=inv_s.dtype)
         np.einsum("...ii->...i", inv_s_diag)[...] = inv_s
         K = inv_s.shape[-1]
@@ -136,7 +136,7 @@ class PositionBasedIKController:
         max_joint_step_rad: float = 0.0,
         min_manipulability: float = 0.001,
         error_scale_distance: float = 0.5,
-    ):
+    ) -> None:
         self._robot = robot
         self._ee_link = ee_link
         self._ee_link_index = ee_link_index
@@ -162,26 +162,32 @@ class PositionBasedIKController:
 
     @property
     def vr_target_filter(self) -> float:
+        """Return the EMA low-pass filter strength for VR targets."""
         return float(self._vr_target_filter)
 
     @vr_target_filter.setter
     def vr_target_filter(self, value: float) -> None:
+        """Set the EMA low-pass filter strength for VR targets."""
         self._vr_target_filter = np.clip(value, 0.0, 0.99)
 
     @property
     def max_joint_step_rad(self) -> float:
+        """Return the maximum allowed joint change per step in radians."""
         return float(self._max_joint_step_rad)
 
     @max_joint_step_rad.setter
     def max_joint_step_rad(self, value: float) -> None:
+        """Set the maximum allowed joint change per step in radians."""
         self._max_joint_step_rad = max(0.0, value)
 
     @property
     def method(self) -> str:
+        """Return the differential IK method name."""
         return self._method
 
     @method.setter
     def method(self, value: str) -> None:
+        """Set the differential IK method by name."""
         allowed = {
             "damped-least-squares",
             "pseudoinverse",

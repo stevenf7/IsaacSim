@@ -15,8 +15,7 @@
 
 """Provides stereo camera components for mobility generation, including the Leopard Imaging Hawk camera system."""
 
-
-from typing import Tuple
+from __future__ import annotations
 
 from isaacsim.core.experimental.utils.stage import add_reference_to_stage
 from isaacsim.replicator.experimental.mobility_gen import MobilityGenCamera, Module
@@ -50,20 +49,20 @@ class HawkCamera(Module):
 
     usd_url: str = get_assets_root_path() + "/Isaac/Sensors/LeopardImaging/Hawk/hawk_v1.1_nominal.usd"
     """USD file path for the Hawk camera asset."""
-    resolution: Tuple[int, int] = (960, 600)
+    resolution: tuple[int, int] = (960, 600)
     """Resolution of the left and right cameras as (width, height)."""
     left_camera_path: str = "left/camera_left"
     """Relative path to the left camera within the Hawk camera prim."""
     right_camera_path: str = "right/camera_right"
     """Relative path to the right camera within the Hawk camera prim."""
 
-    def __init__(self, left: MobilityGenCamera, right: MobilityGenCamera):
+    def __init__(self, left: MobilityGenCamera, right: MobilityGenCamera) -> None:
         self.left = left
         self.right = right
 
     @classmethod
     def build(cls, prim_path: str) -> "HawkCamera":
-        """Creates a new HawkCamera by adding the Hawk camera USD reference to the stage.
+        """Create a new HawkCamera by adding the Hawk camera USD reference to the stage.
 
         Args:
             prim_path: USD prim path where the Hawk camera will be created.
@@ -77,7 +76,7 @@ class HawkCamera(Module):
 
     @classmethod
     def attach(cls, prim_path: str) -> "HawkCamera":
-        """Attaches to an existing Hawk camera prim on the stage.
+        """Attach to an existing Hawk camera prim on the stage.
 
         Args:
             prim_path: USD prim path of the existing Hawk camera.

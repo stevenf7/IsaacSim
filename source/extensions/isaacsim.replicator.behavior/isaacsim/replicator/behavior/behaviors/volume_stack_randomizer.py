@@ -15,8 +15,11 @@
 
 """Behavior script that randomly drops and stacks assets on top of prim surfaces."""
 
+from __future__ import annotations
+
 import asyncio
 from enum import Enum
+from typing import Any
 
 import carb
 import carb.events
@@ -154,7 +157,7 @@ class VolumeStackRandomizer(BehaviorScript):
         },
     ]
 
-    def on_init(self):
+    def on_init(self) -> None:
         """Called when the script is assigned to a prim."""
         self._rng = None
         self._state = BehaviorState.INIT
@@ -187,7 +190,7 @@ class VolumeStackRandomizer(BehaviorScript):
         # Update the current behavior state and publish the new value
         self._set_state_and_publish(BehaviorState.INIT)
 
-    def on_destroy(self):
+    def on_destroy(self) -> None:
         """Called when the script is unassigned from a prim."""
         # Unsubscribe from the event stream
         self._event_sub = None
@@ -199,7 +202,7 @@ class VolumeStackRandomizer(BehaviorScript):
             remove_exposed_variables(self.prim, EXPOSED_ATTR_NS, self.BEHAVIOR_NS, self.VARIABLES_TO_EXPOSE)
             omni.kit.window.property.get_window().request_rebuild()
 
-    def _on_event(self, event: carb.events.IEvent):
+    def _on_event(self, event: carb.events.IEvent) -> None:
         # If the specific prim_path is provided, but does not match the prim_path of this script, return
         if (prim_path := event.payload.get("prim_path")) and prim_path != self.prim_path:
             return
@@ -219,7 +222,7 @@ class VolumeStackRandomizer(BehaviorScript):
                     f"[{self.prim_path}] Invalid action '{action}', valid actions are: {self.ACTION_FUNCTION_MAP.keys()}"
                 )
 
-    def _set_state_and_publish(self, new_state: BehaviorState):
+    def _set_state_and_publish(self, new_state: BehaviorState) -> None:
         # Update the state and publish it to the event stream
         self._state = new_state
         payload_out = {
@@ -230,7 +233,7 @@ class VolumeStackRandomizer(BehaviorScript):
         if self._event_stream:
             self._event_stream.dispatch_event(event_name=self._event_name_out, payload=payload_out)
 
-    async def _setup_async(self):
+    async def _setup_async(self) -> None:
         # Fetch the exposed attributes
         include_children = self._get_exposed_variable("includeChildren")
         self._event_name_out = self._get_exposed_variable("event:output")
@@ -290,7 +293,7 @@ class VolumeStackRandomizer(BehaviorScript):
         # Update the current behavior state and publish the new value
         self._set_state_and_publish(BehaviorState.SETUP)
 
-    async def _reset_async(self):
+    async def _reset_async(self) -> None:
         if self._preserve_simulation_state:
             reset_simulation_and_enable_reset_on_stop()
         self._remove_collision_walls()
@@ -308,7 +311,7 @@ class VolumeStackRandomizer(BehaviorScript):
         # Update the current behavior state and publish the new value
         self._set_state_and_publish(BehaviorState.RESET)
 
-    async def _run_behavior_async(self):
+    async def _run_behavior_async(self) -> None:
         # Update the current behavior state and publish the new value
         self._set_state_and_publish(BehaviorState.RUNNING)
 
@@ -355,7 +358,7 @@ class VolumeStackRandomizer(BehaviorScript):
         # Update the current behavior state and publish the new value
         self._set_state_and_publish(BehaviorState.FINISHED)
 
-    def _create_sim_environment(self, assets_urls, height, num_assets_range):
+    def _create_sim_environment(self, assets_urls: list[str], height: float, num_assets_range: Gf.Vec2i) -> None:
         # Early return if no spawn assets urls were provided
         if not assets_urls:
             carb.log_warn(f"[{self.prim_path}] No assets provided to spawn.")
@@ -427,7 +430,7 @@ class VolumeStackRandomizer(BehaviorScript):
             # Cache the collision wall prims to remove them after the simulation
             self._prim_collision_walls[prim] = collision_wall_prims
 
-    async def _drop_assets_async(self, drop_interval_steps, settling_sim_steps):
+    async def _drop_assets_async(self, drop_interval_steps: int, settling_sim_steps: int) -> None:
         # Group the prims and their associated assets into batches to allow parallel simulation between the prims
         prim_asset_batches = self._group_prims_and_assets_into_batches()
 
@@ -444,7 +447,7 @@ class VolumeStackRandomizer(BehaviorScript):
             sim_steps=settling_sim_steps, physx_dt=self._physx_dt, render=self._render_simulation
         )
 
-    async def _start_batched_asset_drop_async(self, prim_asset_batch, drop_height, sim_steps):
+    async def _start_batched_asset_drop_async(self, prim_asset_batch: list, drop_height: float, sim_steps: int) -> None:
         # For each prim-assset pair calculate the drop area and prepare to drop the asset from a random location
         bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
         xform_cache = UsdGeom.XformCache()
@@ -517,8 +520,8 @@ class VolumeStackRandomizer(BehaviorScript):
         await run_simulation_async(sim_steps=sim_steps, physx_dt=self._physx_dt, render=self._render_simulation)
 
     async def _apply_directional_forces_async(
-        self, force_directions, force_intensity, sim_steps, include_center_force=False
-    ):
+        self, force_directions: list, force_intensity: float, sim_steps: int, include_center_force: bool = False
+    ) -> None:
         # Iterate over the force directions and apply the forces to the assets
         stage_id = UsdUtils.StageCache.Get().GetId(self.stage).ToLongInt()
         xform_cache = UsdGeom.XformCache()
@@ -557,7 +560,7 @@ class VolumeStackRandomizer(BehaviorScript):
                 stage_id, body_ids, forces, positions, sim_steps, self._physx_dt, self._render_simulation
             )
 
-    async def _finalize_simulation_async(self):
+    async def _finalize_simulation_async(self) -> None:
         # Let the simulation run for a few more steps to allow the assets to settle
         await run_simulation_async(sim_steps=20, physx_dt=self._physx_dt, render=self._render_simulation)
 
@@ -586,7 +589,7 @@ class VolumeStackRandomizer(BehaviorScript):
             if scope_root_prim:
                 remove_empty_scopes(scope_root_prim, self.stage)
 
-    def _group_prims_and_assets_into_batches(self):
+    def _group_prims_and_assets_into_batches(self) -> list:
         # Early return if no valid prims or assets were found
         if not self._prim_assets or not self._valid_prims:
             print(f"[{self.prim_path}] No valid prims or assets found.")
@@ -620,7 +623,7 @@ class VolumeStackRandomizer(BehaviorScript):
 
         return prim_asset_batches
 
-    def _remove_collision_walls(self):
+    def _remove_collision_walls(self) -> None:
         if not self.stage:
             carb.log_warn(f"[{self.prim_path}] Stage is not valid to remove collision walls.")
             return
@@ -635,7 +638,7 @@ class VolumeStackRandomizer(BehaviorScript):
                         break
         self._prim_collision_walls.clear()
 
-    def _remove_assets(self):
+    def _remove_assets(self) -> None:
         if not self.stage:
             carb.log_warn(f"[{self.prim_path}] Stage is not valid to remove assets.")
             return
@@ -648,7 +651,7 @@ class VolumeStackRandomizer(BehaviorScript):
 
         self._prim_assets.clear()
 
-    def _remove_physics_material(self):
+    def _remove_physics_material(self) -> None:
         if not self.stage:
             carb.log_warn(f"[{self.prim_path}] Stage is not valid to remove physics material.")
             return
@@ -657,11 +660,11 @@ class VolumeStackRandomizer(BehaviorScript):
             self.stage.RemovePrim(self._physics_material.GetPath())
             self._physics_material = None
 
-    def _get_exposed_variable(self, attr_name):
+    def _get_exposed_variable(self, attr_name: str) -> Any:
         full_attr_name = f"{EXPOSED_ATTR_NS}:{self.BEHAVIOR_NS}:{attr_name}"
         return get_exposed_variable(self.prim, full_attr_name)
 
-    def set_rng(self, rng: np.random.Generator | None = None):
+    def set_rng(self, rng: np.random.Generator | None = None) -> None:
         """Set the random number generator, overriding the USD seed attribute.
 
         Args:

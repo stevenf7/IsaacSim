@@ -30,22 +30,22 @@ from pxr import Sdf, UsdPhysics
 class EndEffectorValidationResult:
     """Result of end effector validation check."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.is_valid: bool = True
         self.errors: list[str] = []
         self.warnings: list[str] = []
 
     def add_error(self, message: str) -> None:
-        """Adds an error and marks result as invalid."""
+        """Add an error and marks result as invalid."""
         self.errors.append(message)
         self.is_valid = False
 
     def add_warning(self, message: str) -> None:
-        """Adds a warning without invalidating the result."""
+        """Add a warning without invalidating the result."""
         self.warnings.append(message)
 
     def get_summary(self) -> str:
-        """Returns a formatted summary of validation results."""
+        """Return a formatted summary of validation results."""
         lines = []
         if self.errors:
             lines.append("Errors:")
@@ -61,7 +61,7 @@ class EndEffectorValidationResult:
 
 
 def find_owning_articulation_root(prim_path: str) -> str | None:
-    """Finds the ArticulationRootAPI prim that owns a given prim path."""
+    """Find the ArticulationRootAPI prim that owns a given prim path."""
     try:
         art_paths = Articulation.fetch_articulation_root_api_prim_paths(prim_path)
         if art_paths:

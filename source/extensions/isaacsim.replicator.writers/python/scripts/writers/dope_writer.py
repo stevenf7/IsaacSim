@@ -293,7 +293,7 @@ class DOPEWriter(Writer):
         return self._last_frame_is_valid
 
     def is_last_frame_valid(self) -> bool:
-        """Checks if the last frame was valid (training data was present).
+        """Check if the last frame was valid (training data was present).
 
         Returns:
             bool: True if the last frame was valid, False otherwise.

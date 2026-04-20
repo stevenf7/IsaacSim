@@ -23,13 +23,13 @@ from omni.ui.tests.test_base import OmniUiTest
 class TestGraspingUIWindow(OmniUiTest):
     """Test the grasping UI window lifecycle."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment with a new stage."""
         await omni.kit.app.get_app().next_update_async()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment and wait for asset loading to complete."""
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
@@ -37,6 +37,6 @@ class TestGraspingUIWindow(OmniUiTest):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
-    async def test_window_ui(self):
+    async def test_window_ui(self) -> None:
         """Verify the grasping UI window renders without errors."""
         await omni.kit.app.get_app().next_update_async()

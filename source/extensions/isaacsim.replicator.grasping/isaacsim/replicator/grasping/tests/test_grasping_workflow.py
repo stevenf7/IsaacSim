@@ -15,6 +15,8 @@
 
 """Test the grasping workflow end-to-end."""
 
+from __future__ import annotations
+
 import os
 
 import omni.kit.app
@@ -26,16 +28,16 @@ from isaacsim.storage.native import get_assets_root_path_async
 from .common import check_grasp_pose_generation_dependencies
 
 
-class TestGraspingWorkflow((omni.kit.test.AsyncTestCase)):
+class TestGraspingWorkflow(omni.kit.test.AsyncTestCase):
     """Test the grasping workflow with configuration and evaluation."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await omni.kit.app.get_app().next_update_async()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
@@ -43,18 +45,18 @@ class TestGraspingWorkflow((omni.kit.test.AsyncTestCase)):
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
-    async def test_grasping_workflow_example(self):
+    async def test_grasping_workflow_example(self) -> None:
         """Test the full grasping workflow with config loading and pose evaluation."""
 
         async def run_example_async(
-            stage_path,
-            config_path=None,
-            sampler_config=None,
-            physics_scene_path=None,
-            output_dir=None,
-            gripper_path=None,
-            object_prim_path=None,
-        ):
+            stage_path: str | None = None,
+            config_path: str | None = None,
+            sampler_config: dict | None = None,
+            physics_scene_path: str | None = None,
+            output_dir: str | None = None,
+            gripper_path: str | None = None,
+            object_prim_path: str | None = None,
+        ) -> None:
             assets_root_path = await get_assets_root_path_async()
             print(f"Assets root path: {assets_root_path}")
             stage_url = assets_root_path + stage_path

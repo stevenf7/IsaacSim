@@ -15,6 +15,10 @@
 
 """Example behavior script controlled via custom event dispatching."""
 
+from __future__ import annotations
+
+from typing import Any
+
 import carb
 import carb.events
 import omni.kit.app
@@ -63,7 +67,7 @@ class ExampleCustomEventBehavior(BehaviorScript):
         },
     ]
 
-    def on_init(self):
+    def on_init(self) -> None:
         """Called when the script is assigned to a prim."""
         self._event_name_out = self.EVENT_NAME_OUT
         self._valid_prims = []
@@ -84,7 +88,7 @@ class ExampleCustomEventBehavior(BehaviorScript):
         # Refresh the property windows to show the exposed variables
         omni.kit.window.property.get_window().request_rebuild()
 
-    def on_destroy(self):
+    def on_destroy(self) -> None:
         """Called when the script is unassigned from a prim."""
         # Unsubscribe from the event stream
         self._reset()
@@ -95,7 +99,7 @@ class ExampleCustomEventBehavior(BehaviorScript):
             remove_exposed_variables(self.prim, EXPOSED_ATTR_NS, self.BEHAVIOR_NS, self.VARIABLES_TO_EXPOSE)
             omni.kit.window.property.get_window().request_rebuild()
 
-    def setup(self):
+    def setup(self) -> None:
         """Set up the behavior and publish a setup completion event."""
         print(f"[ExampleCustomEventBehavior][{self.prim_path}] setup()")
         self._setup()
@@ -103,7 +107,7 @@ class ExampleCustomEventBehavior(BehaviorScript):
             event_name=self._event_name_out, payload={"prim_path": str(self.prim_path), "function_name": "setup"}
         )
 
-    def update(self):
+    def update(self) -> None:
         """Apply the behavior and publish an update completion event."""
         print(f"[ExampleCustomEventBehavior][{self.prim_path}] update()")
         self._apply_behavior()
@@ -111,7 +115,7 @@ class ExampleCustomEventBehavior(BehaviorScript):
             event_name=self._event_name_out, payload={"prim_path": str(self.prim_path), "function_name": "update"}
         )
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the behavior and publish a reset completion event."""
         print(f"[ExampleCustomEventBehavior][{self.prim_path}] reset()")
         self._reset()
@@ -119,7 +123,7 @@ class ExampleCustomEventBehavior(BehaviorScript):
             event_name=self._event_name_out, payload={"prim_path": str(self.prim_path), "function_name": "reset"}
         )
 
-    def _on_event(self, event: carb.events.IEvent):
+    def _on_event(self, event: carb.events.IEvent) -> None:
         # If the specific prim_path is provided, but does not match the prim_path of this script, return
         if event.payload.get("prim_path", None) and event.payload.get("prim_path") != self.prim_path:
             return
@@ -128,7 +132,7 @@ class ExampleCustomEventBehavior(BehaviorScript):
         if (function_name := event.payload.get("function_name", None)) and function_name in self.ALLOWED_FUNCTIONS:
             getattr(self, function_name)()
 
-    def _setup(self):
+    def _setup(self) -> None:
         # Fetch the exposed attributes
         self._include_children = self._get_exposed_variable("includeChildren")
         self._event_name_out = self._get_exposed_variable("event:output")
@@ -142,16 +146,16 @@ class ExampleCustomEventBehavior(BehaviorScript):
             self._valid_prims = []
             carb.log_warn(f"[{self.prim_path}] No valid prims found.")
 
-    def _reset(self):
+    def _reset(self) -> None:
         self._valid_prims.clear()
 
-    def _apply_behavior(self):
+    def _apply_behavior(self) -> None:
         if not self._valid_prims:
             print(f"[ExampleCustomEventBehavior][{self.prim_path}] No valid prims found.")
             return
         for prim in self._valid_prims:
             print(f"[ExampleCustomEventBehavior][{self.prim_path}] Applying behavior to prim {prim.GetPath()}")
 
-    def _get_exposed_variable(self, attr_name):
+    def _get_exposed_variable(self, attr_name: str) -> Any:
         full_attr_name = f"{EXPOSED_ATTR_NS}:{self.BEHAVIOR_NS}:{attr_name}"
         return get_exposed_variable(self.prim, full_attr_name)

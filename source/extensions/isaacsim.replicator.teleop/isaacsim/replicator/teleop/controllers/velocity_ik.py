@@ -72,7 +72,7 @@ class VelocityBasedIKController:
         min_singular_value: float = 1e-5,
         gain: float = 5.0,
         max_joint_step_rad: float = 0.0,
-    ):
+    ) -> None:
         self._robot = robot
         self._ee_link = ee_link
         self._ee_link_index = ee_link_index
@@ -95,26 +95,32 @@ class VelocityBasedIKController:
 
     @property
     def gain(self) -> float:
+        """Return the velocity IK proportional gain."""
         return self._gain
 
     @gain.setter
     def gain(self, value: float) -> None:
+        """Set the velocity IK proportional gain."""
         self._gain = max(0.01, value)
 
     @property
     def max_joint_step_rad(self) -> float:
+        """Return the maximum allowed joint change per step in radians."""
         return float(self._max_joint_step_rad)
 
     @max_joint_step_rad.setter
     def max_joint_step_rad(self, value: float) -> None:
+        """Set the maximum allowed joint change per step in radians."""
         self._max_joint_step_rad = max(0.0, value)
 
     @property
     def method(self) -> str:
+        """Return the differential IK method name."""
         return self._method
 
     @method.setter
     def method(self, value: str) -> None:
+        """Set the differential IK method by name."""
         allowed = {
             "damped-least-squares",
             "pseudoinverse",
@@ -127,19 +133,22 @@ class VelocityBasedIKController:
 
     @property
     def damping(self) -> float:
+        """Return the damping factor for the DLS method."""
         return float(self._damping)
 
     @damping.setter
     def damping(self, value: float) -> None:
+        """Set the damping factor for DLS method."""
         self._damping = max(1e-6, value)
 
     @property
     def vr_target_filter(self) -> float:
+        """Return the VR target filter strength (always 0 for velocity IK)."""
         return 0.0
 
     @vr_target_filter.setter
     def vr_target_filter(self, value: float) -> None:
-        pass
+        """No-op; velocity IK does not support VR target filtering."""
 
     def set_target(
         self,
@@ -216,7 +225,7 @@ class VelocityBasedIKController:
             e = x_error[i, :, 0]
             if self._method == "singular-value-decomposition":
                 U, S, Vh = np.linalg.svd(J)
-                inv_s = np.where(S > self._min_singular_value, 1.0 / S, 0.0)
+                inv_s = np.where(self._min_singular_value < S, 1.0 / S, 0.0)
                 J_pinv = Vh.T @ np.diag(inv_s) @ U.T
                 dq[i] = self._gain * (J_pinv @ e)
             elif self._method == "pseudoinverse":

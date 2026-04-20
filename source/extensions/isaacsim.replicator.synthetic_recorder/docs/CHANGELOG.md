@@ -1,4 +1,8 @@
 # Changelog
+## [2.4.2] - 2026-04-18
+### Changed
+- Added return type annotations and imperative-mood docstrings
+
 ## [2.4.1] - 2026-04-11
 ### Changed
 - Add omni.kit.viewport.window to test dependencies

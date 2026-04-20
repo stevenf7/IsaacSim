@@ -40,7 +40,8 @@ from __future__ import annotations
 
 import math
 import time
-from contextlib import nullcontext
+from contextlib import AbstractContextManager, nullcontext
+from typing import Any
 
 import numpy as np
 from isaacsim.core.experimental.prims import XformPrim
@@ -75,7 +76,7 @@ class LocomotionController:
 
     DEADZONE = 0.1
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._prim_path: str = ""
         self._tracking_space_prim_path: str = ""
         self._base_xform: XformPrim | None = None
@@ -106,41 +107,49 @@ class LocomotionController:
 
     @property
     def prim_path(self) -> str:
+        """USD path of the locomotion target prim."""
         return self._prim_path
 
     @property
     def tracking_space_prim_path(self) -> str:
+        """USD path of the tracking-space prim used for carry."""
         return self._tracking_space_prim_path
 
     @property
     def linear_speed(self) -> float:
+        """Linear movement speed in metres per second."""
         return self._linear_speed
 
     @property
     def angular_speed(self) -> float:
+        """Yaw rotation speed in radians per second."""
         return self._angular_speed
 
     @property
     def is_running(self) -> bool:
+        """True if the locomotion controller is active."""
         return self._running
 
     def set_prim_path(self, path: str) -> None:
+        """Set the USD path of the locomotion target prim."""
         self._prim_path = path
         self._base_world_pose_cache.set_prim_path(path)
 
     def set_tracking_space_prim_path(self, path: str) -> None:
-        """Sets the tracking-space prim carried with the base when Carry Tracking Space is enabled."""
+        """Set the tracking-space prim carried with the base when Carry Tracking Space is enabled."""
         self._tracking_space_prim_path = path
         self._refresh_tracking_space_xform()
 
     def set_linear_speed(self, speed: float) -> None:
+        """Set the linear movement speed in metres per second."""
         self._linear_speed = max(0.0, speed)
 
     def set_angular_speed(self, speed: float) -> None:
+        """Set the yaw rotation speed in radians per second."""
         self._angular_speed = max(0.0, speed)
 
     def set_edit_layer(self, layer: Sdf.Layer | None) -> None:
-        """Sets the USD layer for prim writes.
+        """Set the USD layer for prim writes.
 
         Marker prims have their xformOps in an anonymous session sublayer.
         Without directing writes to that layer, ``set_world_poses`` writes
@@ -153,7 +162,7 @@ class LocomotionController:
     # ------------------------------------------------------------------
 
     def validate(self) -> tuple[bool, str]:
-        """Validates the target prim and caches XformPrim wrappers.
+        """Validate the target prim and caches XformPrim wrappers.
 
         Only resets the xform stack when the prim lacks the standard
         ``translate/orient/scale`` ops required by ``set_world_poses``.
@@ -209,7 +218,7 @@ class LocomotionController:
         return True, "Running"
 
     def disable(self) -> None:
-        """Disables the controller and restores prims to their initial poses."""
+        """Disable the controller and restores prims to their initial poses."""
         self._restore_initial_poses()
         self._running = False
         self._last_update_time = 0.0
@@ -220,8 +229,8 @@ class LocomotionController:
     # Per-frame update
     # ------------------------------------------------------------------
 
-    def update(self, left_ctrl, right_ctrl) -> None:
-        """Applies one frame of locomotion from VR controller data.
+    def update(self, left_ctrl: Any, right_ctrl: Any) -> None:
+        """Apply one frame of locomotion from VR controller data.
 
         Args:
             left_ctrl: Left VR controller snapshot (or None).
@@ -280,14 +289,14 @@ class LocomotionController:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _get_input(ctrl, attr: str) -> float:
+    def _get_input(ctrl: Any, attr: str) -> float:
         """Safely reads a float attribute from a VR controller snapshot."""
         if ctrl is None:
             return 0.0
         return getattr(ctrl.inputs, attr, 0.0)
 
     @staticmethod
-    def _get_bool_input(ctrl, attr: str) -> bool:
+    def _get_bool_input(ctrl: Any, attr: str) -> bool:
         """Safely reads a bool attribute from a VR controller snapshot."""
         if ctrl is None:
             return False
@@ -301,8 +310,8 @@ class LocomotionController:
         return sign * (abs(value) - self.DEADZONE) / (1.0 - self.DEADZONE)
 
     @staticmethod
-    def _read_local_scale(prim) -> np.ndarray | None:
-        """Extracts local scale from the prim's composed local transform matrix.
+    def _read_local_scale(prim: Usd.Prim) -> np.ndarray | None:
+        """Extract local scale from the prim's composed local transform matrix.
 
         Pre-reset fallback: runs before ``XformPrim`` normalizes xformOps, so it
         cannot use ``XformPrim.get_local_scales()`` (which requires an authored
@@ -321,8 +330,8 @@ class LocomotionController:
         )
         return np.linalg.norm(rows, axis=1).reshape(1, 3)
 
-    def _teleop_edit_ctx(self, stage, prim_path: str):
-        """Returns an edit context for Teleop prim writes, or ``nullcontext``.
+    def _teleop_edit_ctx(self, stage: Usd.Stage, prim_path: str) -> AbstractContextManager[None]:
+        """Return an edit context for Teleop prim writes, or ``nullcontext``.
 
         Validates that ``_edit_layer`` is still in the stage's layer stack
         before creating the ``Usd.EditContext`` to avoid crashes when the
@@ -421,7 +430,7 @@ class LocomotionController:
         delta_yaw: float,
         carry_tracking_space: bool = False,
     ) -> None:
-        """Applies incremental translation and yaw rotation to the target prim.
+        """Apply incremental translation and yaw rotation to the target prim.
 
         Horizontal movement uses the prim's local +X projected onto the world
         ground plane (XY).  Vertical movement and yaw are in world frame (Z-up).
@@ -507,7 +516,7 @@ class LocomotionController:
         pos: np.ndarray,
         orient_wxyz: np.ndarray,
     ) -> None:
-        """Writes a single pose into the pre-allocated ``(1, 3)`` / ``(1, 4)`` buffers."""
+        """Write a single pose into the pre-allocated ``(1, 3)`` / ``(1, 4)`` buffers."""
         pos_buf[0, 0] = pos[0]
         pos_buf[0, 1] = pos[1]
         pos_buf[0, 2] = pos[2]

@@ -33,13 +33,13 @@ BEHAVIOR_SCRIPT_PATH = "/isaacsim/replicator/behavior/behaviors/example_behavior
 class TestExposedVariablesWidgetUI(omni.kit.test.AsyncTestCase):
     """Test the exposed variables property widget UI registration and building."""
 
-    async def setup(self):
+    async def setup(self) -> None:
         """Set up test fixtures."""
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
 
-    async def test_widget_registered(self):
+    async def test_widget_registered(self) -> None:
         """Verify the exposed variables widget is registered in the property window."""
         await omni.usd.get_context().new_stage_async()
 
@@ -62,7 +62,7 @@ class TestExposedVariablesWidgetUI(omni.kit.test.AsyncTestCase):
             f"Namespace {EXPOSED_ATTR_NS} not found in filter list: {widget_filter}",
         )
 
-    async def test_widget_built(self):
+    async def test_widget_built(self) -> None:
         """Verify the widget is built for prims with behavior scripts and not for those without."""
         await omni.usd.get_context().new_stage_async()
         stage = omni.usd.get_context().get_stage()

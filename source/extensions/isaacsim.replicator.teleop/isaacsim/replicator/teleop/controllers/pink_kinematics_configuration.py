@@ -58,7 +58,7 @@ class PinkKinematicsConfiguration(Configuration):
         mesh_path: str | None = None,
         copy_data: bool = True,
         forward_kinematics: bool = True,
-    ):
+    ) -> None:
         self._controlled_joint_names = controlled_joint_names
 
         if mesh_path:

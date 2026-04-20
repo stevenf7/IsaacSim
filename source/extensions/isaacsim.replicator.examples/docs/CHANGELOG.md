@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.9.5] - 2026-04-18
+### Changed
+- Added return type annotations and `__all__` definitions
+
 ## [1.9.4] - 2026-04-15
 ### Changed
 - Add new isaacsim.cortex.examples test time dependency 

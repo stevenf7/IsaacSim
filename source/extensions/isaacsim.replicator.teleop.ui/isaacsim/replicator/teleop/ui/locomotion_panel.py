@@ -49,7 +49,8 @@ _PANEL_NAME = "Locomotion"
 _LOG_NAMESPACE = "Locomotion"
 
 
-def set_status(label, text, color=CLR_DIM, emit_terminal: bool = False):
+def set_status(label: ui.Label | None, text: str, color: int = CLR_DIM, emit_terminal: bool = False) -> None:
+    """Set the status label text and color for this panel."""
     _set_status_base(label, text, color, source=_LOG_NAMESPACE, emit_terminal=emit_terminal)
 
 
@@ -64,7 +65,7 @@ class LocomotionPanel:
         locomotion_controller: LocomotionController,
         teleop_manager: TeleopManager,
         collapsed_states: dict,
-    ):
+    ) -> None:
         self._loco = locomotion_controller
         self._tm = teleop_manager
         self._collapsed = collapsed_states
@@ -90,7 +91,7 @@ class LocomotionPanel:
 
         self._settings.set_default_string(f"{_SETTINGS_PREFIX}/path", "")
 
-    def _save(self, key: str, value) -> None:
+    def _save(self, key: str, value: object) -> None:
         path = f"{_SETTINGS_PREFIX}/{key}"
         if isinstance(value, str):
             self._settings.set_string(path, value)
@@ -99,6 +100,7 @@ class LocomotionPanel:
         return self._settings.get_as_string(f"{_SETTINGS_PREFIX}/{key}") or ""
 
     def build(self) -> None:
+        """Build the locomotion panel UI."""
         base_path_tooltip = (
             "Base prim moved kinematically by locomotion. Use the robot root or mobile base that should carry "
             "the attached teleop content."
@@ -194,7 +196,7 @@ class LocomotionPanel:
     # Timeline-driven UI locking
     # ------------------------------------------------------------------
 
-    def _on_timeline_event(self, event) -> None:
+    def _on_timeline_event(self, event: object) -> None:
         if event.type == int(omni.timeline.TimelineEventType.PLAY):
             self._is_playing = True
             self._sync_controls()
@@ -214,7 +216,7 @@ class LocomotionPanel:
     # ------------------------------------------------------------------
 
     def _on_configure(self) -> None:
-        """Validates the base path and transitions to configured state."""
+        """Validate the base path and transitions to configured state."""
         if self._is_playing:
             return
         path = self._path_field.model.get_value_as_string() if self._path_field else ""
@@ -242,7 +244,7 @@ class LocomotionPanel:
         self._sync_controls()
 
     def _on_toggle(self) -> None:
-        """Enables or disables locomotion for the next Play session."""
+        """Enable or disables locomotion for the next Play session."""
         if self._is_playing:
             return
         if self._desired_enabled:
@@ -269,7 +271,7 @@ class LocomotionPanel:
         self._sync_controls()
 
     def _on_clear(self) -> None:
-        """Clears the configured locomotion state (path is preserved)."""
+        """Clear the configured locomotion state (path is preserved)."""
         if self._is_playing:
             return
         self._loco.disable()
@@ -293,7 +295,6 @@ class LocomotionPanel:
 
     def collect_profile(self) -> LocomotionProfile:
         """Collect the current locomotion-controller state into a teleop profile section."""
-
         path = self._path_field.model.get_value_as_string() if self._path_field else ""
         settings = {
             "prim_path": path,
@@ -307,7 +308,6 @@ class LocomotionPanel:
 
     def apply_profile(self, profile: LocomotionProfile, resolve_stage: bool) -> None:
         """Apply a locomotion-controller teleop profile section."""
-
         self._loco.disable()
         self._tm.set_locomotion_tracking(False)
         self._configured = False
@@ -346,7 +346,7 @@ class LocomotionPanel:
                 set_status(self._status_label, "Profile loaded - stage resolution deferred", CLR_YELLOW)
 
     def reset_ui(self) -> None:
-        """Resets all UI widgets to idle state (e.g. after stage close)."""
+        """Reset all UI widgets to idle state (e.g. after stage close)."""
         self._is_playing = False
         self._configured = False
         self._desired_enabled = False
@@ -356,7 +356,6 @@ class LocomotionPanel:
 
     def on_stage_closed(self) -> None:
         """Clear stage-bound runtime state while preserving the configured profile in the UI."""
-
         self._is_playing = False
         self._configured = False
         self._sync_controls()

@@ -51,7 +51,8 @@ _PANEL_NAME = "Session"
 _LOG_NAMESPACE = "Session"
 
 
-def set_status(label, text, color=CLR_DIM, emit_terminal: bool = False):
+def set_status(label: ui.Label | None, text: str, color: int = CLR_DIM, emit_terminal: bool = False) -> None:
+    """Set the status label text and color for this panel."""
     _set_status_base(label, text, color, source=_LOG_NAMESPACE, emit_terminal=emit_terminal)
 
 
@@ -84,7 +85,7 @@ class SessionPanel:
         teleop_manager: TeleopManager,
         markers_manager: MarkersManager,
         collapsed_states: dict,
-    ):
+    ) -> None:
         self._tm = teleop_manager
         self._mm = markers_manager
         self._collapsed = collapsed_states
@@ -121,6 +122,7 @@ class SessionPanel:
         self._debug_backend_combo: ui.ComboBox | None = None
 
     def build(self) -> None:
+        """Build the session panel UI."""
         frame = ui.CollapsableFrame(
             _PANEL_NAME, height=0, collapsed=self._collapsed.get(_PANEL_NAME, False), style=get_style()
         )
@@ -547,7 +549,7 @@ class SessionPanel:
     # ------------------------------------------------------------------
 
     def _on_debug_tracking_toggled(self, enabled: bool) -> None:
-        """Ensures markers exist before enabling debug tracking mode."""
+        """Ensure markers exist before enabling debug tracking mode."""
         if enabled:
             if self._tm.is_connected:
                 if self._debug_tracking_cb:
@@ -576,7 +578,7 @@ class SessionPanel:
     # ------------------------------------------------------------------
 
     def _on_show_markers(self) -> None:
-        """Creates frame markers (if needed) and starts live tracking."""
+        """Create frame markers (if needed) and starts live tracking."""
         ctx = omni.usd.get_context()
         if ctx.get_stage() is None:
             set_status(self._marker_status, "No stage - open a scene first", CLR_RED, emit_terminal=True)
@@ -625,7 +627,7 @@ class SessionPanel:
                     set_status(self._tracking_space_status, f"Failed — {msg}", CLR_RED, emit_terminal=True)
 
     def _on_remove_markers(self) -> None:
-        """Stops tracking, disables debug mode, and removes all markers from the stage."""
+        """Stop tracking, disables debug mode, and removes all markers from the stage."""
         if self._tm.debug_tracking_enabled:
             self._tm.set_debug_tracking(False)
             if self._debug_tracking_cb:
@@ -787,7 +789,7 @@ class SessionPanel:
     # Anchor callbacks
     # ------------------------------------------------------------------
 
-    def _on_anchor_offset_changed(self, ax, ay, az) -> None:
+    def _on_anchor_offset_changed(self, ax: ui.FloatField, ay: ui.FloatField, az: ui.FloatField) -> None:
         x = ax.model.get_value_as_float()
         y = ay.model.get_value_as_float()
         z = az.model.get_value_as_float()
@@ -812,7 +814,6 @@ class SessionPanel:
 
     def collect_profile(self) -> TeleopSettingsProfile:
         """Collect the current session panel values into a teleop settings profile."""
-
         coordinate_system = CoordinateSystem.ISAAC_SIM.value
         if self._coord_system_combo is not None:
             index = self._coord_system_combo.model.get_item_value_model().get_value_as_int()
@@ -853,7 +854,6 @@ class SessionPanel:
 
     def apply_profile(self, profile: TeleopSettingsProfile, resolve_stage: bool) -> None:
         """Apply a teleop settings profile to the panel and shared manager state."""
-
         coord_index = 0
         for index, (_, system) in enumerate(_COORD_SYSTEMS):
             if system.value == profile.coordinate_system:
@@ -924,8 +924,8 @@ class SessionPanel:
             set_status(self._tracking_space_status, "", CLR_DIM)
         self._sync_tracking_space_controls()
 
-    def sync_from_command(self, command, success: bool, message: str) -> None:
-        """Updates session UI after an external command bus execution.
+    def sync_from_command(self, command: TeleopCommand, success: bool, message: str) -> None:
+        """Update session UI after an external command bus execution.
 
         Only reacts to connection-related commands.  Timeline commands
         (START / STOP / RESET) are handled by the controller panels.
@@ -973,7 +973,7 @@ class SessionPanel:
     # Connection callbacks
     # ------------------------------------------------------------------
 
-    def _on_connect(self):
+    def _on_connect(self) -> None:
         ctx = omni.usd.get_context()
         if ctx.get_stage() is None:
             self._set_status("No stage - open a scene first", emit_terminal=True)
@@ -989,13 +989,13 @@ class SessionPanel:
             self._on_show_markers()
             self._set_status("Connected - markers active", emit_terminal=True)
 
-    def _on_disconnect(self):
+    def _on_disconnect(self) -> None:
         self._on_remove_markers()
         self._tm.disconnect()
         self.reset_ui()
 
     def reset_ui(self) -> None:
-        """Resets all UI widgets to the disconnected/idle state."""
+        """Reset all UI widgets to the disconnected/idle state."""
         self._set_status("Disconnected", emit_terminal=True)
         self._sync_ui()
         set_status(self._marker_status, "", CLR_DIM)
@@ -1008,7 +1008,6 @@ class SessionPanel:
 
     def on_stage_closed(self) -> None:
         """Clear stage-bound runtime state while preserving the configured profile in the UI."""
-
         self._set_status("Disconnected")
         self._sync_ui()
         set_status(self._marker_status, "", CLR_DIM)
@@ -1026,12 +1025,12 @@ class SessionPanel:
         self._sync_tracking_space_controls()
         self._sync_marker_buttons()
 
-    def _on_coord_system_changed(self, index: int):
+    def _on_coord_system_changed(self, index: int) -> None:
         if 0 <= index < len(_COORD_SYSTEMS):
             _, system = _COORD_SYSTEMS[index]
             self._tm.set_coordinate_system(system)
 
-    def _set_status(self, text: str, emit_terminal: bool = False):
+    def _set_status(self, text: str, emit_terminal: bool = False) -> None:
         if self._status_label:
             if self._status_label.text == text:
                 return
@@ -1045,7 +1044,7 @@ class SessionPanel:
         if text and emit_terminal:
             print(f"[Teleop][{_LOG_NAMESPACE}] {text}")
 
-    def _sync_ui(self):
+    def _sync_ui(self) -> None:
         connected = self._tm.is_connected
         debug = self._tm.debug_tracking_enabled
         if self._connect_btn:

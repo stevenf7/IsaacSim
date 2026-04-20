@@ -52,7 +52,7 @@ class SyntheticRecorderExtension(omni.ext.IExt, MenuHelperExtensionFull):
             SyntheticRecorderExtension.MENU_GROUP,
         )
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Called when the Synthetic Data Recorder extension is shutting down.
 
         Removes the menu items created during startup.

@@ -43,6 +43,7 @@ import time
 import warnings
 import xml.etree.ElementTree as ET
 from functools import lru_cache
+from typing import Any
 
 import numpy as np
 from isaacsim.core.experimental.prims import Articulation, RigidPrim
@@ -121,7 +122,7 @@ def _freeze_uncontrolled_urdf_joints(urdf_path: str, controlled_joint_names: lis
 # ---------------------------------------------------------------------------
 
 
-def _resolve_frame_name(model, ee_link_name: str) -> str:
+def _resolve_frame_name(model: Any, ee_link_name: str) -> str:
     """Find the Pinocchio frame matching the Isaac Sim EE link name.
 
     The USD-to-URDF exporter may prefix link names with the prim hierarchy
@@ -149,7 +150,7 @@ def _resolve_frame_name(model, ee_link_name: str) -> str:
 
 @lru_cache(maxsize=1)
 def _get_pink_backend_status() -> tuple[bool, str]:
-    """Checks whether the optional PINK backend modules are importable."""
+    """Check whether the optional PINK backend modules are importable."""
     try:
         importlib.import_module("isaacsim.robot_motion.pink")
     except ModuleNotFoundError as exc:
@@ -178,7 +179,7 @@ def _get_pink_backend_status() -> tuple[bool, str]:
 
 @lru_cache(maxsize=None)
 def _get_pink_qp_solver_status(solver_name: str) -> tuple[bool, str]:
-    """Checks whether a supported PINK QP solver backend is importable."""
+    """Check whether a supported PINK QP solver backend is importable."""
     normalized = solver_name.lower()
     module_name = _PINK_QP_SOLVER_IMPORTS.get(normalized)
     if module_name is None:
@@ -221,7 +222,7 @@ class PinkIKController:
 
     @classmethod
     def get_backend_status(cls) -> tuple[bool, str]:
-        """Returns whether the optional PINK backend is available."""
+        """Return whether the optional PINK backend is available."""
         available, reason = _get_pink_backend_status()
         if not available:
             return False, reason
@@ -236,7 +237,7 @@ class PinkIKController:
 
     @classmethod
     def supported_qp_solvers(cls) -> tuple[str, ...]:
-        """Returns the ordered list of supported QP solver backends."""
+        """Return the ordered list of supported QP solver backends."""
         return tuple(_PINK_QP_SOLVER_IMPORTS)
 
     @classmethod
@@ -250,7 +251,7 @@ class PinkIKController:
 
     @classmethod
     def get_qp_solver_status(cls, solver_name: str) -> tuple[bool, str]:
-        """Returns whether a specific PINK QP solver backend is available."""
+        """Return whether a specific PINK QP solver backend is available."""
         try:
             normalized = cls.normalize_qp_solver_name(solver_name)
         except ValueError as exc:
@@ -274,7 +275,7 @@ class PinkIKController:
         max_joint_step_rad: float = 0.0,
         vr_target_filter: float = 0.0,
         solver: str = "daqp",
-    ):
+    ) -> None:
         """Initialise the PINK IK solver.
 
         Args:
@@ -423,53 +424,65 @@ class PinkIKController:
 
     @property
     def vr_target_filter(self) -> float:
+        """Return the EMA low-pass filter strength for VR targets."""
         return float(self._vr_target_filter)
 
     @vr_target_filter.setter
     def vr_target_filter(self, value: float) -> None:
+        """Set the EMA low-pass filter strength for VR targets."""
         self._vr_target_filter = np.clip(value, 0.0, 0.99)
 
     @property
     def max_joint_step_rad(self) -> float:
+        """Return the maximum allowed joint change per step in radians."""
         return float(self._max_joint_step_rad)
 
     @max_joint_step_rad.setter
     def max_joint_step_rad(self, value: float) -> None:
+        """Set the maximum allowed joint change per step in radians."""
         self._max_joint_step_rad = max(0.0, value)
 
     @property
     def task_gain(self) -> float:
+        """Return the PINK FrameTask gain."""
         return float(self._task_gain)
 
     @task_gain.setter
     def task_gain(self, value: float) -> None:
+        """Set the PINK FrameTask gain."""
         self._task_gain = max(0.01, value)
         self._apply_task_tuning()
 
     @property
     def posture_cost(self) -> float:
+        """Return the PINK PostureTask regularisation cost."""
         return float(self._posture_cost)
 
     @posture_cost.setter
     def posture_cost(self, value: float) -> None:
+        """Set the PINK PostureTask regularisation cost."""
         self._posture_cost = max(0.0, value)
         self._apply_task_tuning()
 
     @property
     def lm_damping(self) -> float:
+        """Return the Levenberg-Marquardt damping on the FrameTask."""
         return float(self._lm_damping)
 
     @lm_damping.setter
     def lm_damping(self, value: float) -> None:
+        """Set the Levenberg-Marquardt damping on the FrameTask."""
         self._lm_damping = max(1e-6, value)
         self._apply_task_tuning()
 
     @property
     def qp_solver(self) -> str:
+        """Return the current QP solver backend name."""
         return self._solver_name
 
     @qp_solver.setter
     def qp_solver(self, value: str) -> None:
+        """Set the QP solver backend by name."""
         normalized = self.normalize_qp_solver_name(value)
         available, reason = self.get_qp_solver_status(normalized)
         if not available:
@@ -665,7 +678,7 @@ class PinkIKController:
         self,
         position_world: np.ndarray,
         orientation_xyzw: np.ndarray | None,
-    ):
+    ) -> Any:
         """Convert a world-space target into the current URDF root-link frame."""
         pin = self._pin
 
@@ -693,7 +706,7 @@ class PinkIKController:
 
         return pin.SE3(local_rot, local_pos.reshape(3, 1))
 
-    def _xyzw_to_se3(self, position: np.ndarray, orientation_xyzw: np.ndarray | None):
+    def _xyzw_to_se3(self, position: np.ndarray, orientation_xyzw: np.ndarray | None) -> Any:
         """Convert position + xyzw quaternion to ``pinocchio.SE3``."""
         pin = self._pin
         if orientation_xyzw is not None:

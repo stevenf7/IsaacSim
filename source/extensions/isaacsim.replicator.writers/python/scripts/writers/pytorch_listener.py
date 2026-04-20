@@ -33,7 +33,7 @@ class PytorchListener:
         self.data = {}
 
     def write_data(self, data: dict):
-        """Updates the existing data in the listener with the new data provided.
+        """Update the existing data in the listener with the new data provided.
 
         Args:
             data: New data retrieved from writer.
@@ -42,7 +42,7 @@ class PytorchListener:
         self.data.update(data)
 
     def get_rgb_data(self) -> "torch.Tensor | None":
-        """Returns RGB data as a batched tensor from the current data stored.
+        """Return RGB data as a batched tensor from the current data stored.
 
         Returns:
             Images in batched pytorch tensor form.

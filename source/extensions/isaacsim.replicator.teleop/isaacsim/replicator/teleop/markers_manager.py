@@ -39,6 +39,7 @@ and are removed cleanly when the layer is dropped.  **All** writes
 from leaking into the root layer.
 """
 
+from collections.abc import Generator
 from contextlib import contextmanager
 from typing import Literal
 
@@ -91,7 +92,7 @@ class MarkersManager:
 
     SUPPORTED_BACKENDS: tuple[str, ...] = ("usd", "usdrt", "fabric")
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._frame_scale: float = self.DEFAULT_FRAME_SCALE
         self._markers: dict[str, XformPrim] = {}
         self._world_pose_caches: dict[str, WorldPosePrimCache] = {}
@@ -107,7 +108,7 @@ class MarkersManager:
     # ------------------------------------------------------------------
 
     def _ensure_layer(self, stage: Usd.Stage) -> Sdf.Layer:
-        """Returns the anonymous teleop layer, creating it if needed.
+        """Return the anonymous teleop layer, creating it if needed.
 
         On first call also cleans up any stale ``/Teleop`` specs that may
         have leaked into the root layer from earlier sessions (before the
@@ -126,7 +127,7 @@ class MarkersManager:
 
     @staticmethod
     def _cleanup_root_layer_overs(stage: Usd.Stage) -> None:
-        """Removes stale /Teleop prim specs from the root layer if present."""
+        """Remove stale /Teleop prim specs from the root layer if present."""
         root = stage.GetRootLayer()
         teleop_spec = root.GetPrimAtPath("/Teleop")
         if teleop_spec:
@@ -134,7 +135,7 @@ class MarkersManager:
             print("[Teleop][Markers] Cleaned up stale /Teleop specs from root layer.")
 
     def _remove_layer(self) -> None:
-        """Removes the anonymous layer from the session, deleting all teleop prims.
+        """Remove the anonymous layer from the session, deleting all teleop prims.
 
         Also cleans up any stale ``/Teleop`` specs on the root layer that
         may have been written outside the anonymous layer context (e.g. by
@@ -154,7 +155,7 @@ class MarkersManager:
         self._layer = None
 
     @contextmanager
-    def _edit_ctx(self):
+    def _edit_ctx(self) -> Generator[Usd.Stage | None, None, None]:
         """Context manager that directs all USD writes to the anonymous layer.
 
         Yields the stage for convenience.  If no layer exists yet (markers
@@ -192,7 +193,7 @@ class MarkersManager:
         return get_teleop_backend()
 
     def set_backend(self, backend: Literal["usd", "usdrt", "fabric"]) -> None:
-        """Sets the global teleop write backend.
+        """Set the global teleop write backend.
 
         ``"usdrt"`` and ``"fabric"`` require Fabric Scene Delegate (FSD).
         If FSD is not enabled the request is ignored and a warning is printed.
@@ -204,13 +205,13 @@ class MarkersManager:
 
     @classmethod
     def get_default_marker_pose(cls, name: str) -> tuple[tuple[float, float, float], tuple[float, float, float, float]]:
-        """Returns the default pose for a marker."""
+        """Return the default pose for a marker."""
         return cls.DEFAULT_MARKER_POSES.get(name, cls.DEFAULT_MARKER_POSES["origin"])
 
     def get_marker_world_pose(
         self, name: str
     ) -> tuple[tuple[float, float, float], tuple[float, float, float, float]] | None:
-        """Returns the world-space (position, orientation) of a marker.
+        """Return the world-space (position, orientation) of a marker.
 
         Reads through the same backend used for writes so that poses
         written via usdrt/fabric are visible immediately.
@@ -252,7 +253,7 @@ class MarkersManager:
     # ------------------------------------------------------------------
 
     def set_frame_scale(self, scale: float) -> None:
-        """Sets the frame visual scale and applies it to all existing markers.
+        """Set the frame visual scale and applies it to all existing markers.
 
         Scale is applied to each marker's ``FramePrim`` child, not to the
         marker Xform itself, so that child marker translations are not
@@ -318,7 +319,7 @@ class MarkersManager:
     # ------------------------------------------------------------------
 
     def ensure_marker(self, name: str) -> tuple[bool, str]:
-        """Creates a frame marker by name in the anonymous session layer.
+        """Create a frame marker by name in the anonymous session layer.
 
         Child markers (left, right, head) automatically ensure their
         parent origin marker exists first.
@@ -369,7 +370,7 @@ class MarkersManager:
         return True, f"Created '{name}' marker"
 
     def remove_marker(self, name: str) -> bool:
-        """Removes a single marker by name.
+        """Remove a single marker by name.
 
         Removing the origin also removes all child markers (left, right,
         head) since they are USD children of the origin prim.
@@ -405,7 +406,7 @@ class MarkersManager:
         return True
 
     def remove_all_markers(self) -> bool:
-        """Removes all markers by dropping the anonymous layer.
+        """Remove all markers by dropping the anonymous layer.
 
         This is faster and cleaner than deleting individual prims -
         removing the layer from the session stack instantly removes all
@@ -431,7 +432,7 @@ class MarkersManager:
         position: tuple[float, float, float] | None = None,
         orientation: tuple[float, float, float, float] | None = None,
     ) -> None:
-        """Updates a single marker's local pose.
+        """Update a single marker's local pose.
 
         For child markers (left, right, head) this is origin-local.
 
@@ -464,7 +465,7 @@ class MarkersManager:
         head_position: tuple[float, float, float] | None = None,
         head_orientation: tuple[float, float, float, float] | None = None,
     ) -> None:
-        """Updates left/right/head markers in one call (origin-local poses).
+        """Update left/right/head markers in one call (origin-local poses).
 
         The origin marker is **not** written — only locomotion carry or
         ``move_tracking_space_to`` should change the origin.  USD composes
@@ -484,27 +485,27 @@ class MarkersManager:
 
     def _set_all_poses(
         self,
-        left_position,
-        left_orientation,
-        right_position,
-        right_orientation,
-        head_position,
-        head_orientation,
+        left_position: tuple[float, float, float] | None,
+        left_orientation: tuple[float, float, float, float] | None,
+        right_position: tuple[float, float, float] | None,
+        right_orientation: tuple[float, float, float, float] | None,
+        head_position: tuple[float, float, float] | None,
+        head_orientation: tuple[float, float, float, float] | None,
     ) -> None:
-        """Writes left/right/head marker poses. Must be called inside ``_edit_ctx``."""
+        """Write left/right/head marker poses. Must be called inside ``_edit_ctx``."""
         self._set_pose("left", left_position, left_orientation)
         self._set_pose("right", right_position, right_orientation)
         self._set_pose("head", head_position, head_orientation)
 
     def reset_marker_transform(self, name: str) -> None:
-        """Resets a single marker to its default pose."""
+        """Reset a single marker to its default pose."""
         with self._edit_ctx() as stage:
             if stage is None:
                 return
             self._set_default_pose(name)
 
     def reset_marker_transforms(self) -> None:
-        """Resets all tracked markers to their default poses."""
+        """Reset all tracked markers to their default poses."""
         with self._edit_ctx() as stage:
             if stage is None:
                 return
@@ -517,7 +518,7 @@ class MarkersManager:
 
     @staticmethod
     def _clear_teleop_selection() -> None:
-        """Clears the USD selection if any ``/Teleop`` prim (or descendant) is selected.
+        """Clear the USD selection if any ``/Teleop`` prim (or descendant) is selected.
 
         This prevents Kit's Property panel from inspecting prims that are
         about to be removed, which would trigger async ``_delayed_dirty_handler``
@@ -539,7 +540,7 @@ class MarkersManager:
         position: tuple[float, float, float] | None,
         orientation: tuple[float, float, float, float] | None,
     ) -> None:
-        """Sets pose on a marker.  Must be called inside ``_edit_ctx``."""
+        """Set pose on a marker.  Must be called inside ``_edit_ctx``."""
         xform = self._markers.get(name)
         if not xform:
             return
@@ -556,12 +557,12 @@ class MarkersManager:
         xform.set_local_poses(translations=self._trans_buf, orientations=self._orient_buf)
 
     def _set_default_pose(self, name: str) -> None:
-        """Sets a marker to its default pose. Must be called inside ``_edit_ctx``."""
+        """Set a marker to its default pose. Must be called inside ``_edit_ctx``."""
         position, orientation = self.get_default_marker_pose(name)
         self._set_pose(name, position, orientation)
 
     def _add_frame_reference(self, path: str) -> bool:
-        """Adds a frame_prim.usd reference at the given path.
+        """Add a frame_prim.usd reference at the given path.
 
         Must be called inside a ``Usd.EditContext`` targeting the anonymous
         layer so the reference is authored there, not on the root layer.

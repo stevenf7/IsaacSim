@@ -23,6 +23,7 @@ selection independently.
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from contextlib import contextmanager
 from typing import Literal
 
@@ -35,7 +36,7 @@ _override: str | None = None
 
 
 def reset_teleop_backend() -> None:
-    """Clears the backend override, reverting to the default (USD).
+    """Clear the backend override, reverting to the default (USD).
 
     Called from extension shutdown to prevent stale state across reloads.
     """
@@ -44,7 +45,7 @@ def reset_teleop_backend() -> None:
 
 
 def get_teleop_backend() -> str:
-    """Returns the active teleop write backend.
+    """Return the active teleop write backend.
 
     If an explicit override has been set via :func:`set_teleop_backend`,
     that value is returned.  Otherwise defaults to ``"usd"``.
@@ -77,7 +78,7 @@ def set_teleop_backend(backend: Literal["usd", "usdrt", "fabric"] | None) -> Non
 
 
 @contextmanager
-def teleop_backend_ctx():
+def teleop_backend_ctx() -> Generator[None, None, None]:
     """Context manager that activates the teleop backend for XformPrim ops."""
     backend = get_teleop_backend()
     if backend != "usd":

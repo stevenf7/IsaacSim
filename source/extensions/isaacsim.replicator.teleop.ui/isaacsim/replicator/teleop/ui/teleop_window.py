@@ -49,7 +49,7 @@ class TeleopWindow(ui.Window):
     All other panels are independent — only the TeleopManager is shared.
     """
 
-    def __init__(self, title: str):
+    def __init__(self, title: str) -> None:
         super().__init__(title, dockPreference=ui.DockPreference.MAIN)
         self.deferred_dock_in("Property", ui.DockPolicy.DO_NOTHING)
 
@@ -104,9 +104,8 @@ class TeleopWindow(ui.Window):
         self._locomotion_panel.on_stage_closed()
         self._grasp_panel.on_stage_closed()
 
-    def _on_editor_quit_event(self, _event) -> None:
+    def _on_editor_quit_event(self, _event: object) -> None:
         """Save the current teleop profile on app quit."""
-
         self._save_last_profile()
 
     def _on_command_executed(self, command: TeleopCommand, success: bool, message: str) -> None:
@@ -121,7 +120,7 @@ class TeleopWindow(ui.Window):
             self._session_panel.sync_from_command(command, success, message)
 
     def _reset_all_panels(self) -> None:
-        """Resets every panel to its idle/disconnected state."""
+        """Reset every panel to its idle/disconnected state."""
         self._session_panel.reset_ui()
         self._floating_panel.reset_ui()
         self._ik_panel.reset_ui()
@@ -130,7 +129,6 @@ class TeleopWindow(ui.Window):
 
     def collect_teleop_profile(self) -> TeleopProfile:
         """Collect the current window state into a unified teleop profile."""
-
         return TeleopProfile(
             session=self._session_panel.collect_profile(),
             floating=self._floating_panel.collect_profile(),
@@ -141,7 +139,6 @@ class TeleopWindow(ui.Window):
 
     def apply_teleop_profile(self, profile: TeleopProfile) -> tuple[bool, str]:
         """Apply a unified teleop profile across all panels."""
-
         stage_state = self._get_stage_state()
         resolve = stage_state == STAGE_STATE_READY
 
@@ -166,7 +163,7 @@ class TeleopWindow(ui.Window):
             return STAGE_STATE_LOADING
         return STAGE_STATE_READY
 
-    def destroy(self):
+    def destroy(self) -> None:
         """Full teardown - session, controllers, markers, and subscriptions.
 
         The Teleop window owns all these resources; nothing else consumes
@@ -199,14 +196,13 @@ class TeleopWindow(ui.Window):
 
     def _save_last_profile(self) -> None:
         """Persist the current window state to the extension-managed last profile file."""
-
         if not self._last_profile_path or self._session_panel is None:
             return
         ok, _message = save_teleop_profile(self._last_profile_path, self.collect_teleop_profile())
         if ok and self._teleop_profile_panel is not None:
             self._teleop_profile_panel.remember_last_profile(self._last_profile_path)
 
-    def _build_window_ui(self):
+    def _build_window_ui(self) -> None:
         with self.frame:
             with ui.ScrollingFrame():
                 with ui.VStack(spacing=0):

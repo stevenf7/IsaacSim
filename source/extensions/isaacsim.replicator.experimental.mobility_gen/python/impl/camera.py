@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""MobilityGenCamera class for managing camera rendering and state capture."""
+
 
 import numpy as np
 import omni.replicator.core as rep
@@ -23,8 +25,14 @@ from .common import Buffer, Module
 
 
 class MobilityGenCamera(Module):
+    """A camera module for capturing images and state in Isaac Sim.
 
-    def __init__(self, prim_path: str, resolution: tuple[int, int]):
+    Args:
+        prim_path: The USD prim path for the camera.
+        resolution: The (width, height) resolution in pixels.
+    """
+
+    def __init__(self, prim_path: str, resolution: tuple[int, int]) -> None:
 
         self._prim_path = prim_path
         self._resolution = resolution
@@ -46,8 +54,8 @@ class MobilityGenCamera(Module):
         self.position = Buffer()
         self.orientation = Buffer()
 
-    def enable_rendering(self):
-
+    def enable_rendering(self) -> None:
+        """Enable rendering by creating a render product for this camera."""
         self._render_product = rep.create.render_product(self._prim_path, self._resolution, force_new=False)
         # Disable hydra texture updates while annotators are being attached so that
         # OmniGraph does not try to evaluate partially-constructed nodes
@@ -55,11 +63,13 @@ class MobilityGenCamera(Module):
         # annotators are attached to re-enable updates.
         self._render_product.hydra_texture.set_updates_enabled(False)
 
-    def finalize_rendering(self):
+    def finalize_rendering(self) -> None:
+        """Re-enable hydra texture updates after all annotators have been attached."""
         if self._render_product is not None:
             self._render_product.hydra_texture.set_updates_enabled(True)
 
-    def disable_rendering(self):
+    def disable_rendering(self) -> None:
+        """Disable rendering and release all annotators and the render product."""
         if self._render_product is None:
             return
 
@@ -86,7 +96,8 @@ class MobilityGenCamera(Module):
         self._render_product.destroy()
         self._render_product = None
 
-    def enable_rgb_rendering(self):
+    def enable_rgb_rendering(self) -> None:
+        """Enable RGB image capture for this camera."""
         if self._render_product is None:
             self.enable_rendering()
         if self._rgb_annotator is not None:
@@ -94,27 +105,30 @@ class MobilityGenCamera(Module):
         self._rgb_annotator = rep.AnnotatorRegistry.get_annotator("LdrColor")
         self._rgb_annotator.attach(self._render_product)
 
-    def enable_segmentation_rendering(self):
+    def enable_segmentation_rendering(self) -> None:
+        """Enable semantic segmentation capture for this camera."""
         if self._render_product is None:
             self.enable_rendering()
         if self._segmentation_annotator is not None:
             return
         self._segmentation_annotator = rep.AnnotatorRegistry.get_annotator(
-            "semantic_segmentation", init_params=dict(colorize=False)
+            "semantic_segmentation", init_params={"colorize": False}
         )
         self._segmentation_annotator.attach(self._render_product)
 
-    def enable_instance_id_segmentation_rendering(self):
+    def enable_instance_id_segmentation_rendering(self) -> None:
+        """Enable instance ID segmentation capture for this camera."""
         if self._render_product is None:
             self.enable_rendering()
         if self._instance_id_segmentation_annotator is not None:
             return
         self._instance_id_segmentation_annotator = rep.AnnotatorRegistry.get_annotator(
-            "instance_id_segmentation", init_params=dict(colorize=False)
+            "instance_id_segmentation", init_params={"colorize": False}
         )
         self._instance_id_segmentation_annotator.attach(self._render_product)
 
-    def enable_depth_rendering(self):
+    def enable_depth_rendering(self) -> None:
+        """Enable depth image capture for this camera."""
         if self._render_product is None:
             self.enable_rendering()
         if self._depth_annotator is not None:
@@ -122,7 +136,8 @@ class MobilityGenCamera(Module):
         self._depth_annotator = rep.AnnotatorRegistry.get_annotator("distance_to_camera")
         self._depth_annotator.attach(self._render_product)
 
-    def enable_normals_rendering(self):
+    def enable_normals_rendering(self) -> None:
+        """Enable surface normals capture for this camera."""
         if self._render_product is None:
             self.enable_rendering()
         if self._normals_annotator is not None:
@@ -130,7 +145,8 @@ class MobilityGenCamera(Module):
         self._normals_annotator = rep.AnnotatorRegistry.get_annotator("normals")
         self._normals_annotator.attach(self._render_product)
 
-    def update_state(self):
+    def update_state(self) -> None:
+        """Update all camera state buffers by reading from annotators and USD."""
         if self._rgb_annotator is not None:
             data = self._rgb_annotator.get_data()
             if data.ndim == 3:

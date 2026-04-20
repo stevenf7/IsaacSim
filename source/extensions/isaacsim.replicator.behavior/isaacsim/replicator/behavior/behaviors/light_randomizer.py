@@ -15,6 +15,10 @@
 
 """Behavior script that randomizes light properties such as intensity and color."""
 
+from __future__ import annotations
+
+from typing import Any
+
 import carb
 import numpy as np
 import omni.kit.commands
@@ -74,7 +78,7 @@ class LightRandomizer(BehaviorScript):
         },
     ]
 
-    def on_init(self):
+    def on_init(self) -> None:
         """Called when the script is assigned to a prim."""
         self._rng = None
         self._update_counter = 0
@@ -88,7 +92,7 @@ class LightRandomizer(BehaviorScript):
         # Refresh the property windows to show the exposed variables
         omni.kit.window.property.get_window().request_rebuild()
 
-    def on_destroy(self):
+    def on_destroy(self) -> None:
         """Called when the script is unassigned from a prim."""
         self._reset()
         # Exposed variables should be removed if the script is no longer assigned to the prim
@@ -96,26 +100,23 @@ class LightRandomizer(BehaviorScript):
             remove_exposed_variables(self.prim, EXPOSED_ATTR_NS, self.BEHAVIOR_NS, self.VARIABLES_TO_EXPOSE)
             omni.kit.window.property.get_window().request_rebuild()
 
-    def on_play(self):
+    def on_play(self) -> None:
         """Called when `play` is pressed."""
         self._setup()
         # Make sure the initial behavior is applied if the interval is larger than 0
         if self._interval > 0:
             self._apply_behavior()
 
-    def on_stop(self):
+    def on_stop(self) -> None:
         """Called when `stop` is pressed."""
         self._reset()
 
-    def on_update(self, current_time: float, delta_time: float):
+    def on_update(self, current_time: float, delta_time: float) -> None:
         """Called on per frame update events that occur when `playing`.
 
         Args:
             current_time: The current simulation time.
             delta_time: The time elapsed since the last update.
-
-        Returns:
-            None.
         """
         if delta_time <= 0:
             return
@@ -127,7 +128,7 @@ class LightRandomizer(BehaviorScript):
                 self._apply_behavior()
                 self._update_counter = 0
 
-    def _setup(self):
+    def _setup(self) -> None:
         # Fetch the exposed attributes
         include_children = self._get_exposed_variable("includeChildren")
         self._interval = self._get_exposed_variable("interval")
@@ -154,7 +155,7 @@ class LightRandomizer(BehaviorScript):
         for prim in self._valid_prims:
             self._cache_initial_attributes(prim)
 
-    def _reset(self):
+    def _reset(self) -> None:
         # Restore original attributes
         for prim, attrs in self._initial_attributes.items():
             for attr_name, attr_value in attrs.items():
@@ -166,7 +167,7 @@ class LightRandomizer(BehaviorScript):
         self._update_counter = 0
         self._rng = None
 
-    def _apply_behavior(self):
+    def _apply_behavior(self) -> None:
         for prim in self._valid_prims:
             rand_color = (
                 self._rng.uniform(self._min_color[0], self._max_color[0]),
@@ -178,7 +179,7 @@ class LightRandomizer(BehaviorScript):
             rand_intensity = self._rng.uniform(self._intensity_range[0], self._intensity_range[1])
             prim.GetAttribute("inputs:intensity").Set(rand_intensity)
 
-    def _cache_initial_attributes(self, prim):
+    def _cache_initial_attributes(self, prim: Usd.Prim) -> None:
         if not prim.HasAttribute("inputs:intensity"):
             prim.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float)
         if not prim.HasAttribute("inputs:color"):
@@ -188,11 +189,11 @@ class LightRandomizer(BehaviorScript):
             "inputs:color": prim.GetAttribute("inputs:color").Get(),
         }
 
-    def _get_exposed_variable(self, attr_name):
+    def _get_exposed_variable(self, attr_name: str) -> Any:
         full_attr_name = f"{EXPOSED_ATTR_NS}:{self.BEHAVIOR_NS}:{attr_name}"
         return get_exposed_variable(self.prim, full_attr_name)
 
-    def set_rng(self, rng: np.random.Generator | None = None):
+    def set_rng(self, rng: np.random.Generator | None = None) -> None:
         """Set the random number generator, overriding the USD seed attribute.
 
         Args:

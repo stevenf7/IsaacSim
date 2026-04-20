@@ -58,7 +58,7 @@ def _nearest_point_on_segment(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> tu
 class PathHelper:
     """Utility for querying path length, segment by distance, and nearest point on path."""
 
-    def __init__(self, points: np.ndarray):
+    def __init__(self, points: np.ndarray) -> None:
         """Initialize with an array of path points, shape (N, 2) or (N, 3)."""
         self._points = points
         self._init_point_distances()

@@ -184,7 +184,7 @@ def decompose_rotation(rotation: Gf.Rotation, rotation_order: str) -> Gf.Vec3f:
 def calculate_look_at_rotation(
     eye: Gf.Vec3d, target_location: Gf.Vec3d, up_axis: Gf.Vec3d, epsilon: float = 1e-5
 ) -> Gf.Rotation:
-    """Calculates a look-at rotation matrix from 'eye' to 'target_location' and adjusts for collinearity if needed.
+    """Calculate a look-at rotation matrix from 'eye' to 'target_location' and adjusts for collinearity if needed.
 
     Args:
         eye: The position of the observer.
@@ -486,7 +486,7 @@ def create_physics_material(
 
 
 def create_mdl_material(mtl_url: str, mtl_name: str, mtl_path: str) -> UsdShade.Material:
-    """Creates an MDL material at the given path with the specified URL and name.
+    """Create an MDL material at the given path with the specified URL and name.
 
     Args:
         mtl_url: The URL of the MDL material.
@@ -759,17 +759,13 @@ async def apply_forces_and_simulate_async(
             await omni.kit.app.get_app().next_update_async()
 
 
-def disable_simulation_reset_on_stop():
+def disable_simulation_reset_on_stop() -> None:
     """Disable the simulation reset on stop setting. Needed to preserve the simulation state after play+stop."""
     carb.settings.get_settings().set(omni.physx.bindings._physx.SETTING_RESET_ON_STOP, False)
 
 
-def reset_simulation_and_enable_reset_on_stop():
-    """Reset the simulation and enable the simulation reset on stop setting. Needed to reset the simulation state after play+stop.
-
-    Returns:
-        None.
-    """
+def reset_simulation_and_enable_reset_on_stop() -> None:
+    """Reset the simulation and enable the simulation reset on stop setting. Needed to reset the simulation state after play+stop."""
     if carb.settings.get_settings().get(omni.physx.bindings._physx.SETTING_RESET_ON_STOP):
         carb.log_warn(
             "Expected 'omni.physx.bindings._physx.SETTING_RESET_ON_STOP' to be False, skipping reset_simulation"
