@@ -75,7 +75,13 @@ omni::fabric::RationalTime TimeSampleStorage::getCurrentTime()
                 omni::fabric::ConstSpanWithTypeC arraySpan =
                     m_iStageReaderWriter->getAttributeRd(stageReaderWriterId, externalTimePrim, timeAttrToken);
                 const double* externalSimTimeAttr = arraySpan.getTypedPointer<const double>();
-                CARB_CHECK(externalSimTimeAttr);
+                if (!externalSimTimeAttr)
+                {
+                    CARB_LOG_WARN(
+                        "getCurrentTime: /ExternalSimulationTime.omni:time not readable from Fabric; "
+                        "returning invalid time");
+                    return kInvalidRationalTime;
+                }
                 frameTime = omni::fabric::FabricTime(*externalSimTimeAttr);
             }
             else

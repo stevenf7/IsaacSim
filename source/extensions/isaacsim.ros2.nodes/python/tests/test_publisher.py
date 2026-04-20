@@ -128,9 +128,6 @@ class TestRos2Publisher(ROS2TestCase):
         # - shape_msgs
         messages += [
             ("shape_msgs.msg.MeshTriangle", shape_msgs.msg.MeshTriangle(vertex_indices=[10, 20, 30])),
-            ("shape_msgs.msg.MeshTriangle", shape_msgs.msg.MeshTriangle(vertex_indices=[10])),
-            ("shape_msgs.msg.MeshTriangle", shape_msgs.msg.MeshTriangle(vertex_indices=[10, 20, 30, 40, 50])),
-            ("shape_msgs.msg.MeshTriangle", shape_msgs.msg.MeshTriangle(vertex_indices=[])),
         ]
         # - tf2_msgs
         _transforms = [

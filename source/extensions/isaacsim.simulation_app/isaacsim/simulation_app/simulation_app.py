@@ -305,16 +305,6 @@ class SimulationApp:
         self.reset_render_settings()
 
         self._app.print_and_log("Simulation App Starting")
-        # XXX:make sure we reset the simulation time before doing any other runloop ticking
-        self.enable_multi_tick_rate = self._carb_settings.get("/rtx/hydra/supportMultiTickRate")
-        if self.enable_multi_tick_rate:
-            try:
-                import omni.kit.loop._loop as omni_loop
-
-                _loop_runner = omni_loop.acquire_loop_interface()
-                _loop_runner.set_next_simulation_time(0.0)
-            except Exception:
-                print(f"* unable to pass external simulation time to runloop!")
 
         self._update_without_ready()
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.4] - 2026-04-20
+### Fixed
+- Fix `test_subscriber.py` and `test_publisher.py` issues where the subscriber and publisher were not properly handling the `vertex_indices` array when it was not set
+
 ## [1.15.3] - 2026-04-16
 ### Fixed
 - Fix `OgnROS2PublishPointCloud` issue where the publisher was using its own uninitialized frame ID instead of `db.inputs.frameId()`

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.14.5] - 2026-04-20
+### Changed
+- Multi-tick simulation time is now communicated via the `/ExternalSimulationTime` Fabric prim instead.
+
 ## [1.14.4] - 2026-04-17
 ### Fixed
 - Add missing `@staticmethod` decorator to 5 internal event callbacks (`_on_simulation_registry_event`, `_on_stage_opened`, `_on_stage_closed`, `_on_play`, `_on_stop`)
