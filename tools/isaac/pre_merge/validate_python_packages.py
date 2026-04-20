@@ -385,7 +385,7 @@ def _check_dependencies(
     export_requirements=False,
 ):
     def _should_exclude_dependency(dependency):
-        for item in ["isaacsim-", "nvidia-"]:
+        for item in ["isaacsim-", "nvidia-", "cuda-bindings"]:  # exclude isaacsim itself and torch's CUDA dependencies
             if dependency.startswith(item):
                 return True
         return False
