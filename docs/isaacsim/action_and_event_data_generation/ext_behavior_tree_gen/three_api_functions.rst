@@ -1,15 +1,15 @@
-.. _agent_planner_three_api_functions:
+.. _behavior_tree_gen_three_api_functions:
 
 ===============================
 Using the API Functions
 ===============================
 
-The bridge UI is a wrapper around the three-step public planner API in
-``isaacsim.agent.planner.core.api``:
+The **Behavior Tree Gen** UI in ``omni.ai.behavior_tree_gen.bridge`` is a thin wrapper around the
+three-step public API in ``omni.ai.behavior_tree_gen.core.api``:
 
-1. ``setup_workspace(...)``
-2. ``await prepare_runtime(...)``
-3. ``await generate_behavior_tree(...)``
+1. ``setup_workspace(...)``.
+2. ``await prepare_runtime(...)``.
+3. ``await generate_behavior_tree(...)``.
 
 Use them in that exact order.
 
@@ -19,17 +19,17 @@ next call consumes.
 Shared Example Setup
 --------------------
 
-The snippets below use helper functions from ``isaacsim.agent.planner.bridge.utils`` only to resolve
-the bundled ``simple`` example files. Replace those helper calls with your own file paths when using
-custom planner data.
+The snippets below use helper functions from ``omni.ai.behavior_tree_gen.bridge.utils`` only to
+resolve the bundled ``simple`` example files. Replace those helper calls with your own file paths
+when using custom planner data.
 
 .. code-block:: python
 
     import os
     from pathlib import Path
 
-    from isaacsim.agent.planner.core import api as core_api
-    from isaacsim.agent.planner.bridge.utils import (
+    from omni.ai.behavior_tree_gen.core import api as core_api
+    from omni.ai.behavior_tree_gen.bridge.utils import (
         get_example_scene_context_files,
         get_extension_path,
         load_example_scene_config,
@@ -37,7 +37,7 @@ custom planner data.
     )
 
     # Change these inputs to match your environment.
-    ROOT_DIR = Path("Your/Output/Folder/Path") / "iap_bridge_output"
+    ROOT_DIR = Path("Your/Output/Folder/Path") / "behavior_tree_gen_output"
     OUTPUT_DIR = ROOT_DIR / "output"
     API_KEY = "Your_NVIDIA_API_key"
     SCENARIO = "Anna picks up the CardBox_A and places it on the Table."
@@ -86,10 +86,9 @@ custom planner data.
     )
 
 Step 1: setup_workspace(...)
-----------------------------
+---------------------------
 
-Use this function to create a reusable ``PlannerSession`` and load planner inputs into the
-workspace.
+Use this function to create a reusable ``PlannerSession`` and load input data into the workspace.
 
 The Python signature makes every argument optional, but real planner runs usually provide:
 
@@ -130,9 +129,10 @@ Example:
     print(session.actors_loaded, session.objects_loaded, session.nodes_loaded)
 
 Step 2: prepare_runtime(...)
-----------------------------
+---------------------------
 
-Use this function after workspace setup to configure runtime dependencies for the session.
+Use this function after workspace setup to configure model access, retrievers, and Action IR for
+the session.
 
 Required parameters:
 
@@ -182,7 +182,7 @@ Example:
     print(runtime_result.retriever_ready, runtime_result.action_ir_ready)
 
 Step 3: generate_behavior_tree(...)
------------------------------------
+----------------------------------
 
 Use this function only after the session has a ready workspace and a prepared runtime.
 
@@ -232,8 +232,8 @@ step snippets inside one async function and schedule it:
     import os
     from pathlib import Path
 
-    from isaacsim.agent.planner.core import api as core_api
-    from isaacsim.agent.planner.bridge.utils import (
+    from omni.ai.behavior_tree_gen.core import api as core_api
+    from omni.ai.behavior_tree_gen.bridge.utils import (
         get_example_scene_context_files,
         get_extension_path,
         load_example_scene_config,
@@ -241,7 +241,7 @@ step snippets inside one async function and schedule it:
     )
 
     # Change these inputs to match your environment.
-    ROOT_DIR = Path("Your/Output/Folder/Path") / "iap_bridge_output"
+    ROOT_DIR = Path("Your/Output/Folder/Path") / "behavior_tree_gen_output"
     OUTPUT_DIR = ROOT_DIR / "output"
     API_KEY = "Your_NVIDIA_API_key"
     SCENARIO = "Anna picks up the CardBox_A and places it on the Table."
@@ -335,9 +335,9 @@ step snippets inside one async function and schedule it:
 Practical Notes
 ---------------
 
-* The bridge UI performs the same three calls for you automatically.
+* ``omni.ai.behavior_tree_gen.bridge`` performs the same three calls automatically.
 * ``prepare_runtime(...)`` must complete successfully before ``generate_behavior_tree(...)`` can
   work.
 * ``prepare_runtime(...)`` can reuse compatible Action IR cached under ``cache_dir``.
 * If you need a simpler one-call helper for testing, the bridge also provides
-  ``isaacsim.agent.planner.bridge.test_pipeline.run(...)``.
+  ``omni.ai.behavior_tree_gen.bridge.test_pipeline.run(...)``.
