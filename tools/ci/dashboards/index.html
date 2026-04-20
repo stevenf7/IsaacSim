@@ -173,7 +173,7 @@
         <span class="selector-label active" id="sourceSelectorLabel">Source</span>
         <select id="sourceDropdown" class="source-select active" onchange="onSourceChange()"></select>
       </div>
-      <a class="heatmap-link" href="./heatmap.html" target="_blank" rel="noopener">Open heatmap ↗</a>
+      <a class="heatmap-link" id="heatmapLink" href="#" target="_blank" rel="noopener" style="display:none">Open heatmap ↗</a>
     </div>
   </header>
 
@@ -201,24 +201,24 @@
       <span class="filter-active-hint" id="filterHint">● filtered</span>
     </div>
     <div class="heatmap-legend" id="heatmapLegend">
-      <label class="legend-filter" title="Show only tests with status pass">
-        <input type="checkbox" class="status-filter" data-status="pass">
+      <label class="legend-filter active" title="Show tests with status pass (uncheck to hide)">
+        <input type="checkbox" class="status-filter" data-status="pass" checked>
         <span class="legend-swatch" style="background:var(--c-pass)"></span>pass
       </label>
-      <label class="legend-filter" title="Show only tests with status fail">
-        <input type="checkbox" class="status-filter" data-status="fail">
+      <label class="legend-filter active" title="Show tests with status fail (uncheck to hide)">
+        <input type="checkbox" class="status-filter" data-status="fail" checked>
         <span class="legend-swatch" style="background:var(--c-fail)"></span>fail
       </label>
-      <label class="legend-filter" title="Show only tests with status error">
-        <input type="checkbox" class="status-filter" data-status="error">
+      <label class="legend-filter active" title="Show tests with status error (uncheck to hide)">
+        <input type="checkbox" class="status-filter" data-status="error" checked>
         <span class="legend-swatch" style="background:var(--c-error)"></span>error
       </label>
-      <label class="legend-filter" title="Show only tests with status timeout">
-        <input type="checkbox" class="status-filter" data-status="timeout">
+      <label class="legend-filter active" title="Show tests with status timeout (uncheck to hide)">
+        <input type="checkbox" class="status-filter" data-status="timeout" checked>
         <span class="legend-swatch" style="background:var(--c-timeout)"></span>timeout
       </label>
-      <label class="legend-filter" title="Show only tests with status skip">
-        <input type="checkbox" class="status-filter" data-status="skip">
+      <label class="legend-filter active" title="Show tests with status skip (uncheck to hide)">
+        <input type="checkbox" class="status-filter" data-status="skip" checked>
         <span class="legend-swatch" style="background:var(--c-skip)"></span>skip
       </label>
       <span class="legend-item">
@@ -1124,21 +1124,22 @@ function onVersionChange() {
 // ── Status filter checkboxes ─────────────────────────────────────────────────
 
 function applyStatusFilter() {
-  const checked = [...document.querySelectorAll('.status-filter:checked')]
-    .map(cb => cb.dataset.status);
+  const allBoxes = [...document.querySelectorAll('.status-filter')];
+  const checked = allBoxes.filter(cb => cb.checked).map(cb => cb.dataset.status);
+  const anyUnchecked = checked.length < allBoxes.length;
   const labels = [...document.querySelectorAll('#labelCol .suite-label')];
   const rows   = [...document.querySelectorAll('#heatmapRows .heatmap-row')];
   rows.forEach((row, i) => {
     const rowSet = new Set((row.dataset.statuses || '').split(' ').filter(Boolean));
-    const show = checked.length === 0 || checked.some(s => rowSet.has(s));
+    const show = checked.some(s => rowSet.has(s));
     row.classList.toggle('filtered-out', !show);
     if (labels[i]) labels[i].classList.toggle('filtered-out', !show);
   });
-  // Style active checkboxes and show hint when any filter is active
+  // Dim unchecked labels and show hint when any status is hidden
   document.querySelectorAll('.legend-filter').forEach(lbl => {
     lbl.classList.toggle('active', lbl.querySelector('input').checked);
   });
-  document.getElementById('filterHint').classList.toggle('visible', checked.length > 0);
+  document.getElementById('filterHint').classList.toggle('visible', anyUnchecked);
 }
 
 function renderHeatmapAndTimeline() {
@@ -1165,6 +1166,14 @@ function init() {
     document.title = meta.dashboard_title;
     const h1 = document.getElementById('dashboardTitle');
     if (h1) h1.textContent = meta.dashboard_title;
+  }
+  // Point the heatmap link at the namespace-specific artifact filename.  The
+  // `heatmap` subcommand writes this file next to dashboard.html, and the
+  // pages job copies it to the same public directory.
+  const heatmapLink = document.getElementById('heatmapLink');
+  if (heatmapLink && meta.heatmap_filename) {
+    heatmapLink.href = './' + meta.heatmap_filename;
+    heatmapLink.style.display = '';
   }
 
   document.querySelectorAll('[data-tip]').forEach(el => {

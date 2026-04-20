@@ -57,7 +57,14 @@ def _reconcile_exit_code(process_rc: int, junit_path: str) -> int:
     """
     if process_rc != 0 or not os.path.exists(junit_path):
         return process_rc
-    for suite in ET.parse(junit_path).getroot().iter("testsuite"):
+    try:
+        root = ET.parse(junit_path).getroot()
+    except ET.ParseError:
+        # Matches the malformed-XML handling in _combine_junit_xmls: a crashed
+        # pytest can leave behind an unparseable report, so fall back to the
+        # original process rc rather than propagating the parse error.
+        return process_rc
+    for suite in root.iter("testsuite"):
         if int(suite.get("failures", 0)) or int(suite.get("errors", 0)):
             return 1
     return process_rc

@@ -1209,10 +1209,6 @@ pages:
     script:
       - mkdir -p .public
       - cp -r _build/docs/isaac-sim/latest/* .public/ || true
-      # IsaacSim heatmap stays at the generic top-level location for backward
-      # compatibility with existing links.
-      - cp pipeline_test_chart_isaacsim_heatmap.html .public/heatmap.html 2>/dev/null || true
-      - cp pipeline_test_chart_isaacsim_heatmap.png .public/heatmap.png 2>/dev/null || true
       - |
         ILAB_BRANCH="${ISAAC_LAB_BRANCH:-develop}"
         if [ -d _isaaclab_cache/output ]; then
@@ -1220,19 +1216,22 @@ pages:
           cp _isaaclab_cache/output/dashboard.html ".public/isaac-lab/${ILAB_BRANCH}/"
           cp -r _isaaclab_cache/output/data/. ".public/isaac-lab/${ILAB_BRANCH}/data/"
           # Co-locate the IsaacLab heatmap next to its dashboard so the in-page
-          # link (./heatmap.html) resolves.
-          cp pipeline_test_chart_isaaclab_heatmap.html ".public/isaac-lab/${ILAB_BRANCH}/heatmap.html" 2>/dev/null || true
-          cp pipeline_test_chart_isaaclab_heatmap.png ".public/isaac-lab/${ILAB_BRANCH}/heatmap.png" 2>/dev/null || true
+          # "Open heatmap" link (which points at the namespace-specific
+          # filename) resolves.
+          cp _isaaclab_cache/output/pipeline_test_chart_isaaclab_heatmap.html ".public/isaac-lab/${ILAB_BRANCH}/" 2>/dev/null || true
+          cp _isaaclab_cache/output/pipeline_test_chart_isaaclab_heatmap.png ".public/isaac-lab/${ILAB_BRANCH}/" 2>/dev/null || true
         fi
       - |
         if [ -d _isaacsim_cache/output ]; then
           mkdir -p .public/isaac-sim/data
           cp _isaacsim_cache/output/dashboard.html .public/isaac-sim/index.html
           cp -r _isaacsim_cache/output/data/. .public/isaac-sim/data/
-          # Co-locate the IsaacSim heatmap next to its dashboard so the in-page
-          # link (./heatmap.html) resolves.
-          cp pipeline_test_chart_isaacsim_heatmap.html .public/isaac-sim/heatmap.html 2>/dev/null || true
-          cp pipeline_test_chart_isaacsim_heatmap.png .public/isaac-sim/heatmap.png 2>/dev/null || true
+          cp _isaacsim_cache/output/pipeline_test_chart_isaacsim_heatmap.html .public/isaac-sim/ 2>/dev/null || true
+          cp _isaacsim_cache/output/pipeline_test_chart_isaacsim_heatmap.png .public/isaac-sim/ 2>/dev/null || true
+          # IsaacSim heatmap also stays at the generic top-level location for
+          # backward compatibility with existing links.
+          cp _isaacsim_cache/output/pipeline_test_chart_isaacsim_heatmap.html .public/heatmap.html 2>/dev/null || true
+          cp _isaacsim_cache/output/pipeline_test_chart_isaacsim_heatmap.png .public/heatmap.png 2>/dev/null || true
         fi
       - mv .public public
       - |
@@ -1240,11 +1239,13 @@ pages:
         # CI_PAGES_URL already includes PAGES_PATH_PREFIX when multi-deployment is in use.
         ILAB_BRANCH="${ISAAC_LAB_BRANCH:-develop}"
         BASE="${CI_PAGES_URL%/}"
+        SIM_HM="pipeline_test_chart_isaacsim_heatmap.html"
+        LAB_HM="pipeline_test_chart_isaaclab_heatmap.html"
         echo "=== Published pages URLs ==="
         [ -f "public/isaac-sim/index.html" ] && echo "IsaacSim dashboard:  ${BASE}/isaac-sim/"
-        [ -f "public/isaac-sim/heatmap.html" ] && echo "IsaacSim heatmap:    ${BASE}/isaac-sim/heatmap.html"
+        [ -f "public/isaac-sim/${SIM_HM}" ] && echo "IsaacSim heatmap:    ${BASE}/isaac-sim/${SIM_HM}"
         [ -f "public/isaac-lab/${ILAB_BRANCH}/dashboard.html" ] && echo "IsaacLab dashboard:  ${BASE}/isaac-lab/${ILAB_BRANCH}/dashboard.html"
-        [ -f "public/isaac-lab/${ILAB_BRANCH}/heatmap.html" ] && echo "IsaacLab heatmap:    ${BASE}/isaac-lab/${ILAB_BRANCH}/heatmap.html"
+        [ -f "public/isaac-lab/${ILAB_BRANCH}/${LAB_HM}" ] && echo "IsaacLab heatmap:    ${BASE}/isaac-lab/${ILAB_BRANCH}/${LAB_HM}"
     artifacts:
         expire_in: never
         paths:
@@ -2415,6 +2416,9 @@ generate-isaac-lab-dashboard:
       - get-isaac-lab-historical-data
     script:
       - export TZ="America/Los_Angeles"
+      # Installing kaleido/chrome deps here so the heatmap PNG can be rendered
+      # in this job (previously lived in the post-to-*-slack jobs).
+      - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libnss3 libatk-bridge2.0-0 libcups2 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libxkbcommon0 libpango-1.0-0 libcairo2 libasound2
       - ./tools/packman/python.sh -m pip install -r tools/ci/requirements.txt --quiet
       # Fetch the current pipeline's results (bypasses scope=finished since the pipeline is still running).
       - >
@@ -2432,6 +2436,13 @@ generate-isaac-lab-dashboard:
         --config tools/ci/dashboards/config_isaac_lab.yml
         --data-dir _isaaclab_cache
         --output-dir _isaaclab_cache/output
+      # Render the test heatmap alongside the dashboard so every artifact for
+      # this dashboard lands in a single output directory.
+      - >
+        ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py
+        heatmap
+        --config tools/ci/dashboards/config_isaac_lab.yml
+        --output-dir _isaaclab_cache/output
     artifacts:
         expire_in: 2 weeks
         when: always
@@ -2439,8 +2450,8 @@ generate-isaac-lab-dashboard:
           - _isaaclab_cache/output/
 
 # ==============================================================================================================
-# Posts IsaacLab test results to Slack. Runs after generate-isaac-lab-dashboard so that dashboard
-# artifacts are available. Always runs (even when tests fail) to surface failures.
+# Posts IsaacLab test results to Slack.  Consumes artifacts produced by
+# generate-isaac-lab-dashboard — this job does not generate anything.
 post-to-isaac-lab-slack:
   stage: report-results
   extends:
@@ -2451,14 +2462,10 @@ post-to-isaac-lab-slack:
       artifacts: true
       optional: true
   script:
-    # Installing some packages to get kaleido happy
-    - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libnss3 libatk-bridge2.0-0 libcups2 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libxkbcommon0 libpango-1.0-0 libcairo2 libasound2
     - ./tools/packman/python.sh -m pip install -r tools/ci/requirements.txt --quiet
     - ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py slack --config tools/ci/dashboards/config_isaac_lab.yml
   artifacts:
     paths:
-      - pipeline_test_chart_isaaclab_heatmap.html
-      - pipeline_test_chart_isaaclab_heatmap.png
       - regressions.txt
     expire_in: 1 week
 
@@ -2637,6 +2644,9 @@ generate-isaac-sim-dashboard:
       - get-isaac-sim-historical-data
     script:
       - export TZ="America/Los_Angeles"
+      # Installing kaleido/chrome deps here so the heatmap PNG can be rendered
+      # in this job (previously lived in the post-to-*-slack jobs).
+      - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libnss3 libatk-bridge2.0-0 libcups2 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libxkbcommon0 libpango-1.0-0 libcairo2 libasound2
       - ./tools/packman/python.sh -m pip install -r tools/ci/requirements.txt --quiet
       # Fetch the current pipeline's results (bypasses scope=finished since the pipeline is still running).
       - >
@@ -2652,6 +2662,13 @@ generate-isaac-sim-dashboard:
         generate
         --config tools/ci/dashboards/config_isaac_sim.yml
         --data-dir _isaacsim_cache
+        --output-dir _isaacsim_cache/output
+      # Render the test heatmap alongside the dashboard so every artifact for
+      # this dashboard lands in a single output directory.
+      - >
+        ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py
+        heatmap
+        --config tools/ci/dashboards/config_isaac_sim.yml
         --output-dir _isaacsim_cache/output
     artifacts:
         when: always
@@ -2676,13 +2693,9 @@ post-to-isaac-sim-slack:
       artifacts: true
       optional: true
   script:
-    # Installing some packages to get kaleido happy
-    - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libnss3 libatk-bridge2.0-0 libcups2 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libxkbcommon0 libpango-1.0-0 libcairo2 libasound2
     - ./tools/packman/python.sh -m pip install -r tools/ci/requirements.txt --quiet
     - ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py slack --config tools/ci/dashboards/config_isaac_sim.yml
   artifacts:
     paths:
-      - pipeline_test_chart_isaacsim_heatmap.html
-      - pipeline_test_chart_isaacsim_heatmap.png
       - regressions.txt
     expire_in: 1 week

@@ -66,6 +66,7 @@ from dashboards.clients import _resolve_token, _GITLAB_TOKEN_VARS, _GITHUB_TOKEN
 from dashboards.commands import run_ci_mode, run_generate_only_mode, run_github_fetch_only
 from dashboards.config import load_config
 from dashboards.gitlab_fetch import run_fetch_mode
+from dashboards.heatmap import run_heatmap_mode
 from dashboards.slack import run_slack_mode
 
 
@@ -198,6 +199,30 @@ def main() -> None:
     gen_p.add_argument("--output-dir", default=None,
                        help="Output directory (default: <data-dir>/output)")
 
+    # ── heatmap ─────────────────────────────────────────────────────────────────
+    hm_p = subparsers.add_parser(
+        "heatmap",
+        help="Generate the interactive test heatmap HTML/PNG artifact",
+        description=(
+            "Fetch recent pipeline test data from GitLab and render the test heatmap "
+            "HTML/PNG into --output-dir, named "
+            "pipeline_test_chart_{namespace_prefix}_heatmap.html/png. "
+            "Run from the dashboard generation CI job so all artifacts land in one place."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    hm_p.add_argument("--config", default=None, help=_config_help)
+    hm_p.add_argument("--output-dir", required=True,
+                      help="Directory to write the heatmap HTML/PNG into.")
+    hm_p.add_argument(
+        "--branch", default=None,
+        help="Branch whose pipelines populate the heatmap. "
+             "Defaults to $CI_MERGE_REQUEST_TARGET_BRANCH_NAME, $CI_COMMIT_REF_NAME, or 'develop'.")
+    hm_p.add_argument(
+        "--include-pipeline-id", default=None,
+        help="Pipeline ID to force-include at the right edge of the heatmap "
+             "(default: $CI_PIPELINE_ID). Useful while the current pipeline is still running.")
+
     # ── slack ───────────────────────────────────────────────────────────────────
     slack_p = subparsers.add_parser(
         "slack",
@@ -247,6 +272,8 @@ def main() -> None:
         if not args.output_dir:
             args.output_dir = str(Path(args.data_dir) / "output")
         run_generate_only_mode(args, config)
+    elif args.command == "heatmap":
+        run_heatmap_mode(args, config)
     elif args.command == "slack":
         run_slack_mode(args, config)
 

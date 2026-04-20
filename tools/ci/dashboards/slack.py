@@ -19,7 +19,6 @@ import urllib.parse
 from datetime import datetime
 from .config import load_config, _cfg_slack_token, _cfg_channel_id_map, _cfg_resolve_channel, _cfg_gitlab_url, _cfg_kit_project_id
 from .clients import GitLabClient, _resolve_token, _GITLAB_TOKEN_VARS
-from .heatmap import run_pipeline_test_stats
 from .regression import PipelineType, detect_pipeline_type, _run_regression_analysis, _find_baseline_pipeline, _format_failure_report, _fetch_pipeline_test_report_api, _find_regressions
 
 
@@ -150,61 +149,48 @@ def _header_for_pipeline_post(
     return ""
 
 
+_HEATMAP_SEARCH_SUBDIRS = ("_isaacsim_cache/output", "_isaaclab_cache/output", ".")
+
+
+def _find_heatmap_artifacts(prefix: str) -> list[str]:
+    """Locate pre-generated heatmap HTML/PNG files produced by the generate job."""
+    found: list[str] = []
+    for ext in ("html", "png"):
+        base = f"pipeline_test_chart_{prefix}_heatmap.{ext}"
+        for subdir in _HEATMAP_SEARCH_SUBDIRS:
+            candidate = os.path.join(subdir, base) if subdir != "." else base
+            if os.path.isfile(candidate):
+                found.append(candidate)
+                break
+    return found
+
+
 def _post_heatmap_to_slack(
     display_pipeline_url: str,
     channel: str,
     thread_ts: str,
     config: dict,
-    branch: str | None = None,
-    variable_filters: dict | None = None,
-    pipeline_sources: list[str] | None = None,
-    exclude_isaaclab: bool = True,
-    exclude_container_tests: bool = False,
-    heatmap_subtitle: str | None = None,
-    include_pipeline_id: int | str | None = None,
 ) -> None:
-    """Generate a Plotly heatmap and upload it to Slack."""
-    hcfg = config.get("slack", {}).get("heatmap", {})
-    excl = list(hcfg.get("exclude_job_patterns", []))
-    incl = list(hcfg.get("include_job_patterns", []))
-    # When include_job_patterns is set, it already narrows scope — don't also
-    # add the default isaac-lab exclusion (which would conflict if isaac-lab
-    # jobs are the ones being included).
-    if exclude_isaaclab and not incl and "isaac-lab" not in excl:
-        excl.append("isaac-lab")
-    if exclude_container_tests and "test-container" not in excl:
-        excl.append("test-container")
+    """Upload the pre-generated heatmap HTML/PNG artifacts to Slack.
 
-    # Use namespace_prefix (e.g. "isaacsim"/"isaaclab") to keep the heatmap
-    # filenames unique so that the IsaacSim and IsaacLab Slack jobs don't
-    # overwrite each other's artifacts when both publish to the same pages
-    # deployment.
+    The heatmap itself is produced by the ``heatmap`` subcommand inside the
+    generate-isaac-XXX-dashboard job; this function is purely a file uploader.
+    """
     prefix = config.get("namespace_prefix", "heatmap")
-    output_chart = f"pipeline_test_chart_{prefix}.html"
-
-    run_pipeline_test_stats(
-        heatmap=True, quiet=True,
-        output_chart=output_chart,
-        exclude_patterns=excl,
-        include_patterns=incl or None,
-        limit=hcfg.get("limit", 100),
-        branch=branch or os.getenv("CI_COMMIT_REF_NAME", "develop"),
-        variable_filters=variable_filters,
-        pipeline_sources=pipeline_sources,
-        heatmap_subtitle=heatmap_subtitle,
-        include_pipeline_id=int(include_pipeline_id) if include_pipeline_id is not None else None,
-    )
+    files = _find_heatmap_artifacts(prefix)
+    if not files:
+        print(f"Warning: no heatmap artifacts found for prefix '{prefix}' — "
+              f"generate-isaac-*-dashboard job may not have run.", file=sys.stderr)
+        return
 
     token = _cfg_slack_token(config)
     cmap = _cfg_channel_id_map(config)
-    for fname in (f"pipeline_test_chart_{prefix}_heatmap.html",
-                  f"pipeline_test_chart_{prefix}_heatmap.png"):
-        if os.path.isfile(fname):
-            _post_to_slack(
-                f"Test heatmap for {display_pipeline_url}",
-                channel=channel, thread=thread_ts, file=fname,
-                token=token, channel_id_map=cmap,
-            )
+    for fname in files:
+        _post_to_slack(
+            f"Test heatmap for {display_pipeline_url}",
+            channel=channel, thread=thread_ts, file=fname,
+            token=token, channel_id_map=cmap,
+        )
 
 
 def _post_test_analysis_to_slack(
@@ -413,32 +399,15 @@ def run_slack_mode(args: argparse.Namespace, config: dict) -> None:
 
     post_for = set(hcfg.get("post_for", ["KIT_NIGHTLY", "KIT_POST_MERGE", "ISAAC_POST_MERGE"]))
     always_heatmap = hcfg.get("always_generate", False)
-    heatmap_generated = False
+    post_heatmap = always_heatmap or pipeline_type.name in post_for
 
     if pipeline_type == PipelineType.KIT_NIGHTLY and "KIT_NIGHTLY" in post_for:
-        branch = os.getenv("CI_COMMIT_REF_NAME", "develop-kit-tot")
-        subtitle = f"Nightly Kit Pipeline for branch {branch} on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        _post_heatmap_to_slack(
-            display_url, channel, thread_ts, config, branch=branch,
-            variable_filters={"UPSTREAM_PIPELINE_SOURCE": ["nightly", "post_merge"]},
-            heatmap_subtitle=subtitle, include_pipeline_id=pipeline_id,
-        )
-        heatmap_generated = True
+        _post_heatmap_to_slack(display_url, channel, thread_ts, config)
         time.sleep(10)
         _post_test_analysis_to_slack(client, project_enc, pipeline_id, channel, thread_ts, config)
+        post_heatmap = False
 
-    if pipeline_type == PipelineType.KIT_POST_MERGE and "KIT_POST_MERGE" in post_for:
-        branch = os.getenv("CI_COMMIT_REF_NAME", "develop-kit-tot")
-        subtitle = f"Post-Merge Kit Pipeline for branch {branch} on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        _post_heatmap_to_slack(
-            display_url, channel, thread_ts, config, branch=branch,
-            variable_filters={"UPSTREAM_PIPELINE_SOURCE": ["nightly", "post_merge"]},
-            exclude_container_tests=True,
-            heatmap_subtitle=subtitle, include_pipeline_id=pipeline_id,
-        )
-        heatmap_generated = True
-
-    if pipeline_type == PipelineType.KIT_MR:
+    elif pipeline_type == PipelineType.KIT_MR:
         try:
             upstream_id = os.getenv("UPSTREAM_PIPELINE_ID")
             kit_enc = urllib.parse.quote(str(kit_project_id), safe="")
@@ -457,62 +426,15 @@ def run_slack_mode(args: argparse.Namespace, config: dict) -> None:
                     client, project_enc, pipeline_id, channel, thread_ts, config,
                     baseline_branch=isaac_branch,
                 )
-                if "KIT_MR" in post_for:
-                    subtitle = (f"Target branch {isaac_branch} history on "
-                                f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-                    _post_heatmap_to_slack(
-                        display_url, channel, thread_ts, config,
-                        branch=isaac_branch, pipeline_sources=["push"],
-                        heatmap_subtitle=subtitle,
-                    )
-                    heatmap_generated = True
         except Exception as exc:
             print(f"ERROR: Failed to process KIT_MR pipeline: {exc}", file=sys.stderr)
 
-    if pipeline_type == PipelineType.ISAAC_POST_MERGE and "ISAAC_POST_MERGE" in post_for:
-        branch = os.getenv("CI_COMMIT_REF_NAME", "develop")
-        subtitle = f"Post-Merge Isaac Pipeline for branch {branch} on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        _post_heatmap_to_slack(
-            display_url, channel, thread_ts, config,
-            branch="develop", pipeline_sources=["push"],
-            heatmap_subtitle=subtitle, include_pipeline_id=pipeline_id,
-        )
-        heatmap_generated = True
-
-    if pipeline_type == PipelineType.ISAAC_MR:
+    elif pipeline_type == PipelineType.ISAAC_MR:
         target_branch = os.getenv("CI_MERGE_REQUEST_TARGET_BRANCH_NAME", "develop")
         _post_test_analysis_to_slack(
             client, project_enc, pipeline_id, channel, thread_ts, config,
             baseline_branch=target_branch,
         )
-        if "ISAAC_MR" in post_for:
-            subtitle = (f"Target branch {target_branch} history on "
-                        f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-            _post_heatmap_to_slack(
-                display_url, channel, thread_ts, config,
-                branch=target_branch, pipeline_sources=["push"],
-                heatmap_subtitle=subtitle,
-            )
-            heatmap_generated = True
 
-    if os.getenv("SEND_HEATMAP") == "true":
-        branch = os.getenv("CI_COMMIT_REF_NAME", "develop")
-        subtitle = f"Isaac Pipeline for branch {branch} on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        _post_heatmap_to_slack(
-            display_url, channel, thread_ts, config,
-            branch="develop", pipeline_sources=["push"],
-            exclude_isaaclab=True, exclude_container_tests=True,
-            heatmap_subtitle=subtitle, include_pipeline_id=pipeline_id,
-        )
-        heatmap_generated = True
-
-    # Fallback: always generate a heatmap if configured and none was generated above
-    if always_heatmap and not heatmap_generated:
-        branch = os.getenv("CI_MERGE_REQUEST_TARGET_BRANCH_NAME",
-                           os.getenv("CI_COMMIT_REF_NAME", "develop"))
-        subtitle = f"Pipeline for branch {branch} on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        _post_heatmap_to_slack(
-            display_url, channel, thread_ts, config,
-            branch=branch, pipeline_sources=["push"],
-            heatmap_subtitle=subtitle, include_pipeline_id=pipeline_id,
-        )
+    if post_heatmap or os.getenv("SEND_HEATMAP") == "true":
+        _post_heatmap_to_slack(display_url, channel, thread_ts, config)
