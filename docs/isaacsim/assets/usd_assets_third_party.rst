@@ -37,3 +37,5 @@ Third-Party SimReady USD Assets
      - A large-scale dataset with articulated 3D objects and diverse indoor scenes.
    * - `Extwin <https://synthesis.extwin.com>`_
      - A collection of assets for synthetic data generation.
+   * - `imagine.io <https://physical.imagine.io/library/assets>`_
+     - A collection of usd props.
