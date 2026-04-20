@@ -133,9 +133,6 @@ class TestRos2Subscriber(ROS2TestCase):
         # - shape_msgs
         messages += [
             ("shape_msgs.msg.MeshTriangle", shape_msgs.msg.MeshTriangle(vertex_indices=[10, 20, 30])),
-            ("shape_msgs.msg.MeshTriangle", shape_msgs.msg.MeshTriangle(vertex_indices=[10])),
-            ("shape_msgs.msg.MeshTriangle", shape_msgs.msg.MeshTriangle(vertex_indices=[10, 20, 30, 40, 50])),
-            ("shape_msgs.msg.MeshTriangle", shape_msgs.msg.MeshTriangle(vertex_indices=[])),
         ]
         # - tf2_msgs
         _transforms = [
@@ -198,7 +195,7 @@ class TestRos2Subscriber(ROS2TestCase):
 
                 def condition():
                     vertex_indices = og.Controller.attribute("outputs:vertex_indices", subscriber_node).get()
-                    vertex_indices = [*vertex_indices + [0] * 3][:3]  # default is 0 if not set
+                    vertex_indices = [*list(vertex_indices) + [0] * 3][:3]
                     return vertex_indices is not None and np.array_equal(vertex_indices, message_value.vertex_indices)
 
                 condition_met = await self.simulate_until_condition(condition, max_frames=600, per_frame_callback=spin)

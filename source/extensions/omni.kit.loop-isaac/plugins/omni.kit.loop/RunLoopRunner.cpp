@@ -334,7 +334,7 @@ public:
 
         if (usingEventAdapter)
         {
-            static constexpr size_t kMaxParameters = 3; // 'dt', 'kSWHFrameNumber' +  'SWHExternalSimulationTime'
+            static constexpr size_t kMaxParameters = 2; // 'dt' + 'kSWHFrameNumber'
 
             static const RStringKey kDt("dt");
             carb::eventdispatcher::NamedVariant params[kMaxParameters] = { { kDt, carb::variant::Variant(dt) } };
@@ -345,19 +345,6 @@ public:
                 static const RStringKey kSWHFrameNumber("SWHFrameNumber");
                 CARB_CHECK(numParams < kMaxParameters);
                 params[numParams++] = { kSWHFrameNumber, carb::variant::Variant(m_runloopIterationCount) };
-
-                // In multi-tick rendering mode, the app is expected to set an explicit simulation time
-                // which is picked up by both SWH and the renderer to schedule sensors to be renderered
-                auto settings = getCachedInterface<settings::ISettings>();
-                if (settings && settings->getAsBool("/rtx/hydra/supportMultiTickRate"))
-                {
-                    if (m_nextSimulationTime >= 0.0)
-                    {
-                        static const RStringKey kSWHExternalSimulationTimeParam("SWHExternalSimulationTime");
-                        params[numParams++] = { kSWHExternalSimulationTimeParam,
-                                                carb::variant::Variant(m_nextSimulationTime) };
-                    }
-                }
 
                 std::sort(params, params + numParams, carb::eventdispatcher::detail::NamedVariantLess{});
             }
@@ -558,10 +545,6 @@ public:
     {
         return m_deltaTime;
     }
-    void setNextSimulationTime(double simulationTime)
-    {
-        m_nextSimulationTime = simulationTime;
-    }
 
 private:
     void _initialize()
@@ -627,9 +610,6 @@ private:
     int64_t m_runloopIterationCount;
 
     PrecisionSleep m_windowsSleep;
-
-    // < 0.0 means we won't use this value and fallback to the runloop frame frame based time
-    double m_nextSimulationTime = -1.0;
 };
 
 // Use a transparent compare struct so we can compare against char* without having to construct a std::string
@@ -912,12 +892,6 @@ static bool GetManualMode(const std::string& name = "")
     return manualMode;
 }
 
-static void SetNextSimulationTime(const double simulationTime, const std::string& name)
-{
-    callForRunLoop(name, [simulationTime](RunLoopThread& runloop) { runloop.setNextSimulationTime(simulationTime); });
-}
-
-
 class IExtensionPluginImpl : public ext::IExt
 {
 public:
@@ -955,7 +929,6 @@ void fillInterface(omni::kit::IRunLoopRunnerImpl& iface)
     iface.setManualStepSize = SetManualStepSize;
     iface.getManualMode = GetManualMode;
     iface.getManualStepSize = GetManualStepSize;
-    iface.setNextSimulationTime = SetNextSimulationTime;
 }
 
 void fillInterface(omni::kit::IExtensionPluginImpl& iface)

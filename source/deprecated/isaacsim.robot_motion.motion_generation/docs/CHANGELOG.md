@@ -1,4 +1,8 @@
 # Changelog
+## [8.2.6] - 2026-04-20
+### Fixed
+- Fix `test_motion_policy.py` on windows and increase timeout for test
+
 ## [8.2.5] - 2026-04-17
 ### Fixed
 - Add missing `return None` after `carb.log_error` in `LulaCSpaceTrajectoryGenerator.compute_timestamped_c_space_trajectory` for invalid interpolation mode

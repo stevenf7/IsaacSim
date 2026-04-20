@@ -128,7 +128,9 @@ class TestImporterUI(MenuUITestCase):
         await ui_test.human_delay()
         await omni.kit.app.get_app().next_update_async()
 
-        grid_view = await self.find_widget_with_retry("Select File//Frame/**/VGrid[*].identifier=='None_grid_view'")
+        grid_view = await self.find_widget_with_retry(
+            "Select File//Frame/**/VGrid[*].identifier=='filebrowser_grid_view'"
+        )
         file = await self.find_widget_with_retry("**/Label[*].text=='nv_ant.xml'", parent=grid_view)
         await file.click()
         await ui_test.human_delay()
@@ -193,7 +195,9 @@ class TestImporterUI(MenuUITestCase):
         await ui_test.human_delay()
         await omni.kit.app.get_app().next_update_async()
 
-        grid_view = await self.find_widget_with_retry("Select File//Frame/**/VGrid[*].identifier=='None_grid_view'")
+        grid_view = await self.find_widget_with_retry(
+            "Select File//Frame/**/VGrid[*].identifier=='filebrowser_grid_view'"
+        )
         file = await self.find_widget_with_retry("**/Label[*].text=='nv_ant.xml'", parent=grid_view)
         await file.click()
         await ui_test.human_delay()

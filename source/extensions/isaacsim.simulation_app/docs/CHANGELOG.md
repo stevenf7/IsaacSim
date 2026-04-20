@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.18.1] - 2026-04-20
+### Removed
+- Removed optional multitick support; when multitick is enabled, time now routes through Fabric prim via SimulationManager.
+
 ## [2.18.0] - 2026-04-13
 ### Removed
 - Removed direct telemetry calls from SimulationApp startup

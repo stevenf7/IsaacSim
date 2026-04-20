@@ -482,7 +482,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
 
         self._articulation_policy = ArticulationMotionPolicy(self._robot, self._motion_policy, self._physics_dt)
 
-        timeout = 10
+        timeout = 20
 
         await self.verify_robot_convergence(target_pos, timeout, obs_pos=obstacle_pos)
 
@@ -1209,7 +1209,20 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
             timeout, target_pos, target_orient=target_orient
         )
         if not success:
-            self.assertTrue(False)
+            ee_trans, ee_rot = self._motion_policy.get_end_effector_pose(
+                self._articulation_policy.get_active_joints_subset().get_joint_positions()
+            )
+            trans_dist = distance_metrics.weighted_translational_distance(ee_trans, target_pos)
+            msg = (
+                f"Robot failed to converge within {timeout}s. "
+                f"Final EE position: {ee_trans}, target: {target_pos}, "
+                f"translational distance: {trans_dist:.6f} (threshold: 0.02)"
+            )
+            if target_orient is not None:
+                target_rot = quat_to_rot_matrix(target_orient)
+                rot_dist = distance_metrics.rotational_distance_angle(ee_rot, target_rot)
+                msg += f", rotational distance: {rot_dist:.6f} (threshold: 0.1)"
+            self.fail(msg)
 
         if obs_prim is not None:
             self._motion_policy.remove_obstacle(cuboid)

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.1] - 2026-04-20
+### Changed
+- Updated treeview identifier to filebrowser_grid_view
+
 ## [1.3.0] - 2026-04-08
 ### Changed
 - Added type annotations and improved docstrings

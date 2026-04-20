@@ -25,6 +25,23 @@ import carb
 import omni.kit.app
 
 
+class _StubModule:
+    """No-op mock module returned during stub generation when a dependency is unavailable.
+
+    Attribute access returns another ``_StubModule``, and calling an instance
+    acts as an identity decorator so that patterns like ``@torch.jit.script``
+    do not crash.
+    """
+
+    def __getattr__(self, _name: str) -> _StubModule:
+        return _StubModule()
+
+    def __call__(self, *args, **kwargs):  # noqa: ANN002, ANN003, ANN201
+        if args and callable(args[0]):
+            return args[0]
+        return _StubModule()
+
+
 def import_module(name: str) -> ModuleType:
     """Try to import a Python package/module and return it.
 
@@ -60,6 +77,8 @@ def import_module(name: str) -> ModuleType:
         try:
             return importlib.import_module(name)
         except (ModuleNotFoundError, ImportError) as e:
+            if carb.settings.get_settings().get_as_bool("/app/stubgen/enabled"):
+                return _StubModule()
             msg = """
 ============================================================================
 ========================== IMPLEMENTATION NOTICE ===========================
@@ -89,5 +108,7 @@ For a specific PyTorch version, see: https://pytorch.org/get-started/locally
         try:
             return importlib.import_module(name)
         except (ModuleNotFoundError, ImportError) as e:
+            if carb.settings.get_settings().get_as_bool("/app/stubgen/enabled"):
+                return _StubModule()
             carb.log_error(f"Import error: {str(e)}")
             exit_app()

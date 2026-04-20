@@ -24,6 +24,7 @@
 #include <omni/fabric/FabricUSD.h>
 #include <omni/fabric/IToken.h>
 #include <omni/fabric/SimStageWithHistory.h>
+#include <omni/fabric/core/Type.h>
 #include <omni/graph/core/Type.h>
 #include <omni/kit/IMinimal.h>
 #include <omni/kit/IStageUpdate.h>
@@ -87,10 +88,39 @@ uint32_t g_lastStepsPerSecond = 0;
 void updateMultiTickExternalSimulationTime()
 {
     auto settings = carb::getCachedInterface<carb::settings::ISettings>();
-    if (g_runLoopRunnerInterface && settings && settings->getAsBool("/rtx/hydra/supportMultiTickRate"))
+    if (settings && settings->getAsBool("/rtx/hydra/supportMultiTickRate"))
     {
-        std::string runloopName;
-        g_runLoopRunnerInterface->setNextSimulationTime(g_simulationTime, runloopName);
+        // write the current simulation time to the Fabric prim
+        // /ExternalSimulationTime (attribute omni:time). Writing here from onPhysicsStep
+        // (eUsdContextUpdate, order -10) ensures the multitick rendering codepath
+        // reads the up-to-date value at eHydraRendering (order 30),
+        // within the same app update.
+        auto iSRW = carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
+        if (iSRW && g_stageId.id)
+        {
+            auto srwId = iSRW->get(g_stageId);
+            if (srwId != omni::fabric::kInvalidStageReaderWriterId)
+            {
+                static const omni::fabric::Path externalTimePrim =
+                    omni::fabric::Path::createImmortal("/ExternalSimulationTime");
+                static const omni::fabric::Token timeAttrToken = omni::fabric::Token::createImmortal("omni:time");
+
+                iSRW->createPrim(srwId, externalTimePrim);
+                static constexpr omni::fabric::Type kDoubleType = { omni::fabric::BaseDataType::eDouble, 1, 0,
+                                                                    omni::fabric::AttributeRole::eNone };
+                iSRW->createAttribute(srwId, externalTimePrim, timeAttrToken, omni::fabric::TypeC(kDoubleType));
+
+                auto span = iSRW->getAttributeWr(srwId, externalTimePrim, timeAttrToken);
+                if (auto* p = span.getTypedPointer<double>())
+                {
+                    *p = g_simulationTime;
+                }
+                else
+                {
+                    CARB_LOG_ERROR("Failed to write external simulation time to Fabric");
+                }
+            }
+        }
     }
 }
 
@@ -734,14 +764,6 @@ void onPhysicsStep(float timeElapsed, const omni::physics::PhysicsStepContext& c
     if (!success)
     {
         CARB_LOG_ERROR("Failed to write time data to storage");
-    }
-
-    // multi-tick rate simulation time update
-    auto settings = carb::getCachedInterface<carb::settings::ISettings>();
-    if (g_runLoopRunnerInterface && settings && settings->getAsBool("/rtx/hydra/supportMultiTickRate"))
-    {
-        std::string runloopName;
-        g_runLoopRunnerInterface->setNextSimulationTime(g_simulationTime, runloopName);
     }
 }
 
