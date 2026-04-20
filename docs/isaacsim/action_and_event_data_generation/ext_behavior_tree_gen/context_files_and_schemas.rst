@@ -1,26 +1,34 @@
-.. _agent_planner_context_files_and_schemas:
+..
+   Copyright (c) 2022-2026, NVIDIA CORPORATION. All rights reserved.
+   NVIDIA CORPORATION and its licensors retain all intellectual property
+   and proprietary rights in and to this software, related documentation
+   and any modifications thereto. Any use, reproduction, disclosure or
+   distribution of this software and related documentation without an express
+   license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+.. _behavior_tree_gen_context_files_and_schemas:
 
 ==================================
-Context Files and Metadata Schemas
+Context files and metadata schemas
 ==================================
 
-This guide explains the context-file format used by Isaac Agent Planner example data under
-``isaacsim.agent.planner.bridge/data/example/context_info`` and the base models defined in
-``omni.behavior.composer.models``.
+This guide explains the context-file format used by the example data bundled with
+``omni.ai.behavior_tree_gen.bridge`` under ``data/example/context_info`` and the base models defined
+in ``omni.behavior.composer.models``.
 
-* **Context** is the planner's runtime knowledge base of actors and objects in a scene. Each
-  context entry is a JSON object that follows one of two base models (``ActorInfo`` or
-  ``InteractableObjectInfo``).
+* **Context** is the runtime knowledge base of actors and objects in a scene. Each context entry is
+  a JSON object that follows one of two base models: ``ActorInfo`` or
+  ``InteractableObjectInfo``.
 * **Metadata schema** is a standard JSON Schema document that defines the structure of the
   ``metadata`` dictionary inside each context entry.
 
-Base Context Entry Format
+Base context entry format
 -------------------------
 
-Planner context entries are built on two base models:
+Context entries are built on two base models:
 
-* ``omni.behavior.composer.models.context_models.ActorInfo``
-* ``omni.behavior.composer.models.context_models.InteractableObjectInfo``
+* ``omni.behavior.composer.models.context_models.ActorInfo``.
+* ``omni.behavior.composer.models.context_models.InteractableObjectInfo``.
 
 Both models use the same top-level structure:
 
@@ -37,7 +45,7 @@ Both models use the same top-level structure:
 
 Top-level fields:
 
-* ``id``: Stable identifier used by the planner to refer to the entity.
+* ``id``: Stable identifier used by the pipeline to refer to the entity.
 * ``semantic_description``: Human-readable description used during retrieval and grounding.
 * ``metadata``: Domain-specific fields defined by the actor or object schema.
 * ``supported_interactions``: Optional list of passive interaction labels supported by the entity.
@@ -48,7 +56,7 @@ Top-level fields:
    ``supported_interactions`` is defined on the base context models, not in the metadata schema.
    When present, the model normalizes the values to lowercase unique tokens.
 
-Actor Example
+Actor example
 -------------
 
 The bundled ``simple`` example uses actor entries shaped like this:
@@ -73,10 +81,10 @@ The bundled ``simple`` example uses actor entries shaped like this:
       "entity_type": "actor"
     }
 
-This follows ``ActorInfo`` at the top level and stores planner-specific details such as
+This follows ``ActorInfo`` at the top level and stores domain-specific details such as
 ``actor_type``, ``role``, ``location``, and ``prim_path`` under ``metadata``.
 
-Object Example
+Object example
 --------------
 
 The bundled ``simple`` example uses object entries shaped like this:
@@ -110,7 +118,7 @@ This follows ``InteractableObjectInfo`` at the top level and stores object-speci
 ``interactable_type``, ``prim_path``, ``move_to_targets``, and ``placement_targets`` inside
 ``metadata``.
 
-How Metadata Schemas Work
+How metadata schemas work
 -------------------------
 
 The schema files under ``data/example/context_info/schemas`` define the structure of ``metadata``.
@@ -124,7 +132,7 @@ For the bundled examples:
 In the core implementation, ``ContextCacheManager.setup_actor_model_from_schema()`` and
 ``ContextCacheManager.setup_object_model_from_schema()`` use
 ``omni.behavior.composer.models.schema_builder.build_metadata_model_from_json_schema()`` to build a
-typed metadata model, then attach it to ``ActorInfo`` or ``InteractableObjectInfo``.
+typed metadata model and then attach it to ``ActorInfo`` or ``InteractableObjectInfo``.
 
 This means:
 
@@ -135,41 +143,41 @@ This means:
   model.
 * Extra metadata fields are still allowed because the schema builder uses ``allow_extra=True``.
 
-Bundled Required Metadata Fields
+Bundled required metadata fields
 --------------------------------
 
 The shipped example schemas mark these metadata fields as required:
 
-* Actors: ``metadata.prim_path`` and ``metadata.actor_type``
-* Objects: ``metadata.prim_path`` and ``metadata.interactable_type``
+* Actors: ``metadata.prim_path`` and ``metadata.actor_type``.
+* Objects: ``metadata.prim_path`` and ``metadata.interactable_type``.
 
 If you extend those schemas with new required fields, matching context entries should provide those
 fields under ``metadata``.
 
-Planner-Visible Schema Paths
+Planner-visible schema paths
 ----------------------------
 
-The planner expands schema-defined metadata fields into planner-visible term paths.
+The pipeline expands schema-defined metadata fields into planner-visible term paths.
 
 Examples:
 
-* ``actors.metadata.role``
-* ``actors.metadata.location.x``
-* ``objects.metadata.prim_path``
-* ``objects.metadata.move_to_targets.default``
-* ``objects.metadata.placement_targets.left_end``
+* ``actors.metadata.role``.
+* ``actors.metadata.location.x``.
+* ``objects.metadata.prim_path``.
+* ``objects.metadata.move_to_targets.default``.
+* ``objects.metadata.placement_targets.left_end``.
 
 These paths are used for grounding, retrieval, and parameter generation, so field names and
-descriptions in the schema directly affect how well the planner can use your custom data.
+descriptions in the schema directly affect how well the workflow can use your custom data.
 
-Add a Custom Metadata Field
+Add a custom metadata field
 ---------------------------
 
 To add a new item using your own schema:
 
 1. Start from the existing actor or object schema and add the new metadata field there.
 2. Add the same field under ``metadata`` in each matching context item.
-3. Reload the workspace so the planner rebuilds the typed metadata models from the updated files.
+3. Reload the workspace so the pipeline rebuilds the typed metadata models from the updated files.
 
 Example schema extension for objects:
 
@@ -223,14 +231,15 @@ Matching context entry:
    Keep stable identity and planner-facing descriptions at the top level, and put schema-defined
    domain attributes under ``metadata``.
 
-Using the Files in Agent Planner
---------------------------------
+Using the files in behavior tree generation
+-------------------------------------------
 
 After updating the files:
 
-* In the UI, select the context files and matching schema files in **Context Cache Files**.
+* In the UI, select the context files and matching schema files in **Context Cache Files** inside
+  **Behavior Tree Gen**.
 * In Python, pass the context files through ``context_data_paths`` and the schema files through
   ``actor_schema_path`` or ``object_schema_path`` when calling ``setup_workspace(...)``.
-* Reload the workspace so the updated typed models and schema paths are available to the planner.
+* Reload the workspace so the updated typed models and schema paths are available to the pipeline.
 
-The bundled example files are good references when authoring your own planner context data.
+The bundled example files are good references when authoring your own context data.

@@ -83,9 +83,9 @@ The core functionality is provided by a set of application-level extensions and 
    * - Behavior Composer
      - ``omni.behavior.composer``
      - The **Behavior Composer (OBC)** extension implements the classic behavior tree system for Omniverse Kit applications. It provides tools and APIs to author entity behaviors using OpenUSD and a standalone C++ core runtime API to power simulation engines.
-   * - Agent Planner
-     - ``isaacsim.agent.planner.core``
-     - The **Isaac Agent Planner** core extension converts natural-language scenarios into behavior tree outputs. It provides the planning pipeline used to process scene context, node catalogs, and model configuration data for interactive and scripted workflows.
+   * - Behavior tree generation
+     - ``omni.ai.behavior_tree_gen.core`` and ``omni.ai.behavior_tree_gen.bridge``
+     - The **Behavior Tree Generation** workflow converts natural-language scenarios into behavior tree outputs. ``omni.ai.behavior_tree_gen.core`` provides the reusable pipeline and scripted API, while ``omni.ai.behavior_tree_gen.bridge`` provides the Kit UI, example loaders, and interactive workflow orchestration.
    * - Animated Robot Controller
      - ``isaacsim.anim.robot``
      - The **Animated Robot Controller (IAR)** extension enables realistic robot animation by playing back captured simulation motion data. It bridges physics-based simulation and animation, allowing for precise robot movements without the overhead of real-time physics.
@@ -103,7 +103,7 @@ Extension Tutorials
    :maxdepth: 1
 
    ./tutorial_replicator_agent
-   ./tutorial_agent_planner
+   ./tutorial_behavior_tree_gen
    ./tutorial_replicator_object
    ./tutorial_replicator_caption
    ./tutorial_replicator_incident
