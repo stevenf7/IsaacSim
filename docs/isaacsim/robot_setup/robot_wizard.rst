@@ -1,15 +1,14 @@
 .. _isaac_sim_app_robot_wizard:
 
 ==========================================
-Robot Wizard [Beta]
+Robot Wizard [Deprecated]
 ==========================================
 
+.. warning::
 
-The Robot Wizard is designed to speed up the process of setting up a robot in |isaac-sim_short|. It allows you to define the robot's hierarchy, organize the meshes, add colliders, joints and joint drives. It will automatically apply relevant Schemas and APIs without needing to manually edit the USD files. It separates the robot into different configurations based on the desired structure described in :ref:`isaac_sim_app_reference_asset_structure`. This is particularly useful if you are not familiar with the complexities of USD or the specific requirements for Sim-ready robots in |isaac-sim_short|.
+   **Deprecated:** The Robot Wizard extension (``isaacsim.robot_setup.wizard``) is deprecated since Isaac Sim 6.0.0 and will be removed in a future release.
 
-To enable the Robot Wizard, go to the **Window > Extensions** and enable **Isaac Sim Robot Wizard**. The Robot Wizard window can be toggled on or off inside the **Window > Robot Wizard** menu.  
-
-The Robot Wizard is in Beta and not fully functional for all use cases. It is recommended for CAD imports for basic robots with relatively few links and joints. 
+The Robot Wizard was designed to speed up the process of setting up a robot in |isaac-sim_short|. It allowed you to define the robot's hierarchy, organize the meshes, add colliders, joints and joint drives. It automatically applied relevant Schemas and APIs without needing to manually edit the USD files. It separated the robot into different configurations based on the desired structure described in :ref:`isaac_sim_app_reference_asset_structure`.
 
 
 The following sections explain the UI and functions behind each step in the wizard. To observe the wizard in action, refer to :ref:`isaac_sim_app_robot_wizard_tutorials`.

@@ -167,7 +167,7 @@ Extensions
    isaacsim.robot_setup.assembler <source/extensions/isaacsim.robot_setup.assembler/docs/index>
    isaacsim.robot_setup.gain_tuner <source/extensions/isaacsim.robot_setup.gain_tuner/docs/index>
    isaacsim.robot_setup.grasp_editor <source/extensions/isaacsim.robot_setup.grasp_editor/docs/index>
-   isaacsim.robot_setup.wizard <source/extensions/isaacsim.robot_setup.wizard/docs/index>
+   isaacsim.robot_setup.wizard <source/deprecated/isaacsim.robot_setup.wizard/docs/index>
    isaacsim.robot_setup.collision_detector <source/extensions/isaacsim.robot_setup.collision_detector/docs/index>
    isaacsim.robot_setup.xrdf_editor <source/extensions/isaacsim.robot_setup.xrdf_editor/docs/index>
 

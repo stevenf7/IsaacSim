@@ -1,8 +1,12 @@
 .. _isaac_sim_app_robot_wizard_tutorials:
 
 ==========================================
-Robot Wizard Tutorial
+Robot Wizard Tutorial [Deprecated]
 ==========================================
+
+.. warning::
+
+   **Deprecated:** The Robot Wizard extension (``isaacsim.robot_setup.wizard``) is deprecated since Isaac Sim 6.0.0 and will be removed in a future release.
 
 This tutorial is a step-by-step guide for using the Robot Wizard to create a mock robot that contains a fixed base, a prismatic joint, and a revolute joint.
 Load the prepared file for this tutorial onto stage. Go to ``Isaac/Samples/Rigging/RobotWizard/`` and open the original file for ``raw_blocks.usd``.
