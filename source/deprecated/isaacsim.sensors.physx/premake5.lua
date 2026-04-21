@@ -14,6 +14,8 @@
 -- limitations under the License.
 
 local ext = get_current_extension_info()
+ext.target_dir = deprecated_exts_path .. "/" .. ext.id
+ext.bin_dir = ext.target_dir .. "/bin"
 local ogn = get_ogn_project_information(ext, "isaacsim/sensors/physx")
 project_ext(ext)
 
@@ -37,7 +39,7 @@ includedirs {
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
     "%{root}/_build/target-deps/omni_client_library/include",
     "%{root}/_build/target-deps/python/include",
-    "%{root}/source/extensions/isaacsim.sensors.physx/include",
+    "%{root}/source/deprecated/isaacsim.sensors.physx/include",
     isaac_sim_extra_extsbuild_dir .. "/isaacsim.util.debug_draw/include",
 }
 libdirs {
@@ -86,7 +88,7 @@ project_ext_bindings {
 }
 
 includedirs {
-    "%{root}/source/extensions/isaacsim.sensors.physx/include",
+    "%{root}/source/deprecated/isaacsim.sensors.physx/include",
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
 }
 

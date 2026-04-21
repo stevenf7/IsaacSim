@@ -630,6 +630,9 @@ inventory.includes.all = [
     # extensions
     "extsDeprecated/isaacsim.sensors.camera",
     "extsDeprecated/isaacsim.sensors.physics",
+    "extsDeprecated/isaacsim.sensors.physx.examples",
+    "extsDeprecated/isaacsim.sensors.physx.ui",
+    "extsDeprecated/isaacsim.sensors.physx",
     "extsDeprecated/isaacsim.sensors.rtx",
     "exts/isaacsim.sensors.camera.ui",
     "exts/isaacsim.sensors.experimental.camera",
@@ -638,9 +641,6 @@ inventory.includes.all = [
     "exts/isaacsim.sensors.physics.examples",
     "exts/isaacsim.sensors.physics.nodes",
     "exts/isaacsim.sensors.physics.ui",
-    "exts/isaacsim.sensors.physx.examples",
-    "exts/isaacsim.sensors.physx.ui",
-    "exts/isaacsim.sensors.physx",
     "exts/isaacsim.sensors.rtx.ui",
 ]
 

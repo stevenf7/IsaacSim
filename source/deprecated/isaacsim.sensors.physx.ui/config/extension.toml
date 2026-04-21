@@ -1,34 +1,28 @@
 [package]
-version = "2.4.1"
+version = "2.5.1"
 category = "Simulation"
-title = "Isaac Sim PhysX Sensor Examples"
-description = "Provides example usage and snippets for Isaac Sim PhysX-raycast-based sensors."
-authors = ["hmazhar@nvidia.com", "stevfeng@nvidia.com", "adevalla@nvidia.com"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.physx.examples"
-keywords = ["isaac", "physics", "sensor", "lidar", "examples"]
+title = "Isaac Sim PhysX Sensor UI components"
+description = "Isaac Sim PhysX Sensor UI components extension provides UI components for Isaac Sim PhysX-raycast-based sensor simulation, eg. menu options."
+authors = ["hmazhar@nvidia.com", "adevalla@nvidia.com", "stevfeng@nvidia.com"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/deprecated/isaacsim.sensors.physx.ui"
+keywords = ["isaac", "physics", "sensor", "lidar", "ui"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
 
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 6.0.0 in favor of the Experimental extension: isaacsim.sensors.physics.ui"
+
 [dependencies]
-"isaacsim.core.deprecation_manager" = {}
-"isaacsim.examples.browser" = {}
 "isaacsim.gui.components" = {}
 "isaacsim.sensors.physx" = {}
+"omni.kit.actions.core" = {}
+"omni.kit.context_menu" = {}
 
 [[python.module]]
-name = "isaacsim.sensors.physx.examples"
-
-[[python.module]]
-name = "isaacsim.sensors.physx.examples.lidar_info"
-
-[[python.module]]
-name = "isaacsim.sensors.physx.examples.generic_info"
-
-[[python.module]]
-name = "isaacsim.sensors.physx.examples.lightbeam_sensor"
+name = "isaacsim.sensors.physx.ui"
 
 [[test]]
 name = "startup"
@@ -39,12 +33,16 @@ args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
-[[test]]
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 stdoutFailPatterns.exclude = [
-    '*The NumPy module was reloaded*',
+  '*The NumPy module was reloaded*',
+]
+
+[[test]]
+timeout = 900
+dependencies = [
+    "isaacsim.test.utils",
+    "omni.isaac.ml_archive",
+    "omni.kit.window.stage",
 ]
 args = [
     "--enable",
@@ -90,6 +88,9 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    ### Extension specific args
+    "--/app/window/dpiScaleOverride=1.0",
+    "--/app/window/scaleToMonitor=false",
 ]
 
 [documentation]

@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.4.2] - 2026-04-20
+### Deprecated
+- Extension deprecated in favor of the Experimental extension `isaacsim.sensors.physics.examples`
+
 ## [2.4.1] - 2026-04-17
 ### Fixed
 - Run `_plot_pattern` in a background thread to avoid blocking Kit's main event loop
