@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.0] - 2026-04-21
+### Changed
+- Port ContactSensor to use IPrimDataReader contact API (`enableContactReporting`/`getContactReport`) instead of direct PhysX contact event subscription
+
 ## [2.4.0] - 2026-04-17
 ### Added
 - Add Raycast Sensor C++ implementation, Python bindings, backend, commands, and examples

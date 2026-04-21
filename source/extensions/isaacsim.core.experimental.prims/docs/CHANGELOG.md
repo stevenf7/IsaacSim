@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0] - 2026-04-20
+### Added
+- Add ContactPointData struct, contact event type constants (kContactEventFound/Lost/Persist), ContactEventData struct, ContactReportData struct to IPrimDataReader.h
+- Add enableContactReporting() and getContactReport() virtual methods to IPrimDataReader interface
+- Add SdfPathToken.h with sdfPathToToken/tokenToSdfPath helpers for PhysX contact body identifiers
+- Bump CARB_PLUGIN_INTERFACE version to (2, 2)
+
 ## [1.7.6] - 2026-04-17
 ### Fixed
 - Fix link mass inverse test to not add epsilon to denominator

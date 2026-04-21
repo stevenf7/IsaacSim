@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0] - 2026-04-20
+### Added
+- Implement enableContactReporting() to apply PhysxContactReportAPI to rigid body prims
+- Implement getContactReport() to query full contact report from IPhysxSimulation and filter by body paths
+- Add SdfPathToken.h include and static_asserts verifying contact event type constants match PhysX enums
+- Add m_contactEvents and m_contactPoints member vectors to PrimDataReaderImpl
+
 ## [0.2.0] - 2026-04-03
 ### Added
 - Bulk PhysX tensor reading for world transforms of physics prims (rigid bodies and articulation links) when engine is PhysX, significantly improving performance over per-prim Fabric queries

@@ -24,17 +24,14 @@
 
 #include <isaacsim/core/experimental/prims/IPrimDataReader.h>
 #include <isaacsim/core/experimental/prims/IPrimDataReaderManager.h>
+#include <isaacsim/core/experimental/prims/SdfPathToken.h>
 #include <isaacsim/core/includes/UsdUtilities.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
 #include <isaacsim/robot/schema/sensor_tokens.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/physics/simulation/IPhysicsSimulation.h>
 #include <omni/physics/simulation/IPhysicsStageUpdate.h>
-#include <omni/physx/ContactEvent.h>
-#include <omni/physx/IPhysxSimulation.h>
 #include <omni/usd/UsdContext.h>
-#include <physxSchema/physxContactReportAPI.h>
-#include <physxSchema/physxRigidBodyAPI.h>
 #include <pxr/usd/usdPhysics/rigidBodyAPI.h>
 
 #if defined(_WIN32)
@@ -105,13 +102,7 @@ static std::string findParentRigidBody(pxr::UsdStageRefPtr stage, const pxr::Sdf
     return {};
 }
 
-inline uint64_t sdfPathToToken(const pxr::SdfPath& path)
-{
-    static_assert(sizeof(pxr::SdfPath) == sizeof(uint64_t), "SdfPath size mismatch");
-    uint64_t ret;
-    std::memcpy(&ret, &path, sizeof(pxr::SdfPath));
-    return ret;
-}
+using isaacsim::core::experimental::prims::sdfPathToToken;
 
 class ContactDataStore
 {
@@ -371,46 +362,17 @@ bool ContactSensorImpl::createSensor(const char* primPath)
         return false;
     }
 
-    // SIDE EFFECT: createSensor() modifies the USD stage on the parent rigid body.
+    // SIDE EFFECT: enableContactReporting() modifies the USD stage on the parent rigid body.
     //
     // PhysX's getFullContactReport() only returns data for bodies that have
-    // PhysxContactReportAPI applied. Without it, numHeaders == 0 and no contacts
-    // are reported regardless of actual collisions. This mirrors the behavior of
-    // the legacy ContactSensor::setContactReportApi() in isaacsim.sensors.physics.
-    //
-    // Modifications made:
-    //   1. Applies PhysxSchemaPhysxContactReportAPI if not present
-    //   2. Creates ReportPairsRel if missing
-    //   3. Sets contact report ThresholdAttr to 0.0 (report all contacts)
-    //   4. Sets PhysxRigidBodyAPI sleepThreshold to 0.0 (prevent sleeping bodies
-    //      from being excluded from contact reports)
-    //
+    // PhysxContactReportAPI applied. The reader applies this schema (along with
+    // threshold and sleep settings) so that contacts are actually reported.
     // These changes persist on the USD stage for the lifetime of the session.
-    pxr::SdfPath parentSdfPath(parentPath);
-    pxr::UsdPrim parentPrim = m_impl->usdStage->GetPrimAtPath(parentSdfPath);
-    if (parentPrim.IsValid())
+    if (m_impl->reader)
     {
-        pxr::PhysxSchemaPhysxContactReportAPI contactReportAPI =
-            pxr::PhysxSchemaPhysxContactReportAPI::Get(m_impl->usdStage, parentSdfPath);
-        if (!contactReportAPI)
+        if (!m_impl->reader->enableContactReporting(parentPath.c_str()))
         {
-            contactReportAPI = pxr::PhysxSchemaPhysxContactReportAPI::Apply(parentPrim);
-        }
-
-        if (contactReportAPI)
-        {
-            if (!contactReportAPI.GetReportPairsRel())
-            {
-                contactReportAPI.CreateReportPairsRel();
-            }
-            contactReportAPI.GetThresholdAttr().Set(0.0f);
-        }
-
-        pxr::PhysxSchemaPhysxRigidBodyAPI rigidBodyAPI =
-            pxr::PhysxSchemaPhysxRigidBodyAPI::Get(m_impl->usdStage, parentSdfPath);
-        if (rigidBodyAPI)
-        {
-            rigidBodyAPI.CreateSleepThresholdAttr(pxr::VtValue(0.0f));
+            CARB_LOG_WARN("ContactSensorImpl: failed to enable contact reporting for '%s'", parentPath.c_str());
         }
     }
 
@@ -603,58 +565,66 @@ void ContactSensorImpl::_pullContactData(float dt)
         it.second.clear();
     }
 
-    auto* physxSim = carb::getCachedInterface<omni::physx::IPhysxSimulation>();
-    if (!physxSim)
+    if (!m_impl->reader)
     {
-        CARB_LOG_WARN("ContactSensorImpl: IPhysxSimulation not available");
+        CARB_LOG_WARN("ContactSensorImpl: no IPrimDataReader available");
         return;
     }
 
-    const omni::physx::ContactEventHeader* headers = nullptr;
-    const omni::physx::ContactData* data = nullptr;
-    const omni::physx::FrictionAnchor* frictionData = nullptr;
-    uint32_t numContactData = 0;
-    uint32_t numFrictionData = 0;
-    uint32_t numHeaders = physxSim->getFullContactReport(&headers, &data, numContactData, &frictionData, numFrictionData);
-
-    float simTime = m_impl->simManager ? static_cast<float>(m_impl->simManager->getSimulationTime()) : 0.0f;
-
-    uint32_t dataIndex = 0;
-    for (uint32_t h = 0; h < numHeaders; h++)
+    std::vector<const char*> bodyPaths;
+    bodyPaths.reserve(m_impl->sensors.size());
+    for (const auto& [id, sensor] : m_impl->sensors)
     {
-        const auto& header = headers[h];
-        uint64_t body0 = header.actor0;
-        uint64_t body1 = header.actor1;
+        (void)id;
+        bodyPaths.push_back(sensor.parentRigidBodyPath.c_str());
+    }
 
-        if (header.type == omni::physx::ContactEventType::Enum::eCONTACT_FOUND ||
-            header.type == omni::physx::ContactEventType::Enum::eCONTACT_PERSIST)
+    if (bodyPaths.empty())
+        return;
+
+    isaacsim::core::experimental::prims::ContactReportData report;
+    if (!m_impl->reader->getContactReport(bodyPaths.data(), bodyPaths.size(), &report))
+        return;
+
+    using isaacsim::core::experimental::prims::kContactEventFound;
+    using isaacsim::core::experimental::prims::kContactEventLost;
+    using isaacsim::core::experimental::prims::kContactEventPersist;
+
+    float simTime = report.simTime;
+    // Use reader-reported dt when available; fall back to caller's physics step dt
+    float contactDt = report.dt > 0.0f ? report.dt : dt;
+
+    for (uint32_t ei = 0; ei < report.numEvents; ei++)
+    {
+        const auto& event = report.events[ei];
+
+        if (event.eventType == kContactEventFound || event.eventType == kContactEventPersist)
         {
-            m_impl->contactStore.removeContactPair(body0, body1);
+            m_impl->contactStore.removeContactPair(event.body0, event.body1);
 
-            for (uint32_t i = 0; i < header.numContactData; i++)
+            for (uint32_t ci = 0; ci < event.numContacts; ci++)
             {
-                const auto& contactData = data[dataIndex + i];
+                const auto& cp = event.contacts[ci];
                 ContactRawData entry;
-                entry.body0 = body0;
-                entry.body1 = body1;
-                entry.positionX = contactData.position.x;
-                entry.positionY = contactData.position.y;
-                entry.positionZ = contactData.position.z;
-                entry.normalX = contactData.normal.x;
-                entry.normalY = contactData.normal.y;
-                entry.normalZ = contactData.normal.z;
-                entry.impulseX = contactData.impulse.x;
-                entry.impulseY = contactData.impulse.y;
-                entry.impulseZ = contactData.impulse.z;
+                entry.body0 = event.body0;
+                entry.body1 = event.body1;
+                entry.positionX = cp.positionX;
+                entry.positionY = cp.positionY;
+                entry.positionZ = cp.positionZ;
+                entry.normalX = cp.normalX;
+                entry.normalY = cp.normalY;
+                entry.normalZ = cp.normalZ;
+                entry.impulseX = cp.impulseX;
+                entry.impulseY = cp.impulseY;
+                entry.impulseZ = cp.impulseZ;
                 entry.time = simTime;
-                entry.dt = dt;
+                entry.dt = contactDt;
                 m_impl->contactStore.rawContacts.push_back(entry);
             }
-            dataIndex += header.numContactData;
         }
-        else if (header.type == omni::physx::ContactEventType::Enum::eCONTACT_LOST)
+        else if (event.eventType == kContactEventLost)
         {
-            m_impl->contactStore.removeContactPair(body0, body1);
+            m_impl->contactStore.removeContactPair(event.body0, event.body1);
         }
     }
 }
