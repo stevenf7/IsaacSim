@@ -217,9 +217,9 @@ Extensions
    isaacsim.sensors.physics.examples <source/extensions/isaacsim.sensors.physics.examples/docs/index>
    isaacsim.sensors.physics.nodes <source/extensions/isaacsim.sensors.physics.nodes/docs/index>
    isaacsim.sensors.physics.ui <source/extensions/isaacsim.sensors.physics.ui/docs/index>
-   isaacsim.sensors.physx <source/extensions/isaacsim.sensors.physx/docs/index>
-   isaacsim.sensors.physx.examples <source/extensions/isaacsim.sensors.physx.examples/docs/index>
-   isaacsim.sensors.physx.ui <source/extensions/isaacsim.sensors.physx.ui/docs/index>
+   isaacsim.sensors.physx <source/deprecated/isaacsim.sensors.physx/docs/index>
+   isaacsim.sensors.physx.examples <source/deprecated/isaacsim.sensors.physx.examples/docs/index>
+   isaacsim.sensors.physx.ui <source/deprecated/isaacsim.sensors.physx.ui/docs/index>
    isaacsim.sensors.rtx <source/deprecated/isaacsim.sensors.rtx/docs/index>
    isaacsim.sensors.rtx.ui <source/extensions/isaacsim.sensors.rtx.ui/docs/index>
 

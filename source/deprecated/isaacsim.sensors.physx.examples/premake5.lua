@@ -14,7 +14,7 @@
 -- limitations under the License.
 
 local ext = get_current_extension_info()
-local ogn = get_ogn_project_information(ext, "omni/isaac/range_sensor")
+ext.target_dir = deprecated_exts_path .. "/" .. ext.id
 project_ext(ext)
 
 repo_build.prebuild_link {

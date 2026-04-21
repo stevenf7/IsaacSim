@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.5.3] - 2026-04-20
+### Deprecated
+- Extension deprecated in favor of the Experimental extension `isaacsim.sensors.experimental.physics`
+
 ## [2.5.2] - 2026-04-01
 ### Changed
 - Removed unused dependencies from extension.toml

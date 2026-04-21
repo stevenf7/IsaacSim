@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.5.1] - 2026-04-20
+### Deprecated
+- Extension deprecated in favor of the Experimental extension `isaacsim.sensors.physics.ui`
+
 ## [2.5.0] - 2026-03-04
 ### Changed
 - Added Overview.md and python_api.md and updated docstrings
