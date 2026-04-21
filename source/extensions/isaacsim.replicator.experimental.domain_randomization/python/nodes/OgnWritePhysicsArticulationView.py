@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import carb
 import numpy as np
 import omni.graph.core as og
 import warp as wp
@@ -245,43 +246,20 @@ class OgnWritePhysicsArticulationView:
                 view_name, operation, attribute_name, samples, indices, on_reset
             )
             physics_view.set_rest_offsets(place(rest_offsets, dtype=wp.float32, device="cpu"), wp_indices)
-        elif attribute_name == "tendon_stiffnesses":
-            tendon_stiffnesses = apply_randomization_operation(
+        elif attribute_name in TENDON_ATTRIBUTES:
+            if not physics._current_tendon_properties:
+                carb.log_error(
+                    f"Cannot randomize tendon attribute '{attribute_name}' for view '{view_name}': "
+                    "articulation has no fixed tendons."
+                )
+                db.outputs.execOut = og.ExecutionAttributeState.ENABLED
+                return True
+            tendon_values = apply_randomization_operation(
                 view_name, operation, attribute_name, samples, indices, on_reset
             )
-            physics._current_tendon_properties["tendon_stiffnesses"][indices] = tendon_stiffnesses
-        elif attribute_name == "tendon_dampings":
-            tendon_dampings = apply_randomization_operation(
-                view_name, operation, attribute_name, samples, indices, on_reset
-            )
-            physics._current_tendon_properties["tendon_dampings"][indices] = tendon_dampings
-        elif attribute_name == "tendon_limit_stiffnesses":
-            tendon_limit_stiffnesses = apply_randomization_operation(
-                view_name, operation, attribute_name, samples, indices, on_reset
-            )
-            physics._current_tendon_properties["tendon_limit_stiffnesses"][indices] = tendon_limit_stiffnesses
-        elif attribute_name == "tendon_lower_limits":
-            tendon_lower_limits = apply_randomization_operation(
-                view_name, operation, attribute_name, samples, indices, on_reset
-            )
-            physics._current_tendon_properties["tendon_lower_limits"][indices] = tendon_lower_limits
-        elif attribute_name == "tendon_upper_limits":
-            tendon_upper_limits = apply_randomization_operation(
-                view_name, operation, attribute_name, samples, indices, on_reset
-            )
-            physics._current_tendon_properties["tendon_upper_limits"][indices] = tendon_upper_limits
-        elif attribute_name == "tendon_rest_lengths":
-            tendon_rest_lengths = apply_randomization_operation(
-                view_name, operation, attribute_name, samples, indices, on_reset
-            )
-            physics._current_tendon_properties["tendon_rest_lengths"][indices] = tendon_rest_lengths
-        elif attribute_name == "tendon_offsets":
-            tendon_offsets = apply_randomization_operation(
-                view_name, operation, attribute_name, samples, indices, on_reset
-            )
-            physics._current_tendon_properties["tendon_offsets"][indices] = tendon_offsets
+            physics._current_tendon_properties[attribute_name][indices] = tendon_values
 
-        if attribute_name in TENDON_ATTRIBUTES:
+        if attribute_name in TENDON_ATTRIBUTES and physics._current_tendon_properties:
             current_tendon_limits = np.stack(
                 (
                     physics._current_tendon_properties["tendon_lower_limits"],

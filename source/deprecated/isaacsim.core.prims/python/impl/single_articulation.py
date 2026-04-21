@@ -316,8 +316,8 @@ class SingleArticulation(_SinglePrimWrapper):
             >>> prim.initialize()
         """
         carb.log_info(f"initializing handles for {self.prim_path}")
-        self._articulation_controller.initialize(self._articulation_view)
         self._articulation_view.initialize(physics_sim_view=physics_sim_view)
+        self._articulation_controller.initialize(self._articulation_view)
         return
 
     def get_dof_index(self, dof_name: str) -> int:
