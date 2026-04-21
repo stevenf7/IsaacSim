@@ -39,17 +39,17 @@ Getting Started
 - Install Simulation Interfaces package using:
 
    .. tab-set::
-      
+
       .. tab-item:: Humble
-         
+
          .. code-block:: bash
 
             sudo apt install ros-humble-simulation-interfaces
-      
+
       .. tab-item:: Jazzy
-         
+
          .. code-block:: bash
-         
+
             sudo apt install ros-jazzy-simulation-interfaces
 
    For reference, see the source code for the Simulation Interfaces package `here <https://github.com/ros-simulation/simulation_interfaces>`_.
@@ -97,7 +97,7 @@ The extension provides the following ROS 2 services:
 * ``/get_entity_state``: Get the pose, twist, and acceleration of a specific entity
 * ``/get_entities_states``: Get the states (pose, twist, acceleration) of multiple entities with filtering
 * ``/delete_entity``: Delete a specific entity (prim) from the simulation
-* ``/spawn_entity``: Spawn a new entity into the simulation at a specified location
+* ``/spawn_entity``: Spawn a new entity into the simulation at a specified location (deprecated — use ``/spawn_entities`` instead)
 * ``/reset_simulation``: Reset the simulation environment to its initial state
 * ``/set_entity_state``: Sets the state (pose, twist) of a specific entity in the simulation
 * ``/step_simulation``: Step the simulation forward by a specific number of frames
@@ -105,6 +105,9 @@ The extension provides the following ROS 2 services:
 * ``/unload_world``: Unload the current world and create an empty stage
 * ``/get_current_world``: Get information about the currently loaded world
 * ``/get_available_worlds``: Get a list of available world files that can be loaded
+* ``/spawn_entities``: Batch spawn multiple entities in a single request (requires ``simulation_interfaces`` >= 1.4.0 on Humble, >= 1.5.0 on Jazzy)
+* ``/get_entity_bounds``: Get the world-space axis-aligned bounding box of an entity
+* ``/get_spawnables``: Discover available USD assets that can be spawned
 
 And the following ROS 2 actions:
 
@@ -303,50 +306,143 @@ The DeleteEntity service deletes a specified entity in the simulation.
 * Returns ``RESULT_OPERATION_FAILED`` if the entity is protected and cannot be deleted
 * Uses prim_utils.is_prim_no_delete() to check if a prim can be deleted before attempting deletion
 
-SpawnEntity Service
+GetSpawnables Service
 -----------------------
 
-The SpawnEntity service spawns a new entity into the simulation at a specified location.
+The GetSpawnables service discovers USD assets available for spawning. By default it searches
+``/Isaac/Samples/ROS2/Robots`` in the Isaac assets root path. You can supply additional
+custom search paths using the ``sources`` field.
 
-1. Basic entity spawn with default position:
-
-   .. code-block:: bash
-   
-      ros2 service call /spawn_entity simulation_interfaces/srv/SpawnEntity "{name: 'MyEntity', allow_renaming: false, uri: '/path/to/model.usd'}"
-
-2. Spawn with specific position and orientation:
+1. List all default spawnables:
 
    .. code-block:: bash
-   
-      ros2 service call /spawn_entity simulation_interfaces/srv/SpawnEntity "{name: 'PositionedEntity', allow_renaming: false, uri: '/path/to/model.usd', initial_pose: {pose: {position: {x: 1.0, y: 2.0, z: 3.0}, orientation: {w: 1.0, x: 0.0, y: 0.0, z: 0.0}}}}"
 
-3. Empty Xform creation (no URI):
+      ros2 service call /get_spawnables simulation_interfaces/srv/GetSpawnables
 
-   .. code-block:: bash
-   
-      ros2 service call /spawn_entity simulation_interfaces/srv/SpawnEntity "{name: 'EmptyXform', allow_renaming: false, uri: ''}"
-
-4. With auto-renaming enabled:
+2. List spawnables from an additional local path:
 
    .. code-block:: bash
-   
-      ros2 service call /spawn_entity simulation_interfaces/srv/SpawnEntity "{name: 'AutoRenamedEntity', allow_renaming: true, uri: '/path/to/model.usd'}"
 
-5. With namespace specified:
+      ros2 service call /get_spawnables simulation_interfaces/srv/GetSpawnables "{sources: ['/home/user/custom_robots']}"
+
+3. List spawnables from multiple sources:
 
    .. code-block:: bash
-   
-      ros2 service call /spawn_entity simulation_interfaces/srv/SpawnEntity "{name: 'NamespacedEntity', allow_renaming: false, uri: '/path/to/model.usd', entity_namespace: 'robot1'}"
+
+      ros2 service call /get_spawnables simulation_interfaces/srv/GetSpawnables "{sources: ['/home/user/robots', '/opt/isaac_assets/robots']}"
 
 **Notes:**
 
-* If URI is provided, loads the USD file as a reference in the given prim path
-* If URI is not provided, creates a Xform at the given prim path
-* All spawned prims are marked with a simulationInterfacesSpawned attribute for tracking
-* Returns ``RESULT_OK`` if the entity was successfully spawned
-* Returns ``NAME_NOT_UNIQUE (101)`` if the entity name already exists and allow_renaming is false
-* Returns ``NAME_INVALID (102)`` if the entity name is empty and allow_renaming is false
-* Returns ``RESOURCE_PARSE_ERROR (106)`` if failed to parse or load USD file
+* Default search path is ``/Isaac/Samples/ROS2/Robots`` (searched to a depth of 2)
+* Additional paths in ``sources`` are searched recursively (unlimited depth)
+* Each result is a ``Spawnable`` with ``uri`` (full asset URI), ``description`` (filename without extension), and empty ``spawn_bounds``
+* Returns ``RESULT_OPERATION_FAILED`` if no asset root path is available and no ``sources`` are provided
+
+SpawnEntity Service
+-----------------------
+
+.. warning::
+
+   **Deprecated.** Use the ``/spawn_entities`` service instead. ``SpawnEntities`` supports batch operations and per-entity error reporting, making it suitable for both single and multi-entity workflows.
+
+.. dropdown:: SpawnEntity usage (deprecated)
+
+   The SpawnEntity service spawns a new entity into the simulation at a specified location.
+
+   1. Basic entity spawn with default position:
+
+      .. code-block:: bash
+
+         ros2 service call /spawn_entity simulation_interfaces/srv/SpawnEntity "{name: 'MyEntity', allow_renaming: false, uri: '/path/to/model.usd'}"
+
+   2. Spawn with specific position and orientation:
+
+      .. code-block:: bash
+
+         ros2 service call /spawn_entity simulation_interfaces/srv/SpawnEntity "{name: 'PositionedEntity', allow_renaming: false, uri: '/path/to/model.usd', initial_pose: {pose: {position: {x: 1.0, y: 2.0, z: 3.0}, orientation: {w: 1.0, x: 0.0, y: 0.0, z: 0.0}}}}"
+
+   3. Empty Xform creation (no URI):
+
+      .. code-block:: bash
+
+         ros2 service call /spawn_entity simulation_interfaces/srv/SpawnEntity "{name: 'EmptyXform', allow_renaming: false, uri: ''}"
+
+   4. With auto-renaming enabled:
+
+      .. code-block:: bash
+
+         ros2 service call /spawn_entity simulation_interfaces/srv/SpawnEntity "{name: 'AutoRenamedEntity', allow_renaming: true, uri: '/path/to/model.usd'}"
+
+   5. With namespace specified:
+
+      .. code-block:: bash
+
+         ros2 service call /spawn_entity simulation_interfaces/srv/SpawnEntity "{name: 'NamespacedEntity', allow_renaming: false, uri: '/path/to/model.usd', entity_namespace: 'robot1'}"
+
+   **Notes:**
+
+   * If URI is provided, loads the USD file as a reference in the given prim path
+   * If URI is not provided, creates a Xform at the given prim path
+   * All spawned prims are marked with a ``simulationInterfacesSpawned`` attribute for tracking
+   * Returns ``RESULT_OK`` if the entity was successfully spawned
+   * Returns ``NAME_NOT_UNIQUE (101)`` if the entity name already exists and ``allow_renaming`` is false
+   * Returns ``NAME_INVALID (102)`` if the entity name is empty and ``allow_renaming`` is false
+   * Returns ``RESOURCE_PARSE_ERROR (106)`` if failed to parse or load USD file
+
+SpawnEntities Service
+-----------------------
+
+The SpawnEntities service spawns multiple entities in a single request. Each entry in
+``spawn_requests`` follows the ``SpawnEntity.msg`` format and is processed independently.
+Per-entity success or failure is reported in the ``results`` list.
+
+.. note::
+
+   This service requires ``simulation_interfaces`` >= 1.4.0 on ROS 2 Humble and >= 1.5.0 on ROS 2 Jazzy.
+
+1. Spawn two entities at specific positions:
+
+   .. code-block:: bash
+
+      ros2 service call /spawn_entities simulation_interfaces/srv/SpawnEntities "{
+        spawn_requests: [
+          {
+            name: 'Robot1',
+            allow_renaming: false,
+            entity_resource: {uri: '/path/to/robot.usd'},
+            initial_pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {w: 1.0, x: 0.0, y: 0.0, z: 0.0}}}
+          },
+          {
+            name: 'Robot2',
+            allow_renaming: true,
+            entity_resource: {uri: '/path/to/robot.usd'},
+            initial_pose: {pose: {position: {x: 2.0, y: 0.0, z: 0.0}, orientation: {w: 1.0, x: 0.0, y: 0.0, z: 0.0}}}
+          }
+        ]
+      }"
+
+**Notes:**
+
+* Each entry in ``spawn_requests`` uses the ``entity_resource.uri`` field (not the flat ``uri`` field used by ``SpawnEntity``)
+* Per-entity results are returned in the ``results`` list; check each ``SpawnResult`` for individual success or failure
+* The aggregate ``result`` field is set to ``ENTITIES_SPAWN_FAILED`` if any individual spawn fails
+* All other SpawnEntity rules apply to each entry (auto-renaming, ``simulationInterfacesSpawned`` tagging, etc.)
+
+GetEntityBounds Service
+--------------------------
+
+The GetEntityBounds service computes and returns the world-space axis-aligned bounding box (AABB) of an entity.
+
+.. code-block:: bash
+
+   ros2 service call /get_entity_bounds simulation_interfaces/srv/GetEntityBounds "{entity: '/World/Cube'}"
+
+**Notes:**
+
+* Returns a ``Bounds`` message with ``type=TYPE_BOX`` and two ``points``: the minimum corner and the maximum corner of the AABB
+* Bounding box is computed at the default USD time code and includes only prims with the ``default`` purpose
+* Returns ``RESULT_NOT_FOUND`` if the entity does not exist
+* Returns ``RESULT_OPERATION_FAILED`` if the bounds computation fails
 
 ResetSimulation Service
 ---------------------------
@@ -614,7 +710,8 @@ This page covered:
 * The ROS 2 Simulation Control extension and its capabilities
 * How to enable the extension in Isaac Sim
 * Using ROS 2 services to control simulation state (play, pause, stop)
-* Manipulating entities in the simulation (spawn, delete, get/set state, get info)
+* Manipulating entities in the simulation (spawn, batch spawn, delete, get/set state, get info, get bounds)
+* Discovering spawnable assets and available worlds
 * Managing simulation worlds (load, unload, query available worlds)
 * Using ROS 2 actions for simulation stepping with feedback
 * Technical implementation details of the extension
