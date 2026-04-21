@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.3.0] - 2026-03-16
+### Changed
+- Migrate extension implementation to core experimental API
+
 ## [2.2.0] - 2026-03-04
 ### Changed
 - Added Overview.md, python_api.md and updated docstrings
