@@ -103,7 +103,7 @@ Running from Script
 
 For large-scale data generation, it can be more efficient to launch it from script. IRA provides an automatic script (``actor_sdg.py``) to run offline data generation.
 
-To run from script, open a terminal from where Isaac Sim is installed and run the following commands.
+To run from script, open a terminal from where Isaac Sim is installed and run the following commands:
 
 * For Linux:
    ``./python.sh tools/actor_sdg/actor_sdg.py -c [config file path]``
@@ -197,10 +197,17 @@ For editing the configuration files through UI or code, refer to the :ref:`Confi
 
     ./ext_replicator-agent/ext_isaacsim_replicator_agent_configuration_editor.rst
 
+For a practical walkthrough of using the CustomWriter to stream RTSP video from IRA cameras, review the following example:
+
+.. toctree::
+    :maxdepth: 1
+
+    ./ext_replicator-agent/ext_isaacsim_replicator_agent_custom_writer_example.rst
+
 Actor Behaviors
 -------------------
 
-Actor behaviors are achieved by OMP, IRA and IAR together.
+Actor behaviors are achieved by OMP, IRA, and IAR together.
 
 .. image:: /images/isim_6.0_full_tut_external_actor_sim_actor_behavior_ext_overview.png
     :width: 900
@@ -223,9 +230,9 @@ The Routine Trigger Loop
 
 When no actor triggers are activated, actors perform routine loop by repeatedly pick behaviors under routines to perform by their probability weights, using the ``actor global seed``.
 
-When any trigger is activated, actor will pause routine and start performing the behaviors under each active trigger. Running triggers will be paused and pushed to queue if a trigger with higher priority happens (triggers with lower priority will be skipped).
+When any trigger is activated, the actor will pause routine and start performing the behaviors under each active trigger. Running triggers will be paused and pushed to queue if a trigger with higher priority happens (triggers with lower priority will be skipped).
 The trigger will be marked complete when its behaviors are all finished. Then the first trigger in queue will resume running.
-After all active triggers complete, actors will fallback to routine.
+After all active triggers complete, the actors will fallback to their routine.
 
 .. image:: /images/isim_6.0_full_tut_external_actor_sim_actor_behavior_flowchart.png
     :width: 900
@@ -237,9 +244,9 @@ After all active triggers complete, actors will fallback to routine.
 Configure Behaviors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After actors are loaded into scene by config file, the configurations are embedded in the USD API schemas and USD Prims. Each actor is represented by MetroAgentAPI schema and its derived type.
-For human character, it is the ``IRACharacterAPI`` attached on the SkelRoot prim. For animated robot, it is the ``AnimRobotAPI`` attached on the root prim of the robot payload.
-Each behavior and trigger becomes individual USD Prims that actor USD API can have reference to, each actor trigger prim can also have reference to a list of behaviors.
+After the actors are loaded into scene by config file, the configurations are embedded in the USD API schemas and USD Prims. Each actor is represented by MetroAgentAPI schema and its derived type.
+For a human character, it is the ``IRACharacterAPI`` attached on the SkelRoot prim. For an animated robot, it is the ``AnimRobotAPI`` attached on the root prim of the robot payload.
+Each behavior and trigger becomes an individual USD Prim that the actor USD API can have reference to, each actor trigger prim can also have reference to a list of behaviors.
 
 The actor USD API schema defines basic information of the actor:
 
@@ -257,7 +264,7 @@ Each type of actor behavior is represented by a USD Prim type. It defines the co
 - repeat
 - behavior 
 
-For human characters, the behavior prim types follows ``CharacterXXXBehavior`` naming pattern. For animated robots, they are ``RobotXXXBehavior``.
+For human characters, the behavior prim types follows the ``CharacterXXXBehavior`` naming pattern. For animated robots, they are ``RobotXXXBehavior``.
 
 Each actor trigger is also a USD Prim. It defines the trigger priority and has a reference of behavior list to be executed sequentially when this trigger activates.
 Human characters and anim robots share the same trigger types that's defined in OMP with naming ``MetroXXXTrigger``.
