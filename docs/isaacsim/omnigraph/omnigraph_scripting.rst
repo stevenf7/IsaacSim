@@ -92,7 +92,7 @@ You can also trigger each graph explicitly by making execute only when you call 
 
 Alternatively, you can also set it for an existing graph by ``demand_graph_handle.change_pipeline_stage(og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND)``
 
-A more in-depth example of attaching graphs to physics callbacks and/or rendering callbacks can be found in `standalone_examples/api/isaacsim.core.api/omnigraph_triggers.py`
+A more in-depth example of attaching graphs to physics callbacks and/or rendering callbacks can be found in `standalone_examples/api/isaacsim.core.experimental.api/omnigraph_triggers.py`
 
 
 Summary

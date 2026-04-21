@@ -142,7 +142,7 @@ The sample can be executed by running the following:
 
 .. code-block:: bash
 
-    ./python.sh standalone_examples/api/isaacsim.core.api/time_stepping.py
+    ./python.sh standalone_examples/deprecated/api/isaacsim.core.api/time_stepping.py
 
 Load USD Stage
 ------------------

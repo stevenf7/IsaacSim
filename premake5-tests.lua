@@ -154,49 +154,52 @@ local function get_core_tests()
             "--test",
         },
         -- Core API
-        { "tests-nativepython-isaacsim.core.api.add_cubes", "standalone_examples/api/isaacsim.core.api/add_cubes.py" },
+        {
+            "tests-nativepython-isaacsim.core.api.add_cubes",
+            "standalone_examples/deprecated/api/isaacsim.core.api/add_cubes.py",
+        },
         {
             "tests-nativepython-isaacsim.core.api.add_frankas",
-            "standalone_examples/api/isaacsim.core.api/add_frankas.py",
+            "standalone_examples/deprecated/api/isaacsim.core.api/add_frankas.py",
             "--test",
         },
         {
             "tests-nativepython-isaacsim.core.api.data_logging",
-            "standalone_examples/api/isaacsim.core.api/data_logging.py",
+            "standalone_examples/deprecated/api/isaacsim.core.api/data_logging.py",
         },
         {
             "tests-nativepython-isaacsim.core.api.control_robot",
-            "standalone_examples/api/isaacsim.core.api/control_robot.py",
+            "standalone_examples/deprecated/api/isaacsim.core.api/control_robot.py",
         },
         {
             "tests-nativepython-isaacsim.core.api.simulate_robot",
-            "standalone_examples/api/isaacsim.core.api/simulate_robot.py",
+            "standalone_examples/deprecated/api/isaacsim.core.api/simulate_robot.py",
         },
         {
             "tests-nativepython-isaacsim.core.api.simulation_callbacks",
-            "standalone_examples/api/isaacsim.core.api/simulation_callbacks.py",
+            "standalone_examples/deprecated/api/isaacsim.core.api/simulation_callbacks.py",
         },
         {
             "tests-nativepython-isaacsim.core.api.time_stepping",
-            "standalone_examples/api/isaacsim.core.api/time_stepping.py",
+            "standalone_examples/deprecated/api/isaacsim.core.api/time_stepping.py",
         },
         {
             "tests-nativepython-isaacsim.core.api.visual_materials",
-            "standalone_examples/api/isaacsim.core.api/visual_materials.py",
+            "standalone_examples/deprecated/api/isaacsim.core.api/visual_materials.py",
             "--test",
         },
         {
             "tests-nativepython-isaacsim.core.api.omnigraph_triggers",
-            "standalone_examples/api/isaacsim.core.api/omnigraph_triggers.py",
+            "standalone_examples/deprecated/api/isaacsim.core.api/omnigraph_triggers.py",
         },
         {
             "tests-nativepython-isaacsim.core.api.rigid_contact_view",
-            "standalone_examples/api/isaacsim.core.api/rigid_contact_view.py",
+            "standalone_examples/deprecated/api/isaacsim.core.api/rigid_contact_view.py",
             "--test",
         },
         {
             "tests-nativepython-isaacsim.core.api.detailed_contact_data",
-            "standalone_examples/api/isaacsim.core.api/detailed_contact_data.py",
+            "standalone_examples/deprecated/api/isaacsim.core.api/detailed_contact_data.py",
             "--test",
         },
         -- From Misc
