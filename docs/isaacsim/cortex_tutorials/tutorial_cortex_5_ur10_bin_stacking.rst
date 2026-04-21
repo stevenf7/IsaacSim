@@ -31,7 +31,7 @@ pre-designed USD environment.
 In all command line examples, we use the abbreviation ``isaac_python`` for the Isaac Sim python
 script (``<isaac_sim_root>/python.sh`` on Linux and ``<isaac_sim_root>\python.bat`` on Windows).
 The command lines are written relative to the working directory
-``standalone_examples/api/isaacsim.cortex.framework``.
+``standalone_examples/deprecated/api/isaacsim.cortex.framework``.
 
 Run the following demo
 

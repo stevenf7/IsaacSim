@@ -88,13 +88,13 @@ You can debug a Python script running headless in a docker container.
 
 #. You must still use :code:`./python.sh` to run Python scripts, but to debug them you have to add :code:`-m debugpy --wait-for-client --listen 0.0.0.0:5678` after :code:`./python.sh` and before the Python file.
 
-#. As an example, open :code:`standalone_examples/api/isaacsim.core.api/time_stepping.py` in VS Code and set a breakpoint by clicking on the margin to the left of a line of code.
+#. As an example, open :code:`standalone_examples/deprecated/api/isaacsim.core.api/time_stepping.py` in VS Code and set a breakpoint by clicking on the margin to the left of a line of code.
 
 #. Now start run :code:`time_stepping.py` in the docker container with the complete debugging command:
 
     .. code-block:: console
 
-        # ./python.sh -m debugpy --wait-for-client --listen 0.0.0.0:5678 standalone_examples/api/isaacsim.core.api/time_stepping.py
+        # ./python.sh -m debugpy --wait-for-client --listen 0.0.0.0:5678 standalone_examples/deprecated/api/isaacsim.core.api/time_stepping.py
 
 #. Because of the :code:`--wait-for-client` flag, the script will not start right away.  You must attach the debugger first by selecting it in VS Code's debug window and pressing the Play button.
 

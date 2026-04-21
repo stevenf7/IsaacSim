@@ -28,7 +28,7 @@ include some examples of how to construct state machines using our built in tool
 In all command line examples, we use the abbreviation ``isaac_python`` for the Isaac Sim python
 script (``<isaac_sim_root>/python.sh`` on Linux and ``<isaac_sim_root>\python.bat`` on Windows).
 The command lines are written relative to the working directory
-``standalone_examples/api/isaacsim.cortex.framework``.
+``standalone_examples/deprecated/api/isaacsim.cortex.framework``.
 
 Each example will launch Isaac Sim without playing the simulation. Press play to run the simulation
 and behavior.
