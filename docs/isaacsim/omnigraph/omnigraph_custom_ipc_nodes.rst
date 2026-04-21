@@ -15,6 +15,10 @@ Building Custom IPC OmniGraph Nodes
 
 This guide explains how to build OmniGraph nodes for inter-process communication (IPC) in |isaac-sim_short|—covering the node schema, transport lifecycle with ``BaseResetNode``, non-blocking I/O inside ``compute``, and how to add your transport library as a dependency. The OmniGraph patterns apply regardless of which IPC stack you use; the worked example is ``isaacsim.examples.ipc``, a clock-send and step-receive node pair over BSD sockets in C++ and Python. The tutorial starts by scaffolding a new extension with the CLI template so you have a working build skeleton before writing any IPC code.
 
+.. note::
+
+   All commands in this tutorial are run from the **Isaac Sim repository root** (the directory that contains ``build.sh`` and ``repo.sh``).
+
 Before You Start
 ================
 
@@ -79,6 +83,16 @@ Build once to confirm the scaffold compiles before making any changes:
    ./build.sh
 
 The generated ``OgnExampleCpp`` and ``OgnExamplePython`` nodes are placeholder stubs (they double an input value). Rename or replace them with your actual IPC node(s) as you work through the sections below.
+
+.. admonition:: Try it: verify your scaffold
+
+   After ``./build.sh`` completes above, confirm the scaffold registers its placeholder nodes:
+
+   #. Launch Isaac Sim: ``./_build/linux-x86_64/release/isaac-sim.sh``
+   #. Open **Window → Extensions**, search for your extension name, and enable it.
+   #. Open **Window → Graph Editors → Action Graph** and search for ``OgnExampleCpp`` and ``OgnExamplePython`` in the node library.
+
+   If both nodes appear, the scaffold is wired correctly. Proceed to `Design and Implement Your Nodes`_ to replace the placeholders.
 
 Add Your Transport Library
 ==========================
@@ -254,6 +268,17 @@ Replace the generated ``OgnExamplePython`` stub with a class like this (see ``Og
    :start-after: # TEMPLATE-START
    :end-before: # TEMPLATE-END
 
+.. admonition:: Try it: implement and build your node
+
+   Adapt your scaffolded extension to a minimal IPC sender:
+
+   #. **Update the OGN schema.** In ``nodes/OgnExampleCpp.ogn`` (or ``OgnExamplePython.ogn``), rename the node and add a ``uri`` string input (default ``"127.0.0.1:9000"``) and ``execIn``/``execOut`` execution ports.
+   #. **Replace the implementation.** Copy the template above into ``OgnExampleCpp.cpp`` (or ``OgnExamplePython.py``), rename classes to match, and fill in a no-op ``transfer()`` that always returns ``true``.
+   #. **Rebuild:** ``./build.sh``
+   #. **Verify:** enable your extension in Isaac Sim and confirm the renamed node appears in the Action Graph library.
+
+   For a complete TCP implementation of the same pattern, study ``OgnSimpleSendSimulationClockCpp.cpp`` (or the Python equivalent) in ``source/extensions/isaacsim.examples.ipc/``.
+
 For Python-only extensions (no C++ plugin), omit ``project_ext_plugin``, ``project_ext_bindings``, and all ``includedirs`` / ``links`` entries from ``premake5.lua``. Keep ``add_ogn_dependencies`` (processes ``.ogn`` files and generates ``*Database.py`` modules) and the ``repo_build.prebuild_link`` block:
 
 .. code-block:: lua
@@ -326,12 +351,24 @@ Use Your Nodes in Isaac Sim
 Enable Your Extension and Find Your Nodes
 ------------------------------------------
 
-After building (``./build.sh``), enable your extension in Isaac Sim:
+``./build.sh`` compiles your extension and places the output under ``_build/linux-x86_64/release/exts/<extension_name>/``. Isaac Sim launched from the same repo automatically searches that directory, so no additional path configuration is needed.
+
+Launch Isaac Sim if it is not already running:
+
+.. code-block:: bash
+
+   ./_build/linux-x86_64/release/isaac-sim.sh
+
+Then enable your extension:
 
 #. Open **Window → Extensions**.
 #. Search for your extension name (for example ``isaacsim.my.ipc.nodes``) and enable it.
 
 Your nodes then appear in the Action Graph node library under the category you chose during scaffolding. Use the search box in the node library to find them by name.
+
+.. tip::
+
+   ``isaacsim.examples.ipc`` is a fully working example of this pattern that ships with Isaac Sim. Enable it now and follow the `Building an Example Graph`_ steps below to see the end-to-end IPC workflow before writing any of your own node code.
 
 Building an Example Graph
 --------------------------
@@ -354,9 +391,21 @@ The steps below build the sample graph for ``tcp_tutorial_playback_bridge.py`` u
 
    The default ``uri`` values are ``127.0.0.1:9001`` on the receive node and ``127.0.0.1:9000`` on the send node.
 
-General Action Graph UI is covered in :ref:`isaac_sim_app_tutorial_gui_omnigraph` and in the OmniGraph documentation linked in `Before you start`_.
+#. **Start playback.** Click the **Play** button in the toolbar (or press **Space**) to begin the simulation.
+
+General Action Graph UI is covered in :ref:`isaac_sim_app_tutorial_gui_omnigraph` and in the OmniGraph documentation linked in `Before You Start`_.
 
 Once the graph is wired and playback is running, Receive External Step listens on its URI, the bridge script connects and sends the first step token, and Send Simulation Clock reports the current simulation time back to the script each tick. The script drives the timing loop; Isaac Sim advances one tick per received step.
+
+.. admonition:: Try it: run the bridge with your own node
+
+   Once the reference graph works end-to-end with ``isaacsim.examples.ipc`` nodes, substitute your custom node:
+
+   #. In the graph, delete the ``SimpleSendSimulationClock`` node.
+   #. Add your renamed node from the exercise above.
+   #. Wire it the same way: Receive External Step ``execOut`` → your node ``execIn``, and Isaac Read Simulation Time ``simulationTime`` → your node ``simulationTime``.
+   #. Run the bridge script. Because ``transfer()`` is still a stub that returns ``true`` without sending data, the script will connect but receive no clock output — that is expected. This confirms that your extension loads, enables, and participates in the graph.
+   #. To complete the implementation, add the actual send logic to ``transfer()``. Use ``OgnSimpleSendSimulationClockCpp.cpp`` (or the Python equivalent) in ``source/extensions/isaacsim.examples.ipc/`` as a reference.
 
 External Python Playback Bridge
 --------------------------------
