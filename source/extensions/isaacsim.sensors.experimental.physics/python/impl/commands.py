@@ -245,5 +245,119 @@ class IsaacSensorExperimentalCreateImuSensor(omni.kit.commands.Command):
         """
 
 
+class IsaacSensorExperimentalCreateRaycastSensor(omni.kit.commands.Command):
+    """Command for creating a physics raycast sensor prim.
+
+    Creates an IsaacRaycastSensor prim under the specified parent with
+    configurable ray geometry, range, output frame, and hit prim resolution.
+
+    Args:
+        path: Relative path for the sensor (appended to parent).
+        parent: Parent prim path.
+        min_range: Minimum detection range in stage length units.
+        max_range: Maximum detection range in stage length units.
+        ray_origins: Per-ray origin translations as list of (x,y,z).
+        ray_directions: Per-ray direction vectors as list of (x,y,z).
+        ray_time_offsets: Per-ray time offsets in seconds.
+        output_frame: "SENSOR" or "WORLD".
+        report_hit_prim_paths: Whether to resolve hit prim USD paths.
+        translation: Local translation offset.
+        orientation: Local orientation as quaternion.
+    """
+
+    def __init__(
+        self,
+        path: str = "/Raycast_Sensor",
+        parent: str | None = None,
+        min_range: float = 0.4,
+        max_range: float = 100.0,
+        ray_origins: list | np.ndarray | None = None,
+        ray_directions: list | np.ndarray | None = None,
+        ray_time_offsets: list | np.ndarray | None = None,
+        output_frame: str = "SENSOR",
+        report_hit_prim_paths: bool = False,
+        translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
+        orientation: Gf.Quatd = Gf.Quatd(1, 0, 0, 0),
+    ):
+        for name, value in vars().items():
+            if name != "self":
+                setattr(self, f"_{name}", value)
+        self._prim = None
+
+    def do(self) -> object | None:
+        """Execute the command to create the physics raycast sensor.
+
+        Creates the sensor prim and configures ray geometry, range, output
+        frame, and hit prim path reporting attributes.
+
+        Returns:
+            The created IsaacRaycastSensor prim, or None if creation failed.
+        """
+        if self._parent is None:
+            carb.log_error("Valid parent prim must be selected before creating physics raycast sensor prim.")
+            return None
+
+        if self._ray_origins is not None and self._ray_directions is not None:
+            if len(self._ray_origins) != len(self._ray_directions):
+                carb.log_error(
+                    f"ray_origins length ({len(self._ray_origins)}) != "
+                    f"ray_directions length ({len(self._ray_directions)})"
+                )
+                return None
+
+        if self._ray_origins is not None:
+            num_rays = len(self._ray_origins)
+        elif self._ray_directions is not None:
+            num_rays = len(self._ray_directions)
+        else:
+            num_rays = 1
+
+        if self._ray_time_offsets is not None and len(self._ray_time_offsets) != num_rays:
+            carb.log_error(f"ray_time_offsets length ({len(self._ray_time_offsets)}) != num_rays ({num_rays})")
+            return None
+
+        success, self._prim = omni.kit.commands.execute(
+            "IsaacSensorExperimentalCreatePrim",
+            path=self._path,
+            parent=self._parent,
+            schema_type=IsaacSensorSchema.IsaacRaycastSensor,
+            translation=self._translation,
+            orientation=self._orientation,
+        )
+
+        if success and self._prim:
+            from pxr import Vt
+
+            self._prim.CreateMinRangeAttr(self._min_range)
+            self._prim.CreateMaxRangeAttr(self._max_range)
+
+            if self._ray_origins is not None:
+                origins = Vt.Vec3fArray([(float(o[0]), float(o[1]), float(o[2])) for o in self._ray_origins])
+                self._prim.CreateRayOriginsAttr(origins)
+
+            if self._ray_directions is not None:
+                directions = Vt.Vec3fArray([(float(d[0]), float(d[1]), float(d[2])) for d in self._ray_directions])
+                self._prim.CreateRayDirectionsAttr(directions)
+
+            if self._ray_time_offsets is not None:
+                offsets = Vt.FloatArray([float(t) for t in self._ray_time_offsets])
+                self._prim.CreateRayTimeOffsetsAttr(offsets)
+
+            self._prim.CreateNumRaysAttr(num_rays)
+            self._prim.CreateOutputFrameOfReferenceAttr(self._output_frame)
+            self._prim.CreateReportHitPrimPathsAttr(self._report_hit_prim_paths)
+
+            return self._prim
+        else:
+            carb.log_error("Could not create physics raycast sensor prim")
+            return None
+
+    def undo(self):
+        """Undo the command.
+
+        Note: Prim deletion is handled by IsaacSensorExperimentalCreatePrim.undo().
+        """
+
+
 # Register all command classes in this module with Kit
 omni.kit.commands.register_all_commands_in_module(__name__)

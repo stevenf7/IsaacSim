@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.1.0] - 2026-04-17
+### Added
+- Add `IsaacRaycastSensor` USD schema type, plugInfo entry, sensor tokens, and Python compatibility wrapper
+
 ## [6.0.0] - 2026-04-15
 ### Changed
 - Migrated `rangeSensorSchema` and `isaacSensorSchema` from pre-built C++ typed schema libraries (`omni-isaacsim-schema` packman package) to codeless USD schemas

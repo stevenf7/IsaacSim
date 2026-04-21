@@ -1,8 +1,8 @@
 [package]
-version = "1.4.1"
+version = "1.5.0"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor OmniGraph Nodes"
-description = "OmniGraph nodes for Isaac Sim physics-based sensors (Contact, Effort, IMU, Joint State). Depends on isaacsim.sensors.experimental.physics for sensor backends."
+description = "OmniGraph nodes for Isaac Sim physics-based sensors (Contact, Effort, IMU, Joint State, Raycast). Depends on isaacsim.sensors.experimental.physics for sensor backends."
 authors = ["hmazhar@nvidia.com", "stevfeng@nvidia.com", "adevalla@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.physics.nodes"
 keywords = ["isaac", "physics", "robotics", "omniGraph", "nodes"]
@@ -50,6 +50,8 @@ stdoutFailPatterns.exclude = [
     '*[Error] [omni.graph.core.plugin]*Invalid Imu sensor prim*',
     '*[Error] [omni.graph.core.plugin]*Failed to create IMU sensor*',
     '*[Error] [omni.graph.core.plugin]*Failed to create joint state sensor*',
+    '*[Error] [omni.graph.core.plugin]*Invalid*raycast sensor prim*',
+    '*[Error] [omni.graph.core.plugin]*Failed to create raycast sensor*',
     '*[Error] [isaacsim.sensors.experimental.physics.impl.commands] Valid parent prim must be selected before creating contact sensor prim.*',
     '*[Error] [isaacsim.sensors.physics.plugin] Imu Sensor does not exist*',
     '*[Error] [isaacsim.sensors.physics.plugin] Contact Sensor does not exist*',

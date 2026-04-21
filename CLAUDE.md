@@ -52,17 +52,20 @@ Claude Code's sandbox needs GPU device access and network/filesystem allowlists 
 
 ## Building
 
-| Target | Command |
-|--------|---------|
-| C++ + extensions | `./build.sh --no-docker` |
-| Docs | `./tools/build_docs.sh` |
+| Target | Command (internal) | Command (external/no-docker) |
+|--------|-------------------|-------------------------------|
+| C++ + extensions | `./build.sh` | `./build.sh --no-docker` |
+| Docs | `./tools/build_docs.sh` | `./tools/build_docs.sh` |
+
+Internal (NVIDIA) builds use linbuild (Docker-based) by default — omit `--no-docker`.
+External / open-source builds pass `--no-docker` since linbuild is not available.
 
 On machines with many cores, add `-j12` to avoid OOM:
 ```bash
-./build.sh --no-docker -j12
+./build.sh -j12
 ```
 
-> **Sandbox note:** Docker (`linbuild`) does not work inside the Claude Code sandbox. If asked to build with Docker, run the command outside of sandbox mode.
+> **Sandbox note:** Docker (`linbuild`) does not work inside the Claude Code sandbox. When building inside the sandbox, use `--no-docker`.
 
 ---
 
@@ -82,3 +85,4 @@ Headless (no display required):
 - **Packman cache** lives at `~/.cache/packman` (outside the repo). It is sandbox-allowlisted so builds can download packages.
 - **Extension cache** lives at `~/.local/share/ov` and `~/.nvidia-omniverse`. Both are sandbox-allowlisted.
 - Verify GPU is visible inside the sandbox at any time: `nvidia-smi`
+

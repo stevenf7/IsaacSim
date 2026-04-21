@@ -1,5 +1,5 @@
 [package]
-version = "1.1.1"
+version = "1.2.0"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation Examples"
 description = "Isaac Sim Physics Sensor Simulation Examples extension provides example usage and snippets for Isaac Sim physics-based sensors."
@@ -17,7 +17,9 @@ writeTarget.kit = true
 "isaacsim.examples.browser" = {}
 "isaacsim.gui.components" = {}
 "isaacsim.sensors.experimental.physics" = {}
+"isaacsim.sensors.physics.nodes" = {}
 "isaacsim.storage.native" = {}
+"isaacsim.util.debug_draw" = {}
 
 [[python.module]]
 name = "isaacsim.sensors.physics.examples"
@@ -27,6 +29,12 @@ name = "isaacsim.sensors.physics.examples.contact_sensor"
 
 [[python.module]]
 name = "isaacsim.sensors.physics.examples.imu_sensor"
+
+[[python.module]]
+name = "isaacsim.sensors.physics.examples.raycast_sensor"
+
+[[python.module]]
+name = "isaacsim.sensors.physics.examples.tests"
 
 [[test]]
 name = "startup"

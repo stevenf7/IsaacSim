@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2026-04-17
+### Added
+- Add menu items for creating solid state, rotating, and beam curtain raycast sensors
+
 ## [1.1.1] - 2026-04-09
 ### Removed
 - Remove the `omni.isaac.ml_archive` dependency

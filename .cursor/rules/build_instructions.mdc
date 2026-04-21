@@ -38,12 +38,19 @@ git lfs install
 ## Build Commands
 
 ### Basic Build
+
+**Internal (NVIDIA) builds** use linbuild (Docker-based). Omit the `--no-docker` flag:
 ```bash
 # Linux - builds both debug and release configurations
 ./build.sh
 
 # Windows
 build.bat
+```
+
+**External / open-source builds** cannot use linbuild. Pass `--no-docker`:
+```bash
+./build.sh --no-docker
 ```
 
 ### Build Configurations

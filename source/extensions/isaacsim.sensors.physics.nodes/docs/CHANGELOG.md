@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.0] - 2026-04-17
+### Added
+- Add Isaac Read Raycast Sensor OmniGraph node
+
 ## [1.4.1] - 2026-04-09
 ### Removed
 - Remove the `omni.isaac.ml_archive` dependency

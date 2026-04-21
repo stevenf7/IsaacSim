@@ -38,4 +38,5 @@ The physics-based sensors are organized in the `isaacsim.sensors.physics` extens
     ./isaacsim_sensors_physics_effort
     ./isaacsim_sensors_physics_imu
     ./isaacsim_sensors_physics_proximity
+    ./isaacsim_sensors_physics_raycast
 

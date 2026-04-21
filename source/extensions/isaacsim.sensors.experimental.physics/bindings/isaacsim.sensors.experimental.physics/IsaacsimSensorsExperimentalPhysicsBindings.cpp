@@ -18,6 +18,7 @@
 #include <isaacsim/sensors/experimental/physics/IEffortSensor.h>
 #include <isaacsim/sensors/experimental/physics/IImuSensor.h>
 #include <isaacsim/sensors/experimental/physics/IJointStateSensor.h>
+#include <isaacsim/sensors/experimental/physics/IRaycastSensor.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
@@ -226,6 +227,101 @@ PYBIND11_MODULE(_physics_sensors, m)
             "get_sensor_reading",
             [](IJointStateSensor& self, const std::string& articulationRootPath)
             { return self.getSensorReading(articulationRootPath.c_str()); },
+            py::arg("prim_path"));
+
+    // --- Raycast sensor ---
+    py::class_<RaycastSensorReading>(m, "RaycastSensorReading")
+        .def(py::init<>())
+        .def_readonly("ray_count", &RaycastSensorReading::rayCount)
+        .def_readonly("time", &RaycastSensorReading::time)
+        .def_readonly("is_valid", &RaycastSensorReading::isValid)
+        .def_property_readonly("depths",
+                               [](const RaycastSensorReading& r) -> py::array_t<float>
+                               {
+                                   if (!r.depths || r.rayCount == 0)
+                                   {
+                                       return py::array_t<float>({ 0 });
+                                   }
+                                   py::array_t<float> arr({ static_cast<py::ssize_t>(r.rayCount) });
+                                   std::copy(r.depths, r.depths + r.rayCount, arr.mutable_data());
+                                   return arr;
+                               })
+        .def_property_readonly(
+            "hit_positions",
+            [](const RaycastSensorReading& r) -> py::array_t<float>
+            {
+                if (!r.hitPositions || r.rayCount == 0)
+                {
+                    return py::array_t<float>(std::vector<py::ssize_t>{ 0, 3 });
+                }
+                py::array_t<float> arr({ static_cast<py::ssize_t>(r.rayCount), static_cast<py::ssize_t>(3) });
+                std::copy(r.hitPositions, r.hitPositions + r.rayCount * 3, arr.mutable_data());
+                return arr;
+            })
+        .def_property_readonly(
+            "hit_normals",
+            [](const RaycastSensorReading& r) -> py::array_t<float>
+            {
+                if (!r.hitNormals || r.rayCount == 0)
+                {
+                    return py::array_t<float>(std::vector<py::ssize_t>{ 0, 3 });
+                }
+                py::array_t<float> arr({ static_cast<py::ssize_t>(r.rayCount), static_cast<py::ssize_t>(3) });
+                std::copy(r.hitNormals, r.hitNormals + r.rayCount * 3, arr.mutable_data());
+                return arr;
+            })
+        .def_property_readonly("hit_prim_paths",
+                               [](const RaycastSensorReading& r) -> py::list
+                               {
+                                   py::list result;
+                                   if (r.hitPrimPaths && r.rayCount > 0)
+                                   {
+                                       for (uint32_t i = 0; i < r.rayCount; i++)
+                                       {
+                                           result.append(py::str(r.hitPrimPaths[i] ? r.hitPrimPaths[i] : ""));
+                                       }
+                                   }
+                                   return result;
+                               })
+        .def_property_readonly(
+            "ray_origins_world",
+            [](const RaycastSensorReading& r) -> py::array_t<float>
+            {
+                if (!r.rayOriginsWorld || r.rayCount == 0)
+                {
+                    return py::array_t<float>(std::vector<py::ssize_t>{ 0, 3 });
+                }
+                py::array_t<float> arr({ static_cast<py::ssize_t>(r.rayCount), static_cast<py::ssize_t>(3) });
+                std::copy(r.rayOriginsWorld, r.rayOriginsWorld + r.rayCount * 3, arr.mutable_data());
+                return arr;
+            })
+        .def_property_readonly(
+            "ray_end_points_world",
+            [](const RaycastSensorReading& r) -> py::array_t<float>
+            {
+                if (!r.rayEndPointsWorld || r.rayCount == 0)
+                {
+                    return py::array_t<float>(std::vector<py::ssize_t>{ 0, 3 });
+                }
+                py::array_t<float> arr({ static_cast<py::ssize_t>(r.rayCount), static_cast<py::ssize_t>(3) });
+                std::copy(r.rayEndPointsWorld, r.rayEndPointsWorld + r.rayCount * 3, arr.mutable_data());
+                return arr;
+            });
+
+    carb::defineInterfaceClass<IRaycastSensor>(
+        m, "IRaycastSensor", "acquire_raycast_sensor_interface", "release_raycast_sensor_interface")
+        .def("shutdown", &IRaycastSensor::shutdown)
+        .def(
+            "create_sensor",
+            [](IRaycastSensor& self, const std::string& primPath) { return self.createSensor(primPath.c_str()); },
+            py::arg("prim_path"))
+        .def(
+            "remove_sensor",
+            [](IRaycastSensor& self, const std::string& primPath) { self.removeSensor(primPath.c_str()); },
+            py::arg("prim_path"))
+        .def(
+            "get_sensor_reading",
+            [](IRaycastSensor& self, const std::string& primPath) { return self.getSensorReading(primPath.c_str()); },
             py::arg("prim_path"));
 }
 

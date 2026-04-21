@@ -68,4 +68,16 @@ inline const pxr::TfToken kCurtainLengthAttr{ "curtainLength" };
 inline const pxr::TfToken kForwardAxisAttr{ "forwardAxis" };
 inline const pxr::TfToken kCurtainAxisAttr{ "curtainAxis" };
 
+// IsaacRaycastSensor type
+inline const pxr::TfToken kIsaacRaycastSensorType{ "IsaacRaycastSensor" };
+
+// IsaacRaycastSensor attributes
+inline const pxr::TfToken kRayOriginsAttr{ "rayOrigins" };
+inline const pxr::TfToken kRayDirectionsAttr{ "rayDirections" };
+inline const pxr::TfToken kRayTimeOffsetsAttr{ "rayTimeOffsets" };
+inline const pxr::TfToken kOutputFrameOfReferenceAttr{ "outputFrameOfReference" };
+inline const pxr::TfToken kReportHitPrimPathsAttr{ "reportHitPrimPaths" };
+inline const pxr::TfToken kOutputFrameSensor{ "SENSOR" };
+inline const pxr::TfToken kOutputFrameWorld{ "WORLD" };
+
 } // namespace isaacsim::robot::schema::sensors

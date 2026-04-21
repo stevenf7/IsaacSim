@@ -31,3 +31,5 @@ from .imu_sensor_backend import ImuSensorBackend as ImuSensorBackend
 from .joint_state_sensor import JointStateSensor as JointStateSensor
 from .joint_state_sensor import JointStateSensorReading as JointStateSensorReading
 from .joint_state_sensor_backend import JointStateSensorBackend as JointStateSensorBackend
+from .raycast_sensor import RaycastSensor as RaycastSensor
+from .raycast_sensor_backend import RaycastSensorBackend as RaycastSensorBackend

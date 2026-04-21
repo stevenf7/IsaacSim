@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.0] - 2026-04-17
+### Added
+- Add Raycast Sensor C++ implementation, Python bindings, backend, commands, and examples
+
 ## [2.3.4] - 2026-04-15
 ### Changed
 - Fix test failure after moving to codeless USD schemas
