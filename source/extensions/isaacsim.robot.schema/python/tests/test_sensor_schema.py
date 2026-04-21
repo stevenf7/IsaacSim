@@ -137,6 +137,10 @@ class TestIsaacSensorSchemaRegistration(omni.kit.test.AsyncTestCase):
         tf_type = Tf.Type.FindByName("IsaacSensorIsaacLightBeamSensor")
         self.assertFalse(tf_type.isUnknown, "TfType 'IsaacSensorIsaacLightBeamSensor' not found")
 
+    def test_raycast_sensor_tf_type(self):
+        tf_type = Tf.Type.FindByName("IsaacSensorIsaacRaycastSensor")
+        self.assertFalse(tf_type.isUnknown, "TfType 'IsaacSensorIsaacRaycastSensor' not found")
+
     def test_rtx_lidar_api_tf_type(self):
         tf_type = Tf.Type.FindByName("IsaacSensorIsaacRtxLidarSensorAPI")
         self.assertFalse(tf_type.isUnknown, "TfType 'IsaacSensorIsaacRtxLidarSensorAPI' not found")
@@ -162,6 +166,11 @@ class TestIsaacSensorSchemaRegistration(omni.kit.test.AsyncTestCase):
         self.assertTrue(prim.IsValid())
         self.assertEqual(prim.GetTypeName(), "IsaacLightBeamSensor")
 
+    def test_define_raycast_sensor(self):
+        prim = self._stage.DefinePrim("/TestRaycast", "IsaacRaycastSensor")
+        self.assertTrue(prim.IsValid())
+        self.assertEqual(prim.GetTypeName(), "IsaacRaycastSensor")
+
     # -- Fallback attribute values -------------------------------------------
 
     def test_contact_sensor_fallback_threshold(self):
@@ -186,6 +195,47 @@ class TestIsaacSensorSchemaRegistration(omni.kit.test.AsyncTestCase):
 
     def test_contact_sensor_is_xformable(self):
         prim = self._stage.DefinePrim("/TestContact", "IsaacContactSensor")
+        self.assertTrue(prim.IsA(UsdGeom.Xformable))
+
+    # -- IsaacRaycastSensor fallback values -----------------------------------
+
+    def test_raycast_sensor_fallback_min_range(self):
+        prim = self._stage.DefinePrim("/TestRaycast", "IsaacRaycastSensor")
+        self.assertAlmostEqual(prim.GetAttribute("minRange").Get(), 0.4, places=5)
+
+    def test_raycast_sensor_fallback_max_range(self):
+        prim = self._stage.DefinePrim("/TestRaycast", "IsaacRaycastSensor")
+        self.assertAlmostEqual(prim.GetAttribute("maxRange").Get(), 100.0, places=5)
+
+    def test_raycast_sensor_fallback_ray_origins(self):
+        prim = self._stage.DefinePrim("/TestRaycast", "IsaacRaycastSensor")
+        val = prim.GetAttribute("rayOrigins").Get()
+        self.assertEqual(len(val), 0)
+
+    def test_raycast_sensor_fallback_ray_directions(self):
+        prim = self._stage.DefinePrim("/TestRaycast", "IsaacRaycastSensor")
+        val = prim.GetAttribute("rayDirections").Get()
+        self.assertEqual(len(val), 0)
+
+    def test_raycast_sensor_fallback_ray_time_offsets(self):
+        prim = self._stage.DefinePrim("/TestRaycast", "IsaacRaycastSensor")
+        val = prim.GetAttribute("rayTimeOffsets").Get()
+        self.assertEqual(len(val), 0)
+
+    def test_raycast_sensor_fallback_output_frame(self):
+        prim = self._stage.DefinePrim("/TestRaycast", "IsaacRaycastSensor")
+        self.assertEqual(prim.GetAttribute("outputFrameOfReference").Get(), "SENSOR")
+
+    def test_raycast_sensor_fallback_report_hit_prim_paths(self):
+        prim = self._stage.DefinePrim("/TestRaycast", "IsaacRaycastSensor")
+        self.assertEqual(prim.GetAttribute("reportHitPrimPaths").Get(), False)
+
+    def test_raycast_sensor_inherits_enabled(self):
+        prim = self._stage.DefinePrim("/TestRaycast", "IsaacRaycastSensor")
+        self.assertEqual(prim.GetAttribute("enabled").Get(), True)
+
+    def test_raycast_sensor_is_xformable(self):
+        prim = self._stage.DefinePrim("/TestRaycast", "IsaacRaycastSensor")
         self.assertTrue(prim.IsA(UsdGeom.Xformable))
 
     # -- API schema application -----------------------------------------------
@@ -277,6 +327,7 @@ class TestIsaacSensorSchemaCompatWrapper(omni.kit.test.AsyncTestCase):
         self.assertTrue(hasattr(ISS, "IsaacContactSensor"))
         self.assertTrue(hasattr(ISS, "IsaacImuSensor"))
         self.assertTrue(hasattr(ISS, "IsaacLightBeamSensor"))
+        self.assertTrue(hasattr(ISS, "IsaacRaycastSensor"))
         self.assertTrue(hasattr(ISS, "IsaacRtxLidarSensorAPI"))
         self.assertTrue(hasattr(ISS, "IsaacRtxRadarSensorAPI"))
 
@@ -331,6 +382,45 @@ class TestIsaacSensorSchemaCompatWrapper(omni.kit.test.AsyncTestCase):
         prim = self._stage.DefinePrim("/TestCam", "Camera")
         ISS.IsaacRtxRadarSensorAPI.Apply(prim)
         self.assertIn("IsaacRtxRadarSensorAPI", prim.GetAppliedSchemas())
+
+    def test_raycast_sensor_define(self):
+        import omni.isaac.IsaacSensorSchema as ISS
+
+        sensor = ISS.IsaacRaycastSensor.Define(self._stage, "/TestRaycast")
+        prim = sensor.GetPrim()
+        self.assertTrue(prim.IsValid())
+        self.assertEqual(prim.GetTypeName(), "IsaacRaycastSensor")
+
+    def test_raycast_sensor_create_and_get_attrs(self):
+        import omni.isaac.IsaacSensorSchema as ISS
+
+        sensor = ISS.IsaacRaycastSensor.Define(self._stage, "/TestRaycast")
+        sensor.CreateMinRangeAttr(0.1)
+        self.assertAlmostEqual(sensor.GetMinRangeAttr().Get(), 0.1, places=5)
+        sensor.CreateMaxRangeAttr(50.0)
+        self.assertAlmostEqual(sensor.GetMaxRangeAttr().Get(), 50.0, places=5)
+
+    def test_raycast_sensor_array_attrs(self):
+        import omni.isaac.IsaacSensorSchema as ISS
+        from pxr import Gf, Vt
+
+        sensor = ISS.IsaacRaycastSensor.Define(self._stage, "/TestRaycast")
+        origins = Vt.Vec3fArray([(0, 0, 0), (0, 0.1, 0)])
+        sensor.CreateRayOriginsAttr(origins)
+        result = sensor.GetRayOriginsAttr().Get()
+        self.assertEqual(len(result), 2)
+
+        directions = Vt.Vec3fArray([(1, 0, 0), (1, 0.1, 0)])
+        sensor.CreateRayDirectionsAttr(directions)
+        result = sensor.GetRayDirectionsAttr().Get()
+        self.assertEqual(len(result), 2)
+
+    def test_raycast_sensor_output_frame_attr(self):
+        import omni.isaac.IsaacSensorSchema as ISS
+
+        sensor = ISS.IsaacRaycastSensor.Define(self._stage, "/TestRaycast")
+        sensor.CreateOutputFrameOfReferenceAttr("WORLD")
+        self.assertEqual(sensor.GetOutputFrameOfReferenceAttr().Get(), "WORLD")
 
     def test_wrap_existing_prim(self):
         import omni.isaac.IsaacSensorSchema as ISS

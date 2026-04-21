@@ -12,6 +12,7 @@ Python API
     IsaacSensorExperimentalCreatePrim
     IsaacSensorExperimentalCreateContactSensor
     IsaacSensorExperimentalCreateImuSensor
+    IsaacSensorExperimentalCreateRaycastSensor
 
 .. rubric:: *Sensors*
 .. autosummary::
@@ -21,6 +22,8 @@ Python API
     EffortSensorReading
     EffortSensor
     IMUSensor
+    RaycastSensor
+    RaycastSensorBackend
 
 |
 
@@ -44,6 +47,13 @@ Commands
     :exclude-members: do, undo
 
 .. autoclass:: isaacsim.sensors.experimental.physics.IsaacSensorExperimentalCreateImuSensor
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+    :exclude-members: do, undo
+
+.. autoclass:: isaacsim.sensors.experimental.physics.IsaacSensorExperimentalCreateRaycastSensor
     :members:
     :undoc-members:
     :inherited-members:
@@ -74,6 +84,18 @@ Sensors
     :show-inheritance:
 
 .. autoclass:: isaacsim.sensors.experimental.physics.IMUSensor
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.sensors.experimental.physics.RaycastSensor
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.sensors.experimental.physics.RaycastSensorBackend
     :members:
     :undoc-members:
     :inherited-members:

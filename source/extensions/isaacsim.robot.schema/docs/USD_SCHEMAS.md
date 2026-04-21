@@ -121,6 +121,33 @@
   Maximum range for sensor to detect a hit
 
 
+### IsaacRaycastSensor
+
+#### numRays
+  Number of rays cast by this sensor (unsigned int, authoritative count)
+
+#### minRange
+  Minimum range for sensor to detect a hit, in stage length units
+
+#### maxRange
+  Maximum range for sensor to detect a hit, in stage length units
+
+#### rayOrigins
+  Per-ray origin translations in the sensor's local coordinate frame
+
+#### rayDirections
+  Per-ray cast direction vectors in the sensor's local coordinate frame
+
+#### rayTimeOffsets
+  Per-ray time offsets in seconds, relative to the current simulation time
+
+#### outputFrameOfReference
+  Coordinate frame for hit positions and hit normals ('SENSOR' or 'WORLD')
+
+#### reportHitPrimPaths
+  When true, the sensor reading includes the USD prim path of each hit surface
+
+
 ## robot_schema
 
 ### IsaacRobotAPI

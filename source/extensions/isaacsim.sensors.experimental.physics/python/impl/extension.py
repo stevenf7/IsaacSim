@@ -34,6 +34,7 @@ __all__ = [
     "get_contact_sensor_interface",
     "get_effort_sensor_interface",
     "get_joint_state_sensor_interface",
+    "get_raycast_sensor_interface",
 ]
 
 EXTENSION_NAME = "Isaac Sensor"
@@ -42,6 +43,7 @@ _imu_interface = None
 _contact_sensor_interface = None
 _effort_sensor_interface = None
 _joint_state_interface = None
+_raycast_sensor_interface = None
 
 
 def get_imu_sensor_interface() -> object | None:
@@ -80,6 +82,15 @@ def get_joint_state_sensor_interface() -> object | None:
     return _joint_state_interface
 
 
+def get_raycast_sensor_interface() -> object | None:
+    """Get the cached IRaycastSensor Carbonite interface.
+
+    Returns:
+        The IRaycastSensor interface, or None if not yet acquired.
+    """
+    return _raycast_sensor_interface
+
+
 class Extension(omni.ext.IExt):
     """Omniverse extension class for physics-based sensors.
 
@@ -94,7 +105,7 @@ class Extension(omni.ext.IExt):
         Args:
             ext_id: Extension identifier provided by the extension manager.
         """
-        global _imu_interface, _contact_sensor_interface, _effort_sensor_interface, _joint_state_interface
+        global _imu_interface, _contact_sensor_interface, _effort_sensor_interface, _joint_state_interface, _raycast_sensor_interface
 
         _SensorStepManager.instance()
 
@@ -130,14 +141,28 @@ class Extension(omni.ext.IExt):
             carb.log_warn(f"Failed to acquire IJointStateSensor C++ interface: {e}")
             _joint_state_interface = None
 
+        try:
+            from .. import _physics_sensors
+
+            _raycast_sensor_interface = _physics_sensors.acquire_raycast_sensor_interface()
+        except Exception as e:
+            carb.log_warn(f"Failed to acquire IRaycastSensor C++ interface: {e}")
+            _raycast_sensor_interface = None
+
     def on_shutdown(self) -> None:
         """Clean up resources when the extension is unloaded."""
-        global _imu_interface, _contact_sensor_interface, _effort_sensor_interface, _joint_state_interface
+        global _imu_interface, _contact_sensor_interface, _effort_sensor_interface, _joint_state_interface, _raycast_sensor_interface
 
         try:
             from .. import _physics_sensors
         except Exception:
             _physics_sensors = None
+
+        if _raycast_sensor_interface is not None:
+            _raycast_sensor_interface.shutdown()
+            if _physics_sensors is not None:
+                _physics_sensors.release_raycast_sensor_interface(_raycast_sensor_interface)
+            _raycast_sensor_interface = None
 
         if _joint_state_interface is not None:
             _joint_state_interface.shutdown()

@@ -1,8 +1,8 @@
 [package]
-version = "2.3.4"
+version = "2.4.0"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation"
-description = "Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, & IMU Sensor."
+description = "Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, IMU Sensor, & Raycast Sensor."
 authors = ["hmazhar@nvidia.com", "stevfeng@nvidia.com", "adevalla@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.experimental.physics"
 keywords = ["isaac", "physics", "robotics"]
@@ -53,6 +53,11 @@ stdoutFailPatterns.exclude = [
     '*[Error] [isaacsim.sensors.physics.plugin] Contact Sensor does not exist*',
     '*parent prim is missing contact report API*',
     '*The NumPy module was reloaded*',
+    '*[Error] [isaacsim.sensors.experimental.physics.plugin] IsaacRaycastSensor*numRays*Sensor disabled*',
+    '*[Error] [isaacsim.sensors.experimental.physics.plugin] IsaacRaycastSensor*rayOrigins length*numRays*Sensor disabled*',
+    '*[Error] [isaacsim.sensors.experimental.physics.plugin] IsaacRaycastSensor*rayDirections length*numRays*Sensor disabled*',
+    '*[Error] [isaacsim.sensors.experimental.physics.plugin] IsaacRaycastSensor*rayTimeOffsets length*numRays*Sensor disabled*',
+    '*[Error] [isaacsim.sensors.experimental.physics.plugin] IsaacRaycastSensor*minRange*maxRange*Sensor disabled*',
 ]
 args = [
     "--enable",
@@ -117,6 +122,11 @@ stdoutFailPatterns.exclude = [
     '*[Error] [isaacsim.sensors.physics.plugin] Contact Sensor does not exist*',
     '*parent prim is missing contact report API*',
     '*The NumPy module was reloaded*',
+    '*[Error] [isaacsim.sensors.experimental.physics.plugin] IsaacRaycastSensor*numRays*Sensor disabled*',
+    '*[Error] [isaacsim.sensors.experimental.physics.plugin] IsaacRaycastSensor*rayOrigins length*numRays*Sensor disabled*',
+    '*[Error] [isaacsim.sensors.experimental.physics.plugin] IsaacRaycastSensor*rayDirections length*numRays*Sensor disabled*',
+    '*[Error] [isaacsim.sensors.experimental.physics.plugin] IsaacRaycastSensor*rayTimeOffsets length*numRays*Sensor disabled*',
+    '*[Error] [isaacsim.sensors.experimental.physics.plugin] IsaacRaycastSensor*minRange*maxRange*Sensor disabled*',
 ]
 
 args = [

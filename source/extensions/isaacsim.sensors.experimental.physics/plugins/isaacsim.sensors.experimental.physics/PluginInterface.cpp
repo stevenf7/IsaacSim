@@ -18,6 +18,7 @@
 #include "EffortSensorImpl.h"
 #include "ImuSensorImpl.h"
 #include "JointStateSensorImpl.h"
+#include "RaycastSensorImpl.h"
 
 #include <carb/PluginUtils.h>
 
@@ -36,7 +37,8 @@ CARB_PLUGIN_IMPL(g_kPluginDesc,
                  isaacsim::sensors::experimental::physics::ImuSensorImpl,
                  isaacsim::sensors::experimental::physics::ContactSensorImpl,
                  isaacsim::sensors::experimental::physics::EffortSensorImpl,
-                 isaacsim::sensors::experimental::physics::JointStateSensorImpl)
+                 isaacsim::sensors::experimental::physics::JointStateSensorImpl,
+                 isaacsim::sensors::experimental::physics::RaycastSensorImpl)
 
 void fillInterface(isaacsim::sensors::experimental::physics::ImuSensorImpl& iface)
 {
@@ -54,6 +56,11 @@ void fillInterface(isaacsim::sensors::experimental::physics::EffortSensorImpl& i
 }
 
 void fillInterface(isaacsim::sensors::experimental::physics::JointStateSensorImpl& iface)
+{
+    (void)iface;
+}
+
+void fillInterface(isaacsim::sensors::experimental::physics::RaycastSensorImpl& iface)
 {
     (void)iface;
 }
