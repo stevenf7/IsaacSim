@@ -45,6 +45,8 @@ class DataLogger:
             current_time: Time in seconds corresponding to the data collected.
 
         """
+        if self._pause:
+            return
         self._data_frames.append(DataFrame(current_time_step=current_time_step, current_time=current_time, data=data))
         return
 
@@ -132,7 +134,6 @@ class DataLogger:
         """
         self._pause = True
         self._data_frames = []
-        self._data_frame_logging_func = None
         with open(log_path) as json_file:
             json_data = json.load(json_file)
             data_frames = json_data["Isaac Sim Data"]

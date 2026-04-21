@@ -1,4 +1,10 @@
 # Changelog
+## [8.2.7] - 2026-04-20
+### Fixed
+- Fix `ArticulationKinematicsSolver.compute_end_effector_pose` missing return after `carb.log_error` (crashes with None joint positions)
+- Fix `ArticulationKinematicsSolver.compute_inverse_kinematics` missing return after `carb.log_error` (crashes with None warm start)
+- Fix `ArticulationKinematicsSolver.set_end_effector_frame` missing return after `carb.log_error` (sets invalid frame name)
+
 ## [8.2.6] - 2026-04-20
 ### Fixed
 - Fix `test_motion_policy.py` on windows and increase timeout for test

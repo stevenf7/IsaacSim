@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.11.3] - 2026-04-19
+### Fixed
+- Fix `SingleArticulation.initialize` initializing `ArticulationController` before `ArticulationView` (controller receives uninitialized view)
+
 ## [0.11.2] - 2026-04-19
 ### Fixed
 - Fix `RigidPrim.get_linear_velocities` UnboundLocalError when `clone=False` (used wrong variable name)

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.3] - 2026-04-20
+### Fixed
+- Fix `OgnWritePhysicsArticulationView` `KeyError` when randomizing tendon attributes on robots with no fixed tendons
+
 ## [1.2.2] - 2026-04-18
 ### Changed
 - Added return type annotations, imperative-mood docstrings, and `__all__` definitions

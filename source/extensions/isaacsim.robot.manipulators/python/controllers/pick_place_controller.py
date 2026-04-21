@@ -80,8 +80,8 @@ class PickPlaceController(BaseController):
                 raise Exception("events dt need to be list or numpy array")
             elif isinstance(self._events_dt, np.ndarray):
                 self._events_dt = self._events_dt.tolist()
-            if len(self._events_dt) > 10:
-                raise Exception("events dt length must be less than 10")
+            if len(self._events_dt) != 10:
+                raise Exception(f"events_dt must have exactly 10 entries (one per phase), got {len(self._events_dt)}")
         self._cspace_controller = cspace_controller
         self._gripper = gripper
         self._pause = False
@@ -281,8 +281,8 @@ class PickPlaceController(BaseController):
                 raise Exception("event velocities need to be list or numpy array")
             elif isinstance(self._events_dt, np.ndarray):
                 self._events_dt = self._events_dt.tolist()
-            if len(self._events_dt) > 10:
-                raise Exception("events dt length must be less than 10")
+            if len(self._events_dt) != 10:
+                raise Exception(f"events_dt must have exactly 10 entries (one per phase), got {len(self._events_dt)}")
         return
 
     def is_done(self) -> bool:

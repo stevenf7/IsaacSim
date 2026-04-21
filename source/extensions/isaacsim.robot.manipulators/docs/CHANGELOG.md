@@ -1,4 +1,8 @@
 # Changelog
+## [3.4.3] - 2026-04-19
+### Fixed
+- Fix `PickPlaceController.__init__` and `reset` accepting `events_dt` with fewer than 10 entries (causes IndexError at runtime)
+
 ## [3.4.2] - 2026-04-17
 ### Fixed
 - Add None guard in `ParallelGripper.post_reset` to prevent crash when called before `initialize()`

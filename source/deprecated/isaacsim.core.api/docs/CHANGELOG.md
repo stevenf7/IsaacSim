@@ -1,5 +1,10 @@
 # Changelog
 
+## [5.2.4] - 2026-04-19
+### Fixed
+- Fix `DataLogger.load` silently clearing the registered data logging function (inconsistent with `reset`)
+- Fix `DataLogger.add_data` ignoring `pause` flag (appended frames unconditionally)
+
 ## [5.2.3] - 2026-04-18
 ### Fixed
 - Fix `ArticulationController.apply_action` raising `RuntimeError` when called before `initialize()` (6034969)

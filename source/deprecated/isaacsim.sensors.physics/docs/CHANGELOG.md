@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.4] - 2026-04-19
+### Fixed
+- Fix `IMUSensor.__init__` `UnboundLocalError` when no PhysicsScene exists on stage
+- Fix `ContactSensor.__init__` `UnboundLocalError` when no PhysicsScene exists on stage
+
 ## [1.1.3] - 2026-04-17
 ### Fixed
 - Fix `EffortSensor.change_buffer_size` creating aliased object references via `np.resize` on object-dtype array

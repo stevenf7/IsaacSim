@@ -67,6 +67,7 @@ class ArticulationKinematicsSolver:
             carb.log_error(
                 "Attempted to compute forward kinematics for an uninitialized robot Articulation. Cannot get joint positions"
             )
+            return None, None
 
         return self._kinematics_solver.compute_forward_kinematics(
             self._ee_frame, joint_positions, position_only=position_only
@@ -101,6 +102,7 @@ class ArticulationKinematicsSolver:
             carb.log_error(
                 "Attempted to compute inverse kinematics for an uninitialized robot Articulation.  Cannot get joint positions"
             )
+            return None, False
 
         ik_result, succ = self._kinematics_solver.compute_inverse_kinematics(
             self._ee_frame, target_position, target_orientation, warm_start, position_tolerance, orientation_tolerance
@@ -117,10 +119,9 @@ class ArticulationKinematicsSolver:
             end_effector_frame_name: Name of the robot end effector frame.
         """
         if end_effector_frame_name not in self._kinematics_solver.get_all_frame_names():
-            carb.log_error(
-                "Frame name"
-                + end_effector_frame_name
-                + " not recognized by KinematicsSolver.  Use KinematicsSolver.get_all_frame_names() to get a list of valid frames"
+            raise ValueError(
+                f"Frame name '{end_effector_frame_name}' not recognized by KinematicsSolver. "
+                f"Valid frames: {self._kinematics_solver.get_all_frame_names()}"
             )
 
         self._ee_frame = end_effector_frame_name

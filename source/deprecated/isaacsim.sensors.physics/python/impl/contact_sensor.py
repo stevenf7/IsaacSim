@@ -103,9 +103,13 @@ class ContactSensor(BaseSensor):
             if radius is None:
                 radius = -1
             if dt is None:
+                current_physics_prim = None
                 for prim in traverse_stage():
                     if prim.HasAPI(PhysxSchema.PhysxSceneAPI):
                         current_physics_prim = prim
+                        break
+                if current_physics_prim is None:
+                    raise ValueError("No PhysicsScene found on stage. Cannot determine default dt for ContactSensor.")
                 physx_scene_api = PhysxSchema.PhysxSceneAPI(current_physics_prim)
                 current_physics_frequency = physx_scene_api.GetTimeStepsPerSecondAttr().Get()
                 dt = 1.0 / current_physics_frequency
