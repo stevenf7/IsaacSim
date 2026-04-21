@@ -19,11 +19,12 @@
 from typing import List
 
 import carb
+import isaacsim.core.experimental.utils.prim as prim_utils
+import isaacsim.core.experimental.utils.transform as transform_utils
+import isaacsim.core.experimental.utils.xform as xform_utils
 import numpy as np
 import omni
-from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
-from isaacsim.core.utils.prims import get_prim_at_path
-from isaacsim.core.utils.xforms import get_world_pose
+import warp as wp
 from pxr import PhysxSchema, Sdf, Usd, UsdPhysics
 
 
@@ -42,21 +43,28 @@ def move_rb_subframe_to_position(
     """
     # Get position of rb_xform as `a`
     a_trans, a_orient = rb_xform_view.get_world_poses()
+    if isinstance(a_trans, wp.array):
+        a_trans = a_trans.numpy()
+    if isinstance(a_orient, wp.array):
+        a_orient = a_orient.numpy()
     a_trans = a_trans[0]
     a_orient = a_orient[0]
 
     # Get the subframe position as `b`
-    b_trans, b_orient = get_world_pose(rb_subframe)
+    b_trans, b_orient = xform_utils.get_world_pose(rb_subframe, device="cpu")
+    b_trans, b_orient = b_trans.numpy(), b_orient.numpy()
 
     # The goal is to move `a` such that `rb_subframe` ends up at `desired_translation`, `desired_orientation`
     c_trans, c_orient = desired_translation, desired_orientation
 
-    a_rot, b_rot, c_rot = quats_to_rot_matrices(np.vstack([a_orient, b_orient, c_orient]))
+    a_rot, b_rot, c_rot = transform_utils.quaternion_to_rotation_matrix(
+        np.vstack([a_orient, b_orient, c_orient])
+    ).numpy()
 
     a_rot_cmd = c_rot @ b_rot.T @ a_rot
     a_trans_cmd = c_trans + c_rot @ b_rot.T @ (a_trans - b_trans)
 
-    a_orient_cmd = rot_matrices_to_quats(a_rot_cmd)
+    a_orient_cmd = transform_utils.rotation_matrix_to_quaternion(a_rot_cmd).numpy()
 
     rb_xform_view.set_world_poses(a_trans_cmd[np.newaxis, :], a_orient_cmd[np.newaxis, :])
 
@@ -95,7 +103,7 @@ def mask_collisions(prim_path_a: str, prim_path_b: str) -> Usd.Relationship:
     Returns:
         A relationship filtering collisions between prim_path_a and prim_path_b
     """
-    filteringPairsAPI = UsdPhysics.FilteredPairsAPI.Apply(get_prim_at_path(prim_path_a))
+    filteringPairsAPI = UsdPhysics.FilteredPairsAPI.Apply(prim_utils.get_prim_at_path(prim_path_a))
     rel = filteringPairsAPI.CreateFilteredPairsRel()
     rel.AddTarget(Sdf.Path(prim_path_b))
     return rel
@@ -113,7 +121,7 @@ def convert_prim_to_collidable_rigid_body(prim_path: str, articulation_paths: Li
     Returns:
         str | None: Error message string if conversion fails, None on success.
     """
-    prim_to_convert = get_prim_at_path(prim_path)
+    prim_to_convert = prim_utils.get_prim_at_path(prim_path)
     for art_path in articulation_paths:
         if prim_path[: len(art_path)] == art_path:
             return "Cannot convert a part of an Articulation to Rigid Body"

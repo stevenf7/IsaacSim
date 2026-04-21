@@ -19,8 +19,8 @@
 from typing import List, Tuple
 
 import carb
+import isaacsim.core.experimental.utils.transform as transform_utils
 import numpy as np
-from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices, rot_matrices_to_quats
 
 from .data_writer import DataWriter
 
@@ -107,13 +107,15 @@ class GraspSpec:
         grasp = self.get_grasp_dict_by_name(grasp_name)
 
         art_quat_rel_rb = np.array([grasp["orientation"]["w"], *grasp["orientation"]["xyz"]])
-        art_rot_rel_rb, rb_rot = quats_to_rot_matrices(np.vstack([art_quat_rel_rb, rb_quat]))
+        art_rot_rel_rb, rb_rot = transform_utils.quaternion_to_rotation_matrix(
+            np.vstack([art_quat_rel_rb, rb_quat])
+        ).numpy()
         art_trans_rel_rb = np.array(grasp["position"])
 
         art_trans = rb_rot @ art_trans_rel_rb + rb_trans
         art_rot = rb_rot @ art_rot_rel_rb
 
-        return art_trans, rot_matrices_to_quats(art_rot)
+        return art_trans, transform_utils.rotation_matrix_to_quaternion(art_rot).numpy()
 
     def compute_rigid_body_pose_from_gripper_pose(
         self, grasp_name: str, gripper_trans: np.array, gripper_quat: np.array
@@ -139,11 +141,13 @@ class GraspSpec:
         grasp = self.get_grasp_dict_by_name(grasp_name)
 
         art_quat_rel_rb = np.array([grasp["orientation"]["w"], *grasp["orientation"]["xyz"]])
-        art_rot_rel_rb, art_rot = quats_to_rot_matrices(np.vstack([art_quat_rel_rb, gripper_quat]))
+        art_rot_rel_rb, art_rot = transform_utils.quaternion_to_rotation_matrix(
+            np.vstack([art_quat_rel_rb, gripper_quat])
+        ).numpy()
         art_trans_rel_rb = np.array(grasp["position"])
 
         rb_rot = art_rot @ art_rot_rel_rb.T
-        rb_quat = rot_matrices_to_quats(rb_rot)
+        rb_quat = transform_utils.rotation_matrix_to_quaternion(rb_rot).numpy()
         rb_trans_rel_art = gripper_trans - rb_rot @ art_trans_rel_rb
 
         return rb_trans_rel_art, rb_quat
