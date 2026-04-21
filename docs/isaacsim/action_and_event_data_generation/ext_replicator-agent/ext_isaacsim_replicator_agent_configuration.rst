@@ -6,10 +6,10 @@ Configuration File Guide
 
 This guide describes how to configure the Isaac Sim Replicator Agent (IRA) for simulation and synthetic data generation. The configuration controls the environment, sensor generation and placement, character/robot agents, behaviors, and data generation.
 
-Concepts & Workflow
-===================
+Concepts and Workflow
+=====================
 
-Before diving into detailed configuration, it is helpful to understand the general workflow and key concepts of an IRA simulation.
+Before diving into detailed configuration, review the general workflow and key concepts of an IRA simulation.
 
 Workflow Overview
 -----------------
@@ -392,7 +392,7 @@ These apply to all placement strategies:
 -   ``height_range``: [min, max] height in meters (Z-axis).
 -   ``look_down_angle_range``: [min, max] pitch angle in degrees (0 = horizontal, 90 = straight down).
 -   ``focal_length_range``: [min, max] focal length in millimeters.
--   ``distance_range``: [min, max] distance from the camera to its target/interest point in meters.
+-   ``distance_range``: [min, max] distance from the camera to its target or interest point in meters.
 
 **Example:**
 
@@ -426,7 +426,7 @@ Controls the generation of synthetic data (images, annotations) using Omniverse 
 Writer Configuration
 ^^^^^^^^^^^^^^^^^^^^
 
-Supported writers: ``BasicWriter``, ``IRABasicWriter``, ``CosmosIRAWriter``, ``RTSPWriter``, ``CustomWriter``.
+Supported writers: ``BasicWriter``, ``IRABasicWriter``, ``CosmosIRAWriter``, ``CustomWriter``.
 
 **Common Settings per Writer:**
 
@@ -451,14 +451,14 @@ Supported writers: ``BasicWriter``, ``IRABasicWriter``, ``CosmosIRAWriter``, ``R
 -   ``distance_to_camera``: Depth map.
 -   ``normals``: Surface normals.
 -   ``motion_vectors``: Pixel motion.
--   ``colorize_*``: for example, ``colorize_semantic_segmentation`` (save as visible color map vs raw ID).
+-   ``colorize_*``: for example, ``colorize_semantic_segmentation`` (save as visible color map compaired to raw ID).
 
 Specialized Writers
 ^^^^^^^^^^^^^^^^^^^
 
 1.  **IRABasicWriter**:
 
-    The foundational writer for Agent simulations, derived from Replicator's ``BasicWriter``. It organizes output into separate folders per annotator and consolidates object/agent metadata into ``object_detection.json``.
+    The foundational writer for Agent simulations, derived from Replicator's ``BasicWriter``. It organizes output into separate folders per annotator and consolidates object and agent metadata into ``object_detection.json``.
 
     -   **Key Features**:
 
@@ -508,93 +508,95 @@ Specialized Writers
     -   ``shaded_seg``: Shaded segmentation visualization.
     -   ``canny_edge``: Canny edge detection filter (with ``canny_threshold_low/high``).
 
-3.  **RTSPWriter**:
+3.  **CustomWriter**:
 
-    Streams selected annotators live over RTSP instead of saving frames to disk. It spins up an ``ffmpeg`` process per camera and annotator and pushes raw frame buffers into that stream.
+    A flexible wrapper that delegates to **any** writer registered in ``omni.replicator.core.WriterRegistry``. Use ``CustomWriter`` when you want to use a third-party writer, a writer from another extension, or your own ``omni.replicator.core.Writer`` subclass without modifying the IRA codebase.
 
-    -   **Key Features**:
+    -   **Required parameters**:
 
-        -   **Live RTSP Streaming**: Publishes each camera and annotator to ``rtsp://<host>:<port>/<topic>_<camera>_<annotator>``.
-        -   **Per-annotator Streams**: Each enabled annotator gets its own RTSP endpoint.
-        -   **Hardware/Software Encoding**: NVENC for supported 8-bit RGBA annotators with a software fallback for others.
-        -   **Automatic GPU Distribution**: Multiple GPUs are automatically distributed across available render products.
+        -   ``writer_name`` (string, required): The registry name of the target writer (for example, ``"BasicWriter"``, ``"KittiWriter"``, or a user-defined name). Any class registered via ``WriterRegistry.register()`` can be referenced here.
 
-    .. dropdown:: RTSP setup (FFmpeg)
+    -   **Optional parameters**:
 
-        Before streaming from Isaac Sim using ``RTSPWriter``, install FFmpeg.
+        -   ``writer_class_path`` (string, optional): A dotted Python import path to a writer class (for example, ``"my_extension.writers.MyWriter"``). When provided, the system dynamically imports the class, validates that it is a subclass of ``omni.replicator.core.Writer``, and auto-registers it under ``writer_name`` before use. This is useful for writers that are not yet registered in the ``WriterRegistry`` at config load time.
 
-        Run the following command on Linux:
+    -   **Additional parameters**: All other key-value pairs in the YAML block are passed directly to the target writer's ``initialize(**kwargs)`` call. Only parameters you explicitly list override the writer's built-in defaults; unlisted parameters keep the writer's own default values.
 
-        .. code-block:: shell
-            :caption: Install FFmpeg on Linux
+    .. dropdown:: How parameter discovery works
 
-            sudo apt update && sudo apt install -y ffmpeg
+        When a ``CustomWriter`` entry is loaded, the system introspects the target writer's ``__init__`` signature to discover all accepted parameters along with their types and default values. A typed Pydantic model is dynamically generated from this signature, which enables:
 
-        Run the following command on Windows 10/11:
+        -   **Type validation**: Supplied parameter values are checked against the writer's expected types before the simulation starts.
+        -   **UI integration**: In the Configuration Editor UI, each discoverable parameter appears as an addable field with the correct widget type. Click **Add Parameter** to override a default, or remove a parameter to revert to the writer's own default.
 
-        .. code-block:: shell
-            :caption: Install FFmpeg on Windows 10/11
+        Parameters whose types cannot be represented in JSON (for example, custom backend objects) are excluded from the dynamic model and the UI but can still be passed in YAML.
 
-            winget install ffmpeg
+    .. dropdown:: Auto-registration via class path
 
-    .. dropdown:: RTSP parameters and annotators
+        If the writer class is not yet in the ``WriterRegistry`` when the config is loaded, provide ``writer_class_path`` to have IRA import and register it automatically:
 
-        Each of these parameters is represented as a boolean toggle in the UI. Enabling any of them will include that data type in the RTSP output stream.
+        1.  The dotted path (for example, ``"my_extension.writers.MyWriter"``) is resolved through Python's ``importlib``.
+        2.  The resolved class is validated as a subclass of ``omni.replicator.core.Writer``.
+        3.  If the class name differs from ``writer_name``, a thin subclass is created so that the registry key matches ``writer_name``.
+        4.  The class is registered in ``WriterRegistry`` and is available for the current session.
 
-        -   ``rtsp_stream_url``: Base RTSP server URL.
-        -   ``rtsp_rgb``: Toggle RGB stream (LdrColor).
-        -   ``rtsp_semantic_segmentation``: Toggle semantic segmentation stream.
-        -   ``rtsp_instance_id_segmentation``: Toggle instance ID segmentation stream.
-        -   ``rtsp_instance_segmentation``: Toggle instance segmentation stream.
-        -   ``rtsp_normals``: Toggle normals stream.
-        -   ``rtsp_distance_to_image_plane``: Toggle distance to image plane stream.
-        -   ``rtsp_distance_to_camera``: Toggle distance to camera stream.
-        -   ``device``: NVENC GPU index.
+        If ``writer_class_path`` is omitted, the writer must already be registered (for example, by enabling the extension that provides it).
 
-        Supported RTSP annotators:
+    .. dropdown:: Using CustomWriter in the UI
 
-        -   ``rgb`` (LdrColor)
-        -   ``semantic_segmentation``
-        -   ``instance_id_segmentation``
-        -   ``instance_segmentation``
-        -   ``normals``
-        -   ``distance_to_camera``
-        -   ``distance_to_image_plane``
+        When adding a ``CustomWriter`` through the Configuration Editor:
 
-    .. dropdown:: RTSP stream URL format
+        1.  Click **Add Writer** and select **CustomWriter** from the type list.
+        2.  A dedicated dialog appears with two fields:
 
-        Each stream URL follows this format:
+            -   **Writer Name**: A dropdown listing all writers currently in the ``WriterRegistry``. Select the target writer.
+            -   **Class Path**: An optional text field for the dotted import path. Click **Register** to import, validate, and register the class, which also refreshes the Writer Name dropdown.
 
-        ``[rtsp_stream_url]/RTSPWriter[camera_prim_path_with_underscores]_[annotator_name]``
+        3.  Click **OK** to confirm. The editor displays the writer's name as a read-only label and lists all currently set parameters with their values.
+        4.  Use the **Add Parameter** dropdown at the bottom to override additional defaults from the writer's ``__init__`` signature.
 
-        Where:
+    .. dropdown:: Multiple CustomWriter instances
 
-        -   ``rtsp_stream_url``: Base RTSP server URL (for example, ``rtsp://localhost:8554/RTSPWriter``).
-        -   ``camera_prim_path_with_underscores``: The camera prim path with forward slashes replaced by underscores.
-        -   ``annotator_name``: The original annotator name (for example, ``rgb`` or ``distance_to_camera``).
+        You can configure multiple ``CustomWriter`` entries in the same config. Append a numeric suffix to create unique keys:
 
-        Examples (``rtsp_stream_url`` = ``rtsp://localhost:8554/RTSPWriter``):
+        .. code-block:: yaml
 
-        -   RGB stream for ``/World/Cameras/Camera_01``:
-            ``rtsp://localhost:8554/RTSPWriter_World_Cameras_Camera_01_rgb``
-        -   Distance-to-camera stream for ``/World/Cameras/Camera``:
-            ``rtsp://localhost:8554/RTSPWriter_World_Cameras_Camera_distance_to_camera``
+            replicator:
+              writers:
+                CustomWriter:
+                  writer_name: "BasicWriter"
+                  output_dir: "/tmp/basic_output"
+                  rgb: true
+                CustomWriter_1:
+                  writer_name: "KittiWriter"
+                  output_dir: "/tmp/kitti_output"
 
-    .. dropdown:: RTSP defaults
+        The suffix (``_1``, ``_2``, and so on) is stripped when resolving the writer type; the ``writer_name`` field determines which registry writer is used.
 
-        -   ``rtsp_rgb``: Enabled.
-        -   All other ``rtsp_*`` annotators: Disabled.
-        -   ``rtsp_stream_url``: ``rtsp://localhost:8554/RTSPWriter``.
-        -   ``device``: ``0`` (NVENC GPU index).
+    For a step-by-step walkthrough that uses ``CustomWriter`` to set up live RTSP streaming, refer to :ref:`Example: RTSP streaming with CustomWriter <ira_custom_writer_example>`.
 
-    .. dropdown:: RTSP runtime notes
+    **Examples:**
 
-        Warning messages are posted to the console to show the match between annotator names and RTSP stream URLs.
-        Initializing RTSP streaming may take a while.
-        During RTSP stream initialization, the first few frames may exhibit visual artifacts or corruption. This is expected behavior and resolves after the stream is fully established.
+    .. code-block:: yaml
 
-.. note::
-    In Isaac Sim 6.0 EA release, we support only the ``IRABasicWriter``. Other writers will be supported in the Isaac Sim 6.0 GA release.
+        # Use a registered writer, overriding only specific defaults
+        replicator:
+          writers:
+            CustomWriter:
+              writer_name: "BasicWriter"
+              output_dir: "/tmp/my_output"
+              rgb: true
+
+    .. code-block:: yaml
+
+        # Auto-import and register an unregistered writer class
+        replicator:
+          writers:
+            CustomWriter:
+              writer_name: "MyCustomWriter"
+              writer_class_path: "my_extension.writers.MyCustomWriter"
+              output_dir: "/tmp/my_output"
+              my_custom_flag: true
 
 **Example:**
 

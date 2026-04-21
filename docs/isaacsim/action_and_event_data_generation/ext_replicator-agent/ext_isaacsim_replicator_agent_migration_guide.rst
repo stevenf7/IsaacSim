@@ -59,7 +59,7 @@ changed:
    * - **Robot Spawning (Nova Carter, iw.hub)**
      - Yes
      - Yes
-     - ``nova_carter_num`` / ``iw_hub_num`` replaced by named groups with ``config_file_path`` pointing to IAR configs.
+     - ``nova_carter_num`` and ``iw_hub_num`` replaced by named groups with ``config_file_path`` pointing to IAR configs.
    * - **Character Behavior Control**
      - Yes
      - Yes
@@ -75,7 +75,7 @@ changed:
    * - **Routine-trigger Behavior Loop**
      - --
      - New
-     - Actors continuously pick weighted behaviors; triggers interrupt routines with priority-queued sequences. Replaces the old ``response`` / ``event`` / ``incident`` model.
+     - Actors continuously pick weighted behaviors; triggers interrupt routines with priority-queued sequences. Replaces the old ``response``, ``event``, and ``incident`` model.
    * - **Behavior Types (wander, patrol, stop/halt)**
      - Yes
      - Yes
@@ -87,7 +87,7 @@ changed:
    * - **Event and Time Triggers**
      - Yes
      - Yes
-     - 0.x used ``response``/``event``/``incident`` config sections. 1.x replaces them with first-class ``event_trigger`` and ``time_trigger`` types with priority queuing.
+     - 0.x used ``response``, ``event``, and ``incident`` config sections. 1.x replaces them with first-class ``event_trigger`` and ``time_trigger`` types with priority queuing.
    * - **USD Schema Integration**
      - --
      - New
@@ -96,10 +96,10 @@ changed:
      - --
      - New
      - Each actor's seed is derived from its name, group, and the global seed, enabling reproducible yet independent randomization.
-   * - **Sensor / Camera Placement**
+   * - **Sensor and Camera Placement**
      - Yes
      - Yes
-     - ``camera_num`` / ``camera_list`` replaced by named sensor groups with pluggable placement strategies.
+     - ``camera_num`` and ``camera_list`` replaced by named sensor groups with pluggable placement strategies.
    * - **Sensor Placement Strategies**
      - --
      - New
@@ -119,7 +119,7 @@ changed:
    * - **Per-writer Timing Control**
      - --
      - New
-     - ``start_frame``/``end_frame`` or ``start_time``/``end_time`` per writer.
+     - ``start_frame`` and ``end_frame`` or ``start_time`` and ``end_time`` per writer.
    * - **Per-writer Sensor Selection**
      - --
      - New
@@ -127,7 +127,7 @@ changed:
    * - **Additional Writers**
      - --
      - New
-     - ``CosmosIRAWriter``, ``BasicWriter``, ``SceneGraphWriter``, ``RTSPWriter``, ``CustomWriter``.
+     - ``CosmosIRAWriter``, ``BasicWriter``, ``SceneGraphWriter``, ``CustomWriter``.
    * - **Semantic Labels on Actors**
      - --
      - New
@@ -151,8 +151,8 @@ changed:
    * - **UI Workflow**
      - Yes
      - Yes
-     - Simplified from 5 steps to 3 -- the **Generate Random Commands** and **Save Commands** steps are removed.
-   * - **Headless / Script-based Generation**
+     - Simplified from 5 steps to 3. The **Generate Random Commands** and **Save Commands** steps are removed.
+   * - **Headless and Script-based Generation**
      - Yes
      - Yes
      - ``sdg_scheduler.py`` replaced by ``actor_sdg.py``.
@@ -164,7 +164,7 @@ changed:
      - Yes
      - Removed
      - Replaced entirely by inline ``routines`` and ``triggers`` in YAML.
-   * - ``response`` / ``event`` / ``incident`` config Sections
+   * - ``response``, ``event``, and ``incident`` config Sections
      - Yes
      - Removed
      - Replaced by ``triggers`` on individual actor groups.
@@ -228,7 +228,7 @@ Default Config File Location
 In 1.x, a minimal config is loaded by default. For a full example with
 characters, cameras, and writers, use ``warehouse.yaml``.
 
-Headless / Script-Based Data Generation
+Headless or Script-Based Data Generation
 -----------------------------------------
 
 The script entry point has changed:
@@ -525,7 +525,7 @@ Key differences:
 
 * ``writer`` + ``parameters`` replaced by ``writers`` dict. The key is the writer name, and the value contains the parameters directly (no nesting under ``parameters``).
 * **Multiple writers**: You can define multiple writers in a single config (for example, ``IRABasicWriter`` + ``CosmosIRAWriter``).
-* Per-writer ``start_frame``/``end_frame`` or ``start_time``/``end_time`` for timing control.
+* Per-writer ``start_frame`` and ``end_frame`` or ``start_time`` and ``end_time`` for timing control.
 * Per-writer ``sensor_prim_list`` for selecting specific cameras.
 * Default ``start_frame`` is ``30`` (skips initial settling frames).
 * New writers: ``CosmosIRAWriter``, ``BasicWriter``, ``SceneGraphWriter``, ``CustomWriter``.
@@ -576,7 +576,7 @@ In 1.x, actor behavior uses a **routine-trigger loop** backed by
      - ``response`` + ``incident`` sections
      - ``triggers`` (time-based or event-based)
    * - Animation backend
-     - ``omni.anim.people`` / ``omni.anim.graph``
+     - ``omni.anim.people`` and ``omni.anim.graph``
      - ``omni.anim.behavior.core`` (v110+)
    * - Determinism seed
      - Global seed
@@ -632,7 +632,7 @@ Config File Migration
    * Replace ``nova_carter_num: N`` with a group entry using ``config_file_path: "nova_carter.yaml"``.
    * Replace ``iw_hub_num: N`` similarly with the appropriate IAR config.
 
-8. Replace ``sensor.camera_num`` / ``camera_list`` with ``sensor.groups.<group_name>`` using a placement strategy (``aim_at_targets`` or ``maximum_coverage``).
+8. Replace ``sensor.camera_num`` and ``camera_list`` with ``sensor.groups.<group_name>`` using a placement strategy (``aim_at_targets`` or ``maximum_coverage``).
 9. Move camera randomization settings (height, angle, focal length, distance ranges) from extension settings into the sensor group config.
 10. Replace ``replicator.writer`` + ``replicator.parameters`` with ``replicator.writers.<WriterName>: { ... }``.
 11. Remove ``response``, ``event``, and ``incident`` sections. Replace with ``triggers`` on individual character/robot groups.
