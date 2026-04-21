@@ -249,8 +249,8 @@ step snippets inside one async function and schedule it:
 
     async def run_planner_example():
         ext_path = get_extension_path()
-        scene_config = load_example_scene_config("simple")
-        context_files = get_example_scene_context_files("simple")
+        scene_config = load_example_scene_config("basic")
+        context_files = get_example_scene_context_files("basic")
 
         if ext_path is None or scene_config is None:
             raise RuntimeError("Could not load the bundled example scene configuration.")

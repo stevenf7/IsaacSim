@@ -9,26 +9,29 @@
 .. _behavior_tree_gen_context_files_and_schemas:
 
 ==================================
-Context files and metadata schemas
+Context Files and Metadata Schemas
 ==================================
 
 This guide explains the context-file format used by the example data bundled with
 ``omni.ai.behavior_tree_gen.bridge`` under ``data/example/context_info`` and the base models defined
-in ``omni.behavior.composer.models``.
+in ``omni.ai.behavior_tree_gen.core.pydantic.models``.
 
 * **Context** is the runtime knowledge base of actors and objects in a scene. Each context entry is
-  a JSON object that follows one of two base models: ``ActorInfo`` or
-  ``InteractableObjectInfo``.
+  a JSON object that follows one of two base models: 
+  
+  - ``ActorInfo``
+  - ``InteractableObjectInfo``
+  
 * **Metadata schema** is a standard JSON Schema document that defines the structure of the
   ``metadata`` dictionary inside each context entry.
 
-Base context entry format
+Base Context Entry Format
 -------------------------
 
-Context entries are built on two base models:
+Context entries are built on two base models that are defined in the ``omni.ai.behavior_tree_gen.core.pydantic.models.context_models`` module:
 
-* ``omni.behavior.composer.models.context_models.ActorInfo``.
-* ``omni.behavior.composer.models.context_models.InteractableObjectInfo``.
+* ``ActorInfo``
+* ``InteractableObjectInfo``
 
 Both models use the same top-level structure:
 
@@ -56,7 +59,7 @@ Top-level fields:
    ``supported_interactions`` is defined on the base context models, not in the metadata schema.
    When present, the model normalizes the values to lowercase unique tokens.
 
-Actor example
+Actor Example
 -------------
 
 The bundled ``simple`` example uses actor entries shaped like this:
@@ -84,7 +87,7 @@ The bundled ``simple`` example uses actor entries shaped like this:
 This follows ``ActorInfo`` at the top level and stores domain-specific details such as
 ``actor_type``, ``role``, ``location``, and ``prim_path`` under ``metadata``.
 
-Object example
+Object Example
 --------------
 
 The bundled ``simple`` example uses object entries shaped like this:
@@ -118,7 +121,7 @@ This follows ``InteractableObjectInfo`` at the top level and stores object-speci
 ``interactable_type``, ``prim_path``, ``move_to_targets``, and ``placement_targets`` inside
 ``metadata``.
 
-How metadata schemas work
+How Metadata Schemas Work
 -------------------------
 
 The schema files under ``data/example/context_info/schemas`` define the structure of ``metadata``.
@@ -131,7 +134,7 @@ For the bundled examples:
 
 In the core implementation, ``ContextCacheManager.setup_actor_model_from_schema()`` and
 ``ContextCacheManager.setup_object_model_from_schema()`` use
-``omni.behavior.composer.models.schema_builder.build_metadata_model_from_json_schema()`` to build a
+``omni.ai.behavior_tree_gen.core.pydantic.models.schema_builder.build_metadata_model_from_json_schema()`` to build a
 typed metadata model and then attach it to ``ActorInfo`` or ``InteractableObjectInfo``.
 
 This means:
@@ -143,7 +146,7 @@ This means:
   model.
 * Extra metadata fields are still allowed because the schema builder uses ``allow_extra=True``.
 
-Bundled required metadata fields
+Bundled Required Metadata Fields
 --------------------------------
 
 The shipped example schemas mark these metadata fields as required:
@@ -154,7 +157,7 @@ The shipped example schemas mark these metadata fields as required:
 If you extend those schemas with new required fields, matching context entries should provide those
 fields under ``metadata``.
 
-Planner-visible schema paths
+Planner-visible Schema Paths
 ----------------------------
 
 The pipeline expands schema-defined metadata fields into planner-visible term paths.
@@ -170,7 +173,7 @@ Examples:
 These paths are used for grounding, retrieval, and parameter generation, so field names and
 descriptions in the schema directly affect how well the workflow can use your custom data.
 
-Add a custom metadata field
+Add a Custom Metadata Field
 ---------------------------
 
 To add a new item using your own schema:
@@ -231,7 +234,7 @@ Matching context entry:
    Keep stable identity and planner-facing descriptions at the top level, and put schema-defined
    domain attributes under ``metadata``.
 
-Using the files in behavior tree generation
+Using the Files in Behavior Tree Generation
 -------------------------------------------
 
 After updating the files:
