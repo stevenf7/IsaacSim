@@ -512,6 +512,16 @@ local function get_replicator_tests()
             "standalone_examples/api/isaacsim.replicator.examples/sdg_deformables.py",
         },
         {
+            "tests-nativepython-isaacsim.replicator.examples.sdg_geomsubset_per_subset_true",
+            "standalone_examples/api/isaacsim.replicator.examples/sdg_geomsubset.py",
+            "--/syntheticdata/sensors/perSubsetSegmentation=true --test",
+        },
+        {
+            "tests-nativepython-isaacsim.replicator.examples.sdg_geomsubset_per_subset_false",
+            "standalone_examples/api/isaacsim.replicator.examples/sdg_geomsubset.py",
+            "--/syntheticdata/sensors/perSubsetSegmentation=false --test",
+        },
+        {
             "tests-nativepython-isaacsim.replicator.examples.custom_event_and_write",
             "/standalone_examples/api/isaacsim.replicator.examples/custom_event_and_write.py",
         },

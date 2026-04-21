@@ -83,6 +83,7 @@ isaacsim.replicator.examples
 * ``motion_blur.py``
 * ``multi_camera.py``
 * ``sdg_deformables.py``
+* ``sdg_geomsubset.py``
 * ``sdg_getting_started_01.py``
 * ``sdg_getting_started_02.py``
 * ``sdg_getting_started_03.py``
