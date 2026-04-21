@@ -2,7 +2,7 @@
 order = -100
 
 [package]
-version = "0.2.0"
+version = "0.3.0"
 category = "Simulation"
 title = "Isaac Sim Core Experimental Prim Data"
 description = "Provider extension for IPrimDataReader and IPrimDataReaderManager implementations."

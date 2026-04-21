@@ -24,6 +24,7 @@
 
 #include <isaacsim/core/experimental/prims/IPrimDataReader.h>
 #include <isaacsim/core/experimental/prims/IPrimDataReaderManager.h>
+#include <isaacsim/core/experimental/prims/SdfPathToken.h>
 #include <isaacsim/core/includes/Pose.h>
 #include <isaacsim/core/includes/UsdUtilities.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
@@ -31,11 +32,15 @@
 #include <omni/fabric/FabricUSD.h>
 #include <omni/physics/simulation/IPhysics.h>
 #include <omni/physics/simulation/IPhysicsStageUpdate.h>
+#include <omni/physics/tensors/IArticulationMetatype.h>
 #include <omni/physics/tensors/IArticulationView.h>
 #include <omni/physics/tensors/IRigidBodyView.h>
 #include <omni/physics/tensors/ISimulationView.h>
 #include <omni/physics/tensors/TensorApi.h>
+#include <omni/physx/IPhysxSimulation.h>
 #include <omni/usd/UsdContext.h>
+#include <physxSchema/physxContactReportAPI.h>
+#include <physxSchema/physxRigidBodyAPI.h>
 #include <pxr/usd/usdPhysics/articulationRootAPI.h>
 #include <pxr/usd/usdPhysics/rigidBodyAPI.h>
 
@@ -56,6 +61,16 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+static_assert(static_cast<uint32_t>(omni::physx::ContactEventType::Enum::eCONTACT_FOUND) ==
+                  isaacsim::core::experimental::prims::kContactEventFound,
+              "kContactEventFound does not match PhysX enum");
+static_assert(static_cast<uint32_t>(omni::physx::ContactEventType::Enum::eCONTACT_LOST) ==
+                  isaacsim::core::experimental::prims::kContactEventLost,
+              "kContactEventLost does not match PhysX enum");
+static_assert(static_cast<uint32_t>(omni::physx::ContactEventType::Enum::eCONTACT_PERSIST) ==
+                  isaacsim::core::experimental::prims::kContactEventPersist,
+              "kContactEventPersist does not match PhysX enum");
 
 const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.core.experimental.primdata.plugin",
                                                     "C++ read-only prim data reader", "NVIDIA",
@@ -899,6 +914,125 @@ public:
         return m_deviceOrdinal;
     }
 
+    bool enableContactReporting(const char* bodyPath) override
+    {
+        if (!bodyPath || !m_usdStage)
+            return false;
+
+        pxr::SdfPath sdfPath(bodyPath);
+        pxr::UsdPrim prim = m_usdStage->GetPrimAtPath(sdfPath);
+        if (!prim.IsValid())
+            return false;
+
+        pxr::PhysxSchemaPhysxContactReportAPI contactReportAPI =
+            pxr::PhysxSchemaPhysxContactReportAPI::Get(m_usdStage, sdfPath);
+        if (!contactReportAPI)
+            contactReportAPI = pxr::PhysxSchemaPhysxContactReportAPI::Apply(prim);
+
+        if (contactReportAPI)
+        {
+            if (!contactReportAPI.GetReportPairsRel())
+                contactReportAPI.CreateReportPairsRel();
+            contactReportAPI.GetThresholdAttr().Set(0.0f);
+        }
+
+        pxr::PhysxSchemaPhysxRigidBodyAPI rigidBodyAPI = pxr::PhysxSchemaPhysxRigidBodyAPI::Get(m_usdStage, sdfPath);
+        if (rigidBodyAPI)
+            rigidBodyAPI.CreateSleepThresholdAttr(pxr::VtValue(0.0f));
+
+        return true;
+    }
+
+    bool getContactReport(const char** bodyPaths, size_t numPaths, ContactReportData* outReport) override
+    {
+        m_contactEvents.clear();
+        m_contactPoints.clear();
+
+        if (outReport)
+            *outReport = {};
+
+        if (!bodyPaths && numPaths > 0)
+            return false;
+
+        auto* physxSim = carb::getCachedInterface<omni::physx::IPhysxSimulation>();
+        if (!physxSim)
+            return true;
+
+        const omni::physx::ContactEventHeader* headers = nullptr;
+        const omni::physx::ContactData* data = nullptr;
+        const omni::physx::FrictionAnchor* frictionData = nullptr;
+        uint32_t numContactData = 0;
+        uint32_t numFrictionData = 0;
+        uint32_t numHeaders =
+            physxSim->getFullContactReport(&headers, &data, numContactData, &frictionData, numFrictionData);
+
+        std::unordered_set<uint64_t> requestedTokens;
+        for (size_t i = 0; i < numPaths; ++i)
+        {
+            if (bodyPaths[i])
+                requestedTokens.insert(sdfPathToToken(pxr::SdfPath(bodyPaths[i])));
+        }
+
+        m_contactEvents.reserve(numHeaders);
+        m_contactPoints.reserve(numContactData);
+
+        uint32_t dataIndex = 0;
+        for (uint32_t h = 0; h < numHeaders; h++)
+        {
+            const auto& header = headers[h];
+
+            if (requestedTokens.count(header.actor0) == 0 && requestedTokens.count(header.actor1) == 0)
+            {
+                dataIndex += header.numContactData;
+                continue;
+            }
+
+            for (uint32_t i = 0; i < header.numContactData; i++)
+            {
+                const auto& cd = data[dataIndex + i];
+                ContactPointData cp;
+                cp.positionX = cd.position.x;
+                cp.positionY = cd.position.y;
+                cp.positionZ = cd.position.z;
+                cp.normalX = cd.normal.x;
+                cp.normalY = cd.normal.y;
+                cp.normalZ = cd.normal.z;
+                cp.impulseX = cd.impulse.x;
+                cp.impulseY = cd.impulse.y;
+                cp.impulseZ = cd.impulse.z;
+                m_contactPoints.push_back(cp);
+            }
+            dataIndex += header.numContactData;
+
+            ContactEventData event;
+            event.body0 = header.actor0;
+            event.body1 = header.actor1;
+            event.eventType = static_cast<uint32_t>(header.type);
+            event.numContacts = header.numContactData;
+            event.contacts = nullptr; // patched below
+            m_contactEvents.push_back(event);
+        }
+
+        // Patch contact pointers now that the vector is fully built
+        size_t pointOffset = 0;
+        for (auto& ev : m_contactEvents)
+        {
+            ev.contacts = ev.numContacts > 0 ? m_contactPoints.data() + pointOffset : nullptr;
+            pointOffset += ev.numContacts;
+        }
+
+        if (outReport)
+        {
+            outReport->events = m_contactEvents.data();
+            outReport->numEvents = static_cast<uint32_t>(m_contactEvents.size());
+            outReport->simTime =
+                m_simulationManager ? static_cast<float>(m_simulationManager->getSimulationTime()) : 0.0f;
+            // dt is left at 0.0f (from zero-init above): local PhysX doesn't expose per-contact-report dt.
+            // The caller (ContactSensorImpl) falls back to its own step dt when outReport->dt == 0.
+        }
+        return true;
+    }
+
 private:
     static EngineType _parseEngine(const char* engineType)
     {
@@ -1262,6 +1396,9 @@ private:
 
     std::unordered_map<std::string, ViewData> m_viewData;
     std::unordered_map<std::string, std::unique_ptr<IXformDataView>> m_views;
+
+    std::vector<ContactEventData> m_contactEvents;
+    std::vector<ContactPointData> m_contactPoints;
 };
 
 /**

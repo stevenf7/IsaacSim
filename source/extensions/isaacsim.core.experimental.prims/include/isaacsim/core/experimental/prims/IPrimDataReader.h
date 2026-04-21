@@ -211,6 +211,59 @@ struct IArticulationDataView : public IXformDataView
 };
 
 /**
+ * @struct ContactPointData
+ * @brief Single contact point within a contact event.
+ */
+struct ContactPointData
+{
+    float positionX{ 0.0f };
+    float positionY{ 0.0f };
+    float positionZ{ 0.0f };
+    float normalX{ 0.0f };
+    float normalY{ 0.0f };
+    float normalZ{ 0.0f };
+    float impulseX{ 0.0f };
+    float impulseY{ 0.0f };
+    float impulseZ{ 0.0f };
+};
+
+/// Contact event type constants matching PhysX ContactEventType::Enum values.
+/// Defined here so consumers without PhysX headers can use them.
+static constexpr uint32_t kContactEventFound = 0;
+static constexpr uint32_t kContactEventLost = 1;
+static constexpr uint32_t kContactEventPersist = 2;
+
+/**
+ * @struct ContactEventData
+ * @brief One contact event (header) between a pair of bodies.
+ * @details Mirrors the PhysX ContactEventHeader structure. LOST events have
+ * numContacts=0 and contacts=nullptr. Body identifiers are uint64_t tokens
+ * (SdfPath internal representation) produced by sdfPathToToken() (see SdfPathToken.h).
+ */
+struct ContactEventData
+{
+    uint64_t body0{ 0 };
+    uint64_t body1{ 0 };
+    uint32_t eventType{ 0 }; ///< kContactEventFound / kContactEventLost / kContactEventPersist
+    const ContactPointData* contacts{ nullptr }; ///< points to contiguous array, owned by reader
+    uint32_t numContacts{ 0 };
+};
+
+/**
+ * @struct ContactReportData
+ * @brief Full contact report returned by IPrimDataReader::getContactReport().
+ * @details Pointers are owned by the reader and valid until the next call to
+ * getContactReport() or until the reader is shut down / re-initialized.
+ */
+struct ContactReportData
+{
+    const ContactEventData* events{ nullptr };
+    uint32_t numEvents{ 0 };
+    float simTime{ 0.0f };
+    float dt{ 0.0f };
+};
+
+/**
  * @struct IPrimDataReader
  * @brief Factory interface for creating typed read-only prim data views.
  * @details Carbonite plugin interface that creates typed views for XformPrim,
@@ -236,7 +289,7 @@ struct IArticulationDataView : public IXformDataView
  */
 struct IPrimDataReader
 {
-    CARB_PLUGIN_INTERFACE("isaacsim::core::experimental::prims::IPrimDataReader", 1, 0);
+    CARB_PLUGIN_INTERFACE("isaacsim::core::experimental::prims::IPrimDataReader", 2, 2);
 
     /**
      * @brief Initialize the reader with the current USD stage and simulation device.
@@ -335,6 +388,34 @@ struct IPrimDataReader
      * @return CUDA device ordinal (>=0 for GPU, -1 for CPU).
      */
     virtual int getDeviceOrdinal() const = 0;
+
+    /**
+     * @brief Enable contact reporting for a rigid body on the simulation side.
+     * @details Applies PhysxContactReportAPI (threshold=0, sleepThreshold=0) so that
+     * subsequent getContactReport() calls return data for this body. Idempotent.
+     * For local PhysX: modifies the USD stage directly.
+     * For remote: forwards to the World Simulator via gRPC.
+     * For Newton: no-op (returns true).
+     * @param bodyPath USD path to the rigid body prim.
+     * @return true on success, false on error.
+     */
+    virtual bool enableContactReporting(const char* bodyPath) = 0;
+
+    /**
+     * @brief Get the full contact report filtered to the specified body paths.
+     * @details Returns a two-level structure: events (one per body pair, including
+     * LOST events with zero contact points) containing contact points. Pointers in
+     * the returned ContactReportData are owned by the reader and valid until the
+     * next call to getContactReport() or reader re-initialization.
+     * For local PhysX: calls IPhysxSimulation::getFullContactReport().
+     * For remote: fetches via gRPC from the World Simulator.
+     * For Newton: returns empty report (contact sensor not supported via this path).
+     * @param bodyPaths Array of rigid body prim path strings to filter for.
+     * @param numPaths Number of paths in the array.
+     * @param outReport Receives the contact report data.
+     * @return true if the query succeeded (report may still have zero events), false on error.
+     */
+    virtual bool getContactReport(const char** bodyPaths, size_t numPaths, ContactReportData* outReport) = 0;
 };
 
 } // namespace prims
