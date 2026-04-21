@@ -575,7 +575,7 @@ inventory.includes.all = [
     "exts/isaacsim.robot_setup.gain_tuner",
     "exts/isaacsim.robot_setup.grasp_editor",
     "exts/isaacsim.robot_setup.xrdf_editor",
-    "exts/isaacsim.robot_setup.wizard",
+    "extsDeprecated/isaacsim.robot_setup.wizard",
 ]
 
 [isaacsim-ros1]
