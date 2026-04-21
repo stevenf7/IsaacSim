@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.10.0] - 2026-04-20
+### Changed
+- Added SDG GeomSubset semantic segmentation test for `perSubsetSegmentation` true/false
+
 ## [1.9.5] - 2026-04-18
 ### Changed
 - Added return type annotations and `__all__` definitions
