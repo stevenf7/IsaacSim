@@ -1,49 +1,48 @@
+[core]
+reloadable = true
+order = 0
+
 [package]
-version = "0.7.4"
+version = "0.1.0"
 category = "Simulation"
-title = "Isaac Sim Newton Physics"
-description = "Extension for simulating physics with Newton and connecting with Fabric. Includes tensor interface (isaacsim.physics.newton.tensors) for NumPy/PyTorch/Warp frontends."
-authors = ["Milad-Rakhsha"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim"
-keywords = ["isaac", "newton", "physics", "tensors"]
+title = "Isaac Sim Newton Physics Tensor Backend"
+description = "C++ tensor interface implementation for Newton physics"
+authors = ["NVIDIA"]
+repository = ""
+keywords = ["physics", "newton", "tensor", "cpp"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
-writeTarget.kit = true
+writeTarget.platform = true
 
 [dependencies]
-"isaacsim.core.simulation_manager" = {}  # Required for SimulationManager integration
-"isaacsim.pip.newton" = {}  # Newton pip packages
-"omni.physics" = {}  # Required for unified physics interface registration
-"omni.warp.core" = {}
-"usdrt.scenegraph" = {}  # Required for fabric integration
+"isaacsim.physics.newton" = {}
+"omni.physics.tensors" = {}
 
 [[python.module]]
-name = "isaacsim.physics.newton"
+name = "isaacsim.physics.newton.tensors"
 
 [[python.module]]
-name = "isaacsim.physics.newton.tests"
+name = "isaacsim.physics.newton.tensors.tests"
 
-[settings]
-# Enable CUDA graph capture for physics stepping to improve GPU performance.
-exts."isaacsim.physics.newton".capture_graph_physics_step = true
-# Automatically switch to the Newton physics engine when the extension starts.
-exts."isaacsim.physics.newton".auto_switch_on_startup = true
+[[native.plugin]]
+path = "bin/*.plugin"
 
-# Main python module this extension provides
 [[test]]
 name = "startup"
 
 [[test]]
-timeout = 900
+timeout = 3600
 dependencies = [
-    "isaacsim.test.utils" # Used to suppress NumPy coverage errors
+    "isaacsim.test.utils",
 ]
 
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
+    '*Error while parsing function*',
 ]
+
 args = [
     "--enable",
     "omni.kit.loop-isaac",
@@ -88,9 +87,8 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
-    ### Extension specific args
     "--/exts/isaacsim.core.simulation_manager/default_engine=newton",
 ]
 
 [documentation]
-pages = ["docs/Overview.md","docs/SETTINGS.md", "docs/CHANGELOG.md"]
+pages = []

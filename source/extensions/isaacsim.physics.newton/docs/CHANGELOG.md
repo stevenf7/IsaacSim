@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.4] - 2026-04-22
+### Fixed
+- Run the first simulation step without CUDA graph capture. Warp's link-time optimization compilation for `tile_matmul` / `tile_cholesky` can fail on the first attempt but succeeds on retry. When the first compilation happens inside `wp.capture_begin`, the failure is recorded into the CUDA graph, producing wrong simulation results on all subsequent steps. Skipping graph capture on the first step lets these transient failures resolve before any graph is recorded.
+
+- Forward the user-provided `dt` into `simulate()` when recording the CUDA graph so step times match the requested timestep
+
+- Route `set_dof_actuation_forces` and `get_dof_actuation_forces` through `control.joint_f` so applied joint efforts drive the simulation
+
 ## [0.7.3] - 2026-04-17
 ### Changed
 - Update tensor frontend import paths for `omni.physics.tensors` package restructuring

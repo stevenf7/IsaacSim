@@ -1,0 +1,166 @@
+// SPDX-FileCopyrightText: Copyright (c) 2024-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+// Minimal compatibility header providing warp types used by Newton tensors.
+// Matches the memory layout of warp/native types (vec_t, quat_t, mat_t,
+// transform_t, spatial_vector_t, array_t) so data produced by Python warp
+// arrays can be reinterpreted in C++/CUDA without pulling in the full
+// warp header tree.
+
+#pragma once
+
+#include <cassert>
+#include <cstddef>
+
+#ifdef __CUDACC__
+#    define WP_CUDA_CALLABLE __host__ __device__
+#else
+#    define WP_CUDA_CALLABLE
+#endif
+
+namespace wp
+{
+
+/// Maximum rank of a Warp array.
+const int ARRAY_MAX_DIMS = 4;
+
+/// Dimension descriptor for a Warp array.
+///
+/// Stores up to :data:`ARRAY_MAX_DIMS` element counts. Trailing unused slots are
+/// left zero. Layout matches ``wp::shape_t`` in the native Warp runtime so a
+/// ``wp.array`` struct can be ``reinterpret_cast``'d directly.
+struct shape_t
+{
+    int dims[ARRAY_MAX_DIMS];
+
+    WP_CUDA_CALLABLE shape_t() : dims()
+    {
+    }
+
+    WP_CUDA_CALLABLE int operator[](int i) const
+    {
+        assert(i < ARRAY_MAX_DIMS);
+        return dims[i];
+    }
+
+    WP_CUDA_CALLABLE int& operator[](int i)
+    {
+        assert(i < ARRAY_MAX_DIMS);
+        return dims[i];
+    }
+};
+
+/// Binary-compatible view of a Python ``wp.array`` of element type ``T``.
+///
+/// Layout matches ``wp::array_t<T>`` in the native Warp runtime: ``T* data``,
+/// ``T* grad``, :class:`shape_t` shape, ``int strides[4]``, ``int ndim``.
+/// Strides are byte strides. ``grad`` is null when the array has no gradient.
+template <typename T>
+struct array_t
+{
+    WP_CUDA_CALLABLE array_t() : data(nullptr), grad(nullptr), shape(), strides(), ndim(0)
+    {
+    }
+
+    WP_CUDA_CALLABLE array_t(T* data, int size, T* grad = nullptr) : data(data), grad(grad), ndim(1)
+    {
+        shape.dims[0] = size;
+        shape.dims[1] = 0;
+        shape.dims[2] = 0;
+        shape.dims[3] = 0;
+        strides[0] = sizeof(T);
+        strides[1] = 0;
+        strides[2] = 0;
+        strides[3] = 0;
+    }
+
+    WP_CUDA_CALLABLE bool empty() const
+    {
+        return !data;
+    }
+
+    T* data;
+    T* grad;
+    shape_t shape;
+    int strides[ARRAY_MAX_DIMS];
+    int ndim;
+
+    WP_CUDA_CALLABLE operator T*() const
+    {
+        return data;
+    }
+};
+
+/// 3-element float vector, binary-compatible with ``wp::vec_t<3, float>``.
+struct vec3
+{
+    float c[3];
+
+    WP_CUDA_CALLABLE vec3() : c()
+    {
+    }
+
+    WP_CUDA_CALLABLE float operator[](int i) const
+    {
+        return c[i];
+    }
+    WP_CUDA_CALLABLE float& operator[](int i)
+    {
+        return c[i];
+    }
+};
+
+/// Quaternion laid out as ``{x, y, z, w}``, binary-compatible with ``wp::quat_t<float>``.
+struct quat
+{
+    float c[4];
+
+    WP_CUDA_CALLABLE quat() : c()
+    {
+    }
+
+    WP_CUDA_CALLABLE float operator[](int i) const
+    {
+        return c[i];
+    }
+    WP_CUDA_CALLABLE float& operator[](int i)
+    {
+        return c[i];
+    }
+};
+
+/// 3x3 row-major float matrix, binary-compatible with ``wp::mat_t<3, 3, float>``.
+struct mat33
+{
+    float data[3][3];
+
+    WP_CUDA_CALLABLE mat33() : data()
+    {
+    }
+};
+
+/// Rigid-body transform laid out as seven contiguous floats ``{p.x, p.y, p.z, q.x, q.y, q.z, q.w}``,
+/// binary-compatible with ``wp::transform_t<float>``.
+struct transform
+{
+    vec3 p;
+    quat q;
+
+    WP_CUDA_CALLABLE transform()
+    {
+    }
+};
+
+/// 6-element spatial vector laid out as ``{w[0..2], v[0..2]}`` (angular then linear),
+/// binary-compatible with ``wp::vec_t<6, float>`` (``wp::spatial_vector_t<float>``).
+struct spatial_vector
+{
+    float w[3];
+    float v[3];
+
+    WP_CUDA_CALLABLE spatial_vector() : w(), v()
+    {
+    }
+};
+
+} // namespace wp

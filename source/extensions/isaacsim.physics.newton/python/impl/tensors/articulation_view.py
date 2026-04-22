@@ -1284,14 +1284,14 @@ class NewtonArticulationView:
     def set_dof_actuation_forces(self, data: Any, indices: Any, indices_mask: Any | None = None):
         """Set joint actuation forces/torques.
 
-        Newton doesn't have convert_joint_torques_to_body_forces like warp.sim.
-        This directly sets the joint forces which will be applied by the solver.
+        Writes directly into control.joint_f which is consumed by the solver.
 
         Args:
             data: Actuation force values to set.
             indices: Articulation indices.
             indices_mask: Optional mask for indices.
         """
+        control = self._newton_stage.control
         wp.launch(
             set_dof_attributes,
             dim=(indices.shape[0], self.max_dofs),
@@ -1302,11 +1302,9 @@ class NewtonArticulationView:
                 self._backend.dof_axis_indices,
                 self.max_dofs,
             ],
-            outputs=[self._newton_stage.joint_torques],
+            outputs=[control.joint_f],
             device=str(self._frontend.device),
         )
-        # TODO: May need to call a Newton function to convert joint torques to body forces
-        # if Newton provides such a utility
 
     def get_dof_actuation_forces(self, copy: bool = copy_data) -> Any:
         """Get joint actuation forces/torques.
@@ -1317,6 +1315,7 @@ class NewtonArticulationView:
         Returns:
             Tensor of shape (count, max_dofs).
         """
+        control = self._newton_stage.control
         if copy:
             if not hasattr(self, "_dof_actuation_forces"):
                 self._dof_actuation_forces, self._dof_actuation_forces_desc = self._frontend.create_tensor(
@@ -1325,13 +1324,13 @@ class NewtonArticulationView:
             wp.launch(
                 get_dof_attributes,
                 dim=(self.count, self.max_dofs),
-                inputs=[self._newton_stage.joint_torques, self._backend.dof_axis_indices, self.max_dofs],
+                inputs=[control.joint_f, self._backend.dof_axis_indices, self.max_dofs],
                 outputs=[self._convert_to_warp(self._dof_actuation_forces)],
                 device=str(self._frontend.device),
             )
             return self._dof_actuation_forces
         else:
-            return wp.indexedarray(self._newton_stage.joint_torques, self._backend.dof_axis_indices)
+            return wp.indexedarray(control.joint_f, self._backend.dof_axis_indices)
 
     def get_dof_max_forces(self, copy: bool = copy_data) -> Any:
         """Get joint maximum forces/torques (effort limits).

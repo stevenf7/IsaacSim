@@ -80,6 +80,7 @@ class NewtonStage:
         self.state_1 = None
         self.state_temp = None
         self.graph = None
+        self._kernels_compiled = False
         self.q_ik = None
         self.qd_ik = None
         self.joint_torques = None
@@ -194,12 +195,21 @@ class NewtonStage:
             )
 
             if use_cuda_graph and self.initialized:
-                if self.graph is None:
+                if not self._kernels_compiled:
+                    # Run the first step without graph capture so that
+                    # dynamically-generated solver kernels (tile_matmul,
+                    # tile_cholesky with model-specific tile sizes) are
+                    # compiled with full LTO retry support.  Capturing
+                    # this step would record a graph with failed kernels.
+                    self._kernels_compiled = True
+                    self.simulate(dt=dt)
+                elif self.graph is None:
                     wp.capture_begin(force_module_load=True)
                     try:
-                        self.simulate()
+                        self.simulate(dt=dt)
                     finally:
                         self.graph = wp.capture_end()
+                    wp.capture_launch(self.graph)
                 else:
                     wp.capture_launch(self.graph)
             else:
@@ -514,8 +524,7 @@ class NewtonStage:
             else:
                 self.state_0, self.state_1 = self.state_1, self.state_0
 
-            if i < num_substeps - 1:
-                self.state_0.clear_forces()
+            self.state_0.clear_forces()
 
         self.q_ik = self.model.joint_q
         self.qd_ik = self.model.joint_qd

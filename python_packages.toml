@@ -394,6 +394,7 @@ inventory.includes.all = [
     "exts/isaacsim.core.throttling",
     "exts/isaacsim.core.version",
     "exts/isaacsim.physics.newton",
+    "exts/isaacsim.physics.newton.tensors",
     "exts/isaacsim.physics.newton.ui",
     "exts/isaacsim.simulation_app",
     "exts/omni.kit.loop-isaac",

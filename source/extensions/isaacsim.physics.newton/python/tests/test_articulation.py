@@ -901,3 +901,32 @@ class TestNewtonArticulationView(omni.kit.test.AsyncTestCase):
 
         result = articulations.check()
         self.assertTrue(result, "check() should return True for valid articulation view")
+
+    async def test_effort_causes_velocity_change(self):
+        """Test that set_dof_actuation_forces produces joint motion."""
+        articulations = self.sim.create_articulation_view("/nv_humanoid/torso*")
+        indices = wp.from_numpy(np.arange(articulations.count, dtype=np.int32), dtype=wp.int32, device=self.wp_device)
+
+        zero_stiffness = np.zeros((articulations.count, articulations.max_dofs), dtype=np.float32)
+        zero_damping = np.zeros((articulations.count, articulations.max_dofs), dtype=np.float32)
+        articulations.set_dof_stiffnesses(
+            wp.from_numpy(zero_stiffness, dtype=wp.float32, device=self.wp_device), indices
+        )
+        articulations.set_dof_dampings(wp.from_numpy(zero_damping, dtype=wp.float32, device=self.wp_device), indices)
+
+        zero_vel = np.zeros((articulations.count, articulations.max_dofs), dtype=np.float32)
+        articulations.set_dof_velocities(wp.from_numpy(zero_vel, dtype=wp.float32, device=self.wp_device), indices)
+
+        vel_before = articulations.get_dof_velocities().numpy().copy()
+
+        torques = np.zeros((articulations.count, articulations.max_dofs), dtype=np.float32)
+        torques[:, 0] = 50.0
+        torques_wp = wp.from_numpy(torques, dtype=wp.float32, device=self.wp_device)
+
+        for _ in range(5):
+            articulations.set_dof_actuation_forces(torques_wp, indices)
+            await omni.kit.app.get_app().next_update_async()
+
+        vel_after = articulations.get_dof_velocities().numpy()
+        delta = np.abs(vel_after[0, 0] - vel_before[0, 0])
+        self.assertGreater(delta, 0.01, "DOF 0 velocity should change after applying effort")
