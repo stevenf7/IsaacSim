@@ -34,7 +34,7 @@ class Extension(omni.ext.IExt):
     release of the surface gripper interface during the extension lifecycle.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initializes the Surface Gripper extension.
 
         Args:
@@ -42,7 +42,7 @@ class Extension(omni.ext.IExt):
         """
         self._sg = _surface_gripper.acquire_surface_gripper_interface()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleans up the Surface Gripper extension resources."""
         _surface_gripper.release_surface_gripper_interface(self._sg)
 

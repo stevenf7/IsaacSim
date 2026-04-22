@@ -17,6 +17,7 @@
 
 
 import omni.kit.commands
+from pxr import Usd
 from usd.schema.isaac import robot_schema
 
 
@@ -36,7 +37,7 @@ class CreateSurfaceGripper(omni.kit.commands.Command):
         prim_path: Path where the surface gripper will be created.
     """
 
-    def __init__(self, prim_path: str = ""):
+    def __init__(self, prim_path: str = "") -> None:
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
             if name != "self":
@@ -59,7 +60,7 @@ class CreateSurfaceGripper(omni.kit.commands.Command):
                     prim_path = str(default_prim.GetPath())
         self._prim_path = omni.usd.get_stage_next_free_path(stage, prim_path + "/SurfaceGripper", False)
 
-    def do(self):
+    def do(self) -> Usd.Prim:
         """Creates the Surface Gripper prim at the specified path.
 
         Returns:
@@ -68,7 +69,7 @@ class CreateSurfaceGripper(omni.kit.commands.Command):
         self._prim = robot_schema.CreateSurfaceGripper(self._stage, self._prim_path)
         return self._prim
 
-    def undo(self):
+    def undo(self) -> bool | None:
         """Removes the created Surface Gripper prim from the stage.
 
         Returns:
@@ -76,6 +77,7 @@ class CreateSurfaceGripper(omni.kit.commands.Command):
         """
         if self._prim:
             return self._stage.RemovePrim(self._prim_path)
+        return None
 
 
 omni.kit.commands.register_all_commands_in_module(__name__)

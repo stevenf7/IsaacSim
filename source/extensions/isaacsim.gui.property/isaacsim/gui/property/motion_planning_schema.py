@@ -75,7 +75,7 @@ class MotionPlanningAPIWidget(_RobotSchemaWidgetBase):
     _MENU_PREFIX = "Isaac/Motion Planning"
     """Menu prefix used for organizing Motion Planning related menu items."""
 
-    def __init__(self, title: str, collapsed: bool = False):
+    def __init__(self, title: str, collapsed: bool = False) -> None:
         super().__init__(
             title,
             collapsed,

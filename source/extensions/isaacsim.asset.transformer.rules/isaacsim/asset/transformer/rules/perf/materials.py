@@ -933,6 +933,13 @@ class MaterialsRoutingRule(RuleInterface):
                     base, ext = os.path.splitext(filename)
                     counter = 1
                     while filename in used_filenames or os.path.exists(dst_path):
+                        if (
+                            filename not in used_filenames
+                            and not is_remote
+                            and os.path.exists(dst_path)
+                            and utils.files_are_identical(src_path, dst_path)
+                        ):
+                            break
                         filename = f"{base}_{counter}{ext}"
                         dst_path = os.path.join(assets_output_path, filename)
                         counter += 1

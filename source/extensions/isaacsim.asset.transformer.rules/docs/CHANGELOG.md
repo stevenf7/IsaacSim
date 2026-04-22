@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.6.0] - 2026-04-20
+### Added
+- `GeometriesRoutingRule` now quantizes hashed geometry values to a physical 1 mm grid derived from the stage's `metersPerUnit` (and the mesh's extent magnitude), so meshes authored in m, cm, or mm deduplicate against the same resolution instead of relying on raw float string comparison. Large arrays (points, normals, UVs) are quantized via NumPy in C.
+- `GeometriesRoutingRule` now tracks a global `used_geometry_names` set so newly emitted geometry names cannot collide with pre-existing entries when deduplication is enabled.
+- `visibility` added to `_INSTANCE_SPECIFIC_PROPERTIES` so it is no longer baked into the geometry hash.
+
+### Changed
+- `GeometriesRoutingRule._compute_geometry_hash` now ignores xform properties and replaces the previous `str(value)` hashing with a unit-aware quantization via the new `_quantize_value` helper.
+
+### Fixed
+- `MaterialsRoutingRule` no longer duplicates local texture files when the target path already exists with identical content; a `files_are_identical` check short-circuits the rename loop before appending a counter.
+
 ## [1.5.0] - 2026-04-14
 ### Added
 - `DEFAULT_PROFILE_PATH` module-level constant exposing the path to the bundled `isaacsim_structure.json` profile

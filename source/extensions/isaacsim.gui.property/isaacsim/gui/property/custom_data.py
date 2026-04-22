@@ -24,7 +24,7 @@ from omni.kit.window.property.templates import (
 from pxr import Sdf, Usd
 
 
-def iterate_custom_data(custom_data: dict):
+def iterate_custom_data(custom_data: dict) -> None:
     """Recursively convert numpy arrays in custom data to plain Python lists.
 
     Args:
@@ -40,7 +40,7 @@ def iterate_custom_data(custom_data: dict):
 class CustomDataWidget(SimplePropertyWidget):
     """Property widget for displaying and editing prim custom data as JSON."""
 
-    def _get_prim(self, prim_path: object):
+    def _get_prim(self, prim_path: object) -> Usd.Prim | None:
         """Gets the prim at the specified path from the current stage.
 
         Args:
@@ -76,11 +76,11 @@ class CustomDataWidget(SimplePropertyWidget):
 
         return True
 
-    def build_items(self):
+    def build_items(self) -> None:
         """Build the JSON editor UI for custom data."""
         import json
 
-        def dupe_checking_hook(pairs):
+        def dupe_checking_hook(pairs: list[tuple[str, object]]) -> dict[str, object]:
             result = {}
             for key, val in pairs:
                 if key in result:
@@ -95,7 +95,7 @@ class CustomDataWidget(SimplePropertyWidget):
         error = ui.StringField(multiline=False).model
         error.set_value("Valid, changes saved")
 
-        def validate(t):
+        def validate(t: ui.AbstractValueModel) -> None:
             try:
                 decoder.decode(t.get_value_as_string())
             except ValueError as e:
@@ -116,7 +116,7 @@ class CustomDataWidget(SimplePropertyWidget):
         data.set_value(j)
         data.add_value_changed_fn(lambda m: validate(m))
 
-    def build_property_item(self, stage: Usd.Stage, ui_prop: UsdPropertyUiEntry, prim_paths: list[Sdf.Path]):
+    def build_property_item(self, stage: Usd.Stage, ui_prop: UsdPropertyUiEntry, prim_paths: list[Sdf.Path]) -> None:
         """Build the UI for a single property item.
 
         Args:

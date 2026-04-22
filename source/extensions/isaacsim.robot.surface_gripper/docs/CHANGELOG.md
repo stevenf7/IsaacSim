@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.0] - 2026-04-20
+### Added
+- `SurfaceGripper` OG node (`OgnSurfaceGripper`) gains explicit `Open` and `Close` execution-input pins alongside the existing `Toggle` pin. The OGN node version is bumped from 2 to 3.
+
+### Changed
+- `OgnSurfaceGripper.compute` now dispatches on the firing execution-state of each pin (`db.inputs.<pin> == omni.graph.core.ExecutionAttributeState.ENABLED`) rather than on truthiness, with `Close` taking precedence over `Open` and `Open` over `Toggle` when multiple pins fire in the same tick. Existing graphs that only wire `Toggle` retain their prior behaviour, but graphs that drive `Open` or `Close` now force the requested state unconditionally instead of relying on the toggle fallthrough.
+
 ## [3.4.3] - 2026-03-26
 ### Changed
 - Moved Python binding module to `bindings/` subdirectory

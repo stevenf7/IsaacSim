@@ -263,6 +263,12 @@ def _apply_api(
 ):
     """Apply a schema API and create related attributes and relationships.
 
+    No-op when ``prim`` already has ``schema`` applied anywhere in its layer
+    stack. The redundant ``AddAppliedSchema`` write would otherwise dirty
+    ``apiSchemas`` metadata on every recalc traversal, forcing USD to
+    re-resolve the prim and resetting any session-only or override pose data
+    keyed on the previous composition state.
+
     Args:
         prim: The prim to update.
         schema: The schema class token to apply.
@@ -272,6 +278,8 @@ def _apply_api(
         relationships_custom: Whether to create custom relationships.
 
     """
+    if prim.HasAPI(schema.value):
+        return
     prim.AddAppliedSchema(schema.value)
     _create_attributes(prim, attributes, write_sparsely)
     _create_relationships(prim, relationships, relationships_custom)
