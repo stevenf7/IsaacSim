@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.14.6] - 2026-04-21
+### Added
+- Add `"remotesim"` to `get_active_physics_engine()` and `switch_physics_engine()` return/parameter type hints
+- Add `elif engine == "remotesim"` branch in `create_scene()` that returns a lightweight `PhysicsScene` wrapper
+
 ## [1.14.5] - 2026-04-20
 ### Changed
 - Multi-tick simulation time is now communicated via the `/ExternalSimulationTime` Fabric prim instead.

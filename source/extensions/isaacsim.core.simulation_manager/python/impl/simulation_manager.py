@@ -124,7 +124,7 @@ class SimulationManager:
     """
 
     @classmethod
-    def get_active_physics_engine(cls) -> Literal["physx"]:
+    def get_active_physics_engine(cls) -> Literal["physx", "newton", "remotesim"]:
         """Get the currently active physics engine.
 
         Returns:
@@ -169,7 +169,7 @@ class SimulationManager:
         return engines
 
     @classmethod
-    def switch_physics_engine(cls, engine_name: Literal["physx", "newton"], verbose: bool = False) -> bool:
+    def switch_physics_engine(cls, engine_name: Literal["physx", "newton", "remotesim"], verbose: bool = False) -> bool:
         """Switch to a specific physics engine.
 
         Args:
@@ -495,6 +495,9 @@ class SimulationManager:
                 from .mjc_scene import NewtonMjcScene
 
                 return NewtonMjcScene(path)
+            elif cls._engine == "remotesim":
+                # Remote-sim backend only needs a lightweight scene wrapper for dt/config access.
+                return PhysicsScene(path)
             else:
                 carb.log_warn(f"Unknown engine '{cls._engine}', defaulting to PhysX")
                 return PhysxScene(path)

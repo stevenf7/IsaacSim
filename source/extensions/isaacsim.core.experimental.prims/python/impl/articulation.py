@@ -4741,6 +4741,19 @@ class Articulation(XformPrim):
         self._num_dofs = len(self._dof_names)
         self._dof_index_dict = {name: i for i, name in enumerate(self._dof_names)}
 
+    @staticmethod
+    def _deferred_switch_remotesim() -> bool:
+        """Switch to the remotesim engine if it is registered but not yet active.
+
+        Called after PhysX query_prim so articulation metadata is already populated
+        before the engine transition.
+        """
+        available = SimulationManager.get_available_physics_engines()
+        remotesim_entry = next(((name, active) for name, active in available if name == "remotesim"), None)
+        if remotesim_entry is None or remotesim_entry[1]:
+            return False
+        return SimulationManager.switch_physics_engine("remotesim")
+
     """
     Internal callbacks.
     """
@@ -4861,6 +4874,14 @@ class Articulation(XformPrim):
             # other properties
             self._num_shapes = self._physics_articulation_view.max_shapes
             self._num_fixed_tendons = self._physics_articulation_view.max_fixed_tendons
+
+        switched_to_remotesim = self._deferred_switch_remotesim()
+        if switched_to_remotesim and SimulationManager.get_active_physics_engine() == "remotesim":
+            # The engine switch invalidates the PhysX tensor simulation view.
+            # Drop the cached articulation handle so bridge-side code fails fast
+            # instead of continuing to dereference stale PhysX objects.
+            self._teardown_cpp_data_view()
+            self._physics_articulation_view = None
 
         # C++ data view setup is intentionally opt-in to avoid affecting
         # existing Python-only workflows/tests unless explicitly requested.
