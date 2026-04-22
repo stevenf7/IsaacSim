@@ -441,6 +441,8 @@ void EffortSensorImpl::_processSensor(ImplData& impl, const std::string& jointPr
         return;
     }
 
+    sensor.articulationView->update();
+
     int effortCount = 0;
     const float* efforts = sensor.articulationView->getDofEffortsHost(&effortCount);
 

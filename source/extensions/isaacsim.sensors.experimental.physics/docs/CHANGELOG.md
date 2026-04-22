@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.0] - 2026-04-22
+### Changed
+- Add update() flush calls in EffortSensorImpl and ImuSensorImpl before reading physics data
+
 ## [2.5.0] - 2026-04-21
 ### Changed
 - Port ContactSensor to use IPrimDataReader contact API (`enableContactReporting`/`getContactReport`) instead of direct PhysX contact event subscription

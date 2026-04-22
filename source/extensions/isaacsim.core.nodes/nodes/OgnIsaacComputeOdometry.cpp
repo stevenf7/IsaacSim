@@ -187,6 +187,15 @@ private:
 
     void readTransformAndVelocity()
     {
+        if (m_articulationView)
+        {
+            m_articulationView->update();
+        }
+        else if (m_rigidBodyView)
+        {
+            m_rigidBodyView->update();
+        }
+
         int count = 0;
         if (m_articulationView)
         {

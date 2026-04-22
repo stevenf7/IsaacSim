@@ -33,6 +33,7 @@
 #include <OgnIsaacComputeTransformTreeDatabase.h>
 #include <algorithm>
 #include <atomic>
+#include <cstdint>
 #include <map>
 #include <string>
 #include <unordered_map>
@@ -121,15 +122,7 @@ public:
 
         if (!state.ensureCurrentView(db, context))
         {
-            if (!state.m_simManager || !state.m_simManager->isSimulating())
-            {
-                return false;
-            }
-
-            if (!state.initialize(db, context))
-            {
-                return false;
-            }
+            return false;
         }
 
         if (!state.m_xformView)

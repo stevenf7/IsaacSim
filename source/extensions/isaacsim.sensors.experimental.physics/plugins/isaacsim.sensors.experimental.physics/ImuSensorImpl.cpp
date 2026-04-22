@@ -690,6 +690,8 @@ void ImuSensorImpl::_processSensor(ImplData& impl, const std::string& primPath, 
         return;
     }
 
+    sensor.rigidBodyView->update();
+
     int linearCount = 0, angularCount = 0;
     const float* linearVelocityPointer = sensor.rigidBodyView->getLinearVelocitiesHost(&linearCount);
     const float* angularVelocityPointer = sensor.rigidBodyView->getAngularVelocitiesHost(&angularCount);
