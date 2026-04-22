@@ -145,6 +145,10 @@ General
 
 #. When running SDG pipelines with Replicator in standalone mode on Windows, the first frame may be skipped by writers or the data might be missing in annotators. As a workaround, add an extra capture call (``rep.orchestrator.step()``) before the SDG pipeline starts to ensure all frames are recorded correctly. See :ref:`replicator_first_frame_missing_windows_standalone_mode` for details.
 
+
+#. On Windows 11, the viewport may flicker and SDG pipelines may write black images. To resolve this, update the NVIDIA display driver to version 595 or higher.
+
+
 .. _isaac_sim_known_issues_warnings:
 
 Warnings

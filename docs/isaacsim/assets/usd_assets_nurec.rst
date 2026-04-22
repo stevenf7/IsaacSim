@@ -74,3 +74,8 @@ Prerequisites
         .. raw:: html
 
             </details>
+
+Known Limitations
+-----------------
+
+* Opening a ``.usdz`` file as the root stage and then adding another USD asset to it (via **Add Reference**, **Add Payload**, or drag-and-drop into the Stage) fails to load the added asset. The new prim appears empty with its name shown in red. As a workaround, open a ``.usd`` or ``.usda`` file (or create a new stage) as the root stage and reference the ``.usdz`` assets from there. This limitation will be addressed in a future release.
