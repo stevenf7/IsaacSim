@@ -1,5 +1,5 @@
 [package]
-version = "0.1.0"
+version = "0.1.1"
 category = "Streaming"
 title = "RTSP Streaming OmniGraph Nodes"
 description = "Provides OmniGraph nodes for streaming camera render products over RTSP using kit-livestream."

@@ -205,16 +205,13 @@ class RTSPStreamWriter(Writer):
 
             sim_time_ns = int(sim_time_s * 1e9)
             metadata = self._build_sei_metadata(sim_time_ns)
-            # TODO: Passing sim_time_ns as start_time_ns/ended_time_ns causes
-            # incorrect timestamps when the stream is played. Rely on the fixed PTS/DTS calculated
-            # by the RTSP server (frameCount * frameDuration) until the bug in kit-livestream is fixed.
             self._server.stream_video_pre_encoded_with_metadata(
                 encoded_bytes,
                 len(encoded_bytes),
                 self._width,
                 self._height,
-                start_time_ns=0,
-                ended_time_ns=0,
+                start_time_ns=sim_time_ns,
+                ended_time_ns=sim_time_ns,
                 metadata=metadata,
                 metadata_uuid=_SEI_METADATA_UUID,
             )
