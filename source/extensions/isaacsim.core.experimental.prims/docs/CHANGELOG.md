@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.8.1] - 2026-04-22
+### Added
+- Add `Articulation._deferred_switch_remotesim()` static method that switches to the remotesim engine after PhysX prim query completes
+- Call `_deferred_switch_remotesim()` in `_on_physics_ready` and tear down the PhysX tensor view if the engine was switched
+
 ## [1.8.0] - 2026-04-20
 ### Added
 - Add ContactPointData struct, contact event type constants (kContactEventFound/Lost/Persist), ContactEventData struct, ContactReportData struct to IPrimDataReader.h
