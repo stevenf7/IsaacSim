@@ -1,5 +1,10 @@
 # Changelog
 
+## [5.7.3] - 2026-04-20
+### Changed
+- `OgnIsaacComputeOdometry`: call `update()` on the articulation/rigid-body view at the start of each physics tick to flush pending data from the PhysX backend before reading transforms and velocities
+- `OgnIsaacComputeTransformTree`: add `<cstdint>` include; simplify compute path to return false immediately when `ensureCurrentView` fails instead of attempting a re-initialization
+
 ## [5.7.2] - 2026-04-15
 ### Changed
 - Modified the `OgnIsaacComputeOdometry` and `OgnIsaacComputeTransformTree` nodes to validate that their current prim
