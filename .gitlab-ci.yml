@@ -896,7 +896,10 @@ test-linux-x86_64-omniperf-benchmarks-1-gpu:
       - curl -s "https://gitlab-master.nvidia.com/omniverse/benchmark/reggie-bootstrap/-/archive/${REGGIE_BOOTSTRAP_REF}/reggie-bootstrap-${REGGIE_BOOTSTRAP_REF}.tar.gz" | tar -zx
       - ./reggie-bootstrap-${REGGIE_BOOTSTRAP_REF}/setup_venv.sh ${REGGIE_VERSION}
     script:
+      - ./tools/ci/omniperf/set_cpu_governor_performance.sh
       - ./tools/ci/omniperf/run_benchmarks.sh
+    after_script:
+      - ./tools/ci/omniperf/restore_cpu_governor.sh
     artifacts:
       paths:
         - _omniperf_results/
