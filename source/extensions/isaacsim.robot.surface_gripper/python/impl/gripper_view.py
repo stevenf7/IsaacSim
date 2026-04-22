@@ -70,7 +70,7 @@ class GripperView(XformPrim):
         orientations: np.ndarray | wp.array | None = None,
         scales: np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
-    ):
+    ) -> None:
         XformPrim.__init__(
             self,
             paths=paths,
@@ -97,7 +97,7 @@ class GripperView(XformPrim):
         self._attr_retry_interval = [p.GetAttribute(robot_schema.Attributes.RETRY_INTERVAL.name) for p in self.prims]
         self.set_surface_gripper_properties(max_grip_distance, coaxial_force_limit, shear_force_limit, retry_interval)
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Clean up the gripper view resources."""
         XformPrim.__del__(self)
 

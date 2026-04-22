@@ -25,6 +25,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 
+import numpy as np
 from isaacsim.asset.transformer import RuleConfigurationParam, RuleInterface
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdShade
 
@@ -61,8 +62,22 @@ _GEOMETRY_HASH_LENGTH: int = 32
 # 6 decimal places provides ~1 micrometer precision at meter scale
 _TRANSFORM_HASH_PRECISION: int = 6
 
+# Target quantization step for geometry hashing, in meters.
+# 0.001 m = 1 mm — absorbs DCC export drift while preserving meaningful
+# geometric differences.  The actual decimal-place precision is derived at
+# runtime from the stage's metersPerUnit so that meshes authored in cm, mm,
+# or any other unit system all quantize to the same physical resolution.
+_GEOMETRY_HASH_QUANTIZE_METERS: float = 0.001
+
+# Hard ceiling on the quantization step, in meters. The per-mesh extent can
+# widen `quantum` to keep the int64 bucket index in range on very large
+# meshes, but the grid is never allowed to exceed 1 cm -- anything coarser
+# would treat distinct geometry as identical and cause false-positive
+# deduplication.
+_GEOMETRY_HASH_QUANTIZE_MAX_METERS: float = 0.01
+
 # Properties that should be treated as instance-specific, even if schema declares them.
-_INSTANCE_SPECIFIC_PROPERTIES: frozenset[str] = frozenset({"purpose"})
+_INSTANCE_SPECIFIC_PROPERTIES: frozenset[str] = frozenset({"purpose", "visibility"})
 
 
 @dataclass
@@ -1275,6 +1290,8 @@ class GeometriesRoutingRule(RuleInterface):
         # Group geometries by their content hash for deduplication
         geometry_by_hash: dict[str, GeometryEntry] = {}
         geometry_name_counter: dict[str, int] = defaultdict(int)
+        # Track all geometry names globally to prevent collisions with existing entries
+        used_geometry_names: set[str] = set()
 
         # If deduplication is enabled, scan existing geometries in the layer first
         existing_count = 0
@@ -1282,7 +1299,7 @@ class GeometriesRoutingRule(RuleInterface):
             existing_geometries = self._scan_existing_geometries(geom_stage)
             for geom_hash, entry in existing_geometries.items():
                 geometry_by_hash[geom_hash] = entry
-                # Track name to avoid collisions
+                used_geometry_names.add(entry.name)
                 geometry_name_counter[entry.name] += 1
             existing_count = len(existing_geometries)
             if existing_count > 0:
@@ -1329,6 +1346,12 @@ class GeometriesRoutingRule(RuleInterface):
                     unique_name = f"{base_name}_{geometry_name_counter[base_name] - 1}"
                 else:
                     unique_name = base_name
+
+                while unique_name in used_geometry_names:
+                    geometry_name_counter[base_name] += 1
+                    unique_name = f"{base_name}_{geometry_name_counter[base_name] - 1}"
+
+                used_geometry_names.add(unique_name)
 
                 entry = GeometryEntry(
                     name=unique_name,
@@ -1683,11 +1706,73 @@ class GeometriesRoutingRule(RuleInterface):
             sanitized = "geom_" + sanitized
         return sanitized
 
+    @staticmethod
+    def _quantize_value(value: object, inv_q: float, grid_offset: float, quantum: float) -> bytes:
+        """Quantize a USD attribute value and return raw bytes for hashing.
+
+        Floats are snapped to a grid: ``floor((v + grid_offset) * inv_q)``.
+        The irrational grid offset prevents boundaries from coinciding with
+        "nice" float values that DCC tools produce.
+
+        For VtArray types (points, normals, UVs) the operation is vectorised
+        with numpy — no Python-level per-element loop.
+
+        Args:
+            value: The attribute value to serialize.
+            inv_q: Precomputed ``1.0 / quantum``.
+            grid_offset: Precomputed ``quantum * (sqrt(2) - 1)``.
+            quantum: Grid-cell size (used for the near-zero dead-zone).
+
+        Returns:
+            Deterministic byte sequence suitable for feeding into a hasher.
+
+        """
+        type_name = type(value).__name__
+
+        # --- Fast path: VtArray (points, normals, UVs, indices, …) ----------
+        if "Array" in type_name and hasattr(value, "__len__") and len(value) > 0:
+            first = value[0]
+            if isinstance(first, (int, float)) or hasattr(first, "__len__"):
+                arr = np.asarray(value)
+                # Integer arrays (faceVertexIndices, faceVertexCounts, etc.)
+                # are topology data, not continuous geometry -- hashing them
+                # through float quantization shifts them off-grid and breaks
+                # unit invariance, so pass the raw bytes instead.
+                if arr.dtype.kind in ("i", "u", "b"):
+                    return arr.tobytes()
+                arr = arr.astype(np.float64, copy=False)
+                mask = np.abs(arr) < quantum
+                snapped = np.floor((arr + grid_offset) * inv_q).astype(np.int64)
+                snapped[mask] = 0
+                return snapped.tobytes()
+            return str(value).encode()
+
+        # --- Scalar / small-value path ---------------------------------------
+        def _snap(v: float) -> int:
+            fv = float(v)
+            if abs(fv) < quantum:
+                return 0
+            return math.floor((fv + grid_offset) * inv_q)
+
+        if isinstance(value, float):
+            return str(_snap(value)).encode()
+
+        if isinstance(
+            value, (Gf.Vec2f, Gf.Vec2d, Gf.Vec2h, Gf.Vec3f, Gf.Vec3d, Gf.Vec3h, Gf.Vec4f, Gf.Vec4d, Gf.Vec4h)
+        ):
+            return str(tuple(_snap(c) for c in value)).encode()
+
+        return str(value).encode()
+
     def _compute_geometry_hash(self, prim: Usd.Prim) -> str:
         """Compute a hash of the geometry's intrinsic data for deduplication.
 
-        Only includes authored attribute values in the hash to ensure proper
-        deduplication of geometries with identical authored data.
+        Float precision is derived from the stage's ``metersPerUnit`` and the
+        mesh's coordinate magnitude so that quantization always targets
+        ``_GEOMETRY_HASH_QUANTIZE_METERS`` (1 mm) regardless of unit system.
+
+        Large arrays (points, normals, UVs) are quantized via numpy in C,
+        avoiding per-element Python loops.
 
         Args:
             prim: The geometry prim to hash.
@@ -1701,17 +1786,38 @@ class GeometriesRoutingRule(RuleInterface):
         # Include type name
         hasher.update(prim.GetTypeName().encode())
 
+        # Compute the quantization grid-cell size in vertex-space units.
+        meters_per_unit = UsdGeom.GetStageMetersPerUnit(self.source_stage)
+        quantum = _GEOMETRY_HASH_QUANTIZE_METERS / meters_per_unit
+        # Coarser-than-1 cm quantization risks false-positive deduplication of
+        # visibly distinct geometry, so clamp the grid widening below.
+        max_quantum = _GEOMETRY_HASH_QUANTIZE_MAX_METERS / meters_per_unit
+        extent_attr = prim.GetAttribute("extent")
+        if extent_attr.IsValid() and extent_attr.HasAuthoredValue():
+            ext = extent_attr.Get()
+            max_coord = max(abs(float(c)) for corner in ext for c in corner) if ext else 0.0
+            if max_coord > 1.0:
+                extent_quantum = 10 ** (math.ceil(math.log10(max_coord)) - 3)
+                quantum = min(max(quantum, extent_quantum), max_quantum)
+
+        # Pre-compute constants shared across all attribute values.
+        inv_q = 1.0 / quantum if quantum > 0 else 1.0
+        grid_offset = quantum * (math.sqrt(2) - 1)
+
         # Get intrinsic properties for this geometry type
         intrinsic_props = self._get_intrinsic_attributes(prim)
 
-        # Hash only authored intrinsic attribute values
+        # Hash only authored intrinsic attribute values, excluding xform
+        # properties which are stripped from geometry copies in the layer.
         for attr in sorted(prim.GetAttributes(), key=lambda a: a.GetName()):
             attr_name = attr.GetName()
+            if self._is_xform_property(attr_name):
+                continue
             if self._is_intrinsic_property(attr_name, intrinsic_props) and attr.HasAuthoredValue():
                 value = attr.Get()
                 if value is not None:
                     hasher.update(attr_name.encode())
-                    hasher.update(str(value).encode())
+                    hasher.update(self._quantize_value(value, inv_q, grid_offset, quantum))
 
         return hasher.hexdigest()[:_GEOMETRY_HASH_LENGTH]
 

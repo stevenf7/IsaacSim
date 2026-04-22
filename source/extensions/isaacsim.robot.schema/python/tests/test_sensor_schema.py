@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ruff: noqa: D102, D103, ANN001, ANN201
+# Test methods are self-documenting: their names describe the assertion under
+# test and they always return None implicitly.
 
 """Tests for codeless sensor schemas (rangeSensorSchema, isaacSensorSchema) and Python compatibility wrappers."""
 
@@ -20,7 +23,7 @@ from __future__ import annotations
 import omni.kit.app
 import omni.kit.test
 import omni.usd
-from pxr import Gf, Plug, Sdf, Tf, Usd, UsdGeom
+from pxr import Plug, Tf, UsdGeom
 
 
 class TestRangeSensorSchemaRegistration(omni.kit.test.AsyncTestCase):

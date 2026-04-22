@@ -491,6 +491,133 @@ class TestPopulateWithSites(omni.kit.test.AsyncTestCase):
         self.assertGreater(eef_idx, link1_idx)
 
 
+class TestPopulateSubRobotBoundary(omni.kit.test.AsyncTestCase):
+    """Tests that PopulateRobotSchemaFromArticulation respects sub-robot boundaries."""
+
+    async def setUp(self) -> None:
+        """Create a fresh stage for each test case."""
+        await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        self._stage = omni.usd.get_context().get_stage()
+
+    def _build_robot_with_sub_robot(self) -> None:
+        """Create parent robot -> arm link -> sub-robot -> finger link."""
+        robot = UsdGeom.Xform.Define(self._stage, "/World/Robot")
+        UsdPhysics.ArticulationRootAPI.Apply(robot.GetPrim())
+        UsdPhysics.RigidBodyAPI.Apply(robot.GetPrim())
+
+        arm = UsdGeom.Xform.Define(self._stage, "/World/Robot/Arm")
+        UsdPhysics.RigidBodyAPI.Apply(arm.GetPrim())
+        j_arm = UsdPhysics.Joint.Define(self._stage, "/World/Robot/j_arm")
+        j_arm.CreateBody0Rel().SetTargets([robot.GetPrim().GetPath()])
+        j_arm.CreateBody1Rel().SetTargets([arm.GetPrim().GetPath()])
+
+        sub = UsdGeom.Xform.Define(self._stage, "/World/Robot/Sub")
+        UsdPhysics.RigidBodyAPI.Apply(sub.GetPrim())
+        robot_schema.ApplyRobotAPI(sub.GetPrim())
+
+        finger = UsdGeom.Xform.Define(self._stage, "/World/Robot/Sub/Finger")
+        UsdPhysics.RigidBodyAPI.Apply(finger.GetPrim())
+        sub_joint = UsdPhysics.Joint.Define(self._stage, "/World/Robot/Sub/j_finger")
+        sub_joint.CreateBody0Rel().SetTargets([sub.GetPrim().GetPath()])
+        sub_joint.CreateBody1Rel().SetTargets([finger.GetPrim().GetPath()])
+
+        j_sub = UsdPhysics.Joint.Define(self._stage, "/World/Robot/j_sub")
+        j_sub.CreateBody0Rel().SetTargets([arm.GetPrim().GetPath()])
+        j_sub.CreateBody1Rel().SetTargets([sub.GetPrim().GetPath()])
+
+        return robot.GetPrim()
+
+    async def test_populate_adds_sub_robot_prim_to_links(self) -> None:
+        """The sub-robot prim itself appears in the parent's robotLinks."""
+        robot_prim = self._build_robot_with_sub_robot()
+        robot_utils.PopulateRobotSchemaFromArticulation(self._stage, robot_prim)
+
+        link_paths = {str(p) for p in robot_prim.GetRelationship(robot_schema.Relations.ROBOT_LINKS.name).GetTargets()}
+        self.assertIn("/World/Robot/Sub", link_paths)
+
+    async def test_populate_excludes_sub_robot_internals(self) -> None:
+        """Sub-robot internal links and joints are excluded from the parent."""
+        robot_prim = self._build_robot_with_sub_robot()
+        robot_utils.PopulateRobotSchemaFromArticulation(self._stage, robot_prim)
+
+        link_paths = {str(p) for p in robot_prim.GetRelationship(robot_schema.Relations.ROBOT_LINKS.name).GetTargets()}
+        joint_paths = {
+            str(p) for p in robot_prim.GetRelationship(robot_schema.Relations.ROBOT_JOINTS.name).GetTargets()
+        }
+
+        self.assertNotIn("/World/Robot/Sub/Finger", link_paths)
+        self.assertNotIn("/World/Robot/Sub/j_finger", joint_paths)
+
+    async def test_populate_keeps_parent_joints(self) -> None:
+        """The bridging joint and parent-only joints remain in the parent."""
+        robot_prim = self._build_robot_with_sub_robot()
+        robot_utils.PopulateRobotSchemaFromArticulation(self._stage, robot_prim)
+
+        joint_paths = {
+            str(p) for p in robot_prim.GetRelationship(robot_schema.Relations.ROBOT_JOINTS.name).GetTargets()
+        }
+        self.assertIn("/World/Robot/j_arm", joint_paths)
+        self.assertIn("/World/Robot/j_sub", joint_paths)
+
+    async def test_populate_adds_sub_robot_when_joint_targets_internal_link(self) -> None:
+        """When a bridging joint body points inside the sub-robot, the sub-robot prim is still added."""
+        robot = UsdGeom.Xform.Define(self._stage, "/World/Robot")
+        UsdPhysics.ArticulationRootAPI.Apply(robot.GetPrim())
+        UsdPhysics.RigidBodyAPI.Apply(robot.GetPrim())
+
+        arm = UsdGeom.Xform.Define(self._stage, "/World/Robot/Arm")
+        UsdPhysics.RigidBodyAPI.Apply(arm.GetPrim())
+        j_arm = UsdPhysics.Joint.Define(self._stage, "/World/Robot/j_arm")
+        j_arm.CreateBody0Rel().SetTargets([robot.GetPrim().GetPath()])
+        j_arm.CreateBody1Rel().SetTargets([arm.GetPrim().GetPath()])
+
+        sub = UsdGeom.Xform.Define(self._stage, "/World/Robot/Sub")
+        robot_schema.ApplyRobotAPI(sub.GetPrim())
+
+        palm = UsdGeom.Xform.Define(self._stage, "/World/Robot/Sub/Palm")
+        UsdPhysics.RigidBodyAPI.Apply(palm.GetPrim())
+
+        j_bridge = UsdPhysics.Joint.Define(self._stage, "/World/Robot/j_bridge")
+        j_bridge.CreateBody0Rel().SetTargets([arm.GetPrim().GetPath()])
+        j_bridge.CreateBody1Rel().SetTargets([palm.GetPrim().GetPath()])
+
+        robot_utils.PopulateRobotSchemaFromArticulation(self._stage, robot.GetPrim())
+
+        link_paths = {
+            str(p) for p in robot.GetPrim().GetRelationship(robot_schema.Relations.ROBOT_LINKS.name).GetTargets()
+        }
+        self.assertIn("/World/Robot/Sub", link_paths)
+        self.assertNotIn("/World/Robot/Sub/Palm", link_paths)
+
+    async def test_populate_skips_non_rigid_body(self) -> None:
+        """Prims without RigidBodyAPI are not added as links."""
+        robot = UsdGeom.Xform.Define(self._stage, "/World/Robot")
+        UsdPhysics.ArticulationRootAPI.Apply(robot.GetPrim())
+        UsdPhysics.RigidBodyAPI.Apply(robot.GetPrim())
+        robot_schema.ApplyRobotAPI(robot.GetPrim())
+
+        link = UsdGeom.Xform.Define(self._stage, "/World/Robot/Link1")
+        UsdPhysics.RigidBodyAPI.Apply(link.GetPrim())
+        no_body = UsdGeom.Xform.Define(self._stage, "/World/Robot/NoBody")
+
+        j1 = UsdPhysics.Joint.Define(self._stage, "/World/Robot/j1")
+        j1.CreateBody0Rel().SetTargets([robot.GetPrim().GetPath()])
+        j1.CreateBody1Rel().SetTargets([link.GetPrim().GetPath()])
+        j2 = UsdPhysics.Joint.Define(self._stage, "/World/Robot/j2")
+        j2.CreateBody0Rel().SetTargets([link.GetPrim().GetPath()])
+        j2.CreateBody1Rel().SetTargets([no_body.GetPrim().GetPath()])
+
+        robot_utils.PopulateRobotSchemaFromArticulation(self._stage, robot.GetPrim())
+
+        link_paths = {
+            str(p) for p in robot.GetPrim().GetRelationship(robot_schema.Relations.ROBOT_LINKS.name).GetTargets()
+        }
+        self.assertIn("/World/Robot/Link1", link_paths)
+        self.assertNotIn("/World/Robot/NoBody", link_paths)
+        self.assertFalse(no_body.GetPrim().HasAPI(robot_schema.Classes.LINK_API.value))
+
+
 class TestRecalculateRobotSchema(omni.kit.test.AsyncTestCase):
     """Tests for RecalculateRobotSchema."""
 
@@ -567,6 +694,78 @@ class TestRecalculateRobotSchema(omni.kit.test.AsyncTestCase):
             self.assertIn(path, new_links)
         # New link added
         self.assertIn("/World/Robot/Link2", new_links)
+
+    async def test_recalculate_skips_prims_without_rigid_body(self) -> None:
+        """Prims reached via BFS that lack RigidBodyAPI are not added as links."""
+        robot_xform = UsdGeom.Xform.Define(self._stage, "/World/Robot")
+        UsdPhysics.ArticulationRootAPI.Apply(robot_xform.GetPrim())
+        UsdPhysics.RigidBodyAPI.Apply(robot_xform.GetPrim())
+        robot_schema.ApplyRobotAPI(robot_xform.GetPrim())
+
+        link = UsdGeom.Xform.Define(self._stage, "/World/Robot/Link1")
+        UsdPhysics.RigidBodyAPI.Apply(link.GetPrim())
+
+        no_body = UsdGeom.Xform.Define(self._stage, "/World/Robot/NoBody")
+
+        j1 = UsdPhysics.Joint.Define(self._stage, "/World/Robot/j1")
+        j1.CreateBody0Rel().SetTargets([robot_xform.GetPrim().GetPath()])
+        j1.CreateBody1Rel().SetTargets([link.GetPrim().GetPath()])
+
+        j2 = UsdPhysics.Joint.Define(self._stage, "/World/Robot/j2")
+        j2.CreateBody0Rel().SetTargets([link.GetPrim().GetPath()])
+        j2.CreateBody1Rel().SetTargets([no_body.GetPrim().GetPath()])
+
+        robot_utils.RecalculateRobotSchema(self._stage, robot_xform.GetPrim())
+
+        link_paths = {
+            str(p) for p in robot_xform.GetPrim().GetRelationship(robot_schema.Relations.ROBOT_LINKS.name).GetTargets()
+        }
+        self.assertIn("/World/Robot/Link1", link_paths)
+        self.assertNotIn("/World/Robot/NoBody", link_paths)
+        self.assertFalse(no_body.GetPrim().HasAPI(robot_schema.Classes.LINK_API.value))
+
+    async def test_recalculate_does_not_descend_into_sub_robot(self) -> None:
+        """Sub-robot internals are excluded; the sub-robot prim itself is discovered."""
+        robot_xform = UsdGeom.Xform.Define(self._stage, "/World/Robot")
+        UsdPhysics.ArticulationRootAPI.Apply(robot_xform.GetPrim())
+        UsdPhysics.RigidBodyAPI.Apply(robot_xform.GetPrim())
+        robot_schema.ApplyRobotAPI(robot_xform.GetPrim())
+
+        arm = UsdGeom.Xform.Define(self._stage, "/World/Robot/Arm")
+        UsdPhysics.RigidBodyAPI.Apply(arm.GetPrim())
+        j_arm = UsdPhysics.Joint.Define(self._stage, "/World/Robot/j_arm")
+        j_arm.CreateBody0Rel().SetTargets([robot_xform.GetPrim().GetPath()])
+        j_arm.CreateBody1Rel().SetTargets([arm.GetPrim().GetPath()])
+
+        sub = UsdGeom.Xform.Define(self._stage, "/World/Robot/Sub")
+        UsdPhysics.RigidBodyAPI.Apply(sub.GetPrim())
+        robot_schema.ApplyRobotAPI(sub.GetPrim())
+
+        sub_link = UsdGeom.Xform.Define(self._stage, "/World/Robot/Sub/Finger")
+        UsdPhysics.RigidBodyAPI.Apply(sub_link.GetPrim())
+        sub_joint = UsdPhysics.Joint.Define(self._stage, "/World/Robot/Sub/j_finger")
+        sub_joint.CreateBody0Rel().SetTargets([sub.GetPrim().GetPath()])
+        sub_joint.CreateBody1Rel().SetTargets([sub_link.GetPrim().GetPath()])
+
+        j_sub = UsdPhysics.Joint.Define(self._stage, "/World/Robot/j_sub")
+        j_sub.CreateBody0Rel().SetTargets([arm.GetPrim().GetPath()])
+        j_sub.CreateBody1Rel().SetTargets([sub.GetPrim().GetPath()])
+
+        robot_utils.RecalculateRobotSchema(self._stage, robot_xform.GetPrim())
+
+        link_paths = {
+            str(p) for p in robot_xform.GetPrim().GetRelationship(robot_schema.Relations.ROBOT_LINKS.name).GetTargets()
+        }
+        joint_paths = {
+            str(p) for p in robot_xform.GetPrim().GetRelationship(robot_schema.Relations.ROBOT_JOINTS.name).GetTargets()
+        }
+
+        self.assertIn("/World/Robot/Arm", link_paths)
+        self.assertIn("/World/Robot/Sub", link_paths)
+        self.assertNotIn("/World/Robot/Sub/Finger", link_paths)
+        self.assertIn("/World/Robot/j_arm", joint_paths)
+        self.assertIn("/World/Robot/j_sub", joint_paths)
+        self.assertNotIn("/World/Robot/Sub/j_finger", joint_paths)
 
 
 class TestDetectAndApplySites(omni.kit.test.AsyncTestCase):

@@ -1,8 +1,21 @@
 # Changelog
 
+## [6.2.0] - 2026-04-20
+### Added
+- `RecalculateRobotSchema` gains `force_update` kwarg that rebuilds `robotLinks`/`robotJoints` and authors cross-layer `deletedItems`.
+- New shared `_discover_articulation_graph` helper with a `root_link_override` input for seeding traversal from the user's chosen base link.
+- Articulation-root scoring picks the highest-parentness rigid body when the articulation root is a grouping `Xform`.
+- Sub-robot boundary handling registers each sub-robot as one collapsed entry at its first boundary joint.
+- `SaveRobotSchemaToRobotLayer` flushes composed state onto the layer authoring `IsaacRobotAPI` only, with referenced-layer support via namespace translation.
+
 ## [6.1.0] - 2026-04-17
 ### Added
 - Add `IsaacRaycastSensor` USD schema type, plugInfo entry, sensor tokens, and Python compatibility wrapper
+### Changed
+- `PopulateRobotSchemaFromArticulation` and `RecalculateRobotSchema` now traverse DFS by default, with a `traversal` kwarg (`"dfs"` | `"bfs"`).
+- `PopulateRobotSchemaFromArticulation` only registers `RigidBodyAPI` prims as `robotLinks` and `JointAPI` prims as `robotJoints`; grouping Xforms skipped.
+- Targets now written as prepend list ops via `_set_targets_as_prepend`, preserving additive composition with downstream layers.
+- `_apply_api` is a no-op when the schema is already applied, preventing `apiSchemas` churn on recalc.
 
 ## [6.0.0] - 2026-04-15
 ### Changed
