@@ -373,8 +373,8 @@ class TestRTSPWriterMetadata(omni.kit.test.AsyncTestCase):
 
         mock_server.stream_video_pre_encoded_with_metadata.assert_called_once()
         call_kwargs = mock_server.stream_video_pre_encoded_with_metadata.call_args
-        self.assertEqual(call_kwargs.kwargs["start_time_ns"], 0)
-        self.assertEqual(call_kwargs.kwargs["ended_time_ns"], 0)
+        self.assertEqual(call_kwargs.kwargs["start_time_ns"], 2_000_000_000)
+        self.assertEqual(call_kwargs.kwargs["ended_time_ns"], 2_000_000_000)
         self.assertEqual(call_kwargs.kwargs["metadata_uuid"], _SEI_METADATA_UUID)
         payload = json.loads(call_kwargs.kwargs["metadata"])
         self.assertEqual(payload["publish_sim_time_ns"], 2_000_000_000)
