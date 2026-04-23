@@ -28,6 +28,10 @@ Install Isaac Sim using PIP
     * On Linux, GLIBC 2.35+ (``manylinux_2_35_x86_64``) version compatibility is required for pip to discover and install the Python packages. Check the GLIBC version using the command ``ldd --version``.
     * On Windows, it may be necessary to `enable long path <https://pip.pypa.io/warnings/enable-long-paths>`_ support to avoid installation errors due to OS limitations.
 
+.. note::
+
+    **Building Isaac Sim pip wheels from source.** To produce your own ``.whl`` files (for example, to test a local modification or a specific branch) instead of installing the pre-built wheels below, see the `PIP Packages <https://github.com/isaac-sim/IsaacSim/blob/main/README.md#pip-packages>`_ section of the Isaac Sim GitHub README.
+
 |isaac-sim_short| provides several Python `namespace packages <https://packaging.python.org/en/latest/guides/packaging-namespace-packages/>`_
 that allow you to compose an |isaac-sim_short| app by parts using a Python package manager (for example: `pip <https://pip.pypa.io/>`_).
 The following tables list the available *Isaac Sim - Python packages*.

@@ -1321,3 +1321,73 @@ exts.extra_folders = [
 
 # Check and fail on CI when API changed. That encourages to update and commit the python_api.md files.
 fail_on_changed_api = true
+
+########################################################################################################################
+# Python packages generation
+########################################################################################################################
+# Configuration for `./repo.sh python_package --create | --wheel`. See README.md -> Additional Build Tools ->
+# PIP Packages for end-user instructions.
+[repo_python_package]
+enabled = true
+
+templates.pyproject = """
+[build-system]
+requires = [ "setuptools >= 78.1.1" ]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+package-dir = { "" = "src" }
+
+[project.scripts]
+isaacsim = "isaacsim:main"
+"""
+
+# package generation
+definition_paths = ["${root}/python_packages.toml"]
+distributions_folder = "${root}/_build/packages/dist"
+namespace = "isaacsim"
+packages_folder = "${root}/_build/packages/python"
+source_folder = "${root}/_build/${platform}/release"
+
+# package metadata (common)
+# pyproject.toml
+pyproject.authors = [{name = "Isaac Sim team"}]
+pyproject.classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "License :: Other/Proprietary License",
+]
+pyproject.license = {text = "NVIDIA Proprietary Software"}
+pyproject.readme = """
+See [Install Isaac Sim using PIP](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_python.html)
+for details on how to install and run Isaac Sim in a (virtual) Python environment.
+"""
+pyproject.requires-python = "==3.12.*"
+pyproject.urls = [
+  {"Home page" = "https://developer.nvidia.com/isaac-sim"},
+  {"Documentation" = "https://docs.isaacsim.omniverse.nvidia.com"},
+  {"Forum" = "https://forums.developer.nvidia.com/c/omniverse/simulation/69"},
+]
+pyproject.version = "${build_string}"
+
+# wheel specifications
+wheel.platforms = {"linux-x86_64" = "manylinux_2_35_x86_64", "windows-x86_64" = "win_amd64", "linux-aarch64" = "manylinux_2_35_aarch64"}
+wheel.python = "cp312"
+
+########################################################################################################################
+# Comment archive extension dependencies
+########################################################################################################################
+# Post-processing pass between `python_package --create` and `python_package --wheel` that strips references to Kit
+# pip-archive extensions (which are shipped as runtime pip bundles, not as wheel-time dependencies) from the generated
+# extension.toml and .kit files under `_build/packages/python`.
+[repo_comment_archive_deps]
+archives = [
+  "isaacsim.pip.newton",
+  "omni.isaac.core_archive",
+  "omni.isaac.ml_archive",
+  "omni.pip.compute",
+  "omni.pip.cloud",
+  "omni.kit.pip_archive",
+]
+search_folder = "${root}/_build/packages/python"
