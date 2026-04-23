@@ -177,9 +177,9 @@ Extensions
 
    isaacsim.robot.experimental.manipulators.examples <source/extensions/isaacsim.robot.experimental.manipulators.examples/docs/index>
    isaacsim.robot.experimental.wheeled_robots <source/extensions/isaacsim.robot.experimental.wheeled_robots/docs/index>
-   isaacsim.robot.manipulators <source/extensions/isaacsim.robot.manipulators/docs/index>
+   isaacsim.robot.manipulators <source/deprecated/isaacsim.robot.manipulators/docs/index>
    isaacsim.robot.manipulators.examples <source/deprecated/isaacsim.robot.manipulators.examples/docs/index>
-   isaacsim.robot.manipulators.ui <source/extensions/isaacsim.robot.manipulators.ui/docs/index>
+   isaacsim.robot.manipulators.ui <source/deprecated/isaacsim.robot.manipulators.ui/docs/index>
    isaacsim.robot.policy.examples <source/extensions/isaacsim.robot.policy.examples/docs/index>
    isaacsim.robot.poser <source/extensions/isaacsim.robot.poser/docs/index>
    isaacsim.robot.poser.ui <source/extensions/isaacsim.robot.poser.ui/docs/index>
