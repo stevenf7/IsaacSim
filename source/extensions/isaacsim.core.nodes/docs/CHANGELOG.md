@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.7.4] - 2026-04-21
+### Changed
+- `OgnIsaacComputeTransformTree`: deferred frame name resolution to compute time so `isaac:nameOverride` attributes are fully authored before lookup
+- `OgnIsaacComputeTransformTree`: leaf prims take priority over mount parents sharing the same `nameOverride`; collisions fall back to ancestor-prefixed names (e.g. `robot_name_frame`) instead of replacing the full USD path with underscores
+- `OgnIsaacComputeTransformTree`: output arrays are only resized when the pair count changes, avoiding per-frame allocations
+- `OgnIsaacJointNameResolver`: skip prims without `isaac:nameOverride` during name override map construction, avoiding unnecessary attribute lookups
+- `OgnIsaacJointNameResolver`: name override map stores `std::string` prim names instead of live `pxr::UsdPrim` handles
+
 ## [5.7.3] - 2026-04-20
 ### Changed
 - `OgnIsaacComputeOdometry`: call `update()` on the articulation/rigid-body view at the start of each physics tick to flush pending data from the PhysX backend before reading transforms and velocities

@@ -498,9 +498,6 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         ros2_node.destroy_publisher(ros2_publisher)
         ros2_node.destroy_node()
 
-        ros2_node.destroy_publisher(ros2_publisher)
-        ros2_node.destroy_node()
-
     async def test_joint_state_subscriber_with_names(self):
         """Test if the joint state subscriber is able to move the robot as expected."""
         # add the connection between joint names from subscriber and the controller
@@ -622,5 +619,87 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         self.assertAlmostEqual(joint_velocity_received[2], -2.5, delta=1e-2)
         self.assertAlmostEqual(joint_velocity_received[1], 0, delta=1e-2)
 
+        ros2_node.destroy_publisher(ros2_publisher)
+        ros2_node.destroy_node()
+
+    async def test_joint_state_subscriber_with_name_override(self):
+        """Test that JointNameResolver correctly maps overridden joint names to prim names."""
+        from pxr import Sdf
+        from sensor_msgs.msg import JointState
+
+        joint_paths = [
+            "/Articulation/Arm/CenterRevoluteJoint",
+            "/Articulation/Slider/PrismaticJoint",
+            "/Articulation/DistalPivot/DistalRevoluteJoint",
+        ]
+        override_names = ["center_joint", "slider_joint", "distal_joint"]
+
+        for joint_path, override_name in zip(joint_paths, override_names):
+            prim = self._stage.GetPrimAtPath(joint_path)
+            attr = prim.GetAttribute("isaac:nameOverride")
+            if not attr:
+                attr = prim.CreateAttribute("isaac:nameOverride", Sdf.ValueTypeNames.String)
+            attr.Set(override_name)
+
+        graph_handle = og.get_graph_by_path("/ActionGraph")
+        og.Controller.edit(
+            graph_handle,
+            {
+                og.Controller.Keys.CREATE_NODES: [
+                    ("JointNameResolver", "isaacsim.core.nodes.IsaacJointNameResolver"),
+                ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("JointNameResolver.inputs:robotPath", "/Articulation"),
+                ],
+                og.Controller.Keys.CONNECT: [
+                    (
+                        "/ActionGraph/SubscribeJointState.outputs:execOut",
+                        "/ActionGraph/JointNameResolver.inputs:execIn",
+                    ),
+                    (
+                        "/ActionGraph/SubscribeJointState.outputs:jointNames",
+                        "/ActionGraph/JointNameResolver.inputs:jointNames",
+                    ),
+                    (
+                        "/ActionGraph/JointNameResolver.outputs:execOut",
+                        "/ActionGraph/ArticulationController.inputs:execIn",
+                    ),
+                    (
+                        "/ActionGraph/JointNameResolver.outputs:jointNames",
+                        "/ActionGraph/ArticulationController.inputs:jointNames",
+                    ),
+                ],
+                og.Controller.Keys.DISCONNECT: [
+                    ("/ActionGraph/OnPlaybackTick.outputs:tick", "/ActionGraph/ArticulationController.inputs:execIn"),
+                ],
+            },
+        )
+        await og.Controller.evaluate(graph_handle)
+
+        ros2_node = self.create_node("isaac_sim_test_joint_state_name_override")
+        ros2_publisher = self.create_publisher(ros2_node, JointState, "joint_command", 10)
+
+        test_position = [45 * PI / 180.0, 0.2, -120 * PI / 180.0]
+
+        js = JointState()
+        js.name = override_names
+        js.position = test_position
+
+        self._timeline.play()
+        await simulate_async(0.5)
+
+        art_handle = SingleArticulation("/Articulation")
+        art_handle.initialize()
+        await simulate_async(0.5)
+
+        ros2_publisher.publish(js)
+        await simulate_async(1)
+
+        joint_positions = art_handle.get_joint_positions()
+        self.assertAlmostEqual(joint_positions[0], test_position[0], delta=1e-3)
+        self.assertAlmostEqual(joint_positions[1], test_position[1], delta=1e-3)
+        self.assertAlmostEqual(joint_positions[2], test_position[2], delta=1e-3)
+
+        self._timeline.stop()
         ros2_node.destroy_publisher(ros2_publisher)
         ros2_node.destroy_node()

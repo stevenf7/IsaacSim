@@ -33,8 +33,6 @@
 #include <OgnIsaacComputeTransformTreeDatabase.h>
 #include <algorithm>
 #include <atomic>
-#include <cstdint>
-#include <map>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -57,16 +55,14 @@ static std::atomic<int> s_transformTreeViewCounter{ 0 };
 /// View index value meaning "use world or optional parent prim" (not an index into m_viewPaths).
 static constexpr int kWorldParentViewIdx = -1;
 
-/// Per-link-pair record: which view indices are the parent and child, plus frame names and cached tokens.
+/// Per-link-pair record: which view indices are the parent and child, plus cached tokens.
 struct TransformPair
 {
     int parentViewIdx; ///< kWorldParentViewIdx = world/external parent; >= 0 = index in m_viewPaths
     int childViewIdx; ///< index in m_viewPaths
-    std::string parentFrame;
-    std::string childFrame;
     bool isCamera; ///< true if child is a UsdGeomCamera (needs 180° x-axis rotation for ROS convention)
-    NameToken parentToken; ///< cached token for parentFrame (avoid per-frame stringToToken)
-    NameToken childToken; ///< cached token for childFrame
+    NameToken parentToken; ///< cached token (avoid per-frame stringToToken)
+    NameToken childToken;
 };
 
 /// World-space position + orientation in float32, matching IPrimDataReader's float arrays directly.
@@ -149,10 +145,10 @@ public:
         m_pairs.clear();
         m_parentPoseCache.clear();
         m_parentPoseCacheValid.clear();
-        m_renamedFrames.clear();
-        m_publishedFrames.clear();
+        m_lastNumPairs = -1;
         m_parentPath.clear();
         m_parentFrame = "world";
+        m_frameNamesStale = true;
     }
 
 private:
@@ -202,9 +198,10 @@ private:
             return false;
         }
 
-        buildTransformPairs(db, linkParents);
+        buildTransformPairs(linkParents);
 
         m_firstFrame = false;
+        m_frameNamesStale = true;
         return true;
     }
 
@@ -296,22 +293,14 @@ private:
                 if (isArticulation)
                 {
                     // Copy link data before removing the view (pointers become invalid after removeView).
-                    struct LinkCopy
-                    {
-                        std::string path;
-                        std::string parentPath;
-                    };
-                    std::vector<LinkCopy> copied(linkCount);
+                    std::vector<std::pair<std::string, std::string>> copied(linkCount);
                     for (size_t j = 0; j < linkCount; j++)
-                    {
-                        copied[j].path = links[j].path;
-                        copied[j].parentPath = links[j].parentPath;
-                    }
+                        copied[j] = { links[j].path, links[j].parentPath };
                     m_reader->removeView(tempId.c_str());
-                    for (const auto& lc : copied)
+                    for (const auto& [path, parentPath] : copied)
                     {
-                        m_viewPaths.push_back(lc.path);
-                        linkParents[lc.path] = lc.parentPath;
+                        m_viewPaths.push_back(path);
+                        linkParents[path] = parentPath;
                     }
                 }
                 else
@@ -370,71 +359,125 @@ private:
         return true;
     }
 
-    void buildTransformPairs(OgnIsaacComputeTransformTreeDatabase& db,
-                             const std::unordered_map<std::string, std::string>& linkParents)
+    // Records only pair topology (indices + isCamera). Frame names and tokens are filled by rebuildFrameNames().
+    void buildTransformPairs(const std::unordered_map<std::string, std::string>& linkParents)
     {
         std::unordered_map<std::string, int> pathIndex;
         for (size_t i = 0; i < m_viewPaths.size(); i++)
-        {
             pathIndex[m_viewPaths[i]] = static_cast<int>(i);
-        }
-
-        std::unordered_map<std::string, std::string> pathToFrame;
-        for (const auto& path : m_viewPaths)
-        {
-            char nameBuf[256] = {};
-            std::string name;
-            if (m_xformView->getPrimFrameName(path.c_str(), nameBuf, sizeof(nameBuf)))
-            {
-                name = nameBuf;
-            }
-            else
-            {
-                auto slash = path.rfind('/');
-                name = (slash != std::string::npos) ? path.substr(slash + 1) : path;
-            }
-            pathToFrame[path] = getUniqueFrameName(name, path);
-        }
 
         for (size_t i = 0; i < m_viewPaths.size(); i++)
         {
             const std::string& childPath = m_viewPaths[i];
-            const std::string& childFrame = pathToFrame[childPath];
-            const auto& parentPathStr = linkParents.at(childPath);
+            const auto& parentPath = linkParents.at(childPath);
             bool isCamera = m_cameraViewIndices.count(static_cast<int>(i)) > 0;
 
-            if (parentPathStr.empty())
+            if (parentPath.empty())
             {
-                m_pairs.push_back({ kWorldParentViewIdx, static_cast<int>(i), m_parentFrame, childFrame, isCamera });
+                m_pairs.push_back({ kWorldParentViewIdx, static_cast<int>(i), isCamera });
             }
             else
             {
-                auto it = pathIndex.find(parentPathStr);
-                if (it != pathIndex.end())
-                {
-                    const std::string& parentFrame = pathToFrame.at(parentPathStr);
-                    m_pairs.push_back({ it->second, static_cast<int>(i), parentFrame, childFrame, isCamera });
-                }
-                else
-                {
-                    m_pairs.push_back({ kWorldParentViewIdx, static_cast<int>(i), m_parentFrame, childFrame, isCamera });
-                }
+                auto it = pathIndex.find(parentPath);
+                m_pairs.push_back(
+                    { it != pathIndex.end() ? it->second : kWorldParentViewIdx, static_cast<int>(i), isCamera });
             }
-        }
-
-        // Cache OmniGraph tokens once — avoids per-frame stringToToken calls.
-        for (auto& pair : m_pairs)
-        {
-            pair.parentToken = db.stringToToken(pair.parentFrame.c_str());
-            pair.childToken = db.stringToToken(pair.childFrame.c_str());
         }
 
         m_parentPoseCache.resize(m_viewPaths.size());
         m_parentPoseCacheValid.resize(m_viewPaths.size(), 0);
     }
 
+    /// Re-reads all frame names from the xform view (after nameOverrides are fully authored) and
+    /// updates m_pairs tokens. Called on the first compute frame after initialize().
+    /// Each node instance resolves names independently, so multiple robots can
+    /// each own frame names like 'front_fisheye_camera' without cross-node interference.
+    void rebuildFrameNames(OgnIsaacComputeTransformTreeDatabase& db)
+    {
+        if (!m_parentPath.empty())
+        {
+            char nameBuf[256] = {};
+            if (m_xformView->getPrimFrameName(m_parentPath.c_str(), nameBuf, sizeof(nameBuf)))
+                m_parentFrame = nameBuf;
+        }
+
+        const size_t n = m_viewPaths.size();
+
+        // Collect desired frame name for every prim (nameOverride or USD leaf name as fallback).
+        std::vector<std::string> desired(n);
+        for (size_t i = 0; i < n; ++i)
+        {
+            char nameBuf[256] = {};
+            if (m_xformView->getPrimFrameName(m_viewPaths[i].c_str(), nameBuf, sizeof(nameBuf)))
+                desired[i] = nameBuf;
+            else
+            {
+                auto slash = m_viewPaths[i].rfind('/');
+                desired[i] = (slash != std::string::npos) ? m_viewPaths[i].substr(slash + 1) : m_viewPaths[i];
+            }
+        }
+
+        // Deepest-path preference: for each desired name, record the prim with the longest path
+        // (sensor leaves take priority over mount parents with the same nameOverride).
+        std::unordered_map<std::string, size_t> deepest;
+        for (size_t i = 0; i < n; ++i)
+        {
+            auto [it, inserted] = deepest.emplace(desired[i], i);
+            if (!inserted && m_viewPaths[i].size() > m_viewPaths[it->second].size())
+                it->second = i;
+        }
+
+        std::vector<std::string> frameNames(n);
+
+        // Primaries get their desired name directly.
+        for (size_t i = 0; i < n; ++i)
+        {
+            if (deepest.at(desired[i]) == i)
+                frameNames[i] = desired[i];
+        }
+
+        // Non-primaries (e.g. mount prims that lost leaf-preference) fall back to USD leaf name.
+        // If that is also taken (two prims share a USD leaf name), walk ancestors for a qualified name.
+        const size_t startPos = firstComponentEnd();
+        std::unordered_map<std::string, std::string> nameCache;
+        for (size_t i = 0; i < n; ++i)
+        {
+            if (!frameNames[i].empty())
+                continue;
+
+            const std::string& path = m_viewPaths[i];
+            auto slash = path.rfind('/');
+            std::string leafName = (slash != std::string::npos) ? path.substr(slash + 1) : path;
+
+            std::string name = std::find(frameNames.begin(), frameNames.end(), leafName) != frameNames.end() ?
+                                   disambiguateFrameName(path, leafName, startPos, frameNames, nameCache) :
+                                   leafName;
+
+            if (desired[i] != name)
+                CARB_LOG_WARN(
+                    "Frame '%s' already exists (used by another prim). Using '%s' for '%s'. "
+                    "Set unique `isaac:nameOverride` values per robot instance to suppress this.",
+                    desired[i].c_str(), name.c_str(), path.c_str());
+
+            frameNames[i] = name;
+        }
+
+        for (auto& pair : m_pairs)
+        {
+            pair.childToken = db.stringToToken(frameNames[pair.childViewIdx].c_str());
+            const std::string& parentName =
+                (pair.parentViewIdx != kWorldParentViewIdx) ? frameNames[pair.parentViewIdx] : m_parentFrame;
+            pair.parentToken = db.stringToToken(parentName.c_str());
+        }
+
+        m_frameNamesStale = false;
+    }
+
     bool computeTransforms(OgnIsaacComputeTransformTreeDatabase& db)
     {
+        if (m_frameNamesStale)
+            rebuildFrameNames(db);
+
         const auto poses = m_xformView->getWorldPosesHost();
         const float* positions = poses.positions;
         const float* orientations = poses.orientations;
@@ -463,10 +506,14 @@ private:
         auto& outTranslations = db.outputs.translations();
         auto& outOrientations = db.outputs.orientations();
 
-        outParentFrames.resize(numPairs);
-        outChildFrames.resize(numPairs);
-        outTranslations.resize(numPairs);
-        outOrientations.resize(numPairs);
+        if (numPairs != m_lastNumPairs)
+        {
+            outParentFrames.resize(numPairs);
+            outChildFrames.resize(numPairs);
+            outTranslations.resize(numPairs);
+            outOrientations.resize(numPairs);
+            m_lastNumPairs = numPairs;
+        }
 
         std::fill(m_parentPoseCacheValid.begin(), m_parentPoseCacheValid.end(), static_cast<uint8_t>(0));
 
@@ -539,36 +586,63 @@ private:
             piw, pix, piy, piz, child.px - parent.px, child.py - parent.py, child.pz - parent.pz, outTx, outTy, outTz);
     }
 
-    /// Returns a unique frame name: uses existing rename, or frame if first use, or path-derived name on collision.
-    std::string getUniqueFrameName(const std::string& frame, const std::string& path)
+    /// Returns the byte offset of the slash that ends the first path component (e.g. 6 for
+    /// "/World/..."). Used by disambiguateFrameName so the first ancestor qualifier tried is the
+    /// robot-level prim (e.g. /World/Nova_Carter_ROS_1), which is unique per robot instance.
+    size_t firstComponentEnd() const
     {
-        std::string name(frame);
-        auto renameIt = m_renamedFrames.find(path);
-        if (renameIt != m_renamedFrames.end())
+        if (m_viewPaths.empty())
+            return 0;
+        size_t pos = m_viewPaths[0].find('/', 1);
+        return (pos != std::string::npos) ? pos : 0;
+    }
+
+    /// Builds a qualified frame name by prepending ancestor path components to @p leaf, starting
+    /// past the first path component (e.g. past /World). Returns the first unused candidate,
+    /// or a path slug from @p startPos as a last resort.
+    std::string disambiguateFrameName(const std::string& path,
+                                      const std::string& leaf,
+                                      size_t startPos,
+                                      const std::vector<std::string>& frameNames,
+                                      std::unordered_map<std::string, std::string>& nameCache)
+    {
+        auto taken = [&](const std::string& s)
+        { return std::find(frameNames.begin(), frameNames.end(), s) != frameNames.end(); };
+        if (path.size() > 1 && path[0] == '/')
         {
-            m_publishedFrames[frame] = true;
-            return renameIt->second;
-        }
-        if (m_publishedFrames.find(frame) == m_publishedFrames.end())
-        {
-            m_renamedFrames[path] = frame;
-            m_publishedFrames[frame] = true;
-        }
-        else
-        {
-            name = path;
-            std::replace(name.begin(), name.end(), '/', '_');
-            if (!name.empty() && name[0] == '_')
+            size_t pos = startPos;
+            while (true)
             {
-                name = name.substr(1);
+                size_t nextSlash = path.find('/', pos + 1);
+                if (nextSlash == std::string::npos)
+                    break;
+                std::string ancestorPath = path.substr(0, nextSlash);
+                auto it = nameCache.find(ancestorPath);
+                std::string ancestorName;
+                if (it != nameCache.end())
+                    ancestorName = it->second;
+                else
+                {
+                    char nameBuf[256] = {};
+                    ancestorName =
+                        (m_xformView && m_xformView->getPrimFrameName(ancestorPath.c_str(), nameBuf, sizeof(nameBuf))) ?
+                            nameBuf :
+                            path.substr(pos + 1, nextSlash - pos - 1);
+                    nameCache[ancestorPath] = ancestorName;
+                }
+                if (!ancestorName.empty() && ancestorName != leaf)
+                {
+                    std::string candidate = ancestorName + "_" + leaf;
+                    if (!taken(candidate))
+                        return candidate;
+                }
+                pos = nextSlash;
             }
-            CARB_LOG_WARN(
-                "Frame with name %s already exists. Overriding frame name for %s to %s "
-                "(add isaac:nameOverride attribute to remove this warning)",
-                frame.c_str(), path.c_str(), name.c_str());
-            m_renamedFrames[path] = name;
-            m_publishedFrames[name] = true;
         }
+        // Last resort: slug the path from startPos onward, skipping the root component.
+        size_t slugStart = (startPos < path.size() && path[startPos] == '/') ? startPos + 1 : startPos;
+        std::string name = path.substr(slugStart);
+        std::replace(name.begin(), name.end(), '/', '_');
         return name;
     }
 
@@ -603,11 +677,9 @@ private:
     std::string m_parentPath;
     std::string m_parentFrame = "world";
 
-    // Frame name deduplication
-    std::map<std::string, std::string> m_renamedFrames;
-    std::map<std::string, bool> m_publishedFrames;
-
     bool m_firstFrame = true;
+    bool m_frameNamesStale = true;
+    int m_lastNumPairs = -1;
 };
 
 REGISTER_OGN_NODE()
