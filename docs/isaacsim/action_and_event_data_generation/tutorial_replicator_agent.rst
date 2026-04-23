@@ -308,6 +308,10 @@ Behavior tree mode is an alternative to the routine-trigger system. Each charact
 
 1.  Author a behavior tree using ``omni.behavior.tree.ui`` and save it as a JSON file. The tree references node libraries ``omni.behavior.tree.core`` and ``omni.anim.behavior.tree`` for its action, composite, and modifier nodes. Refer to the `Behavior Tree's User Guide <https://docs.omniverse.nvidia.com/kit/docs/behavior-tree/latest/user-guide.html>`_ on how to author a behavior tree.
 2.  In the IRA configuration YAML, create a character group with a ``behavior_tree`` field pointing to the JSON file. Optionally provide an ``overrides`` field to assign node parameters for different character groups without modifying the tree file.
+
+    .. warning::
+        The ``overrides`` field is not currently configurable through the UI. It can only be edited directly in the YAML configuration file or API.
+
 3.  Run the simulation as usual. The behavior-tree characters share the same spawning, NavMesh, and data-generation pipeline as IRA characters.
 
 Some sample config files with behavior tree character groups are provided in the ``[Isaac Sim Assets Path]/Samples/BehaviorTree`` folder as well as bundled in the ``data/sample_configs`` folder in the ``isaacsim.replicator.agent.core`` extension. For configuration details, parameter reference, and YAML examples, refer to :ref:`Behavior Tree Character Group (Experimental) <ira_bt_character_group>` in the Configuration File Guide.
