@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.3.0] - 2026-04-22
+### Deprecated
+- Deprecated `rangeSensorSchema` plugin types: `RangeSensor`, `Lidar`, `Generic` — used only by the deprecated `isaacsim.sensors.physx` extension. Use `IsaacRaycastSensor` with `isaacsim.sensors.experimental.physics` or `isaacsim.sensors.experimental.rtx` instead.
+- Deprecated `IsaacLightBeamSensor` from `isaacSensorSchema` — used only by the deprecated `isaacsim.sensors.physx` extension. Use `IsaacRaycastSensor` with `isaacsim.sensors.experimental.physics` instead.
+- `omni.isaac.RangeSensorSchema` Python module now emits `DeprecationWarning` on import
+- `IsaacLightBeamSensor` Python wrapper now emits `DeprecationWarning` on construction
+- Reorganized C++ sensor tokens to separate active from deprecated entries
+
 ## [6.2.0] - 2026-04-20
 ### Added
 - `RecalculateRobotSchema` gains `force_update` kwarg that rebuilds `robotLinks`/`robotJoints` and authors cross-layer `deletedItems`.

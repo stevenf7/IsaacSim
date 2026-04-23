@@ -20,6 +20,10 @@
 
 from __future__ import annotations
 
+import importlib
+import sys
+import warnings
+
 import omni.kit.app
 import omni.kit.test
 import omni.usd
@@ -271,14 +275,18 @@ class TestRangeSensorSchemaCompatWrapper(omni.kit.test.AsyncTestCase):
         self._stage = omni.usd.get_context().get_stage()
 
     def test_import(self):
-        import omni.isaac.RangeSensorSchema as RSS
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            import omni.isaac.RangeSensorSchema as RSS
 
         self.assertTrue(hasattr(RSS, "Lidar"))
         self.assertTrue(hasattr(RSS, "Generic"))
         self.assertTrue(hasattr(RSS, "RangeSensor"))
 
     def test_lidar_define(self):
-        import omni.isaac.RangeSensorSchema as RSS
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            import omni.isaac.RangeSensorSchema as RSS
 
         lidar = RSS.Lidar.Define(self._stage, "/TestLidar")
         prim = lidar.GetPrim()
@@ -286,7 +294,9 @@ class TestRangeSensorSchemaCompatWrapper(omni.kit.test.AsyncTestCase):
         self.assertEqual(prim.GetTypeName(), "Lidar")
 
     def test_generic_define(self):
-        import omni.isaac.RangeSensorSchema as RSS
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            import omni.isaac.RangeSensorSchema as RSS
 
         generic = RSS.Generic.Define(self._stage, "/TestGeneric")
         prim = generic.GetPrim()
@@ -294,7 +304,9 @@ class TestRangeSensorSchemaCompatWrapper(omni.kit.test.AsyncTestCase):
         self.assertEqual(prim.GetTypeName(), "Generic")
 
     def test_lidar_create_and_get_attrs(self):
-        import omni.isaac.RangeSensorSchema as RSS
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            import omni.isaac.RangeSensorSchema as RSS
 
         lidar = RSS.Lidar.Define(self._stage, "/TestLidar")
         lidar.CreateHorizontalFovAttr(120.0)
@@ -302,18 +314,38 @@ class TestRangeSensorSchemaCompatWrapper(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(val, 120.0, places=5)
 
     def test_base_sensor_create_enabled(self):
-        import omni.isaac.RangeSensorSchema as RSS
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            import omni.isaac.RangeSensorSchema as RSS
 
         lidar = RSS.Lidar.Define(self._stage, "/TestLidar")
         lidar.CreateEnabledAttr(False)
         self.assertEqual(lidar.GetEnabledAttr().Get(), False)
 
     def test_wrap_existing_prim(self):
-        import omni.isaac.RangeSensorSchema as RSS
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            import omni.isaac.RangeSensorSchema as RSS
 
         prim = self._stage.DefinePrim("/TestLidar", "Lidar")
         wrapped = RSS.Lidar(prim)
         self.assertEqual(wrapped.GetPrim().GetPath(), prim.GetPath())
+
+    def test_import_emits_deprecation_warning(self):
+        """Importing omni.isaac.RangeSensorSchema must emit a DeprecationWarning."""
+        mod_name = "omni.isaac.RangeSensorSchema"
+        saved = sys.modules.pop(mod_name, None)
+        try:
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
+                importlib.import_module(mod_name)
+            deprecation_msgs = [w for w in caught if issubclass(w.category, DeprecationWarning)]
+            self.assertTrue(len(deprecation_msgs) > 0, "No DeprecationWarning emitted on import")
+        finally:
+            if saved is not None:
+                sys.modules[mod_name] = saved
+            else:
+                sys.modules.pop(mod_name, None)
 
 
 class TestIsaacSensorSchemaCompatWrapper(omni.kit.test.AsyncTestCase):
@@ -353,7 +385,9 @@ class TestIsaacSensorSchemaCompatWrapper(omni.kit.test.AsyncTestCase):
     def test_light_beam_sensor_define(self):
         import omni.isaac.IsaacSensorSchema as ISS
 
-        sensor = ISS.IsaacLightBeamSensor.Define(self._stage, "/TestLightBeam")
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            sensor = ISS.IsaacLightBeamSensor.Define(self._stage, "/TestLightBeam")
         prim = sensor.GetPrim()
         self.assertTrue(prim.IsValid())
         self.assertEqual(prim.GetTypeName(), "IsaacLightBeamSensor")
@@ -431,3 +465,14 @@ class TestIsaacSensorSchemaCompatWrapper(omni.kit.test.AsyncTestCase):
         prim = self._stage.DefinePrim("/TestContact", "IsaacContactSensor")
         wrapped = ISS.IsaacContactSensor(prim)
         self.assertEqual(wrapped.GetPrim().GetPath(), prim.GetPath())
+
+    def test_light_beam_sensor_construction_emits_deprecation_warning(self):
+        """Constructing IsaacLightBeamSensor must emit a DeprecationWarning."""
+        import omni.isaac.IsaacSensorSchema as ISS
+
+        prim = self._stage.DefinePrim("/TestLightBeam", "IsaacLightBeamSensor")
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            ISS.IsaacLightBeamSensor(prim)
+        deprecation_msgs = [w for w in caught if issubclass(w.category, DeprecationWarning)]
+        self.assertTrue(len(deprecation_msgs) > 0, "No DeprecationWarning emitted on IsaacLightBeamSensor construction")

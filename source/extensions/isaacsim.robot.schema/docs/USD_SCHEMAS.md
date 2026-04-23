@@ -2,6 +2,11 @@
 
 ## rangeSensorSchema
 
+> **Deprecated since 6.2.0**: The rangeSensorSchema (RangeSensor, Lidar, Generic) is deprecated.
+> Used only by the deprecated `isaacsim.sensors.physx` extension.
+> Use `IsaacRaycastSensor` from the `isaacSensorSchema` plugin with
+> `isaacsim.sensors.experimental.physics` or `isaacsim.sensors.experimental.rtx` instead.
+
 ### RangeSensor
 
 #### enabled
@@ -101,6 +106,10 @@
 
 
 ### IsaacLightBeamSensor
+
+> **Deprecated since 6.2.0**: IsaacLightBeamSensor is deprecated.
+> Used only by the deprecated `isaacsim.sensors.physx` extension.
+> Use `IsaacRaycastSensor` with `isaacsim.sensors.experimental.physics` instead.
 
 #### numRays
   Number of rays for the light curtain, default 1

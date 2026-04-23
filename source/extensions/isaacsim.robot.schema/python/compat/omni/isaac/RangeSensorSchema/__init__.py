@@ -18,11 +18,23 @@
 # (D107), and defer typing to the upstream pxr signatures (ANN00x/20x).
 """Drop-in compatibility wrapper for omni.isaac.RangeSensorSchema.
 
-Replicates the generated schema API using generic USD attribute access,
-so that existing callsites continue to work without changes.
+.. deprecated:: 6.2.0
+    The RangeSensor, Lidar, and Generic schemas are deprecated.
+    Use ``IsaacRaycastSensor`` with ``isaacsim.sensors.experimental.physics``
+    or ``isaacsim.sensors.experimental.rtx`` instead.
 """
+import warnings
 
 from pxr import Sdf, Tf, Usd
+
+warnings.warn(
+    "omni.isaac.RangeSensorSchema is deprecated since isaacsim.robot.schema 6.2.0. "
+    "The RangeSensor, Lidar, and Generic schemas are deprecated. "
+    "Use IsaacRaycastSensor with isaacsim.sensors.experimental.physics "
+    "or isaacsim.sensors.experimental.rtx instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 
 class RangeSensor:

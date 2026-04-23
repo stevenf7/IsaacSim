@@ -21,6 +21,7 @@
 Replicates the generated schema API using generic USD attribute access,
 so that existing callsites continue to work without changes.
 """
+import warnings
 
 from pxr import Sdf, Tf, Usd
 
@@ -72,11 +73,31 @@ class IsaacBaseSensor:
         return attr
 
     def GetSensorPeriodAttr(self):
-        """Return the `sensorPeriod` float attribute."""
+        """Return the `sensorPeriod` float attribute.
+
+        .. deprecated:: 6.2.0
+            Only used by the deprecated ``isaacsim.sensors.physx`` extension.
+        """
+        warnings.warn(
+            "sensorPeriod is deprecated since isaacsim.robot.schema 6.2.0. "
+            "It is only used by the deprecated isaacsim.sensors.physx extension.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self._prim.GetAttribute("sensorPeriod")
 
     def CreateSensorPeriodAttr(self, value=None):
-        """Create the `sensorPeriod` float attribute and optionally set `value`."""
+        """Create the `sensorPeriod` float attribute and optionally set `value`.
+
+        .. deprecated:: 6.2.0
+            Only used by the deprecated ``isaacsim.sensors.physx`` extension.
+        """
+        warnings.warn(
+            "sensorPeriod is deprecated since isaacsim.robot.schema 6.2.0. "
+            "It is only used by the deprecated isaacsim.sensors.physx extension.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         attr = self._prim.CreateAttribute("sensorPeriod", Sdf.ValueTypeNames.Float)
         if value is not None:
             attr.Set(value)
@@ -168,12 +189,25 @@ class IsaacImuSensor(IsaacBaseSensor):
 
 
 class IsaacLightBeamSensor(IsaacBaseSensor):
-    """Compatibility wrapper for pxr::IsaacSensorIsaacLightBeamSensor."""
+    """Compatibility wrapper for pxr::IsaacSensorIsaacLightBeamSensor.
+
+    .. deprecated:: 6.2.0
+        Use ``IsaacRaycastSensor`` with ``isaacsim.sensors.experimental.physics`` instead.
+    """
 
     _TYPE_NAME = "IsaacLightBeamSensor"
     _TF_TYPE_NAME = "IsaacSensorIsaacLightBeamSensor"
 
-    # --- IsaacLightBeamSensor attributes ---
+    def __init__(self, prim):
+        warnings.warn(
+            "IsaacLightBeamSensor is deprecated since isaacsim.robot.schema 6.2.0. "
+            "Use IsaacRaycastSensor with isaacsim.sensors.experimental.physics instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(prim)
+
+    # ── IsaacLightBeamSensor attributes ─────────────────────────────────
 
     def GetNumRaysAttr(self):
         """Return the `numRays` int attribute (number of rays cast per frame)."""
