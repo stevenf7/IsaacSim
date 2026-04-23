@@ -19,7 +19,6 @@ from __future__ import annotations
 
 from typing import Any, NoReturn
 
-import omni.kit.window.property
 from isaacsim.replicator.behavior.utils.behavior_utils import (
     check_if_exposed_variables_should_be_removed,
     create_exposed_variables,
@@ -59,18 +58,15 @@ class BaseBehavior(BehaviorScript):
         self._update_counter = 0
         self._interval = 0
 
-        # Expose the variables as USD attributes
+        # Expose the variables as USD attributes. The property window refresh (if a UI is loaded) is
+        # triggered via a carb event dispatched from inside create_exposed_variables().
         create_exposed_variables(self.prim, EXPOSED_ATTR_NS, self.BEHAVIOR_NS, self.VARIABLES_TO_EXPOSE)
-
-        # Refresh the property windows to show the exposed variables
-        omni.kit.window.property.get_window().request_rebuild()
 
     def on_destroy(self) -> None:
         """Called when the script is unassigned from a prim."""
         # Exposed variables should be removed if the script is no longer assigned to the prim
         if check_if_exposed_variables_should_be_removed(self.prim, __file__):
             remove_exposed_variables(self.prim, EXPOSED_ATTR_NS, self.BEHAVIOR_NS, self.VARIABLES_TO_EXPOSE)
-            omni.kit.window.property.get_window().request_rebuild()
 
     def on_play(self) -> None:
         """Called when `play` is pressed."""

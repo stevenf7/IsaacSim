@@ -20,10 +20,23 @@ from __future__ import annotations
 from typing import Any
 
 import carb
+import carb.eventdispatcher
 import carb.events
 import omni.kit.app
 import omni.kit.commands
 from pxr import Sdf, Usd
+
+from ..global_variables import EXPOSED_VARS_CHANGED_EVENT
+
+
+def _notify_exposed_variables_changed() -> None:
+    """Dispatch an event signaling that exposed USD variables were created or removed.
+
+    The UI extension (``isaacsim.replicator.behavior.ui``) subscribes to this event to
+    refresh the property window. Dispatched unconditionally; if no subscriber is
+    registered (e.g. headless / no-UI mode) the event is a no-op.
+    """
+    carb.eventdispatcher.get_eventdispatcher().dispatch_event(event_name=EXPOSED_VARS_CHANGED_EVENT, payload={})
 
 
 def create_exposed_variable(
@@ -77,6 +90,8 @@ def create_exposed_variables(prim: Usd.Prim, exposed_attr_ns: str, behavior_ns: 
     import asyncio
 
     asyncio.ensure_future(lock_exposed_variables(attr_to_lock))
+
+    _notify_exposed_variables_changed()
 
 
 async def lock_exposed_variables(attr_paths: object) -> None:
@@ -160,6 +175,8 @@ def remove_exposed_variables(prim: Usd.Prim, exposed_attr_ns: str, behavior_ns: 
         attr_name = var["attr_name"]
         full_attr_name = f"{exposed_attr_ns}:{behavior_ns}:{attr_name}"
         remove_exposed_variable(prim, full_attr_name)
+
+    _notify_exposed_variables_changed()
 
 
 def get_exposed_variable(prim: Usd.Prim, full_attr_name: str) -> Any:

@@ -25,7 +25,6 @@ import carb
 import carb.events
 import numpy as np
 import omni.kit.app
-import omni.kit.window.property
 import omni.usd
 from isaacsim.replicator.behavior.global_variables import EXPOSED_ATTR_NS, EXTENSION_NAME, SCOPE_NAME
 from isaacsim.replicator.behavior.utils.behavior_utils import (
@@ -184,9 +183,6 @@ class VolumeStackRandomizer(BehaviorScript):
         # Expose the variables as USD attributes
         create_exposed_variables(self.prim, EXPOSED_ATTR_NS, self.BEHAVIOR_NS, self.VARIABLES_TO_EXPOSE)
 
-        # Refresh the property windows to show the exposed variables
-        omni.kit.window.property.get_window().request_rebuild()
-
         # Update the current behavior state and publish the new value
         self._set_state_and_publish(BehaviorState.INIT)
 
@@ -200,7 +196,6 @@ class VolumeStackRandomizer(BehaviorScript):
         # Exposed variables should be removed if the script is no longer assigned to the prim
         if check_if_exposed_variables_should_be_removed(self.prim, __file__):
             remove_exposed_variables(self.prim, EXPOSED_ATTR_NS, self.BEHAVIOR_NS, self.VARIABLES_TO_EXPOSE)
-            omni.kit.window.property.get_window().request_rebuild()
 
     def _on_event(self, event: carb.events.IEvent) -> None:
         # If the specific prim_path is provided, but does not match the prim_path of this script, return

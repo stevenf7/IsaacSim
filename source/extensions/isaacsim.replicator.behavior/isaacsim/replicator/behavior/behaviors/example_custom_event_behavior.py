@@ -22,7 +22,6 @@ from typing import Any
 import carb
 import carb.events
 import omni.kit.app
-import omni.kit.window.property
 from isaacsim.replicator.behavior.global_variables import EXPOSED_ATTR_NS, EXTENSION_NAME
 from isaacsim.replicator.behavior.utils.behavior_utils import (
     check_if_exposed_variables_should_be_removed,
@@ -85,9 +84,6 @@ class ExampleCustomEventBehavior(BehaviorScript):
         # Expose the variables as USD attributes
         create_exposed_variables(self.prim, EXPOSED_ATTR_NS, self.BEHAVIOR_NS, self.VARIABLES_TO_EXPOSE)
 
-        # Refresh the property windows to show the exposed variables
-        omni.kit.window.property.get_window().request_rebuild()
-
     def on_destroy(self) -> None:
         """Called when the script is unassigned from a prim."""
         # Unsubscribe from the event stream
@@ -97,7 +93,6 @@ class ExampleCustomEventBehavior(BehaviorScript):
         # Exposed variables should be removed if the script is no longer assigned to the prim
         if check_if_exposed_variables_should_be_removed(self.prim, __file__):
             remove_exposed_variables(self.prim, EXPOSED_ATTR_NS, self.BEHAVIOR_NS, self.VARIABLES_TO_EXPOSE)
-            omni.kit.window.property.get_window().request_rebuild()
 
     def setup(self) -> None:
         """Set up the behavior and publish a setup completion event."""
