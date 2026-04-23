@@ -58,7 +58,8 @@ def replace_package_urls_with_paths(input_string: str) -> tuple[str, bool]:
     for package_name in matches:
         try:
             package_path = package_path_to_system_path(package_name)
-        except Exception:
+        except Exception as e:
+            carb.log_error(f"Could not resolve package '{package_name}'")
             continue
         package_url = "package://" + package_name
         input_string = input_string.replace(package_url, package_path)
