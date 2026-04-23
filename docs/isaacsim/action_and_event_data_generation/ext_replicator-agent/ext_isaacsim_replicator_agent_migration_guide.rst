@@ -80,10 +80,9 @@ changed:
      - Yes
      - Yes
      - 0.x supported GoTo, Idle, and Patrol-like commands through text files. 1.x formalizes these as typed behaviors (``wander``, ``patrol``, ``stop``, ``halt``) with rich inline parameters.
-   * - **Custom Behavior Trees**
+   * - **Behavior Tree Groups**
      - --
-     - Planned
-     - ``custom_behavior`` type executes a Behavior Tree from a JSON file (re-enable planned for a future release).
+     - A character or robot group can use ``behavior_tree`` + ``overrides`` instead of ``routines``/``triggers``, delegating all logic to the referenced JSON tree. Review the Configuration File Guide sections "Behavior Tree Character Group" and "Behavior Tree Robot Group".
    * - **Event and Time Triggers**
      - Yes
      - Yes
@@ -273,7 +272,7 @@ The ``version`` field now tracks the extension version and must have a
 
    # 1.x
    isaacsim.replicator.agent:
-     version: 1.2.0
+     version: 1.5.0
 
 Top-Level Structure
 --------------------
@@ -296,16 +295,16 @@ Top-Level Structure
      - Section renamed from ``scene`` to ``environment``.
    * - ``sensor``
      - ``sensor``
-     - Completely restructured (see below).
+     - Completely restructured (refer below).
    * - ``character``
      - ``character``
-     - Completely restructured (see below).
+     - Completely restructured (refer below).
    * - ``robot``
      - ``robot``
-     - Completely restructured (see below).
+     - Completely restructured (refer below).
    * - ``replicator``
      - ``replicator``
-     - Completely restructured (see below).
+     - Completely restructured (refer below).
    * - ``response``
      - *(removed)*
      - Response section no longer exists. Use triggers instead.
@@ -326,9 +325,11 @@ Top-Level Structure
 
    # NEW (1.x)
    isaacsim.replicator.agent:
-     version: 1.2.0
+     version: 1.5.0
      seed: 123456789           # optional, auto-generated if omitted
      simulation_duration: 60.0  # 1800 frames / 30 FPS = 60 seconds
+     environment:
+       base_stage_asset_path: "Isaac/Environments/Simple_Warehouse/full_warehouse.usd"  # now required
 
 Environment (was ``scene``)
 -----------------------------
@@ -372,13 +373,13 @@ files.
    # NEW (1.x)
    character:
      root_prim_path: "/World/Characters"   # optional, defaults to /World/Characters
+     motion_library_path: ""                # optional; 1.4.0+ moved this to character root (was per-group)
      groups:
        warehouse_workers:                   # named group
          num: 10
          asset_path: "Isaac/People/Characters/"
          spawn_areas: []                    # renamed from spawn_area
          semantic_labels: [["class", "character"]]
-         motion_library_path: ""            # optional
          routines:                          # replaces command_file
            - wander:
                weight: 1.0
@@ -402,7 +403,7 @@ Key differences:
 * ``filters`` field is removed.
 * ``spawn_area`` renamed to ``spawn_areas``.
 * ``navigation_area`` is now per-behavior under ``walk.navigation_areas``.
-* New ``semantic_labels``, ``motion_library_path``, ``triggers``, and ``colliders`` fields.
+* New ``semantic_labels``, ``triggers``, and ``colliders`` fields on character groups. ``motion_library_path`` is also new but lives at the ``character:`` root (not inside a group) as of IRA 1.4.0; placing it inside a group now fails validation.
 
 Robot Section
 --------------
@@ -593,7 +594,6 @@ Available Behavior Types
 * ``wander`` -- random walk and idle cycles with configurable speed, distance, idle animations
 * ``patrol`` -- follow a path defined by 3D points or target prims
 * ``stop`` -- remain stationary for a configurable time
-* ``custom_behavior`` -- execute a Behavior Tree from a JSON file (re-enable planned for future)
 
 **Robot behaviors:**
 
@@ -605,6 +605,12 @@ Available Behavior Types
 
 * ``event_trigger`` -- fires on a named event
 * ``time_trigger`` -- fires after a specified time (in seconds)
+* ``collision_trigger`` -- fires when a named collider on the actor begins or ends overlapping with another named collider
+
+Behavior Tree Groups (alternative to routines/triggers)
+---------------------------------------------------------
+
+Starting in IRA 1.3.0 (characters) and 1.5.0 (robots), a group may opt out of the routine-trigger system by declaring a ``behavior_tree`` JSON asset and an optional ``overrides`` block at the group level. All behavior logic is then authored inside the referenced tree; ``routines``, ``triggers``, and ``colliders`` are not applied. Review the Configuration File Guide sections "Behavior Tree Character Group (Experimental)" and "Behavior Tree Robot Group (Experimental)" for the full schema and examples.
 
 Step-by-Step Migration Checklist
 =================================
@@ -612,7 +618,7 @@ Step-by-Step Migration Checklist
 Config File Migration
 ----------------------
 
-1. Change ``version`` to ``1.x.x`` (for example, ``1.2.0``).
+1. Change ``version`` to ``1.x.x`` (for example, ``1.5.0``).
 2. Move ``global.seed`` to root-level ``seed``.
 3. Convert ``global.simulation_length`` (frames) to ``simulation_duration`` (seconds) at root level.
 
@@ -625,7 +631,7 @@ Config File Migration
    * GoTo commands -> ``wander`` behavior with ``distance_range``
    * Idle commands -> ``wander`` behavior with ``idle`` list
    * Patrol-like sequences -> ``patrol`` behavior with ``path_points`` or ``target_prims``
-   * See the :ref:`Configuration File Guide <ira_configuration_file>` for full behavior type documentation.
+   * Review the :ref:`Configuration File Guide <ira_configuration_file>` for full behavior type documentation.
 
 7. Restructure ``robot`` into ``robot.groups.<group_name>`` with ``num``, ``config_file_path``, and inline ``routines``.
 
@@ -672,7 +678,7 @@ Quick Config Conversion Example
 .. code-block:: yaml
 
    isaacsim.replicator.agent:
-     version: 1.2.0
+     version: 1.5.0
      seed: 123456789
      simulation_duration: 60.0
      environment:
