@@ -100,18 +100,28 @@ Character
 Defines groups of human characters, their appearance, and their behavior.
 
 -   ``root_prim_path`` (optional): Root path for spawning characters (default: ``/World/Characters``).
+-   ``motion_library_path`` (optional): Path to a custom motion library file. Supports paths relative to the :ref:`isaac_assets_overview` root. Default: ``Isaac/People/MotionLibrary/HumanMotionLibrary.usd``.
 -   ``groups``: Dictionary of character groups.
 
-Character Group Parameters
+There are two types of Character Groups: 
+
+* BaseCharacterGroup that define Behaviors on Routine-Trigger manners.
+
+* BehaviorTreeGroup (experimental) that receives a behavior tree json file.
+
+Base Character Group
+-----------------------
+
+Group Parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -   ``num`` (required): Number of characters to spawn (>= 0).
 -   ``asset_path`` (optional): USD path to character assets. Supports paths relative to the :ref:`isaac_assets_overview` root. Default: ``Isaac/People/Characters/``.
 -   ``spawn_areas`` (optional): List of **NavMesh area names** where characters can spawn. If empty, spawns anywhere on the NavMesh.
 -   ``semantic_labels`` (optional): List of ``[type, data]`` pairs for semantic segmentation. Default: ``[["class", "character"]]``.
--   ``motion_library_path`` (optional): Path to a custom motion library file. Supports paths relative to the :ref:`isaac_assets_overview` root. Default: ``Isaac/People/MotionLibrary/HumanMotionLibrary.usd``.
 -   ``routines`` (optional): List of behaviors the characters will execute. Default: ``[{ wander: {} }]``.
 -   ``triggers`` (optional): List of event-based triggers that interrupt routines.
+-   ``colliders`` (optional): List of colliders to be spawned under the characters.
 
 Behaviors
 ^^^^^^^^^
@@ -150,8 +160,53 @@ Behaviors are defined in the ``routines`` list. Common fields:
     -   ``time_range``: [min, max] duration in seconds (default [5.0, 5.0]).
 
 
+Colliders
+^^^^^^^^^^^
+
+Characters can define a list of colliders to spawn and attach under their root. These colliders are to be used together with `collision_trigger` (details in Trigger section below) to create scenarios where characters perform behaviors when they are entering or exiting other colliders.
+
+When the following two types of colliders supported are spawned, the collider prim will be applied with `PhysicsRigidBodyAPI`, `PhysicsCollisionAPI` and `PhysxTriggerAPI`:
+
+-   **box**: The collider from UsdGeom.Cube.
+
+    - ``dimension``: The dimension of the cube in x, y, z order (for example, [1.0, 1.0, 1.0]). Value type is Array.
+
+-  **cylinder**: The collider from UsdGeom.Cylinder.
+
+    - ``radius``: The cylinder radius. Value type is Float.
+
+Each colldier also defines a name. This name will be translated into a custom USD String attribute ``metro:collider:name`` on the collider, to be used in ``self_collider`` or ``other_colliders`` from ``collision_trigger`` for collision filtering. 
+
+The spawned colliders will generate overlap events with other colliders that have ``PhysicsCollisionAPI``. ``collision_trigger`` will further filter them by checking if they have the custom USD String attribute ``metro:collider:name``. 
+
+However, Collision triggering between two characters will not be detected because Physx does not support triggering between two ``PhysxTriggerAPI``. 
+
+The recommended workflow is to pre-define colliders in stage, adding ``metro:collider:name`` to them, then set up ``colliders`` and ``collision_trigger`` in the config file.
+
+.. code-block:: yaml
+
+    character:
+      groups:
+        Worker:
+          asset_path: "Isaac/People/Characters/"
+          num: 10
+          colliders:
+           # Spawn a cylinder collider for each worker
+            - cylinder:
+                name: worker_collider_0
+                radius: 1.2
+          triggers:
+            # Worker will pause a few sceonds when it walks into colldiers with name "loading_zone" or "unloading_zone" in stage
+            - collision_trigger:
+                self_collider: worker_collider_0
+                other_colliders: loading_zone;unloading_zone
+                behavior:
+                  - stop:
+                      time_range: [2.0, 4.0]
+
+
 Triggers
-^^^^^^^^
+^^^^^^^^^
 
 Triggers define events that interrupt normal routines to execute a list of reaction behavior.
 
@@ -170,7 +225,21 @@ Each actor can specify a list of triggers to listen to.
 
 -   ``event_trigger``: Fires on a named carb event.
 
--   ``time_trigger``: Fires after a specific duration during play (in seconds).
+    - ``event``: The carb event name. Value type is String.
+
+-   ``time_trigger``: Fires after a specific time after play.
+
+    - ``time``: The time in second. Value type is Float.
+
+-   ``collision_trigger``: Fires after a specific collider under this actor begins or ends overlapping with other colliders.
+
+    - ``self_collider``: The name of collider on this actor to use (spawned by collider field in group setting). Value type is String.
+
+    - ``other_colliders``: The name list string of other colliders to react to, names are separated by ',' or ';'. Value type is String.
+
+    - ``trigger_enter``: (Optional) To trigger when it is entering the overlap. Value type is Boolean. Default is True.
+
+    - ``trigger_exit``: (Optional) To trigger when it is exiting the overlap. Value type is Boolean. Default is False.
 
     .. tip::
 
@@ -225,6 +294,17 @@ Each actor can specify a list of triggers to listen to.
                       path_points:
                         - [0, 0, 0]
                         - [0, -5, 0]
+            # Pause a few sceonds when it walks into colldiers with name "loading_zone" or "unloading_zone"
+            - collision_trigger:
+                self_collider: worker_sensing_collider
+                other_colliders: loading_zone;unloading_zone
+                behavior:
+                  - stop:
+                      time_range: [2.0, 4.0]
+          colliders:
+            - cylinder:
+                name: worker_sensing_collider  # A collider to represent the sensing range of the worker
+                radius: 10.0
 
 .. _ira_bt_character_group:
 
@@ -451,7 +531,7 @@ Supported writers: ``BasicWriter``, ``IRABasicWriter``, ``CosmosIRAWriter``, ``C
 -   ``distance_to_camera``: Depth map.
 -   ``normals``: Surface normals.
 -   ``motion_vectors``: Pixel motion.
--   ``colorize_*``: for example, ``colorize_semantic_segmentation`` (save as visible color map compaired to raw ID).
+-   ``colorize_*``: For example, ``colorize_semantic_segmentation`` (save as visible color map compaired to raw ID).
 
 Specialized Writers
 ^^^^^^^^^^^^^^^^^^^
@@ -483,7 +563,7 @@ Specialized Writers
 
     -   **Special Parameters**:
 
-        -   ``video_rendering_annotator_list``: Generates .mp4 videos for specified annotators (for example, ``["rgb", "semantic_segmentation"]``).
+        -   ``video_rendering_annotator_list``: Generates ``.mp4`` videos for specified annotators (for example, ``["rgb", "semantic_segmentation"]``).
         -   ``agent_info_skeleton_data``: Exports 2D/3D skeleton joints for characters.
 
     -   **Action data**:
@@ -504,7 +584,7 @@ Specialized Writers
 
 2.  **CosmosIRAWriter**:
 
-    -   Adds "Cosmos" specific post-processing.
+    -   Adds "Cosmos" Specific post-processing.
     -   ``shaded_seg``: Shaded segmentation visualization.
     -   ``canny_edge``: Canny edge detection filter (with ``canny_threshold_low/high``).
 
@@ -514,7 +594,7 @@ Specialized Writers
 
     -   **Required parameters**:
 
-        -   ``writer_name`` (string, required): The registry name of the target writer (for example, ``"BasicWriter"``, ``"KittiWriter"``, or a user-defined name). Any class registered via ``WriterRegistry.register()`` can be referenced here.
+        -   ``writer_name`` (string, required): The registry name of the target writer (for example, ``"BasicWriter"``, ``"KittiWriter"``, or a user-defined name). Any class registered using ``WriterRegistry.register()`` can be referenced here.
 
     -   **Optional parameters**:
 
@@ -531,7 +611,7 @@ Specialized Writers
 
         Parameters whose types cannot be represented in JSON (for example, custom backend objects) are excluded from the dynamic model and the UI but can still be passed in YAML.
 
-    .. dropdown:: Auto-registration via class path
+    .. dropdown:: Auto-registration using class path
 
         If the writer class is not yet in the ``WriterRegistry`` when the config is loaded, provide ``writer_class_path`` to have IRA import and register it automatically:
 
@@ -550,7 +630,7 @@ Specialized Writers
         2.  A dedicated dialog appears with two fields:
 
             -   **Writer Name**: A dropdown listing all writers currently in the ``WriterRegistry``. Select the target writer.
-            -   **Class Path**: An optional text field for the dotted import path. Click **Register** to import, validate, and register the class, which also refreshes the Writer Name dropdown.
+            -   **Class Path**: An optional text field for the dotted import path. Click **Register** to import, validate, and register the class, which also refreshes the **Writer Name** dropdown.
 
         3.  Click **OK** to confirm. The editor displays the writer's name as a read-only label and lists all currently set parameters with their values.
         4.  Use the **Add Parameter** dropdown at the bottom to override additional defaults from the writer's ``__init__`` signature.
