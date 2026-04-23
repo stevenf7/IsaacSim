@@ -49,6 +49,15 @@ class RmpFlowController(mg.BaseController):
             it is used as-is. Defaults to "rmp_flow.yaml".
         tool_frame: Name of the tool frame for end-effector control. Defaults to None,
             which uses the first tool frame defined in the robot description.
+        maximum_substep_size: Maximum timestep size (in seconds) used during Euler integration.
+            When the frame duration exceeds this value, the integration is split into multiple
+            substeps to improve numerical stability.
+
+    Raises:
+        ValueError: If `cumotion_robot.controlled_joint_names` is not a subset of `robot_joint_space`.
+        ValueError: If `tool_frame` is not found in `robot_site_space`.
+        ValueError: If `maximum_substep_size` is not strictly positive.
+        RuntimeError: If no tool frames are available in the robot description and `tool_frame` is None.
 
     Example:
 
@@ -71,6 +80,7 @@ class RmpFlowController(mg.BaseController):
         robot_site_space: list[str],
         rmp_flow_configuration_filename: pathlib.Path | str = "rmp_flow.yaml",
         tool_frame: str | None = None,
+        maximum_substep_size: float = 1.0 / 120.0,
     ) -> None:
 
         if not set(cumotion_robot.controlled_joint_names).issubset(set(robot_joint_space)):
@@ -94,6 +104,11 @@ class RmpFlowController(mg.BaseController):
             )
 
         self._cumotion_world_interface = cumotion_world_interface
+
+        if maximum_substep_size <= 0.0:
+            raise ValueError("maximum_substep_size must be strictly positive.")
+
+        self._maximum_substep_size = maximum_substep_size
 
         # there is no "RmpFlow" algorithm until we initialize.
         self._rmp_flow = None
@@ -191,14 +206,10 @@ class RmpFlowController(mg.BaseController):
             if tool_orientation is not None:
                 self._rmp_flow.set_end_effector_orientation_attractor(tool_orientation)
 
-        # TODO:
-        # SUB-STEPPING.
-        # BOOLEAN TO EVALUATE FROM ESTIMATED STATE.
-        joint_acceleration = np.zeros_like(self._output_position)
-        self._rmp_flow.eval_accel(self._output_position, self._output_velocity, joint_acceleration)
-
-        self._output_velocity += joint_acceleration * (t - self._previous_run_time)
-        self._output_position += self._output_velocity * (t - self._previous_run_time)
+        frame_duration = t - self._previous_run_time
+        self._output_position, self._output_velocity = self._euler_integration(
+            self._output_position, self._output_velocity, frame_duration
+        )
         self._previous_run_time = t
 
         # output the current desired joints & reference frames:
@@ -340,3 +351,32 @@ class RmpFlowController(mg.BaseController):
             orientation_world_to_target=rotation_world_target,
             orientation_world_to_base=world_to_robot_base_quaternion,
         )
+
+    def _euler_integration(
+        self, joint_positions: np.ndarray, joint_velocities: np.ndarray, frame_duration: float
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Perform Euler integration to advance robot joint states.
+
+        Integrates the robot dynamics using multiple substeps to maintain numerical stability.
+        The number of substeps is determined by `_maximum_substep_size`.
+
+        Args:
+            joint_positions: Starting joint positions.
+            joint_velocities: Starting joint velocities.
+            frame_duration: Total time duration to integrate over in seconds.
+
+        Returns:
+            Updated joint positions and velocities after integration.
+        """
+        if frame_duration <= 0.0:
+            return joint_positions, joint_velocities
+        num_steps = int(np.ceil(frame_duration / self._maximum_substep_size))
+        policy_timestep = frame_duration / num_steps
+
+        joint_acceleration = np.zeros_like(joint_positions)
+        for _ in range(num_steps):
+            self._rmp_flow.eval_accel(joint_positions, joint_velocities, joint_acceleration)
+            joint_velocities += policy_timestep * joint_acceleration
+            joint_positions += policy_timestep * joint_velocities
+
+        return joint_positions, joint_velocities
