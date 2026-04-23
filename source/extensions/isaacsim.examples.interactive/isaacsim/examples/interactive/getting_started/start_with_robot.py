@@ -20,8 +20,8 @@ import time
 
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.timeline
+from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.core.simulation_manager import IsaacEvents, SimulationManager
-from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.examples.base.base_sample_experimental import BaseSample
 from isaacsim.storage.native import get_assets_root_path
 
@@ -75,7 +75,7 @@ class GettingStartedRobot(BaseSample):
         start/stop cycle to reset the physics timeline.
         """
         # move camera to a better vanatage point
-        set_camera_view(eye=[5.0, 0.0, 1.5], target=[0.00, 0.00, 1.00], camera_prim_path="/OmniverseKit_Persp")
+        ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=[5.0, 0.0, 1.5], target=[0.00, 0.00, 1.00])
 
         # Add physics callback using SimulationManager (experimental API)
         self._physics_callback_id = SimulationManager.register_callback(

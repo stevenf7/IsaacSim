@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.16.0] - 2026-04-21
+### Changed
+- Remove deprecated dependency extensions and migrate implementation to core experimental
+
+### Removed
+- Move the `base_sample` module to the `isaacsim.cortex.examples` extension
+
 ## [4.15.7] - 2026-04-14
 ### Changed
 - Deprecated cortex examples. Moved to source/deprecated/isaacsim.cortex.examples

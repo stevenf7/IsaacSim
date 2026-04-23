@@ -21,10 +21,10 @@ import os
 
 import omni.ext
 import omni.ui as ui
+from isaacsim.cortex.examples.base_sample import BaseSampleUITemplate
 from isaacsim.cortex.examples.ur10_palletizing.ur10_palletizing import BinStacking
 from isaacsim.cortex.framework.cortex_world import CortexWorld
 from isaacsim.examples.browser import get_instance as get_browser_instance
-from isaacsim.examples.interactive.base_sample import BaseSampleUITemplate
 from isaacsim.gui.components.ui_utils import btn_builder, cb_builder, str_builder
 
 

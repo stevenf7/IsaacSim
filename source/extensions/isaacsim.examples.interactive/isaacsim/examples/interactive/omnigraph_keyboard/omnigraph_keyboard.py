@@ -20,7 +20,7 @@ import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.graph.core as og
 from isaacsim.core.experimental.materials import PreviewSurfaceMaterial
 from isaacsim.core.experimental.objects import Cube
-from isaacsim.core.utils.viewports import set_camera_view
+from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.examples.base.base_sample_experimental import BaseSample
 from isaacsim.storage.native import get_assets_root_path
 
@@ -81,7 +81,7 @@ class OmnigraphKeyboard(BaseSample):
             path="/World/ground",
         )
 
-        set_camera_view(eye=[5, 5, 3], target=[0, 0, 0])
+        ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=[5, 5, 3], target=[0, 0, 0])
 
         # setup graph
         keys = og.Controller.Keys
