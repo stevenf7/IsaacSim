@@ -13,44 +13,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""MobilityGen robot base class, front-camera utilities, and robot registry."""
+"""MobilityGen robot base classes and robot registry."""
 
 from __future__ import annotations
 
 import math
+import pathlib
+import sys
+from abc import ABC, abstractmethod
 
 import isaacsim.core.experimental.utils.transform as transform_utils
 
 # Standard imports
 import numpy as np
 
+# Extension imports
+import yaml
+
 # Isaac Sim Imports
 from isaacsim.core.experimental.objects import Camera
 from isaacsim.core.experimental.prims import Articulation, XformPrim
 from isaacsim.core.experimental.utils.stage import get_current_stage
-from pxr import Sdf
 
-# Extension imports
-from .common import Buffer, Module
-from .types import Pose2d
+from .common import Buffer, Module, _join_sdf_paths
+from .types import Pose2d, SensorConfig
 from .utils.registry import Registry
-
-
-def _join_sdf_paths(*subpaths: str) -> str:
-    p = Sdf.Path(subpaths[0])
-    for subpath in subpaths[1:]:
-        subpath = subpath.strip("/")
-        if subpath:
-            p = p.AppendPath(subpath)
-    return str(p)
-
 
 # =========================================================
 #  BASE CLASSES
 # =========================================================
 
 
-class MobilityGenRobot(Module):
+class MobilityGenRobot(Module, ABC):
     """Abstract base class for robots.
 
     This class defines an abstract base class for robots.
@@ -211,6 +205,7 @@ class MobilityGenRobot(Module):
         return camera_path
 
     @classmethod
+    @abstractmethod
     def build(cls, prim_path: str) -> "MobilityGenRobot":
         """Build the robot at the given prim path.
 
@@ -220,15 +215,16 @@ class MobilityGenRobot(Module):
         Returns:
             The constructed robot instance.
         """
-        raise NotImplementedError
+        ...
 
+    @abstractmethod
     def write_action(self, step_size: float) -> None:
         """Write the current action to the robot actuators.
 
         Args:
             step_size: The physics timestep size in seconds.
         """
-        raise NotImplementedError
+        ...
 
     def is_physics_ready(self) -> bool:
         """Return True if the physics tensor entity is valid and ready.
@@ -290,3 +286,130 @@ class MobilityGenRobot(Module):
 
 
 ROBOTS = Registry[MobilityGenRobot]()
+
+
+# =========================================================
+#  V2: YAML-driven multi-sensor robot
+# =========================================================
+
+
+class MobilityGenMultiSensorRobot(MobilityGenRobot):
+    """YAML-driven robot that extends :class:`MobilityGenRobot` with a multi-sensor rig.
+
+    Subclasses set ``robot_config_path`` to a YAML file path relative to the subclass
+    module's ``__file__``.  The YAML is parsed once at class-definition time via
+    ``__init_subclass__``, which calls :meth:`_apply_robot_yaml` to populate all standard
+    :class:`MobilityGenRobot` class attributes — no per-class attribute boilerplate needed.
+
+    The ``sensor_rig.sensors`` YAML section is parsed into ``cls.sensor_configs`` (a list of
+    :class:`~.types.CameraConfig`).  Call :meth:`build_sensor_rig` in ``build()`` to
+    instantiate the :class:`~.sensor_rig.MobilityGenSensorRig` and store it as
+    ``self.sensor_rig``.
+    """
+
+    robot_config_path: str = ""
+    # Always fully reassigned by _apply_robot_yaml; never mutated in-place.
+    sensor_configs: list[SensorConfig] = []
+
+    def __init_subclass__(cls, **kwargs: object) -> None:
+        """Auto-apply robot YAML when a subclass sets robot_config_path."""
+        super().__init_subclass__(**kwargs)
+        if cls.robot_config_path:
+            module_file = sys.modules[cls.__module__].__file__
+            yaml_path = pathlib.Path(module_file).parent / cls.robot_config_path
+            cls._apply_robot_yaml(str(yaml_path))
+
+    @classmethod
+    def _apply_robot_yaml(cls, path: str) -> None:
+        """Parse a robot YAML file and set class attributes directly on this class.
+
+        Populates all standard :class:`MobilityGenRobot` class attributes so that every
+        inherited method works without any override.  Robot-type-specific keys (``wheel``,
+        ``articulation_path``, ``controller_z_offset``) are set only when present.
+
+        Args:
+            path: Absolute path to the robot YAML configuration file.
+        """
+        from .sensor_rig import parse_sensor_entries
+
+        with open(path) as f:
+            d = yaml.safe_load(f)
+
+        cc = d.get("chase_camera", {})
+        om = d.get("occupancy_map", {})
+        ctrl = d.get("control", {})
+        ra = d.get("random_action", {})
+        pf = d.get("path_following", {})
+        wheel = d.get("wheel", {})
+
+        cls.usd_url = d["asset_path"]  # suffix only; build() prepends get_assets_root_path()
+        cls.physics_dt = d["physics_dt"]
+        cls.z_offset = d["z_offset"]
+        cls.chase_camera_base_path = cc["base_path"]
+        cls.chase_camera_x_offset = cc["x_offset"]
+        cls.chase_camera_z_offset = cc["z_offset"]
+        cls.chase_camera_tilt_angle = cc["tilt_angle"]
+        cls.occupancy_map_radius = om["radius"]
+        cls.occupancy_map_collision_radius = om["collision_radius"]
+        cls.occupancy_map_z_min = om.get("z_min", 0.0)
+        cls.occupancy_map_z_max = om.get("z_max", 1.0)
+        cls.occupancy_map_cell_size = om.get("cell_size", 0.05)
+        cls.keyboard_linear_velocity_gain = ctrl["keyboard_linear_velocity_gain"]
+        cls.keyboard_angular_velocity_gain = ctrl["keyboard_angular_velocity_gain"]
+        cls.gamepad_linear_velocity_gain = ctrl["gamepad_linear_velocity_gain"]
+        cls.gamepad_angular_velocity_gain = ctrl["gamepad_angular_velocity_gain"]
+        cls.random_action_linear_velocity_range = tuple(ra["linear_velocity_range"])
+        cls.random_action_angular_velocity_range = tuple(ra["angular_velocity_range"])
+        cls.random_action_linear_acceleration_std = ra["linear_acceleration_std"]
+        cls.random_action_angular_acceleration_std = ra["angular_acceleration_std"]
+        cls.random_action_grid_pose_sampler_grid_size = ra["grid_pose_sampler_grid_size"]
+        cls.path_following_speed = pf["speed"]
+        cls.path_following_angular_gain = pf["angular_gain"]
+        cls.path_following_stop_distance_threshold = pf["stop_distance_threshold"]
+        cls.path_following_forward_angle_threshold = pf["forward_angle_threshold"]
+        cls.path_following_target_point_offset_meters = pf["target_point_offset_m"]
+        cls.sensor_configs = parse_sensor_entries(d.get("sensor_rig", {}).get("sensors", []))
+
+        # Wheeled-robot specific
+        if wheel:
+            cls.wheel_dof_names = wheel.get("dof_names")
+            cls.wheel_radius = wheel.get("radius_m")
+            cls.wheel_base = wheel.get("base_m")
+            cls.chassis_subpath = wheel.get("chassis_subpath")
+
+        # Policy-robot specific
+        if "articulation_path" in d:
+            cls.articulation_path = d["articulation_path"]
+        if "controller_z_offset" in d:
+            cls.controller_z_offset = d["controller_z_offset"]
+
+    @property
+    def front_camera(self) -> None:
+        """Raise AttributeError — multi-sensor robots expose cameras via sensor_rig."""
+        raise AttributeError(f"{type(self).__name__} uses a sensor_rig; access cameras via self.sensor_rig.<name>")
+
+    @front_camera.setter
+    def front_camera(self, _value: object) -> None:
+        pass  # parent __init__ sets this to None; silently discard it
+
+    def __init__(self, prim_path: str, articulation: Articulation, sensor_rig: Module | None = None) -> None:
+        super().__init__(prim_path=prim_path, articulation=articulation, front_camera=None)
+        self.sensor_rig = sensor_rig
+
+    @classmethod
+    def build_sensor_rig(cls, prim_path: str) -> "Module | None":
+        """Build a :class:`~.sensor_rig.MobilityGenSensorRig` from ``cls.sensor_configs``.
+
+        Args:
+            prim_path: Absolute USD prim path of the robot root, used to resolve relative
+                ``sensor_prim_path`` values in the sensor configs.
+
+        Returns:
+            A :class:`~.sensor_rig.MobilityGenSensorRig` instance, or ``None`` if
+            ``sensor_configs`` is empty.
+        """
+        if not cls.sensor_configs:
+            return None
+        from .sensor_rig import MobilityGenSensorRig
+
+        return MobilityGenSensorRig.from_sensor_configs(cls.sensor_configs, prim_path)

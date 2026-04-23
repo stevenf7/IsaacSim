@@ -16,6 +16,7 @@
 """MobilityGenCamera class for managing camera rendering and state capture."""
 
 
+import carb
 import numpy as np
 import omni.replicator.core as rep
 from isaacsim.core.experimental.utils.prim import get_prim_at_path
@@ -48,6 +49,10 @@ class MobilityGenCamera(Module):
         self.segmentation_image = Buffer(tags=["segmentation"])
         self.segmentation_info = Buffer()
         self.depth_image = Buffer(tags=["depth"])
+        # TODO: tag should be ["instance_id_segmentation"], not ["segmentation"]. Using the same tag causes
+        # state_dict_segmentation() to return both buffers, mixing instance ID data into state/segmentation/.
+        # Also, the annotator used is the hidden legacy "instance_id_segmentation" node; should be
+        # "instance_id_segmentation_fast" to match the supported API.
         self.instance_id_segmentation_image = Buffer(tags=["segmentation"])
         self.instance_id_segmentation_info = Buffer()
         self.normals_image = Buffer(tags=["normals"])
@@ -147,8 +152,15 @@ class MobilityGenCamera(Module):
 
     def update_state(self) -> None:
         """Update all camera state buffers by reading from annotators and USD."""
+        if not self._prim or not self._prim.IsValid():
+            carb.log_warn(f"MobilityGenCamera: prim at '{self._prim_path}' is invalid; skipping update")
+            super().update_state()
+            return
+
+        # do_array_copy=True is required: annotators return views into shared internal buffers that are
+        # overwritten each render frame. Without copying, Buffer.value would be silently corrupted.
         if self._rgb_annotator is not None:
-            data = self._rgb_annotator.get_data()
+            data = self._rgb_annotator.get_data(do_array_copy=True)
             if data.ndim == 3:
                 self.rgb_image.set_value(data[:, :, :3])
             elif data.ndim == 1 and data.size > 0:
@@ -156,25 +168,24 @@ class MobilityGenCamera(Module):
                 w, h = self._resolution
                 self.rgb_image.set_value(data.reshape(h, w, -1)[:, :, :3])
         if self._segmentation_annotator is not None:
-            data = self._segmentation_annotator.get_data()
+            data = self._segmentation_annotator.get_data(do_array_copy=True)
             seg_image = data["data"]
             seg_info = data["info"]
             self.segmentation_image.set_value(seg_image)
             self.segmentation_info.set_value(seg_info)
 
         if self._depth_annotator is not None:
-            self.depth_image.set_value(self._depth_annotator.get_data())
+            self.depth_image.set_value(self._depth_annotator.get_data(do_array_copy=True))
 
         if self._instance_id_segmentation_annotator is not None:
-            data = self._instance_id_segmentation_annotator.get_data()
+            data = self._instance_id_segmentation_annotator.get_data(do_array_copy=True)
             id_seg_image = data["data"]
             id_seg_info = data["info"]
             self.instance_id_segmentation_image.set_value(id_seg_image)
             self.instance_id_segmentation_info.set_value(id_seg_info)
 
         if self._normals_annotator is not None:
-            data = self._normals_annotator.get_data()
-            self.normals_image.set_value(data)
+            self.normals_image.set_value(self._normals_annotator.get_data(do_array_copy=True))
 
         # Use USD directly (no warp tensors) to avoid a CPU-GPU sync every step.
         xform = UsdGeom.Xformable(self._prim)

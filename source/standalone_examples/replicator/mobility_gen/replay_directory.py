@@ -13,11 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Launches a simulation app for replaying a recording and rendering sensor data."""
+"""CLI wrapper for replaying MobilityGen recordings and rendering sensor data.
+
+Example usage (from the Isaac Sim build directory):
+
+    cd _build/linux-x86_64/release
+    ./python.sh ../../../source/standalone_examples/replicator/mobility_gen/replay_directory.py \\
+        --render_interval 6 \\
+        --enable isaacsim.replicator.mobility_gen.examples \\
+        --input ~/MobilityGenData/recordings \\
+        --output ~/MobilityGenData/replays
+
+Note: multi_gpu is disabled to avoid crashes on Kit 110.1.x with multiple GPUs.
+"""
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp(launch_config={"headless": True})
+simulation_app = SimulationApp(launch_config={"headless": True, "multi_gpu": False})
 
 import argparse
 import glob
@@ -29,12 +41,19 @@ import carb
 import isaacsim.core.experimental.utils.app as app_utils
 import omni.replicator.core as rep
 import omni.timeline
+from isaacsim.core.experimental.utils.stage import get_current_stage
 from isaacsim.core.simulation_manager import SimulationManager
 
 app_utils.enable_extension("isaacsim.replicator.experimental.mobility_gen")
 app_utils.enable_extension("isaacsim.replicator.mobility_gen.examples")
 
-from isaacsim.replicator.experimental.mobility_gen import MobilityGenReader, MobilityGenWriter, load_scenario
+from isaacsim.replicator.experimental.mobility_gen import (
+    MobilityGenReader,
+    MobilityGenWriter,
+    apply_sensor_overrides,
+    load_scenario,
+    log_camera_properties,
+)
 
 if "MOBILITY_GEN_DATA" in os.environ:
     DATA_DIR = os.environ["MOBILITY_GEN_DATA"]
@@ -56,26 +75,39 @@ if __name__ == "__main__":
         help="The path to output the recordings with rendered sensor data",
     )
 
-    parser.add_argument("--rgb_enabled", type=bool, default=True, help="Set true to enable RGB image rendering.")
+    parser.add_argument(
+        "--rgb_enabled",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Enable RGB image rendering (--rgb_enabled / --no-rgb_enabled).",
+    )
 
     parser.add_argument(
         "--segmentation_enabled",
-        type=bool,
+        action=argparse.BooleanOptionalAction,
         default=True,
-        help="Set true to enable semantic segmentation image rendering.",
+        help="Enable semantic segmentation rendering (--segmentation_enabled / --no-segmentation_enabled).",
     )
 
-    parser.add_argument("--depth_enabled", type=bool, default=True, help="Set true to enable depth image rendering.")
+    parser.add_argument(
+        "--depth_enabled",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Enable depth image rendering (--depth_enabled / --no-depth_enabled).",
+    )
 
     parser.add_argument(
         "--instance_id_segmentation_enabled",
-        type=bool,
+        action=argparse.BooleanOptionalAction,
         default=False,
-        help="Set true to enable instance segmentation image rendering.",
+        help="Enable instance segmentation rendering (--instance_id_segmentation_enabled / --no-instance_id_segmentation_enabled).",
     )
 
     parser.add_argument(
-        "--normals_enabled", type=bool, default=False, help="Set true to enable surface normal image rendering."
+        "--normals_enabled",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Enable surface normal image rendering (--normals_enabled / --no-normals_enabled).",
     )
 
     parser.add_argument(
@@ -101,9 +133,7 @@ if __name__ == "__main__":
 
     recording_paths = glob.glob(os.path.join(args.input, "*"))
 
-    recording_count = 0
-    for recording_path in recording_paths:
-        recording_count += 1
+    for i, recording_path in enumerate(recording_paths, start=1):
         name = os.path.basename(recording_path)
 
         output_path = os.path.join(args.output, name)
@@ -144,6 +174,12 @@ if __name__ == "__main__":
         simulation_app.update()
         rep.orchestrator.step(rt_subframes=args.render_rt_subframes, delta_time=0.0, pause_timeline=False)
 
+        # Apply camera calibration overrides after the render graph is fully
+        # initialised — applying them earlier causes Kit to queue a USD change
+        # notice that races with SDGPipeline construction and crashes OmniGraph.
+        apply_sensor_overrides("/World/robot", recording_path)
+        log_camera_properties(get_current_stage(), "/World/robot")
+
         reader = MobilityGenReader(recording_path)
         num_steps = len(reader)
 
@@ -153,7 +189,7 @@ if __name__ == "__main__":
         writer = MobilityGenWriter(output_path)
         writer.copy_init(recording_path)
 
-        carb.log_warn(f"============== Replaying {recording_count} / {len(recording_paths)}==============")
+        carb.log_warn(f"============== Replaying {i} / {len(recording_paths)} ==============")
         carb.log_warn(f"\tInput path: {recording_path}")
         carb.log_warn(f"\tOutput path: {output_path}")
         carb.log_warn(f"\tRgb enabled: {args.rgb_enabled}")

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.2] - 2026-04-22
+### Fixed
+- Call `save_sensor_overrides` on recording start to persist camera calibration changes made in the UI
+- Use `export_as_stage` when caching the scene stage to prevent black images on replay
+
 ## [0.4.1] - 2026-04-18
 ### Changed
 - Added return type annotations

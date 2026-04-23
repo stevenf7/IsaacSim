@@ -99,6 +99,7 @@ class KeyboardDriver(object):
         if KeyboardDriver._instance is None:
             return
         KeyboardDriver.instance()._disconnect()
+        KeyboardDriver._instance = None
 
     @staticmethod
     def instance() -> "KeyboardDriver":
@@ -211,6 +212,7 @@ class GamepadDriver(object):
         if GamepadDriver._instance is None:
             return
         GamepadDriver.instance()._disconnect()
+        GamepadDriver._instance = None
 
     @staticmethod
     def instance() -> "GamepadDriver":
@@ -225,7 +227,7 @@ class GamepadDriver(object):
 
     def get_button_values(self) -> np.ndarray:
         """Return an array of current button values."""
-        return np.ndarray([])
+        return np.array([])
 
 
 # =========================================================

@@ -46,8 +46,8 @@ class MobilityGenWriter:
         dict_folder = os.path.join(self.path, "state", "common")
         if not os.path.exists(dict_folder):
             os.makedirs(dict_folder)
-        state_dict_path = os.path.join(dict_folder, f"{step:08d}.npy")
-        np.save(state_dict_path, state_dict)
+        state_dict_path = os.path.join(dict_folder, f"{step:08d}.npz")
+        np.savez(state_dict_path, **{k: v for k, v in state_dict.items() if v is not None})
 
     def write_state_dict_rgb(self, state_rgb: dict, step: int) -> None:
         """Write RGB image frames to disk.

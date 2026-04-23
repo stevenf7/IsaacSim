@@ -15,6 +15,8 @@
 
 """MobilityGen scenario base class and registry."""
 
+from abc import ABC, abstractmethod
+
 from PIL import Image
 
 from .common import Module
@@ -23,7 +25,7 @@ from .robot import MobilityGenRobot
 from .utils.registry import Registry
 
 
-class MobilityGenScenario(Module):
+class MobilityGenScenario(Module, ABC):
     """Abstract base class for MobilityGen scenarios.
 
     Args:
@@ -49,10 +51,12 @@ class MobilityGenScenario(Module):
         """
         return cls(robot, occupancy_map)
 
+    @abstractmethod
     def reset(self) -> None:
         """Reset the scenario to its initial state."""
-        raise NotImplementedError
+        ...
 
+    @abstractmethod
     def step(self, step_size: float) -> bool:
         """Step the scenario forward by one timestep.
 
@@ -62,7 +66,7 @@ class MobilityGenScenario(Module):
         Returns:
             True if the episode is still active, False if it has ended.
         """
-        raise NotImplementedError
+        ...
 
     def get_visualization_image(self) -> Image.Image:
         """Get a visualization image of the current scenario state.

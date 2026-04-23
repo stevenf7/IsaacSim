@@ -38,8 +38,14 @@ class MobilityGenReader:
     def __init__(self, recording_path: str) -> None:
         self.recording_path = recording_path
 
-        state_dict_paths = glob.glob(os.path.join(self.recording_path, "state", "common", "*.npy"))
+        state_dict_paths = glob.glob(os.path.join(self.recording_path, "state", "common", "*.npz"))
+        if not state_dict_paths and glob.glob(os.path.join(self.recording_path, "state", "common", "*.npy")):
+            import carb
 
+            carb.log_error(
+                f"[MobilityGenReader] Recording at '{recording_path}' uses the legacy .npy format. "
+                "Run migrate_recordings.py to convert it to .npz before replaying."
+            )
         steps = [int(os.path.basename(path).split(".")[0]) for path in state_dict_paths]
         self.steps = sorted(steps)
 
@@ -201,10 +207,8 @@ class MobilityGenReader:
             The common state dictionary loaded from disk.
         """
         step = self.steps[index]
-        state_dict = np.load(
-            os.path.join(self.recording_path, "state", "common", f"{step:08d}.npy"), allow_pickle=True
-        ).item()
-        return state_dict
+        path = os.path.join(self.recording_path, "state", "common", f"{step:08d}.npz")
+        return dict(np.load(path))
 
     def read_state_dict(self, index: int) -> dict:
         """Read the full state dictionary (all modalities) for the given step index.

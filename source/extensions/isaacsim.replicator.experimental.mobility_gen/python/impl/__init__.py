@@ -22,14 +22,17 @@ from .occupancy_map import OccupancyMap
 from .path_planner import compress_path, generate_paths
 from .pose_samplers import GridPoseSampler, UniformPoseSampler
 from .reader import MobilityGenReader
-from .robot import ROBOTS, MobilityGenRobot
+from .robot import ROBOTS, MobilityGenMultiSensorRobot, MobilityGenRobot
 from .scenario import SCENARIOS, MobilityGenScenario
-from .types import Pose2d
+from .sensor_overrides import apply_sensor_overrides, log_camera_properties, save_sensor_overrides
+from .sensor_rig import MobilityGenSensorRig
+from .types import CameraConfig, Pose2d, SensorConfig
 from .utils.path_utils import PathHelper
 from .writer import MobilityGenWriter
 
 __all__ = [
     "Buffer",
+    "CameraConfig",
     "Config",
     "Gamepad",
     "GamepadDriver",
@@ -37,9 +40,11 @@ __all__ = [
     "Keyboard",
     "KeyboardDriver",
     "MobilityGenCamera",
+    "MobilityGenMultiSensorRobot",
     "MobilityGenReader",
     "MobilityGenRobot",
     "MobilityGenScenario",
+    "MobilityGenSensorRig",
     "MobilityGenWriter",
     "Module",
     "OccupancyMap",
@@ -47,8 +52,12 @@ __all__ = [
     "Pose2d",
     "ROBOTS",
     "SCENARIOS",
+    "SensorConfig",
     "UniformPoseSampler",
+    "apply_sensor_overrides",
     "compress_path",
     "generate_paths",
     "load_scenario",
+    "log_camera_properties",
+    "save_sensor_overrides",
 ]

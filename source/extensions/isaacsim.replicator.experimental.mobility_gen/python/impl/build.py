@@ -15,13 +15,11 @@
 
 """Build utilities for loading MobilityGen scenarios from recorded data."""
 
+from __future__ import annotations
+
 import os
 import tempfile
 
-from isaacsim.core.experimental.objects import GroundPlane
-from isaacsim.core.experimental.utils.stage import delete_prim, get_current_stage, open_stage
-from isaacsim.core.rendering_manager import ViewportManager
-from isaacsim.core.simulation_manager import SimulationManager
 from pxr import UsdGeom
 
 from .occupancy_map import OccupancyMap
@@ -45,6 +43,12 @@ def load_scenario(path: str) -> MobilityGenScenario:
     Returns:
         The loaded MobilityGen scenario.
     """
+    from isaacsim.core.experimental.objects import GroundPlane
+    from isaacsim.core.experimental.utils.stage import delete_prim, get_current_stage, open_stage
+    from isaacsim.core.rendering_manager import ViewportManager
+    from isaacsim.core.simulation_manager import SimulationManager
+    from pxr import Usd as _Usd
+
     reader = MobilityGenReader(path)
     config = reader.read_config()
     robot_type = ROBOTS.get(config.robot_type)
@@ -56,8 +60,6 @@ def load_scenario(path: str) -> MobilityGenScenario:
         # recording stage.  Opening such a stage in Kit would recreate the stale
         # OmniGraph nodes and crash during headless replay.  We strip them from a
         # temp copy so the original recording file is never modified.
-        from pxr import Usd as _Usd
-
         _src = os.path.join(path, "stage.usd")
         _disk_stage = _Usd.Stage.Open(_src)
         _needs_strip = any(_disk_stage.GetPrimAtPath(p).IsValid() for p in _SDG_PATHS)
@@ -85,12 +87,10 @@ def load_scenario(path: str) -> MobilityGenScenario:
     # Develop uses GroundPlane(visible=False); experimental API has no such parameter.
     for mesh_path in ground_plane.meshes.paths:
         UsdGeom.Imageable(stage.GetPrimAtPath(mesh_path)).MakeInvisible()
-    occupancy_map = reader.read_occupancy_map()
     robot = robot_type.build(robot_prim_path)
     chase_camera_path = robot.build_chase_camera()
     if ViewportManager.get_viewport_api() is not None:
         ViewportManager.set_camera(chase_camera_path)
-    robot_type = ROBOTS.get(config.robot_type)
     occupancy_map = OccupancyMap.from_ros_yaml(ros_yaml_path=os.path.join(path, "occupancy_map", "map.yaml"))
     scenario = scenario_type.from_robot_occupancy_map(robot, occupancy_map)
     return scenario
