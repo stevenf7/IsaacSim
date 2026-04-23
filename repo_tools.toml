@@ -28,6 +28,14 @@ entry_point = "${config_root}/tools/isaac_build/edit_sysconfig.py:setup_repo_too
 command = "generate_vscode_settings"
 entry_point = "${config_root}/tools/isaac_build/generate_vscode_settings.py:setup_repo_tool"
 
+########################################################################################################################
+# Comment archives extension dependencies in *.kit and config/extension.toml files
+########################################################################################################################
+
+[comment_archive_deps]
+command = "comment_archive_deps"
+entry_point = "${config_root}/tools/python_packages/comment_archive_deps.py:setup_repo_tool"
+
 
 # AUTOREMOVE: BEGIN
 
@@ -104,14 +112,6 @@ entry_point = "${config_root}/tools/isaac/generate_changelog.py:setup_repo_tool"
 [find_duplicate_files]
 command = "find_duplicate_files"
 entry_point = "${config_root}/tools/isaac/find_duplicate_files.py:setup_repo_tool"
-
-########################################################################################################################
-# Comment archives extension dependencies in *.kit and config/extension.toml files
-########################################################################################################################
-
-[comment_archive_deps]
-command = "comment_archive_deps"
-entry_point = "${config_root}/tools/isaac/comment_archive_deps.py:setup_repo_tool"
 
 ########################################################################################################################
 # Check for the proper definition of the python packages

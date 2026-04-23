@@ -26,4 +26,7 @@
   <dependency name="repo_kit_template" linkPath="../_repo/deps/repo_kit_template">
     <package name="repo_kit_template" version="2.3.2" />
   </dependency>
+  <dependency name="repo_python_package" linkPath="../_repo/deps/repo_python_package">
+    <package name="repo_python_package" version="1.0.2" />
+  </dependency>
 </project>

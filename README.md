@@ -222,7 +222,7 @@ Congratulations on installing Isaac Sim! To get started with using Isaac Sim, fo
 
 ## Additional Build Tools
 
-Beyond building and running from source (see [Quick Start](#quick-start)), Isaac Sim can also be packaged as a standalone binary archive or deployed as a Docker container.
+Beyond building and running from source (see [Quick Start](#quick-start)), Isaac Sim can also be packaged as a standalone binary archive, built as Python wheels, or deployed as a Docker container.
 
 ### Binary Package
 
@@ -243,6 +243,48 @@ Build a standalone redistributable binary package from source. A successful [bui
 ```
 
 The packaged archive is written to the `_build/packages/` directory.
+
+### PIP Packages
+
+Build Isaac Sim Python (PIP) wheels locally from a successful [build](#quick-start). Pre-built wheels for released versions are also available on [pypi.nvidia.com](https://pypi.nvidia.com); see [Install Isaac Sim using PIP](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_python.html#installation-using-pip) for the install-only path.
+
+A successful [build](#quick-start) is required before packaging.
+
+**Linux:**
+
+```bash
+./repo.sh python_package --create
+./repo.sh comment_archive_deps
+./repo.sh python_package --wheel
+```
+
+**Windows:**
+
+```powershell
+.\repo.bat python_package --create
+.\repo.bat comment_archive_deps
+.\repo.bat python_package --wheel
+```
+
+The three steps, in order:
+
+1. `python_package --create` stages per-package source trees under `_build/packages/python/` from the wheel definitions in [python_packages.toml](python_packages.toml).
+2. `comment_archive_deps` comments out references to Kit pip-archive extensions (`omni.kit.pip_archive`, `omni.isaac.core_archive`, `omni.isaac.ml_archive`, `omni.pip.compute`, `omni.pip.cloud`, `isaacsim.pip.newton`) in the generated `extension.toml` and `*.kit` files so wheel metadata is self-contained.
+3. `python_package --wheel` builds the `.whl` files into `_build/packages/dist/`.
+
+Install locally-built wheels into a Python 3.12 virtual environment:
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install _build/packages/dist/*.whl
+```
+
+> **(Linux aarch64) ⚠️**
+> On aarch64 hosts, X11 development headers are required to build transitive Python dependencies that lack pre-built aarch64 wheels (same note as under [Prerequisites and Environment Setup](#prerequisites-and-environment-setup)):
+> ```bash
+> sudo apt-get install -y libx11-dev xorg-dev
+> ```
 
 ### Container (Docker)
 

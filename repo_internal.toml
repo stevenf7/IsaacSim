@@ -519,57 +519,10 @@ script = "${root}/tools/ci/check_extension_support_levels/check_extension_suppor
 
 
 ########################################################################################################################
-# Python packages generation
+# Python packages generation (internal-only additions)
 ########################################################################################################################
-[repo_python_package]
-enabled = true
-
-templates.pyproject = """
-[build-system]
-requires = [ "setuptools >= 78.1.1" ]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-include-package-data = true
-package-dir = { "" = "src" }
-
-[project.scripts]
-isaacsim = "isaacsim:main"
-"""
-
-# package generation
-definition_paths = ["${root}/python_packages.toml"]
-distributions_folder = "${root}/_build/packages/dist"
-namespace = "isaacsim"
-packages_folder = "${root}/_build/packages/python"
-source_folder = "${root}/_build/${platform}/release"
-
-# package metadata (common)
-# pyproject.toml
-pyproject.authors = [{name = "Isaac Sim team"}]
-pyproject.classifiers = [
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.12",
-  "License :: Other/Proprietary License",
-]
-pyproject.license = {text = "NVIDIA Proprietary Software"}
-pyproject.readme = """
-See [Install Isaac Sim using PIP](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_python.html)
-for details on how to install and run Isaac Sim in a (virtual) Python environment.
-"""
-pyproject.requires-python = "==3.12.*"
-pyproject.urls = [
-  {"Home page" = "https://developer.nvidia.com/isaac-sim"},
-  {"Documentation" = "https://docs.isaacsim.omniverse.nvidia.com"},
-  {"Forum" = "https://forums.developer.nvidia.com/c/omniverse/simulation/69"},
-]
-pyproject.version = "${build_string}"
-
-# wheel specifications
-wheel.platforms = {"linux-x86_64" = "manylinux_2_35_x86_64", "windows-x86_64" = "win_amd64", "linux-aarch64" = "manylinux_2_35_aarch64"}
-wheel.python = "cp312"
-
-# wheel publishing (PyPI)
+# Public-safe [repo_python_package] + [repo_comment_archive_deps] live in repo.toml so they ship publicly.
+# Only the internal Artifactory publish task remains here.
 [[repo_python_package.publish.task]]
 packages_wildcard_path = "${root}/_build/packages/dist/*.whl"
 pypi.password = "${env:ISAACSIM_ARTIFACTORY_PASSWORD}"
@@ -604,18 +557,6 @@ dependencies_files = [
   "${root}/deps/pip_newton.toml",  # isaacsim.pip.newton
   "${root}/deps/pip_urdf_usd.toml",  # isaacsim.asset.importer.urdf
 ]
-
-# comment archive extension dependencies
-[repo_comment_archive_deps]
-archives = [
-  "isaacsim.pip.newton",
-  "omni.isaac.core_archive",
-  "omni.isaac.ml_archive",
-  "omni.pip.compute",
-  "omni.pip.cloud",
-  "omni.kit.pip_archive",
-]
-search_folder = "${root}/_build/packages/python"
 
 [repo_dump_extensions]
 root_folder = "${root}/_build/${platform}/${config}"
@@ -831,7 +772,6 @@ exclude = [
     "docs/VERSION",
     "index.rst",
     "PACKAGE-INFO.yaml",
-    "python_packages.toml",
     "README_INTERNAL.md",
     "repo_internal.toml",
     "TESTING.md",
@@ -849,7 +789,6 @@ exclude = [
     "tools/lib",
     "tools/package.*",
     "tools/publish*",
-    "tools/python_packages",
     "tools/repoman/__pycache__",
     "tools/test_*",
     "tools/test*",
