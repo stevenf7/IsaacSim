@@ -98,13 +98,12 @@ public:
             // Traverse from the starting prim
             for (const pxr::UsdPrim& currentPrim : pxr::UsdPrimRange(startPrim))
             {
-
+                if (!currentPrim.HasAttribute(isaacsim::core::includes::g_kIsaacNameOveride))
+                    continue;
                 const std::string primNameOverride = isaacsim::core::includes::getName(currentPrim);
-                const std::string primName = currentPrim.GetName();
+                const std::string primName = currentPrim.GetName().GetString();
                 if (primNameOverride != primName)
-                {
-                    state.m_nameOverrideMap.emplace(primNameOverride, currentPrim);
-                }
+                    state.m_nameOverrideMap.emplace(primNameOverride, primName);
             }
         }
 
@@ -124,8 +123,7 @@ public:
         {
             const std::string primNameString = db.tokenToString(inNames[i]);
             const auto it = m_nameOverrideMap.find(primNameString);
-            outNames[i] = db.stringToToken(it != m_nameOverrideMap.end() ? it->second.GetName().GetText() :
-                                                                           primNameString.c_str());
+            outNames[i] = db.stringToToken(it != m_nameOverrideMap.end() ? it->second.c_str() : primNameString.c_str());
         }
 
         db.outputs.robotPath() = m_robotPath;
@@ -139,7 +137,7 @@ public:
     }
 
 private:
-    std::unordered_map<std::string, pxr::UsdPrim> m_nameOverrideMap;
+    std::unordered_map<std::string, std::string> m_nameOverrideMap;
     bool m_firstFrame = true;
     std::string m_robotPath;
 };
