@@ -1,31 +1,28 @@
 [package]
-version = "3.4.3"
+version = "2.2.1"
 category = "Simulation"
-title = "Isaac Sim Manipulators"
-description = "Provides Python classes for controlling robotic manipulators including single-arm robots, parallel grippers, and surface grippers with pick-and-place and stacking controllers."
+title = "Isaac Sim Manipulators UI"
+description = "Provides UI menus for creating OmniGraph-based robot controllers including joint position, joint velocity, and gripper control interfaces."
 authors = ["hmazhar@nvidia.com", "qwan@nvidia.com"]
-repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.manipulators"
-keywords = ["isaac", "manipulators"]
+repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot.manipulators.ui"
+keywords = ["isaac", "manipulators", "ui"]
 changelog = "docs/CHANGELOG.md"
 readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
 
+[deprecation]
+warning = "Extension deprecated since Isaac Sim 6.0.0. Refer to isaacsim.robot.experimental.manipulators.examples for recommended alternatives."
+
 [dependencies]
 "isaacsim.core.api" = {}
-"isaacsim.core.nodes" = {}
-"isaacsim.robot.surface_gripper" = {}
+"isaacsim.gui.components" = {}
+"isaacsim.robot.manipulators" = {}
+"omni.kit.menu.utils" = {}
 
 [[python.module]]
-name = "isaacsim.robot.manipulators"
-
-[[python.module]]
-name = "isaacsim.robot.manipulators.tests"
-
-[fswatcher.patterns]
-include = ["*.ogn", "*.py"]
-exclude = ["Ogn*Database.py"]
+name = "isaacsim.robot.manipulators.ui"
 
 [[test]]
 name = "startup"
@@ -41,16 +38,10 @@ stdoutFailPatterns.exclude = [
 ]
 
 [[test]]
-timeout = 900
 dependencies = [
+    "isaacsim.test.utils",
     "omni.isaac.ml_archive",
 ]
-stdoutFailPatterns.exclude = [
-    "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_robot_manipulators_IsaacGripperController: [/TestGraph] OmniGraph Error: No robot prim found for the articulation controller*",
-    "*[Error] [carb.glinterop.plugin] GLInteropContext::init: carb::windowing is not available*",
-    '*The NumPy module was reloaded*',
-]
-
 args = [
     "--enable",
     "omni.kit.loop-isaac",
@@ -95,6 +86,13 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    ### Extension specific args
+    "--/app/window/dpiScaleOverride=1.0",
+    "--/app/window/scaleToMonitor=false",
+]
+
+stdoutFailPatterns.exclude = [    
+    '*The NumPy module was reloaded*',
 ]
 
 [documentation]

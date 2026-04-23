@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.4.4] - 2026-04-23
+### Deprecated
+- Extension deprecated in favor of `isaacsim.robot.experimental.manipulators.examples`
+
 ## [3.4.3] - 2026-04-19
 ### Fixed
 - Fix `PickPlaceController.__init__` and `reset` accepting `events_dt` with fewer than 10 entries (causes IndexError at runtime)
