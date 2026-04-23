@@ -16,7 +16,7 @@ Workflow Overview
 
 1.  **Environment Setup**: Define the static 3D environment where the simulation takes place.
 2.  **Agent & Sensor Definition**: Configure characters, robots, and cameras (sensors) to populate the environment.
-3.  **Behavior Configuration**: Assign routines (weighted random actions like walking, idling) and triggers (reactive behaviors like when a collision occurs) to actors.
+3.  **Behavior Configuration**: Assign routines (weighted random actions like walking, idling) and triggers (reactive behaviors like when a collision occurs) to actors. Alternatively, drive a group with a **behavior tree** instead of routines and triggers (experimental; available for both character and robot groups).
 4.  **Data Generation**: Configure the Replicator writers to generate ground-truth data (RGB, segmentation).
 
 Key Concepts
@@ -27,6 +27,7 @@ Key Concepts
 -   **Behaviors**: Atomic actions an actor can perform, such as ``wander``, ``patrol``, or ``idle``.
 -   **Routines**: A collection of behaviors assigned to an actor group. Actors randomly select behaviors from this pool based on assigned weights.
 -   **Triggers**: Conditional logic that interrupts normal routines. When a condition is met (for example, a specific time or event), the trigger executes its defined list of behaviors in sequence. Once the trigger sequence is complete, the agent resumes its standard routine until another trigger activates.
+-   **Behavior Tree (experimental)**: An alternative to the routine-trigger system. A character or robot group may specify a ``behavior_tree`` JSON asset instead of ``routines`` / ``triggers``; all of the group's logic is then authored inside the tree. See :ref:`ira_bt_character_group` and :ref:`ira_bt_robot_group`.
 -   **Sensors**: Cameras placed in the scene to observe the simulation.
 -   **Replicator**: The system responsible for rendering frames and writing annotated data (ground truth) to disk or cloud storage.
 
@@ -138,7 +139,7 @@ Behaviors are defined in the ``routines`` list. Common fields:
     -   ``walk``:
         -   ``speed_range``: [min, max] m/s (default [1.0, 1.0]).
         -   ``distance_range``: [min, max] distance to travel per walk leg (default [5.0, 15.0]).
-        -   ``navigation_areas``: List of allowed NavMesh area tags.
+        -   ``navigation_areas``: List of allowed NavMesh area tags. Each entry must be a unique, non-empty string.
 
     -   ``idle``: Array of idle options.
         -   ``animation``: Name of the animation (must exist in motion lib).
@@ -148,7 +149,7 @@ Behaviors are defined in the ``routines`` list. Common fields:
 2.  **patrol**: Follow a specific path.
 
     -   ``speed_range``: [min, max] m/s (default [1.0, 1.0]).
-    -   One of:
+    -   Exactly one of (required):
         -   ``path_points``: List of 3D points ``[[x,y,z], [x,y,z], ...]``.
         -   ``target_prims``: List of prim paths to visit.
 
@@ -159,6 +160,8 @@ Behaviors are defined in the ``routines`` list. Common fields:
 
     -   ``time_range``: [min, max] duration in seconds (default [5.0, 5.0]).
 
+
+.. _ira_colliders:
 
 Colliders
 ^^^^^^^^^^^
@@ -212,8 +215,11 @@ Triggers define events that interrupt normal routines to execute a list of react
 
 Each actor can specify a list of triggers to listen to.
 
--   ``priority`` (default 1): Higher priority triggers override lower ones.
+-   ``priority`` (default 1): Higher priority triggers override lower ones. Must be >= 1.
 -   ``behavior``: List of behaviors to execute **in sequence** when triggered.
+
+.. note::
+    Every trigger variant is strict: unknown keys inside a trigger block fail validation.
 
 .. tip::
 
@@ -225,21 +231,21 @@ Each actor can specify a list of triggers to listen to.
 
 -   ``event_trigger``: Fires on a named carb event.
 
-    - ``event``: The carb event name. Value type is String.
+    - ``event``: The carb event name. Value type is String; must be non-empty.
 
 -   ``time_trigger``: Fires after a specific time after play.
 
-    - ``time``: The time in second. Value type is Float.
+    - ``time``: The time in seconds. Value type is Float; must be >= 0.
 
 -   ``collision_trigger``: Fires after a specific collider under this actor begins or ends overlapping with other colliders.
 
-    - ``self_collider``: The name of collider on this actor to use (spawned by collider field in group setting). Value type is String.
+    - ``self_collider``: The name of the collider on this actor to use (spawned by the ``colliders`` field in the group setting). Value type is String; must be non-empty.
 
-    - ``other_colliders``: The name list string of other colliders to react to, names are separated by ',' or ';'. Value type is String.
+    - ``other_colliders``: (Optional) Semicolon-separated name list of other colliders to react to. Value type is String; defaults to ``""`` (react to any collider on the overlap partner).
 
-    - ``trigger_enter``: (Optional) To trigger when it is entering the overlap. Value type is Boolean. Default is True.
+    - ``trigger_enter``: (Optional) Trigger when entering the overlap. Value type is Boolean. Default is True.
 
-    - ``trigger_exit``: (Optional) To trigger when it is exiting the overlap. Value type is Boolean. Default is False.
+    - ``trigger_exit``: (Optional) Trigger when exiting the overlap. Value type is Boolean. Default is False.
 
     .. tip::
 
@@ -351,7 +357,7 @@ A single configuration can mix both group types. For example, one group using IR
 The ``overrides`` field is a JSON string (written as a YAML multi-line block scalar with ``|``) that lets you adjust node parameters per-group without editing the tree file. The JSON structure has two keys:
 
 -   ``schemaVersion`` (required): Must be ``"2.0.0"``.
--   ``instanceOverrides`` (required): A dictionary mapping **node paths** (for example, ``/Root/MoveTo:RandomNavMeshPoint``) to **port overrides**, which isa dictionary of port name to its type and overriden value.
+-   ``instanceOverrides`` (required): A dictionary mapping **node paths** (for example, ``/Root/MoveTo:RandomNavMeshPoint``) to **port overrides**, which is a dictionary of port name to its type and overriden value.
 
 For example, to change the wander radius of a ``RandomNavMeshPoint`` modifier node:
 
@@ -407,13 +413,14 @@ Robot Group Parameters
 -   ``num`` (required): Number of robots (>= 1).
 -   ``config_file_path`` (required): Path to the robot agent YAML configuration file for this robot type. Supports absolute paths or paths relative to the built-in sample config folder (``data/sample_configs/`` within the ``isaacsim.anim.robot.core`` extension).
 -   ``spawn_areas`` (optional): NavMesh areas for spawning.
--   ``agent_radius`` (optional): Radius in meters used for NavMesh queries. Must be > 0 when set. If omitted, defaults to ``0.3`` at runtime.
+-   ``agent_radius`` (optional): Radius in meters used for NavMesh queries. Must be > 0 when set. If omitted, defaults to ``0.5`` at runtime.
 -   ``write_data`` (optional): If ``true``, enables data collection from the robot's onboard cameras.
--   ``camera_prim_paths`` (optional): List of specific camera prims on the robot to use. If empty and ``write_data`` is true, *all* cameras on the robot are used. Requires ``write_data`` to be ``true``. *Not available in Isaac Sim 6.0 EA yet. (Coming in 6.0 GA)*
+-   ``camera_prim_paths`` (optional): List of specific camera prims on the robot to use. If empty and ``write_data`` is true, *all* cameras on the robot are used. Requires ``write_data`` to be ``true``.
 -   ``semantic_labels`` (optional): Default ``[["class", "robot"]]``.
 -   ``semantic_label_path`` (optional): Relative path under the robot prim to apply semantics.
 -   ``routines`` (optional): List of robot behaviors. Default: ``[{ wander: {} }]``.
--   ``triggers`` (optional): List of triggers that interrupt routines. Robots support ``event_trigger`` and ``time_trigger``.
+-   ``triggers`` (optional): List of triggers that interrupt routines. Robots support ``event_trigger``, ``time_trigger``, and ``collision_trigger``.
+-   ``colliders`` (optional): List of colliders to spawn and attach under each robot (same schema as character ``colliders``; refer to the :ref:`Colliders <ira_colliders>` section). Used together with ``collision_trigger`` to drive behaviors when the robot enters or exits other colliders.
 
 .. note::
     ``write_data`` has a behavior regression (comparing to Isaac Sim 6.0 EA) and enabling it may lead to program hang. It is recommended to disable it until next release.
@@ -422,9 +429,9 @@ Robot Behaviors
 ^^^^^^^^^^^^^^^
 
 -   **wander**:
-    -   ``move``: { ``distance_range``: [min, max] (default [10.0, 15.0]), ``navigation_areas``: list of allowed NavMesh area tags (default []) }
+    -   ``move``: { ``distance_range``: [min, max] (default [10.0, 15.0]), ``navigation_areas``: list of allowed NavMesh area tags,  each entry must be a unique, non-empty string (default []) }
     -   ``idle``: { ``time_range``: [min, max] (default [2.0, 5.0]) }
--   **patrol** (exactly one must be provided):
+-   **patrol** (exactly one of ``path_points`` or ``target_prims`` is required):
     -   ``path_points``: List of 3D points ``[[x,y,z], [x,y,z], ...]``.
     -   ``target_prims``: List of prim paths to visit.
 
@@ -433,6 +440,46 @@ Robot Behaviors
 
 -   **halt**:
     -   ``time_range``: [min, max] seconds to remain halted (default [5.0, 5.0]).
+
+.. _ira_bt_robot_group:
+
+Behavior Tree Robot Group (Experimental)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. warning::
+    Behavior tree robot support is **experimental** and may change in future releases.
+
+When a robot group contains a ``behavior_tree`` key instead of ``routines`` and ``triggers``, IRA treats it as a **behavior-tree robot group**. In this mode, all behavior logic is defined inside the referenced behavior tree rather than through the IRA routine-trigger system, and the robot is driven by :doc:`ext_isaacsim_anim_robot_bt_nodes` (``RobotMoveTo``, ``RobotTurn``, ``RobotIdle``, ``RobotPlayAnimation``, and the ``RobotIsInState`` modifier).
+
+A single configuration can mix both group types. For example, one routine-driven group and another behavior-tree-driven group.
+
+.. note::
+    ``routines``, ``triggers``, and ``colliders`` are **not available** for behavior-tree robot groups. Any reactive or conditional logic must be authored as nodes inside the behavior tree itself.
+
+**Behavior-Tree-Specific Parameters:**
+
+-   ``behavior_tree`` (required): Path or URL to a JSON behavior tree asset. Supports Isaac asset-root-relative paths (for example, ``Isaac/...``), absolute filesystem paths, and paths relative to the config file directory.
+-   ``overrides`` (optional): A YAML multi-line string containing JSON that overrides node port values at runtime without modifying the original tree file. Follows the ``omni.behavior.tree`` override schema (``schemaVersion`` + ``instanceOverrides``); see :ref:`ira_bt_character_group` for an example.
+
+**Shared Parameters (same as IRA robot groups):**
+
+-   ``num`` (required): Number of robots to spawn (>= 1).
+-   ``config_file_path`` (optional): Path to the per-robot agent YAML (default: ``nova_carter.yaml``).
+-   ``spawn_areas`` (optional): List of NavMesh area names where robots can spawn.
+-   ``agent_radius`` (optional): NavMesh query radius in meters (must be > 0 when set).
+-   ``semantic_labels`` (optional): Default ``[["class", "robot"]]``.
+-   ``semantic_label_path`` (optional): Relative path under the robot prim to apply semantics.
+
+**Minimal Example:**
+
+.. code-block:: yaml
+
+    robot:
+      groups:
+        bt_carters:
+          num: 2
+          config_file_path: nova_carter.yaml
+          behavior_tree: ../sample_behavior_tree/robot_wander.json
 
 Sensor
 ------
