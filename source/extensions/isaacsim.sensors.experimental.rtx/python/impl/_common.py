@@ -17,3 +17,51 @@ ANNOTATOR_SPEC = {
     "generic-model-output": {"name": "GenericModelOutput"},
     "stable-id-map": {"name": "StableIdMap"},
 }
+
+WRITER_SPEC: dict[str, dict] = {}
+"""Mutable registry of writer specs available to the sensor runtime classes.
+
+Companion extensions populate this at startup via :func:`register_writer_spec`
+so that writer names can be passed to the ``writers`` parameter of
+``LidarSensor``, ``RadarSensor``, and ``AcousticSensor``.
+"""
+
+
+def register_annotator_spec(name: str, spec: dict) -> None:
+    """Register an additional annotator type for the sensor runtime classes.
+
+    Modifies :data:`ANNOTATOR_SPEC` in place so that subsequent ``LidarSensor``,
+    ``RadarSensor``, or ``AcousticSensor`` instances accept the new name in
+    their ``annotators`` parameter.
+
+    Args:
+        name: Short annotator name (e.g. ``"draw-point-cloud"``).
+        spec: Spec dict with at least a ``"name"`` key matching the Replicator
+            annotator registry name.
+    """
+    ANNOTATOR_SPEC[name] = spec
+
+
+def unregister_annotator_spec(name: str) -> None:
+    """Remove a previously registered annotator spec."""
+    ANNOTATOR_SPEC.pop(name, None)
+
+
+def register_writer_spec(name: str, spec: dict) -> None:
+    """Register a writer type for the sensor runtime classes.
+
+    Modifies :data:`WRITER_SPEC` in place so that subsequent sensor instances
+    accept the new name in their ``writers`` parameter.
+
+    Args:
+        name: Short writer name (e.g. ``"debug-draw"``).
+        spec: Spec dict with at least a ``"name"`` key matching the Replicator
+            writer registry name.  Optional ``"defaults"`` dict provides default
+            ``initialize()`` kwargs.
+    """
+    WRITER_SPEC[name] = spec
+
+
+def unregister_writer_spec(name: str) -> None:
+    """Remove a previously registered writer spec."""
+    WRITER_SPEC.pop(name, None)

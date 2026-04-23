@@ -43,6 +43,8 @@ class Acoustic(_SensorAuthoring):
     Args:
         path: Single path to existing or non-existing (one of both) USD OmniAcoustic prim.
             Can include regular expression for matching a prim.
+        aux_output_level: Auxiliary data level for GenericModelOutput. Valid values:
+            ``"NONE"`` (default), ``"BASIC"``.
         tick_rate: Sensor tick rate in Hz. A value of ``0`` (the default) enables autotrigger mode.
         attributes: Attributes to set on the OmniAcoustic prim.
         positions: Positions in the world frame (shape ``(N, 3)``).
@@ -72,6 +74,7 @@ class Acoustic(_SensorAuthoring):
 
     _PRIM_TYPE = "OmniAcoustic"
     _SCHEMA = "OmniSensorGenericAcousticWpmAPI"
+    _VALID_AUX_OUTPUT_LEVELS = ("NONE", "BASIC")
 
     # Mapping from attribute prefix to multi-apply API schema name.
     _MULTI_APPLY_SCHEMAS = {
@@ -80,6 +83,22 @@ class Acoustic(_SensorAuthoring):
     }
 
     def _create_prim(self, path: str, attributes: dict[str, Any] | None) -> str:
+        """Create an OmniAcoustic prim with multi-instance schemas auto-applied.
+
+        Applies ``OmniSensorGenericAcousticWpmAPI`` and automatically infers
+        multi-instance schemas (sensor mount, receiver group) from attribute
+        key prefixes.
+
+        Args:
+            path: USD prim path for the new acoustic sensor.
+            attributes: Optional mapping of attribute names to values. Keys
+                matching ``omni:sensor:WpmAcoustic:sensorMount:`` or
+                ``omni:sensor:WpmAcoustic:rxGroup:`` prefixes trigger automatic
+                multi-instance schema application.
+
+        Returns:
+            The USD prim path of the created acoustic sensor.
+        """
         prim = stage_utils.define_prim(path, "OmniAcoustic")
         prim.ApplyAPI("OmniSensorGenericAcousticWpmAPI")
         if attributes is not None:
@@ -93,13 +112,16 @@ class Acoustic(_SensorAuthoring):
                         if schema_instance not in applied_instances:
                             prim.ApplyAPI(schema, instance_name)
                             applied_instances.add(schema_instance)
-            self._apply_attributes(prim_utils.get_prim_path(prim), attributes)
+        # Attributes are applied by the base class after all schemas
+        # (including additional ones passed via the schemas parameter)
+        # have been applied.
         return path
 
     @staticmethod
     def create(
         path: str,
         *,
+        aux_output_level: str = "NONE",
         tick_rate: float = 0,
         attributes: dict[str, Any] | None = None,
         positions: list | np.ndarray | wp.array | None = None,
@@ -114,6 +136,8 @@ class Acoustic(_SensorAuthoring):
 
         Args:
             path: Single path to existing or non-existing (one of both) USD OmniAcoustic prim.
+            aux_output_level: Auxiliary data level for GenericModelOutput. Valid values:
+                ``"NONE"`` (default), ``"BASIC"``.
             tick_rate: Sensor tick rate in Hz. A value of ``0`` (the default) enables autotrigger mode.
             attributes: Attributes to set on the OmniAcoustic prim.
             positions: Positions in the world frame (shape ``(N, 3)``).
@@ -139,6 +163,7 @@ class Acoustic(_SensorAuthoring):
             path = Acoustic._create_from_usd(path=path, usd_path=usd_path, variant=variant)
         return Acoustic(
             path=path,
+            aux_output_level=aux_output_level,
             tick_rate=tick_rate,
             attributes=attributes,
             positions=positions,

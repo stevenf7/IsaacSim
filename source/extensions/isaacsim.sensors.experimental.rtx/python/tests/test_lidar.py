@@ -55,6 +55,12 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         lidar = Lidar("/World/lidar", tick_rate=10.0)
         self.assertAlmostEqual(lidar.prims[0].GetAttribute("omni:sensor:tickRate").Get(), 10.0)
 
+    async def test_wrap_with_accumulate_outputs_false(self):
+        prim = stage_utils.define_prim("/World/lidar", "OmniLidar")
+        prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
+        lidar = Lidar("/World/lidar", accumulate_outputs=False)
+        self.assertFalse(lidar.prims[0].GetAttribute("omni:sensor:Core:accumulateOutputs").Get())
+
     async def test_wrap_with_attributes(self):
         prim = stage_utils.define_prim("/World/lidar", "OmniLidar")
         prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
@@ -78,9 +84,17 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         lidar = Lidar("/World/lidar", tick_rate=30.0)
         self.assertAlmostEqual(lidar.prims[0].GetAttribute("omni:sensor:tickRate").Get(), 30.0)
 
-    async def test_create_default_tick_rate_is_zero(self):
+    async def test_create_default_tick_rate(self):
         lidar = Lidar("/World/lidar")
-        self.assertAlmostEqual(lidar.prims[0].GetAttribute("omni:sensor:tickRate").Get(), 0.0)
+        self.assertAlmostEqual(lidar.prims[0].GetAttribute("omni:sensor:tickRate").Get(), 10.0)
+
+    async def test_create_default_accumulate_outputs_is_true(self):
+        lidar = Lidar("/World/lidar")
+        self.assertTrue(lidar.prims[0].GetAttribute("omni:sensor:Core:accumulateOutputs").Get())
+
+    async def test_create_with_accumulate_outputs_false(self):
+        lidar = Lidar("/World/lidar", accumulate_outputs=False)
+        self.assertFalse(lidar.prims[0].GetAttribute("omni:sensor:Core:accumulateOutputs").Get())
 
     async def test_create_with_attributes(self):
         lidar = Lidar("/World/lidar", attributes={"omni:sensor:Core:outputFrameOfReference": "WORLD"})
@@ -100,6 +114,24 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
         lidar = Lidar("/World/lidar", tick_rate=10.0, attributes={"omni:sensor:tickRate": 25.0})
         self.assertAlmostEqual(lidar.prims[0].GetAttribute("omni:sensor:tickRate").Get(), 25.0)
+
+    async def test_accumulate_outputs_from_attributes_overrides_parameter(self):
+        prim = stage_utils.define_prim("/World/lidar", "OmniLidar")
+        prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
+        lidar = Lidar("/World/lidar", accumulate_outputs=True, attributes={"omni:sensor:Core:accumulateOutputs": False})
+        self.assertFalse(lidar.prims[0].GetAttribute("omni:sensor:Core:accumulateOutputs").Get())
+
+    # -- schemas --
+
+    async def test_create_with_multi_instance_schema(self):
+        lidar = Lidar("/World/lidar", schemas=["OmniSensorGenericLidarCoreEmitterStateAPI:s002"])
+        self.assertTrue(lidar.prims[0].HasAPI("OmniSensorGenericLidarCoreEmitterStateAPI", "s002"))
+
+    async def test_wrap_with_multi_instance_schema(self):
+        prim = stage_utils.define_prim("/World/lidar", "OmniLidar")
+        prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
+        lidar = Lidar("/World/lidar", schemas=["OmniSensorGenericLidarCoreEmitterStateAPI:s002"])
+        self.assertTrue(lidar.prims[0].HasAPI("OmniSensorGenericLidarCoreEmitterStateAPI", "s002"))
 
     # -- errors --
 

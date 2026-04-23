@@ -20,11 +20,10 @@ import math
 
 import numpy as np
 import omni
-from isaacsim.core.experimental.materials import OmniPbrMaterial
+from isaacsim.core.experimental.materials import NonVisualMaterial
 from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.sensors.experimental.physics import RaycastSensor
-from isaacsim.sensors.rtx import apply_nonvisual_material, get_material_id
 from pxr import Gf, Sdf, UsdPhysics
 
 
@@ -256,12 +255,14 @@ def _create_cube_with_material(
 
     cube_info = {}
     if enable_material:
-        material = OmniPbrMaterial(f"{cube_path}/material")
-        material.set_input_values("diffuse_color_constant", color)
-        material_prim = material.materials[0].GetPrim()
-        apply_nonvisual_material(material_prim, *material_props)
-        cube.apply_visual_materials(material)
-        cube_info = {"material_id": get_material_id(material_prim)}
+        nv_material = NonVisualMaterial(
+            f"{cube_path}/nv_material",
+            bases=material_props[0],
+            coatings=material_props[1],
+            attributes=material_props[2],
+        )
+        cube.apply_visual_materials(nv_material)
+        cube_info = {"material_id": NonVisualMaterial.encode_material_ids(nv_material).numpy().item()}
 
     return {cube_path: cube_info} if cube_info else {}
 

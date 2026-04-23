@@ -28,4 +28,4 @@ Menu items are dynamically created and organized by vendor, providing a structur
 
 ## Integration
 
-The extension uses **omni.kit.actions.core** to register sensor creation actions and **omni.kit.context_menu** to provide right-click access to sensor creation tools. It integrates with isaacsim.sensors.camera for the underlying sensor implementation and isaacsim.gui.components for UI component support.
+The extension uses **omni.kit.actions.core** to register sensor creation actions and **omni.kit.context_menu** to provide right-click access to sensor creation tools. It currently integrates with the deprecated `isaacsim.sensors.camera` for the underlying sensor implementation (pending migration to `isaacsim.sensors.experimental.rtx`) and `isaacsim.gui.components` for UI component support.

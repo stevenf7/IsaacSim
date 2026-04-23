@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for validating all supported lidar configurations and variants in the isaacsim.sensors.rtx extension."""
+"""Tests for validating all supported lidar configurations and variants in the isaacsim.sensors.experimental.rtx extension."""
 
 
 from pathlib import Path
@@ -28,7 +28,7 @@ from .common import create_sarcophagus
 
 
 class TestSupportedLidarConfigs(omni.kit.test.AsyncTestCase):
-    """Test class for validating all supported lidar configurations and variants in the isaacsim.sensors.rtx extension.
+    """Test class for validating all supported lidar configurations and variants in the isaacsim.sensors.experimental.rtx extension.
 
     This test class dynamically generates test methods for each supported lidar configuration and variant combination
     from SUPPORTED_LIDAR_CONFIGS. Each test method creates a lidar sensor prim using the IsaacSensorCreateRtxLidar

@@ -51,13 +51,6 @@ Their results are then copied to the ``GenericModelOutput`` AOV for use.
 Overview
 --------
 
-.. Note:: In |isaac-sim_short| 4.5 and earlier, RTX sensors were based on ``Camera`` prims. If the ``Camera`` prim's
-    ``sensorModelPluginName`` attribute was set to ``omni.sensors.nv.radar.wpm_dmatapprox.plugin``, then the
-    ``Camera`` prim was used to render the Radar. The Radar was configured using a JSON file whose
-    filename (without extension) was set in the ``Camera`` prim's ``sensorModelConfig`` attribute, assuming
-    the file was present in a folder specified by the ``app.sensors.nv.radar.profileBaseFolder`` setting.
-    Support for ``Camera`` prims as RTX Radars was deprecated in |isaac-sim_short| 5.0.
-
 RTX Radars are rendered using ``OmniRadar`` prims, with the ``OmniSensorGenericRadarWpmDmatAPI`` schema applied,
 as configured by attributes on the prim. After attaching a render product to the ``OmniRadar`` prim, and setting
 the ``GenericModelOutput`` AOV on the render product, the RTXSensor renderer will write Radar render results to the AOV.
@@ -67,23 +60,19 @@ the ``GenericModelOutput`` AOV on the render product, the RTXSensor renderer wil
 How to Create an RTX Radar
 --------------------------
 
-The ``isaacsim.sensors.rtx`` extension provides one API for creating RTX Radars. In addition, the ``omni.replicator.core``
+The ``isaacsim.sensors.experimental.rtx`` extension provides the ``Radar`` class for creating RTX Radars. In addition, the ``omni.replicator.core``
 extension provides even lower-level APIs for creating ``OmniRadar`` prims (including batch creation) and attaching render
 products to them.
 
-Create an RTX Radar Using Command
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Create an RTX Radar Using the ``Radar`` Class
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``IsaacSensorCreateRtxRadar`` command creates
-a generic ``OmniRadar`` prim with the appropriate schemas applied, or a ``Camera`` prim with the appropriate attributes
-to support deprecated workflows.
+The ``Radar`` class creates or wraps an ``OmniRadar`` prim with the appropriate schemas applied.
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_radar/create_an_rtx_radar_using_command.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_radar/create_an_rtx_radar.py
     :language: python
 
-The example command above creates an ``OmniRadar`` prim in the stage at the
-specified ``translation`` with the specified ``orientation``, at path ``/radar``. The prim is set to be invisible
-in the stage. The prim's ``omni:sensor:tickRate`` attribute is set to 10 Hz from 20 Hz (default).
+The snippet above creates an ``OmniRadar`` prim at path ``/World/radar`` with ``omni:sensor:tickRate`` set to 10 Hz.
 
 Review the `OmniSensorGenericRadarWpmDmatAPI <https://docs.omniverse.nvidia.com/kit/docs/omni.usd.schema.omni_sensors/107.3.1/omni_sensors_schema.html#omnisensorgenericradarwpmdmatapi>`_
 schema in the ``omni.usd.schema.omni_sensors`` extension to learn which attributes can be set on the ``OmniRadar`` prim.
@@ -91,23 +80,71 @@ schema in the ``omni.usd.schema.omni_sensors`` extension to learn which attribut
 .. image:: /images/isim_5.0_full_ext-isaacsim.sensors.rtx-15.1.1_gui_rtx_radar_create_command.png
     :align: center
     :width: 800
-    :alt: The Isaac Sim UI after running the ``IsaacSensorCreateRtxRadar`` command shown above.
-
-Setting ``force_camera_prim`` to ``True`` will instead create an invisible ``Camera`` prim at the specified ``translation``
-and ``orientation``.
+    :alt: The Isaac Sim UI after creating an RTX Radar.
 
 Annotators can then be attached to the ``OmniRadar`` prim to collect and visualize the Radar results.
 Details about available annotators can be explored :ref:`here<rtx_sensor_annotator_descriptions>`.
 
+Tick Rate
+^^^^^^^^^
+
+.. note::
+
+    This section only applies to RTX Radars when the multi-tick rendering feature is enabled. This feature is currently disabled by default.
+
+The ``tick_rate`` parameter (Hz) controls how frequently the sensor renders. A value of ``0``
+(the default) enables autotrigger mode, where the sensor renders every simulation frame. Setting a
+nonzero value causes the sensor to render at the specified frequency independently of the simulation
+step rate. This maps to the ``omni:sensor:tickRate`` prim attribute.
+
+.. code-block:: python
+
+    from isaacsim.sensors.experimental.rtx import Radar
+
+    # Render at 10 Hz regardless of simulation frame rate
+    radar = Radar.create("/World/Radar", tick_rate=10.0)
+
+.. note::
+
+    ``tick_rate`` is the recommended replacement for the deprecated ``frameSkipCount`` parameter
+    on ROS2 helper nodes.
+
+Auxiliary Output Level
+^^^^^^^^^^^^^^^^^^^^^^
+
+In previous releases, users set ``auxOutputType`` as a prim attribute directly on radar prims. With
+the experimental API in 6.0, use the ``aux_output_level`` constructor parameter instead. This
+controls what auxiliary data appears in ``GenericModelOutput`` frames.
+
+Valid values for Radar: ``"NONE"`` (default), ``"BASIC"``.
+
+.. code-block:: python
+
+    from isaacsim.sensors.experimental.rtx import Radar
+
+    radar = Radar.create("/World/Radar", aux_output_level="BASIC")
+
+.. note::
+
+    Setting ``aux_output_level="BASIC"`` enables radial velocity (``rv_ms``) in the GMO output.
+
+See :ref:`rtx_sensor_annotator_descriptions` for details on what fields are available at each level.
+
 How to Collect Data from an RTX Radar
 -------------------------------------
 
-The recommended method for collecting data from an RTX Radar is to use Replicator Annotators, similar to RTX Lidar.
+The recommended method for collecting data from an RTX Radar is to use the ``RadarSensor`` runtime class,
+which wraps a ``Radar`` authoring object and manages Replicator Annotators, similar to ``LidarSensor``.
 
-The ``IsaacExtractRTXSensorPointCloudNoAccumulator`` annotator works with both ``OmniLidar`` and ``OmniRadar`` prims,
-extracting point cloud data from the ``GenericModelOutput`` buffer every frame.
+.. code-block:: python
 
-Refer to :ref:`rtx_sensor_annotator_descriptions` for the full list of available annotators.
+    from isaacsim.sensors.experimental.rtx import RadarSensor, parse_generic_model_output_data
+
+    sensor = RadarSensor(radar, annotators=["generic-model-output"])
+    data, info = sensor.get_data("generic-model-output")
+    gmo = parse_generic_model_output_data(data)
+
+Refer to :ref:`rtx_sensor_annotator_descriptions` for the full list of available lower-level annotators.
 
 .. _isaacsim_sensors_rtx_radar_visualization:
 
@@ -123,7 +160,7 @@ The standalone example ``create_radar_basic.py`` demonstrates using Debug Draw t
 
 .. code-block:: bash
 
-    ./python.sh standalone_examples/api/isaacsim.sensors.rtx/create_radar_basic.py
+    ./python.sh standalone_examples/api/isaacsim.sensors.experimental.rtx/create_radar_basic.py
 
 For more information on Debug Draw APIs, refer to :ref:`isaac_debug_draw` and :ref:`isaac_sim_app_util_snippets`.
 
@@ -155,14 +192,18 @@ For examples of creating and collecting data from RTX Radar, refer to the follow
 .. code-block:: bash
 
     # Basic radar creation with debug draw visualization
-    ./python.sh standalone_examples/api/isaacsim.sensors.rtx/create_radar_basic.py
+    ./python.sh standalone_examples/api/isaacsim.sensors.experimental.rtx/create_radar_basic.py
 
 **Data Collection and Inspection**
 
 .. code-block:: bash
 
     # Inspect radar GenericModelOutput (GMO) data
-    ./python.sh standalone_examples/api/isaacsim.sensors.rtx/inspect_radar_gmo.py
+    ./python.sh standalone_examples/api/isaacsim.sensors.experimental.rtx/inspect_radar_gmo.py
+
+**ROS 2 Integration**
+
+For publishing RTX Radar data to ROS 2 as PointCloud2 messages, see the :ref:`isaac_sim_app_tutorial_ros2_rtx_radar` tutorial.
 
 .. note::
 

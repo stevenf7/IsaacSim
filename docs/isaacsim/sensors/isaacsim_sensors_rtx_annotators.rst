@@ -15,20 +15,11 @@
 RTX Sensor Annotators
 =====================
 
-The ``isaacsim.sensors.rtx`` extension uses Omniverse Replicator to provide Annotators for RTX Lidar and Radar data collection.
-Annotators can be attached to render products, attached to ``OmniSensor`` prims (for example, ``OmniLidar`` or ``OmniRadar``); for example,
-when run in the *Script Editor*, the following snippet creates an ``OmniLidar`` prim at ``/lidar``, a render product for the sensor,
-and attaches an ``IsaacExtractRTXSensorPointCloudNoAccumulator`` annotator to the render product.
+The ``isaacsim.sensors.experimental.rtx`` and ``isaacsim.sensors.rtx.nodes`` extensions use Omniverse Replicator to provide Annotators for RTX Lidar and Radar data collection.
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_annotators/rtx_sensor_annotators.py
-    :language: python
+The recommended approach is to use the ``LidarSensor`` or ``RadarSensor`` classes, which manage annotators and render products automatically:
 
-Alternatively, the ``LidarRtx`` class offers a single API for attaching any annotator to an ``OmniLidar`` prim
-and collecting data. For example, in a standalone Python workflow, the following snippet creates an ``OmniLidar`` prim at ``/lidar``,
-creates a render product for the sensor, and attaches an ``IsaacExtractRTXSensorPointCloudNoAccumulator`` annotator to it, then collects
-data from the annotator on each simulation frame. Note that this snippet will not run in the script editor window.
-
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_annotators/attach_the_render_product_after_the_annotator_is_i.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_annotators/collect_data_with_lidar_sensor.py
     :language: python
 
 Time Behavior of RTX Sensor Annotators
@@ -50,26 +41,126 @@ when collecting data using these Annotators.
 Annotators
 ----------
 
-Each ``isaacsim.sensors.rtx`` Annotator is associated with a specific ``isaacsim.sensors.rtx`` OmniGraph node, which is linked
-in that Annotator's subsection below. The inputs and outputs of the Annotator are the same as the inputs and outputs of the
-corresponding OmniGraph node.
+.. _rtx_sensor_IsaacExtractRTXSensorPointCloud:
 
-.. note:: In |isaac-sim_short| 5.0, several existing ``isaacsim.sensors.rtx`` annotators were removed in favor of simpler
-    annotators that can handle output from the new ``OmniLidar`` or ``OmniRadar`` prims, in addition to the
-    deprecated ``Camera``-prim-based workflows. See :ref:`rtx_sensor_deprecated_annotators` for details.
+IsaacExtractRTXSensorPointCloud
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    If the Lidar rotation rate is slower than the frame rate, data from Annotators for accumulated Lidar scans will contain returns from multiple frames. If the Lidar prim moves between frames, or objects
-    move in the scene, the buffer might contain returns from before the Lidar or objects moved, causing points to appear as though they are "dragging" behind objects when
-    viewed with the ``DebugDrawPointCloud`` or ``DebugDrawPointCloudBuffer`` writers.
+The ``IsaacExtractRTXSensorPointCloud`` Annotator extracts the ``GenericModelOutput`` buffer's point cloud data
+into a Cartesian (x, y, z) buffer every frame. It is provided by the ``isaacsim.sensors.rtx.nodes`` extension.
 
-    ``isaacsim.sensors.rtx`` annotators rely on the ``GenericModelOutput`` AOV from the ``OmniLidar`` prim being
-    provided on device. If ``--/app/sensors/nv/lidar/outputBufferOnGPU`` or ``--/app/sensors/nv/radar/outputBufferOnGPU`` is
-    set to ``false``, the annotators will not function correctly.
+This annotator works with both ``OmniLidar`` (RTX Lidar) and ``OmniRadar`` (RTX Radar) prims.
+It performs spherical-to-Cartesian conversion when the ``GenericModelOutput`` buffer contains spherical coordinates,
+and outputs a sensor-to-world transform matrix.
+
+The ``RtxSensorDebugDrawPointCloud`` Replicator Writer (also from ``isaacsim.sensors.rtx.nodes``)
+can be used to visualize the point cloud in the viewport.
+
+**Using with the runtime sensor classes**
+
+When ``isaacsim.sensors.rtx.nodes`` is enabled, a writer named ``"draw-point-cloud"``
+becomes available on ``LidarSensor``, ``RadarSensor``, and ``AcousticSensor``.
+Pass ``writers=["draw-point-cloud"]`` to attach the debug draw writer:
+
+.. code-block:: python
+
+    from isaacsim.sensors.experimental.rtx import LidarSensor
+
+    sensor = LidarSensor("/World/lidar", annotators=[], writers=["draw-point-cloud"])
+
+**Using with RTX Radar**
+
+The annotator works identically with ``OmniRadar`` prims. Remember that Motion BVH must be enabled for RTX Radar:
+
+.. code-block:: python
+
+    import numpy as np
+    import omni.replicator.core as rep
+    from isaacsim.sensors.experimental.rtx import Radar
+
+    radar = Radar("/World/radar", tick_rate=20, translations=np.array([0, 0, 1.0]))
+    render_product = rep.create.render_product(radar.paths[0], resolution=(1, 1))
+
+    writer = rep.writers.get("RtxSensorDebugDrawPointCloud")
+    writer.initialize(size=0.2, color=[1.0, 0.3, 0.1, 1.0])  # orange, larger points
+    writer.attach([render_product.path])
+
+**Auxiliary data**
+
+When using the ``LidarSensor`` or ``RadarSensor`` classes, auxiliary data (intensity, emitter IDs, material IDs, etc.)
+is available directly through the ``GenericModelOutput`` buffer via ``parse_generic_model_output_data``.
+The ``_replicator:rendervar:GenericModelOutput:channels`` attribute on the sensor prim controls which auxiliary fields are populated:
+
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_annotators/create_lidar_sensor_with_aux_output.py
+    :language: python
+
+.. _rtx_sensor_reading_gmo_buffer:
+
+Reading Data from the ``GenericModelOutput`` Buffer
+---------------------------------------------------
+
+.. note:: |isaac-sim_short| 4.5 included the ``OgnIsaacReadRTXLidarData`` node, which provided an
+    example of reading data from the ``GenericModelOutput`` buffer in Python. This node has been removed
+    as of |isaac-sim_short| 5.0 and replaced by the utility module and functions described below.
+
+The ``isaacsim.sensors.experimental.rtx.generic_model_output`` Python module provides APIs for inspecting the
+``GenericModelOutput`` buffer, generated by the ``GenericModelOutput`` annotator. The ``parse_generic_model_output_data``
+utility function from ``isaacsim.sensors.experimental.rtx`` provides a convenient way to parse annotator output.
+
+For more information on the ``GenericModelOutput`` buffer, see |link_ext|.
+
+.. |link_ext| raw:: html
+
+    <a href="../py/docs/source/generic_model_output/generic_model_output.html" target="_blank">the API documentation.</a>
+
+For an example of reading data from the ``GenericModelOutput`` buffer from |isaac-sim_short|, checkout the
+standalone examples:
+
+.. code-block:: bash
+
+    # Lidar GMO inspection
+    ./python.sh standalone_examples/api/isaacsim.sensors.experimental.rtx/inspect_lidar_gmo.py --aux-data-level FULL
+
+    # Radar GMO inspection
+    ./python.sh standalone_examples/api/isaacsim.sensors.experimental.rtx/inspect_radar_gmo.py
+
+.. _rtx_sensor_resolving_object_ids:
+
+Semantic Segmentation with RTX Sensor using Object IDs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``GenericModelOutput`` struct includes an ``objId`` field containing per-return object identifiers.
+
+The data is provided as a ``numpy`` array of ``dtype`` ``np.uint8``, and is only populated if ``--/rtx-transient/stableIds/enabled=true`` is set.
+This data is meant to be interpreted as a sequence of 128-bit unsigned integers (effectively ``stride`` 16), which are stable, unique IDs corresponding to
+unique prim paths in the scene. In other words, the ``i``-th 128-bit unsigned integer in the array corresponds to prim generating the ``i``-th return from the sensor.
+This can be used for semantic segmentation of the scene, by mapping the object IDs to prim paths and then retrieving semantic labels from the prims.
+
+The ``isaacsim.sensors.experimental.rtx`` extension provides two utility functions for resolving object IDs as prim paths.
+
+``parse_stable_id_map_data`` resolves the output of the ``StableIdMap`` AOV (which can be generated from an ``OmniLidar`` or ``OmniRadar`` prim)
+as a Python ``dict`` mapping stable IDs to prim paths.
+
+``parse_generic_model_output_data`` provides access to the ``objId`` field in the ``GenericModelOutput`` buffer, which contains 128-bit object IDs.
+
+Refer to ``standalone_examples/api/isaacsim.sensors.experimental.rtx/resolve_lidar_object_ids.py`` for an example of using these functions to resolve object IDs as prim paths.
+
+.. _rtx_sensor_deprecated_annotators:
+
+Deprecated Annotators
+---------------------
+
+.. warning::
+
+    The following annotators are provided by the deprecated ``isaacsim.sensors.rtx`` extension
+    and will be removed in a future release. Use ``IsaacExtractRTXSensorPointCloud`` (from
+    ``isaacsim.sensors.rtx.nodes``) with the ``LidarSensor`` and ``RadarSensor`` runtime
+    classes (from ``isaacsim.sensors.experimental.rtx``) instead.
 
 .. _rtx_sensor_IsaacCreateRTXLidarScanBuffer:
 
-IsaacCreateRTXLidarScanBuffer
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IsaacCreateRTXLidarScanBuffer *(deprecated)*
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``IsaacCreateRTXLidarScanBuffer`` Annotator accumulates frames of data from an ``OmniLidar`` prim into a single scan,
 and provides the accumulated scan data as outputs. It is associated with the |IsaacCreateRTXLidarScanBuffer| node.
@@ -88,15 +179,8 @@ If creating the Annotator directly using the Replicator API, this can be done as
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_annotators/isaaccreatertxlidarscanbuffer.py
     :language: python
 
-If creating the Annotator through the ``LidarRtx`` class, this can be done as follows:
-
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_annotators/note_this_must_be_done_before_attaching_the_annota.py
-    :language: python
-
 The node outputs data as pointers to buffers and the table below specifies the data type of each buffer, as well as any attributes to set on the ``OmniLidar`` prim or carb settings that are required for the desired output(s).
 If the user does not set the required attributes or carb settings, the annotator will print a warning and will not output the desired data.
-
-.. warning:: In |isaac-sim_short| 5.1 and earlier, the ``IsaacCreateRTXLidarScanBuffer`` node  included an ``outputNormal`` field, which has been deprecated. Use the ``outputHitNormal`` input instead.
 
 .. csv-table::
     :header: "Output", "Type", "Description", "Notes"
@@ -122,8 +206,8 @@ If the user does not set the required attributes or carb settings, the annotator
 
 .. _rtx_sensor_IsaacComputeRTXLidarFlatScan:
 
-IsaacComputeRTXLidarFlatScan
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IsaacComputeRTXLidarFlatScan *(deprecated)*
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``IsaacComputeRTXLidarFlatScan`` Annotator extracts depth and azimuth data from an accumulated 2D RTX Lidar scan.
 It is associated with the |IsaacComputeRTXLidarFlatScan| node.
@@ -134,90 +218,11 @@ It is associated with the |IsaacComputeRTXLidarFlatScan| node.
 
 .. warning:: The ``IsaacComputeRTXLidarFlatScan`` Annotator only works with ``OmniLidar`` prims (RTX Lidar) configured as 2D lidars, defined as having emitters only at elevation angle zero (0). It does not work with ``OmniRadar`` prims (RTX Radar) or 3D Lidars.
 
-Even if ``--/app/sensors/nv/lidar/outputBufferOnGPU=true`` is set, ``IsaacComputeRTXLidarFlatScanSimulationTime`` output data will be on host memory.
+.. _rtx_sensor_IsaacExtractRTXSensorPointCloudNoAccumulator:
 
-.. _rtx_sensor_IsaacExtractRTXSensorPointCloud:
+IsaacExtractRTXSensorPointCloudNoAccumulator *(deprecated)*
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-IsaacExtractRTXSensorPointCloudNoAccumulator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The ``IsaacExtractRTXSensorPointCloud`` Annotator extracts the ``GenericModelOutput`` buffer's point cloud data
-into a Cartesian vector ``data`` buffer every frame. It is associated with the |IsaacCreateRTXLidarScanBuffer| node, with ``enablePerFrameOutput`` set to ``true``.
-
-.. note::
-
-    * The ``IsaacExtractRTXSensorPointCloudNoAccumulator`` Annotator works with ``OmniLidar`` prims (RTX Lidar) and ``OmniRadar`` prims (RTX Radar).
-    * |isaac-sim_short| 5.0 previously used the ``IsaacExtractRTXSensorPointCloud`` node for this annotator, but that node was removed after performance improvements were made to the ``IsaacCreateRTXLidarScanBuffer`` node.
-
-.. _rtx_sensor_reading_gmo_buffer:
-
-Reading Data from the ``GenericModelOutput`` Buffer
----------------------------------------------------
-
-.. note:: |isaac-sim_short| 4.5 included the ``OgnIsaacReadRTXLidarData`` node, which provided an
-    example of reading data from the ``GenericModelOutput`` buffer in Python. This node has been removed
-    as of |isaac-sim_short| 5.0 and replaced by the utility module and functions described below.
-
-The ``isaacsim.sensors.rtx.generic_model_output`` Python module provides APIs for inspecting the
-``GenericModelOutput`` buffer, generated by the ``GenericModelOutput`` annotator.
-
-For more information on the ``GenericModelOutput`` buffer, see |link_ext|.
-
-.. |link_ext| raw:: html
-
-    <a href="../py/docs/source/generic_model_output/generic_model_output.html" target="_blank">the API documentation.</a>
-
-For an example of reading data from the ``GenericModelOutput`` buffer from |isaac-sim_short|, checkout the
-standalone examples:
-
-.. code-block:: bash
-
-    # Lidar GMO inspection
-    ./python.sh standalone_examples/api/isaacsim.sensors.rtx/inspect_lidar_gmo.py --aux-data-level FULL
-
-    # Radar GMO inspection
-    ./python.sh standalone_examples/api/isaacsim.sensors.rtx/inspect_radar_gmo.py
-
-.. _rtx_sensor_resolving_object_ids:
-
-Semantic Segmentation with RTX Sensor using Object IDs
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The ``GenericModelOutput`` struct includes a ``objId`` field and the ``IsaacCreateRTXLidarScanBuffer`` node outputs an optional ``objectId`` output.
-
-In both cases, the data is provided as a ``numpy`` array of ``dtype`` ``np.uint8``, and is only populated if ``--/rtx-transient/stableIds/enabled=true`` is set.
-This data is meant to be interpreted as a sequence of 128-bit unsigned integers (effectively ``stride`` 16), which are stable, unique IDs corresponding to
-unique prim paths in the scene. In other words, the ``i``-th 128-bit unsigned integer in the array corresponds to prim generating the ``i``-th return from the sensor.
-This can be used for semantic segmentation of the scene, by mapping the object IDs to prim paths and then retrieving semantic labels from the prims.
-
-The ``isaacsim.sensors.rtx.LidarRtx`` class provides two utility functions for resolving object IDs as prim paths.
-
-First, ``LidarRtx.decode_stable_id_mapping`` resolves the output of the ``StableIdMap`` AOV (which can be generated from an ``OmniLidar``, ``OmniRadar``, or ``Camera`` prim)
-as a Python ``dict`` mapping 128-bit unsigned integers to prim paths.
-
-Second, ``LidarRtx.get_object_ids`` resolves the object ID array output from ``GenericModelOutput`` or ``IsaacCreateRTXLidarScanBuffer`` as 128-bit unsigned integers.
-
-Refer to ``standalone_examples/api/isaacsim.sensors.rtx/resolve_lidar_object_ids.py`` for an example of using these functions to resolve object IDs as prim paths.
-
-.. _rtx_sensor_deprecated_annotators:
-
-Deprecated Annotators
----------------------
-
-Several annotators have been removed and or replaced by the annotators described above, as of |isaac-sim_short| 5.0.
-
-New annotator outputs are not guaranteed to be the same as the outputs of the deprecated annotators;
-the table below describes affected annotators and how to replace them.
-
-.. csv-table::
-    :header: "Deprecated |isaac-sim_short| 4.5 Annotator", "Replacement", "Details"
-    :widths: 35, 30, 35
-
-    "``IsaacComputeRTXLidarFlatScanSimulationTime``", "``IsaacComputeRTXLidarFlatScan``", "The new annotator outputs the same data as the old annotator. To get an associated timestamp, use the ``IsaacReadSimulationTime`` annotator."
-    "``IsaacComputeRTXLidarFlatScanSystemTime``", "``IsaacComputeRTXLidarFlatScan``", "The new annotator outputs the same data as the old annotator. To get an associated timestamp, use the ``IsaacReadSystemTime`` annotator."
-    "``RtxSensorCpuIsaacComputeRTXLidarPointCloud``", "``IsaacExtractRTXSensorPointCloudNoAccumulator``", "The new annotator outputs the same data as the old annotator, excluding ``azimuth``, ``elevation``, and ``range``. These values can be computed from the Cartesian ``data`` buffer. The new annotator also automatically supports CPU or GPU output based on the ``--/app/sensors/nv/lidar/outputBufferOnGPU`` and ``--/app/sensors/nv/radar/outputBufferOnGPU`` settings, rather than Annotator type."
-    "``RtxSensorGpuIsaacComputeRTXLidarPointCloud``", "``IsaacExtractRTXSensorPointCloudNoAccumulator``", "See above."
-    "``RtxSensorCpuIsaacComputeRTXRadarPointCloud``", "``IsaacExtractRTXSensorPointCloudNoAccumulator``", "See above."
-    "``RtxSensorGpuIsaacComputeRTXRadarPointCloud``", "``IsaacExtractRTXSensorPointCloudNoAccumulator``", "See above."
-    "``IsaacReadRTXLidarData``", "``isaacsim.sensors.rtx.get_gmo_data`` utility.", "See :ref:`rtx_sensor_reading_gmo_buffer` for details."
+Per-frame point cloud extraction from the ``GenericModelOutput`` buffer. Works with ``OmniLidar`` and ``OmniRadar`` prims.
+Replaced by ``IsaacExtractRTXSensorPointCloud`` from ``isaacsim.sensors.rtx.nodes``.
 

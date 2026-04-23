@@ -43,6 +43,7 @@ def create_sarcophagus(apply_nonvisual_material: bool = True) -> dict:
         # Place cube normal to x-axis
         cube = Cube(
             f"/World/cube_{i*4}",
+            sizes=1.0,
             positions=np.multiply(signs, np.array([l + 0.5, l / 2, h1 - h / 2])),
             scales=np.array([1, l, h]),
             colors=[1, 0, 0],
@@ -62,6 +63,7 @@ def create_sarcophagus(apply_nonvisual_material: bool = True) -> dict:
         # place cube normal to y-axis
         cube = Cube(
             f"/World/cube_{i*4+1}",
+            sizes=1.0,
             positions=np.multiply(signs, np.array([l / 2, l + 0.5, h1 - h / 2])),
             scales=np.array([l, 1, h]),
             colors=[0, 1, 0],
@@ -81,6 +83,7 @@ def create_sarcophagus(apply_nonvisual_material: bool = True) -> dict:
         # place cube normal to z-axis, top
         cube = Cube(
             f"/World/cube_{i*4+2}",
+            sizes=1.0,
             positions=np.multiply(signs, np.array([l / 2, l / 2, h1 + 0.5])),
             scales=np.array([l, l, 1]),
             colors=[0, 0, 1],
@@ -100,6 +103,7 @@ def create_sarcophagus(apply_nonvisual_material: bool = True) -> dict:
         # place cube normal to z-axis, bottom
         cube = Cube(
             f"/World/cube_{i*4+3}",
+            sizes=1.0,
             positions=np.multiply(signs, np.array([l / 2, l / 2, -h2 - 0.5])),
             scales=np.array([l, l, 1]),
             colors=[1, 1, 0],

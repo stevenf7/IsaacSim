@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.8.0] - 2026-04-21
+### Changed
+- Migrated `camera_info_utils` from deprecated `isaacsim.sensors.camera` to `isaacsim.sensors.experimental.rtx` APIs
+- Camera info now reads OpenCV distortion coefficients from `OmniLensDistortion` schemata (`OmniLensDistortionOpenCvPinholeAPI`, `OmniLensDistortionOpenCvFisheyeAPI`)
+- Removed deprecated `isaacsim.sensors.camera` and `isaacsim.sensors.rtx` dependencies; added `isaacsim.sensors.experimental.rtx` and `isaacsim.sensors.rtx.nodes`
+- Removed legacy physical distortion model support (`physicalDistortionModel`, `physicalDistortionCoefficients`)
+- Refactored `test_camera_info_utils.py` to use `RtxCamera` and `OmniLensDistortion` schemas
+
 ## [1.7.4] - 2026-04-20
 ### Fixed
 - Remove unused isaacsim.sensors.physx dependency

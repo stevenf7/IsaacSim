@@ -25,7 +25,7 @@ Stereoscopic Depth Cameras
 Single-View Post-Processing Pipeline
 ------------------------------------
 
-|isaac-sim_short| models stereoscopic depth cameras using a single camera view through the ``isaacsim.sensors.camera.SingleViewDepthSensor`` class. This class wraps around ``isaacsim.sensors.camera.Camera``, and
+|isaac-sim_short| models stereoscopic depth cameras using a single camera view through the ``isaacsim.sensors.experimental.rtx.SingleViewDepthCameraSensor`` class. This class wraps around ``isaacsim.sensors.experimental.rtx.RtxCamera``, and
 includes APIs for configuring a post-processing pipeline for stereoscopic depth estimation from a single Camera prim. The process by which the renderer models disparity and noise from a single camera view
 is described in detail `here <http://omniverse-docs.s3-website-us-east-1.amazonaws.com/omni.sensors.nv.camera/0.21.0-coreapi/camera_extension.html#single-view-depth-camera>`_.
 
@@ -33,7 +33,7 @@ is described in detail `here <http://omniverse-docs.s3-website-us-east-1.amazona
 
 Standalone Python
 ^^^^^^^^^^^^^^^^^
-Check out the standalone example located at ``standalone_examples/api/isaacsim.sensors.camera/camera_stereoscopic_depth.py`` for an example of how to use the ``isaacsim.sensors.camera.SingleViewDepthSensor`` class
+Check out the standalone example located at ``standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_stereoscopic_depth.py`` for an example of how to use the ``SingleViewDepthCameraSensor`` class from ``isaacsim.sensors.experimental.rtx``
 and the `new Annotators provided in Replicator <https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator/annotators_details.html>`_.
 
 When running the standalone example, a basic set of colored shapes in the Black Grid environment are in the viewport, like below:
@@ -63,14 +63,14 @@ Verify that you see the disparity map in the viewport, like below:
    :width: 800
    :alt: Disparity map
 
-.. note:: Any settings under **Render Settings > Post Processing > Depth Sensor** will be applied to all render products in the scene (including the viewport). The ``isaacsim.sensors.camera.SingleViewDepthSensor`` class
+.. note:: Any settings under **Render Settings > Post Processing > Depth Sensor** will be applied to all render products in the scene (including the viewport). The ``isaacsim.sensors.experimental.rtx.SingleViewDepthCameraSensor`` class
    enables configuration of individual render products as depth sensors.
 
 Close the |isaac-sim_short| UI and rerun the standalone example as follows:
 
 .. code-block:: bash
 
-   ./python.sh standalone_examples/api/isaacsim.sensors.camera/camera_stereoscopic_depth.py --test
+   ./python.sh standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_stereoscopic_depth.py --test
 
 |isaac-sim_short| will now run the standalone example in headless mode and generate the following output from Annotators
 attached to the ``camera`` render product. The first image is output from the ``DepthSensorDistance`` Annotator (``depth_sensor_distance.png``), and the
@@ -84,24 +84,18 @@ second image is output from the ``DistanceToImagePlane`` Annotator (``distance_t
    :width: 800
    :alt: True distance to image plane
 
-.. warning:: When using any of the new depth AOVs, you might see the following (or similar) errors:
-
-   .. code-block:: bash
-
-      [Error] [rtx.postprocessing.plugin] DepthSensor: Texture sizes do not match: inColorTexDesc 1920x1080x1:11@0 inDepthTexDesc 1500x843x1:33@0
-      [Error] [rtx.postprocessing.plugin] DepthSensor: Failed to allocate view resources for view 1 device 0
-      [Error] [carb.scenerenderer-rtx.plugin] Failed to export AOV 38 to render product. The renderer did not generate the AOV texture
-
-   These errors are expected for the first frame of the depth simulation and will be corrected in a future release.
-
 Depth Camera Asset Wrapper
 --------------------------
 
+.. warning::
+
+    The ``SingleViewDepthSensorAsset`` class from ``isaacsim.sensors.camera`` is deprecated. For new projects, use ``RtxCamera`` and ``SingleViewDepthCameraSensor`` from ``isaacsim.sensors.experimental.rtx`` to configure depth cameras directly.
+
 |isaac-sim_short| supports several official :ref:`isaac_assets_camera_depth_sensors_depth_sensors`. These can be automatically loaded as references on a stage
-using the ``isaacsim.sensors.camera.SingleViewDepthSensorAsset`` class. This API will search the asset for ``RenderProduct``prims specifying single-view depth
-sensor characteristics, tailored for a specific camera in the asset, then wrap those ``Camera`` prims as ``SingleViewDepthSensor`` instances. By loading the
+using the ``SingleViewDepthSensorAsset`` class from the deprecated ``isaacsim.sensors.camera`` extension. This API will search the asset for ``RenderProduct`` prims specifying single-view depth
+sensor characteristics, tailored for a specific camera in the asset, then wrap those ``Camera`` prims as depth sensor instances. By loading the
 asset in this manner, you will have full control over the post-processing pipeline for each depth sensor in the asset, and can attach any number of Annotators
-to the ``SingleViewDepthSensor`` instances through its API.
+to the depth sensor instances through its API.
 
 .. note:: Attribute specification for ``Camera`` prims in the official assets linked above are tentative, and can change in future asset updates or releases.
 
@@ -137,12 +131,12 @@ Building a Depth Sensor Model in Isaac Sim
 Updating Existing Assets to Use Depth Sensors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-|isaac-sim_short| provides a convenient API to update an existing asset to use depth sensors using the ``isaacsim.sensors.camera.SingleViewDepthSensorAsset`` class. The following example demonstrates how to update a new ``Camera`` prim
-as a depth sensor, then export it as a USD file that can be loaded as a reference in other stages using ``isaacsim.sensors.camera.SingleViewDepthSensorAsset``.
+|isaac-sim_short| provides a convenient API to create a depth camera sensor using the ``SingleViewDepthCameraSensor`` class from ``isaacsim.sensors.experimental.rtx``. The following example demonstrates how to create an ``RtxCamera`` prim
+configured as a depth sensor with multiple depth annotators.
 
 .. code-block:: bash
 
-   ./python.sh standalone_examples/api/isaacsim.sensors.camera/camera_add_depth_sensor.py
+   ./python.sh standalone_examples/api/isaacsim.sensors.experimental.rtx/create_camera_depth_sensor.py
 
 Running the example will create a new ``example_camera_with_depth_sensor.usd`` asset in the local directory.
 After opening the new asset in |isaac-sim_short|, observe the following in the **Stage** window:

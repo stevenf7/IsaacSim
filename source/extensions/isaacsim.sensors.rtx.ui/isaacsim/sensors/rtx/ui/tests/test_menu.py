@@ -15,7 +15,7 @@
 
 """Test menu functionality."""
 
-from isaacsim.core.utils.stage import traverse_stage
+from isaacsim.core.experimental.utils.stage import get_current_stage
 from isaacsim.test.utils import MenuUITestCase, get_all_menu_paths
 from omni.kit.mainwindow import get_main_window
 from omni.kit.ui_test import get_context_menu
@@ -38,7 +38,7 @@ class TestMenuAssets(MenuUITestCase):
         num_prims = 0
         sensor_passed = False
 
-        for prim in traverse_stage():
+        for prim in get_current_stage().Traverse():
             num_prims += 1
             if prim.IsA("OmniLidar"):
                 sensor_passed = True

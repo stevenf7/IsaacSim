@@ -23,8 +23,8 @@ import omni
 import omni.graph.core as og
 import omni.replicator.core as rep
 import omni.syntheticdata._syntheticdata as sd
+from isaacsim.core.experimental.objects import Camera
 from isaacsim.core.nodes.scripts.utils import set_target_prims
-from isaacsim.sensors.camera import Camera
 from isaacsim.storage.native import get_assets_root_path
 
 # Enable ROS 2 bridge extension

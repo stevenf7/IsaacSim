@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0] - 2026-04-23
+### Added
+- `RtxCamera` authoring class for creating/wrapping USD Camera prims with OmniSensorAPI schema
+- `CameraSensor` runtime class for single-camera annotator data retrieval with resolution-aware render products
+- `TiledCameraSensor` runtime class for batched multi-camera rendering with shared annotators
+- `SingleViewDepthCameraSensor` runtime class extending `CameraSensor` with stereoscopic depth post-processing
+- `draw_annotator_data_to_image` utility for converting annotator output to images
+- Camera-specific annotator spec registry (`_camera_common.py`)
+- `register_annotator_spec`, `unregister_annotator_spec`, `register_writer_spec`, `unregister_writer_spec` for companion extension integration
+- `aux_output_level` parameter to `Radar.create()` and `Acoustic.create()` (matching `Lidar.create()`)
+- `aux_output_level` to `Radar` and `Acoustic` class docstrings
+
 ## [1.0.1] - 2026-04-22
 ### Fixed
 - Mark extension as platform-specific (`writeTarget.platform = true`) so the registry publishes a separate artifact per platform. Without this, consumers on Linux would pull a Windows-built package containing `.pyd` instead of `.so` from `generic-model-output`/`sensor-checker` (or vice versa) and fail to load.

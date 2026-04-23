@@ -14,13 +14,23 @@
 # limitations under the License.
 
 
+from ._common import register_annotator_spec as register_annotator_spec
+from ._common import register_writer_spec as register_writer_spec
+from ._common import unregister_annotator_spec as unregister_annotator_spec
+from ._common import unregister_writer_spec as unregister_writer_spec
 from .acoustic import Acoustic as Acoustic
 from .acoustic_sensor import AcousticSensor as AcousticSensor
+from .camera_sensor import CameraSensor as CameraSensor
+from .camera_utils import draw_annotator_data_to_image as draw_annotator_data_to_image
 from .lidar import Lidar as Lidar
 from .lidar_sensor import LidarSensor as LidarSensor
 from .radar import Radar as Radar
 from .radar_sensor import RadarSensor as RadarSensor
+from .rtx_camera import RtxCamera as RtxCamera
 from .rtx_lidar_configs import SUPPORTED_LIDAR_CONFIGS as SUPPORTED_LIDAR_CONFIGS
 from .rtx_lidar_configs import SUPPORTED_LIDAR_VARIANT_SET_NAME as SUPPORTED_LIDAR_VARIANT_SET_NAME
+from .single_view_depth_camera_sensor import SingleViewDepthCameraSensor as SingleViewDepthCameraSensor
+from .tiled_camera_sensor import TiledCameraSensor as TiledCameraSensor
 from .utils import parse_generic_model_output_data as parse_generic_model_output_data
+from .utils import parse_object_ids as parse_object_ids
 from .utils import parse_stable_id_map_data as parse_stable_id_map_data

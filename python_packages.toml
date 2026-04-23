@@ -636,12 +636,12 @@ inventory.includes.all = [
     "extsDeprecated/isaacsim.sensors.physx",
     "extsDeprecated/isaacsim.sensors.rtx",
     "exts/isaacsim.sensors.camera.ui",
-    "exts/isaacsim.sensors.experimental.camera",
     "exts/isaacsim.sensors.experimental.physics",
     "exts/isaacsim.sensors.experimental.rtx",
     "exts/isaacsim.sensors.physics.examples",
     "exts/isaacsim.sensors.physics.nodes",
     "exts/isaacsim.sensors.physics.ui",
+    "exts/isaacsim.sensors.rtx.nodes",
     "exts/isaacsim.sensors.rtx.ui",
 ]
 

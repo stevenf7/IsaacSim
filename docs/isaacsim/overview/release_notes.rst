@@ -70,7 +70,7 @@ Robots
 Sensors
 ^^^^^^^
 
-- **Cameras and Depth Sensors**: ``isaacsim.sensors.camera`` deprecated in favor of ``isaacsim.sensors.experimental.camera``. Camera sensor now uses ``_fast`` annotator variants for improved performance. Fixed tiled sensor data slicing.
+- **Cameras and Depth Sensors**: ``isaacsim.sensors.camera`` deprecated in favor of ``isaacsim.sensors.experimental.rtx``. Camera sensor now uses ``_fast`` annotator variants for improved performance. Fixed tiled sensor data slicing.
 - **RTX Non-Visual Sensors**: Added explicit RTX Radar support via new Annotator. RTX Sensor models now use Hydra time (``omni.timeline``) for accurate simulation time tracking. Scan accumulation and post-processing moved to host by default, reducing GPU resource contention. Fixed point cloud "flickering" and broken scans when using RTX Lidar. New and updated standalone examples.
 - **Physics Sensors**: ``isaacsim.sensors.physics`` deprecated in favor of ``isaacsim.sensors.experimental.physics``. Added dedicated GPU codepath for IMU sensor using a separate CUDA stream and pinned memory buffer for improved performance.
 

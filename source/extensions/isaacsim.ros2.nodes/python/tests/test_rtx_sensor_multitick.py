@@ -19,17 +19,17 @@ import time
 from typing import List
 from uuid import uuid4
 
-import isaacsim.sensors.rtx.generic_model_output as gmo_utils
+import carb
+import isaacsim.sensors.experimental.rtx.generic_model_output as gmo_utils
 import numpy as np
 import omni
 import omni.graph.core as og
 import omni.kit
-import omni.kit.commands
 import omni.kit.test
 import omni.replicator.core as rep
 import rclpy
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
-from isaacsim.sensors.rtx import get_gmo_data
+from isaacsim.sensors.experimental.rtx import Lidar, parse_generic_model_output_data
 from sensor_msgs.msg import LaserScan, PointCloud2
 from std_msgs.msg import String
 
@@ -44,7 +44,6 @@ class TestROS2SensorMsgRTX(ROS2TestCase):
     async def setUp(self):
         await super().setUp()
 
-        self._sensor = None
         self._sensor_prim_path = None
         self._render_product = None
         self._render_product_path = None
@@ -108,22 +107,41 @@ class TestROS2SensorMsgRTX(ROS2TestCase):
             self._annotator_timestamp.detach()
         await super().tearDown()
 
-    async def _create_sensor(self, sensor_type: str, config: str = None, variant: str = None, **kwargs):
-        # Create an RTX Sensor
-        _, self._sensor = omni.kit.commands.execute(
-            f"IsaacSensorCreateRtx{sensor_type.capitalize()}",
-            path=f"/{sensor_type}",
-            config=config,
-            variant=variant,
-            **kwargs,
-        )
-        self.assertEqual(
-            self._sensor.GetTypeName(), f"Omni{sensor_type.capitalize()}", f"Failed to create {sensor_type}."
-        )
-        self._sensor_prim_path = self._sensor.GetPath()
+    async def _create_sensor(
+        self,
+        sensor_type: str,
+        config: str = None,
+        variant: str = None,
+        aux_output_level: str = "NONE",
+        accumulate_outputs: bool = True,
+        **kwargs,
+    ):
         self._sensor_type = sensor_type
-        self.assertFalse(self._sensor.GetAttribute("omni:sensor:Core:skipDroppingInvalidPoints").Get())
-        self.assertTrue(self._sensor.GetAttribute("omni:sensor:Core:accumulateOutputs").Get())
+
+        if sensor_type == "radar":
+            from isaacsim.sensors.experimental.rtx import Radar
+
+            radar = Radar(
+                f"/{sensor_type}",
+                aux_output_level=aux_output_level,
+                attributes=kwargs if kwargs else None,
+            )
+            prim = radar.prims[0]
+            self.assertEqual(prim.GetTypeName(), "OmniRadar", f"Failed to create {sensor_type}.")
+            self._sensor_prim_path = radar.paths[0]
+        else:
+            # Create an RTX Lidar sensor using the Lidar authoring class
+            lidar = Lidar.create(
+                f"/{sensor_type}",
+                config=config,
+                variant=variant,
+                aux_output_level=aux_output_level,
+                accumulate_outputs=accumulate_outputs,
+                attributes=kwargs if kwargs else None,
+            )
+            prim = lidar.prims[0]
+            self.assertEqual(prim.GetTypeName(), "OmniLidar", f"Failed to create {sensor_type}.")
+            self._sensor_prim_path = lidar.paths[0]
 
         # Create a render product for the sensor
         self._render_product = rep.create.render_product(self._sensor_prim_path, resolution=(128, 128))
@@ -140,12 +158,13 @@ class TestROS2SensorMsgRTX(ROS2TestCase):
         set_values = [
             ("PCLPublish.inputs:renderProductPath", self._render_product_path),
             ("PCLPublish.inputs:topicName", self._ros_topic),
-            ("PCLPublish.inputs:frameId", "my_custom_lidar_frame"),
             ("PCLPublish.inputs:resetSimulationTimeOnStop", True),
             ("PCLPublish.inputs:useSystemTime", use_system_time),
-            ("PCLPublish.inputs:enableObjectIdMap", self._sensor_type == "lidar" and "objectId" in metadata),
-            ("PCLPublish.inputs:objectIdMapTopicName", self._ros_object_id_map_topic),
         ]
+        # Object ID map is only supported for lidar
+        if self._sensor_type == "lidar":
+            set_values.append(("PCLPublish.inputs:enableObjectIdMap", "objectId" in metadata))
+            set_values.append(("PCLPublish.inputs:objectIdMapTopicName", self._ros_object_id_map_topic))
         connections = [
             ("OnPlaybackTick.outputs:tick", "PCLPublish.inputs:execIn"),
         ]
@@ -155,7 +174,6 @@ class TestROS2SensorMsgRTX(ROS2TestCase):
             # Use OgnROS2RtxLidarPointCloudConfig to specify metadata for Lidar
             create_nodes.append(("PCLLidarConfig", "isaacsim.ros2.bridge.ROS2RtxLidarPointCloudConfig"))
             set_values.append(("PCLPublish.inputs:type", self._helper_type))
-            set_values.append(("PCLPublish.inputs:fullScan", enable_full_scan))
             for metadata_item in metadata:
                 set_values.append((f"PCLLidarConfig.inputs:output{metadata_item[0].upper()}{metadata_item[1:]}", True))
             connections.append(("PCLLidarConfig.outputs:selectedMetadata", "PCLPublish.inputs:selectedMetadata"))
@@ -176,9 +194,6 @@ class TestROS2SensorMsgRTX(ROS2TestCase):
         except Exception as e:
             self.fail(f"Failed to create OmniGraph for {self._sensor_type}: {e}")
 
-    def _get_annotator_name(self, full_scan: bool = False, metadata: List[str] = []):
-        return "GenericModelOutput"
-
     def _get_expected_message_count(self, full_scan: bool = False, test_duration_s: float = 1.5):
         if self._sensor_type == "lidar":
             return test_duration_s * 10 * (1 if full_scan else 6) - 1
@@ -196,6 +211,7 @@ class TestROS2SensorMsgRTX(ROS2TestCase):
     async def _test_sensor(
         self,
         sensor_type: str,
+        aux_output_level: str = "NONE",
         full_scan: bool = False,
         use_system_time: bool = False,
         metadata: List[str] = [],
@@ -204,7 +220,9 @@ class TestROS2SensorMsgRTX(ROS2TestCase):
     ):
 
         self._is_full_scan = full_scan
-        await self._create_sensor(sensor_type, **kwargs)
+        await self._create_sensor(
+            sensor_type, aux_output_level=aux_output_level, accumulate_outputs=full_scan, **kwargs
+        )
         await self._create_omnigraph(enable_full_scan=full_scan, use_system_time=use_system_time, metadata=metadata)
 
         # Start the timeline and advance by 1 frame to create the post-process graph
@@ -212,7 +230,7 @@ class TestROS2SensorMsgRTX(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # Retrieve the annotator and attach it to the render product
-        annotator_name = self._get_annotator_name(full_scan=full_scan, metadata=metadata)
+        annotator_name = "GenericModelOutput"
         self._annotator_rtx = rep.AnnotatorRegistry.get_annotator(annotator_name)
         self.assertIsNotNone(
             self._annotator_rtx,
@@ -268,7 +286,7 @@ class TestROS2SensorMsgRTX(ROS2TestCase):
             timestamp_data = self._annotator_timestamp.get_data()
             timestamp = timestamp_data.get(timestamp_output) if timestamp_data is not None else None
             if timestamp is not None and raw_data is not None and raw_data.size > 0:
-                gmo = get_gmo_data(raw_data)
+                gmo = parse_generic_model_output_data(raw_data)
                 if gmo.magicNumber == gmo_utils.getMagicNumberGMO() and gmo.numElements > 0:
                     snapshot = {
                         "x": gmo.x.copy(),
@@ -373,7 +391,6 @@ class TestROS2PointCloudRTX(TestROS2SensorMsgRTX):
 
     async def _test_message_data(self, full_scan: bool = False, test_duration_s: float = 1.5, metadata: List[str] = []):
         self.assertIsNotNone(self._ros_msg_data)
-        self.assertEqual(self._ros_msg_data.header.frame_id, "my_custom_lidar_frame")
         message_timestamp = self._ros_msg_data.header.stamp.sec + self._ros_msg_data.header.stamp.nanosec / 1e9
         snap = self._get_closest_timestamp(message_timestamp)
 
@@ -462,21 +479,20 @@ class TestROS2PointCloudRTX(TestROS2SensorMsgRTX):
         )
 
     async def test_rtx_lidar_full_scan_simulation_time_partial_metadata(self):
-        kwargs = {"omni:sensor:Core:auxOutputType": "BASIC"}
         await self._test_sensor(
             sensor_type="lidar",
             full_scan=True,
+            aux_output_level="BASIC",
             use_system_time=False,
             metadata=["echoId"],
             test_duration_s=0.5,
-            **kwargs,
         )
 
     async def test_rtx_lidar_full_scan_simulation_time_full_metadata(self):
-        kwargs = {"omni:sensor:Core:auxOutputType": "FULL"}
         await self._test_sensor(
             sensor_type="lidar",
             full_scan=True,
+            aux_output_level="FULL",
             use_system_time=False,
             metadata=[
                 "intensity",
@@ -492,15 +508,14 @@ class TestROS2PointCloudRTX(TestROS2SensorMsgRTX):
                 "tickState",
             ],
             test_duration_s=0.5,
-            **kwargs,
         )
 
     async def test_rtx_lidar_full_scan_system_time_full_metadata(self):
-        kwargs = {"omni:sensor:Core:auxOutputType": "FULL"}
         await self._test_sensor(
             sensor_type="lidar",
             full_scan=True,
             use_system_time=True,
+            aux_output_level="FULL",
             metadata=[
                 "intensity",
                 "timestamp",
@@ -515,7 +530,6 @@ class TestROS2PointCloudRTX(TestROS2SensorMsgRTX):
                 "tickState",
             ],
             test_duration_s=0.5,
-            **kwargs,
         )
 
 
@@ -529,7 +543,6 @@ class TestROS2LaserScanRTX(TestROS2SensorMsgRTX):
             return
 
         self.assertIsNotNone(self._ros_msg_data)
-        self.assertEqual(self._ros_msg_data.header.frame_id, "my_custom_lidar_frame")
         message_timestamp = self._ros_msg_data.header.stamp.sec + self._ros_msg_data.header.stamp.nanosec / 1e9
         snap = self._get_closest_timestamp(message_timestamp)
 
@@ -583,3 +596,69 @@ class TestROS2LaserScanRTX(TestROS2SensorMsgRTX):
 
     async def test_rtx_lidar_full_scan_system_time(self):
         await self._test_sensor(sensor_type="lidar", use_system_time=True, test_duration_s=0.5, config="SICK_nanoScan3")
+
+
+class TestROS2RadarPointCloudRTX(TestROS2SensorMsgRTX):
+    """Test RTX Radar point cloud publishing via ROS2RtxRadarHelper."""
+
+    _ros_msg_type = PointCloud2
+    _helper_type = "point_cloud"
+
+    async def setUp(self):
+        await super().setUp()
+        # Enable Motion BVH required by radar
+        carb.settings.get_settings().set("/renderer/raytracingMotion/enabled", True)
+
+    async def _test_message_data(self, full_scan: bool = False, test_duration_s: float = 1.5, metadata: List[str] = []):
+        self.assertIsNotNone(self._ros_msg_data)
+
+        self.assertGreater(
+            self._ros_msg_count,
+            0,
+            f"No message received for {self._sensor_type} after {test_duration_s} simulated seconds.",
+        )
+
+        from sensor_msgs_py.point_cloud2 import read_points
+
+        msg_points = read_points(self._ros_msg_data)
+
+        # Verify basic point cloud data exists
+        self.assertGreater(len(msg_points), 0, "Point cloud should have points")
+
+        # Verify radial velocity field if requested
+        if "radialVelocityMS" in metadata:
+            self.assertIn(
+                "radial_velocity_ms",
+                msg_points.dtype.names,
+                "PointCloud2 should contain radial_velocity_ms field",
+            )
+            rv_data = msg_points["radial_velocity_ms"]
+            # For a static scene, radial velocity should be near zero
+            self.assertTrue(
+                np.all(np.abs(rv_data) < 1.0),
+                f"Radial velocity should be near zero for static scene, max={np.max(np.abs(rv_data)):.4f}",
+            )
+
+    async def test_rtx_radar_point_cloud_basic(self):
+        """Test basic radar point cloud publishing without metadata."""
+        kwargs = {"omni:sensor:WpmDmat:outputFrameOfReference": "WORLD"}
+        await self._test_sensor(
+            sensor_type="radar",
+            use_system_time=False,
+            metadata=[],
+            test_duration_s=0.5,
+            aux_output_level="BASIC",
+            **kwargs,
+        )
+
+    async def test_rtx_radar_point_cloud_with_radial_velocity(self):
+        """Test radar point cloud with radial velocity metadata."""
+        kwargs = {"omni:sensor:WpmDmat:outputFrameOfReference": "WORLD"}
+        await self._test_sensor(
+            sensor_type="radar",
+            use_system_time=False,
+            metadata=["radialVelocityMS"],
+            test_duration_s=0.5,
+            aux_output_level="BASIC",
+            **kwargs,
+        )

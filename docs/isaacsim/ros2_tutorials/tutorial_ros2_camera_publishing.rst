@@ -38,7 +38,7 @@ Getting Started
 Setup a Camera in a Scene
 ==============================================
 
-To begin this tutorial, set up an environment with a ``isaacsim.sensors.camera`` :ref:`Camera<isaacsim_sensors_camera>` object. Running the following code results in a basic warehouse environment loaded with a camera in the scene.
+To begin this tutorial, set up an environment with a :ref:`Camera<isaacsim_sensors_camera>` object. Running the following code results in a basic warehouse environment loaded with a camera in the scene.
 
 .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_publishing/camera_publishing.py
     :language: python
@@ -47,7 +47,7 @@ To begin this tutorial, set up an environment with a ``isaacsim.sensors.camera``
 Publish Camera Intrinsics to CameraInfo Topic
 ==============================================
 
-The following snippet will publish camera intrinsics associated with an ``isaacsim.sensors.camera`` Camera to a |link_sensor_msg| topic.
+The following snippet will publish camera intrinsics associated with a Camera prim to a |link_sensor_msg| topic.
 
     .. |link_sensor_msg| raw:: html
 

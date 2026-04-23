@@ -19,7 +19,7 @@ RTX Sensor Non-Visual Materials
 The ``omni.sensors.nv.materials`` extension, documented `here <http://omniverse-docs.s3-website-us-east-1.amazonaws.com/omni.sensors.nv.materials/1.6.0-coreapi/materials_extension.html>`_, provides support for rendering materials, which are visible in non-visual spectra for RTX sensors. These materials
 are referred to as "non-visual materials".
 
-As described in the extension documentation, non-visual materials are rendered using USD attributes, and can be specified in the USD file. |isaac-sim_short| includes APIs in the ``isaacsim.sensors.rtx`` extension to simplify setting these attributes on ``Material`` prims. The renderer
+As described in the extension documentation, non-visual materials are rendered using USD attributes, and can be specified in the USD file. |isaac-sim_short| includes the ``isaacsim.core.experimental.materials.NonVisualMaterial`` class to simplify setting these attributes on ``Material`` prims. The renderer
 will compute a material ID for each non-visual material, based on the combination of provided attributes. This material ID is provided by the ``GenericModelOutput`` AOV, and is exposed by multiple Annotators. Refer to :ref:`rtx_sensor_annotator_descriptions` for more details.
 
 Specifying Non-Visual Material Attributes
@@ -48,12 +48,12 @@ After adding the new attribute, it will appear in the material's properties, at 
 Python
 ######
 
-``isaacsim.sensors.rtx`` includes several Python APIs to simplify setting non-visual material attributes on ``Material`` prims. The following standalone example
-demonstrates how to use these APIs. Examine the source code to learn more.
+The ``isaacsim.core.experimental.materials.NonVisualMaterial`` class provides a Python API to simplify setting non-visual material attributes on ``Material`` prims. The following standalone example
+demonstrates how to use this API. Examine the source code to learn more.
 
 .. code-block:: bash
 
-    ./python.sh standalone_examples/api/isaacsim.sensors.rtx/apply_nonvisual_materials.py
+    ./python.sh standalone_examples/api/isaacsim.sensors.experimental.rtx/apply_nonvisual_materials.py
 
 After running this example, verify that you receive the following:
 

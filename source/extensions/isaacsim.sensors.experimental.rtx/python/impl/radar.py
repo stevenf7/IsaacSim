@@ -52,6 +52,8 @@ class Radar(_SensorAuthoring):
     Args:
         path: Single path to existing or non-existing (one of both) USD OmniRadar prim.
             Can include regular expression for matching a prim.
+        aux_output_level: Auxiliary data level for GenericModelOutput. Valid values:
+            ``"NONE"`` (default), ``"BASIC"``.
         tick_rate: Sensor tick rate in Hz. A value of ``0`` (the default) enables autotrigger mode.
         attributes: Attributes to set on the OmniRadar prim.
         positions: Positions in the world frame (shape ``(N, 3)``).
@@ -82,8 +84,25 @@ class Radar(_SensorAuthoring):
 
     _PRIM_TYPE = "OmniRadar"
     _SCHEMA = "OmniSensorGenericRadarWpmDmatAPI"
+    _VALID_AUX_OUTPUT_LEVELS = ("NONE", "BASIC")
 
     def _create_prim(self, path: str, attributes: dict[str, Any] | None) -> str:
+        """Create an OmniRadar prim via the Replicator functional API.
+
+        Validates that Motion BVH is enabled before creating the prim, since
+        RTX Radar requires it for Doppler velocity estimation.
+
+        Args:
+            path: USD prim path for the new radar.
+            attributes: Optional mapping of attribute names to values, forwarded to
+                ``rep.functional.create.omni_radar``.
+
+        Returns:
+            The USD prim path of the created radar.
+
+        Raises:
+            RuntimeError: If Motion BVH is not enabled.
+        """
         settings = carb.settings.get_settings()
         if not settings.get("/renderer/raytracingMotion/enabled"):
             raise RuntimeError(
@@ -104,6 +123,7 @@ class Radar(_SensorAuthoring):
     def create(
         path: str,
         *,
+        aux_output_level: str = "NONE",
         tick_rate: float = 0,
         attributes: dict[str, Any] | None = None,
         positions: list | np.ndarray | wp.array | None = None,
@@ -118,6 +138,8 @@ class Radar(_SensorAuthoring):
 
         Args:
             path: Single path to existing or non-existing (one of both) USD OmniRadar prim.
+            aux_output_level: Auxiliary data level for GenericModelOutput. Valid values:
+                ``"NONE"`` (default), ``"BASIC"``.
             tick_rate: Sensor tick rate in Hz. A value of ``0`` (the default) enables autotrigger mode.
             attributes: Attributes to set on the OmniRadar prim.
             positions: Positions in the world frame (shape ``(N, 3)``).
@@ -146,6 +168,7 @@ class Radar(_SensorAuthoring):
             path = Radar._create_from_usd(path=path, usd_path=usd_path, variant=variant)
         return Radar(
             path=path,
+            aux_output_level=aux_output_level,
             tick_rate=tick_rate,
             attributes=attributes,
             positions=positions,

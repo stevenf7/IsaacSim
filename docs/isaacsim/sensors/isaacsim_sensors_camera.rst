@@ -46,17 +46,34 @@ Creating and Modifying a Camera
 Standalone Python
 =================
 
-There are multiple ways to retrieve data from a render product attached to a camera prim in |isaac-sim_short|. One method is the ``Camera`` class
-under the ``isaacsim.sensors.camera`` extension. You can run an example using the ``Camera`` class using ``./python.sh standalone_examples/api/isaacsim.sensors.camera/camera.py``.
+There are multiple ways to retrieve data from a render product attached to a camera prim in |isaac-sim_short|. The recommended method is the ``RtxCamera`` and ``CameraSensor`` classes
+from the ``isaacsim.sensors.experimental.rtx`` extension. You can run an example using ``./python.sh standalone_examples/api/isaacsim.sensors.experimental.rtx/create_camera_basic.py``.
 The code in that example is provided below, for reference.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_camera/standalone_python.py
     :language: python
     :linenos:
-    :emphasize-lines: 38-44, 48, 51, 63-65
+    :emphasize-lines: 15-21, 24-28, 37-42
 
 .. image:: /images/isim_4.5_full_ext-isaacsim.sensors.camera-0.2.5_gui_4.png
     :align: center
+
+Camera Sensor Classes
+=====================
+
+The ``isaacsim.sensors.experimental.rtx`` extension provides a set of classes for creating, configuring, and reading data from camera sensors programmatically.
+
+**Authoring**
+
+- ``RtxCamera``: Creates or wraps a USD Camera prim with the ``OmniSensorAPI`` schema applied. Supports ``tick_rate``, ``aux_output_level``, ``schemas``, and ``attributes`` constructor parameters. Provides a ``.camera`` property for accessing optical parameters (focal length, aperture, clipping range) via the ``isaacsim.core.experimental.objects.Camera`` wrapper.
+
+**Runtime**
+
+- ``CameraSensor``: Wraps an ``RtxCamera`` object, creates a render product at a specified resolution, attaches annotators (e.g. ``rgb``, ``distance_to_camera``, ``semantic_segmentation``), and provides ``get_data()`` for retrieving rendered data as numpy arrays.
+- ``TiledCameraSensor``: Handles multiple cameras in a single tiled render product for efficient batched rendering. Useful for reinforcement learning or multi-camera setups.
+- ``SingleViewDepthCameraSensor``: Extends ``CameraSensor`` with stereoscopic depth simulation post-processing. See :ref:`isaacsim_sensors_camera_depth_stereoscopic_pipeline` for details.
+
+For standalone examples, see ``standalone_examples/api/isaacsim.sensors.experimental.rtx/create_camera_basic.py`` (``CameraSensor``), ``camera_tiled.py`` (``TiledCameraSensor``), and ``camera_stereoscopic_depth.py`` (``SingleViewDepthCameraSensor``).
 
 .. _isaacsim_sensors_camera_calibration_and_camera_lens_distortion_models:
 
@@ -64,12 +81,12 @@ Calibration and Camera Lens Distortion Models
 =============================================
 
 Omniverse cameras support a variety of lens distortion models, described `here <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/cameras.html#omniverse-cameras>`_.
-The ``isaacsim.sensors.camera.Camera`` class includes APIs to set lens distortion parameters for each Omniverse camera lens distortion model.
+The ``RtxCamera`` class from ``isaacsim.sensors.experimental.rtx`` supports applying lens distortion schemas (e.g. ``OmniLensDistortionOpenCvFisheyeAPI``, ``OmniLensDistortionOpenCvPinholeAPI``) via the ``schemas`` parameter and setting distortion coefficients via the ``attributes`` parameter.
 
 
 Calibration toolkits like OpenCV normally provide the calibration parameters as an intrinsic matrix and distortion coefficients. Omniverse includes native renderer support for the OpenCV pinhole and
-OpenCV fisheye lens distortion models. |isaac-sim_short| provides two standalone examples demonstrating the use of the ``Camera`` class with OpenCV lens distortion models,
-located at ``standalone_examples/api/isaacsim.sensors.camera/camera_opencv_pinhole.py`` and ``standalone_examples/api/isaacsim.sensors.camera/camera_opencv_fisheye.py``.
+OpenCV fisheye lens distortion models. |isaac-sim_short| provides two standalone examples demonstrating the use of ``RtxCamera`` with OpenCV lens distortion models,
+located at ``standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_opencv_pinhole.py`` and ``standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_opencv_fisheye.py``.
 
 Portions of these examples are repeated below for reference, and can be run using using **Script Editor**, opened from **Window > Script Editor**.
 
@@ -139,31 +156,72 @@ is a convenience camera that can return the scene depth as seen from that camera
 the same algorithm that is used in the RealSense was used then the same results (including artifacts) would be produced.
 
 
-Exposing the Pre-ISP Camera Pipeline
-====================================
+Exposing the ISP camera pipeline
+=================================
 
-The ``omni.sensors.nv.camera`` extension `simulates the camera sensor and image signal processor (ISP) pipeline <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/cameras.html#omni-sensors-nv-camera-extension>`_.
+The ``omni.sensors.nv.camera`` extension `simulates the camera sensor and Image Signal Processor (ISP) pipeline <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/cameras.html#omni-sensors-nv-camera-extension>`_.
+|isaac-sim_short| includes a standalone example that configures the ISP pipeline via the ``OmniSensorGenericCameraCoreAPI`` USD schema and saves the introspection output from every pipeline stage as viewable images.
+You can use these outputs to test your own ISP against images rendered in RTX, or compare them with the Omniverse-simulated ISP output.
 
-|isaac-sim_short| 5.1 now includes a standalone example demonstrating how to render and save output from each step of the pre-ISP camera pipeline, including color correction, CFA encoding, and companding, for users who
-would like to test their own ISP using images rendered in Omniverse, or compare the output of their ISP with the output of the Omniverse simulatedISP.
+Refer to the `extension documentation <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/cameras.html#omni-sensors-nv-camera-extension>`_ for details on individual pipeline stages and schema attributes.
 
-Refer to the `extension documentation <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/cameras.html#omni-sensors-nv-camera-extension>`_ for more details on the camera pipeline.
+Run the example:
 
-Run the example via:
+.. code-block:: bash
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_camera/exposing_the_pre_isp_camera_pipeline.py
-    :language: python
+   ./python.sh standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_isp_pipeline.py
 
-The example will render and save output from three pre-ISP steps, by default in the ``pre_isp_camera_pipeline_outputs`` directory. The HDR buffer, raw sensor output, and ISP output from the example are shown below:
+The example renders 20 frames and saves output from each ISP stage to the ``camera_isp_pipeline_outputs`` directory.
+The pipeline stages, in order, are described below.
 
-.. image:: /images/isim_5.1_base_tut_external_camera_pre_isp_pipeline_hdr_input.png
+**HDR texture read** --- the raw HDR radiance buffer read from the renderer before any sensor processing.
+
+.. image:: /images/isim_6.0_base_tut_external_camera_isp_pipeline_texread.png
+    :alt: HDR texture read output from the ISP pipeline example
     :align: center
+    :width: 80%
 
-.. image:: /images/isim_5.1_base_tut_external_camera_pre_isp_pipeline_raw_sensor_output.png
-    :align: center
+**Color correction** --- applies black-level subtraction, white-balance gains, a 3x3 color-correction matrix, and sensor-response scaling.
 
-.. image:: /images/isim_5.1_base_tut_external_camera_pre_isp_pipeline_isp_output.png
+.. image:: /images/isim_6.0_base_tut_external_camera_isp_pipeline_color.png
+    :alt: Color-corrected output from the ISP pipeline example
     :align: center
+    :width: 80%
+
+**CFA encoding** --- encodes the RGB image into a single-channel Bayer mosaic using the configured Color Filter Array pattern (GRBG in this example).
+
+.. image:: /images/isim_6.0_base_tut_external_camera_isp_pipeline_cfa.png
+    :alt: CFA-encoded Bayer output from the ISP pipeline example
+    :align: center
+    :width: 80%
+
+**Noise simulation** --- adds Gaussian and shot noise to the Bayer image to approximate real sensor behavior.
+
+.. image:: /images/isim_6.0_base_tut_external_camera_isp_pipeline_noise.png
+    :alt: Noise-simulated Bayer output from the ISP pipeline example
+    :align: center
+    :width: 80%
+
+**Companding** --- applies a piecewise-linear tone curve that compresses the high-dynamic-range Bayer data into a lower bit depth.
+
+.. image:: /images/isim_6.0_base_tut_external_camera_isp_pipeline_comp.png
+    :alt: Companded output from the ISP pipeline example
+    :align: center
+    :width: 80%
+
+**ISP output** --- the fully processed image after the on-chip ISP program runs (demosaic, denoise, tone-map, and color grading).
+
+.. image:: /images/isim_6.0_base_tut_external_camera_isp_pipeline_isp_output.png
+    :alt: ISP-processed output from the ISP pipeline example
+    :align: center
+    :width: 80%
+
+**YUV conversion** --- the final ISP output converted from RGB to YUV color space.
+
+.. image:: /images/isim_6.0_base_tut_external_camera_isp_pipeline_yuv.png
+    :alt: YUV-converted output from the ISP pipeline example
+    :align: center
+    :width: 80%
 
 .. _isaac_sim_app_tutorial_camera_inspector_extension:
 

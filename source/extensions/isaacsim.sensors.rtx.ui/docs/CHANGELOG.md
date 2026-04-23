@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.0] - 2026-04-21
+### Changed
+- Migrated Lidar creation from `IsaacSensorCreateRtxLidar` Kit command to `Lidar.create()` from `isaacsim.sensors.experimental.rtx`
+- Migrated Radar creation from `IsaacSensorCreateRtxRadar` Kit command to `Radar()` from `isaacsim.sensors.experimental.rtx`
+- Replaced `isaacsim.sensors.rtx` dependency with `isaacsim.sensors.experimental.rtx`
+- Replaced `isaacsim.core.utils.stage` with `isaacsim.core.experimental.utils.stage`
+- Updated tests to use experimental API imports
+
 ## [1.3.1] - 2026-04-01
 ### Changed
 - Update actions_api.md file

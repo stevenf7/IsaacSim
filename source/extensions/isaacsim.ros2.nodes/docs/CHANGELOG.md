@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.17.0] - 2026-04-23
+### Added
+- `OgnROS2RtxRadarHelper` node for publishing RTX Radar data as `PointCloud2` messages to ROS 2
+- Camera and camera info tests (`test_camera.py`, `test_camera_info.py`) using `isaacsim.sensors.experimental.rtx`
+- Multitick rendering test coverage for RTX sensor nodes
+
+### Changed
+- Updated extension dependency from `isaacsim.sensors.rtx` to `isaacsim.sensors.experimental.rtx`
 ## [1.16.3] - 2026-04-21
 ### Fixed
 - Removed duplicate `destroy_publisher`/`destroy_node` calls in joint state subscriber test teardown

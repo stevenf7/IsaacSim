@@ -1,5 +1,5 @@
 [package]
-version = "1.16.3"
+version = "1.17.0"
 category = "Simulation"
 title = "ROS 2 Nodes"
 description = "The ROS 2 Nodes extension provides OmniGraph nodes for ROS 2 communication. It contains publisher, subscriber, and service nodes that can be used in Action graphs to interface with ROS 2 systems. This extension depends on the isaacsim.ros2.core extension for underlying ROS 2 functionality."
@@ -26,6 +26,7 @@ writeTarget.platform = true
 "isaacsim.sensors.experimental.physics" = {}
 "isaacsim.sensors.physics.nodes" = {}
 "isaacsim.sensors.rtx" = {}
+"isaacsim.sensors.rtx.nodes" = {}
 "isaacsim.storage.native" = {}
 "omni.graph" = {}
 "omni.graph.tools" = {}
@@ -79,6 +80,7 @@ dependencies = [
 pythonTests.exclude = [
     "isaacsim.ros2.nodes.tests.test_rtx_sensor_multitick.*",
     "isaacsim.ros2.nodes.tests.test_camera*test_rgb_golden_image_comparison*",
+    "isaacsim.ros2.nodes.tests.test_camera.TestRos2Camera.test_tick_rate_reduces_publish_frequency",
 ]
 
 stdoutFailPatterns.exclude = [

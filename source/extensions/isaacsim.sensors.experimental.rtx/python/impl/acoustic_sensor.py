@@ -45,12 +45,13 @@ class AcousticSensor(_SensorRuntime):
     .. code-block:: python
 
         >>> import isaacsim.core.experimental.utils.app as app_utils
-        >>> from isaacsim.sensors.experimental.rtx import AcousticSensor
+        >>> from isaacsim.sensors.experimental.rtx import Acoustic, AcousticSensor
         >>>
         >>> # given a USD stage with the OmniAcoustic prim: /World/prim_0
         >>> # and a USD Cube prim: /World/cube
+        >>> acoustic = Acoustic("/World/prim_0", aux_output_level="BASIC")
         >>> sensor = AcousticSensor(
-        ...     "/World/prim_0",
+        ...     acoustic,
         ...     annotators=["generic-model-output"],
         ... )  # doctest: +NO_CHECK
         >>>

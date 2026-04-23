@@ -39,4 +39,4 @@ A menu hierarchy system organizes sensor options into logical groupings, with RT
 
 ## Integration
 
-The extension integrates with `isaacsim.sensors.rtx` to access the underlying RTX sensor creation functionality and uses `**omni.kit.actions.core**` for action registration mechanisms. Context menu integration is provided through `**omni.kit.context_menu**`, enabling right-click sensor creation workflows in the viewport.
+The extension integrates with `isaacsim.sensors.experimental.rtx` to access the underlying RTX sensor creation functionality and uses `**omni.kit.actions.core**` for action registration mechanisms. Context menu integration is provided through `**omni.kit.context_menu**`, enabling right-click sensor creation workflows in the viewport.
