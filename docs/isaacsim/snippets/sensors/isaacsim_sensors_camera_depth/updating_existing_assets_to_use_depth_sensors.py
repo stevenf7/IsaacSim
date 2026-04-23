@@ -1,5 +1,5 @@
-from isaacsim.sensors.camera import SingleViewDepthSensorAsset
+from isaacsim.sensors.experimental.rtx import RtxCamera, SingleViewDepthCameraSensor
 
-asset_path = "example_camera_with_depth_sensor.usd"
-example_depth_sensor = SingleViewDepthSensorAsset(prim_path="/example_depth_sensor", asset_path=asset_path)
-example_depth_sensor.initialize()
+cam = RtxCamera("/World/depth_sensor")
+sensor = SingleViewDepthCameraSensor(cam, resolution=(720, 1280), annotators=["depth_sensor_distance"])
+sensor.set_enabled_post_processing(True)

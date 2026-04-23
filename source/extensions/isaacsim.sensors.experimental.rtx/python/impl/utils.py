@@ -51,13 +51,19 @@ def parse_generic_model_output_data(data: wp.array) -> generic_model_output.Gene
         >>> parse_generic_model_output_data(data) # doctest: +NO_CHECK
         <generic_model_output.GenericModelOutput object at 0x...>
     """
+    import carb
+
     if data is None:
+        carb.log_warn("parse_generic_model_output_data: No data provided")
         gmo = generic_model_output.GenericModelOutput()
     # build struct from buffer
     elif isinstance(data, wp.array):
         gmo = generic_model_output.getModelOutputFromBuffer(data.numpy())
+    elif isinstance(data, np.ndarray):
+        gmo = generic_model_output.getModelOutputFromBuffer(data)
     # build struct from pointer
     else:
+        carb.log_warn("parse_generic_model_output_data: Data provided as pointer")
         # - read first 28 bytes (magic number, version, size and number of elements)
         header = (ctypes.c_char * 28).from_address(data)
         # - resolve size (in bytes) of the contiguous buffer of the model output (including the struct itself)
@@ -67,6 +73,7 @@ def parse_generic_model_output_data(data: wp.array) -> generic_model_output.Gene
         gmo = generic_model_output.getModelOutputFromBuffer(buffer)
     # validate struct (getModelOutputFromBuffer warns if magic number is incorrect)
     if gmo.magicNumber != generic_model_output.getMagicNumberGMO():
+        carb.log_warn("parse_generic_model_output_data: Invalid magic number")
         gmo = generic_model_output.GenericModelOutput()
         gmo.numElements = 0
     return gmo
@@ -108,3 +115,27 @@ def parse_stable_id_map_data(data: wp.array) -> dict:
         .rstrip()
         for item in np.frombuffer(data[:data_length], "<u4").reshape(-1, 6)
     }
+
+
+def parse_object_ids(obj_ids: np.ndarray) -> list[int]:
+    """Parse 128-bit object IDs from a GenericModelOutput ``objId`` buffer.
+
+    Each object ID is 16 bytes (128 bits). The returned integers match the keys
+    produced by :func:`parse_stable_id_map_data`.
+
+    Args:
+        obj_ids: The object ID buffer from ``GenericModelOutput.objId``.
+
+    Returns:
+        List of object IDs as Python ints.
+    """
+    obj_ids = np.ascontiguousarray(obj_ids)
+    if obj_ids.dtype == np.uint8:
+        obj_ids = obj_ids.reshape(-1, 16)
+    elif obj_ids.dtype == np.uint32:
+        obj_ids = obj_ids.reshape(-1, 4)
+    elif obj_ids.dtype == np.uint64:
+        obj_ids = obj_ids.reshape(-1, 2)
+    else:
+        raise ValueError(f"Unsupported dtype for object IDs: {obj_ids.dtype}. Expected uint8, uint32, or uint64.")
+    return [int.from_bytes(group.tobytes(), byteorder="little") for group in obj_ids]

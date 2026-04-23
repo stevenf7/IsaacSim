@@ -21,10 +21,10 @@ from pathlib import Path
 
 import omni.ext
 import omni.kit.actions.core
-import omni.kit.commands
-from isaacsim.core.utils.stage import get_next_free_path
+import omni.usd
+from isaacsim.core.experimental.utils.stage import generate_next_free_path
 from isaacsim.gui.components.menu import create_submenu
-from isaacsim.sensors.rtx import SUPPORTED_LIDAR_CONFIGS
+from isaacsim.sensors.experimental.rtx import SUPPORTED_LIDAR_CONFIGS, Lidar, Radar
 from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from pxr import Tf
 
@@ -170,26 +170,25 @@ class Extension(omni.ext.IExt):
         return curr_prim
 
     def _create_lidar(self, sensor_name: str, sensor_config: str) -> None:
-        """Creates an RTX Lidar sensor at the selected location.
-
-        Generates a unique path based on the sensor name and executes the IsaacSensorCreateRtxLidar
-        command to create the sensor prim.
+        """Create an RTX Lidar sensor at the selected location.
 
         Args:
             sensor_name: The display name of the lidar sensor.
             sensor_config: The configuration identifier for the lidar sensor.
         """
         selected_prim = self._get_stage_and_path()
-        prim_path = get_next_free_path("/" + Tf.MakeValidIdentifier(sensor_name), None)
-        omni.kit.commands.execute(
-            "IsaacSensorCreateRtxLidar", path=prim_path, parent=selected_prim, config=sensor_config
-        )
+        base_name = Tf.MakeValidIdentifier(sensor_name)
+        if selected_prim:
+            prim_path = generate_next_free_path(selected_prim + "/" + base_name, prepend_default_prim=False)
+        else:
+            prim_path = generate_next_free_path("/" + base_name)
+        Lidar.create(prim_path, config=sensor_config)
 
-    def _create_radar(self):
-        """Creates an RTX Radar sensor at the selected location.
-
-        Executes the IsaacSensorCreateRtxRadar command to create the radar sensor prim
-        at a fixed path under the selected parent prim.
-        """
+    def _create_radar(self) -> None:
+        """Create an RTX Radar sensor at the selected location."""
         selected_prim = self._get_stage_and_path()
-        omni.kit.commands.execute("IsaacSensorCreateRtxRadar", path="/RtxRadar", parent=selected_prim)
+        if selected_prim:
+            prim_path = generate_next_free_path(selected_prim + "/RtxRadar", prepend_default_prim=False)
+        else:
+            prim_path = generate_next_free_path("/RtxRadar")
+        Radar(prim_path)

@@ -1,5 +1,5 @@
 [package]
-version = "1.0.1"
+version = "1.1.0"
 category = "Simulation"
 title = "Isaac Sim RTX Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar, RTX Radar & RTX Acoustic."
@@ -15,6 +15,8 @@ writeTarget.platform = true  # ships platform-specific binaries copied from gene
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.core.experimental.materials" = {}
+"isaacsim.core.experimental.objects" = {}
 "isaacsim.core.experimental.prims" = {}
 "isaacsim.storage.native" = {}
 "omni.replicator.core" = {}
@@ -23,6 +25,7 @@ writeTarget.platform = true  # ships platform-specific binaries copied from gene
 "omni.sensors.nv.ids" = {}
 "omni.sensors.nv.lidar" = {}
 "omni.sensors.nv.radar" = {}
+"omni.usd.schema.omni_lens_distortion" = {}
 "omni.usd.schema.omni_sensors" = {}
 
 [[python.module]]
@@ -59,8 +62,6 @@ args = [
 [[test]]
 timeout = 900
 dependencies = [
-    "isaacsim.core.experimental.materials",
-    "isaacsim.core.experimental.objects",
     "isaacsim.core.rendering_manager",
     "isaacsim.test.utils",
 ]
@@ -109,6 +110,8 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    "--/rtx/hydra/supportMultiTickRate=true",
+    "--/rtx/rendering/perSensorTickTlas=true",
     ### Extension specific args
     "--/rtx-transient/stableIds/enabled=true",
     "--/renderer/raytracingMotion/enabled=true",

@@ -1,4 +1,10 @@
 # Changelog
+
+## [0.5.1] - 2026-04-21
+### Changed
+- Added multitick rendering test arguments (`supportMultiTickRate`, `perSensorTickTlas`)
+- Updated Overview.md to reference `isaacsim.sensors.experimental.rtx` as the target migration extension
+
 ## [0.5.0] - 2026-03-04
 ### Changed
 - Added Overview.md and python_api.md and updated docstrings

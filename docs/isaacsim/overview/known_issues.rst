@@ -365,6 +365,12 @@ Errors
 
 #. If you are encountering any issues regarding the dependencies on ``omni.replicator.character`` or ``omni.replicator.agent``, the extension is now renamed to ``isaacsim.replicator.agent``. Revise your code accordingly.
 
+#. When ``aux_output_level`` is set on an RTX sensor authoring class (``isaacsim.sensors.experimental.rtx.Lidar``, ``isaacsim.sensors.experimental.rtx.Radar``, or ``isaacsim.sensors.experimental.rtx.Acoustic``), the following warning may appear in the log. This is harmless — the ``usdrt`` Fabric cache does not mirror ``VtArray<std::string>`` attributes, but the attribute is correctly set on the USD prim and read by the Replicator pipeline.
+
+    .. code-block:: bash
+
+        [Warning] [usdrt.population.plugin] [UsdNoticeHandler] Unhandled attribute type VtArray<std::string> (prim attribute: _replicator:rendervar:GenericModelOutput:channels)
+
 #. CUDA driver failures from the ``omni.sensors.nv.lidar.lidar_core.plugin`` (example below) on Ubuntu may be due to a system-level CUDA installation mismatch with the ``omni.sensors`` runtime-compiled libraries.
 
     .. code-block:: bash

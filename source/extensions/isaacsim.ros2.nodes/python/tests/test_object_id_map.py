@@ -23,7 +23,7 @@ import omni.kit
 import omni.replicator.core as rep
 import rclpy
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
-from isaacsim.sensors.rtx import LidarRtx
+from isaacsim.sensors.experimental.rtx import parse_stable_id_map_data
 from std_msgs.msg import String
 
 from .common import create_sarcophagus, get_qos_profile
@@ -117,7 +117,7 @@ class TestROS2ObjectIdMap(ROS2TestCase):
         self.assertIsNotNone(self._ros_msg_data)
 
         # Convert the annotator data to a dictionary
-        annotator_data_dict = LidarRtx.decode_stable_id_mapping(self._annotator_data.tobytes())
+        annotator_data_dict = parse_stable_id_map_data(self._annotator_data)
 
         # Resolve the ROS2 message data to a dictionary
         ros_msg_data_dict = json.loads(self._ros_msg_data.data)["id_to_labels"]

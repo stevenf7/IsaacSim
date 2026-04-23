@@ -23,6 +23,7 @@ from __future__ import annotations
 import pathlib
 from typing import Any
 
+import carb
 import isaacsim.core.experimental.utils.prim as prim_utils
 import numpy as np
 import omni.replicator.core as rep
@@ -49,7 +50,12 @@ class Lidar(_SensorAuthoring):
     Args:
         path: Single path to existing or non-existing (one of both) USD OmniLidar prim.
             Can include regular expression for matching a prim.
+        accumulate_outputs: Set the ``omni:sensor:Core:accumulateOutputs`` attribute on the OmniLidar prim.
+            When ``True`` (the default), the lidar model accumulates a full scan before generating an output.
+        aux_output_level: Auxiliary data level for GenericModelOutput. Valid values:
+            ``"NONE"`` (default), ``"BASIC"``, ``"EXTRA"``, ``"FULL"``.
         tick_rate: Sensor tick rate in Hz. A value of ``0`` (the default) enables autotrigger mode.
+        schemas: Additional API schemas to apply to the prim.
         attributes: Attributes to set on the OmniLidar prim.
         positions: Positions in the world frame (shape ``(N, 3)``).
             If the input shape is smaller than expected, data will be broadcasted (following NumPy broadcast rules).
@@ -78,8 +84,59 @@ class Lidar(_SensorAuthoring):
 
     _PRIM_TYPE = "OmniLidar"
     _SCHEMA = "OmniSensorGenericLidarCoreAPI"
+    _VALID_AUX_OUTPUT_LEVELS = ("NONE", "BASIC", "EXTRA", "FULL")
+
+    def __init__(
+        self,
+        path: str,
+        *,
+        accumulate_outputs: bool = True,
+        aux_output_level: str = "NONE",
+        tick_rate: float = 10,
+        schemas: list[str] | None = None,
+        attributes: dict[str, Any] | None = None,
+        positions: list | np.ndarray | wp.array | None = None,
+        translations: list | np.ndarray | wp.array | None = None,
+        orientations: list | np.ndarray | wp.array | None = None,
+        scales: list | np.ndarray | wp.array | None = None,
+        reset_xform_op_properties: bool = True,
+    ) -> None:
+        super().__init__(
+            path,
+            aux_output_level=aux_output_level,
+            tick_rate=tick_rate,
+            schemas=schemas,
+            attributes=attributes,
+            positions=positions,
+            translations=translations,
+            orientations=orientations,
+            scales=scales,
+            reset_xform_op_properties=reset_xform_op_properties,
+        )
+        # resolve accumulate_outputs: attributes dict takes precedence over parameter
+        _ATTR = "omni:sensor:Core:accumulateOutputs"
+        if attributes is not None and _ATTR in attributes:
+            if accumulate_outputs is not True:
+                carb.log_warn(
+                    "Both 'accumulate_outputs' parameter and 'omni:sensor:Core:accumulateOutputs' attribute "
+                    "were provided. Using the value from 'attributes'."
+                )
+            accumulate_outputs = attributes[_ATTR]
+        for prim in self.prims:
+            if prim.HasAttribute(_ATTR):
+                prim.GetAttribute(_ATTR).Set(accumulate_outputs)
 
     def _create_prim(self, path: str, attributes: dict[str, Any] | None) -> str:
+        """Create an OmniLidar prim via the Replicator functional API.
+
+        Args:
+            path: USD prim path for the new lidar.
+            attributes: Optional mapping of attribute names to values, forwarded to
+                ``rep.functional.create.omni_lidar``.
+
+        Returns:
+            The USD prim path of the created lidar.
+        """
         path_parts = path.rsplit("/", 1)
         parent = path_parts[0] if len(path_parts) > 1 and path_parts[0] else None
         name = path_parts[-1]
@@ -95,7 +152,10 @@ class Lidar(_SensorAuthoring):
     def create(
         path: str,
         *,
+        accumulate_outputs: bool = True,
+        aux_output_level: str = "NONE",
         tick_rate: float = 0,
+        schemas: list[str] | None = None,
         attributes: dict[str, Any] | None = None,
         positions: list | np.ndarray | wp.array | None = None,
         translations: list | np.ndarray | wp.array | None = None,
@@ -110,6 +170,8 @@ class Lidar(_SensorAuthoring):
 
         Args:
             path: Single path to existing or non-existing (one of both) USD OmniLidar prim.
+            accumulate_outputs: Set the ``omni:sensor:Core:accumulateOutputs`` attribute on the OmniLidar prim.
+                When ``True`` (the default), the lidar model accumulates a full scan before generating an output.
             tick_rate: Sensor tick rate in Hz. A value of ``0`` (the default) enables autotrigger mode.
             attributes: Attributes to set on the OmniLidar prim.
             positions: Positions in the world frame (shape ``(N, 3)``).
@@ -161,7 +223,10 @@ class Lidar(_SensorAuthoring):
             )
         return Lidar(
             path=path,
+            accumulate_outputs=accumulate_outputs,
+            aux_output_level=aux_output_level,
             tick_rate=tick_rate,
+            schemas=schemas,
             attributes=attributes,
             positions=positions,
             translations=translations,

@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal, get_args
+from typing import Any, Literal
 
 import carb
 import isaacsim.core.experimental.utils.prim as prim_utils
@@ -26,9 +26,9 @@ import numpy as np
 import omni.replicator.core as rep
 import warp as wp
 from isaacsim.core.experimental.prims import XformPrim
-from pxr import UsdRender
+from pxr import Sdf, UsdRender
 
-from ._common import ANNOTATOR_SPEC
+from ._common import ANNOTATOR_SPEC, WRITER_SPEC
 
 ANNOTATOR = Literal[
     "generic-model-output",
@@ -46,17 +46,21 @@ class _SensorAuthoring(XformPrim):
     Subclasses must define:
         _PRIM_TYPE: str — USD prim type name (e.g. ``"OmniLidar"``)
         _SCHEMA: str — API schema name (e.g. ``"OmniSensorGenericLidarCoreAPI"``)
+        _VALID_AUX_OUTPUT_LEVELS: tuple[str, ...] — valid ``aux_output_level`` values
         _create_prim(path, attributes) -> str — create a new prim and return its actual path
     """
 
     _PRIM_TYPE: str
     _SCHEMA: str
+    _VALID_AUX_OUTPUT_LEVELS: tuple[str, ...] = ("NONE",)
 
     def __init__(
         self,
         path: str,
         *,
+        aux_output_level: str = "NONE",
         tick_rate: float = 0,
+        schemas: list[str] | None = None,
         attributes: dict[str, Any] | None = None,
         # XformPrim
         positions: list | np.ndarray | wp.array | None = None,
@@ -65,6 +69,13 @@ class _SensorAuthoring(XformPrim):
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
     ) -> None:
+        # validate aux_output_level
+        if aux_output_level not in self._VALID_AUX_OUTPUT_LEVELS:
+            raise ValueError(
+                f"Invalid aux_output_level '{aux_output_level}' for {type(self).__name__}. "
+                f"Valid values: {self._VALID_AUX_OUTPUT_LEVELS}"
+            )
+        self._aux_output_level = aux_output_level
         existent_paths, nonexistent_paths = XformPrim.resolve_paths(path)
         if len(existent_paths) > 1 or len(nonexistent_paths) > 1:
             raise ValueError(
@@ -82,6 +93,10 @@ class _SensorAuthoring(XformPrim):
                     raise ValueError(f"Prim at {path} is not an '{self._PRIM_TYPE}' prim but a '{type_name}' prim")
                 if not prim.HasAPI(self._SCHEMA):
                     raise ValueError(f"Prim at {path} does not have the '{self._SCHEMA}' schema")
+            # apply additional schemas before setting attributes
+            if schemas is not None:
+                for path in existent_paths:
+                    self._apply_schemas(path, schemas)
             if attributes is not None:
                 for path in existent_paths:
                     self._apply_attributes(path, attributes)
@@ -91,6 +106,14 @@ class _SensorAuthoring(XformPrim):
             for path in nonexistent_paths:
                 actual_path = self._create_prim(path, attributes)
                 paths.append(actual_path)
+            # apply additional schemas after prim creation
+            if schemas is not None:
+                for p in paths:
+                    self._apply_schemas(p, schemas)
+            # apply attributes after all schemas are present
+            if attributes is not None:
+                for p in paths:
+                    self._apply_attributes(p, attributes)
         # resolve tick rate: attributes dict takes precedence over tick_rate parameter
         if attributes is not None and "omni:sensor:tickRate" in attributes:
             if tick_rate != 0:
@@ -103,6 +126,13 @@ class _SensorAuthoring(XformPrim):
             prim = prim_utils.get_prim_at_path(p)
             if prim.HasAttribute("omni:sensor:tickRate"):
                 prim.GetAttribute("omni:sensor:tickRate").Set(tick_rate)
+        # set aux_output_level as channels attribute on the sensor prim so the
+        # Replicator pipeline propagates it to the GenericModelOutput RenderVar
+        for p in paths:
+            prim = prim_utils.get_prim_at_path(p)
+            prim.CreateAttribute(
+                "_replicator:rendervar:GenericModelOutput:channels", Sdf.ValueTypeNames.StringArray, True
+            ).Set([self._aux_output_level])
         # initialize base class
         super().__init__(
             paths,
@@ -127,8 +157,34 @@ class _SensorAuthoring(XformPrim):
         raise NotImplementedError
 
     @staticmethod
+    def _apply_schemas(path: str, schemas: list[str]) -> None:
+        """Apply API schemas to a prim.
+
+        Each entry can be a plain schema name (e.g. ``"OmniLensDistortionOpenCvFisheyeAPI"``)
+        or a multi-instance schema with a colon-separated instance name
+        (e.g. ``"OmniSensorGenericLidarCoreEmitterStateAPI:s002"``).
+        """
+        prim = prim_utils.get_prim_at_path(path)
+        for schema in schemas:
+            if ":" in schema:
+                schema_name, instance_name = schema.rsplit(":", 1)
+                prim.ApplyAPI(schema_name, instance_name)
+            else:
+                if not prim.HasAPI(schema):
+                    prim.ApplyAPI(schema)
+
+    @staticmethod
     def _apply_attributes(path: str, attributes: dict[str, Any]) -> None:
-        """Apply attributes to an existing prim."""
+        """Apply attributes to an existing prim.
+
+        Iterate over the key-value pairs in ``attributes`` and set each on the
+        prim at the given path. If an attribute does not exist on the prim, a
+        warning is logged and the attribute is skipped.
+
+        Args:
+            path: USD prim path.
+            attributes: Mapping of attribute names to values.
+        """
         prim = prim_utils.get_prim_at_path(path)
         for attribute, value in attributes.items():
             if prim.HasAttribute(attribute):
@@ -167,6 +223,15 @@ class _SensorAuthoring(XformPrim):
             raise ValueError(f"Unable to find {cls._PRIM_TYPE} prim in the USD file {usd_path} (variant: {variant})")
         return prim_utils.get_prim_path(sensor_prim)
 
+    @property
+    def aux_output_level(self) -> str:
+        """The auxiliary output level configured on the GenericModelOutput RenderVar.
+
+        Returns:
+            The configured level (e.g. ``"NONE"``, ``"BASIC"``, ``"EXTRA"``, ``"FULL"``).
+        """
+        return self._aux_output_level
+
 
 class _SensorRuntime:
     """Base class for RTX sensor runtime (annotator management and data retrieval).
@@ -187,15 +252,23 @@ class _SensorRuntime:
         self,
         path: str | _SensorAuthoring,
         *,
-        annotators: ANNOTATOR | list[ANNOTATOR],
+        annotators: ANNOTATOR | list[ANNOTATOR] | None = None,
+        writers: str | list[str] | None = None,
+        render_vars: list[str] | None = None,
     ) -> None:
-        # define properties
+        # define properties early so __del__ is safe if __init__ raises
         self._hydra_texture = None
         self._annotators = {}
+        self._writers = {}
         if not hasattr(self, "_annotators_spec"):
-            self._annotators_spec = {annotator: ANNOTATOR_SPEC[annotator] for annotator in get_args(ANNOTATOR)}
-        # check for supported annotators
-        self._validate_annotators(annotators)
+            self._annotators_spec = dict(ANNOTATOR_SPEC)
+        if not hasattr(self, "_writers_spec"):
+            self._writers_spec = dict(WRITER_SPEC)
+        # check for supported annotators / writers
+        if annotators is not None:
+            self._validate_annotators(annotators)
+        if writers is not None:
+            self._validate_writers(writers)
         # get or create authoring object
         authoring_obj = path if isinstance(path, self._AUTHORING_CLASS) else self._AUTHORING_CLASS(path)
         setattr(self, self._AUTHORING_ATTR, authoring_obj)
@@ -205,7 +278,13 @@ class _SensorRuntime:
                 f"but the provided argument refers to {len(authoring_obj)} prims: {authoring_obj.paths}",
             )
         # initialize instance from arguments
-        self._initialize_sensor(annotators)
+        self._initialize_sensor(annotators or [], render_vars=render_vars)
+        # attach writers requested at construction time
+        if writers is not None:
+            writers = [writers] if isinstance(writers, str) else writers
+            for writer_name in writers:
+                spec = self._writers_spec[writer_name]
+                self.attach_writer(spec["name"], **spec.get("defaults", {}))
 
     def __del__(self) -> None:
         """Clean up instance."""
@@ -308,20 +387,70 @@ class _SensorRuntime:
             info = {}
         return data, info
 
+    def attach_writer(self, writer_name: str, **kwargs) -> None:
+        """Attach a writer to the sensor's render product.
+
+        ``writer_name`` can be either a short name registered in :data:`WRITER_SPEC`
+        (e.g. ``"draw-point-cloud"``) or a Replicator writer registry name
+        (e.g. ``"RtxSensorDebugDrawPointCloud"``).  When a spec is found, its
+        ``"defaults"`` are merged with the provided *kwargs* (explicit kwargs win).
+
+        Args:
+            writer_name: Writer spec name or Replicator writer registry name.
+            **kwargs: Keyword arguments forwarded to ``writer.initialize()``.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> sensor.attach_writer(
+            ...     "draw-point-cloud",
+            ...     size=0.05,
+            ...     color=[0.0, 1.0, 0.5, 1.0],
+            ... )  # doctest: +NO_CHECK
+        """
+        spec = self._writers_spec.get(writer_name)
+        if spec is not None:
+            registry_name = spec["name"]
+            merged = {**spec.get("defaults", {}), **kwargs}
+        else:
+            registry_name = writer_name
+            merged = kwargs
+        writer = rep.writers.get(registry_name)
+        writer.initialize(**merged)
+        writer.attach([self._hydra_texture.path])
+        self._writers[writer_name] = writer
+
+    def detach_writer(self, writer_name: str) -> None:
+        """Detach a previously attached writer.
+
+        Args:
+            writer_name: Writer spec name or Replicator writer registry name used in :meth:`attach_writer`.
+        """
+        writer = self._writers.pop(writer_name, None)
+        if writer is not None:
+            writer.detach()
+        else:
+            carb.log_warn(f"Unable to detach writer '{writer_name}'. It might have been already detached")
+
     def _invalidate_sensor(self) -> None:
-        """Invalidate sensor by detaching annotators and destroying the hydra texture."""
+        """Invalidate sensor by detaching writers, annotators, and destroying the hydra texture."""
         if self._hydra_texture is not None:
+            for writer in self._writers.values():
+                writer.detach()
             self.detach_annotators(list(self._annotators.keys()))
             self._hydra_texture.destroy()
+        self._writers = {}
         self._annotators = {}
         self._hydra_texture = None
 
-    def _initialize_sensor(self, annotators: str | list[str]) -> None:
+    def _initialize_sensor(self, annotators: str | list[str], *, render_vars: list[str] | None = None) -> None:
         """Initialize sensor by creating the hydra texture and attaching annotators."""
         self._hydra_texture = rep.create.render_product(
             camera=self.authoring_object.paths[0],
             resolution=(300, 300),  # (width, height), needed but unused by the RTX sensor
             name=f"rtx_sensor_{hash(self)}",
+            render_vars=render_vars,
         )
         self.attach_annotators(annotators)
 
@@ -341,4 +470,13 @@ class _SensorRuntime:
             if annotator not in self._annotators_spec:
                 raise ValueError(
                     f"Unsupported annotator '{annotator}'. Supported annotator are {list(self._annotators_spec.keys())}"
+                )
+
+    def _validate_writers(self, writers: str | list[str]) -> None:
+        """Validate the given writers."""
+        writers = [writers] if isinstance(writers, str) else writers
+        for writer in writers:
+            if writer not in self._writers_spec:
+                raise ValueError(
+                    f"Unsupported writer '{writer}'. Supported writers are {list(self._writers_spec.keys())}"
                 )

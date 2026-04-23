@@ -1,1 +1,1 @@
-from isaacsim.sensors.rtx import LidarRtx
+from isaacsim.sensors.experimental.rtx import Lidar

@@ -44,6 +44,7 @@ Sensors and Control
     ./tutorial_ros2_camera_publishing
     ./tutorial_ros2_compressed_image
     ./tutorial_ros2_rtx_lidar
+    ./tutorial_ros2_rtx_radar
     ./tutorial_ros2_tf
     ./tutorial_ros2_publish_rate
     ./tutorial_ros2_qos

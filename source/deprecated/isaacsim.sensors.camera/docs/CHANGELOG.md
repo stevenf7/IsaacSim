@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.5] - 2026-04-21
+### Changed
+- Updated deprecation warning and Overview.md to reference `isaacsim.sensors.experimental.rtx` (was `isaacsim.sensors.experimental.camera`)
+
 ## [1.7.4] - 2026-04-17
 ### Fixed
 - Fix `Camera.set_dt` rejecting valid sub-rendering-rate frequencies due to float modulo precision
@@ -15,7 +19,7 @@
 
 ## [1.7.2] - 2026-03-31
 ### Deprecated
-- Extension deprecated in favor of the Experimental extension `isaacsim.sensors.experimental.camera`
+- Extension deprecated in favor of `isaacsim.sensors.experimental.rtx`
 
 ## [1.7.1] - 2026-03-18
 ### Changed

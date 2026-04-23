@@ -1,7 +1,11 @@
 # Overview
 
 ```{deprecated} 6.0.0
-This extension is deprecated in favor of `isaacsim.sensors.experimental.camera`.
+This extension is deprecated. Use {mod}`isaacsim.sensors.experimental.rtx` instead, which provides
+{class}`RtxCamera <isaacsim.sensors.experimental.rtx.RtxCamera>`,
+{class}`CameraSensor <isaacsim.sensors.experimental.rtx.CameraSensor>`,
+{class}`TiledCameraSensor <isaacsim.sensors.experimental.rtx.TiledCameraSensor>`, and
+{class}`SingleViewDepthCameraSensor <isaacsim.sensors.experimental.rtx.SingleViewDepthCameraSensor>`.
 ```
 
 The isaacsim.sensors.camera extension provides APIs for creating and managing camera sensors in Isaac Sim. This extension enables programmatic control of camera properties, lens distortion models, and batch processing of camera data for robotics simulation and computer vision applications.
@@ -37,7 +41,7 @@ The {class}`CameraView <isaacsim.sensors.camera.CameraView>` class extends XForm
 
 **Coordinate system support:**
 - World coordinates (+Z up, +X forward)
-- ROS coordinates (+Y up, +Z forward)  
+- ROS coordinates (+Y up, +Z forward)
 - USD coordinates (+Y up, -Z forward)
 
 ## Functionality

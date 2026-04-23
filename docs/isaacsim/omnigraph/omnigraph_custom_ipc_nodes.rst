@@ -478,7 +478,7 @@ Other read extensions you may chain before a custom sender:
 
 - ``isaacsim.sensors.physics.nodes`` — IMU, contact, effort, etc., backed by ``isaacsim.sensors.experimental.physics``.
 - ``isaacsim.sensors.physx`` — for example Isaac Read Lidar Beams, Isaac Read Lidar Point Cloud, Isaac Read Light Beam Sensor.
-- ``isaacsim.sensors.rtx`` — for example Isaac Create RTX Lidar Scan Buffer, Isaac Compute RTX Lidar Flat Scan.
+- ``isaacsim.sensors.rtx.nodes`` — for example Isaac Extract RTX Sensor Point Cloud.
 
 For IPC with external applications (topics, services, or other runtimes), use dedicated bridge extensions—for example ``isaacsim.ros2.nodes`` (ROS 2) or ``isaacsim.ucx.nodes`` (UCX)—rather than treating the table above as a transport; those extensions play the same role as the TCP tutorial nodes, not the sensor-read nodes in the table.
 

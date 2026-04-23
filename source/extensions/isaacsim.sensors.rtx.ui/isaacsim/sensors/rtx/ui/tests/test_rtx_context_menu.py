@@ -19,8 +19,8 @@ import carb
 import omni.kit.app
 import omni.kit.ui_test as ui_test
 import omni.usd
-from isaacsim.core.utils.stage import clear_stage
-from isaacsim.sensors.rtx import SUPPORTED_LIDAR_CONFIGS
+from isaacsim.core.experimental.utils.stage import create_new_stage
+from isaacsim.sensors.experimental.rtx import SUPPORTED_LIDAR_CONFIGS
 from isaacsim.test.utils import MenuUITestCase, count_menu_items, get_all_menu_paths
 
 # Known issue: omni.kit.ui_test.select_context_menu has a bug where it cannot correctly
@@ -91,7 +91,7 @@ class TestRTXContextMenu(MenuUITestCase):
             full_test_path = "Create/Isaac/Sensors/RTX Lidar/" + test_path
             carb.log_info(f"Testing sensor: {full_test_path}")
 
-            clear_stage()
+            create_new_stage()
             await self.wait_n_frames(2)
 
             await self.get_viewport_context_menu()

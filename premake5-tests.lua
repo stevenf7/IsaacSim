@@ -301,6 +301,101 @@ local function get_sensor_tests()
             "standalone_examples/api/isaacsim.sensors.rtx/apply_nonvisual_materials.py",
             "--test",
         },
+        -- RTX Sensors (Experimental)
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.create_camera_basic",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/create_camera_basic.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.create_camera_depth_sensor",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/create_camera_depth_sensor.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.camera_opencv_pinhole",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_opencv_pinhole.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.camera_opencv_fisheye",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_opencv_fisheye.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.camera_stereoscopic_depth",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_stereoscopic_depth.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.camera_tiled",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_tiled.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.camera_annotator_devices",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_annotator_devices.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.camera_ros",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_ros.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.camera_isp_pipeline",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_isp_pipeline.py",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.create_lidar_basic",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/create_lidar_basic.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.create_lidar_with_config_and_variants",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/create_lidar_with_config_and_variants.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.inspect_lidar_gmo",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/inspect_lidar_gmo.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.resolve_lidar_object_ids",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/resolve_lidar_object_ids.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.lidar_robot_integration",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/lidar_robot_integration.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.create_radar_basic",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/create_radar_basic.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.inspect_radar_gmo",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/inspect_radar_gmo.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.create_acoustic_basic",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/create_acoustic_basic.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.inspect_acoustic_gmo",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/inspect_acoustic_gmo.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.apply_nonvisual_materials",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/apply_nonvisual_materials.py",
+            "--test",
+        },
         -- Physics
         {
             "tests-nativepython-isaacsim.sensors.physx.rotating_lidar_physX",
@@ -569,7 +664,7 @@ local function get_replicator_tests()
         {
             "tests-nativepython-isaacsim.replicator.examples.sdg_getting_started_05",
             "standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_05.py",
-        },        
+        },
         {
             "tests-nativepython-isaacsim.replicator.examples.simready_assets_sdg",
             "standalone_examples/api/isaacsim.replicator.examples/simready_assets_sdg.py",
@@ -768,12 +863,6 @@ local function get_doc_snippets_tests()
             "../../../docs/isaacsim/snippets/sensors/isaacsim_sensors_rtx/how_to_enable_motion_bvh.py",
             "--test",
         },
-        -- sensors/isaacsim_sensors_rtx_annotators
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.sensors.isaacsim_sensors_rtx_annotators.attach_the_render_product_after_the_annotator_is_i",
-            "../../../docs/isaacsim/snippets/sensors/isaacsim_sensors_rtx_annotators/attach_the_render_product_after_the_annotator_is_i.py",
-            "--test",
-        },
         -- motion_generation/controllers (no noise and no filtering)
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.controllers.mobile_robot_control_example",
@@ -945,7 +1034,7 @@ local function get_benchmark_tests()
             "tests-standalone_benchmarks-benchmark_robots_nova_carter_ros2_multitick",
             "standalone_examples/benchmarks/benchmark_robots_nova_carter_ros2.py",
             "--num-frames 10 --num-robots 2 --enable-3d-lidar 1 --enable-2d-lidar 2 --enable-hawks 1 --non-headless --multitick",
-        },        
+        },
         {
             "tests-standalone_benchmarks-benchmark_robots_nova_carter",
             "standalone_examples/benchmarks/benchmark_robots_nova_carter.py",

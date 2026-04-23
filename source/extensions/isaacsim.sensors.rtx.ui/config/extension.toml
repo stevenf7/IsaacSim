@@ -1,5 +1,5 @@
 [package]
-version = "1.3.1"
+version = "1.4.0"
 category = "Simulation"
 title = "Isaac Sim RTX Sensor Simulation UI Components"
 description = "Provides UI components for Isaac Sim RTX-based sensor simulation, eg. menu options."
@@ -13,8 +13,9 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
+"isaacsim.core.experimental.utils" = {}
 "isaacsim.gui.components" = {}
-"isaacsim.sensors.rtx" = {}
+"isaacsim.sensors.experimental.rtx" = {}
 "omni.kit.actions.core" = {}
 "omni.kit.context_menu" = {}
 
@@ -81,6 +82,8 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    "--/rtx/hydra/supportMultiTickRate=true",
+    "--/rtx/rendering/perSensorTickTlas=true",
     ### Extension specific args
     "--/app/window/dpiScaleOverride=1.0",
     "--/app/window/scaleToMonitor=false",

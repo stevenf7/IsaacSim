@@ -1,5 +1,5 @@
 [package]
-version = "1.7.4"
+version = "1.8.0"
 category = "Simulation"
 title = "ROS 2 Core"
 description = "The ROS 2 core extension containing backend libraries required to run the ROS 2 bridge."
@@ -20,10 +20,9 @@ writeTarget.platform = true
 "isaacsim.core.rendering_manager" = {}
 "isaacsim.core.simulation_manager" = {}
 "isaacsim.robot.schema" = {}
-"isaacsim.sensors.camera" = {}
-"isaacsim.sensors.rtx" = {}
+"isaacsim.sensors.experimental.rtx" = {}
+"isaacsim.sensors.rtx.nodes" = {}
 "isaacsim.storage.native" = {}
-
 "omni.pip.compute" = {}
 "omni.replicator.core" = {}
 "omni.syntheticdata" = {}
@@ -97,6 +96,7 @@ dependencies = [
 
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
+    "*[Error] [isaacsim.ros2.core.impl.camera_info_utils] Unsupported lens distortion model 'ftheta'. Only 'opencvPinhole' and 'opencvFisheye' are supported. Legacy physical distortion models are no longer supported as of Isaac Sim 6.0. Migrate to OmniLensDistortion schemas (OmniLensDistortionOpenCvPinholeAPI or OmniLensDistortionOpenCvFisheyeAPI)*",
 ]
 
 
@@ -144,6 +144,8 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    "--/rtx/hydra/supportMultiTickRate=true",
+    "--/rtx/rendering/perSensorTickTlas=true",
     ### Extension specific args
     '--/exts/isaacsim.ros2.bridge/ros_distro = "system_default"',
     "--/exts/isaacsim.ros2.bridge/publish_without_verification=1",

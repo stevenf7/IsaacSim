@@ -24,7 +24,7 @@ RTX sensors in |isaac-sim_short| use the |rtx|'s RTX Sensor SDK to sense the env
 This means an RTX-based Lidar can model returns from light interaction with transparent or reflective surfaces, and an RTX-based Radar can model returns accounting for
 material emissivity and reflectivity in the radio spectrum.
 
-|isaac-sim_short| organizes utilities supporting RTX sensors into the ``isaacsim.sensors.rtx`` extension.
+|isaac-sim_short| organizes utilities supporting RTX sensors into the ``isaacsim.sensors.experimental.rtx`` extension.
 
 Getting Started
 ---------------
@@ -47,6 +47,7 @@ Sensor Types
 
     ./isaacsim_sensors_rtx_lidar
     ./isaacsim_sensors_rtx_radar
+    ./isaacsim_sensors_rtx_acoustic
 
 Data Collection and Materials
 -----------------------------
@@ -87,9 +88,12 @@ The following settings affect RTX sensor behavior and performance:
     :header: "Setting", "Default", "Description"
     :widths: 40, 15, 45
 
-    "``--/app/sensors/nv/lidar/outputBufferOnGPU``", "``true``", "Output Lidar data on GPU. Must be ``true`` for annotators to work correctly."
-    "``--/app/sensors/nv/radar/outputBufferOnGPU``", "``true``", "Output Radar data on GPU. Must be ``true`` for annotators to work correctly."
+    "``--/app/sensors/nv/lidar/outputBufferOnGPU``", "``false``", "Keep Lidar return buffer on GPU for post-processing. Must be ``false`` for annotators to work correctly."
+    "``--/app/sensors/nv/radar/outputBufferOnGPU``", "``false``", "Keep Radar return buffer on GPU for post-processing. Must be ``false`` for annotators to work correctly."
     "``--/app/sensors/nv/lidar/publishNormals``", "``false``", "Enable hit normal output. Increases VRAM usage."
+    "``--/rtx/materialDb/nonVisualMaterialCSV/enabled``", "``false``", "Enable non-visual materials using USD attributes."
+    "``--/rtx/materialDb/nonVisualMaterialSemantics/prefix``", "``omni:simready:nonvisual``", "Specify the non-visual material USD attribute prefix."
+    "``--/rtx/rtxsensor/useHydraTimeAlways``", "``true``", "Use Hydra time (``omni.timeline``) in RTX sensor models."
     "``--/rtx-transient/stableIds/enabled``", "``false``", "Enable stable 128-bit object IDs for semantic segmentation."
     "``--/renderer/raytracingMotion/enabled``", "``false``", "Enable Motion BVH for motion compensation and Doppler effects."
 

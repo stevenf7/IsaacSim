@@ -13,14 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Callable, Literal
+"""Test rtx radar sensor functionality via Writer-based GMO validation."""
 
 import carb
-import isaacsim.core.experimental.utils.app as app_utils
+import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
+import numpy as np
 import omni.kit.test
-import warp as wp
-from isaacsim.core.experimental.prims.tests.common import cprint
+import omni.replicator.core as rep
 from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.sensors.experimental.rtx import (
     Radar,
@@ -28,125 +28,215 @@ from isaacsim.sensors.experimental.rtx import (
     parse_generic_model_output_data,
     parse_stable_id_map_data,
 )
+from omni.replicator.core import Writer
+from pxr import Sdf
 
 from .common import create_sarcophagus
 
-EXPECTED_ANNOTATOR_SPEC = {
-    "stable-id-map": {"dtype": wp.uint8, "type": wp.array},
-    "generic-model-output": {"dtype": wp.uint8, "type": wp.array},
-}
+NEAR_EDGE_THRESHOLD = 0.5  # degrees — skip returns near octant edges
 
+# Half-dimensions of the 8 sarcophagus octants (x, y, z), derived from
+# the cube layout in create_sarcophagus(). Each pair of entries corresponds
+# to one of the four quadrants (top / bottom).
+_OCTANT_DIMENSIONS = [
+    (10, 10, 5),
+    (10, 10, 7),
+    (25, 25, 17),
+    (25, 25, 19),
+    (15, 15, 9),
+    (15, 15, 11),
+    (20, 20, 13),
+    (20, 20, 15),
+]
 
-def parametrize(
-    *,
-    instances: list[Literal["one", "many"]] = ["one"],
-    operations: list[Literal["wrap", "create"]] = ["wrap", "create"],
-    sensor_class: type,
-    sensor_class_kwargs: dict = {},
-    populate_stage_func: Callable[[int, Literal["wrap", "create"]], None],
-    populate_stage_func_kwargs: dict = {},
-    max_num_prims: int = 1,
-):
-    def decorator(func):
-        async def wrapper(self):
-            for instance in instances:
-                for operation in operations:
-                    assert instance in ["one"], f"Invalid instance: {instance}. Only one instance is supported"
-                    assert operation in ["wrap", "create"], f"Invalid operation: {operation}"
-                    cprint(f"  |-- instance: {instance}, operation: {operation}")
-                    # populate stage
-                    await populate_stage_func(max_num_prims, operation, **populate_stage_func_kwargs)
-                    # parametrize test
-                    if operation == "wrap":
-                        paths = "/World/A_0" if instance == "one" else "/World/A_.*"
-                    elif operation == "create":
-                        paths = "/World/A_0" if instance == "one" else [f"/World/A_{i}" for i in range(max_num_prims)]
-                    sensor = sensor_class(paths, **sensor_class_kwargs)
-                    num_prims = 1 if instance == "one" else max_num_prims
-                    # run test function
-                    app_utils.play(commit=True)
-                    await app_utils.update_app_async(steps=10)
-                    try:
-                        await func(self, sensor=sensor, num_prims=num_prims, operation=operation)
-                    finally:
-                        app_utils.stop(commit=True)
-                        await app_utils.update_app_async()
-                        del sensor  # needed to destroy/release everything before the next test
-                        await app_utils.update_app_async(steps=3)
+# Maps an octant index to the base cube index used by create_sarcophagus().
+_OCTANT_TO_CUBE = np.array([0, 0, 3, 3, 1, 1, 2, 2], dtype=int)
 
-        return wrapper
-
-    return decorator
-
-
-async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs) -> None:
-    # create new stage
-    await stage_utils.create_new_stage_async()
-    # wait for the viewport to be ready
-    await ViewportManager.wait_for_viewport_async()
-    # enable Motion BVH for radar
-    carb.settings.get_settings().set("/renderer/raytracingMotion/enabled", True)
-    # define some shapes
-    create_sarcophagus()
-    # define radar prims
-    if operation == "wrap":
-        for i in range(max_num_prims):
-            prim = stage_utils.define_prim(f"/World/A_{i}", "OmniRadar")
-            prim.ApplyAPI("OmniSensorGenericRadarWpmDmatAPI")
+# Radar uses a fixed 60 Hz tick rate.
+_RADAR_TICK_RATE_HZ = 60.0
 
 
 class TestRadarSensor(omni.kit.test.AsyncTestCase):
+    """Test rtx radar sensor via a Writer attached through RadarSensor."""
+
+    # ------------------------------------------------------------------
+    # Writer
+    # ------------------------------------------------------------------
+
+    class _GmoRadarTestWriter(Writer):
+        """Custom Writer that validates GenericModelOutput data each frame for radar."""
+
+        def __init__(self, test_instance=None, sensor_prim=None):
+            self.data_structure = "renderProduct"
+            self.annotators = [
+                rep.annotators.get("GenericModelOutput"),
+                rep.annotators.get("StableIdMap"),
+            ]
+            self._test = test_instance
+            self._prev_timestamp_ns = None
+            self._stable_id_map = None
+            self._octant_dims = np.array(_OCTANT_DIMENSIONS)
+            self.num_elements_zero_count = 0
+            self.valid_frame_count = 0
+            self._sensor_prim = sensor_prim
+            self._expected_advance_ns = round(1.0 / _RADAR_TICK_RATE_HZ * 1e9)
+
+        # -- frame callback ------------------------------------------
+
+        def write(self, data):
+            if "renderProducts" not in data:
+                return
+            for _rp_name, rp_data in data["renderProducts"].items():
+                gmo_raw = rp_data.get("GenericModelOutput")
+                if isinstance(gmo_raw, dict):
+                    gmo_raw = gmo_raw.get("data")
+
+                gmo = parse_generic_model_output_data(gmo_raw)
+
+                if gmo.numElements == 0:
+                    self.num_elements_zero_count += 1
+                    return
+
+                ts = int(gmo.timestampNs)
+
+                if self._prev_timestamp_ns is not None and self._expected_advance_ns > 0:
+                    delta = ts - self._prev_timestamp_ns
+                    self._test.assertAlmostEqual(delta, self._expected_advance_ns, delta=10)
+                self._prev_timestamp_ns = ts
+
+                self.valid_frame_count += 1
+                if self.valid_frame_count == 1:
+                    return
+
+                self._test_point_cloud(gmo)
+                self._test_intensity(gmo)
+                self._test_radial_velocity(gmo)
+
+        # -- per-field validators -------------------------------------
+
+        def _test_point_cloud(self, gmo):
+            """Validate sensor returns against expected range from sarcophagus geometry."""
+            unit_vecs = np.stack(
+                [np.cos(np.radians(gmo.x)), np.sin(np.radians(gmo.x)), np.sin(np.radians(gmo.y))],
+                axis=1,
+            )
+
+            unit_vecs /= np.linalg.norm(unit_vecs, axis=1, keepdims=True)
+            octant = (unit_vecs[:, 0] < 0) * 4 + (unit_vecs[:, 1] < 0) * 2 + (unit_vecs[:, 2] < 0)
+            dims = self._octant_dims[octant]
+
+            with np.errstate(divide="ignore"):
+                ratio = np.divide(dims, np.abs(unit_vecs))
+            expected_range = np.min(ratio, axis=1)
+
+            percent_diffs = np.divide(np.abs(expected_range - gmo.z), expected_range)
+
+            edge_azimuths = np.arange(-180, 181, 45).reshape(1, -1)
+            near_edge = np.any(np.abs(gmo.x[:, None] - edge_azimuths) < NEAR_EDGE_THRESHOLD, axis=1)
+
+            num_exceeding = np.sum(np.logical_and(percent_diffs > 2e-2, ~near_edge))
+            num_returns = np.size(gmo.x)
+            pct_exceeding = num_exceeding / num_returns * 100
+            valid_threshold = 1.0 if num_returns >= 100 else 10.0
+            self._test.assertLessEqual(
+                pct_exceeding,
+                valid_threshold,
+                f"{num_exceeding} of {num_returns} returns exceeded 2% range threshold.",
+            )
+
+        def _test_intensity(self, gmo):
+            self._test.assertTrue(np.all(gmo.scalar != 0), "Radar intensities must be non-zero.")
+
+        def _test_radial_velocity(self, gmo):
+            self._test.assertLessEqual(
+                np.max(np.abs(gmo.rv_ms)), 1e-2, "Radial velocity should be ~0 for static scene."
+            )
+
+    # ------------------------------------------------------------------
+    # Test lifecycle
+    # ------------------------------------------------------------------
+
+    _writer_registered = False
+
     async def setUp(self):
-        """Method called to prepare the test fixture"""
         super().setUp()
-        self.maxDiff = None  # show all diffs
+        await stage_utils.create_new_stage_async()
+        await ViewportManager.wait_for_viewport_async()
+        # Enable Motion BVH required by radar
+        carb.settings.get_settings().set("/renderer/raytracingMotion/enabled", True)
+        self.cube_info = create_sarcophagus()
+        self._timeline = omni.timeline.get_timeline_interface()
+        if not TestRadarSensor._writer_registered:
+            rep.WriterRegistry.register(TestRadarSensor._GmoRadarTestWriter)
+            TestRadarSensor._writer_registered = True
 
     async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
         super().tearDown()
 
-    # --------------------------------------------------------------------
+    # ------------------------------------------------------------------
+    # Tests
+    # ------------------------------------------------------------------
 
-    @parametrize(
-        sensor_class=RadarSensor,
-        sensor_class_kwargs={"annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
-        populate_stage_func=populate_stage,
-    )
-    async def test_data(self, sensor, num_prims, operation):
-        for annotator in sorted(list(EXPECTED_ANNOTATOR_SPEC.keys())):
-            cprint(f"  |    |-- annotator: {annotator}")
-            spec = EXPECTED_ANNOTATOR_SPEC[annotator]
-            data, info = None, {}
-            for i in range(10):
-                await app_utils.update_app_async()
-                data, info = sensor.get_data(annotator)
-                # if data is not None:
-                #     break
-            if data is None:
-                raise RuntimeError(f"No data available from '{annotator}' annotator after {i + 1} steps")
-            else:
-                cprint(f"  |    |    |-- data available after {i + 1} steps")
+    async def test_gmo_writer(self):
+        """Validate GenericModelOutput via a Writer attached to a RadarSensor."""
+        COLLECTION_SECONDS = 3.0
 
-                # check data
-                # - type
-                self.assertIsInstance(
-                    data, spec["type"], f"'{annotator}' annotator type {type(data)} != {spec['type']}"
-                )
-                # - dtype
-                dtype = spec["dtype"]
-                self.assertEqual(data.dtype, dtype, f"'{annotator}' annotator dtype {data.dtype} != {dtype}")
-                # - data
-                if annotator == "stable-id-map":
-                    stable_id_map = parse_stable_id_map_data(data)
-                    self.assertTrue(len(set(stable_id_map.values())), "Expected one or more stable IDs")
-                    for value in stable_id_map.values():
-                        self.assertTrue(value.startswith("/World/cube_"), f"Unexpected stable ID value: {value}")
-                elif annotator == "generic-model-output":
-                    generic_model_output = parse_generic_model_output_data(data)
-                    self.assertTrue(generic_model_output.x.size, msg=f"Expected non-empty X coordinates")
-                    self.assertTrue(generic_model_output.y.size, msg=f"Expected non-empty Y coordinates")
-                    self.assertTrue(generic_model_output.z.size, msg=f"Expected non-empty Z coordinates")
-                else:
-                    raise ValueError(f"Unsupported annotator '{annotator}' for testing")
-                # - info
-                self.assertDictEqual({}, info, msg=f"Annotator info mismatch for '{annotator}'")
+        radar = Radar(
+            "/World/radar",
+            attributes={
+                "omni:sensor:WpmDmat:outputFrameOfReference": "WORLD",
+            },
+            aux_output_level="BASIC",
+        )
+        sensor = RadarSensor(radar, annotators=["generic-model-output"])
+        sensor.attach_writer(
+            "_GmoRadarTestWriter",
+            test_instance=self,
+            sensor_prim=radar.prims[0],
+        )
+
+        total_frames = int(COLLECTION_SECONDS * 60)
+        self._timeline.set_end_time(COLLECTION_SECONDS + 1.0)
+        self._timeline.play()
+        for _ in range(total_frames):
+            await omni.kit.app.get_app().next_update_async()
+        self._timeline.stop()
+
+        writer = sensor._writers["_GmoRadarTestWriter"]
+        carb.log_warn(f"numElements==0 frames: {writer.num_elements_zero_count}")
+        carb.log_warn(f"valid frames: {writer.valid_frame_count}")
+
+        self.assertGreater(writer.valid_frame_count, 0, "Expected at least one valid GMO frame.")
+
+    async def test_aux_output_level_sets_channels_attribute(self):
+        """Verify aux_output_level sets the channels attribute on the sensor prim."""
+        for level in ("NONE", "BASIC"):
+            await stage_utils.create_new_stage_async()
+            await ViewportManager.wait_for_viewport_async()
+            carb.settings.get_settings().set("/renderer/raytracingMotion/enabled", True)
+            create_sarcophagus()
+
+            radar = Radar("/World/radar", aux_output_level=level)
+            sensor = RadarSensor(radar, annotators=["generic-model-output"])
+            self.assertEqual(radar.aux_output_level, level)
+
+            prim = prim_utils.get_prim_at_path(radar.paths[0])
+            attr = prim.GetAttribute("_replicator:rendervar:GenericModelOutput:channels")
+            self.assertTrue(attr.IsValid())
+            self.assertEqual(attr.GetTypeName(), Sdf.ValueTypeNames.StringArray)
+            self.assertEqual(list(attr.Get()), [level])
+
+            del sensor
+            await omni.kit.app.get_app().next_update_async()
+
+    async def test_aux_output_level_default_is_none(self):
+        """Verify the default aux_output_level is NONE."""
+        radar = Radar("/World/radar")
+        self.assertEqual(radar.aux_output_level, "NONE")
+
+    async def test_aux_output_level_invalid_raises(self):
+        """Verify invalid aux_output_level raises ValueError for radar."""
+        with self.assertRaises(ValueError):
+            Radar("/World/radar", aux_output_level="FULL")

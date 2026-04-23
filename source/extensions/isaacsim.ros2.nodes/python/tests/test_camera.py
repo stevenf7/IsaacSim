@@ -19,6 +19,7 @@ import asyncio
 import math
 import os
 import shutil
+import unittest
 
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
@@ -1236,6 +1237,254 @@ class TestRos2Camera(ROS2TestCase):
 
         self._timeline.stop()
         spin()
+
+    async def test_semantic_labels_publishing(self):
+        """Verify enableSemanticLabels publishes semantic labels on a separate topic."""
+        Cube("/World/cube", sizes=1.0, positions=[2.0, 0.0, 0.0])
+        semantics_utils.add_labels("/World/cube", labels=["TestCube"])
+
+        from isaacsim.sensors.experimental.rtx import RtxCamera
+
+        # Orientation (90, -90, 0) intrinsic XYZ = looking down +X toward the cube
+        cam = RtxCamera("/World/camera", positions=[0.0, 0.0, 0.5], orientations=[0.5, 0.5, -0.5, -0.5])
+
+        og.Controller.edit(
+            {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+            {
+                og.Controller.Keys.CREATE_NODES: [
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("CreateRenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
+                    ("SemanticPublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
+                ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("CreateRenderProduct.inputs:cameraPrim", [usdrt.Sdf.Path("/World/camera")]),
+                    ("CreateRenderProduct.inputs:height", 480),
+                    ("CreateRenderProduct.inputs:width", 640),
+                    ("SemanticPublish.inputs:topicName", "semantic_seg"),
+                    ("SemanticPublish.inputs:type", "semantic_segmentation"),
+                    ("SemanticPublish.inputs:enableSemanticLabels", True),
+                    ("SemanticPublish.inputs:semanticLabelsTopicName", "semantic_labels"),
+                    ("SemanticPublish.inputs:resetSimulationTimeOnStop", True),
+                ],
+                og.Controller.Keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "CreateRenderProduct.inputs:execIn"),
+                    ("CreateRenderProduct.outputs:execOut", "SemanticPublish.inputs:execIn"),
+                    ("CreateRenderProduct.outputs:renderProductPath", "SemanticPublish.inputs:renderProductPath"),
+                ],
+            },
+        )
+
+        from std_msgs.msg import String
+
+        label_data = None
+        node = self.create_node("test_semantic_labels")
+        self.start_async_spinning(node)
+
+        def on_label(msg):
+            nonlocal label_data
+            label_data = msg.data
+
+        self.create_subscription(node, String, "semantic_labels", on_label, get_qos_profile(depth=10))
+
+        self._timeline.play()
+        # Wait for a label message that contains our TestCube label
+        # Note: the pipeline lowercases semantic labels
+        condition_met = await self.simulate_until_condition(
+            lambda: label_data is not None and "testcube" in label_data.lower(), max_frames=180
+        )
+        self._timeline.stop()
+
+        self.assertTrue(condition_met, f"testcube not found in semantic labels. Last received: {label_data}")
+
+    async def test_enabled_input_disables_publishing(self):
+        """Verify setting enabled=False stops message publishing."""
+        Cube("/World/cube", sizes=1.0, positions=[2.0, 0.0, 0.0])
+
+        from isaacsim.sensors.experimental.rtx import RtxCamera
+
+        cam = RtxCamera("/World/camera", positions=[0.0, 0.0, 0.5], orientations=[0.5, 0.5, -0.5, -0.5])
+
+        og.Controller.edit(
+            {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+            {
+                og.Controller.Keys.CREATE_NODES: [
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("CreateRenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
+                    ("RGBPublish", "isaacsim.ros2.bridge.ROS2CameraHelper"),
+                ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("CreateRenderProduct.inputs:cameraPrim", [usdrt.Sdf.Path("/World/camera")]),
+                    ("CreateRenderProduct.inputs:height", 240),
+                    ("CreateRenderProduct.inputs:width", 320),
+                    ("RGBPublish.inputs:topicName", "rgb_enabled_test"),
+                    ("RGBPublish.inputs:type", "rgb"),
+                    ("RGBPublish.inputs:enabled", False),
+                    ("RGBPublish.inputs:resetSimulationTimeOnStop", True),
+                ],
+                og.Controller.Keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "CreateRenderProduct.inputs:execIn"),
+                    ("CreateRenderProduct.outputs:execOut", "RGBPublish.inputs:execIn"),
+                    ("CreateRenderProduct.outputs:renderProductPath", "RGBPublish.inputs:renderProductPath"),
+                ],
+            },
+        )
+
+        msg_count = 0
+        node = self.create_node("test_enabled")
+        self.start_async_spinning(node)
+
+        def on_image(msg):
+            nonlocal msg_count
+            msg_count += 1
+
+        self.create_subscription(node, Image, "rgb_enabled_test", on_image, get_qos_profile(depth=10))
+
+        self._timeline.play()
+        for _ in range(60):
+            await omni.kit.app.get_app().next_update_async()
+        self._timeline.stop()
+
+        self.assertEqual(msg_count, 0, "Expected no messages when enabled=False")
+
+    async def test_tick_rate_reduces_publish_frequency(self):
+        """Verify that omni:sensor:tickRate throttles render product output and reduces publish rate.
+
+        Creates two cameras: one at 10 Hz tickRate, one at autotrigger (0 = every frame).
+        Both publish RGB via ROS2CameraHelper. After 120 frames (~2s at 60 Hz), the slow
+        camera should have significantly fewer unique frames than the fast one.
+        A moving cube ensures each rendered frame is visually distinct.
+        """
+        # Add a dome light so the scene is visible
+        from pxr import UsdLux
+
+        dome_light = UsdLux.DomeLight.Define(stage_utils.get_current_stage(), "/World/dome_light")
+        dome_light.CreateIntensityAttr(1000)
+
+        # Create a cube in the camera's FOV — we'll move it each frame to ensure unique renders
+        cube = Cube("/World/cube", sizes=1.0, positions=[3.0, 0.0, 0.5], colors=[1, 0, 0])
+
+        from isaacsim.sensors.experimental.rtx import RtxCamera
+
+        cam_slow = RtxCamera(
+            "/World/camera_slow",
+            tick_rate=10.0,
+            positions=[0.0, 0.0, 0.5],
+            orientations=[0.5, 0.5, -0.5, -0.5],
+        )
+        cam_fast = RtxCamera(
+            "/World/camera_fast",
+            positions=[0.0, 1.0, 0.5],
+            orientations=[0.5, 0.5, -0.5, -0.5],
+        )
+
+        og.Controller.edit(
+            {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+            {
+                og.Controller.Keys.CREATE_NODES: [
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("CreateRPSlow", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
+                    ("CreateRPFast", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
+                    ("RGBSlow", "isaacsim.ros2.bridge.ROS2CameraHelper"),
+                    ("RGBFast", "isaacsim.ros2.bridge.ROS2CameraHelper"),
+                ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("CreateRPSlow.inputs:cameraPrim", [usdrt.Sdf.Path("/World/camera_slow")]),
+                    ("CreateRPSlow.inputs:height", 240),
+                    ("CreateRPSlow.inputs:width", 320),
+                    ("CreateRPFast.inputs:cameraPrim", [usdrt.Sdf.Path("/World/camera_fast")]),
+                    ("CreateRPFast.inputs:height", 240),
+                    ("CreateRPFast.inputs:width", 320),
+                    ("RGBSlow.inputs:topicName", "rgb_slow"),
+                    ("RGBSlow.inputs:type", "rgb"),
+                    ("RGBSlow.inputs:resetSimulationTimeOnStop", True),
+                    ("RGBFast.inputs:topicName", "rgb_fast"),
+                    ("RGBFast.inputs:type", "rgb"),
+                    ("RGBFast.inputs:resetSimulationTimeOnStop", True),
+                ],
+                og.Controller.Keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "CreateRPSlow.inputs:execIn"),
+                    ("OnPlaybackTick.outputs:tick", "CreateRPFast.inputs:execIn"),
+                    ("CreateRPSlow.outputs:execOut", "RGBSlow.inputs:execIn"),
+                    ("CreateRPSlow.outputs:renderProductPath", "RGBSlow.inputs:renderProductPath"),
+                    ("CreateRPFast.outputs:execOut", "RGBFast.inputs:execIn"),
+                    ("CreateRPFast.outputs:renderProductPath", "RGBFast.inputs:renderProductPath"),
+                ],
+            },
+        )
+
+        import hashlib
+        import tempfile
+
+        SAVE_DEBUG_FRAMES = False  # Set True to save frames for debugging
+
+        slow_count = 0
+        fast_count = 0
+        slow_unique_hashes = set()
+        fast_unique_hashes = set()
+        slow_debug_dir = os.path.join(tempfile.gettempdir(), "debug_tick_rate_slow")
+        fast_debug_dir = os.path.join(tempfile.gettempdir(), "debug_tick_rate_fast")
+        if SAVE_DEBUG_FRAMES:
+            os.makedirs(slow_debug_dir, exist_ok=True)
+            os.makedirs(fast_debug_dir, exist_ok=True)
+
+        node = self.create_node("test_tick_rate")
+        self.start_async_spinning(node)
+
+        def _save_frame(msg, directory, count):
+            try:
+                import numpy as _np
+                from PIL import Image as PILImage
+
+                arr = _np.frombuffer(bytes(msg.data), dtype=_np.uint8).reshape((msg.height, msg.width, 3))
+                PILImage.fromarray(arr).save(os.path.join(directory, f"frame_{count:04d}.png"))
+            except Exception:
+                pass
+
+        def on_slow(msg):
+            nonlocal slow_count
+            slow_count += 1
+            slow_unique_hashes.add(hashlib.md5(bytes(msg.data)).hexdigest())
+            if SAVE_DEBUG_FRAMES:
+                _save_frame(msg, slow_debug_dir, slow_count)
+
+        def on_fast(msg):
+            nonlocal fast_count
+            fast_count += 1
+            fast_unique_hashes.add(hashlib.md5(bytes(msg.data)).hexdigest())
+            if SAVE_DEBUG_FRAMES:
+                _save_frame(msg, fast_debug_dir, fast_count)
+
+        self.create_subscription(node, Image, "rgb_slow", on_slow, get_qos_profile(depth=100))
+        self.create_subscription(node, Image, "rgb_fast", on_fast, get_qos_profile(depth=100))
+
+        self._timeline.play()
+        for i in range(120):
+            # Move cube each frame to ensure visually distinct renders
+            cube.set_world_poses(positions=[[3.0 + i * 0.01, 0.0, 0.5]])
+            await omni.kit.app.get_app().next_update_async()
+        self._timeline.stop()
+
+        carb.log_warn(
+            f"tickRate test: slow_count={slow_count} (unique={len(slow_unique_hashes)}), "
+            f"fast_count={fast_count} (unique={len(fast_unique_hashes)})"
+        )
+        if SAVE_DEBUG_FRAMES:
+            carb.log_warn(f"Debug frames saved to {slow_debug_dir} and {fast_debug_dir}")
+
+        # At 60 Hz sim rate, fast (autotrigger) should render ~120 unique frames,
+        # slow (10 Hz) should render ~20 unique frames.
+        # The writer may republish stale frames, so check unique image count.
+        self.assertGreater(fast_count, 0, "Fast camera should have published messages")
+        self.assertGreater(slow_count, 0, "Slow camera should have published some messages")
+        if len(fast_unique_hashes) > 10:
+            self.assertLess(
+                len(slow_unique_hashes),
+                len(fast_unique_hashes) * 0.5,
+                f"tickRate not respected: slow has {len(slow_unique_hashes)} unique frames "
+                f"(of {slow_count} msgs) vs fast {len(fast_unique_hashes)} unique frames "
+                f"(of {fast_count} msgs). "
+                f"Expected slow ~{len(fast_unique_hashes) * 10 // 60} unique frames at 10 Hz.",
+            )
 
     async def test_camera_depth_to_pcl(self):
         """Test camera depth to pcl."""

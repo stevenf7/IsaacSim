@@ -248,46 +248,26 @@ class ROS2NodesExtension(omni.ext.IExt):
             # RTX lidar PCL publisher (direct from GMO)
             if is_multitick_enabled:
                 gmo_pcl_annotators = [
-                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                        "GenericModelOutputPtr",
-                        attributes_mapping={
-                            "outputs:dataPtr": "inputs:gmoDataPtr",
-                            "outputs:bufferSize": "inputs:gmoBufferSize",
-                        },
-                    ),
+                    "IsaacExtractRTXSensorPointCloud",
                     "PostProcessDispatchIsaacSimulationGate",
                     omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
                         f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
                     ),
                 ]
-                register_node_writer_with_telemetry(
-                    name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
-                    node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
-                    annotators=gmo_pcl_annotators,
-                    category=BRIDGE_NAME,
-                )
+                for name_prefix in ("RtxLidar", "RtxRadar"):
+                    register_node_writer_with_telemetry(
+                        name=f"{name_prefix}{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
+                        node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
+                        annotators=gmo_pcl_annotators,
+                        category=BRIDGE_NAME,
+                    )
 
-                register_node_writer_with_telemetry(
-                    name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloudBuffer",
-                    node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
-                    annotators=gmo_pcl_annotators,
-                    category=BRIDGE_NAME,
-                )
-
-                # RTX Radar PCL publisher
-                register_node_writer_with_telemetry(
-                    name=f"RtxRadar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
-                    node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
-                    annotators=[
-                        "IsaacExtractRTXSensorPointCloudNoAccumulator",
-                        "PostProcessDispatchIsaacSimulationGate",
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            f"IsaacReadS{time_type[0]}",
-                            attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"},
-                        ),
-                    ],
-                    category=BRIDGE_NAME,
-                )
+                    register_node_writer_with_telemetry(
+                        name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloudBuffer",
+                        node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
+                        annotators=gmo_pcl_annotators,
+                        category=BRIDGE_NAME,
+                    )
 
                 # RTX lidar LaserScan publisher (direct from GMO)
                 register_node_writer_with_telemetry(

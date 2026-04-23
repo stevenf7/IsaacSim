@@ -13,137 +13,194 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Callable, Literal
+"""Test rtx acoustic sensor functionality via Writer-based GMO validation."""
 
-import isaacsim.core.experimental.utils.app as app_utils
+import carb
+import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
+import isaacsim.sensors.experimental.rtx.generic_model_output as gmo_utils
+import numpy as np
 import omni.kit.test
-import warp as wp
-from isaacsim.core.experimental.prims.tests.common import cprint
+import omni.replicator.core as rep
+from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.sensors.experimental.rtx import (
     Acoustic,
     AcousticSensor,
     parse_generic_model_output_data,
-    parse_stable_id_map_data,
 )
-
-from .common import create_sarcophagus
-
-EXPECTED_ANNOTATOR_SPEC = {
-    "stable-id-map": {"dtype": wp.uint8, "type": wp.array},
-    "generic-model-output": {"dtype": wp.uint8, "type": wp.array},
-}
-
-
-def parametrize(
-    *,
-    instances: list[Literal["one", "many"]] = ["one"],
-    operations: list[Literal["wrap", "create"]] = ["wrap", "create"],
-    sensor_class: type,
-    sensor_class_kwargs: dict = {},
-    populate_stage_func: Callable[[int, Literal["wrap", "create"]], None],
-    populate_stage_func_kwargs: dict = {},
-    max_num_prims: int = 1,
-):
-    def decorator(func):
-        async def wrapper(self):
-            for instance in instances:
-                for operation in operations:
-                    assert instance in ["one"], f"Invalid instance: {instance}. Only one instance is supported"
-                    assert operation in ["wrap", "create"], f"Invalid operation: {operation}"
-                    cprint(f"  |-- instance: {instance}, operation: {operation}")
-                    # populate stage
-                    await populate_stage_func(max_num_prims, operation, **populate_stage_func_kwargs)
-                    # parametrize test
-                    if operation == "wrap":
-                        paths = "/World/A_0" if instance == "one" else "/World/A_.*"
-                    elif operation == "create":
-                        paths = "/World/A_0" if instance == "one" else [f"/World/A_{i}" for i in range(max_num_prims)]
-                    sensor = sensor_class(paths, **sensor_class_kwargs)
-                    num_prims = 1 if instance == "one" else max_num_prims
-                    # run test function
-                    app_utils.play(commit=True)
-                    await app_utils.update_app_async(steps=10)
-                    try:
-                        await func(self, sensor=sensor, num_prims=num_prims, operation=operation)
-                    finally:
-                        app_utils.stop(commit=True)
-                        await app_utils.update_app_async()
-                        del sensor  # needed to destroy/release everything before the next test
-                        await app_utils.update_app_async(steps=3)
-
-        return wrapper
-
-    return decorator
-
-
-async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs) -> None:
-    # create new stage
-    await stage_utils.create_new_stage_async()
-    # wait for the viewport to be ready
-    await ViewportManager.wait_for_viewport_async()
-    # define some shapes
-    create_sarcophagus()
-    # define acoustic prims
-    if operation == "wrap":
-        for i in range(max_num_prims):
-            prim = stage_utils.define_prim(f"/World/A_{i}", "OmniAcoustic")
-            prim.ApplyAPI("OmniSensorGenericAcousticWpmAPI")
+from omni.replicator.core import Writer
+from pxr import Sdf
 
 
 class TestAcousticSensor(omni.kit.test.AsyncTestCase):
+    """Test rtx acoustic sensor via a Writer attached through AcousticSensor."""
+
+    # ------------------------------------------------------------------
+    # Writer
+    # ------------------------------------------------------------------
+
+    class _GmoAcousticTestWriter(Writer):
+        """Custom Writer that validates GenericModelOutput data each frame for acoustic."""
+
+        def __init__(self, test_instance=None):
+            self.data_structure = "renderProduct"
+            self.annotators = [
+                rep.annotators.get("GenericModelOutput"),
+            ]
+            self._test = test_instance
+            self.num_elements_zero_count = 0
+            self.valid_frame_count = 0
+
+        def write(self, data):
+            if "renderProducts" not in data:
+                return
+            for _rp_name, rp_data in data["renderProducts"].items():
+                gmo_raw = rp_data.get("GenericModelOutput")
+                if isinstance(gmo_raw, dict):
+                    gmo_raw = gmo_raw.get("data")
+
+                gmo = parse_generic_model_output_data(gmo_raw)
+
+                if gmo.numElements == 0:
+                    self.num_elements_zero_count += 1
+                    return
+
+                self.valid_frame_count += 1
+                if self.valid_frame_count == 1:
+                    return
+
+                self._check_acoustic_gmo(gmo)
+
+        def _check_acoustic_gmo(self, gmo):
+            t = self._test
+
+            # Modality
+            t.assertEqual(gmo.modality, gmo_utils.Modality.ACOUSTIC)
+
+            # Coordinate type is not applicable for acoustic
+            t.assertEqual(gmo.elementsCoordsType, gmo_utils.CoordsType.NOT_APPLICABLE)
+
+            # numElements is a multiple of numSamplesPerSgw
+            num_samples_per_sgw = gmo.numSamplesPerSgw
+            t.assertGreater(num_samples_per_sgw, 0)
+            num_signal_ways = gmo.numElements // num_samples_per_sgw
+            t.assertEqual(gmo.numElements, num_signal_ways * num_samples_per_sgw)
+
+            # Frame timestamps are ordered
+            t.assertLess(gmo.frameStart.timestampNs, gmo.frameEnd.timestampNs)
+            frame_duration_ns = gmo.frameEnd.timestampNs - gmo.frameStart.timestampNs
+
+            # Scalars (amplitude samples) are finite
+            t.assertTrue(np.all(np.isfinite(gmo.scalar[: gmo.numElements])))
+
+            # timeOffsetNs at signal-way boundaries are non-negative and within frame duration
+            for sgw in range(num_signal_ways):
+                idx = sgw * num_samples_per_sgw
+                offset = gmo.timeOffsetNs[idx]
+                t.assertGreaterEqual(offset, 0, f"Signal way {sgw}: negative timeOffsetNs")
+                t.assertLess(offset, frame_duration_ns, f"Signal way {sgw}: timeOffsetNs >= frame duration")
+
+            # No overflow: all timeOffsetNs within element range are non-negative
+            t.assertTrue(np.all(gmo.timeOffsetNs[: gmo.numElements] >= 0))
+
+    # ------------------------------------------------------------------
+    # Test lifecycle
+    # ------------------------------------------------------------------
+
+    _writer_registered = False
+
     async def setUp(self):
-        """Method called to prepare the test fixture"""
         super().setUp()
-        self.maxDiff = None  # show all diffs
+        await stage_utils.create_new_stage_async()
+        await ViewportManager.wait_for_viewport_async()
+        # Place reflective targets
+        for i, (x, y) in enumerate([(3, 0), (5, 2), (4, -2)]):
+            Cube(f"/World/target_{i}", sizes=1.0, positions=np.array([float(x), float(y), 0.0]))
+        self._timeline = omni.timeline.get_timeline_interface()
+        if not TestAcousticSensor._writer_registered:
+            rep.WriterRegistry.register(TestAcousticSensor._GmoAcousticTestWriter)
+            TestAcousticSensor._writer_registered = True
 
     async def tearDown(self):
-        """Method called immediately after the test method has been called"""
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
         super().tearDown()
 
-    # --------------------------------------------------------------------
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
 
-    @parametrize(
-        sensor_class=AcousticSensor,
-        sensor_class_kwargs={"annotators": list(EXPECTED_ANNOTATOR_SPEC.keys())},
-        populate_stage_func=populate_stage,
-    )
-    async def test_data(self, sensor, num_prims, operation):
-        for annotator in sorted(list(EXPECTED_ANNOTATOR_SPEC.keys())):
-            cprint(f"  |    |-- annotator: {annotator}")
-            spec = EXPECTED_ANNOTATOR_SPEC[annotator]
-            data, info = None, {}
-            for i in range(10):
-                await app_utils.update_app_async()
-                data, info = sensor.get_data(annotator)
-                # if data is not None:
-                #     break
-            if data is None:
-                raise RuntimeError(f"No data available from '{annotator}' annotator after {i + 1} steps")
-            else:
-                cprint(f"  |    |    |-- data available after {i + 1} steps")
+    def _create_acoustic_sensor(self, aux_output_level="BASIC"):
+        """Create an Acoustic + AcousticSensor with a small sensor array."""
+        acoustic = Acoustic(
+            "/World/acoustic",
+            aux_output_level=aux_output_level,
+            tick_rate=30.0,
+            attributes={
+                "omni:sensor:WpmAcoustic:centerFrequency": 51200.0,
+                "omni:sensor:WpmAcoustic:sensorMount:m001:position": (0.0, -0.05, 0.0),
+                "omni:sensor:WpmAcoustic:sensorMount:m001:rotation": (0.0, 0.0, 0.0),
+                "omni:sensor:WpmAcoustic:sensorMount:m002:position": (0.0, 0.0, 0.0),
+                "omni:sensor:WpmAcoustic:sensorMount:m002:rotation": (0.0, 0.0, 0.0),
+                "omni:sensor:WpmAcoustic:sensorMount:m003:position": (0.0, 0.05, 0.0),
+                "omni:sensor:WpmAcoustic:sensorMount:m003:rotation": (0.0, 0.0, 0.0),
+                "omni:sensor:WpmAcoustic:rxGroup:g001:receiverIndices": [0, 1],
+                "omni:sensor:WpmAcoustic:rxGroup:g002:receiverIndices": [1, 2],
+            },
+        )
+        sensor = AcousticSensor(acoustic, annotators=["generic-model-output"])
+        return acoustic, sensor
 
-                # check data
-                # - type
-                self.assertIsInstance(
-                    data, spec["type"], f"'{annotator}' annotator type {type(data)} != {spec['type']}"
-                )
-                # - dtype
-                dtype = spec["dtype"]
-                self.assertEqual(data.dtype, dtype, f"'{annotator}' annotator dtype {data.dtype} != {dtype}")
-                # - data
-                if annotator == "stable-id-map":
-                    stable_id_map = parse_stable_id_map_data(data)
-                    self.assertTrue(len(set(stable_id_map.values())), "Expected one or more stable IDs")
-                    for value in stable_id_map.values():
-                        self.assertTrue(value.startswith("/World/cube_"), f"Unexpected stable ID value: {value}")
-                elif annotator == "generic-model-output":
-                    generic_model_output = parse_generic_model_output_data(data)
-                    self.assertTrue(generic_model_output.x.size, msg=f"Expected non-empty X coordinates")
-                    self.assertTrue(generic_model_output.y.size, msg=f"Expected non-empty Y coordinates")
-                    self.assertTrue(generic_model_output.z.size, msg=f"Expected non-empty Z coordinates")
-                else:
-                    raise ValueError(f"Unsupported annotator '{annotator}' for testing")
-                # - info
-                self.assertDictEqual({}, info, msg=f"Annotator info mismatch for '{annotator}'")
+    # ------------------------------------------------------------------
+    # Tests
+    # ------------------------------------------------------------------
+
+    async def test_gmo_writer(self):
+        """Validate acoustic GenericModelOutput via a Writer attached to an AcousticSensor."""
+        COLLECTION_SECONDS = 3.0
+
+        acoustic, sensor = self._create_acoustic_sensor(aux_output_level="BASIC")
+        sensor.attach_writer("_GmoAcousticTestWriter", test_instance=self)
+
+        total_frames = int(COLLECTION_SECONDS * 60)
+        self._timeline.set_end_time(COLLECTION_SECONDS + 1.0)
+        self._timeline.play()
+        for _ in range(total_frames):
+            await omni.kit.app.get_app().next_update_async()
+        self._timeline.stop()
+
+        writer = sensor._writers["_GmoAcousticTestWriter"]
+        carb.log_warn(f"numElements==0 frames: {writer.num_elements_zero_count}")
+        carb.log_warn(f"valid frames: {writer.valid_frame_count}")
+
+        self.assertGreater(writer.valid_frame_count, 0, "Expected at least one valid GMO frame.")
+
+    async def test_aux_output_level_sets_channels_attribute(self):
+        """Verify aux_output_level sets the channels attribute on the sensor prim."""
+        for level in ("NONE", "BASIC"):
+            await stage_utils.create_new_stage_async()
+            await ViewportManager.wait_for_viewport_async()
+            Cube("/World/target", sizes=1.0, positions=np.array([3.0, 0.0, 0.0]))
+
+            acoustic, sensor = self._create_acoustic_sensor(aux_output_level=level)
+            self.assertEqual(acoustic.aux_output_level, level)
+
+            prim = prim_utils.get_prim_at_path(acoustic.paths[0])
+            attr = prim.GetAttribute("_replicator:rendervar:GenericModelOutput:channels")
+            self.assertTrue(attr.IsValid(), "channels attribute must exist on prim")
+            self.assertEqual(attr.GetTypeName(), Sdf.ValueTypeNames.StringArray)
+            self.assertEqual(list(attr.Get()), [level])
+
+            del sensor
+            await omni.kit.app.get_app().next_update_async()
+
+    async def test_aux_output_level_default_is_none(self):
+        """Verify the default aux_output_level is NONE."""
+        acoustic = Acoustic("/World/acoustic2", tick_rate=30.0)
+        self.assertEqual(acoustic.aux_output_level, "NONE")
+
+    async def test_aux_output_level_invalid_raises(self):
+        """Verify invalid aux_output_level raises ValueError."""
+        with self.assertRaises(ValueError):
+            Acoustic("/World/acoustic3", tick_rate=30.0, aux_output_level="FULL")

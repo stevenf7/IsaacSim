@@ -21,8 +21,11 @@ import cv2 as cv
 import numpy as np
 from isaacsim.core.experimental.utils import xform as xform_utils
 from isaacsim.core.rendering_manager import ViewportManager
-from isaacsim.sensors.camera.camera import OPENCV_FISHEYE_ATTRIBUTE_MAP, OPENCV_PINHOLE_ATTRIBUTE_MAP
 from pxr import Gf, Usd
+
+# OpenCV distortion coefficient attribute names, matching the omni:lensdistortion schema.
+OPENCV_PINHOLE_ATTRIBUTE_MAP = ["k1", "k2", "p1", "p2", "k3", "k4", "k5", "k6", "s1", "s2", "s3", "s4"]
+OPENCV_FISHEYE_ATTRIBUTE_MAP = ["k1", "k2", "k3", "k4"]
 
 
 def read_camera_info(render_product_path: str) -> tuple:
@@ -81,9 +84,14 @@ def read_camera_info(render_product_path: str) -> tuple:
         camera_info.distortion_model = "equidistant"
         camera_info.d = fisheye
     else:
-        carb.log_warn(
-            f"ROS2 CameraInfo support for lens distortion models beyond opencvPinhole and opencvFisheye is deprecated as of Isaac Sim 5.0, and will be removed in a future release."
-        )
+        # No OmniLensDistortion schema — compute intrinsics from USD camera attributes
+        if lens_distortion_model is not None:
+            carb.log_error(
+                f"Unsupported lens distortion model '{lens_distortion_model}'. "
+                f"Only 'opencvPinhole' and 'opencvFisheye' are supported. "
+                f"Legacy physical distortion models are no longer supported as of Isaac Sim 6.0. "
+                f"Migrate to OmniLensDistortion schemas (OmniLensDistortionOpenCvPinholeAPI or OmniLensDistortionOpenCvFisheyeAPI)."
+            )
 
         width, height = ViewportManager.get_resolution(render_product_path)
         focalLength = camera_prim.GetAttribute("focalLength").Get()
@@ -95,24 +103,8 @@ def read_camera_info(render_product_path: str) -> tuple:
         cx = width * 0.5
         cy = height * 0.5
 
-        supported_physical_distortion_models = ["plumb_bob", "rational_polynomial", "equidistant"]
-        physical_distortion = camera_prim.GetAttribute("physicalDistortionModel").Get()
-        physical_distortion_coefs = camera_prim.GetAttribute("physicalDistortionCoefficients").Get()
-
-        # Set default distortion model to plumb_bob without distortion
         camera_info.distortion_model = "plumb_bob"
         camera_info.d = [0.0] * 5
-        if physical_distortion not in supported_physical_distortion_models:
-            carb.log_warn(
-                f"Unsupported physical distortion model '{physical_distortion}'. Using plumb_bob with default coefficients."
-            )
-        elif physical_distortion == "plumb_bob" and physical_distortion_coefs != [0.0] * 5:
-            carb.log_warn(
-                f"Setting physical distortion coefficients to [0, 0, 0, 0, 0] for physicalDistortionModel == 'plumb_bob'."
-            )
-        else:
-            camera_info.distortion_model = physical_distortion
-            camera_info.d = list(physical_distortion_coefs)
 
     # Retrieve and store resolution
     camera_info.width = width

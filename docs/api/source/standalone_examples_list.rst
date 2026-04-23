@@ -83,7 +83,6 @@ isaacsim.replicator.examples
 * ``motion_blur.py``
 * ``multi_camera.py``
 * ``sdg_deformables.py``
-* ``sdg_geomsubset.py``
 * ``sdg_getting_started_01.py``
 * ``sdg_getting_started_02.py``
 * ``sdg_getting_started_03.py``
@@ -173,6 +172,29 @@ isaacsim.sensors.experimental.physics
 * ``contact_sensor.py``
 * ``effort_sensor.py``
 * ``imu_sensor.py``
+
+isaacsim.sensors.experimental.rtx
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``apply_nonvisual_materials.py``
+* ``camera_annotator_devices.py``
+* ``camera_isp_pipeline.py``
+* ``camera_opencv_fisheye.py``
+* ``camera_opencv_pinhole.py``
+* ``camera_ros.py``
+* ``camera_stereoscopic_depth.py``
+* ``camera_tiled.py``
+* ``create_acoustic_basic.py``
+* ``create_camera_basic.py``
+* ``create_camera_depth_sensor.py``
+* ``create_lidar_basic.py``
+* ``create_lidar_with_config_and_variants.py``
+* ``create_radar_basic.py``
+* ``inspect_acoustic_gmo.py``
+* ``inspect_lidar_gmo.py``
+* ``inspect_radar_gmo.py``
+* ``lidar_robot_integration.py``
+* ``resolve_lidar_object_ids.py``
 
 isaacsim.sensors.physics
 ~~~~~~~~~~~~~~~~~~~~~~~~
