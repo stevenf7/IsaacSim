@@ -1,5 +1,5 @@
 [package]
-version = "1.0.0"
+version = "1.0.1"
 category = "Simulation"
 title = "Isaac Sim RTX Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar, RTX Radar & RTX Acoustic."
@@ -11,6 +11,7 @@ readme = "docs/Overview.md"
 preview_image = "data/preview.png"
 icon = "data/icon.png"
 writeTarget.kit = true
+writeTarget.platform = true  # ships platform-specific binaries copied from generic-model-output and sensor-checker target-deps
 
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}

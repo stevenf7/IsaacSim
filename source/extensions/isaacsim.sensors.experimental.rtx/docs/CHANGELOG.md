@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1] - 2026-04-22
+### Fixed
+- Mark extension as platform-specific (`writeTarget.platform = true`) so the registry publishes a separate artifact per platform. Without this, consumers on Linux would pull a Windows-built package containing `.pyd` instead of `.so` from `generic-model-output`/`sensor-checker` (or vice versa) and fail to load.
+
 ## [1.0.0] - 2026-04-06
 ### Added
 - `Radar` authoring class for creating/wrapping OmniRadar prims via `omni.replicator.core.functional.create.omni_radar`
