@@ -15,6 +15,7 @@
 
 """Implementation module for the Isaac Sim asset generation conveyor extension."""
 
+from .conveyor import create_conveyor_belt
 from .extension import Extension  # noqa: F401 (Extension loaded for side effects)
 
-__all__ = []
+__all__ = ["create_conveyor_belt"]

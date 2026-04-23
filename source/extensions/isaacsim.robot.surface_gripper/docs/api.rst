@@ -8,7 +8,7 @@ Python API
 .. autosummary::
     :nosignatures:
 
-    CreateSurfaceGripper
+    create_surface_gripper
     GripperView
     bindings._surface_gripper.SurfaceGripperInterface
 
@@ -16,12 +16,7 @@ Python API
 
 .. API
 
-.. autoclass:: isaacsim.robot.surface_gripper.CreateSurfaceGripper
-    :members:
-    :undoc-members:
-    :inherited-members:
-    :show-inheritance:
-    :exclude-members: do, undo
+.. autofunction:: isaacsim.robot.surface_gripper.create_surface_gripper
 
 .. autoclass:: isaacsim.robot.surface_gripper.bindings._surface_gripper.SurfaceGripperInterface
     :members:

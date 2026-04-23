@@ -50,7 +50,7 @@ class Ros2ClockGraph(MenuHelperWindow):
     Python script used for graph generation.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the ROS2 clock graph window."""
         super().__init__("ROS2 Clock Graph", width=300, height=150)
         self._og_path = "/Graph/ROS_Clock"
@@ -198,7 +198,7 @@ class Ros2GenericPubGraph(MenuHelperWindow):
     The UI includes buttons to access the Python script used for graph generation and links to relevant documentation.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the ROS2 generic publisher graph window."""
         super().__init__("ROS2 Generic Publisher Graph", width=350, height=180)
         self._og_path = "/Graph/ROS_GenericPub"
@@ -483,7 +483,7 @@ class Ros2JointStatesGraph(MenuHelperWindow):
     understand and customize the generated OmniGraph configurations.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the ROS2 joint states graph window."""
         super().__init__("ROS2 Joint States Graph", width=450, height=350)
         self._og_path = "/Graph/ROS_JointStates"
@@ -832,7 +832,7 @@ class Ros2TfPubGraph(MenuHelperWindow):
     publisher nodes for different transform hierarchies.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the ROS2 TF publisher graph window."""
         super().__init__("ROS2 TF Publisher Graph", width=450, height=450)
         self._og_path = "/Graph/ROS_TF"
@@ -1111,7 +1111,7 @@ class Ros2OdometryGraph(MenuHelperWindow):
     the odometry nodes to an existing graph or create a new one.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the ROS2 odometry graph window."""
         super().__init__("ROS2 Odometry Graph", width=450, height=350)
         self._og_path = "/Graph/ROS_Odometry"

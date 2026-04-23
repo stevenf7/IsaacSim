@@ -17,6 +17,7 @@
 
 
 import asyncio
+import typing
 
 import carb
 import omni
@@ -100,7 +101,7 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
             },
         }
 
-    def _request_refresh(self):
+    def _request_refresh(self) -> None:
         """Refreshes the entire property window."""
         selection = omni.usd.get_context().get_selection()
         selected_paths = selection.get_selected_prim_paths()
@@ -118,7 +119,7 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
             notice: The USD notice containing change information.
             stage: The USD stage that was modified.
         """
-        targets = notice.GetChangedInfoOnlyPaths()
+        notice.GetChangedInfoOnlyPaths()
         if self._old_payload != self.on_new_payload(
             self._payload
         ):  # if selection didn't change, check if attribute still exists, and force rebuild if so
@@ -199,7 +200,7 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
         filtered_props = shared_props
         if self._filter.name:
 
-            def display_name(ui_prop):
+            def display_name(ui_prop: typing.Any) -> str:
                 return UsdPropertiesWidgetBuilder.get_display_name(ui_prop.prop_name, ui_prop.metadata)
 
             print([display_name(ui_prop) for ui_prop in shared_props])
@@ -220,7 +221,7 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
         ]
 
         # Sort the filtered properties according to the defined order
-        def get_sort_key(prop):
+        def get_sort_key(prop: typing.Any) -> int:
             try:
                 return property_order.index(prop.prop_name)
             except ValueError:
@@ -265,7 +266,7 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
 
         return props
 
-    def close(self):
+    def close(self) -> None:
         """Closes the gripper for all selected prims."""
         gripper_interface = surface_gripper.acquire_surface_gripper_interface()
         for prim in self._prims:
@@ -273,23 +274,23 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
             gripper_path = prim.GetPath().pathString
 
             # Close the gripper
-            success = gripper_interface.close_gripper(gripper_path)
+            gripper_interface.close_gripper(gripper_path)
 
-    def open(self):
+    def open(self) -> None:
         """Opens the gripper for all selected prims."""
         gripper_interface = surface_gripper.acquire_surface_gripper_interface()
         for prim in self._prims:
             gripper_path = prim.GetPath().pathString
-            success = gripper_interface.open_gripper(gripper_path)
+            gripper_interface.open_gripper(gripper_path)
 
-    def _on_forward_axis_selection(self, item: str):
+    def _on_forward_axis_selection(self, item: str) -> None:
         """Handles forward axis selection changes.
 
         Args:
             item: The selected axis item.
         """
 
-    def _on_coaxial_force_limit_changed(self, value: float):
+    def _on_coaxial_force_limit_changed(self, value: float) -> None:
         """Handles coaxial force limit value changes.
 
         Args:
@@ -297,28 +298,28 @@ class SurfaceGripperPropertiesWidget(UsdPropertiesWidget):
         """
         print("Coaxial Force Limit Changed was called!", value)
 
-    def _on_grip_distance_changed(self, value: float):
+    def _on_grip_distance_changed(self, value: float) -> None:
         """Handles changes to the grip distance value.
 
         Args:
             value: The new grip distance value.
         """
 
-    def _on_max_grip_distance_changed(self, value: float):
+    def _on_max_grip_distance_changed(self, value: float) -> None:
         """Handles changes to the maximum grip distance value.
 
         Args:
             value: The new maximum grip distance value.
         """
 
-    def _on_retry_interval_changed(self, value: float):
+    def _on_retry_interval_changed(self, value: float) -> None:
         """Handles changes to the retry interval value.
 
         Args:
             value: The new retry interval value.
         """
 
-    def _on_shear_force_limit_changed(self, value: float):
+    def _on_shear_force_limit_changed(self, value: float) -> None:
         """Handles changes to the shear force limit value.
 
         Args:

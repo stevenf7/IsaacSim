@@ -4,17 +4,19 @@ The isaacsim.asset.gen.conveyor extension provides utilities for authoring and s
 
 ## Key Components
 
-### Python Command — CreateConveyorBelt
+### Python API — create_conveyor_belt
 
-The `CreateConveyorBelt` command creates an Action Graph containing the IsaacConveyor node and wires it to a target rigid body prim. If the selected prim does not already have a rigid body API, the command applies one.
+The `create_conveyor_belt` function creates an Action Graph containing the IsaacConveyor node and wires it to a target rigid body prim. If the selected prim does not already have a rigid body API, the function applies one.
 
 ```python
-result, prim = omni.kit.commands.execute(
-    "CreateConveyorBelt",
-    prim_name="ConveyorActionGraph",
-    conveyor_prim="/World/ConveyorBeltRigidBody",
-)
+from isaacsim.asset.gen.conveyor import create_conveyor_belt
+
+stage = omni.usd.get_context().get_stage()
+conveyor_prim = stage.GetPrimAtPath("/World/ConveyorBeltRigidBody")
+conveyor_node = create_conveyor_belt(stage, conveyor_prim, prim_name="ConveyorActionGraph")
 ```
+
+> **Deprecated:** The `CreateConveyorBelt` Kit command is deprecated. Use `create_conveyor_belt(stage, conveyor_prim)` directly instead.
 
 ### C++ Plugin
 

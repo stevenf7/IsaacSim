@@ -78,7 +78,7 @@ def singleton(class_: type) -> typing.Callable:
     """
     instances: dict[type, typing.Any] = {}
 
-    def getinstance(*args, **kwargs):
+    def getinstance(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
         if class_ not in instances:
             instances[class_] = class_(*args, **kwargs)
         return instances[class_]

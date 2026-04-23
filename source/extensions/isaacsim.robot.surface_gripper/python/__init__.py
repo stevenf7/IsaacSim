@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# there is no extension, so we just import bindings
 from .bindings import _surface_gripper  # noqa: F401
-from .impl import *
+from .impl import Extension  # noqa: F401 (loaded for Kit extension discovery)
+from .impl import GripperView, create_surface_gripper
+
+__all__ = ["GripperView", "create_surface_gripper"]

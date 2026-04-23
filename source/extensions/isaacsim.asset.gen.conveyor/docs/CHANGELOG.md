@@ -1,4 +1,12 @@
 # Changelog
+## [1.2.0] - 2026-04-21
+### Added
+- Add `create_conveyor_belt` public Python API as a direct replacement for the Kit command
+### Deprecated
+- Deprecate `CreateConveyorBelt` Kit command in favor of `create_conveyor_belt()`
+### Changed
+- Clean up `__init__.py` exports to only expose public API
+
 ## [1.1.1] - 2026-04-17
 ### Fixed
 - Remove debug `print(self._prim_path)` left in `CreateConveyorBelt.do()` production code

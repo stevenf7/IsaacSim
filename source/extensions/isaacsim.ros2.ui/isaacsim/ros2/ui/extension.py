@@ -16,7 +16,10 @@
 """Extension that provides ROS 2 shortcuts menu for creating ROS 2-related assets in the stage."""
 
 
+from __future__ import annotations
+
 from functools import partial
+from typing import Any, Optional
 
 import carb
 import omni.ext
@@ -31,10 +34,10 @@ from .og_rtx_sensors import Ros2CameraGraph, Ros2RtxLidarGraph
 from .og_utils import Ros2ClockGraph, Ros2GenericPubGraph, Ros2JointStatesGraph, Ros2OdometryGraph, Ros2TfPubGraph
 
 
-class Ros2ShortcutsMenuExtension(omni.ext.IExt, MenuHelperExtensionFull):
+class Extension(omni.ext.IExt, MenuHelperExtensionFull):
     """Extension providing ROS 2 OmniGraph shortcut menu items."""
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the extension."""
         self._ext_id = ext_id
         carb.log_info("ROS2 Shortcuts Menu startup")
@@ -152,7 +155,9 @@ class Ros2ShortcutsMenuExtension(omni.ext.IExt, MenuHelperExtensionFull):
         # ]
         # add_layout(self.__ros_menu_layout)
 
-    def create_asset(self, usd_path, stage_path, camera_position=None, camera_target=None):
+    def create_asset(
+        self, usd_path: str, stage_path: str, camera_position: Optional[Any] = None, camera_target: Optional[Any] = None
+    ) -> None:
         """Create a USD asset reference on the stage."""
         self._assets_root_path = get_assets_root_path()
         if self._assets_root_path is None:
@@ -172,7 +177,7 @@ class Ros2ShortcutsMenuExtension(omni.ext.IExt, MenuHelperExtensionFull):
         if camera_position is not None and camera_target is not None:
             ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=camera_position, target=camera_target)
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up resources when the extension shuts down."""
         carb.log_info("ROS2 Shortcuts Menu shutdown")
         self.menu_shutdown()
@@ -185,48 +190,3 @@ class Ros2ShortcutsMenuExtension(omni.ext.IExt, MenuHelperExtensionFull):
         action_registry.deregister_action(self._ext_id, "create_iw_hub_ros")
         action_registry.deregister_action(self._ext_id, "open_content_browser_ros2")
         # remove_layout(self.__ros_menu_layout)
-
-    #     if self.window_handle:
-    #         self.window_handle.visible = False
-
-    # def _open_clock(self):
-    #     if self.window_handle:
-    #         self.window_handle.visible = False
-    #     clock_graph = Ros2ClockGraph()
-    #     self.window_handle = clock_graph.create_clock_graph()
-
-    # def _open_rtf(self):
-    #     if self.window_handle:
-    #         self.window_handle.visible = False
-    #     clock_graph = Ros2GenericPubGraph()
-    #     self.window_handle = clock_graph.create_generic_pub_graph()
-
-    # def _open_camera_sensor(self):
-    #     if self.window_handle:
-    #         self.window_handle.visible = False
-    #     camera_graph = Ros2CameraGraph()
-    #     self.window_handle = camera_graph.create_camera_graph()
-
-    # def _open_rtx_lidar_sensor(self):
-    #     if self.window_handle:
-    #         self.window_handle.visible = False
-    #     lidar_graph = Ros2RtxLidarGraph()
-    #     self.window_handle = lidar_graph.create_lidar_graph()
-
-    # def _open_joint_states_pubsub(self):
-    #     if self.window_handle:
-    #         self.window_handle.visible = False
-    #     js_graph = Ros2JointStatesGraph()
-    #     self.window_handle = js_graph.create_jointstates_graph()
-
-    # def _open_pub_tf(self):
-    #     if self.window_handle:
-    #         self.window_handle.visible = False
-    #     tf_pub_graph = Ros2TfPubGraph()
-    #     self.window_handle = tf_pub_graph.create_tf_pub_graph()
-
-    # def _open_odometry_publisher(self):
-    #     if self.window_handle:
-    #         self.window_handle.visible = False
-    #     odom_pub_graph = Ros2OdometryGraph()
-    #     self.window_handle = odom_pub_graph.create_odometry_graph()

@@ -5,8 +5,12 @@ Public command API for module **isaacsim.asset.importer.mjcf**:
 - [MJCFCreateImportConfig](#mjcfcreateimportconfig)
 
 
-## MJCFCreateAsset
-This command parses and imports a given mjcf file.
+## MJCFCreateAsset (deprecated)
+
+.. deprecated::
+   Use ``MJCFImporter()`` directly instead.
+
+This command parses and imports a given mjcf file. It is deprecated and will be removed in a future version.
 
 ### Arguments
 - mjcf_path
@@ -14,43 +18,9 @@ This command parses and imports a given mjcf file.
 - prim_path
 - dest_path
 
-### Usage
+## MJCFCreateImportConfig (deprecated)
 
-```python
-import omni.kit.commands
-from isaacsim.asset.importer.mjcf import _mjcf
+.. deprecated::
+   Use ``MJCFImporterConfig()`` directly instead.
 
-# Create import configuration
-import_config = omni.kit.commands.execute("MJCFCreateImportConfig")
-
-# Import MJCF file to USD stage
-mjcf_path = "/path/to/your/robot.xml"
-prim_path = "/World/Robot"
-dest_path = "/path/to/output/robot.usd"
-
-asset_path = omni.kit.commands.execute(
-    "MJCFCreateAsset",
-    mjcf_path=mjcf_path,
-    import_config=import_config,
-    prim_path=prim_path,
-    dest_path=dest_path
-)
-```
-
-## MJCFCreateImportConfig
-Returns an ImportConfig object that can be used while parsing and importing.
-Should be used with the `MJCFCreateAsset` command
-
-Returns:
-:obj:`isaacsim.asset.importer.mjcf._mjcf.ImportConfig`: Parsed MJCF stored in an internal structure.
-
-
-### Usage
-
-```python
-import omni.kit.commands
-
-# Create an MJCF import configuration
-config = omni.kit.commands.execute("MJCFCreateImportConfig")
-```
-
+Returns an ImportConfig object that can be used while parsing and importing. It is deprecated and will be removed in a future version.

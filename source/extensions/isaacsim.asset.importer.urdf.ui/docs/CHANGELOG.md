@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.2] - 2026-04-21
+### Changed
+- Rename `test_command.py` to `test_commands.py` for consistency
+
 ## [1.3.1] - 2026-04-20
 ### Changed
 - Updated treeview identifier to filebrowser_grid_view

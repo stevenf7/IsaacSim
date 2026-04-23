@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.1.4] - 2026-04-21
+### Changed
+- Replace `omni.kit.commands.execute("CreateSurfaceGripper")` call sites with direct `create_surface_gripper()` API
+
 ## [3.1.3] - 2026-03-26
 ### Changed
 - Updated Python bindings import paths for consistency

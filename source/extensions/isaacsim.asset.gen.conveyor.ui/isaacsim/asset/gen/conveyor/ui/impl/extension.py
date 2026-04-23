@@ -24,8 +24,8 @@ import weakref
 import carb
 import omni.ext
 import omni.kit.actions
-import omni.kit.commands
 import omni.ui as ui
+from isaacsim.asset.gen.conveyor import create_conveyor_belt
 from isaacsim.asset.gen.conveyor.bindings._isaacsim_asset_gen_conveyor import acquire_interface as _acquire
 from isaacsim.asset.gen.conveyor.bindings._isaacsim_asset_gen_conveyor import release_interface as _release
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
@@ -177,13 +177,21 @@ class Extension(omni.ext.IExt):
         gc.collect()
 
     def _add_conveyor(self, *args: object, **kwargs: object) -> None:
-        """Create a conveyor belt prim via the ``CreateConveyorBelt`` command.
+        """Create a conveyor belt prim using the create_conveyor_belt API.
 
         Args:
             *args: Unused positional arguments (Kit callback compatibility).
             **kwargs: Unused keyword arguments (Kit callback compatibility).
-
-        Note:
-            Arguments are not forwarded to ``execute``; only the command name is used.
         """
-        _, prim = omni.kit.commands.execute("CreateConveyorBelt")
+        stage = omni.usd.get_context().get_stage()
+        selection = omni.usd.get_context().get_selection()
+        selected_paths = selection.get_selected_prim_paths()
+        if selected_paths:
+            conveyor_prim = stage.GetPrimAtPath(selected_paths[0])
+        else:
+            default_prim = stage.GetDefaultPrim()
+            if default_prim and default_prim.IsValid():
+                conveyor_prim = default_prim
+            else:
+                conveyor_prim = stage.GetPrimAtPath("/")
+        create_conveyor_belt(stage, conveyor_prim)

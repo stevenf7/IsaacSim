@@ -296,7 +296,7 @@ The Surface Gripper prim is used to control the suction action of the gripper. Y
         .. literalinclude:: ../snippets/robot_simulation/ext_isaacsim_robot_surface_gripper/walkthrough_create_surface_gripper_prim.py
             :language: python
 
-        ``CreateSurfaceGripper`` is the same command the UI uses when you pick **Create** > **Isaac** > **Robots** > **Surface Gripper**; it picks a free prim name such as ``SurfaceGripper`` or ``SurfaceGripper_01``. For a lower-level variant that calls ``robot_schema.CreateSurfaceGripper`` directly, see :ref:`isaac_surface_grippers_code_snippets`.
+        ``create_surface_gripper`` is the same function the UI uses when you pick **Create** > **Isaac** > **Robots** > **Surface Gripper**; it picks a free prim name such as ``SurfaceGripper`` or ``SurfaceGripper_01``. For lower-level control, call ``robot_schema.CreateSurfaceGripper`` directly — see :ref:`isaac_surface_grippers_code_snippets`.
 
     .. tab-item:: OmniGraph
 

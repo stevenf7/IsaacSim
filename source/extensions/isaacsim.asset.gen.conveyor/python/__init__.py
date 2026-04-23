@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .commands import *
+from . import commands as _commands  # noqa: F401 (triggers Kit command registration)
 from .impl import Extension  # noqa: F401 (loaded for Kit extension discovery)
+from .impl import create_conveyor_belt
 
-__all__ = ["CreateConveyorBelt"]
+__all__ = ["create_conveyor_belt"]
