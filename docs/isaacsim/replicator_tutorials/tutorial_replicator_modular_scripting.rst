@@ -15,9 +15,16 @@ Modular Behavior Scripting
 Overview
 --------
 
-This tutorial introduces the ``isaacsim.replicator.behavior`` extension, providing multiple examples of modular behavior scripts in |isaac-sim_short| Replicator for synthetic data generation (SDG). By utilizing `Behavior Scripts (Python Scripting Component) <https://docs.omniverse.nvidia.com/extensions/latest/ext_python-scripting-component/user_manual.html>`_, reusable, shareable, and easily modifiable behaviors can be developed and attached to prims in a USD stage, acting as randomizers or custom smart-asset behaviors.
+This tutorial introduces the ``isaacsim.replicator.behavior`` extension and walks through its modular behavior scripts for |isaac-sim_short| Replicator synthetic data generation (SDG). Built on top of the `Python Scripting Component <https://docs.omniverse.nvidia.com/extensions/latest/ext_python-scripting-component/user_manual.html>`_, these behaviors attach directly to prims in a USD stage and act as randomizers or custom smart-asset behaviors that are reusable, shareable, and easy to modify.
 
-The behavior script examples can be found under:
+The behavior functionality ships as two extensions:
+
+* ``isaacsim.replicator.behavior`` — the core extension containing the behavior scripts. It has no UI dependency and runs in headless mode.
+* ``isaacsim.replicator.behavior.ui`` — the UI extension that renders exposed variables in the **Property** panel.
+
+The two extensions communicate through a carb event, so the core can run without the UI loaded. See :ref:`core_and_ui_extension_split` for details.
+
+Find the bundled behavior scripts under:
 
 ``/exts/isaacsim.replicator.behavior/isaacsim/replicator/behavior/behaviors/*``
 
@@ -46,7 +53,7 @@ After completing this tutorial, you will understand how to:
 Prerequisites
 #############
 
-It is recommended that you have a basic understanding of the following concepts before proceeding with the tutorial:
+Before starting, make sure you are familiar with:
 
 * USD and |isaac-sim_short| APIs for creating and manipulating USD stages
 * `Python Scripting Component <https://docs.omniverse.nvidia.com/extensions/latest/ext_python-scripting-component/user_manual.html>`_ in |isaac-sim_short|
@@ -54,6 +61,10 @@ It is recommended that you have a basic understanding of the following concepts 
 * :doc:`omni.replicator <extensions:ext_replicator>` and its |isaac-sim_short| :ref:`tutorials <isaac_sim_app_tutorial_replicator_getting_started>` for synthetic data generation
 * :doc:`Writers <extensions:ext_replicator/writer_examples>` and :doc:`annotators <extensions:ext_replicator/annotators_details>` for data capture
 * Running scripts using the :doc:`Script Editor <extensions:ext_script-editor>` to setup and run pipelines
+
+.. note::
+
+    To attach behavior scripts to prims from the UI (**Property** panel > **Add** > **Python Scripting**), enable the ``omni.behavior.scripting.ui`` extension from **Window** > **Extensions**. This extension ships the Python Scripting Component UI and is not enabled by default. The core behaviors in ``isaacsim.replicator.behavior`` run without it, which is useful for headless SDG pipelines.
 
 Demonstration
 ##############
@@ -68,31 +79,52 @@ The :ref:`example section <isaac_sim_app_tutorial_replicator_modular_scripting_e
     :height: 230px
     :alt: Data from the behavior script-based SDG
 
-Behavior Scripts
+Behavior scripts
 ################
 
-**Behavior Scripts** are modular Python scripts attached to prims in a USD stage. By default, they include template code that responds to timeline events such as start, pause, stop, and update. These scripts define specific behaviors or randomizations applied to prims during simulation or data generation. 
+**Behavior scripts** are modular Python scripts attached to prims in a USD stage. By default, they respond to timeline events — start, pause, stop, and update — and define the randomization or custom logic applied to the prim during simulation or data generation.
 
-Attaching scripts directly to prims integrates the behaviors into the USD, making them modular because scripts can be easily attached, detached, or swapped on prims without altering core logic. They are sharable because behaviors can be embedded within assets and shared across different projects or stages. 
+Attaching scripts directly to prims embeds the behavior in the USD itself and gives you:
 
-They are configurable because variables can be exposed through USD attributes for customization without modifying the script code. Additionally, they are persistent; because scripts reside on the prims, they persist with the USD stage and can be versioned and managed accordingly.
-
-The advantages of behavior scripts include reusability, allowing them to be written once and reused across multiple prims or projects. They offer encapsulation by containing behavior logic within the prims, reducing external dependencies. They provide interactivity because parameters can be adjusted through the UI, enabling modifications without programming. Finally, they ensure integration by becoming an integral part of the asset, which maintains consistency across different environments.
+* **Modularity.** Attach, detach, or swap scripts on a prim without changing core logic.
+* **Shareability.** Embed behaviors within assets and reuse them across projects or stages.
+* **Configurability.** Expose variables as USD attributes and edit them without modifying source.
+* **Persistence.** Scripts live on the prim and travel with the stage, so you can version them alongside it.
+* **Reusability and encapsulation.** Write a behavior once and reuse it across prims and scenes with minimal external dependencies.
 
 .. figure:: /images/isim_4.5_replicator_tut_gui_behavior_scripts_variables.jpg
     :align: center
     :alt: Behavior Scripts with Exposed Variables
 
-Exposing Variables Through USD Attributes
+Exposing variables through USD attributes
 #########################################
 
-To enhance flexibility and accessibility, the input parameters in the provided behavior scripts examples can be exposed as USD attributes on prims. This approach allows you to modify behavior parameters directly from the UI without altering the script code.
+Each behavior script exposes its input parameters as namespaced USD attributes on the prim that carries the script. This lets you edit behavior parameters directly from the **Property** panel — or programmatically through the USD API — without modifying the script source.
 
-The benefits of exposing variables include customization, interactivity, and consistency. Parameters such as target locations, ranges, or other settings can be adjusted per prim instance, using the UI to tweak behaviors and observe immediate effects, while maintaining a uniform interface for modifying behaviors across different scripts.
+Exposing variables as USD attributes provides three benefits:
 
-The exposed variables are implemented using the USD API to create custom attributes with appropriate namespaces on the prim. These attributes are then read by the behavior scripts during execution to adjust their logic accordingly.
+* **Customization.** Tune parameters such as target locations, ranges, or seeds per prim instance.
+* **Interactivity.** Edit values in the UI and observe the effect on the next update.
+* **Consistency.** Every behavior presents the same editing interface regardless of its internal logic.
 
-The UI implementation for exposing the variables is done in ``isaacsim.replicator.behavior.ui``. It extends the **Property** panel of the selected prims in the stage with a custom section for the exposed variables. The UI is automatically generated based on the exposed variables defined in the behavior script, displaying them as editable fields in the generated widget.
+The scripts use the USD API to create custom attributes under a shared namespace (``exposedVar:<behaviorNamespace>:<attrName>``) and read them back during execution to drive their logic.
+
+.. _core_and_ui_extension_split:
+
+Core and UI extension split
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The behavior functionality is split across two extensions:
+
+* ``isaacsim.replicator.behavior`` — the **core** extension. It defines the behavior scripts, creates and removes the exposed USD attributes, and has no UI dependency. This lets you run the behaviors in headless mode (for example, during automated SDG pipelines).
+* ``isaacsim.replicator.behavior.ui`` — the **UI** extension. It registers an ``ExposedVariablesPropertyWidget`` with the **Property** panel that automatically renders the exposed variables as editable fields.
+
+The two extensions communicate through a single carb event, ``isaacsim.replicator.behavior.EXPOSED_VARS_CHANGED``:
+
+1. The core extension dispatches the event whenever it creates or removes exposed variables on a prim.
+2. The UI extension subscribes to the event at startup and rebuilds the **Property** panel when it fires.
+
+This event-based decoupling allows the core extension to run without the UI loaded, and the UI extension to refresh on demand without the core importing any UI modules.
 
 **Example of Exposed Variables Definition:**
 
@@ -114,16 +146,18 @@ The UI implementation for exposing the variables is done in ``isaacsim.replicato
         # Additional variables...
     ]
 
-Custom Event-Based Behavior Scripts
+Custom event-based behavior scripts
 ###################################
 
-While behavior scripts are timeline-based by default, some behaviors need to operate independently of the simulation timeline. **Event-based scripting** allows behaviors to be triggered by `custom events <https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest/guide/events.html>`_, providing greater control over when and how they execute. This is achieved by skipping the default behavior functions and instead listening to and publishing custom events.
+Timeline-driven behaviors are convenient, but some workflows need to run independently of the simulation clock — for example, pre-simulation setup, one-shot scene preparation, or sequences that must complete before data capture begins.
 
-Custom events are defined and managed within Omniverse using an event bus system, enabling scripts to publish or subscribe to these events and facilitating communication between different components or behaviors.
+**Event-based scripting** lets a behavior skip the default timeline hooks and instead publish and subscribe to `custom events <https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest/guide/events.html>`_ on the Omniverse event bus. This gives you:
 
-Event-based scripting offers flexibility by allowing customization of when behaviors are executed, independent of the simulation timeline. It enhances modularity by decoupling behaviors from the core simulation loop, making them more modular. Additionally, it improves scalability by managing complex workflows through orchestrating multiple behaviors via events.
+* **Flexibility.** Trigger behaviors on demand, decoupled from the simulation timeline.
+* **Modularity.** Orchestrate complex workflows by chaining behaviors through events.
+* **Performance.** Avoid per-frame work by running behaviors only when triggered.
 
-For example, the `volume_stack_randomizer.py` script randomizes the stacking of objects by simulating physics before the simulation starts. By using custom events, behaviors can be triggered before the simulation, execution flow can be controlled by starting, stopping, or resetting behaviors based on specific events rather than timeline updates, and performance can be enhanced by avoiding unnecessary computations during each simulation frame through decoupling certain behaviors.
+The ``volume_stack_randomizer.py`` script illustrates this pattern. It uses custom events to drop, stack, and settle assets using physics *before* the timeline starts, so the data-capture phase runs against a deterministic initial state.
 
 
 Script Examples
@@ -275,7 +309,7 @@ The ``location_randomizer.py`` script randomizes the location of prims within sp
 Rotation Randomizer
 ###################
 
-The ``rotation_randomizer_1.py`` script applies random rotations to prims during runtime, enhancing orientation diversity in synthetic datasets.
+The ``rotation_randomizer.py`` script applies random rotations to prims during runtime, enhancing orientation diversity in synthetic datasets.
 
 .. tab-set::
 
@@ -368,7 +402,7 @@ The ``rotation_randomizer_1.py`` script applies random rotations to prims during
             <details open>
             <summary>Step-by-Step Configuration</summary>
 
-        1. **Attach Script**: Add `rotation_randomizer_1.py` to your target prim
+        1. **Attach Script**: Add `rotation_randomizer.py` to your target prim
         2. **Set Rotation Bounds**: Configure `range:minRotation` and `range:maxRotation`
         3. **Enable Children**: Set `includeChildren` to `True` for hierarchical rotation
         4. **Set Interval**: Use `interval` to control update frequency

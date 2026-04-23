@@ -22,7 +22,6 @@ from typing import Any
 import carb
 import numpy as np
 import omni.kit.commands
-import omni.kit.window.property
 import omni.usd
 from isaacsim.replicator.behavior.global_variables import EXPOSED_ATTR_NS
 from isaacsim.replicator.behavior.utils.behavior_utils import (
@@ -89,16 +88,12 @@ class LightRandomizer(BehaviorScript):
         # Expose the variables as USD attributes
         create_exposed_variables(self.prim, EXPOSED_ATTR_NS, self.BEHAVIOR_NS, self.VARIABLES_TO_EXPOSE)
 
-        # Refresh the property windows to show the exposed variables
-        omni.kit.window.property.get_window().request_rebuild()
-
     def on_destroy(self) -> None:
         """Called when the script is unassigned from a prim."""
         self._reset()
         # Exposed variables should be removed if the script is no longer assigned to the prim
         if check_if_exposed_variables_should_be_removed(self.prim, __file__):
             remove_exposed_variables(self.prim, EXPOSED_ATTR_NS, self.BEHAVIOR_NS, self.VARIABLES_TO_EXPOSE)
-            omni.kit.window.property.get_window().request_rebuild()
 
     def on_play(self) -> None:
         """Called when `play` is pressed."""
@@ -129,13 +124,18 @@ class LightRandomizer(BehaviorScript):
                 self._update_counter = 0
 
     def _setup(self) -> None:
-        # Fetch the exposed attributes
+        # Fetch the exposed attributes (re-read on every setup so runtime edits take effect on the next apply)
         include_children = self._get_exposed_variable("includeChildren")
         self._interval = self._get_exposed_variable("interval")
         self._min_color = self._get_exposed_variable("range:minColor")
         self._max_color = self._get_exposed_variable("range:maxColor")
         self._intensity_range = self._get_exposed_variable("range:intensity")
         seed = self._get_exposed_variable("seed")
+
+        # Skip the one-shot setup if already initialized (e.g. a play/pause/play loop). Re-caching here
+        # would store the current randomized color/intensity as the "initial" and break restoration on stop.
+        if self._valid_prims:
+            return
 
         # Initialize the random number generator (use seed if valid, otherwise non-deterministic)
         if self._rng is None:

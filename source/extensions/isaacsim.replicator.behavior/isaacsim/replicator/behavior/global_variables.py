@@ -25,3 +25,7 @@ EXPOSED_ATTR_NS = "exposedVar"
 
 # The scope name to keep the created assets in
 SCOPE_NAME = "/Behaviors"
+
+# Event dispatched when exposed USD variables are created or removed. The UI extension subscribes to this
+# event to refresh the property window. Using an event keeps the core extension decoupled from any UI module.
+EXPOSED_VARS_CHANGED_EVENT = f"{EXTENSION_NAME}.EXPOSED_VARS_CHANGED"
