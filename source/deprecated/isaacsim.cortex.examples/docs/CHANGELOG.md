@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.0] - 2026-04-23
+### Added
+- Move the `isaacsim.examples.interactive.base_sample` module to this extension
+
 ## [0.1.1] - 2026-04-17
 ### Fixed
 - `CortexBase.load_world_async` now calls `setup_scene()` when switching examples with an existing CortexWorld
