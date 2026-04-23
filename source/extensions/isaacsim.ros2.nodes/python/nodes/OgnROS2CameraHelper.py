@@ -26,12 +26,12 @@ import omni.syntheticdata
 from isaacsim.core.nodes import BaseWriterNode
 from isaacsim.ros2.core import collect_namespace
 from isaacsim.ros2.nodes.impl.ros2_common import (
-    SRTX_SENSOR_SET,
     USE_SRTX_SETTING,
     CompressedImageManager,
     _start_or_extend_continuous_capture,
     cleanup_srtx_state,
     ensure_render_var_on_product,
+    get_srtx_sensor_set_name,
 )
 from pxr import Usd, UsdRender
 
@@ -177,7 +177,7 @@ class OgnROS2CameraHelper:
             carb.log_error(f"No SRTX instance for stage '{usd_scene}'")
             return False
 
-        sensor_set_name = SRTX_SENSOR_SET
+        sensor_set_name = get_srtx_sensor_set_name()
         sensor_name = render_product_path.rsplit("/", 1)[-1]
         rp_prim = stage.GetPrimAtPath(render_product_path)
         if rp_prim and rp_prim.IsValid():

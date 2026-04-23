@@ -31,8 +31,39 @@ from pxr import Sdf, Usd
 # Nodes extension constants
 BRIDGE_NAME = "isaacsim.ros2.bridge"
 BRIDGE_PREFIX = "ROS2"
-SRTX_SENSOR_SET = "default-sensor-set"
 USE_SRTX_SETTING = "/exts/omni.replicator.srtx/enabled"
+
+# Carb setting that lets the host application (e.g. the Mega Isaac Sim bridge)
+# override the SRTX sensor-set name used by the ROS 2 OmniGraph helpers.
+#
+# In multi-bridge deployments (Mega) every bridge process must publish a
+# DIFFERENT name, otherwise the bridges' SensorSet registrations clobber each
+# other on the shared SRTX runtime stage and only the last writer wins. See
+# `framework/services/extensions/isaac.mega.bridge/source/MegaFrontendClient.cpp`
+# in the mega-dev repo for the producer side.
+SRTX_SENSOR_SET_NAME_SETTING = "/exts/omni.replicator.srtx/sensorSetName"
+
+
+def get_srtx_sensor_set_name() -> str:
+    """Return the SRTX sensor-set name to use for ROS 2 OmniGraph publishers.
+
+    Reads the carb setting :data:`SRTX_SENSOR_SET_NAME_SETTING` if present and
+    non-empty; falls back to ``"default-sensor-set"`` (preserves the historical
+    behavior for standalone Isaac Sim use). The host application is responsible
+    for ensuring the value is valid for the SRTX server (lowercase letters,
+    digits, hyphens, length 4-63, first char letter, last char letter/digit).
+    """
+    default = "default-sensor-set"
+    settings = carb.settings.get_settings()
+    if settings is not None:
+        try:
+            override = settings.get(SRTX_SENSOR_SET_NAME_SETTING)
+        except Exception:
+            override = None
+        if isinstance(override, str) and override:
+            return override
+    return default
+
 
 NON_IMAGE_COMPRESSION_FALLBACK = "blosc"
 

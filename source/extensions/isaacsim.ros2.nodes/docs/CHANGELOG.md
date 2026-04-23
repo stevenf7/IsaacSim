@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.16.2] - 2026-04-22
+### Fixed
+- Make the SRTX sensor-set name used by `OgnROS2CameraHelper` and `OgnROS2RtxLidarHelper` overridable via the `/exts/omni.replicator.srtx/sensorSetName` carb setting. Previously both helpers hard-coded `"default-sensor-set"`, which caused every Isaac Sim bridge in a Mega simulation to register the same sensor-set ID against the shared SRTX runtime stage, clobbering each other and causing `triggerSensorSet ... not found` / `requestCaptureFrames: timed out waiting for previous capture` cascades. The helper `get_srtx_sensor_set_name()` reads the override and falls back to the previous default for standalone Isaac Sim use. The Mega Isaac Sim bridge publishes a per-bridge unique value derived from `<robotStackId>-<robotName>`.
+
 ## [1.16.1] - 2026-04-21
 ### Changed
 - Replaced `omni.kit.commands` raycast sensor creation in test helpers with `RaycastSensor.create()` class method
