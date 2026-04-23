@@ -1,6 +1,6 @@
 import math
 
-import omni.kit.commands
+from isaacsim.sensors.experimental.physics import RaycastSensor
 from pxr import Gf
 
 # Generate rays for a rotating physics raycast sensor with time offsets.
@@ -27,10 +27,8 @@ for ai in range(azimuth_steps):
         directions.append([dx, dy, dz])
         time_offsets.append(t_offset)
 
-success, sensor_prim = omni.kit.commands.execute(
-    "IsaacSensorExperimentalCreateRaycastSensor",
-    path="/Rotating_Physics_Raycast_Sensor",
-    parent="/World/Sensors",
+sensor = RaycastSensor.create(
+    "/World/Sensors/Rotating_Physics_Raycast_Sensor",
     min_range=0.4,
     max_range=100.0,
     ray_origins=origins,

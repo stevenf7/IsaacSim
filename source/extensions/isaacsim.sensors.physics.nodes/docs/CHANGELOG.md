@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.1] - 2026-04-21
+### Changed
+- Replaced `omni.kit.commands` sensor creation in OGN tests with `ContactSensor.create()` class method
+
 ## [1.5.0] - 2026-04-17
 ### Added
 - Add Isaac Read Raycast Sensor OmniGraph node

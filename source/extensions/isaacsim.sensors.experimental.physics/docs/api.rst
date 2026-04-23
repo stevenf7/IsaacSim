@@ -5,15 +5,6 @@ Python API
 
 .. currentmodule:: isaacsim.sensors.experimental.physics
 
-.. rubric:: *Commands*
-.. autosummary::
-    :nosignatures:
-
-    IsaacSensorExperimentalCreatePrim
-    IsaacSensorExperimentalCreateContactSensor
-    IsaacSensorExperimentalCreateImuSensor
-    IsaacSensorExperimentalCreateRaycastSensor
-
 .. rubric:: *Sensors*
 .. autosummary::
     :nosignatures:
@@ -28,39 +19,6 @@ Python API
 |
 
 .. API
-
-Commands
-^^^^^^^^
-
-.. autoclass:: isaacsim.sensors.experimental.physics.IsaacSensorExperimentalCreatePrim
-    :members:
-    :undoc-members:
-    :inherited-members:
-    :show-inheritance:
-    :exclude-members: do, undo
-
-.. autoclass:: isaacsim.sensors.experimental.physics.IsaacSensorExperimentalCreateContactSensor
-    :members:
-    :undoc-members:
-    :inherited-members:
-    :show-inheritance:
-    :exclude-members: do, undo
-
-.. autoclass:: isaacsim.sensors.experimental.physics.IsaacSensorExperimentalCreateImuSensor
-    :members:
-    :undoc-members:
-    :inherited-members:
-    :show-inheritance:
-    :exclude-members: do, undo
-
-.. autoclass:: isaacsim.sensors.experimental.physics.IsaacSensorExperimentalCreateRaycastSensor
-    :members:
-    :undoc-members:
-    :inherited-members:
-    :show-inheritance:
-    :exclude-members: do, undo
-
-|
 
 Sensors
 ^^^^^^^

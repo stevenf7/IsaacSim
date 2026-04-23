@@ -1,5 +1,5 @@
 [package]
-version = "1.7.3"
+version = "1.7.4"
 category = "Simulation"
 title = "ROS 2 Core"
 description = "The ROS 2 core extension containing backend libraries required to run the ROS 2 bridge."
@@ -21,7 +21,6 @@ writeTarget.platform = true
 "isaacsim.core.simulation_manager" = {}
 "isaacsim.robot.schema" = {}
 "isaacsim.sensors.camera" = {}
-"isaacsim.sensors.physx" = {}
 "isaacsim.sensors.rtx" = {}
 "isaacsim.storage.native" = {}
 

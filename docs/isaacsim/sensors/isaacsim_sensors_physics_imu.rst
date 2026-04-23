@@ -131,26 +131,26 @@ Creating and Modifying the IMU
 
 There are two ways to create an IMU Sensor in Python:
 
-* using a command
-* using the wrapper class 
+* using the ``IMUSensor.create()`` class method
+* using the ``IMUSensor`` wrapper class constructor directly
  
 This section provides snippets to be executed using standalone Python; these snippets are intended as a references, and must be modified to suit your purposes. The following snippet adds a ground plane, cube prim, and physics scene to an |isaac-sim_short| scene, which are required for the reference snippets further below to work correctly.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/creating_and_modifying_the_imu.py
     :language: python
 
-Using Python Command
+Using the Python API
 ####################
 
-You can add an IMU to the cube prim created above using the ``IsaacSensorCreateImuSensor`` command, as demonstrated in the following snippet. The only required argument is the parent path; the remaining arguments are optional.
+You can add an IMU to the cube prim created above using ``IMUSensor.create()``, as demonstrated in the following snippet. The path must include the parent prim path; the remaining arguments are optional.
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/using_python_command.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/using_python_api.py
     :language: python
 
 Using Python Wrapper
 ####################
 
-You can add an IMU to the cube prim, created above, using the ``isaacsim.sensors.physics.IMUSensor`` Python wrapper class, as demonstrated in the following snippet. The benefit of using the wrapper class over the command is that it comes with additional helper functions to set the IMU sensor properties and retrieve sensor data.
+You can also add an IMU to the cube prim, created above, using the ``IMUSensor`` constructor directly when wrapping an existing sensor prim, as demonstrated in the following snippet. The wrapper class provides additional helper functions to set the IMU sensor properties and retrieve sensor data.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/using_python_wrapper.py
     :language: python

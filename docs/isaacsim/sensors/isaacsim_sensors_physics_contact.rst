@@ -130,12 +130,12 @@ The contact sensor will be attached to the latter.
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/creating_and_modifying_the_contact_sensor.py
     :language: python
 
-Using Python Command
+Using the Python API
 ####################
 
-Contact sensors can be created with Python using the ``IsaacSensorCreateContactSensor`` command, with available parameters to set, specified below, with default values. The only required parameter is the parent path.
+Contact sensors can be created with Python using ``ContactSensor.create()``, with available parameters to set, specified below, with default values. The path must include the parent prim path.
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/using_python_command.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/using_python_api.py
     :language: python
 
 Using Python Wrapper
@@ -149,7 +149,7 @@ The contact sensor can also be created using the ``isaacsim.sensors.physics.Cont
 .. note::
     Translation and position cannot both be defined, frequency, and ``dt`` also cannot both be defined.
 
-Creating a contact sensor can only be done on a prim with a collider API, and it depends on a Contact Report API. Both the command and the wrapper class automatically add a Contact Report API to the parent prim. You can also manually add a Contact Report API to a prim through:
+Creating a contact sensor can only be done on a prim with a collider API, and it depends on a Contact Report API. Both ``ContactSensor.create()`` and the wrapper class constructor automatically add a Contact Report API to the parent prim. You can also manually add a Contact Report API to a prim through:
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/using_python_wrapper_1.py
     :language: python

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1] - 2026-04-21
+### Changed
+- Replaced `omni.kit.commands` sensor creation with `ContactSensor.create()`, `IMUSensor.create()`, and `RaycastSensor.create()` class methods
+
 ## [1.2.0] - 2026-04-17
 ### Added
 - Add example for creating solid state, rotating, and beam curtain raycast sensors

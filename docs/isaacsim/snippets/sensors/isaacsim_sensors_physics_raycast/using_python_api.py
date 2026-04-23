@@ -1,6 +1,6 @@
 import math
 
-import omni.kit.commands
+from isaacsim.sensors.experimental.physics import RaycastSensor
 from pxr import Gf
 
 # Generate a simple grid of ray directions for a solid state physics raycast sensor.
@@ -18,10 +18,8 @@ for vi in range(v_count):
         origins.append([0.0, 0.0, 0.0])
         directions.append([dx, dy, dz])
 
-success, sensor_prim = omni.kit.commands.execute(
-    "IsaacSensorExperimentalCreateRaycastSensor",
-    path="/Physics_Raycast_Sensor",
-    parent="/World/Sensors",
+sensor = RaycastSensor.create(
+    "/World/Sensors/Physics_Raycast_Sensor",
     min_range=0.4,
     max_range=100.0,
     ray_origins=origins,

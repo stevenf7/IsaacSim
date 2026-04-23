@@ -16,13 +16,16 @@
 
 """Common test utilities for ROS 2 node tests."""
 
+import math
+
 import numpy as np
 import omni
 from isaacsim.core.experimental.materials import OmniPbrMaterial
 from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.utils import stage as stage_utils
+from isaacsim.sensors.experimental.physics import RaycastSensor
 from isaacsim.sensors.rtx import apply_nonvisual_material, get_material_id
-from pxr import UsdPhysics
+from pxr import Gf, Sdf, UsdPhysics
 
 
 async def simulate_async(seconds, steps_per_sec=60, callback=None):
@@ -91,6 +94,53 @@ async def add_cube(path, size, offset):
     UsdPhysics.CollisionAPI.Apply(cubePrim)
 
     return cubeGeom
+
+
+def create_raycast_lidar_sensor(
+    path: str = "/World/Lidar",
+    parent: str | None = None,
+    h_fov: float = 360.0,
+    h_resolution: float = 0.4,
+    v_fov: float = 0.0,
+    v_count: int = 1,
+    min_range: float = 0.4,
+    max_range: float = 100.0,
+    translation: Gf.Vec3d | None = None,
+) -> str:
+    """Create a physics raycast sensor configured as a horizontal lidar.
+
+    Returns the full prim path of the created sensor.
+    """
+    if translation is None:
+        translation = Gf.Vec3d(0, 0, 0)
+    if parent is None:
+        parent = str(Sdf.Path(path).GetParentPath())
+        path = Sdf.Path(path).name
+    h_count = int(h_fov / h_resolution)
+    origins = []
+    directions = []
+    for vi in range(v_count):
+        if v_count > 1:
+            v_angle = math.radians(-v_fov / 2 + v_fov * vi / (v_count - 1))
+        else:
+            v_angle = 0.0
+        for hi in range(h_count):
+            h_angle = math.radians(-h_fov / 2 + h_fov * hi / h_count)
+            dx = math.cos(v_angle) * math.cos(h_angle)
+            dy = math.cos(v_angle) * math.sin(h_angle)
+            dz = math.sin(v_angle)
+            origins.append([0.0, 0.0, 0.0])
+            directions.append([dx, dy, dz])
+
+    sensor = RaycastSensor.create(
+        f"{parent}/{path}",
+        min_range=min_range,
+        max_range=max_range,
+        ray_origins=origins,
+        ray_directions=directions,
+        translation=translation,
+    )
+    return sensor.prim_path
 
 
 async def add_carter(assets_root_path, prim_path="/Carter"):

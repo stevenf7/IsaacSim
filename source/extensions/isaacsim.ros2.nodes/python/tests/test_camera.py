@@ -49,7 +49,7 @@ from isaacsim.test.utils.image_io import read_image_as_array, save_rgb_image
 from pxr import PhysxSchema, Sdf
 from sensor_msgs.msg import Image
 
-from .common import get_qos_profile
+from .common import add_carter_ros, add_cube, get_qos_profile, simulate_async
 
 
 def _camera_orientation_at_angle_deg(angle_deg: float):
@@ -1233,6 +1233,80 @@ class TestRos2Camera(ROS2TestCase):
         self.assertAlmostEqual(t.x, 7.0, places=3)
         self.assertAlmostEqual(t.y, 8.0, places=3)
         self.assertAlmostEqual(t.z, 9.0, places=3)
+
+        self._timeline.stop()
+        spin()
+
+    async def test_camera_depth_to_pcl(self):
+        """Test camera depth to pcl."""
+        from sensor_msgs.msg import PointCloud2
+
+        robot_path = await add_carter_ros(self._assets_root_path)
+        await add_cube("/cube", 0.80, (1.60, 0.10, 0.50))
+
+        graph_path = robot_path + "/ROS_Cameras"
+
+        og.Controller.attribute(graph_path + "/isaac_create_render_product_left.inputs:enabled").set(False)
+
+        try:
+            keys = og.Controller.Keys
+            og.Controller.edit(
+                graph_path,
+                {
+                    keys.CREATE_NODES: [("depthToPCL", "isaacsim.ros2.bridge.ROS2CameraHelper")],
+                    keys.CONNECT: [
+                        (graph_path + "/isaac_create_render_product_left.outputs:execOut", "depthToPCL.inputs:execIn"),
+                        (graph_path + "/camera_frameId_left.inputs:value", "depthToPCL.inputs:frameId"),
+                        (
+                            graph_path + "/isaac_create_render_product_left.outputs:renderProductPath",
+                            "depthToPCL.inputs:renderProductPath",
+                        ),
+                    ],
+                    og.Controller.Keys.SET_VALUES: [
+                        ("depthToPCL.inputs:topicName", "/point_cloud_left"),
+                        ("depthToPCL.inputs:type", "depth_pcl"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+
+        og.Controller.set(
+            og.Controller.attribute(graph_path + "/isaac_create_render_product_left.inputs:enabled"), True
+        )
+
+        viewport_api = omni.kit.viewport.utility.get_active_viewport()
+        viewport_api.set_texture_resolution((1280, 720))
+
+        self._point_cloud_data = None
+
+        def point_cloud_callback(data: PointCloud2):
+            self._point_cloud_data = data
+
+        node = self.create_node("depth_point_cloud_tester")
+        self.create_subscription(node, PointCloud2, "point_cloud_left", point_cloud_callback, get_qos_profile())
+
+        def spin():
+            rclpy.spin_once(node, timeout_sec=0.1)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        await simulate_async(1, 60, spin)
+
+        self.assertIsNotNone(self._point_cloud_data)
+        self.assertGreater(self._point_cloud_data.width, 1)
+        self.assertEqual(
+            self._point_cloud_data.row_step / self._point_cloud_data.point_step, self._point_cloud_data.width
+        )
+        self.assertEqual(
+            len(self._point_cloud_data.data) / self._point_cloud_data.row_step, self._point_cloud_data.height
+        )
+
+        self.assertEqual(self._point_cloud_data.data[526327], 190)
+        self.assertEqual(self._point_cloud_data.data[712187], 63)
+        self.assertEqual(self._point_cloud_data.fields[0].datatype, 7)
+        self.assertEqual(self._point_cloud_data.fields[1].datatype, 7)
+        self.assertEqual(self._point_cloud_data.fields[2].datatype, 7)
 
         self._timeline.stop()
         spin()

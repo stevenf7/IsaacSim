@@ -13,10 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Experimental physics sensor implementation module providing commands and extension functionality."""
+"""Experimental physics sensor implementation module providing sensor helpers and extension functionality."""
 
 
-from .commands import *
 from .common import ContactSensorReading as ContactSensorReading
 from .common import IMURawData as IMURawData
 from .common import IMUSensorReading as IMUSensorReading

@@ -14,3 +14,5 @@
 # limitations under the License.
 
 from .impl.extension import Extension  # noqa: F401 (Extension loaded for side effects)
+
+__all__ = []

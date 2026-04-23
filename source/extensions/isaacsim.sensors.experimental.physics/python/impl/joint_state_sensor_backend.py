@@ -21,12 +21,7 @@ carries the complete reading (dof_count, dof_names, positions, velocities, effor
 """
 from __future__ import annotations
 
-
-def _get_joint_state_interface() -> object | None:
-    from .extension import get_joint_state_sensor_interface
-
-    return get_joint_state_sensor_interface()
-
+from .common import _PhysicsSensorBase
 
 _INVALID_JOINT_STATE_READING = None
 
@@ -40,7 +35,7 @@ def _get_invalid_reading() -> object:
     return _INVALID_JOINT_STATE_READING
 
 
-class JointStateSensorBackend:
+class JointStateSensorBackend(_PhysicsSensorBase):
     """Backend implementation for joint state sensors, backed by a C++ plugin.
 
     Returns the C++ JointStateSensorReading struct directly from get_sensor_reading().
@@ -52,19 +47,15 @@ class JointStateSensorBackend:
     """
 
     def __init__(self, articulation_prim_path: str) -> None:
-        self._articulation_prim_path = articulation_prim_path
-        self._sensor_created: bool = False
-        self._iface = None
+        super().__init__(articulation_prim_path)
 
-    def _ensure_sensor(self) -> bool:
-        if self._iface is None:
-            self._iface = _get_joint_state_interface()
-        if self._iface is None:
-            return False
-        if self._sensor_created:
-            return True
-        self._sensor_created = self._iface.create_sensor(self._articulation_prim_path)
-        return self._sensor_created
+    def _acquire_interface(self) -> object | None:
+        from .extension import get_joint_state_sensor_interface
+
+        return get_joint_state_sensor_interface()
+
+    def _get_invalid_reading(self) -> object:
+        return _get_invalid_reading()
 
     def get_sensor_reading(self) -> object:
         """Get the complete joint state reading.
@@ -73,24 +64,4 @@ class JointStateSensorBackend:
             The C++ JointStateSensorReading struct with dof_count, dof_names,
             positions, velocities, and efforts populated when is_valid is True.
         """
-        if not self._sensor_created and not self._ensure_sensor():
-            return _get_invalid_reading()
-
-        reading = self._iface.get_sensor_reading(self._articulation_prim_path)
-        if not reading.is_valid:
-            self._sensor_created = False
-            if not self._ensure_sensor():
-                return _get_invalid_reading()
-            reading = self._iface.get_sensor_reading(self._articulation_prim_path)
-        return reading
-
-    def on_timeline_stop(self) -> None:
-        """Reset sensor state on timeline stop."""
-        self._sensor_created = False
-        self._iface = None
-
-    def reset(self) -> None:
-        """Remove the C++ sensor and reset state."""
-        if self._iface is not None and self._sensor_created:
-            self._iface.remove_sensor(self._articulation_prim_path)
-        self._sensor_created = False
+        return self._get_reading()

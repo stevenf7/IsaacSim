@@ -15,11 +15,12 @@
 
 """Tests for the physics raycast sensor example."""
 
-import omni.kit.commands
+from typing import Any
+
 import omni.kit.test
 import omni.timeline
 import omni.usd
-from isaacsim.sensors.experimental.physics import RaycastSensorBackend
+from isaacsim.sensors.experimental.physics import RaycastSensor, RaycastSensorBackend
 from isaacsim.sensors.physics.examples.raycast_sensor import (
     _generate_curtain_rays,
     _generate_rotating_rays,
@@ -31,16 +32,18 @@ from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 class TestRaycastSensorExample(omni.kit.test.AsyncTestCase):
     """Verify the physics raycast sensor example creates sensors and produces valid readings with hits."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Set up test fixtures."""
         self._timeline = omni.timeline.get_timeline_interface()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Tear down test fixtures."""
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
 
-    async def _create_scene(self):
+    async def _create_scene(self) -> Any:
         """Create a minimal scene with physics, collision geometry, and sensors."""
         stage = omni.usd.get_context().get_stage()
 
@@ -71,15 +74,13 @@ class TestRaycastSensorExample(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         return stage
 
-    async def test_solid_state_physics_raycast_sensor(self):
+    async def test_solid_state_physics_raycast_sensor(self) -> None:
         """Create solid state physics raycast sensor and verify it detects the wall obstacle."""
         stage = await self._create_scene()
 
         origins, directions, _ = _generate_solid_state_rays()
-        result, _ = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateRaycastSensor",
-            path="/Solid_State_Physics_Raycast_Sensor",
-            parent="/World/Sensors",
+        sensor = RaycastSensor.create(
+            "/World/Sensors/Solid_State_Physics_Raycast_Sensor",
             min_range=0.4,
             max_range=100.0,
             ray_origins=origins,
@@ -87,7 +88,7 @@ class TestRaycastSensorExample(omni.kit.test.AsyncTestCase):
             output_frame="WORLD",
             translation=Gf.Vec3d(0, 0, 1.5),
         )
-        self.assertTrue(result, "Failed to create solid state physics raycast sensor")
+        self.assertIsNotNone(sensor, "Failed to create solid state physics raycast sensor")
 
         prim = stage.GetPrimAtPath("/World/Sensors/Solid_State_Physics_Raycast_Sensor")
         self.assertTrue(prim.IsValid(), "Solid state physics raycast sensor prim not found")
@@ -104,15 +105,13 @@ class TestRaycastSensorExample(omni.kit.test.AsyncTestCase):
         hit_count = sum(1 for d in reading.depths if d < 100.0)
         self.assertGreater(hit_count, 0, "Solid state physics raycast sensor should detect the wall")
 
-    async def test_rotating_physics_raycast_sensor(self):
+    async def test_rotating_physics_raycast_sensor(self) -> None:
         """Create rotating physics raycast sensor and verify it detects obstacles across a full sweep."""
         stage = await self._create_scene()
 
         origins, directions, time_offsets = _generate_rotating_rays()
-        result, _ = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateRaycastSensor",
-            path="/Rotating_Physics_Raycast_Sensor",
-            parent="/World/Sensors",
+        sensor = RaycastSensor.create(
+            "/World/Sensors/Rotating_Physics_Raycast_Sensor",
             min_range=0.4,
             max_range=100.0,
             ray_origins=origins,
@@ -121,7 +120,7 @@ class TestRaycastSensorExample(omni.kit.test.AsyncTestCase):
             output_frame="WORLD",
             translation=Gf.Vec3d(0, 3, 1.5),
         )
-        self.assertTrue(result, "Failed to create rotating physics raycast sensor")
+        self.assertIsNotNone(sensor, "Failed to create rotating physics raycast sensor")
 
         prim = stage.GetPrimAtPath("/World/Sensors/Rotating_Physics_Raycast_Sensor")
         self.assertTrue(prim.IsValid(), "Rotating physics raycast sensor prim not found")
@@ -141,15 +140,13 @@ class TestRaycastSensorExample(omni.kit.test.AsyncTestCase):
         self.assertEqual(reading.ray_count, len(origins))
         self.assertGreater(total_hits, 0, "Rotating physics raycast sensor should detect obstacles during a full sweep")
 
-    async def test_beam_curtain_physics_raycast_sensor(self):
+    async def test_beam_curtain_physics_raycast_sensor(self) -> None:
         """Create beam curtain physics raycast sensor and verify it detects the box obstacle."""
         stage = await self._create_scene()
 
         origins, directions, _ = _generate_curtain_rays()
-        result, _ = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateRaycastSensor",
-            path="/Beam_Curtain_Physics_Raycast_Sensor",
-            parent="/World/Sensors",
+        sensor = RaycastSensor.create(
+            "/World/Sensors/Beam_Curtain_Physics_Raycast_Sensor",
             min_range=0.2,
             max_range=10.0,
             ray_origins=origins,
@@ -157,7 +154,7 @@ class TestRaycastSensorExample(omni.kit.test.AsyncTestCase):
             output_frame="WORLD",
             translation=Gf.Vec3d(0, -3, 1.0),
         )
-        self.assertTrue(result, "Failed to create beam curtain physics raycast sensor")
+        self.assertIsNotNone(sensor, "Failed to create beam curtain physics raycast sensor")
 
         prim = stage.GetPrimAtPath("/World/Sensors/Beam_Curtain_Physics_Raycast_Sensor")
         self.assertTrue(prim.IsValid(), "Beam curtain physics raycast sensor prim not found")

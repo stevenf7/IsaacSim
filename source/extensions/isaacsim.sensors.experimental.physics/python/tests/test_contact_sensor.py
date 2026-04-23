@@ -21,7 +21,6 @@ import carb.tokens
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni
-import omni.kit.commands
 
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add suport for async/await tests
@@ -123,10 +122,8 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         """Helper to add contact sensors to ant legs. Requires ant to be loaded."""
         self.sensor_geoms = []
         for i in range(4):
-            result, sensor = omni.kit.commands.execute(
-                "IsaacSensorExperimentalCreateContactSensor",
-                path="/sensor",
-                parent=self.leg_paths[i],
+            sensor = ContactSensor.create(
+                self.leg_paths[i] + "/sensor",
                 min_threshold=0,
                 max_threshold=10000000,
                 color=self.color[i],
@@ -134,7 +131,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                 translation=self.sensor_offsets[i],
             )
             self.sensor_geoms.append(sensor)
-            self.assertTrue(result)
             self.assertIsNotNone(sensor)
 
     async def test_add_sensor_prim(self):
@@ -191,21 +187,21 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         GroundPlane("/World/GroundPlane", sizes=10.0)
 
-        block_0_prim = add_reference_to_stage(
+        add_reference_to_stage(
             usd_path=self._assets_root_path + "/Isaac/Props/Blocks/basic_block.usd", path="/World/block_0"
         )
-        block_0 = RigidPrim(
+        RigidPrim(
             "/World/block_0/Cube", positions=[10, 0, 5.0], scales=np.ones(3) * 1.0, reset_xform_op_properties=True
         )
 
-        block_1_prim = add_reference_to_stage(
+        add_reference_to_stage(
             usd_path=self._assets_root_path + "/Isaac/Props/Blocks/basic_block.usd", path="/World/block_1"
         )
-        block_1 = RigidPrim(
+        RigidPrim(
             "/World/block_1/Cube", positions=[10, 0, 10.0], scales=np.ones(3) * 1.0, reset_xform_op_properties=True
         )
 
-        sensor = ContactSensor("/World/block_1/Cube/contact_sensor")
+        ContactSensor("/World/block_1/Cube/contact_sensor")
         backend = self._get_contact_backend("/World/block_1/Cube/contact_sensor")
 
         await omni.kit.app.get_app().next_update_async()
@@ -290,10 +286,8 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         # create 4 sensors at the center of the leg
         for i in range(4):
-            result, sensor = omni.kit.commands.execute(
-                "IsaacSensorExperimentalCreateContactSensor",
-                path="/sensor",
-                parent=self.leg_paths[i],
+            sensor = ContactSensor.create(
+                self.leg_paths[i] + "/sensor",
                 min_threshold=0,
                 max_threshold=10000000,
                 color=self.color[i],
@@ -301,7 +295,6 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
                 translation=Gf.Vec3f(0, 0, 0),
             )
             self.sensor_geoms.append(sensor)
-            self.assertTrue(result)
             self.assertIsNotNone(sensor)
 
         await omni.kit.app.get_app().next_update_async()
@@ -346,17 +339,14 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         """Ensure sensor reads return monotonically increasing times."""
         await self._setup_ant()
         for i in range(4):
-            result, sensor = omni.kit.commands.execute(
-                "IsaacSensorExperimentalCreateContactSensor",
-                path="/custom_sensor",
-                parent=self.leg_paths[i],
+            sensor = ContactSensor.create(
+                self.leg_paths[i] + "/custom_sensor",
                 min_threshold=0,
                 max_threshold=10000000,
                 color=self.color[i],
                 radius=0.12,
                 translation=self.sensor_offsets[i],
             )
-            self.assertTrue(result)
             self.assertIsNotNone(sensor)
 
         await omni.kit.app.get_app().next_update_async()
@@ -397,17 +387,14 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         # create four sensors with custom thresholds
         for i in range(4):
-            result, sensor = omni.kit.commands.execute(
-                "IsaacSensorExperimentalCreateContactSensor",
-                path="/custom_sensor",
-                parent=self.leg_paths[i],
+            sensor = ContactSensor.create(
+                self.leg_paths[i] + "/custom_sensor",
                 min_threshold=min_threshold[i],
                 max_threshold=max_threshold[i],
                 color=self.color[i],
                 radius=0.12,
                 translation=self.sensor_offsets[i],
             )
-            self.assertTrue(result)
             self.assertIsNotNone(sensor)
 
         await omni.kit.app.get_app().next_update_async()
@@ -446,19 +433,16 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         for i in range(4):
             xform_path = self.leg_paths[i] + "/xform"
             stage_utils.define_prim(xform_path, "Xform")
-            xform = XformPrim(xform_path, translations=[20, 0, 0], reset_xform_op_properties=True)
+            XformPrim(xform_path, translations=[20, 0, 0], reset_xform_op_properties=True)
 
-            result, sensor = omni.kit.commands.execute(
-                "IsaacSensorExperimentalCreateContactSensor",
-                path="/xform/custom_sensor",
-                parent=self.leg_paths[i],
+            sensor = ContactSensor.create(
+                self.leg_paths[i] + "/xform/custom_sensor",
                 min_threshold=0.0,
                 max_threshold=100.0,
                 color=self.color[i],
                 radius=0.12,
                 translation=Gf.Vec3d(20, 0, 0),
             )
-            self.assertTrue(result)
             self.assertIsNotNone(sensor)
 
         await omni.kit.app.get_app().next_update_async()
@@ -576,16 +560,13 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # Create a contact sensor on the cube
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateContactSensor",
-            path="/contact_sensor",
-            parent="/World/Cube",
+        sensor = ContactSensor.create(
+            "/World/Cube/contact_sensor",
             min_threshold=0,
             max_threshold=10000000,
             radius=0.12,
             translation=Gf.Vec3d(0, 0, 0),
         )
-        self.assertTrue(result)
         self.assertIsNotNone(sensor)
         await omni.kit.app.get_app().next_update_async()
 

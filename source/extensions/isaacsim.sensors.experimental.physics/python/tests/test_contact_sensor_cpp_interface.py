@@ -22,12 +22,12 @@ import asyncio
 
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
-import omni.kit.commands
 import omni.kit.test
 import omni.timeline
 from isaacsim.core.experimental.objects import Cube, GroundPlane
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 from isaacsim.core.simulation_manager import SimulationManager
+from isaacsim.sensors.experimental.physics import ContactSensor
 from isaacsim.sensors.experimental.physics.impl.extension import get_contact_sensor_interface
 from pxr import PhysxSchema
 
@@ -52,10 +52,8 @@ class TestContactSensorCppInterface(omni.kit.test.AsyncTestCase):
         contact_report_api = PhysxSchema.PhysxContactReportAPI.Apply(prim_utils.get_prim_at_path("/World/Cube"))
         contact_report_api.CreateThresholdAttr().Set(0)
 
-        omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateContactSensor",
-            path="/contact_sensor",
-            parent="/World/Cube",
+        ContactSensor.create(
+            "/World/Cube/contact_sensor",
             max_threshold=10000000,
         )
         await omni.kit.app.get_app().next_update_async()

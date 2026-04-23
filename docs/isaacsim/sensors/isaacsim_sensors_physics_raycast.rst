@@ -30,7 +30,7 @@ See the :ref:`isaac_sim_conventions` documentation for a complete list of |isaac
 **Physics Raycast Sensor Properties**
 
 #. ``enabled`` parameter determines if the sensor is running or not.
-#. ``numRays`` (unsigned int) parameter specifies the authoritative ray count. ``rayOrigins`` and ``rayDirections`` must each have exactly this many elements. This is set automatically when using the Python command or ``RaycastSensor`` wrapper.
+#. ``numRays`` (unsigned int) parameter specifies the authoritative ray count. ``rayOrigins`` and ``rayDirections`` must each have exactly this many elements. This is set automatically when using ``RaycastSensor.create()`` or the ``RaycastSensor`` constructor.
 #. ``minRange`` parameter specifies the minimum detection range in stage length units. Rays start at ``origin + direction * minRange``.
 #. ``maxRange`` parameter specifies the maximum detection range in stage length units.
 #. ``rayOrigins`` parameter specifies per-ray origin translations in the sensor's local coordinate frame.
@@ -116,12 +116,12 @@ For the example snippets below, prepare the scene using the following snippet by
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_raycast/scene_setup.py
     :language: python
 
-Using Python Command
+Using the Python API
 ####################
 
-Physics raycast sensors are created with the ``IsaacSensorExperimentalCreateRaycastSensor`` command. You must provide ``ray_origins`` and ``ray_directions`` arrays of the same length. The ``parent`` parameter is required.
+Physics raycast sensors are created with ``RaycastSensor.create()``. You must provide ``ray_origins`` and ``ray_directions`` arrays of the same length. The path must include the parent prim path.
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_raycast/using_python_command.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_raycast/using_python_api.py
     :language: python
 
 Using Time Offsets

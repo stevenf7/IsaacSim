@@ -22,10 +22,9 @@ import sys
 
 import numpy as np
 import omni
-import omni.kit.commands
 from isaacsim.core.api import World
 from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.sensors.experimental.physics import ContactSensorBackend
+from isaacsim.sensors.experimental.physics import ContactSensor, ContactSensorBackend
 from pxr import Gf
 
 timeline = omni.timeline.get_timeline_interface()
@@ -39,10 +38,8 @@ cube_1 = world.scene.add(DynamicCuboid(prim_path=cube_path, name="cube_1", posit
 world.scene.add_default_ground_plane()
 
 # Setup contact sensor on cube
-result, sensor = omni.kit.commands.execute(
-    "IsaacSensorExperimentalCreateContactSensor",
-    path="/Contact_Sensor",
-    parent=cube_path,
+sensor = ContactSensor.create(
+    f"{cube_path}/Contact_Sensor",
     min_threshold=0,
     max_threshold=100000000,
     color=Gf.Vec4f(1, 1, 1, 1),

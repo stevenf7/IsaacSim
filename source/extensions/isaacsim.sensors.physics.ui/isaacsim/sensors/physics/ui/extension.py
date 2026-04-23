@@ -20,11 +20,15 @@ import math
 from pathlib import Path
 from typing import Any
 
+import carb
 import omni.ext
 import omni.kit.actions.core
-import omni.kit.commands
-from isaacsim.core.experimental.prims import XformPrim
 from isaacsim.gui.components.menu import create_submenu
+from isaacsim.sensors.experimental.physics import (
+    ContactSensor,
+    IMUSensor,
+    RaycastSensor,
+)
 from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from pxr import Gf
 
@@ -32,7 +36,7 @@ from pxr import Gf
 class Extension(omni.ext.IExt):
     """Extension that adds physics sensors to create menus."""
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Register sensor menu items when the extension starts.
 
         Args:
@@ -139,7 +143,7 @@ class Extension(omni.ext.IExt):
 
         self._viewport_create_menu = omni.kit.context_menu.add_menu(context_menu_dict, "CREATE")
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Remove menu items and clean up on shutdown."""
         remove_menu_items(self._menu_items, "Create")
         self._viewport_create_menu = None
@@ -166,17 +170,19 @@ class Extension(omni.ext.IExt):
             curr_prim = None
         return curr_prim
 
-    def _add_contact_sensor(self, *args: Any, **kwargs: Any):
+    def _add_contact_sensor(self, *args: Any, **kwargs: Any) -> None:
         """Create a contact sensor under the current selection.
 
         Args:
             *args: Additional positional arguments from the menu callback.
             **kwargs: Additional keyword arguments from the menu callback.
         """
-        result, prim = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateContactSensor",
-            path="/Contact_Sensor",
-            parent=self._get_stage_and_path(),
+        parent = self._get_stage_and_path()
+        if parent is None:
+            carb.log_error("No prim selected for contact sensor creation.")
+            return
+        ContactSensor.create(
+            f"{parent}/Contact_Sensor",
             min_threshold=0.0,
             max_threshold=100000.0,
             color=Gf.Vec4f(1, 0, 0, 1),
@@ -184,30 +190,34 @@ class Extension(omni.ext.IExt):
             translation=Gf.Vec3d(0, 0, 0),
         )
 
-    def _add_imu_sensor(self, *args: Any, **kwargs: Any):
+    def _add_imu_sensor(self, *args: Any, **kwargs: Any) -> None:
         """Create an IMU sensor under the current selection.
 
         Args:
             *args: Additional positional arguments from the menu callback.
             **kwargs: Additional keyword arguments from the menu callback.
         """
-        result, prim = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor",
-            path="/Imu_Sensor",
-            parent=self._get_stage_and_path(),
+        parent = self._get_stage_and_path()
+        if parent is None:
+            carb.log_error("No prim selected for IMU sensor creation.")
+            return
+        sensor = IMUSensor.create(
+            f"{parent}/Imu_Sensor",
             translation=Gf.Vec3d(0, 0, 0),
         )
-        if result and prim:
-            # Make sensor invisible on stage
-            XformPrim(str(prim.GetPath())).set_visibilities([False])
+        sensor.set_visibilities([False])
 
-    def _add_solid_state_physics_raycast_sensor(self, *args: Any, **kwargs: Any):
+    def _add_solid_state_physics_raycast_sensor(self, *args: Any, **kwargs: Any) -> None:
         """Create a solid state physics raycast sensor under the current selection.
 
         Args:
             *args: Additional positional arguments from the menu callback.
             **kwargs: Additional keyword arguments from the menu callback.
         """
+        parent = self._get_stage_and_path()
+        if parent is None:
+            carb.log_error("No prim selected for raycast sensor creation.")
+            return
         h_count, v_count = 10, 5
         h_fov, v_fov = 60.0, 20.0
         origins = []
@@ -222,10 +232,8 @@ class Extension(omni.ext.IExt):
                 origins.append([0.0, 0.0, 0.0])
                 directions.append([dx, dy, dz])
 
-        omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateRaycastSensor",
-            path="/Solid_State_Physics_Raycast_Sensor",
-            parent=self._get_stage_and_path(),
+        RaycastSensor.create(
+            f"{parent}/Solid_State_Physics_Raycast_Sensor",
             min_range=0.4,
             max_range=100.0,
             ray_origins=origins,
@@ -233,13 +241,17 @@ class Extension(omni.ext.IExt):
             output_frame="WORLD",
         )
 
-    def _add_rotating_physics_raycast_sensor(self, *args: Any, **kwargs: Any):
+    def _add_rotating_physics_raycast_sensor(self, *args: Any, **kwargs: Any) -> None:
         """Create a rotating physics raycast sensor under the current selection.
 
         Args:
             *args: Additional positional arguments from the menu callback.
             **kwargs: Additional keyword arguments from the menu callback.
         """
+        parent = self._get_stage_and_path()
+        if parent is None:
+            carb.log_error("No prim selected for raycast sensor creation.")
+            return
         v_count = 8
         azimuth_steps = 36
         v_fov = 30.0
@@ -261,10 +273,8 @@ class Extension(omni.ext.IExt):
                 directions.append([dx, dy, dz])
                 time_offsets.append(t_offset)
 
-        omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateRaycastSensor",
-            path="/Rotating_Physics_Raycast_Sensor",
-            parent=self._get_stage_and_path(),
+        RaycastSensor.create(
+            f"{parent}/Rotating_Physics_Raycast_Sensor",
             min_range=0.4,
             max_range=100.0,
             ray_origins=origins,
@@ -273,13 +283,17 @@ class Extension(omni.ext.IExt):
             output_frame="WORLD",
         )
 
-    def _add_beam_curtain_physics_raycast_sensor(self, *args: Any, **kwargs: Any):
+    def _add_beam_curtain_physics_raycast_sensor(self, *args: Any, **kwargs: Any) -> None:
         """Create a beam curtain physics raycast sensor under the current selection.
 
         Args:
             *args: Additional positional arguments from the menu callback.
             **kwargs: Additional keyword arguments from the menu callback.
         """
+        parent = self._get_stage_and_path()
+        if parent is None:
+            carb.log_error("No prim selected for raycast sensor creation.")
+            return
         beam_count = 16
         curtain_height = 0.75
         origins = []
@@ -289,10 +303,8 @@ class Extension(omni.ext.IExt):
             origins.append([0.0, 0.0, z])
             directions.append([1.0, 0.0, 0.0])
 
-        omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateRaycastSensor",
-            path="/Beam_Curtain_Physics_Raycast_Sensor",
-            parent=self._get_stage_and_path(),
+        RaycastSensor.create(
+            f"{parent}/Beam_Curtain_Physics_Raycast_Sensor",
             min_range=0.2,
             max_range=10.0,
             ray_origins=origins,

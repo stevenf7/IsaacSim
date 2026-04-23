@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.5] - 2026-04-21
+### Fixed
+- Removed unused `numpy` import from `EffortSensor`
+
 ## [1.1.4] - 2026-04-19
 ### Fixed
 - Fix `IMUSensor.__init__` `UnboundLocalError` when no PhysicsScene exists on stage

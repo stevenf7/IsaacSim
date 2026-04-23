@@ -18,7 +18,6 @@
 from __future__ import annotations
 
 import numpy as np
-import omni.kit.commands
 import omni.kit.test
 import omni.timeline
 import omni.usd
@@ -71,7 +70,7 @@ class TestRaycastSensorWrapper(omni.kit.test.AsyncTestCase):
         """RaycastSensor creates a new prim when the path does not exist."""
         await _create_basic_scene()
 
-        sensor = RaycastSensor(
+        RaycastSensor(
             "/World/Sensors/TestSensor",
             ray_origins=[[0.0, 0.0, 0.0]],
             ray_directions=[[1.0, 0.0, 0.0]],
@@ -92,19 +91,17 @@ class TestRaycastSensorWrapper(omni.kit.test.AsyncTestCase):
         """RaycastSensor wraps an existing prim and applies overrides."""
         await _create_basic_scene()
 
-        result, _ = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateRaycastSensor",
-            path="/ExistingSensor",
-            parent="/World/Sensors",
+        sensor = RaycastSensor.create(
+            "/World/Sensors/ExistingSensor",
             min_range=0.4,
             max_range=100.0,
             ray_origins=[[0.0, 0.0, 0.0]],
             ray_directions=[[1.0, 0.0, 0.0]],
         )
-        self.assertTrue(result)
+        self.assertIsNotNone(sensor)
         await omni.kit.app.get_app().next_update_async()
 
-        sensor = RaycastSensor(
+        RaycastSensor(
             "/World/Sensors/ExistingSensor",
             min_range=1.0,
             max_range=25.0,
@@ -220,10 +217,8 @@ class TestRaycastSensorBackendLifecycle(omni.kit.test.AsyncTestCase):
         await _create_basic_scene()
 
         sensor_path = "/World/Sensors/RemoveSensor"
-        result, _ = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateRaycastSensor",
-            path="/RemoveSensor",
-            parent="/World/Sensors",
+        sensor = RaycastSensor.create(
+            "/World/Sensors/RemoveSensor",
             min_range=0.1,
             max_range=100.0,
             ray_origins=[[0.0, 0.0, 0.0]],
@@ -231,7 +226,7 @@ class TestRaycastSensorBackendLifecycle(omni.kit.test.AsyncTestCase):
             output_frame="WORLD",
             translation=Gf.Vec3d(0, 0, 1.5),
         )
-        self.assertTrue(result)
+        self.assertIsNotNone(sensor)
         await omni.kit.app.get_app().next_update_async()
 
         backend = RaycastSensorBackend(sensor_path)
@@ -256,10 +251,8 @@ class TestRaycastSensorBackendLifecycle(omni.kit.test.AsyncTestCase):
         await _create_basic_scene()
 
         sensor_path = "/World/Sensors/ResetSensor"
-        result, _ = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateRaycastSensor",
-            path="/ResetSensor",
-            parent="/World/Sensors",
+        sensor = RaycastSensor.create(
+            "/World/Sensors/ResetSensor",
             min_range=0.1,
             max_range=100.0,
             ray_origins=[[0.0, 0.0, 0.0]],
@@ -267,7 +260,7 @@ class TestRaycastSensorBackendLifecycle(omni.kit.test.AsyncTestCase):
             output_frame="WORLD",
             translation=Gf.Vec3d(0, 0, 1.5),
         )
-        self.assertTrue(result)
+        self.assertIsNotNone(sensor)
         await omni.kit.app.get_app().next_update_async()
 
         backend = RaycastSensorBackend(sensor_path)
@@ -286,10 +279,8 @@ class TestRaycastSensorBackendLifecycle(omni.kit.test.AsyncTestCase):
         await _create_basic_scene()
 
         sensor_path = "/World/Sensors/TimelineStopSensor"
-        result, _ = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateRaycastSensor",
-            path="/TimelineStopSensor",
-            parent="/World/Sensors",
+        sensor = RaycastSensor.create(
+            "/World/Sensors/TimelineStopSensor",
             min_range=0.1,
             max_range=100.0,
             ray_origins=[[0.0, 0.0, 0.0]],
@@ -297,7 +288,7 @@ class TestRaycastSensorBackendLifecycle(omni.kit.test.AsyncTestCase):
             output_frame="WORLD",
             translation=Gf.Vec3d(0, 0, 1.5),
         )
-        self.assertTrue(result)
+        self.assertIsNotNone(sensor)
         await omni.kit.app.get_app().next_update_async()
 
         backend = RaycastSensorBackend(sensor_path)

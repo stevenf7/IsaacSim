@@ -41,7 +41,7 @@ class EffortSensorReading:
         value: Effort (torque/force) value at the joint.
     """
 
-    def __init__(self, is_valid: bool = False, time: float = 0, value: float = 0):
+    def __init__(self, is_valid: bool = False, time: float = 0, value: float = 0) -> None:
         self.is_valid = is_valid
         self.time = time
         self.value = value
@@ -73,7 +73,7 @@ class EffortSensor:
                 print(f"Joint torque: {reading.value}")
     """
 
-    def __init__(self, prim_path: str, enabled: bool = True):
+    def __init__(self, prim_path: str, enabled: bool = True) -> None:
         self.enabled = enabled
         self.prim_path = prim_path
 
@@ -107,7 +107,7 @@ class EffortSensor:
             observer_name="isaacsim.sensors.experimental.physics.EffortSensor._timeline_stop_callback",
         )
 
-    def _stage_open_callback_fn(self, event: Any = None):
+    def _stage_open_callback_fn(self, event: Any = None) -> None:
         """Handle stage open by releasing all subscriptions.
 
         Args:
@@ -116,7 +116,7 @@ class EffortSensor:
         self._stage_open_sub = None
         self._timeline_stop_sub = None
 
-    def _timeline_stop_callback_fn(self, event: Any):
+    def _timeline_stop_callback_fn(self, event: Any) -> None:
         """Handle timeline stop by resetting state.
 
         Args:
@@ -127,7 +127,6 @@ class EffortSensor:
             (EffortSensorReading() for _ in range(self.data_buffer_size)), maxlen=self.data_buffer_size
         )
         self.physics_num_steps = 0
-        self._backend.on_timeline_stop()
 
     def get_sensor_reading(self) -> EffortSensorReading:
         """Get the current effort sensor reading.
@@ -160,7 +159,7 @@ class EffortSensor:
 
         return reading
 
-    def update_dof_name(self, dof_name: str):
+    def update_dof_name(self, dof_name: str) -> None:
         """Update the DOF (degree of freedom) name being measured.
 
         Creates a new backend targeting the updated joint path.
@@ -179,7 +178,7 @@ class EffortSensor:
         self._backend.reset()
         self._backend = EffortSensorBackend(new_path)
 
-    def change_buffer_size(self, new_buffer_size: int):
+    def change_buffer_size(self, new_buffer_size: int) -> None:
         """Change the size of the sensor reading buffer.
 
         Args:

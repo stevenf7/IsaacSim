@@ -1,6 +1,6 @@
 # Overview
 
-The isaacsim.sensors.experimental.physics extension provides experimental physics-based sensors for Isaac Sim robotics applications. It offers four types of sensors - contact sensors for detecting collisions and forces, effort sensors for measuring joint torque and force, IMU sensors for capturing inertial measurements, and joint state sensors for reading full articulation DOF state - each with high-level wrapper classes and programmatic creation commands.
+The isaacsim.sensors.experimental.physics extension provides experimental physics-based sensors for Isaac Sim robotics applications. It offers four types of sensors - contact sensors for detecting collisions and forces, effort sensors for measuring joint torque and force, IMU sensors for capturing inertial measurements, and joint state sensors for reading full articulation DOF state - each with high-level wrapper classes and `create()` class methods for programmatic sensor creation.
 
 ```{image} ../../../../source/extensions/isaacsim.sensors.experimental.physics/data/preview.png
 ---
@@ -97,7 +97,11 @@ The sensor returns {class}`JointStateSensorReading <isaacsim.sensors.experimenta
 
 ### Programmatic Sensor Creation
 
-The extension provides command-based sensor creation through {class}`IsaacSensorExperimentalCreateContactSensor <isaacsim.sensors.experimental.physics.IsaacSensorExperimentalCreateContactSensor>` and {class}`IsaacSensorExperimentalCreateImuSensor <isaacsim.sensors.experimental.physics.IsaacSensorExperimentalCreateImuSensor>`. These commands handle USD prim creation, schema application, and attribute configuration with full undo support.
+Each sensor class provides a `create()` static method for programmatic sensor creation:
+{meth}`ContactSensor.create() <isaacsim.sensors.experimental.physics.ContactSensor.create>`,
+{meth}`IMUSensor.create() <isaacsim.sensors.experimental.physics.IMUSensor.create>`, and
+{meth}`RaycastSensor.create() <isaacsim.sensors.experimental.physics.RaycastSensor.create>`.
+These methods handle USD prim creation, schema application, and attribute configuration, and return a fully initialized sensor wrapper instance.
 
 ### Frame-Based Data Access
 

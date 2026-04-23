@@ -238,15 +238,9 @@ public:
             return false;
         }
 
-        if (!db.inputs.linearDepthData.isValid() || !db.inputs.intensitiesData.isValid())
+        if (!db.inputs.linearDepthData.isValid())
         {
-            db.logError("Buffers are invalid");
-            return false;
-        }
-
-        if (db.inputs.linearDepthData.size() != db.inputs.intensitiesData.size())
-        {
-            db.logError("Linear Depth data and Intensities data sizes do not match");
+            db.logError("linearDepthData buffer is invalid");
             return false;
         }
 
@@ -257,8 +251,31 @@ public:
             return false;
         }
 
-        return publishMessage(db, db.inputs.linearDepthData().data(),
-                              static_cast<const uint8_t*>(db.inputs.intensitiesData().data()), buffSize);
+        const float* depthData = db.inputs.linearDepthData().data();
+        const uint8_t* intensityData = nullptr;
+
+        if (!db.inputs.intensitiesData.isValid() || db.inputs.intensitiesData.size() == 0 ||
+            db.inputs.intensitiesData.size() != db.inputs.linearDepthData.size())
+        {
+            if (db.inputs.intensitiesData.isValid() && db.inputs.intensitiesData.size() > 0)
+            {
+                CARB_LOG_WARN_ONCE(
+                    "intensitiesData size (%zu) != linearDepthData size (%zu); synthesizing binary intensities",
+                    db.inputs.intensitiesData.size(), db.inputs.linearDepthData.size());
+            }
+            m_intensitiesBuffer.resize(buffSize);
+            for (size_t i = 0; i < buffSize; i++)
+            {
+                m_intensitiesBuffer[i] = (depthData[i] > 0.0f) ? 255 : 0;
+            }
+            intensityData = m_intensitiesBuffer.data();
+        }
+        else
+        {
+            intensityData = static_cast<const uint8_t*>(db.inputs.intensitiesData().data());
+        }
+
+        return publishMessage(db, depthData, intensityData, buffSize);
     }
 
     static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
