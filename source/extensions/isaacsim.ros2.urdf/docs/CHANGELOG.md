@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.1] - 2026-04-23
+### Changed
+- Updated the UI status language on failed/successful imports to be clearer.
+- Added error message when package can't be resolved in urdf  
+
 ## [2.3.0] - 2026-04-21
 ### Deprecated
 - Deprecate `URDFImportFromROS2Node` Kit command in favor of using `RobotDefinitionReader` and `URDFImporter` directly

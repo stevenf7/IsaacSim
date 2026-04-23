@@ -81,16 +81,16 @@ class RobotDescription:
         out_dir = os.path.normpath(os.path.join(self._extension_path, "data", "urdf"))
         os.makedirs(out_dir, exist_ok=True)
         out_path = os.path.normpath(os.path.join(out_dir, f"{self.package_name}.urdf"))
-        print(out_path)
+        carb.log_info(f"Writing URDF to {out_path}")
         with open(out_path, "w", encoding="utf-8") as f:
             f.write(urdf_description)
 
         self.urdf_description = urdf_description
         self._last_urdf_path = os.path.normpath(out_path)
         if package_found:
-            self._set_status("ROS node found")
+            self._set_status("ROS package paths resolved")
         else:
-            self._set_status("ROS node not found", color=0xFF0000FF)
+            self._set_status("ROS package paths could not be resolved", color=0xFF0000FF)
 
         def _enable_ui() -> None:
             self._option_widget.set_refresh_enabled(True)

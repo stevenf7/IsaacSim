@@ -107,6 +107,13 @@ Simulation Control
     
     ./tutorial_ros2_simulation_control
 
+Putting It All Together
+-----------------------
+.. toctree::
+    :maxdepth: 1
+
+    ./tutorial_ros2_putting_it_all_together
+
 FAQ
 ---------------
 .. toctree::
