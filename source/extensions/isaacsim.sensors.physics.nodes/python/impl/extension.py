@@ -33,7 +33,7 @@ class Extension(omni.ext.IExt):
     isaacsim.sensors.experimental.physics.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the extension when it is loaded.
 
         Args:
@@ -44,7 +44,7 @@ class Extension(omni.ext.IExt):
         # Acquire the plugin interface so OGN node registration lifetime matches extension lifetime.
         self._interface = acquire_interface()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up when the extension is unloaded."""
         if self._interface is not None:
             release_interface(self._interface)

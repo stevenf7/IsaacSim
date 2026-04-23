@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.7.0] - 2026-04-22
+### Changed
+- Replaced command classes with `create()` static methods on sensor wrapper classes (`ContactSensor.create()`, `IMUSensor.create()`, `RaycastSensor.create()`) matching the `isaacsim.sensors.experimental.rtx` pattern
+- Removed command classes, standalone factory functions, and `sensor_helpers.py`; sensor prim creation logic is now inlined in each sensor class
+- Removed `commands_api.md`; updated `api.rst` and `Overview.md` to document class-based creation API
+- Refactored backend classes to use shared `_PhysicsSensorBase` lifecycle (lazy interface, ensure/retry, reset, timeline stop), eliminating ~300 lines of duplicated code
+- Extracted `_create_sensor_prim` helper for shared prim creation boilerplate across Contact, IMU, and Raycast sensors
+- Removed deprecated `_SensorStepManager.get_imu_backend()` method
+- Fixed `ContactSensor.__init__` parent validation to walk up the hierarchy and accept both `CollisionAPI` and `RigidBodyAPI` ancestors
+
 ## [2.6.0] - 2026-04-22
 ### Changed
 - Add update() flush calls in EffortSensorImpl and ImuSensorImpl before reading physics data

@@ -15,11 +15,10 @@
 
 """Tests for the contact sensor example."""
 
-import omni.kit.commands
 import omni.kit.test
 import omni.timeline
 import omni.usd
-from isaacsim.sensors.experimental.physics import ContactSensorBackend
+from isaacsim.sensors.experimental.physics import ContactSensor, ContactSensorBackend
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf
 
@@ -27,14 +26,16 @@ from pxr import Gf
 class TestContactSensorExample(omni.kit.test.AsyncTestCase):
     """Verify the contact sensor example creates sensors and produces valid readings."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Set up test fixtures."""
         self._timeline = omni.timeline.get_timeline_interface()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Tear down test fixtures."""
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
 
-    async def test_scene_creation_and_sensor_readings(self):
+    async def test_scene_creation_and_sensor_readings(self) -> None:
         """Load the ant asset, create contact sensors, and verify readings after physics steps."""
         assets_root = get_assets_root_path()
         if assets_root is None:
@@ -48,17 +49,15 @@ class TestContactSensorExample(omni.kit.test.AsyncTestCase):
 
         leg_paths = [f"/Ant/Arm_{i + 1:02d}/Lower_Arm" for i in range(4)]
         for leg in leg_paths:
-            result, sensor = omni.kit.commands.execute(
-                "IsaacSensorExperimentalCreateContactSensor",
-                path="/sensor",
-                parent=leg,
+            sensor = ContactSensor.create(
+                f"{leg}/sensor",
                 min_threshold=0,
                 max_threshold=10000000,
                 color=(1, 0, 0, 1),
                 radius=0.12,
                 translation=Gf.Vec3d(40, 0, 0),
             )
-            self.assertTrue(result, f"Failed to create contact sensor at {leg}")
+            self.assertIsNotNone(sensor, f"Failed to create contact sensor at {leg}")
 
         for leg in leg_paths:
             prim = stage.GetPrimAtPath(leg + "/sensor")

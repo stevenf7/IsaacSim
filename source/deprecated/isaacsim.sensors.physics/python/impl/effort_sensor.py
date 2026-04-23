@@ -20,7 +20,6 @@ import copy
 
 import carb
 import carb.eventdispatcher
-import numpy as np
 import omni.kit.utils
 import omni.physics.core
 import omni.timeline

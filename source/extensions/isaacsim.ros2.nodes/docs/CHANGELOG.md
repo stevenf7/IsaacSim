@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.16.1] - 2026-04-21
+### Changed
+- Replaced `omni.kit.commands` raycast sensor creation in test helpers with `RaycastSensor.create()` class method
+
+## [1.16.0] - 2026-04-20
+### Changed
+- Replaced `isaacsim.sensors.physx` dependency with `isaacsim.sensors.experimental.physics` and `isaacsim.sensors.physics.nodes`
+- Migrated point cloud and laser scan tests from PhysX lidar to physics raycast sensor (`IsaacReadRaycastSensor`)
+- `OgnROS2PublishLaserScan` legacy array path now synthesizes binary hit/miss intensities when `intensitiesData` is unconnected
+
 ## [1.15.4] - 2026-04-20
 ### Fixed
 - Fix `test_subscriber.py` and `test_publisher.py` issues where the subscriber and publisher were not properly handling the `vertex_indices` array when it was not set

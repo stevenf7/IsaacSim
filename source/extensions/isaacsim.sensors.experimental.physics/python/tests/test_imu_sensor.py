@@ -29,13 +29,12 @@ import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.core.experimental.utils.transform as transform_utils
 import numpy as np
-import omni.kit.commands
 import omni.kit.test
 import omni.timeline
 from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.prims import Articulation, GeomPrim, RigidPrim, XformPrim
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.sensors.experimental.physics import ImuSensorBackend, IMUSensorReading
+from isaacsim.sensors.experimental.physics import IMUSensor, ImuSensorBackend, IMUSensorReading
 from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Gf, UsdGeom, UsdUtils
 
@@ -135,25 +134,19 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         """Helper to add IMU sensors to ant legs and sphere. Requires ant to be loaded."""
         for i in range(4):
             await omni.kit.app.get_app().next_update_async()
-            result, sensor = omni.kit.commands.execute(
-                "IsaacSensorExperimentalCreateImuSensor",
-                path="/sensor",
-                parent=self.leg_paths[i],
+            sensor = IMUSensor.create(
+                self.leg_paths[i] + "/sensor",
                 translation=self.sensor_offsets[i],
                 orientation=self.sensor_quatd[i],
             )
-            self.assertTrue(result)
             self.assertIsNotNone(sensor)
             # Add sensor on body sphere
             await omni.kit.app.get_app().next_update_async()
-            result, sensor = omni.kit.commands.execute(
-                "IsaacSensorExperimentalCreateImuSensor",
-                path="/sensor",
-                parent=self.sphere_path,
+            sensor = IMUSensor.create(
+                self.sphere_path + "/sensor",
                 translation=self.sensor_offsets[4],
                 orientation=self.sensor_quatd[4],
             )
-            self.assertTrue(result)
             self.assertIsNotNone(sensor)
 
     async def test_add_sensor_prim(self):
@@ -165,14 +158,11 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         """Test orientation imu."""
         await self._setup_simple_articulation()
 
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor",
-            path="/arm_imu",
-            parent=self.arm_path,
+        sensor = IMUSensor.create(
+            self.arm_path + "/arm_imu",
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
         )
-        self.assertTrue(result)
         self.assertIsNotNone(sensor)
 
         self._timeline.play()
@@ -208,14 +198,11 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         """Test ang vel imu."""
         await self._setup_simple_articulation()
 
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor",
-            path="/slider_imu",
-            parent=self.slider_path,
+        sensor = IMUSensor.create(
+            self.slider_path + "/slider_imu",
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
         )
-        self.assertTrue(result)
         self.assertIsNotNone(sensor)
 
         self._timeline.play()
@@ -245,31 +232,25 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         """Ensure linear acceleration magnitudes align with applied efforts."""
         await self._setup_simple_articulation()
 
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor",
-            path="/slider_imu",
-            parent=self.slider_path,
+        sensor = IMUSensor.create(
+            self.slider_path + "/slider_imu",
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
             linear_acceleration_filter_size=10,
             angular_velocity_filter_size=10,
             orientation_filter_size=10,
         )
-        self.assertTrue(result)
         self.assertIsNotNone(sensor)
 
         # await self.test_add_arm_imu()
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor",
-            path="/arm_imu",
-            parent=self.arm_path,
+        sensor = IMUSensor.create(
+            self.arm_path + "/arm_imu",
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
             linear_acceleration_filter_size=10,
             angular_velocity_filter_size=10,
             orientation_filter_size=10,
         )
-        self.assertTrue(result)
         self.assertIsNotNone(sensor)
 
         self._timeline.play()
@@ -398,10 +379,8 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         RigidPrim(cube_path, masses=[1.0])
 
         await omni.kit.app.get_app().next_update_async()
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor",
-            path="/sensor",
-            parent=cube_path,
+        sensor = IMUSensor.create(
+            cube_path + "/sensor",
         )
 
         await omni.kit.app.get_app().next_update_async()
@@ -422,17 +401,14 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         await self._setup_ant(physics_rate=400)
         await omni.kit.app.get_app().next_update_async()
 
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor",
-            path="/sphere_imu_1",
-            parent=self.sphere_path,
+        sensor = IMUSensor.create(
+            self.sphere_path + "/sphere_imu_1",
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
             linear_acceleration_filter_size=1,
             angular_velocity_filter_size=1,
             orientation_filter_size=1,
         )
-        self.assertTrue(result)
         self.assertIsNotNone(sensor)
 
         low_rolling_avg_size_reading = np.zeros(
@@ -481,9 +457,9 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         )
 
         # test 2, when the rolling average is 20, should expect lower fluctuations
-        sensor.CreateLinearAccelerationFilterWidthAttr().Set(20)
-        sensor.CreateAngularVelocityFilterWidthAttr().Set(20)
-        sensor.CreateOrientationFilterWidthAttr().Set(20)
+        sensor._isaac_sensor_prim.CreateLinearAccelerationFilterWidthAttr().Set(20)
+        sensor._isaac_sensor_prim.CreateAngularVelocityFilterWidthAttr().Set(20)
+        sensor._isaac_sensor_prim.CreateOrientationFilterWidthAttr().Set(20)
 
         await omni.kit.app.get_app().next_update_async()
 
@@ -527,14 +503,11 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         """Test sensor latest data."""
         await self._setup_ant()
         await self._add_sensor_prims()
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor",
-            path="/custom_sensor",
-            parent=self.sphere_path,
+        sensor = IMUSensor.create(
+            self.sphere_path + "/custom_sensor",
             translation=self.sensor_offsets[4],
             orientation=self.sensor_quatd[4],
         )
-        self.assertTrue(result)
         self.assertIsNotNone(sensor)
 
         await omni.kit.app.get_app().next_update_async()
@@ -568,14 +541,11 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         """Ensure changing filter widths still yields valid readings."""
         await self._setup_ant()
         await self._add_sensor_prims()
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor",
-            path="/custom_sensor",
-            parent=self.sphere_path,
+        sensor = IMUSensor.create(
+            self.sphere_path + "/custom_sensor",
             translation=self.sensor_offsets[4],
             orientation=self.sensor_quatd[4],
         )
-        self.assertTrue(result)
         self.assertIsNotNone(sensor)
 
         await omni.kit.app.get_app().next_update_async()
@@ -601,10 +571,8 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         stage_utils.define_prim("/World/Cube/xform", "Xform")
         XformPrim("/World/Cube/xform", translations=[10.0, 0.0, 0.0], reset_xform_op_properties=True)
 
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor",
-            path="/custom_sensor",
-            parent="/World/Cube/xform",
+        sensor = IMUSensor.create(
+            "/World/Cube/xform/custom_sensor",
             translation=self.sensor_offsets[4],
             orientation=self.sensor_quatd[4],
         )
@@ -641,10 +609,8 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
     async def test_invalid_imu(self):
         """Test invalid imu."""
         # goal is to make sure an invalid imu doesn't crash the sim
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor",
-            path="/sensor",
-            parent="/World",
+        IMUSensor.create(
+            "/World/sensor",
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
         )
@@ -665,14 +631,11 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # Create an IMU sensor on the cube
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor",
-            path="/imu_sensor",
-            parent="/World/Cube",
+        sensor = IMUSensor.create(
+            "/World/Cube/imu_sensor",
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
         )
-        self.assertTrue(result)
         self.assertIsNotNone(sensor)
         await omni.kit.app.get_app().next_update_async()
 
@@ -725,12 +688,10 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         RigidPrim("/World/Cube", masses=[1.0])
 
         # Also create a valid IMU sensor for comparison
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor",
-            path="/imu_sensor",
-            parent="/World/Cube",
+        sensor = IMUSensor.create(
+            "/World/Cube/imu_sensor",
         )
-        self.assertTrue(result)
+        self.assertIsNotNone(sensor)
         await omni.kit.app.get_app().next_update_async()
 
         # Start simulation - cube is in free fall
@@ -842,10 +803,8 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         GeomPrim(cube_path, apply_collision_apis=True)
         RigidPrim(cube_path, masses=[1.0])
 
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor", path="/imu_sensor", parent=cube_path
-        )
-        self.assertTrue(result)
+        sensor = IMUSensor.create(cube_path + "/imu_sensor")
+        self.assertIsNotNone(sensor)
         sensor_path = cube_path + "/imu_sensor"
         await omni.kit.app.get_app().next_update_async()
 
@@ -886,10 +845,8 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         GeomPrim(cube_path, apply_collision_apis=True)
         RigidPrim(cube_path, masses=[1.0])
 
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor", path="/imu_sensor", parent=cube_path
-        )
-        self.assertTrue(result)
+        sensor = IMUSensor.create(cube_path + "/imu_sensor")
+        self.assertIsNotNone(sensor)
         sensor_path = cube_path + "/imu_sensor"
         await omni.kit.app.get_app().next_update_async()
 

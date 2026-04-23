@@ -124,12 +124,11 @@ class JointStateSensor:
         self._timeline_stop_sub = None
 
     def _timeline_stop_callback_fn(self, event: Any) -> None:
-        """Handle timeline stop by resetting backend state.
+        """Handle timeline stop.
 
         Args:
             event: Timeline stop event payload.
         """
-        self._backend.on_timeline_stop()
 
     def get_sensor_reading(self) -> JointStateSensorReading:
         """Get the current joint state reading for all DOFs.

@@ -15,11 +15,10 @@
 
 """Tests for the IMU sensor example."""
 
-import omni.kit.commands
 import omni.kit.test
 import omni.timeline
 import omni.usd
-from isaacsim.sensors.experimental.physics import ImuSensorBackend
+from isaacsim.sensors.experimental.physics import IMUSensor, ImuSensorBackend
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf
 
@@ -27,14 +26,16 @@ from pxr import Gf
 class TestImuSensorExample(omni.kit.test.AsyncTestCase):
     """Verify the IMU sensor example creates a sensor and produces valid readings."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Set up test fixtures."""
         self._timeline = omni.timeline.get_timeline_interface()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Tear down test fixtures."""
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
 
-    async def test_scene_creation_and_sensor_readings(self):
+    async def test_scene_creation_and_sensor_readings(self) -> None:
         """Load the ant asset, create an IMU sensor, and verify readings after physics steps."""
         assets_root = get_assets_root_path()
         if assets_root is None:
@@ -47,14 +48,12 @@ class TestImuSensorExample(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(stage)
 
         body_path = "/Ant/Sphere"
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor",
-            path="/sensor",
-            parent=body_path,
+        sensor = IMUSensor.create(
+            f"{body_path}/sensor",
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
         )
-        self.assertTrue(result, "Failed to create IMU sensor")
+        self.assertIsNotNone(sensor, "Failed to create IMU sensor")
 
         prim = stage.GetPrimAtPath(body_path + "/sensor")
         self.assertTrue(prim.IsValid(), "IMU sensor prim not found")

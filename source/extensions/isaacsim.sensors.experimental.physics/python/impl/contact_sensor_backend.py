@@ -29,19 +29,7 @@ from isaacsim.core.simulation_manager import SimulationManager
 from .common import (
     ContactSensorReading,
     _PhysicsSensorBase,
-    _SensorStepManager,
 )
-
-
-def _get_contact_sensor_interface():
-    """Get the cached IContactSensor Carbonite interface.
-
-    Returns:
-        Cached C++ contact sensor interface instance.
-    """
-    from .extension import get_contact_sensor_interface
-
-    return get_contact_sensor_interface()
 
 
 class ContactSensorBackend(_PhysicsSensorBase):
@@ -66,20 +54,19 @@ class ContactSensorBackend(_PhysicsSensorBase):
         >>> backend = ContactSensorBackend("/World/ContactSensor")  # doctest: +NO_CHECK
     """
 
-    def __init__(self, prim_path: str):
-        self._prim_path = prim_path
-        self._sensor_created: bool = False
-        self._iface = None
+    def __init__(self, prim_path: str) -> None:
+        super().__init__(prim_path)
         self._is_valid_sensor = self._check_sensor_prim_type()
         self._latest_reading = ContactSensorReading()
         self._last_physics_step = -1
 
-        _SensorStepManager.instance().register(self)
+    def _acquire_interface(self) -> object | None:
+        from .extension import get_contact_sensor_interface
 
-    def _get_iface(self):
-        if self._iface is None:
-            self._iface = _get_contact_sensor_interface()
-        return self._iface
+        return get_contact_sensor_interface()
+
+    def _get_invalid_reading(self) -> object:
+        return ContactSensorReading()
 
     def _check_sensor_prim_type(self) -> bool:
         """Verify that the prim is an IsaacContactSensor type.
@@ -92,20 +79,6 @@ class ContactSensorBackend(_PhysicsSensorBase):
         if not prim.IsValid():
             return False
         return prim.GetTypeName() == "IsaacContactSensor"
-
-    def _ensure_cpp_sensor(self) -> bool:
-        """Ensure the C++ sensor is created and initialized.
-
-        Returns:
-            True if the sensor is created and initialized, False otherwise.
-        """
-        if self._sensor_created:
-            return True
-        iface = self._get_iface()
-        if iface is None:
-            return False
-        self._sensor_created = iface.create_sensor(self._prim_path)
-        return self._sensor_created
 
     def on_physics_step(self, step_dt: float) -> None:
         """Called by _SensorStepManager after each physics step.
@@ -120,27 +93,22 @@ class ContactSensorBackend(_PhysicsSensorBase):
         if not self._is_valid_sensor:
             return
 
-        if not self._ensure_cpp_sensor():
+        if not self._ensure_sensor():
             return
 
-        iface = self._get_iface()
-        if iface is None:
-            return
-
-        cpp_reading = iface.get_sensor_reading(self._prim_path)
+        cpp_reading = self._iface.get_sensor_reading(self._prim_path)
         if not cpp_reading.is_valid and self._sensor_created:
             self._sensor_created = False
-            if self._ensure_cpp_sensor():
-                cpp_reading = iface.get_sensor_reading(self._prim_path)
+            if self._ensure_sensor():
+                cpp_reading = self._iface.get_sensor_reading(self._prim_path)
 
         self._latest_reading = cpp_reading
 
-    def on_timeline_stop(self):
+    def on_timeline_stop(self) -> None:
         """Reset sensor state when timeline stops."""
+        super().on_timeline_stop()
         self._latest_reading = ContactSensorReading()
         self._last_physics_step = -1
-        self._sensor_created = False
-        self._iface = None
 
     def get_sensor_reading(self) -> ContactSensorReading:
         """Get the current contact sensor reading.
@@ -163,7 +131,7 @@ class ContactSensorBackend(_PhysicsSensorBase):
         if not self._is_valid_sensor:
             return ContactSensorReading(is_valid=False, time=0.0)
 
-        if not self._ensure_cpp_sensor():
+        if not self._ensure_sensor():
             return ContactSensorReading(is_valid=False, time=0.0)
 
         if SimulationManager.is_simulating():
@@ -191,14 +159,10 @@ class ContactSensorBackend(_PhysicsSensorBase):
         if not self._is_valid_sensor:
             return []
 
-        if not self._ensure_cpp_sensor():
+        if not self._ensure_sensor():
             return []
 
-        iface = self._get_iface()
-        if iface is None:
-            return []
-
-        return iface.get_raw_contacts(self._prim_path)
+        return self._iface.get_raw_contacts(self._prim_path)
 
     @property
     def parent_token(self) -> int | None:

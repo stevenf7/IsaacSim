@@ -25,12 +25,13 @@ from typing import Any, cast
 import carb
 import numpy as np
 import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
-import omni.kit.commands
+import omni.usd
 from isaacsim.core.experimental.prims import XformPrim
 from isaacsim.core.experimental.utils import prim as prim_utils
 from isaacsim.core.simulation_manager import SimulationManager
+from isaacsim.sensors.experimental.physics.impl.common import _create_sensor_prim
 from isaacsim.sensors.experimental.physics.impl.contact_sensor_backend import ContactSensorBackend
-from pxr import Gf, PhysicsSchemaTools, UsdPhysics
+from pxr import Gf, PhysicsSchemaTools, PhysxSchema, UsdPhysics
 
 
 class ContactSensor(XformPrim):
@@ -77,6 +78,83 @@ class ContactSensor(XformPrim):
             print(f"Contact force: {frame['force']}")
     """
 
+    @staticmethod
+    def create(
+        path: str,
+        *,
+        min_threshold: float = 0,
+        max_threshold: float = 100000,
+        color: Gf.Vec4f = Gf.Vec4f(1, 1, 1, 1),
+        radius: float = -1,
+        translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
+    ) -> ContactSensor:
+        """Create a new contact sensor at the specified path.
+
+        Args:
+            path: Full USD path for the sensor (e.g., ``/World/Robot/foot/contact_sensor``).
+            min_threshold: Minimum force threshold in Newtons.
+            max_threshold: Maximum force threshold in Newtons.
+            color: Sensor visualization color as RGBA.
+            radius: Contact detection radius. Negative means no radius filtering.
+            translation: Local translation offset from parent.
+
+        Returns:
+            ContactSensor instance wrapping the created prim.
+
+        Raises:
+            RuntimeError: If sensor creation fails.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> from isaacsim.sensors.experimental.physics import ContactSensor
+            >>>
+            >>> sensor = ContactSensor.create(
+            ...     "/World/Robot/foot/contact_sensor",
+            ...     min_threshold=1.0,
+            ...     max_threshold=1000.0,
+            ... )  # doctest: +NO_CHECK
+        """
+        parent = "/".join(path.rstrip("/").split("/")[:-1])
+        sensor_name = path.rstrip("/").split("/")[-1]
+        if not parent:
+            raise RuntimeError(f"Path must include a parent prim (e.g., '/World/Cube/{sensor_name}')")
+        prim = ContactSensor._create_prim(
+            path="/" + sensor_name,
+            parent=parent,
+            min_threshold=min_threshold,
+            max_threshold=max_threshold,
+            color=color,
+            radius=radius,
+            translation=translation,
+        )
+        return ContactSensor(prim.GetPath().pathString)
+
+    @staticmethod
+    def _create_prim(
+        path: str,
+        parent: str,
+        min_threshold: float = 0,
+        max_threshold: float = 100000,
+        color: Gf.Vec4f = Gf.Vec4f(1, 1, 1, 1),
+        radius: float = -1,
+        translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
+    ) -> IsaacSensorSchema.IsaacContactSensor:
+        prim, prim_path = _create_sensor_prim(
+            path, parent, IsaacSensorSchema.IsaacContactSensor, translation=translation
+        )
+        prim.CreateThresholdAttr().Set((min_threshold, max_threshold))
+        prim.CreateColorAttr().Set(color)
+        prim.CreateRadiusAttr().Set(radius)
+
+        stage = omni.usd.get_context().get_stage()
+        parent_prim = stage.GetPrimAtPath(parent)
+        contact_report = PhysxSchema.PhysxContactReportAPI.Apply(parent_prim)
+        contact_report.CreateThresholdAttr(min_threshold)
+
+        return prim
+
     def __init__(
         self,
         prim_path: str,
@@ -86,17 +164,29 @@ class ContactSensor(XformPrim):
         min_threshold: float | None = None,
         max_threshold: float | None = None,
         radius: float | None = None,
-    ):
+    ) -> None:
         if position is not None and translation is not None:
             raise ValueError("Sensor position and translation can't be both specified")
 
-        # Extract parent path (sensor must be under a collision-enabled prim)
+        # Walk up from the sensor to find the nearest ancestor with a physics body API
         self._body_prim_path = "/".join(prim_path.split("/")[:-1])
         prim = prim_utils.get_prim_at_path(prim_path)
 
-        # Validate parent has collision API
-        if prim.IsValid() and not prim_utils.has_api(self._body_prim_path, UsdPhysics.CollisionAPI):
-            raise ValueError("Contact Sensor needs to be created under another prim that has collision api enabled on.")
+        if prim.IsValid():
+            parent_path = self._body_prim_path
+            found_body = False
+            while parent_path and parent_path != "/":
+                if prim_utils.has_api(parent_path, UsdPhysics.CollisionAPI) or prim_utils.has_api(
+                    parent_path, UsdPhysics.RigidBodyAPI
+                ):
+                    self._body_prim_path = parent_path
+                    found_body = True
+                    break
+                parent_path = "/".join(parent_path.split("/")[:-1])
+            if not found_body:
+                raise ValueError(
+                    "Contact Sensor needs to be created under a prim that has CollisionAPI or RigidBodyAPI."
+                )
 
         self._sensor_name = prim_path.split("/")[-1]
         if prim.IsValid():
@@ -126,8 +216,7 @@ class ContactSensor(XformPrim):
             color_rgba = np.array([1.0, 1.0, 1.0, 1.0])
 
             carb.log_info(f"Creating a new contact sensor prim at path {prim_path}")
-            success, self._isaac_sensor_prim = omni.kit.commands.execute(
-                "IsaacSensorExperimentalCreateContactSensor",
+            self._isaac_sensor_prim = ContactSensor._create_prim(
                 path="/" + self._sensor_name,
                 parent=self._body_prim_path,
                 min_threshold=min_threshold,
@@ -135,8 +224,6 @@ class ContactSensor(XformPrim):
                 color=Gf.Vec4f(*color_rgba.tolist()),
                 radius=radius,
             )
-            if not success:
-                raise RuntimeError("Failed to create contact sensor prim")
             super().__init__(
                 prim_path,
                 positions=position,
@@ -165,7 +252,7 @@ class ContactSensor(XformPrim):
         """
         return self.paths[0]
 
-    def initialize(self, physics_sim_view: Any = None):
+    def initialize(self, physics_sim_view: Any = None) -> None:
         """Initialize the sensor for simulation.
 
         This method is provided for API compatibility and currently performs
@@ -246,7 +333,7 @@ class ContactSensor(XformPrim):
 
         return self._current_frame
 
-    def add_raw_contact_data_to_frame(self):
+    def add_raw_contact_data_to_frame(self) -> None:
         """Enable raw contact data in frame output.
 
         After calling this, get_current_frame() will include a "contacts" list
@@ -261,7 +348,7 @@ class ContactSensor(XformPrim):
         contacts: list[dict[str, object]] = []
         self._current_frame["contacts"] = contacts
 
-    def remove_raw_contact_data_from_frame(self):
+    def remove_raw_contact_data_from_frame(self) -> None:
         """Disable raw contact data in frame output.
 
         Removes the "contacts" key from frame output to reduce overhead.
@@ -289,7 +376,7 @@ class ContactSensor(XformPrim):
         """
         return self._prim.GetAttribute("radius").Get()
 
-    def set_radius(self, value: float):
+    def set_radius(self, value: float) -> None:
         """Set the contact detection radius.
 
         Args:
@@ -325,7 +412,7 @@ class ContactSensor(XformPrim):
         else:
             return None
 
-    def set_min_threshold(self, value: float):
+    def set_min_threshold(self, value: float) -> None:
         """Set the minimum force threshold.
 
         Contacts with force below this threshold are ignored.
@@ -363,7 +450,7 @@ class ContactSensor(XformPrim):
         else:
             return None
 
-    def set_max_threshold(self, value: float):
+    def set_max_threshold(self, value: float) -> None:
         """Set the maximum force threshold.
 
         Contact forces are clamped to this maximum value.

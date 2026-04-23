@@ -1,5 +1,5 @@
 [package]
-version = "1.15.4"
+version = "1.16.1"
 category = "Simulation"
 title = "ROS 2 Nodes"
 description = "The ROS 2 Nodes extension provides OmniGraph nodes for ROS 2 communication. It contains publisher, subscriber, and service nodes that can be used in Action graphs to interface with ROS 2 systems. This extension depends on the isaacsim.ros2.core extension for underlying ROS 2 functionality."
@@ -23,8 +23,8 @@ writeTarget.platform = true
 "isaacsim.robot.schema" = {}
 "isaacsim.ros2.core" = {}
 "isaacsim.sensors.camera" = {}
+"isaacsim.sensors.experimental.physics" = {}
 "isaacsim.sensors.physics.nodes" = {}
-"isaacsim.sensors.physx" = {}
 "isaacsim.sensors.rtx" = {}
 "isaacsim.storage.native" = {}
 "omni.graph" = {}
@@ -82,7 +82,6 @@ pythonTests.exclude = [
 ]
 
 stdoutFailPatterns.exclude = [
-    "*[Error] [omni.graph.core.plugin] /ActionGraph/ReadLidarPCL: [/ActionGraph] no prim path found for the lidar*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros2_bridge_ROS2PublishJointState: [/TestGraph] Could not find target prim*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros2_bridge_ROS2PublishJointState: [/TestGraph] Specify targetPrim or connect Isaac Read Joint State node outputs*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros2_bridge_ROS2PublishImage: [/TestGraph] Width 0 or height 0 is not valid*",
@@ -247,7 +246,6 @@ dependencies = [
 ]
 
 stdoutFailPatterns.exclude = [
-    "*[Error] [omni.graph.core.plugin] /ActionGraph/ReadLidarPCL: [/ActionGraph] no prim path found for the lidar*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros2_bridge_ROS2PublishJointState: [/TestGraph] Could not find target prim*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros2_bridge_ROS2PublishJointState: [/TestGraph] Specify targetPrim or connect Isaac Read Joint State node outputs*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros2_bridge_ROS2PublishImage: [/TestGraph] Width 0 or height 0 is not valid*",

@@ -24,19 +24,20 @@ import carb
 import carb.eventdispatcher
 import omni
 import omni.graph.core as og
-import omni.kit.commands
 import omni.physics.core
 import omni.ui as ui
 import omni.usd
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.ui_utils import LABEL_WIDTH, get_style, setup_ui_headers
-from isaacsim.sensors.experimental.physics import RaycastSensorBackend
+from isaacsim.sensors.experimental.physics import RaycastSensor, RaycastSensorBackend
 from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
 
 EXTENSION_NAME = "Physics Raycast Sensor Example"
 
 
-def _generate_solid_state_rays(h_count=10, v_count=5, h_fov=60.0, v_fov=20.0):
+def _generate_solid_state_rays(
+    h_count: int = 10, v_count: int = 5, h_fov: float = 60.0, v_fov: float = 20.0
+) -> tuple[list[list[float]], list[list[float]], None]:
     """Generate a rectangular grid of rays for a solid state physics raycast sensor."""
     origins = []
     directions = []
@@ -52,7 +53,9 @@ def _generate_solid_state_rays(h_count=10, v_count=5, h_fov=60.0, v_fov=20.0):
     return origins, directions, None
 
 
-def _generate_rotating_rays(v_count=8, azimuth_steps=36, v_fov=30.0, rotation_rate=1.0):
+def _generate_rotating_rays(
+    v_count: int = 8, azimuth_steps: int = 36, v_fov: float = 30.0, rotation_rate: float = 1.0
+) -> tuple[list[list[float]], list[list[float]], list[float]]:
     """Generate rays for a rotating physics raycast sensor with time offsets for sweep.
 
     Each azimuthal column is assigned a time offset within one sweep
@@ -77,7 +80,9 @@ def _generate_rotating_rays(v_count=8, azimuth_steps=36, v_fov=30.0, rotation_ra
     return origins, directions, time_offsets
 
 
-def _generate_curtain_rays(beam_count=16, curtain_height=0.75):
+def _generate_curtain_rays(
+    beam_count: int = 16, curtain_height: float = 0.75
+) -> tuple[list[list[float]], list[list[float]], None]:
     """Generate parallel rays spread vertically for a beam curtain physics raycast sensor."""
     origins = []
     directions = []
@@ -91,7 +96,7 @@ def _generate_curtain_rays(beam_count=16, curtain_height=0.75):
 class Extension(omni.ext.IExt):
     """Extension that hosts the physics raycast sensor example UI."""
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the extension and register the example.
 
         Args:
@@ -110,10 +115,10 @@ class Extension(omni.ext.IExt):
             category="Sensors",
         )
 
-    def build_window(self):
+    def build_window(self) -> None:
         """Build the example window entrypoint."""
 
-    def _on_stage_closed(self, event: Any):
+    def _on_stage_closed(self, event: Any) -> None:
         """Handle stage-closed events.
 
         Args:
@@ -121,7 +126,7 @@ class Extension(omni.ext.IExt):
         """
         self.on_closed()
 
-    def build_ui(self):
+    def build_ui(self) -> None:
         """Build the UI controls for the physics raycast sensor example."""
         with ui.VStack(spacing=5, height=0):
             title = "Physics Raycast Sensor Example"
@@ -136,7 +141,7 @@ class Extension(omni.ext.IExt):
             setup_ui_headers(self._ext_id, __file__, title, doc_link, overview, info_collapsed=False)
             ui.Button("Load Scene", clicked_fn=lambda: self._load_scene())
 
-    def _load_scene(self):
+    def _load_scene(self) -> None:
         """Load the physics raycast sensor example scene and initialize UI state."""
         if self._window:
             self.on_closed()
@@ -187,12 +192,12 @@ class Extension(omni.ext.IExt):
 
         asyncio.ensure_future(self.create_scenario())
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up resources when the extension is unloaded."""
         self.on_closed()
         get_browser_instance().deregister_example(name="Physics Raycast Sensor", category="Sensors")
 
-    def _on_visibility_changed(self, visible: bool):
+    def _on_visibility_changed(self, visible: bool) -> None:
         """Handle window visibility changes.
 
         Args:
@@ -201,7 +206,7 @@ class Extension(omni.ext.IExt):
         if not visible:
             self.on_closed()
 
-    def on_closed(self):
+    def on_closed(self) -> None:
         """Tear down the example window and subscriptions."""
         if self._window:
             self.sub = None
@@ -211,7 +216,7 @@ class Extension(omni.ext.IExt):
             self._window.destroy()
             self._window = None
 
-    def _on_update(self, dt: float, context: Any):
+    def _on_update(self, dt: float, context: Any) -> None:
         """Update UI values from the physics raycast sensor readings.
 
         Args:
@@ -235,7 +240,7 @@ class Extension(omni.ext.IExt):
                 self.sliders[f"{key}_hits"].model.set_value(0)
                 self.sliders[f"{key}_min"].model.set_value(0)
 
-    async def create_scenario(self):
+    async def create_scenario(self) -> None:
         """Create the physics raycast sensor example scene with obstacles and sensors."""
         await omni.usd.get_context().new_stage_async()
         stage = omni.usd.get_context().get_stage()
@@ -278,10 +283,8 @@ class Extension(omni.ext.IExt):
 
         # Solid state physics raycast sensor
         ss_origins, ss_dirs, _ = _generate_solid_state_rays()
-        omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateRaycastSensor",
-            path="/Solid_State_Physics_Raycast_Sensor",
-            parent="/World/Sensors",
+        RaycastSensor.create(
+            "/World/Sensors/Solid_State_Physics_Raycast_Sensor",
             min_range=0.4,
             max_range=100.0,
             ray_origins=ss_origins,
@@ -292,10 +295,8 @@ class Extension(omni.ext.IExt):
 
         # Rotating physics raycast sensor — rays fire in a sweeping pattern at 1 Hz
         rot_origins, rot_dirs, rot_offsets = _generate_rotating_rays(rotation_rate=1.0)
-        omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateRaycastSensor",
-            path="/Rotating_Physics_Raycast_Sensor",
-            parent="/World/Sensors",
+        RaycastSensor.create(
+            "/World/Sensors/Rotating_Physics_Raycast_Sensor",
             min_range=0.4,
             max_range=100.0,
             ray_origins=rot_origins,
@@ -307,10 +308,8 @@ class Extension(omni.ext.IExt):
 
         # Beam curtain physics raycast sensor
         cur_origins, cur_dirs, _ = _generate_curtain_rays()
-        omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateRaycastSensor",
-            path="/Beam_Curtain_Physics_Raycast_Sensor",
-            parent="/World/Sensors",
+        RaycastSensor.create(
+            "/World/Sensors/Beam_Curtain_Physics_Raycast_Sensor",
             min_range=0.2,
             max_range=10.0,
             ray_origins=cur_origins,

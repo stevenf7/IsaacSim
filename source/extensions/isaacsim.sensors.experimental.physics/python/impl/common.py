@@ -271,7 +271,7 @@ class _SensorStepManager:
 
     _instance: _SensorStepManager | None = None
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._sensors: weakref.WeakSet[_PhysicsSensorBase] = weakref.WeakSet()
 
         self._post_step_callback = SimulationManager.register_callback(
@@ -295,28 +295,13 @@ class _SensorStepManager:
             cls._instance = cls()
         return cls._instance
 
-    def register(self, sensor: _PhysicsSensorBase):
+    def register(self, sensor: _PhysicsSensorBase) -> None:
         """Register a sensor to receive physics step updates.
 
         Args:
             sensor: Sensor instance to register.
         """
         self._sensors.add(sensor)
-
-    def get_imu_backend(self, prim_path: str) -> _PhysicsSensorBase | None:
-        """Get an IMU backend by prim path.
-
-        .. deprecated::
-            IMU backends are now managed by the C++ IImuSensor plugin.
-            Use ImuSensorBackend(prim_path) directly instead.
-
-        Args:
-            prim_path: IMU prim path to look up.
-
-        Returns:
-            None (IMU backends are no longer tracked by the step manager).
-        """
-        return None
 
     def _on_simulation_start(self, event: Any) -> None:
         """Handle simulation start events.
@@ -325,7 +310,7 @@ class _SensorStepManager:
             event: Simulation start event data.
         """
 
-    def _on_physics_step(self, step_dt: float, context: Any = None):
+    def _on_physics_step(self, step_dt: float, context: Any = None) -> None:
         """Handle physics step events.
 
         Notifies the contact report manager and all registered sensors of the physics step update.
@@ -337,7 +322,7 @@ class _SensorStepManager:
         for sensor in list(self._sensors):
             sensor.on_physics_step(step_dt)
 
-    def _on_timeline_stop(self, event: Any):
+    def _on_timeline_stop(self, event: Any) -> None:
         """Handle timeline stop events.
 
         Notifies all registered sensors of the timeline stop and clears auto-discovered IMU backends and contact data.
@@ -350,23 +335,127 @@ class _SensorStepManager:
 
 
 class _PhysicsSensorBase:
-    """Abstract base class for physics-based sensors."""
+    """Base class for physics sensor backends with lazy C++ interface management.
 
-    def on_physics_step(self, step_dt: float):
-        """Called after each physics simulation step.
+    Provides shared lifecycle logic: lazy interface acquisition, sensor
+    creation/removal, retry-on-invalid reading, and timeline stop cleanup.
+    Subclasses override ``_acquire_interface`` and ``_get_invalid_reading``.
+    """
+
+    def __init__(self, prim_path: str) -> None:
+        self._prim_path = prim_path
+        self._sensor_created: bool = False
+        self._iface = None
+        _SensorStepManager.instance().register(self)
+
+    def _acquire_interface(self) -> object | None:
+        """Return the C++ Carbonite interface for this sensor type.
+
+        Raises:
+            NotImplementedError: If not overridden by subclass.
+        """
+        raise NotImplementedError
+
+    def _get_invalid_reading(self) -> object:
+        """Return a default invalid reading for this sensor type.
+
+        Raises:
+            NotImplementedError: If not overridden by subclass.
+        """
+        raise NotImplementedError
+
+    def _ensure_sensor(self) -> bool:
+        """Ensure the C++ sensor is created and initialized.
+
+        Returns:
+            True if the sensor is ready, False otherwise.
+        """
+        if self._iface is None:
+            self._iface = self._acquire_interface()
+        if self._iface is None:
+            return False
+        if self._sensor_created:
+            return True
+        self._sensor_created = self._iface.create_sensor(self._prim_path)
+        return self._sensor_created
+
+    def _get_reading(self, *args: object) -> object:
+        """Get a sensor reading with auto-retry on invalid.
+
+        Args:
+            *args: Additional arguments forwarded to C++ ``get_sensor_reading``.
+
+        Returns:
+            The sensor reading object.
+        """
+        if not self._sensor_created and not self._ensure_sensor():
+            return self._get_invalid_reading()
+        reading = self._iface.get_sensor_reading(self._prim_path, *args)
+        if not reading.is_valid:
+            self._sensor_created = False
+            if not self._ensure_sensor():
+                return self._get_invalid_reading()
+            reading = self._iface.get_sensor_reading(self._prim_path, *args)
+        return reading
+
+    def on_physics_step(self, step_dt: float) -> None:
+        """Called after each physics step. Override for custom per-step logic.
 
         Args:
             step_dt: Physics step duration in seconds.
-
-        Raises:
-            NotImplementedError: If the base class method is called directly.
         """
-        raise NotImplementedError
 
-    def on_timeline_stop(self):
-        """Called when the simulation timeline stops.
+    def on_timeline_stop(self) -> None:
+        """Reset sensor state when the timeline stops."""
+        self._sensor_created = False
+        self._iface = None
 
-        Raises:
-            NotImplementedError: If the base class method is called directly.
-        """
-        raise NotImplementedError
+    def reset(self) -> None:
+        """Remove the sensor from the simulation and reset state."""
+        if self._iface is not None and self._sensor_created:
+            self._iface.remove_sensor(self._prim_path)
+        self._sensor_created = False
+
+
+def _create_sensor_prim(
+    path: str,
+    parent: str,
+    schema_type: type,
+    translation: Any = None,
+    orientation: Any = None,
+) -> tuple[Any, str]:
+    """Create a sensor prim with common setup (path, schema, enabled attr, transform).
+
+    Args:
+        path: Sensor name path (e.g. ``"/SensorName"``).
+        parent: Parent prim path.
+        schema_type: USD schema class to ``Define`` (e.g. ``IsaacSensorSchema.IsaacImuSensor``).
+        translation: Local translation as ``Gf.Vec3d``. Defaults to origin.
+        orientation: Local orientation as ``Gf.Quatd``. Defaults to identity.
+
+    Returns:
+        Tuple of (schema prim object, resolved prim path string).
+    """
+    import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
+    import omni.usd
+    from isaacsim.core.experimental.prims import XformPrim
+    from isaacsim.core.experimental.utils import stage as stage_utils
+    from pxr import Gf
+
+    if translation is None:
+        translation = Gf.Vec3d(0, 0, 0)
+    if orientation is None:
+        orientation = Gf.Quatd(1, 0, 0, 0)
+
+    stage = omni.usd.get_context().get_stage()
+    base_path = f"{parent.rstrip('/')}/{path.lstrip('/')}"
+    prim_path = stage_utils.generate_next_free_path(base_path, prepend_default_prim=False)
+    prim = schema_type.Define(stage, prim_path)
+    IsaacSensorSchema.IsaacBaseSensor(prim).CreateEnabledAttr(True)
+
+    translation_arr = np.array(translation, dtype=np.float64)
+    orientation_arr = np.array([orientation.GetReal(), *orientation.GetImaginary()], dtype=np.float64)
+    XformPrim(prim_path, reset_xform_op_properties=True).set_local_poses(
+        translations=translation_arr, orientations=orientation_arr
+    )
+    return prim, prim_path

@@ -22,13 +22,12 @@ from typing import Any
 import carb
 import carb.eventdispatcher
 import omni
-import omni.kit.commands
 import omni.physics.core
 import omni.ui as ui
 import omni.usd
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.ui_utils import LABEL_WIDTH, get_style, setup_ui_headers
-from isaacsim.sensors.experimental.physics import ImuSensorBackend
+from isaacsim.sensors.experimental.physics import IMUSensor, ImuSensorBackend
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf, UsdGeom
 
@@ -38,7 +37,7 @@ EXTENSION_NAME = "IMU Sensor Example"
 class Extension(omni.ext.IExt):
     """Extension that hosts the IMU sensor example UI."""
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the extension and register the example.
 
         Args:
@@ -58,7 +57,7 @@ class Extension(omni.ext.IExt):
             category="Sensors",
         )
 
-    def build_window(self):
+    def build_window(self) -> None:
         """Build the example window entrypoint.
 
         Example:
@@ -67,7 +66,7 @@ class Extension(omni.ext.IExt):
                 extension.build_window()
         """
 
-    def _on_stage_closed(self, event: Any):
+    def _on_stage_closed(self, event: Any) -> None:
         """Handle stage-closed events.
 
         Args:
@@ -75,7 +74,7 @@ class Extension(omni.ext.IExt):
         """
         self.on_closed()
 
-    def build_ui(self):
+    def build_ui(self) -> None:
         """Build the UI controls for the IMU sensor example.
 
         Example:
@@ -96,7 +95,7 @@ class Extension(omni.ext.IExt):
             setup_ui_headers(self._ext_id, __file__, title, doc_link, overview, info_collapsed=False)
             ui.Button("Load Scene", clicked_fn=lambda: self._load_scene())
 
-    def _load_scene(self):
+    def _load_scene(self) -> None:
         """Load the IMU example scene and initialize UI state."""
         if self._window:
             # clear existing window
@@ -172,12 +171,12 @@ class Extension(omni.ext.IExt):
 
         window.visible = True
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up resources when the extension is unloaded."""
         self.on_closed()
         get_browser_instance().deregister_example(name="IMU Sensor", category="Sensors")
 
-    def _on_visibility_changed(self, visible: bool):
+    def _on_visibility_changed(self, visible: bool) -> None:
         """Handle window visibility changes.
 
         Args:
@@ -186,7 +185,7 @@ class Extension(omni.ext.IExt):
         if not visible:
             self.on_closed()
 
-    def on_closed(self):
+    def on_closed(self) -> None:
         """Tear down the example window and subscriptions.
 
         Example:
@@ -201,7 +200,7 @@ class Extension(omni.ext.IExt):
             self._window.destroy()
             self._window = None
 
-    def _on_update(self, dt: float, context: Any):
+    def _on_update(self, dt: float, context: Any) -> None:
         """Update UI values from the IMU sensor reading.
 
         Args:
@@ -235,7 +234,7 @@ class Extension(omni.ext.IExt):
             self.sliders[8].model.set_value(0)
             self.sliders[9].model.set_value(1)
 
-    async def create_scenario(self):
+    async def create_scenario(self) -> None:
         """Create the IMU example scene and sensor prims.
 
         Example:
@@ -259,10 +258,8 @@ class Extension(omni.ext.IExt):
 
         self.meters_per_unit = UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())
 
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateImuSensor",
-            path="/sensor",
-            parent=self.body_path,
+        IMUSensor.create(
+            f"{self.body_path}/sensor",
             translation=Gf.Vec3d(0, 0, 0),
             orientation=Gf.Quatd(1, 0, 0, 0),
         )

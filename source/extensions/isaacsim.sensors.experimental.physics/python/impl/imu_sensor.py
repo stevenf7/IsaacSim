@@ -25,11 +25,12 @@ from typing import Any
 import carb
 import numpy as np
 import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
-import omni.kit.commands
 from isaacsim.core.experimental.prims import XformPrim
 from isaacsim.core.experimental.utils import prim as prim_utils
 from isaacsim.core.simulation_manager import SimulationManager
+from isaacsim.sensors.experimental.physics.impl.common import _create_sensor_prim
 from isaacsim.sensors.experimental.physics.impl.imu_sensor_backend import ImuSensorBackend
+from pxr import Gf
 
 
 class IMUSensor(XformPrim):
@@ -75,6 +76,77 @@ class IMUSensor(XformPrim):
             print(f"Orientation: {frame['orientation']}")
     """
 
+    @staticmethod
+    def create(
+        path: str,
+        *,
+        translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
+        orientation: Gf.Quatd = Gf.Quatd(1, 0, 0, 0),
+        linear_acceleration_filter_size: int = 1,
+        angular_velocity_filter_size: int = 1,
+        orientation_filter_size: int = 1,
+    ) -> IMUSensor:
+        """Create a new IMU sensor at the specified path.
+
+        Args:
+            path: Full USD path for the sensor (e.g., ``/World/Robot/body/imu``).
+            translation: Local translation offset from parent.
+            orientation: Sensor orientation as a quaternion.
+            linear_acceleration_filter_size: Rolling average window for acceleration.
+            angular_velocity_filter_size: Rolling average window for angular velocity.
+            orientation_filter_size: Rolling average window for orientation.
+
+        Returns:
+            IMUSensor instance wrapping the created prim.
+
+        Raises:
+            RuntimeError: If sensor creation fails.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> from isaacsim.sensors.experimental.physics import IMUSensor
+            >>>
+            >>> sensor = IMUSensor.create(
+            ...     "/World/Robot/body/imu",
+            ...     linear_acceleration_filter_size=5,
+            ... )  # doctest: +NO_CHECK
+        """
+        parent = "/".join(path.rstrip("/").split("/")[:-1])
+        sensor_name = path.rstrip("/").split("/")[-1]
+        if not parent:
+            raise RuntimeError(f"Path must include a parent prim (e.g., '/World/Cube/{sensor_name}')")
+        prim = IMUSensor._create_prim(
+            path="/" + sensor_name,
+            parent=parent,
+            translation=translation,
+            orientation=orientation,
+            linear_acceleration_filter_size=linear_acceleration_filter_size,
+            angular_velocity_filter_size=angular_velocity_filter_size,
+            orientation_filter_size=orientation_filter_size,
+        )
+        return IMUSensor(prim.GetPath().pathString)
+
+    @staticmethod
+    def _create_prim(
+        path: str,
+        parent: str,
+        translation: Gf.Vec3d = Gf.Vec3d(0, 0, 0),
+        orientation: Gf.Quatd = Gf.Quatd(1, 0, 0, 0),
+        linear_acceleration_filter_size: int = 1,
+        angular_velocity_filter_size: int = 1,
+        orientation_filter_size: int = 1,
+    ) -> IsaacSensorSchema.IsaacImuSensor:
+        prim, _ = _create_sensor_prim(
+            path, parent, IsaacSensorSchema.IsaacImuSensor, translation=translation, orientation=orientation
+        )
+        prim.CreateLinearAccelerationFilterWidthAttr().Set(linear_acceleration_filter_size)
+        prim.CreateAngularVelocityFilterWidthAttr().Set(angular_velocity_filter_size)
+        prim.CreateOrientationFilterWidthAttr().Set(orientation_filter_size)
+
+        return prim
+
     def __init__(
         self,
         prim_path: str,
@@ -85,7 +157,7 @@ class IMUSensor(XformPrim):
         linear_acceleration_filter_size: int | None = 1,
         angular_velocity_filter_size: int | None = 1,
         orientation_filter_size: int | None = 1,
-    ):
+    ) -> None:
         if position is not None and translation is not None:
             raise ValueError("Sensor position and translation can't be both specified")
 
@@ -117,16 +189,13 @@ class IMUSensor(XformPrim):
         else:
             # Create new sensor prim
             carb.log_warn(f"Creating a new IMU prim at path {prim_path}")
-            success, self._isaac_sensor_prim = omni.kit.commands.execute(
-                "IsaacSensorExperimentalCreateImuSensor",
+            self._isaac_sensor_prim = IMUSensor._create_prim(
                 path="/" + self._sensor_name,
                 parent=self._body_prim_path,
                 linear_acceleration_filter_size=linear_acceleration_filter_size,
                 angular_velocity_filter_size=angular_velocity_filter_size,
                 orientation_filter_size=orientation_filter_size,
             )
-            if not success:
-                raise RuntimeError("Failed to create IMU sensor prim")
             super().__init__(
                 prim_path,
                 positions=position,
@@ -160,7 +229,7 @@ class IMUSensor(XformPrim):
         """
         return self.paths[0]
 
-    def initialize(self, physics_sim_view: Any = None):
+    def initialize(self, physics_sim_view: Any = None) -> None:
         """Initialize the sensor for simulation.
 
         This method is provided for API compatibility and currently performs

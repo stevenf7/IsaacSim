@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.4] - 2026-04-20
+### Fixed
+- Remove unused isaacsim.sensors.physx dependency
+
 ## [1.7.3] - 2026-04-17
 ### Changed
 - Updated internal ROS 2 libraries to support latest simulation interfaces versions (v1.4.0 Humble and v1.5.0 Jazzy)

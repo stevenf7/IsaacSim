@@ -1,5 +1,5 @@
 [package]
-version = "2.6.0"
+version = "2.7.0"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation"
 description = "Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, IMU Sensor, & Raycast Sensor."
@@ -48,7 +48,6 @@ dependencies = [
     "isaacsim.test.utils",
 ]
 stdoutFailPatterns.exclude = [
-    '*[Error] [isaacsim.sensors.experimental.physics.impl.commands] Valid parent prim must be selected before creating contact sensor prim.*',
     '*[Error] [isaacsim.sensors.physics.plugin] Imu Sensor does not exist*',
     '*[Error] [isaacsim.sensors.physics.plugin] Contact Sensor does not exist*',
     '*parent prim is missing contact report API*',
@@ -117,7 +116,6 @@ dependencies = [
     "isaacsim.test.utils",
 ]
 stdoutFailPatterns.exclude = [
-    '*[Error] [isaacsim.sensors.experimental.physics.impl.commands] Valid parent prim must be selected before creating contact sensor prim.*',
     '*[Error] [isaacsim.sensors.physics.plugin] Imu Sensor does not exist*',
     '*[Error] [isaacsim.sensors.physics.plugin] Contact Sensor does not exist*',
     '*parent prim is missing contact report API*',

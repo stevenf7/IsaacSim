@@ -15,3 +15,27 @@
 
 from .bindings import _physics_sensors  # noqa: F401
 from .impl import *
+
+__all__ = [
+    "ContactSensorReading",
+    "IMURawData",
+    "IMUSensorReading",
+    "ContactSensor",
+    "ContactSensorBackend",
+    "EffortSensor",
+    "EffortSensorReading",
+    "EffortSensorBackend",
+    "Extension",
+    "IMUSensor",
+    "ImuSensorBackend",
+    "JointStateSensor",
+    "JointStateSensorReading",
+    "JointStateSensorBackend",
+    "RaycastSensor",
+    "RaycastSensorBackend",
+    "get_imu_sensor_interface",
+    "get_contact_sensor_interface",
+    "get_effort_sensor_interface",
+    "get_joint_state_sensor_interface",
+    "get_raycast_sensor_interface",
+]

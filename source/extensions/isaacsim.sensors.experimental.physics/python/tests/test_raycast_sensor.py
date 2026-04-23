@@ -17,15 +17,13 @@
 
 from __future__ import annotations
 
-import numpy as np
-import omni.kit.commands
 import omni.kit.test
 import omni.timeline
 import omni.usd
 from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.sensors.experimental.physics import RaycastSensorBackend
+from isaacsim.sensors.experimental.physics import RaycastSensor, RaycastSensorBackend
 from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 from .common import step_simulation
@@ -68,17 +66,15 @@ class TestRaycastSensor(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         sensor_path = "/World/FallingCube/Physics_Raycast_Sensor"
-        result, sensor = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateRaycastSensor",
-            path="/Physics_Raycast_Sensor",
-            parent=cube_path,
+        sensor = RaycastSensor.create(
+            cube_path + "/Physics_Raycast_Sensor",
             min_range=0.1,
             max_range=20.0,
             ray_origins=[[0.0, 0.0, 0.0]],
             ray_directions=[[0.0, 0.0, -1.0]],
             output_frame="WORLD",
         )
-        self.assertTrue(result, "Failed to create physics raycast sensor")
+        self.assertIsNotNone(sensor, "Failed to create physics raycast sensor")
         await omni.kit.app.get_app().next_update_async()
 
         backend = RaycastSensorBackend(sensor_path)
@@ -128,17 +124,15 @@ class TestRaycastSensor(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
         sensor_path = cube_path + "/Physics_Raycast_Sensor"
-        result, _ = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateRaycastSensor",
-            path="/Physics_Raycast_Sensor",
-            parent=cube_path,
+        sensor = RaycastSensor.create(
+            cube_path + "/Physics_Raycast_Sensor",
             min_range=0.6,
             max_range=20.0,
             ray_origins=[[0.0, 0.0, 0.0]],
             ray_directions=[[0.0, 0.0, -1.0]],
             output_frame="WORLD",
         )
-        self.assertTrue(result)
+        self.assertIsNotNone(sensor)
         await omni.kit.app.get_app().next_update_async()
 
         backend = RaycastSensorBackend(sensor_path)
@@ -182,17 +176,15 @@ class TestRaycastSensor(omni.kit.test.AsyncTestCase):
         xform.GetPrim().CreateAttribute("physics:kinematicEnabled", Sdf.ValueTypeNames.Bool).Set(True)
 
         sensor_path = "/World/SensorMount/Physics_Raycast_Sensor"
-        result, _ = omni.kit.commands.execute(
-            "IsaacSensorExperimentalCreateRaycastSensor",
-            path="/Physics_Raycast_Sensor",
-            parent="/World/SensorMount",
+        sensor = RaycastSensor.create(
+            "/World/SensorMount/Physics_Raycast_Sensor",
             min_range=0.1,
             max_range=20.0,
             ray_origins=[[0.0, 0.0, 0.0]],
             ray_directions=[[1.0, 0.0, 0.0]],
             output_frame="WORLD",
         )
-        self.assertTrue(result)
+        self.assertIsNotNone(sensor)
         await omni.kit.app.get_app().next_update_async()
 
         backend = RaycastSensorBackend(sensor_path)

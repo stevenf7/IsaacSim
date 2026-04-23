@@ -22,12 +22,7 @@ transparently.
 """
 from __future__ import annotations
 
-
-def _get_effort_interface() -> object | None:
-    from .extension import get_effort_sensor_interface
-
-    return get_effort_sensor_interface()
-
+from .common import _PhysicsSensorBase
 
 _INVALID_EFFORT_READING = None
 
@@ -41,7 +36,7 @@ def _get_invalid_effort_reading() -> object:
     return _INVALID_EFFORT_READING
 
 
-class EffortSensorBackend:
+class EffortSensorBackend(_PhysicsSensorBase):
     """Backend implementation for effort sensors, backed by a C++ plugin.
 
     Returns the C++ EffortSensorReading struct directly for minimal
@@ -52,19 +47,15 @@ class EffortSensorBackend:
     """
 
     def __init__(self, joint_prim_path: str) -> None:
-        self._joint_prim_path = joint_prim_path
-        self._sensor_created: bool = False
-        self._iface = None
+        super().__init__(joint_prim_path)
 
-    def _ensure_sensor(self) -> bool:
-        if self._iface is None:
-            self._iface = _get_effort_interface()
-        if self._iface is None:
-            return False
-        if self._sensor_created:
-            return True
-        self._sensor_created = self._iface.create_sensor(self._joint_prim_path)
-        return self._sensor_created
+    def _acquire_interface(self) -> object | None:
+        from .extension import get_effort_sensor_interface
+
+        return get_effort_sensor_interface()
+
+    def _get_invalid_reading(self) -> object:
+        return _get_invalid_effort_reading()
 
     def get_sensor_reading(self) -> object:
         """Get the current effort sensor reading.
@@ -72,24 +63,4 @@ class EffortSensorBackend:
         Returns:
             The C++ EffortSensorReading struct directly.
         """
-        if not self._sensor_created and not self._ensure_sensor():
-            return _get_invalid_effort_reading()
-
-        reading = self._iface.get_sensor_reading(self._joint_prim_path)
-        if not reading.is_valid:
-            self._sensor_created = False
-            if not self._ensure_sensor():
-                return _get_invalid_effort_reading()
-            reading = self._iface.get_sensor_reading(self._joint_prim_path)
-        return reading
-
-    def on_timeline_stop(self) -> None:
-        """Handle timeline stop event."""
-        self._sensor_created = False
-        self._iface = None
-
-    def reset(self) -> None:
-        """Reset the sensor state."""
-        if self._iface is not None and self._sensor_created:
-            self._iface.remove_sensor(self._joint_prim_path)
-        self._sensor_created = False
+        return self._get_reading()
