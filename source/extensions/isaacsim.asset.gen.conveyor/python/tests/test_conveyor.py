@@ -18,8 +18,8 @@ from __future__ import annotations
 import asyncio
 import time
 
-import omni.kit.commands
 import omni.kit.test
+from isaacsim.asset.gen.conveyor import create_conveyor_belt
 from pxr import Gf, PhysxSchema, UsdGeom, UsdPhysics
 from usdrt import Sdf, Usd
 
@@ -136,21 +136,17 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
     async def test_add_conveyor(self, physics: bool = True) -> None:
         """Test creating a conveyor belt with a cube primitive.
 
-        Creates a cube primitive, applies rigid body properties if physics is enabled,
-        and creates a conveyor belt using the CreateConveyorBelt command.
-
         Args:
             physics: Whether to enable physics on the cube.
         """
-        stage = omni.usd.get_context().get_stage()
         cube_prim = add_cube(self._stage, "/cube", 1.00, (0, 0, 0), physics=physics)
         rigid_prim = UsdPhysics.RigidBodyAPI(cube_prim)
         if rigid_prim:
             rigid_prim.GetKinematicEnabledAttr().Set(True)
-        _, og_prim = omni.kit.commands.execute("CreateConveyorBelt", conveyor_prim=cube_prim)
+        og_prim = create_conveyor_belt(self._stage, cube_prim)
         self.assertIsNotNone(og_prim)
         self.conveyor_node = og_prim
-        self.velocity_attr = stage.GetPrimAtPath("/ConveyorBeltGraph").GetAttribute("graph:variable:Velocity")
+        self.velocity_attr = self._stage.GetPrimAtPath("/ConveyorBeltGraph").GetAttribute("graph:variable:Velocity")
         self.assertTrue(self.conveyor_node.IsValid())
         pass
 
@@ -255,7 +251,7 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         for i in range(10):
             for j in range(10):
                 cube_prim = add_cube(self._stage, f"/cube_{i}_{j}", 1.00, (i, j, 0), physics=True)
-                _, og_prim = omni.kit.commands.execute("CreateConveyorBelt", conveyor_prim=cube_prim)
+                og_prim = create_conveyor_belt(self._stage, cube_prim)
                 self.assertIsNotNone(og_prim)
                 conveyor_nodes.append(og_prim)
                 self.assertTrue(conveyor_nodes[-1].IsValid())

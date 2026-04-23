@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.6.1] - 2026-04-21
+### Removed
+- Remove dead root-level `__init__.py`, `extension.py`, and `og_shortcuts_menu.py` (not deployed to build output)
+### Changed
+- Clean up `__init__.py` exports
+
 ## [1.6.0] - 2026-04-01
 ### Changed
 - Removed deprecated `isaacsim.core.utils` dependency

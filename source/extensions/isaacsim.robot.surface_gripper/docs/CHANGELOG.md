@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.6.0] - 2026-04-21
+### Added
+- Add `create_surface_gripper` public Python API as a direct replacement for the Kit command
+### Deprecated
+- Deprecate `CreateSurfaceGripper` Kit command in favor of `create_surface_gripper()`
+### Changed
+- Clean up `__init__.py` exports to only expose public API
+
 ## [3.5.0] - 2026-04-20
 ### Added
 - `SurfaceGripper` OG node (`OgnSurfaceGripper`) gains explicit `Open` and `Close` execution-input pins alongside the existing `Toggle` pin. The OGN node version is bumped from 2 to 3.

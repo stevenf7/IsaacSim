@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Kit command helpers for importing URDF from ROS 2 nodes."""
+"""Deprecated Kit command helpers for importing URDF from ROS 2 nodes."""
 
 import os
 import typing
@@ -28,7 +28,9 @@ from omni.client import Result
 
 
 class URDFImportFromROS2Node(omni.kit.commands.Command):
-    """Command that imports a URDF from a ROS 2 node.
+    """Deprecated command that imports a URDF from a ROS 2 node.
+
+    .. deprecated:: Use RobotDefinitionReader and URDFImporter directly instead.
 
     Args:
         ros2_node_name: ROS 2 node to query for robot_description.
@@ -43,7 +45,11 @@ class URDFImportFromROS2Node(omni.kit.commands.Command):
         import_config: URDFImporterConfig = URDFImporterConfig(),
         dest_path: str = "",
         get_articulation_root: bool = False,
-    ):
+    ) -> None:
+        carb.log_warn(
+            "URDFImportFromROS2Node command is deprecated and will be removed in a future version. "
+            "Use RobotDefinitionReader and URDFImporter classes directly instead."
+        )
         self.urdf_importer = URDFImporter()
         self.ros2_node_name = ros2_node_name
         self.dest_path = dest_path

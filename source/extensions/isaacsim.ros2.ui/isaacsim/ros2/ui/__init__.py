@@ -16,8 +16,8 @@
 """Provides UI utilities and graph builders for ROS 2 integration in Isaac Sim."""
 
 
-from .og_rtx_sensors import *
-from .og_shortcuts_menu import *
-from .og_utils import *
+from .extension import *  # noqa: F403
+from .og_rtx_sensors import *  # noqa: F403
+from .og_utils import *  # noqa: F403
 
 __all__ = []

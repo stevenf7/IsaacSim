@@ -40,6 +40,10 @@ updated_urdf, package_found = replace_package_urls_with_paths(urdf_string)
 
 **{class}`URDFImportFromROS2Node <isaacsim.ros2.urdf.URDFImportFromROS2Node>`** encapsulates the import operation as a command, allowing the robot description import to be triggered programmatically or through UI interactions.
 
+```{deprecated}
+The ``URDFImportFromROS2Node`` Kit command is deprecated. Use ``RobotDefinitionReader`` and ``URDFImporter`` directly instead.
+```
+
 ## Integration
 
 This extension builds upon isaacsim.asset.importer.urdf.ui by adding ROS 2-specific import capabilities. It uses isaacsim.ros2.bridge to communicate with ROS 2 nodes and query parameters. The workflow integrates with the existing URDF import pipeline - once the robot description is retrieved and package URLs are resolved, the standard URDF import process handles the actual asset creation.

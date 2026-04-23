@@ -58,7 +58,7 @@ class Ros2CameraGraph(MenuHelperWindow):
     The window validates the selected camera prim to ensure it is a valid UsdGeom.Camera before generating the graph. If adding to an existing graph, it verifies the graph contains required nodes such as OnPlaybackTick and ROS2Context.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the ROS2 camera graph window."""
         super().__init__("ROS2 Camera Graph", width=500, height=600)
         # Initialize parameters
@@ -732,7 +732,7 @@ class Ros2RtxLidarGraph(MenuHelperWindow):
     corresponds to the input on the ROS2RtxLidarPointCloudConfig node.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the ROS2 RTX lidar graph window."""
         super().__init__("ROS2 RTX Lidar Graph", width=400, height=650)
         self._og_path = "/Graph/ROS_LidarRTX"

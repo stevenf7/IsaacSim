@@ -11,18 +11,21 @@ align: center
 
 ## Key Components
 
-### {class}`CreateSurfaceGripper <isaacsim.robot.surface_gripper.CreateSurfaceGripper>` Command
+### {func}`create_surface_gripper <isaacsim.robot.surface_gripper.create_surface_gripper>`
 
-The {class}`CreateSurfaceGripper <isaacsim.robot.surface_gripper.CreateSurfaceGripper>` command creates a complete surface gripper setup including the necessary action graph nodes and prims. This command integrates with the **omni.kit.commands** system to provide undo/redo functionality.
+The {func}`create_surface_gripper <isaacsim.robot.surface_gripper.create_surface_gripper>` function creates a Surface Gripper prim under a given parent path. It automatically picks a unique prim name (e.g. ``SurfaceGripper``, ``SurfaceGripper_01``).
 
 ```python
-result, prim = omni.kit.commands.execute(
-    "CreateSurfaceGripper",
-    prim_path="/SurfaceGripper",
-)
+import omni.usd
+from isaacsim.robot.surface_gripper import create_surface_gripper
+
+stage = omni.usd.get_context().get_stage()
+gripper_prim = create_surface_gripper(stage, "/World/ee_link")
 ```
 
-The command automatically handles the creation of all required components, including action graph nodes that manage the gripper's behavior and state transitions.
+```{deprecated}
+The ``CreateSurfaceGripper`` Kit command is deprecated. Use ``create_surface_gripper(stage, prim_path)`` directly instead.
+```
 
 ### {class}`GripperView <isaacsim.robot.surface_gripper.GripperView>`
 

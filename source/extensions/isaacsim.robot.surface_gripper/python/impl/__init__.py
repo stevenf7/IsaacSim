@@ -16,6 +16,9 @@
 """Implementation module for the surface gripper robot in Isaac Sim."""
 
 
-from .commands import *
-from .extension import *
-from .gripper_view import GripperView as GripperView
+from .commands import CreateSurfaceGripper  # noqa: F401 (triggers Kit command registration)
+from .extension import Extension  # noqa: F401 (loaded for Kit extension discovery)
+from .gripper_view import GripperView
+from .surface_gripper import create_surface_gripper
+
+__all__ = ["GripperView", "create_surface_gripper"]

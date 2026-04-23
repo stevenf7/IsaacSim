@@ -16,4 +16,6 @@
 """Command utilities for conveyor asset generation in Isaac Sim."""
 
 
-from .commands import *
+from .commands import CreateConveyorBelt
+
+__all__ = ["CreateConveyorBelt"]

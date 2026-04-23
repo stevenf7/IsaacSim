@@ -1,6 +1,14 @@
 # Changelog
 
-## [2.2.0] - 2026-03-09
+## [2.3.0] - 2026-04-21
+### Deprecated
+- Deprecate `URDFImportFromROS2Node` Kit command in favor of using `RobotDefinitionReader` and `URDFImporter` directly
+### Removed
+- Remove dead root-level `__init__.py` and `extension.py` (not deployed to build output)
+### Changed
+- Clean up `__init__.py` exports to only expose public API
+
+## [2.2.0] - 2026-03-19
 ### Changed
 - Updated import path to use isaacsim.gui.components ui utils when the util function is available
 

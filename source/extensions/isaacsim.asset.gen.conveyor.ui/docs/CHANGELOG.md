@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.1] - 2026-04-21
+### Changed
+- Replace `omni.kit.commands.execute("CreateConveyorBelt")` call sites with direct `create_conveyor_belt()` API
+
 ## [2.2.0] - 2026-04-08
 ### Changed
 - Improve Python API documentation (`config/python_api.md` and/or module docstrings).

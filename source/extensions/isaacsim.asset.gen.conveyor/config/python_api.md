@@ -1,8 +1,5 @@
 # Public API for module isaacsim.asset.gen.conveyor:
 
-## Classes
+## Functions
 
-- class CreateConveyorBelt(omni.kit.commands.Command)
-  - def __init__(self, prim_name: str = 'ConveyorBeltGraph', conveyor_prim: Any = None)
-  - def do(self) -> Usd.Prim
-  - def undo(self) -> bool
+- def create_conveyor_belt(stage: Usd.Stage, conveyor_prim: Usd.Prim, prim_name: str = 'ConveyorBeltGraph') -> Usd.Prim

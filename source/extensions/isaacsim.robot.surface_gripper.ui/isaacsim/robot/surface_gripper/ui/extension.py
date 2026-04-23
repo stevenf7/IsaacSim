@@ -21,7 +21,8 @@ from functools import partial
 from pathlib import Path
 
 import omni.ext
-import omni.kit.commands
+import omni.usd
+from isaacsim.robot.surface_gripper import create_surface_gripper
 from isaacsim.robot.surface_gripper.ui.widgets.SurfaceGripperPropertiesWidget import SurfaceGripperPropertiesWidget
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 
@@ -36,7 +37,7 @@ class Extension(omni.ext.IExt):
     gripper parameters through the UI.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Called when the extension is starting up.
 
         Initializes the extension by registering actions, menu items, and UI widgets for creating surface grippers.
@@ -89,7 +90,7 @@ class Extension(omni.ext.IExt):
 
         self._register_widget()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Called when the extension is shutting down.
 
         Cleans up resources by removing menu items, unregistering widgets, and deregistering actions.
@@ -104,14 +105,22 @@ class Extension(omni.ext.IExt):
         self._viewport_create_menu = None
         gc.collect()
 
-    def menu_click(self):
-        """Handles the menu click event to create a surface gripper.
+    def menu_click(self) -> None:
+        """Handles the menu click event to create a surface gripper."""
+        stage = omni.usd.get_context().get_stage()
+        selection = omni.usd.get_context().get_selection()
+        paths = selection.get_selected_prim_paths()
+        if paths:
+            prim_path = paths[0]
+        else:
+            default_prim = stage.GetDefaultPrim()
+            if default_prim and default_prim.IsValid():
+                prim_path = str(default_prim.GetPath())
+            else:
+                prim_path = "/"
+        create_surface_gripper(stage, prim_path)
 
-        Executes the CreateSurfaceGripper command to add a new surface gripper to the scene.
-        """
-        _, prim = omni.kit.commands.execute("CreateSurfaceGripper")
-
-    def _register_widget(self):
+    def _register_widget(self) -> None:
         """Registers the Surface Gripper Properties widget in the property window.
 
         Adds the SurfaceGripperPropertiesWidget to the property window for configuring surface gripper parameters.
@@ -126,7 +135,7 @@ class Extension(omni.ext.IExt):
             False,
         )
 
-    def _unregister_widget(self):
+    def _unregister_widget(self) -> None:
         """Unregisters the Surface Gripper Properties widget from the property window.
 
         Removes the surface gripper widget from the property window during cleanup.

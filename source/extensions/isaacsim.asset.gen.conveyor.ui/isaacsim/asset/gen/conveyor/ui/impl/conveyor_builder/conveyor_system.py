@@ -21,6 +21,7 @@ from math import asin, degrees
 from typing import Any
 
 import omni
+from isaacsim.asset.gen.conveyor import create_conveyor_belt
 from pxr import Gf, Usd, UsdGeom
 from pxr.Usd import Stage
 
@@ -301,9 +302,7 @@ class ConveyorBuilder:
             self._anchor_connections[new_track][track_anchor] = parent
             self._anchor_connections[parent][parent_anchor] = new_track
         for node in track.conveyor_nodes:
-            _, conveyor_prim = omni.kit.commands.execute(
-                "CreateConveyorBelt", conveyor_prim=self.stage.GetPrimAtPath(prim.GetPath().AppendChild(node))
-            )
+            conveyor_prim = create_conveyor_belt(self.stage, self.stage.GetPrimAtPath(prim.GetPath().AppendChild(node)))
             if conveyor_prim:
                 conveyor_prim.GetAttribute("inputs:animateDirection").Set(
                     Gf.Vec2f(*track.conveyor_nodes[node]["animate_direction"])

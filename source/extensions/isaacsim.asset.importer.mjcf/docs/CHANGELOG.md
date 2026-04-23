@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.5.1] - 2026-04-21
+### Changed
+- Add deprecation notice to `commands_api.md` for `MJCFCreateImportConfig` and `MJCFCreateAsset` Kit commands
+
 ## [3.5.0] - 2026-04-14
 ### Changed
 - Replace Kit extension manager lookup for default profile path with `isaacsim.asset.transformer.rules.DEFAULT_PROFILE_PATH`

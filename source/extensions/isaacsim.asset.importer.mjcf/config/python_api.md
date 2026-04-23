@@ -17,7 +17,3 @@
   - [property] def config(self) -> MJCFImporterConfig
   - [config.setter] def config(self, config: MJCFImporterConfig)
   - def import_mjcf(self, config: MJCFImporterConfig | None = None) -> str
-
-- class Extension(omni.ext.IExt)
-  - def on_startup(self, ext_id: str)
-  - def on_shutdown(self)

@@ -16,6 +16,7 @@
 """Tests for ROS 2 OmniGraph menu shortcuts."""
 
 import copy
+from typing import Any
 
 import numpy as np
 import omni.graph.core as og
@@ -41,12 +42,14 @@ from .common import ROS2TestCase
 class ROS2MenuTestBase(ROS2TestCase):
     """Base class for ROS2 OmniGraph Menu tests."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await super().setUp()
         self.node = self.create_node("test_omnigraph_node")
 
-    async def setup_test_environment(self, robot_path: str = "/World/test_robot", add_test_cubes: bool = False):
+    async def setup_test_environment(
+        self, robot_path: str = "/World/test_robot", add_test_cubes: bool = False
+    ) -> tuple[Any, str, str]:
         """Set up a standard test environment with a Nova Carter robot.
 
         Args:
@@ -94,7 +97,7 @@ class ROS2MenuTestBase(ROS2TestCase):
 class TestMenuROS2CameraGraph(ROS2MenuTestBase):
     """Test ROS2 Camera OmniGraph creation from menu."""
 
-    async def test_camera_graph_creation(self):
+    async def test_camera_graph_creation(self) -> None:
         """Test creation of camera graph structure via menu."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
@@ -165,7 +168,7 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
         for expected in expected_nodes:
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
-    async def test_camera_null_conditions(self):
+    async def test_camera_null_conditions(self) -> None:
         """Test camera graph with null target prim."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
@@ -198,7 +201,7 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
         # Verify simulation completed (implicit test that no crash occurred)
         self.assertFalse(self._timeline.is_playing())
 
-    async def test_camera_data_flow(self):
+    async def test_camera_data_flow(self) -> None:
         """Test camera data is being properly published to ROS2 topics."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment(add_test_cubes=True)
@@ -215,13 +218,13 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
         depth_topic = "/depth"
         point_cloud_topic = "/depth_pcl"
 
-        def rgb_callback(msg):
+        def rgb_callback(msg: Any) -> None:
             self.rgb_image_data = msg
 
-        def depth_callback(msg):
+        def depth_callback(msg: Any) -> None:
             self.depth_image_data = msg
 
-        def point_cloud_callback(msg):
+        def point_cloud_callback(msg: Any) -> None:
             self.point_cloud_data = msg
 
         # Create subscribers
@@ -257,7 +260,7 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
         self._timeline.play()
 
         # Define helper function to procress messages
-        def spin_ros():
+        def spin_ros() -> None:
             rclpy.spin_once(self.node, timeout_sec=0.01)
 
         # Run simulation
@@ -306,7 +309,7 @@ class TestMenuROS2CameraGraph(ROS2MenuTestBase):
 class TestMenuROS2LidarGraph(ROS2MenuTestBase):
     """Test ROS2 Lidar OmniGraph creation from menu."""
 
-    async def test_lidar_graph_creation(self):
+    async def test_lidar_graph_creation(self) -> None:
         """Test creation of RTX Lidar graph structure via menu."""
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -354,7 +357,7 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
         for expected in expected_nodes:
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
-    async def test_lidar_null_conditions(self):
+    async def test_lidar_null_conditions(self) -> None:
         """Test lidar graph with null target prim."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
@@ -390,7 +393,7 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
         # Verify simulation completed (implicit test that no crash occurred)
         self.assertFalse(self._timeline.is_playing())
 
-    async def test_lidar_data_flow(self):
+    async def test_lidar_data_flow(self) -> None:
         """Test RTX Lidar data is being properly published to ROS2 topics with detailed data validation."""
         from pxr import Sdf
 
@@ -415,7 +418,7 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
         # def laser_scan_callback(msg):
         #     self.laser_scan_data = msg
 
-        def point_cloud_callback(msg):
+        def point_cloud_callback(msg: Any) -> None:
             self.point_cloud_data = msg
 
         # Create subscribers with validation callbacks
@@ -471,7 +474,7 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
         self._timeline.play()
 
         # Define helper function to process messages
-        def spin_ros():
+        def spin_ros() -> None:
             rclpy.spin_once(self.node, timeout_sec=0.01)
 
         # Run simulation
@@ -506,7 +509,7 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
                     self.assertIn("y", field_names, "PointCloud missing 'y' field")
                     self.assertIn("z", field_names, "PointCloud missing 'z' field")
 
-    async def test_lidar_point_cloud_with_metadata(self):
+    async def test_lidar_point_cloud_with_metadata(self) -> None:
         """Test creation of RTX Lidar graph with point cloud metadata config node."""
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -598,7 +601,7 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
         helper_metadata_attr = lidar_helper_node.get_attribute("inputs:selectedMetadata")
         self.assertIsNotNone(helper_metadata_attr, "selectedMetadata input attribute not found")
 
-    async def test_lidar_metadata_without_point_cloud(self):
+    async def test_lidar_metadata_without_point_cloud(self) -> None:
         """Test that metadata options are ignored when point cloud is disabled."""
         robot, base_link_path, art_root_path = await self.setup_test_environment()
 
@@ -667,7 +670,7 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
 class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
     """Test ROS2 Joint States OmniGraph creation from menu."""
 
-    async def test_joint_states_graph_creation(self):
+    async def test_joint_states_graph_creation(self) -> None:
         """Test creation of Joint States graph structure via menu."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
@@ -723,7 +726,7 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
         for expected in expected_nodes:
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
-    async def test_joint_states_null_conditions(self):
+    async def test_joint_states_null_conditions(self) -> None:
         """Test robot state graph with null target prim."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
@@ -761,7 +764,7 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
         # Verify simulation completed (implicit test that no crash occurred)
         self.assertFalse(self._timeline.is_playing())
 
-    async def test_joint_states_data_flow(self):
+    async def test_joint_states_data_flow(self) -> None:
         """Test Joint States data is being properly published to ROS2 topics."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
@@ -783,7 +786,7 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
         joint_states_topic = "/joint_states"
 
         # Create callback to store message data
-        def joint_states_callback(msg):
+        def joint_states_callback(msg: Any) -> None:
             self.joint_state_data = msg
 
         # Create subscriber
@@ -829,7 +832,7 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
         self._timeline.play()
 
         # Define helper function to process messages
-        def spin_ros():
+        def spin_ros() -> None:
             rclpy.spin_once(self.node, timeout_sec=0.01)
 
         # Run simulation
@@ -881,12 +884,12 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
                 # Clear the current joint_state_data to ensure we get a fresh one after the command
                 self.joint_state_data = None
 
-                def publish_and_spin():
+                def publish_and_spin() -> None:
                     command_msg.header.stamp = self.node.get_clock().now().to_msg()
                     command_publisher.publish(command_msg)
                     spin_ros()
 
-                def wheel_joints_moved():
+                def wheel_joints_moved() -> bool:
                     if self.joint_state_data is None:
                         return False
                     for i, name in enumerate(self.joint_state_data.name):
@@ -919,7 +922,7 @@ class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
 class TestMenuROS2TFGraph(ROS2MenuTestBase):
     """Test ROS2 TF OmniGraph creation from menu."""
 
-    async def test_tf_graph_creation(self):
+    async def test_tf_graph_creation(self) -> None:
         """Test creation of TF graph structure via menu."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
@@ -965,7 +968,7 @@ class TestMenuROS2TFGraph(ROS2MenuTestBase):
         for expected in expected_nodes:
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
-    async def test_tf_null_conditions(self):
+    async def test_tf_null_conditions(self) -> None:
         """Test TF graph with null target prim."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
@@ -1003,7 +1006,7 @@ class TestMenuROS2TFGraph(ROS2MenuTestBase):
         # Verify simulation completed (implicit test that no crash occurred)
         self.assertFalse(self._timeline.is_playing())
 
-    async def test_tf_data_flow(self):
+    async def test_tf_data_flow(self) -> None:
         """Test TF transform data is being properly published to ROS2 topics."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
@@ -1013,7 +1016,7 @@ class TestMenuROS2TFGraph(ROS2MenuTestBase):
         tf_topic = "/tf"
 
         # Create callback to store message data
-        def tf_callback(msg):
+        def tf_callback(msg: Any) -> None:
             self.tf_data = msg
 
         # Create subscriber
@@ -1047,7 +1050,7 @@ class TestMenuROS2TFGraph(ROS2MenuTestBase):
         # Run simulation
         self._timeline.play()
 
-        def spin_ros():
+        def spin_ros() -> None:
             rclpy.spin_once(self.node, timeout_sec=0.01)
 
         # Run simulation
@@ -1098,7 +1101,7 @@ class TestMenuROS2TFGraph(ROS2MenuTestBase):
 class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
     """Test ROS2 Odometry OmniGraph creation from menu."""
 
-    async def test_odometry_graph_creation(self):
+    async def test_odometry_graph_creation(self) -> None:
         """Test creation of Odometry graph structure via menu."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
@@ -1151,7 +1154,7 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
         for expected in expected_nodes:
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
-    async def test_odometry_null_conditions(self):
+    async def test_odometry_null_conditions(self) -> None:
         """Test odometry graph with null chassis prim."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
@@ -1194,7 +1197,7 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
         # Verify simulation completed (implicit test that no crash occurred)
         self.assertFalse(self._timeline.is_playing())
 
-    async def test_odometry_data_flow(self):
+    async def test_odometry_data_flow(self) -> None:
         """Test odometrydata is being properly published to ROS2 topics."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
@@ -1207,10 +1210,10 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
         odom_topic = "/odom"
 
         # Create callbacks to store message data
-        def tf_callback(msg):
+        def tf_callback(msg: Any) -> None:
             self.tf_data = copy.deepcopy(msg)
 
-        def odom_callback(msg):
+        def odom_callback(msg: Any) -> None:
             self.odom_data = copy.deepcopy(msg)
 
         # Create subscribers
@@ -1291,14 +1294,14 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
         # Run simulation
         self._timeline.play()
 
-        def spin_ros():
+        def spin_ros() -> None:
             rclpy.spin_once(self.node, timeout_sec=0.01)
 
         # Run simulation
         frame_ids = set()
         child_frame_ids = set()
 
-        def check_base_link_received():
+        def check_base_link_received() -> bool:
             if self.tf_data and self.odom_data:
                 frame_ids.update(transform.header.frame_id for transform in self.tf_data.transforms)
                 child_frame_ids.update(transform.child_frame_id for transform in self.tf_data.transforms)
@@ -1358,7 +1361,7 @@ class TestMenuROS2OdometryGraph(ROS2MenuTestBase):
 class TestMenuROS2ClockGraph(ROS2MenuTestBase):
     """Test ROS2 Clock OmniGraph creation from menu."""
 
-    async def test_clock_graph_creation(self):
+    async def test_clock_graph_creation(self) -> None:
         """Test creation of Clock graph structure via menu."""
         # Create environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
@@ -1398,7 +1401,7 @@ class TestMenuROS2ClockGraph(ROS2MenuTestBase):
         for expected in expected_nodes:
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
-    async def test_clock_data_flow(self):
+    async def test_clock_data_flow(self) -> None:
         """Test Clock data is being properly published to ROS2 topics with data validation."""
         # Create environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
@@ -1414,7 +1417,7 @@ class TestMenuROS2ClockGraph(ROS2MenuTestBase):
         clock_topic = "/clock"
 
         # Create callback to store message data
-        def clock_callback(msg):
+        def clock_callback(msg: Any) -> None:
             self.clock_data = msg
             # Store timestamp along with clock value for debugging
             time_value = msg.clock.sec + msg.clock.nanosec * 1e-9
@@ -1482,7 +1485,7 @@ class TestMenuROS2ClockGraph(ROS2MenuTestBase):
         # Run the simulation in steps
         self._timeline.play()
 
-        def spin_ros():
+        def spin_ros() -> None:
             rclpy.spin_once(self.node, timeout_sec=0.01)
 
         # Run simulation with more iterations and longer total time
@@ -1531,7 +1534,7 @@ class TestMenuROS2ClockGraph(ROS2MenuTestBase):
 class TestMenuROS2GenericPublisherGraph(ROS2MenuTestBase):
     """Test suite for menu r o s2 generic publisher graph."""
 
-    async def test_generic_publisher_graph_creation(self):
+    async def test_generic_publisher_graph_creation(self) -> None:
         """Test generic publisher graph creation from menu."""
         # Creating environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
@@ -1573,7 +1576,7 @@ class TestMenuROS2GenericPublisherGraph(ROS2MenuTestBase):
         for expected in expected_nodes:
             self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
 
-    async def test_generic_publisher_data_flow(self):
+    async def test_generic_publisher_data_flow(self) -> None:
         """Test Generic Publisher data is properly publishing RTF as Float32 to ROS2 topics."""
         # Create environment and Carter Robot
         robot, base_link_path, art_root_path = await self.setup_test_environment()
@@ -1586,7 +1589,7 @@ class TestMenuROS2GenericPublisherGraph(ROS2MenuTestBase):
         test_topic = "/test_rtf_publisher"
 
         # Create callback to store message data
-        def float_callback(msg):
+        def float_callback(msg: Any) -> None:
             self.float_data = msg
             print(f"Received Float32 value: {msg.data}")
 
@@ -1636,7 +1639,7 @@ class TestMenuROS2GenericPublisherGraph(ROS2MenuTestBase):
         self._timeline.play()
 
         # Define helper function to process messages
-        def spin_ros():
+        def spin_ros() -> None:
             rclpy.spin_once(self.node, timeout_sec=0.01)
 
         # Run simulation

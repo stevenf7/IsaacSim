@@ -18,6 +18,6 @@
 """Surface gripper UI extension components for Isaac Sim robot control interface."""
 
 
-from .extension import Extension
+from .extension import Extension  # noqa: F401
 
 __all__ = []
