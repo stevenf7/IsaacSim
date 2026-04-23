@@ -33,9 +33,9 @@ class IconModel(sc.AbstractManipulatorModel):
     """Manages sensor icons within the viewport scene as manipulator items.
 
     This class automatically detects and visualizes sensor prims in the USD stage as interactive icons.
-    It monitors various sensor types including Lidar, OmniLidar, IsaacContactSensor, IsaacLightBeamSensor,
-    IsaacImuSensor, and Generic sensors. The icons are dynamically updated based on prim visibility,
-    activation status, and stage changes.
+    It monitors various sensor types including OmniLidar, IsaacContactSensor, IsaacImuSensor,
+    IsaacRaycastSensor, and deprecated types (Lidar, IsaacLightBeamSensor, Generic). The icons
+    are dynamically updated based on prim visibility, activation status, and stage changes.
 
     The model maintains a persistent connection to both USD and USDRT stages for efficient querying
     and real-time updates. Icons are positioned based on the sensor prim's world transform and respond
@@ -46,7 +46,16 @@ class IconModel(sc.AbstractManipulatorModel):
     as set click callbacks for interactive behavior.
     """
 
-    SENSOR_TYPES = ["Lidar", "OmniLidar", "IsaacContactSensor", "IsaacLightBeamSensor", "IsaacImuSensor", "Generic"]
+    SENSOR_TYPES = [
+        "OmniLidar",
+        "IsaacContactSensor",
+        "IsaacImuSensor",
+        "IsaacRaycastSensor",
+        # DEPRECATED types (kept for backward compatibility with existing scenes)
+        "Lidar",
+        "IsaacLightBeamSensor",
+        "Generic",
+    ]
     """List of sensor type names that the icon model recognizes and displays icons for."""
 
     class IconItem(sc.AbstractManipulatorItem):

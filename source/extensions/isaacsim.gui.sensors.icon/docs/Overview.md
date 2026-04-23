@@ -6,7 +6,7 @@ The isaacsim.gui.sensors.icon extension renders sensor icons in the viewport and
 
 ### Sensor Icon System
 
-The extension automatically detects various sensor types in the USD stage and displays interactive icons at their world positions. Supported sensor types include Lidar, OmniLidar, IsaacContactSensor, IsaacLightBeamSensor, IsaacImuSensor, and Generic sensors.
+The extension automatically detects various sensor types in the USD stage and displays interactive icons at their world positions. Supported sensor types include OmniLidar, IsaacContactSensor, IsaacImuSensor, and IsaacRaycastSensor, as well as deprecated types (Lidar, IsaacLightBeamSensor, Generic) for backward compatibility.
 
 Icons are positioned based on the sensor prim's world transform and update dynamically when the stage changes or when sensors are moved. Each icon can have custom click callbacks for interactive behavior.
 

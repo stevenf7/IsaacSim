@@ -50,7 +50,7 @@ class IsaacContactSensor "IsaacContactSensor" (
 	float2 threshold = (0.01, 100000.0) (doc = """Min, Max force that is detected by this sensor, units in (kg) * (stage length unit) / (second)^2""")
 	float radius = -1 (doc = """Radius of the contact sensor, unit in stage length unit""")
 	float4 color = (1,1,1,1) (doc = """Color of the contact sensor sphere, R, G, B, A""")
-	float sensorPeriod = 0.0025 (doc = """Time between each sensor measurement, unit in simulator seconds""")
+	float sensorPeriod = 0.0025 (doc = """DEPRECATED since isaacsim.robot.schema 6.2.0. Only used by the deprecated isaacsim.sensors.physx extension. Time between each sensor measurement, unit in simulator seconds""")
 }
 
 
@@ -58,7 +58,7 @@ class IsaacImuSensor "IsaacImuSensor" (
 	  inherits = </IsaacBaseSensor>
 )
 {
-	float sensorPeriod = 0.01(doc = """Time between each sensor measurement, unit in simulator seconds""")
+	float sensorPeriod = 0.01(doc = """DEPRECATED since isaacsim.robot.schema 6.2.0. Only used by the deprecated isaacsim.sensors.physx extension. Time between each sensor measurement, unit in simulator seconds""")
 	int linearAccelerationFilterWidth = 1 (doc = """Number of linear acceleration measurements used in the rolling average""")
 	int angularVelocityFilterWidth = 1 (doc = """Number of angular velocity measurements used in the rolling average""")
 	int orientationFilterWidth = 1 (doc = """Number of orientation measurements used in the rolling average""")
@@ -67,6 +67,9 @@ class IsaacImuSensor "IsaacImuSensor" (
 
 class IsaacLightBeamSensor "IsaacLightBeamSensor" (
 	  inherits = </IsaacBaseSensor>
+	  doc = """DEPRECATED since isaacsim.robot.schema 6.2.0.
+	  Used only by the deprecated isaacsim.sensors.physx extension.
+	  Use IsaacRaycastSensor with isaacsim.sensors.experimental.physics instead."""
 )
 {
 	int numRays = 1 (doc = """Number of rays for the light curtain, default 1""")

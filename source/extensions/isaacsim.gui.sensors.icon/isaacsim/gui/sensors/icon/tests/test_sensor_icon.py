@@ -258,7 +258,7 @@ class TestSensorIcon(OmniUiTest):
         self.assertTrue(model.get_item(TEST_OBJECT_PRIM_PATH).visible)
 
 
-def create_test_object(prim_path=TEST_OBJECT_PRIM_PATH, prim_type="Generic", attrs=None):
+def create_test_object(prim_path=TEST_OBJECT_PRIM_PATH, prim_type="IsaacContactSensor", attrs=None):
     """Create a test object prim with an icon position attribute."""
     kwargs = {"prim_type": prim_type, "prim_path": prim_path}
     if attrs:

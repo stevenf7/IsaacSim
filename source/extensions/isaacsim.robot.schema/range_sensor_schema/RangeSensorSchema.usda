@@ -18,6 +18,10 @@ over "GLOBAL" (
 }
 class "RangeSensor" (
 	  inherits = </Xformable>
+	  doc = """DEPRECATED since isaacsim.robot.schema 6.2.0.
+	  Used only by the deprecated isaacsim.sensors.physx extension.
+	  Use IsaacRaycastSensor with isaacsim.sensors.experimental.physics
+	  or isaacsim.sensors.experimental.rtx instead."""
 )
 {
 	bool enabled = true (doc = """Flag used to enable or disable this sensor""")
@@ -32,6 +36,9 @@ class "RangeSensor" (
 
 class Lidar "Lidar" (
 	  inherits = </RangeSensor>
+	  doc = """DEPRECATED since isaacsim.robot.schema 6.2.0.
+	  Used only by the deprecated isaacsim.sensors.physx extension.
+	  Use IsaacRaycastSensor with isaacsim.sensors.experimental.rtx instead."""
 )
 {
 	float yawOffset = 0.0 (doc = """Offset along yaw axis to account for sensor having a different forward direction""")
@@ -49,6 +56,9 @@ class Lidar "Lidar" (
 
 class Generic "Generic" (
 	  inherits = </RangeSensor>
+	  doc = """DEPRECATED since isaacsim.robot.schema 6.2.0.
+	  Used only by the deprecated isaacsim.sensors.physx extension.
+	  Use IsaacRaycastSensor with isaacsim.sensors.experimental.rtx instead."""
 )
 {
 	int samplingRate = 60 (doc = """sampling rate of the custom sensor data in Hz""")

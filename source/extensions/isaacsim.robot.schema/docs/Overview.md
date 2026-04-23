@@ -6,16 +6,18 @@ The isaacsim.robot.schema extension provides comprehensive USD schemas for robot
 
 ```{mermaid}
 graph TD
-    %% Inheritance relationships
-    Generic --> RangeSensor
-    Lidar --> RangeSensor
+    %% Inheritance relationships (deprecated)
+    Generic["Generic (deprecated)"] --> RangeSensor["RangeSensor (deprecated)"]
+    Lidar["Lidar (deprecated)"] --> RangeSensor
 ```
 
 </div>
 
 ## Key Components
 
-### Range Sensor Schemas
+### Range Sensor Schemas (Deprecated)
+
+> **Deprecated since 6.2.0**: The range sensor schemas are deprecated. Use `IsaacRaycastSensor` with `isaacsim.sensors.experimental.physics` or `isaacsim.sensors.experimental.rtx` instead.
 
 The `**omni.isaac.RangeSensorSchema**` module provides schemas for distance-measuring sensors. The base {class}`RangeSensor <omni.isaac.RangeSensorSchema.RangeSensor>` class defines common attributes for range detection, visualization controls, and detection thresholds.
 
@@ -31,7 +33,7 @@ The `**omni.isaac.IsaacSensorSchema**` module provides specialized sensors for r
 
 **{class}`IsaacImuSensor <omni.isaac.IsaacSensorSchema.IsaacImuSensor>`** simulates inertial measurement units with configurable filter widths for linear acceleration, angular velocity, and orientation measurements.
 
-**{class}`IsaacLightBeamSensor <omni.isaac.IsaacSensorSchema.IsaacLightBeamSensor>`** creates light curtain sensors with multiple rays, configurable beam direction, and range detection capabilities for industrial automation applications.
+**{class}`IsaacLightBeamSensor <omni.isaac.IsaacSensorSchema.IsaacLightBeamSensor>`** *(deprecated since 6.2.0)* creates light curtain sensors with multiple rays, configurable beam direction, and range detection capabilities for industrial automation applications. Use `IsaacRaycastSensor` with `isaacsim.sensors.experimental.physics` instead.
 
 **{class}`IsaacRtxLidarSensorAPI <omni.isaac.IsaacSensorSchema.IsaacRtxLidarSensorAPI>`** and **{class}`IsaacRtxRadarSensorAPI <omni.isaac.IsaacSensorSchema.IsaacRtxRadarSensorAPI>`** provide API schema extensions for RTX-accelerated sensor implementations.
 
