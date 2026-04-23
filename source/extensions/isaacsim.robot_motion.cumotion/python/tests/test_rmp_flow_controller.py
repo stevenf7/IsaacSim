@@ -128,6 +128,28 @@ class TestRmpFlowControllerFranka(omni.kit.test.AsyncTestCase):
                 tool_frame=invalid_tool_frame,
             )
 
+    async def test_rmp_flow_controller_invalid_maximum_substep_size_zero(self) -> None:
+        """Test that maximum_substep_size of zero raises ValueError."""
+        with self.assertRaises(ValueError):
+            cu_mg.RmpFlowController(
+                cumotion_robot=self.cumotion_robot,
+                cumotion_world_interface=self.world_binding.get_world_interface(),
+                robot_joint_space=self.robot_joint_space,
+                robot_site_space=self.robot_site_space,
+                maximum_substep_size=0.0,
+            )
+
+    async def test_rmp_flow_controller_invalid_maximum_substep_size_negative(self) -> None:
+        """Test that a negative maximum_substep_size raises ValueError."""
+        with self.assertRaises(ValueError):
+            cu_mg.RmpFlowController(
+                cumotion_robot=self.cumotion_robot,
+                cumotion_world_interface=self.world_binding.get_world_interface(),
+                robot_joint_space=self.robot_joint_space,
+                robot_site_space=self.robot_site_space,
+                maximum_substep_size=-0.01,
+            )
+
     async def test_rmp_flow_controller_with_custom_config_file(self) -> None:
         """Test initialization with custom configuration file."""
         # Note: This test assumes a config file exists. If not, it will use defaults.

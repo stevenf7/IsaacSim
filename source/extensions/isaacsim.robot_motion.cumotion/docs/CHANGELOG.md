@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.2] - 2026-04-23
+### Added
+- `RmpFlowController` contains `maximum_substep_size` for sub-stepping when more stable integration is required.
+
 ## [1.1.1] - 2026-03-16
 ### Fixed
 - TrajectoryOptimizer now functional on Windows.
