@@ -16,6 +16,8 @@
 """Provides pre-built scenario implementations for robot mobility generation and control."""
 
 
+import colorsys
+
 import numpy as np
 import PIL.Image
 from isaacsim.replicator.experimental.mobility_gen import (
@@ -35,18 +37,89 @@ from isaacsim.replicator.experimental.mobility_gen import (
 from PIL import ImageDraw
 
 
+class TeleoperationScenario(MobilityGenScenario):
+    """Shared base for keyboard and gamepad teleoperation scenarios.
+
+    Provides rainbow-gradient path visualization (red at start → violet at current position)
+    and a yellow heading arrow drawn on the occupancy map.
+    """
+
+    def __init__(self, robot: MobilityGenRobot, occupancy_map: OccupancyMap) -> None:
+        super().__init__(robot, occupancy_map)
+        self.pose_sampler = UniformPoseSampler()
+        self.position_history: list = []
+
+    def _reset_visualization(self) -> None:
+        """Clear path history and record the current pose as the new start."""
+        self.position_history = []
+        start = self.robot.get_pose_2d()
+        self.position_history.append((start.x, start.y))
+
+    def _record_position(self) -> None:
+        """Append the robot's current world position to the path history."""
+        pose = self.robot.get_pose_2d()
+        self.position_history.append((pose.x, pose.y))
+
+    def get_visualization_image(self) -> PIL.Image.Image:
+        """Returns the occupancy map with a rainbow path and yellow heading arrow overlaid.
+
+        The traveled path is drawn as a color gradient from red (start) to violet (current
+        position). A yellow arrow indicates the robot's current heading direction.
+        """
+        image = self.occupancy_map.ros_image().copy().convert("RGBA")
+        draw = ImageDraw.Draw(image)
+        positions = self.position_history
+        r = self.robot.occupancy_map_radius
+        width_pixels = max(2, int(r / self.occupancy_map.resolution / 2))
+
+        if len(positions) >= 2:
+            n = len(positions)
+            pixels = self.occupancy_map.world_to_pixel_numpy(np.array(positions))
+            for i in range(n - 1):
+                t = i / (n - 1)
+                hue = t * (270.0 / 360.0)
+                rc, gc, bc = colorsys.hsv_to_rgb(hue, 1.0, 1.0)
+                color = (int(rc * 255), int(gc * 255), int(bc * 255), 220)
+                draw.line(
+                    [int(pixels[i, 0]), int(pixels[i, 1]), int(pixels[i + 1, 0]), int(pixels[i + 1, 1])],
+                    fill=color,
+                    width=width_pixels,
+                )
+
+        if positions:
+            pose = self.robot.get_pose_2d()
+            cx, cy, theta = pose.x, pose.y, pose.theta
+            fwd = np.array([np.cos(theta), np.sin(theta)])
+            perp = np.array([-np.sin(theta), np.cos(theta)])
+
+            tip = np.array([cx, cy]) + 3.0 * r * fwd
+            head_base = tip - 1.0 * r * fwd
+            left = head_base + 0.6 * r * perp
+            right = head_base - 0.6 * r * perp
+
+            pts_px = self.occupancy_map.world_to_pixel_numpy(
+                np.array([[cx, cy], [tip[0], tip[1]], [left[0], left[1]], [right[0], right[1]]])
+            )
+            draw.line(
+                [int(pts_px[0, 0]), int(pts_px[0, 1]), int(pts_px[1, 0]), int(pts_px[1, 1])],
+                fill="yellow",
+                width=max(1, width_pixels // 2),
+            )
+            draw.polygon(
+                [
+                    (int(pts_px[2, 0]), int(pts_px[2, 1])),
+                    (int(pts_px[3, 0]), int(pts_px[3, 1])),
+                    (int(pts_px[1, 0]), int(pts_px[1, 1])),
+                ],
+                fill="yellow",
+            )
+
+        return image
+
+
 @SCENARIOS.register()
-class KeyboardTeleoperationScenario(MobilityGenScenario):
-    """A teleoperation scenario that enables manual control of a robot using keyboard input.
-
-    This scenario allows users to control a robot's movement through keyboard commands, where WASD keys control
-    the robot's linear and angular velocities. The robot can be moved forward/backward and rotated left/right
-    based on user input. The scenario handles real-time keyboard input processing and applies the corresponding
-    velocity commands to the robot.
-
-    The robot is initially positioned at a random valid location within the occupancy map's free space. During
-    each simulation step, the scenario reads keyboard input and converts it to velocity commands that are applied
-    to the robot.
+class KeyboardTeleoperationScenario(TeleoperationScenario):
+    """Teleoperation scenario with WASD keyboard control.
 
     Args:
         robot: The robot instance to be controlled via keyboard input.
@@ -56,21 +129,16 @@ class KeyboardTeleoperationScenario(MobilityGenScenario):
     def __init__(self, robot: MobilityGenRobot, occupancy_map: OccupancyMap) -> None:
         super().__init__(robot, occupancy_map)
         self.keyboard = Keyboard()
-        self.pose_sampler = UniformPoseSampler()
 
     def reset(self) -> None:
-        """Reset the scenario by placing the robot at a random pose and updating the state.
-
-        Samples a new pose using the uniform pose sampler and sets the robot to that position.
-        """
+        """Places the robot at a random pose and clears the path history."""
         pose = self.pose_sampler.sample(self.buffered_occupancy_map)
         self.robot.set_pose_2d(pose)
         self.update_state()
+        self._reset_visualization()
 
     def step(self, step_size: float) -> bool:
-        """Execute one step of keyboard teleoperation control.
-
-        Reads keyboard input for WASD keys to control robot movement, calculates linear and angular velocities based on the input, and applies the action to the robot.
+        """Reads WASD keyboard input and applies velocity commands to the robot.
 
         Args:
             step_size: Time step for the simulation step.
@@ -79,9 +147,9 @@ class KeyboardTeleoperationScenario(MobilityGenScenario):
             Always returns True indicating the scenario continues running.
         """
         self.update_state()
+        self._record_position()
 
         buttons = self.keyboard.buttons.get_value()
-
         w_val = float(buttons[0])
         a_val = float(buttons[1])
         s_val = float(buttons[2])
@@ -91,28 +159,16 @@ class KeyboardTeleoperationScenario(MobilityGenScenario):
         angular_velocity = (a_val - d_val) * self.robot.keyboard_angular_velocity_gain
 
         self.robot.action.set_value(np.array([linear_velocity, angular_velocity]))
-
         self.robot.write_action(step_size)
 
         return True
 
 
 @SCENARIOS.register()
-class GamepadTeleoperationScenario(MobilityGenScenario):
-    """A mobility generation scenario that enables gamepad-based teleoperation of a robot.
+class GamepadTeleoperationScenario(TeleoperationScenario):
+    """Teleoperation scenario with joystick/gamepad control.
 
-    This scenario allows direct control of a robot using gamepad input, where the left analog stick controls
-    linear velocity and the right analog stick controls angular velocity. The robot is initially positioned
-    at a random valid location within the occupancy map and can be controlled in real-time through gamepad
-    input.
-
-    The scenario continuously reads gamepad axes values and translates them into robot movement commands.
-    The linear velocity is controlled by the first axis (typically left stick vertical) multiplied by the
-    robot's gamepad linear velocity gain, while angular velocity is controlled by the fourth axis (typically
-    right stick horizontal) multiplied by the robot's gamepad angular velocity gain.
-
-    This scenario is useful for manual robot control, data collection, testing robot behavior in specific
-    situations, or providing human-in-the-loop control capabilities.
+    Left stick controls linear velocity; right stick controls angular velocity.
 
     Args:
         robot: The robot instance to be controlled via gamepad input.
@@ -122,22 +178,16 @@ class GamepadTeleoperationScenario(MobilityGenScenario):
     def __init__(self, robot: MobilityGenRobot, occupancy_map: OccupancyMap) -> None:
         super().__init__(robot, occupancy_map)
         self.gamepad = Gamepad()
-        self.pose_sampler = UniformPoseSampler()
 
     def reset(self) -> None:
-        """Reset the scenario by randomly placing the robot and updating its state.
-
-        Samples a random pose from free space and sets the robot to that position.
-        """
+        """Places the robot at a random pose and clears the path history."""
         pose = self.pose_sampler.sample(self.buffered_occupancy_map)
         self.robot.set_pose_2d(pose)
         self.update_state()
+        self._reset_visualization()
 
     def step(self, step_size: float) -> bool:
-        """Execute one simulation step using gamepad input to control the robot.
-
-        Reads gamepad axes values, converts them to linear and angular velocities based on
-        configured gains, and applies the resulting action to the robot.
+        """Reads gamepad axes and applies velocity commands to the robot.
 
         Args:
             step_size: Time step duration for the simulation.
@@ -155,6 +205,7 @@ class GamepadTeleoperationScenario(MobilityGenScenario):
         self.robot.write_action(step_size)
 
         self.update_state()
+        self._record_position()
 
         return True
 
@@ -275,6 +326,7 @@ class RandomPathFollowingScenario(MobilityGenScenario):
         self.is_alive = True
         self.target_path = Buffer()
         self.collision_occupancy_map = occupancy_map.buffered(robot.occupancy_map_collision_radius)
+        self._omap_base_image = occupancy_map.ros_image().convert("RGBA")
 
     def _vector_angle(self, w: np.ndarray, v: np.ndarray) -> float:
         """Calculate the angle between two 2D vectors.
@@ -375,7 +427,7 @@ class RandomPathFollowingScenario(MobilityGenScenario):
         Returns:
             RGBA image with the occupancy map and target path drawn in green.
         """
-        image = self.occupancy_map.ros_image().copy().convert("RGBA")
+        image = self._omap_base_image.copy()
         draw = ImageDraw.Draw(image)
         path = self.target_path.get_value()
         if path is not None:

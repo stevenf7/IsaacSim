@@ -127,8 +127,7 @@ class GridPoseSampler(PoseSampler):
         mask = occupancy_map.freespace_mask()
 
         block_mask = np.zeros_like(mask)
-        block_mask[block_x_min : block_x_min + block_size_px] = True
-        block_mask[block_y_min : block_y_min + block_size_px] = True
+        block_mask[block_y_min : block_y_min + block_size_px, block_x_min : block_x_min + block_size_px] = True
 
         net_mask = block_mask & mask
 

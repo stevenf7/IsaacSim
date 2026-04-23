@@ -69,6 +69,8 @@ class GeneratePathsOutput:
             A (row, col) index tuple for a randomly selected reachable cell.
         """
         i, j = self.get_valid_end_points()
+        if len(i) == 0:
+            raise RuntimeError("BFS found no reachable cells — start position may be blocked or outside freespace.")
         index = random.randint(0, len(i) - 1)
         return (int(i[index]), int(j[index]))
 

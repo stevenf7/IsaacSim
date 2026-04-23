@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0] - 2026-04-22
+### Added
+- `WheeledMultiSensorRobot` and `PolicyMultiSensorRobot` base classes for YAML-driven multi-camera robots
+- `CarterMultiSensorRobot`, `JetbotMultiSensorRobot`, `H1MultiSensorRobot`, `SpotMultiSensorRobot` concrete robots
+- YAML robot configs (`carter.yaml`, `jetbot.yaml`, `h1.yaml`, `spot.yaml`)
+- `generate_sensor_rigs.py` script to discover sensor prims in a robot USD and scaffold `sensor_rig:` YAML blocks
+
 ## [0.2.2] - 2026-04-18
 ### Changed
 - Added return type annotations, `from __future__ import annotations`, and imperative-mood docstrings

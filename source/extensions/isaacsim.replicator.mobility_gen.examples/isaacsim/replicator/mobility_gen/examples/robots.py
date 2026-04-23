@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import math
+from abc import abstractmethod
 
 import numpy as np
 from isaacsim.core.deprecation_manager import import_module
@@ -28,7 +29,13 @@ torch = import_module("torch")
 # isaacsim.core.experimental.*
 from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.experimental.utils.stage import add_reference_to_stage, get_current_stage
-from isaacsim.replicator.experimental.mobility_gen import ROBOTS, MobilityGenRobot, Module, Pose2d
+from isaacsim.replicator.experimental.mobility_gen import (
+    ROBOTS,
+    MobilityGenMultiSensorRobot,
+    MobilityGenRobot,
+    Module,
+    Pose2d,
+)
 from isaacsim.robot.experimental.wheeled_robots import DifferentialController
 from isaacsim.robot.policy.examples.robots import H1FlatTerrainPolicy, SpotFlatTerrainPolicy
 from isaacsim.storage.native import get_assets_root_path
@@ -149,13 +156,14 @@ class PolicyMobilityGenRobot(MobilityGenRobot):
         self._controller_initialized = False
 
     @classmethod
+    @abstractmethod
     def build_policy(cls, prim_path: str) -> H1FlatTerrainPolicy | SpotFlatTerrainPolicy:
         """Build the policy controller for the robot.
 
         Args:
             prim_path: USD prim path for the robot.
         """
-        raise NotImplementedError
+        ...
 
     @classmethod
     def build(cls, prim_path: str) -> PolicyMobilityGenRobot:
@@ -598,4 +606,183 @@ class SpotRobot(PolicyMobilityGenRobot):
         Returns:
             Configured SpotFlatTerrainPolicy instance with the robot's position and z-offset.
         """
+        return SpotFlatTerrainPolicy(prim_path=prim_path, position=np.array([0.0, 0.0, cls.controller_z_offset]))
+
+
+# =========================================================
+#  V2: YAML-driven multi-sensor robots
+# =========================================================
+
+
+class WheeledMultiSensorRobot(MobilityGenMultiSensorRobot):
+    """Wheeled differential-drive robot using YAML config and a multi-sensor rig.
+
+    Concrete subclasses set ``robot_config_path`` to a YAML file (relative to the subclass
+    module file).  The YAML ``wheel`` section provides DOF names, radius, and wheelbase.
+
+    Args:
+        prim_path: USD prim path of the robot root.
+        articulation: Isaac Sim articulation for the robot.
+        controller: Differential drive controller.
+        sensor_rig: Optional pre-built sensor rig module.
+    """
+
+    def __init__(
+        self,
+        prim_path: str,
+        articulation: Articulation,
+        controller: DifferentialController,
+        sensor_rig: Module | None = None,
+    ) -> None:
+        super().__init__(prim_path=prim_path, articulation=articulation, sensor_rig=sensor_rig)
+        self.controller = controller
+        self._wheel_indices = None
+
+    @classmethod
+    def build(cls, prim_path: str) -> "WheeledMultiSensorRobot":
+        """Build the wheeled robot and its sensor rig at *prim_path*.
+
+        Args:
+            prim_path: USD prim path where the robot will be created.
+
+        Returns:
+            Configured :class:`WheeledMultiSensorRobot` instance.
+        """
+        full_url = get_assets_root_path() + cls.usd_url
+        add_reference_to_stage(usd_path=full_url, path=prim_path)
+        stage = get_current_stage(backend="usd")
+        stage.Load(prim_path)
+        articulation = Articulation(prim_path)
+        controller = DifferentialController(wheel_radius=cls.wheel_radius, wheel_base=cls.wheel_base)
+        sensor_rig = cls.build_sensor_rig(prim_path)
+        return cls(prim_path=prim_path, articulation=articulation, controller=controller, sensor_rig=sensor_rig)
+
+    def write_action(self, step_size: float) -> None:
+        """Apply wheel velocities based on the current action.
+
+        Args:
+            step_size: Physics timestep size in seconds.
+        """
+        if not self.is_physics_ready():
+            return
+        if self._wheel_indices is None:
+            self._wheel_indices = self.articulation.get_joint_indices(self.wheel_dof_names)
+        action = self.controller.forward(command=self.action.get_value())
+        self.articulation.set_dof_velocities(action[np.newaxis], dof_indices=self._wheel_indices)
+
+
+class PolicyMultiSensorRobot(MobilityGenMultiSensorRobot):
+    """Policy-driven robot (humanoid/quadruped) using YAML config and a multi-sensor rig.
+
+    Concrete subclasses set ``robot_config_path`` and implement :meth:`build_policy`.
+
+    Args:
+        prim_path: USD prim path of the robot root.
+        articulation: Isaac Sim articulation for the robot.
+        controller: Locomotion policy controller (H1 or Spot).
+        sensor_rig: Optional pre-built sensor rig module.
+    """
+
+    def __init__(
+        self,
+        prim_path: str,
+        articulation: Articulation,
+        controller: H1FlatTerrainPolicy | SpotFlatTerrainPolicy,
+        sensor_rig: Module | None = None,
+    ) -> None:
+        super().__init__(prim_path=prim_path, articulation=articulation, sensor_rig=sensor_rig)
+        self.controller = controller
+        self._controller_initialized = False
+
+    @classmethod
+    @abstractmethod
+    def build_policy(cls, prim_path: str) -> H1FlatTerrainPolicy | SpotFlatTerrainPolicy:
+        """Create the locomotion policy controller for the robot.
+
+        Args:
+            prim_path: USD prim path of the robot.
+        """
+        ...
+
+    @classmethod
+    def build(cls, prim_path: str) -> "PolicyMultiSensorRobot":
+        """Build the policy robot and its sensor rig at *prim_path*.
+
+        Args:
+            prim_path: USD prim path where the robot will be created.
+
+        Returns:
+            Configured :class:`PolicyMultiSensorRobot` instance.
+        """
+        full_url = get_assets_root_path() + cls.usd_url
+        add_reference_to_stage(usd_path=full_url, path=prim_path)
+        stage = get_current_stage(backend="usd")
+        controller = cls.build_policy(prim_path)
+        stage.Load(prim_path)
+        sensor_rig = cls.build_sensor_rig(prim_path)
+        return cls(prim_path=prim_path, articulation=controller.robot, controller=controller, sensor_rig=sensor_rig)
+
+    def write_action(self, step_size: float) -> None:
+        """Apply the current action via the locomotion policy controller.
+
+        Args:
+            step_size: Physics timestep size in seconds.
+        """
+        if not self.is_physics_ready():
+            return
+        if not self._controller_initialized:
+            self.controller.initialize()
+            self._controller_initialized = True
+        action = self.action.get_value()
+        device = torch.device(str(self.controller.robot._device))
+        command = torch.tensor([action[0], 0.0, action[1]], dtype=torch.float32, device=device)
+        self.controller.forward(step_size, command)
+
+    def set_pose_2d(self, pose: Pose2d) -> None:
+        """Set the robot's 2D pose and reinitialize the policy controller.
+
+        Args:
+            pose: The target 2D pose (x, y, theta).
+        """
+        super().set_pose_2d(pose)
+        if self.is_physics_ready():
+            self.controller.initialize()
+            self._controller_initialized = True
+
+
+@ROBOTS.register()
+class CarterMultiSensorRobot(WheeledMultiSensorRobot):
+    """Nova Carter with full multi-sensor rig (8 Hawk cameras + 4 Owl cameras), driven by YAML config."""
+
+    robot_config_path = "data/robots/carter.yaml"
+
+
+@ROBOTS.register()
+class JetbotMultiSensorRobot(WheeledMultiSensorRobot):
+    """Jetbot with front Hawk camera, driven by YAML config."""
+
+    robot_config_path = "data/robots/jetbot.yaml"
+
+
+@ROBOTS.register()
+class H1MultiSensorRobot(PolicyMultiSensorRobot):
+    """Unitree H1 humanoid with front camera, driven by YAML config."""
+
+    robot_config_path = "data/robots/h1.yaml"
+
+    @classmethod
+    def build_policy(cls, prim_path: str) -> H1FlatTerrainPolicy:
+        """Build and return an H1FlatTerrainPolicy controller at the given prim path."""
+        return H1FlatTerrainPolicy(prim_path=prim_path, position=np.array([0.0, 0.0, cls.controller_z_offset]))
+
+
+@ROBOTS.register()
+class SpotMultiSensorRobot(PolicyMultiSensorRobot):
+    """Boston Dynamics Spot quadruped with front camera, driven by YAML config."""
+
+    robot_config_path = "data/robots/spot.yaml"
+
+    @classmethod
+    def build_policy(cls, prim_path: str) -> SpotFlatTerrainPolicy:
+        """Build and return a SpotFlatTerrainPolicy controller at the given prim path."""
         return SpotFlatTerrainPolicy(prim_path=prim_path, position=np.array([0.0, 0.0, cls.controller_z_offset]))

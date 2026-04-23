@@ -19,11 +19,31 @@ from __future__ import annotations
 
 from collections import OrderedDict
 
+from pxr import Sdf
+
 __all__ = ["Buffer", "Module"]
 
 
+def _join_sdf_paths(*subpaths: str) -> str:
+    """Join one or more USD path segments into a single SdfPath string."""
+    p = Sdf.Path(subpaths[0])
+    for subpath in subpaths[1:]:
+        subpath = subpath.strip("/")
+        if subpath:
+            p = p.AppendPath(subpath)
+    return str(p)
+
+
 class Buffer:
-    """A named value container with optional tags for filtering.
+    """A tagged container for storing and managing data values within modules.
+
+    The Buffer class provides a flexible storage mechanism that associates arbitrary data with optional tags for
+    filtering and categorization. Buffers are commonly used within Module hierarchies to organize state data,
+    sensor outputs, or configuration parameters that can be selectively accessed based on their tags.
+
+    Tags enable powerful filtering capabilities, allowing buffers to be grouped by type (e.g., "rgb",
+    "segmentation", "depth") or other categorical attributes. This makes it easy to retrieve specific subsets
+    of data from complex module hierarchies.
 
     Args:
         value: The initial value of the buffer. Defaults to None.
@@ -80,7 +100,23 @@ class Buffer:
 
 
 class Module:
-    """A composable container of Buffers and child Modules."""
+    """Base class for hierarchical state management and simulation data handling.
+
+    This class provides a framework for organizing simulation components in a tree structure with automatic
+    state management capabilities. It supports nested modules and buffers, enabling efficient data collection,
+    serialization, and replay functionality for simulation scenarios.
+
+    The Module class manages two types of objects:
+    - Child modules: Other Module instances that form a hierarchical structure
+    - Buffers: Data containers (Buffer instances) that store simulation state with optional tagging
+
+    Key features include:
+    - Automatic discovery of nested modules and buffers
+    - State dictionary generation with tag-based filtering
+    - Specialized methods for different rendering types (RGB, segmentation, depth, normals)
+    - State loading and saving for simulation replay
+    - Non-strict state loading that handles missing keys gracefully
+    """
 
     def children(self) -> dict[str, "Module"]:
         """Get the immediate children attached to the module.

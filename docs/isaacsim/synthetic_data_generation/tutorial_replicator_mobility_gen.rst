@@ -33,6 +33,12 @@ MobilityGen supports:
    - Quadruped - Spot
    - Humanoid - H1
 
+- Many sensor configurations
+   - Single front-camera configurations
+      - JetbotRobot, CarterRobot, H1Robot, SpotRobot
+   - USD-based multi-sensor rigs (current version supports multi-camera only)
+      - JetbotMultiSensorRobot, CarterMultiSensorRobot, H1MultiSensorRobot, SpotMultiSensorRobot
+
 - Many data collection methods
    - Manual - Keyboard Teleoperation, Gamepad Teleoperation
    - Automated - Random Accelerations, Random Path Following
@@ -170,28 +176,36 @@ The data is now recorded to ``~/MobilityGenData/recordings`` by default.
 Replay and Render
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After recording a trajectory, which includes
-data, like robot poses, you can *replay* the scenario.
+After recording a trajectory (robot poses and joint state), you can *replay* it headlessly
+to render sensor images (RGB, depth, segmentation, normals) without re-running the physics
+simulation.
 
-To do this, use the ``replay_directory.py`` Python script that ships with Isaac Sim.
-
-To run the script call the following from inside the Isaac Sim directory:
+Isaac Sim ships a standalone replay script for this. Run it from the Isaac Sim root directory
+(replace ``~/omni_isaac_sim`` with your actual Isaac Sim installation path):
 
 .. code::
 
-   ./python.sh standalone_examples/replicator/mobility_gen/replay_directory.py --render_interval 40 --enable isaacsim.replicator.mobility_gen.examples
+   cd ~/omni_isaac_sim
+   ./_build/linux-x86_64/release/python.sh \
+       standalone_examples/replicator/mobility_gen/replay_directory.py \
+       --input  ~/MobilityGenData/recordings \
+       --output ~/MobilityGenData/replays \
+       --render_interval 40 \
+       --enable isaacsim.replicator.mobility_gen.examples
 
-The arguments to this script are
+- ``--input`` — directory containing one or more recordings (each in its own subdirectory).
+- ``--output`` — directory where replays with rendered sensor data will be written.
+- ``--render_interval`` — render every Nth physics step. ``40`` renders roughly once per second and is a good starting point; set to ``1`` for full-frame-rate output.
+- ``--enable`` — comma-separated list of extra extensions to load. Required when your robot classes (e.g. ``CarterRobot``, ``H1Robot``) are defined in ``isaacsim.replicator.mobility_gen.examples``.
 
-* --input: The path to the input recordings.
-* --output: The path to output the recordings with rendered sensor data.
-* --rgb_enabled: Set true to enable RGB image rendering.
-* --segmentation_enabled: Set true to enable semantic segmentation image rendering.
-* --depth_enabled: Set true to enable depth image rendering.
-* --instance_id_segmentation_enabled: Set true to enable instance segmentation image rendering.
-* --normals_enabled: Set true to enable surface normal image rendering.
-* --render_rt_subframes: The number of subframes for RT rendering.  Increase this number to improve rendering quality at the cost of speed.
-* --render_interval: The number of physics steps per rendering.  For example, setting this value to 2 will render only once every 2 physics timesteps.  
+Additional optional flags:
+
+* ``--rgb_enabled`` — enable RGB image rendering (default: ``True``).
+* ``--depth_enabled`` — enable depth image rendering (default: ``True``).
+* ``--segmentation_enabled`` — enable semantic segmentation rendering (default: ``True``).
+* ``--normals_enabled`` — enable surface normal rendering (default: ``False``).
+* ``--instance_id_segmentation_enabled`` — enable instance segmentation rendering (default: ``False``).
+* ``--render_rt_subframes`` — number of RT subframes per step; increase for higher rendering quality at the cost of speed (default: ``1``).
 
 After the script finishes, verify that you have a folder ``~/MobilityGenData/replays``, which contains
 the rendered sensor data.
@@ -254,7 +268,7 @@ The general workflow is as follows:
    - Implement the ``write_action()`` method.  This method takes as input a linear and angular velocity command and performs any control logic.
    - Overwrite common class parameters (like physics_dt).
 
-4. Register the robot class by using the ``ROBOT.register()`` decorator. This makes the custom robot discoverable by MobilityGen.
+4. Register the robot class by using the ``ROBOTS.register()`` decorator. This makes the custom robot discoverable by MobilityGen.
 
 After implementing this in the file above, save the file.
 
@@ -322,6 +336,26 @@ When defining your robot, you may find the following list of common parameters a
      - The angle threshold at which point the robot will move forward. Applies to the path following scenario.
    * - ``path_following_target_point_offset_meters``
      - The offset distance used to generate the 'target point' that the robot will follow in the path following scenario. A larger offset results in smoother motion, but too large may cause the robot to cut corners during turns.
+
+Migrate Older Recordings
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Recordings made with Isaac Sim 5.x store robot state in ``state/common/*.npy`` files
+(pickled Python dicts).  Starting with Isaac Sim 6.0, MobilityGen switched to
+``state/common/*.npz`` (named NumPy arrays).  The reader only supports the new format,
+so older recordings must be converted before replay.
+
+To convert all recordings in a directory in-place, run:
+
+.. code::
+
+   cd ~/omni_isaac_sim
+   ./_build/linux-x86_64/release/python.sh \
+       standalone_examples/replicator/mobility_gen/migrate_recordings.py \
+       --input ~/MobilityGenData/recordings
+
+If a recording still uses the old format, the reader will log an error and produce
+zero steps — convert it with the script above before replaying.
 
 Next Steps
 ----------

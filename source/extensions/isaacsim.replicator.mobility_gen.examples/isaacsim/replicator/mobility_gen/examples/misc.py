@@ -47,8 +47,8 @@ class HawkCamera(Module):
         right: The right camera component of the stereo pair.
     """
 
-    usd_url: str = get_assets_root_path() + "/Isaac/Sensors/LeopardImaging/Hawk/hawk_v1.1_nominal.usd"
-    """USD file path for the Hawk camera asset."""
+    usd_path: str = "/Isaac/Sensors/LeopardImaging/Hawk/hawk_v1.1_nominal.usd"
+    """USD asset path suffix for the Hawk camera (appended to the assets root at build time)."""
     resolution: tuple[int, int] = (960, 600)
     """Resolution of the left and right cameras as (width, height)."""
     left_camera_path: str = "left/camera_left"
@@ -70,7 +70,7 @@ class HawkCamera(Module):
         Returns:
             A new HawkCamera instance with left and right cameras configured.
         """
-        add_reference_to_stage(usd_path=cls.usd_url, path=prim_path)
+        add_reference_to_stage(usd_path=get_assets_root_path() + cls.usd_path, path=prim_path)
 
         return cls.attach(prim_path)
 
