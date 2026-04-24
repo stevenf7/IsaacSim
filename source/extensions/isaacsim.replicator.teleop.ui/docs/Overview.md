@@ -12,6 +12,8 @@ The isaacsim.replicator.teleop.ui extension provides the desktop UI for VR teleo
 
 **Main window** that composes six panels in a scrollable layout: Profiles, Session, Floating, IK, Grasp, and Locomotion. It instantiates {class}`TeleopManager <isaacsim.replicator.teleop.TeleopManager>`, {class}`MarkersManager <isaacsim.replicator.teleop.MarkersManager>`, and all four controllers, then wires them to the corresponding panels. All panel settings persist under `/persistent/exts/isaacsim.replicator.teleop/`.
 
+Recording and replay live in the standalone `isaacsim.replicator.episode_recorder.ui` extension (*Tools > Replicator > Episode Recorder*). While `TeleopManager` is alive it installs a session-injector (see {func}`install_teleop_session_injector <isaacsim.replicator.teleop.install_teleop_session_injector>`) so the standalone Episode Recorder window automatically attaches teleop controller and head-pose channels to any session it opens — no teleop-specific code in the recorder UI is required.
+
 ## UI Panels
 
 ### Profiles Panel
@@ -28,6 +30,15 @@ The last-used profile is automatically restored when the window opens. Profile v
 ### Session Panel
 
 OpenXR connection controls (**Connect** / **Disconnect**), frame marker management (**Show** / **Remove** with adjustable scale), Tracking Space prim selection with coordinate system dropdown, XR Anchor configuration (position offset, rotation mode, smoothing, fixed-height lock), and a **Debug** section with synthetic input controls (thumbstick sliders, trigger sliders, locomotion buttons) and a **Write Backend** dropdown to override the global XformPrim backend (USD / USD-RT / Fabric).
+
+### Recording & Replay
+
+Recording and replay are not built into the Teleop window. Open *Tools > Replicator > Episode Recorder* to drive an {class}`EpisodeRecorder <isaacsim.replicator.episode_recorder.EpisodeRecorder>` / {class}`EpisodeReplayer <isaacsim.replicator.episode_recorder.EpisodeReplayer>` against the current stage. The Teleop window shares the session through two hooks:
+
+- **Session injector** — {class}`TeleopManager <isaacsim.replicator.teleop.TeleopManager>` auto-installs a session injector (see {func}`install_teleop_session_injector <isaacsim.replicator.teleop.install_teleop_session_injector>`) so any session opened from the Episode Recorder window picks up `teleop/left`, `teleop/right`, and (when the backend reports a head pose) `teleop/head` channels automatically.
+- **VR button** — the Meta Quest left-**Y** button is still wired to the `toggle` command via {class}`VRRecordingButton <isaacsim.replicator.teleop.VRRecordingButton>`, dispatched through the shared `EPISODE_CMD_EVENT` bus. The Episode Recorder window listens on the same bus, so the VR button starts / ends the active session without the Episode Recorder UI needing focus.
+
+Aim / head-pose capture is controlled by carb settings (`/persistent/exts/isaacsim.replicator.teleop/record/record_aim_pose` and `.../record_head_pose`, both default `True`).
 
 ### Floating Controller Panel
 

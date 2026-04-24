@@ -61,9 +61,15 @@ _PANEL_NAME = "Floating Controller"
 _LOG_NAMESPACE = "Floating"
 
 
-def set_status(label: ui.Label | None, text: str, color: int = CLR_DIM, emit_terminal: bool = False) -> None:
+def set_status(
+    label: ui.Label | None,
+    text: str,
+    color: int = CLR_DIM,
+    emit_terminal: bool = False,
+    side: str | None = None,
+) -> None:
     """Set the status label text and color for this panel."""
-    _set_status_base(label, text, color, source=_LOG_NAMESPACE, emit_terminal=emit_terminal)
+    _set_status_base(label, text, color, source=_LOG_NAMESPACE, emit_terminal=emit_terminal, side=side)
 
 
 _SETTINGS_PREFIX = "/persistent/exts/isaacsim.replicator.teleop/floating"
@@ -380,14 +386,14 @@ class FloatingPanel:
                 self._sync_side_controls(side)
                 status = self._get_field(side, "status")
                 if self._fc.is_running(side):
-                    set_status(status, "Active", CLR_GREEN, emit_terminal=True)
+                    set_status(status, "Active", CLR_GREEN, emit_terminal=True, side=side)
         elif event.type == int(omni.timeline.TimelineEventType.STOP):
             self._is_playing = False
             for side in ("left", "right"):
                 self._sync_side_controls(side)
                 status = self._get_field(side, "status")
                 if self._fc.is_configured(side):
-                    set_status(status, "Standby", CLR_YELLOW, emit_terminal=True)
+                    set_status(status, "Standby", CLR_YELLOW, emit_terminal=True, side=side)
                 else:
                     set_status(status, "", CLR_DIM)
 
@@ -428,10 +434,10 @@ class FloatingPanel:
         valid, msg = self._fc.validate(side)
         if valid:
             self._configured[side] = True
-            set_status(status, f"Configured - {msg}", CLR_YELLOW, emit_terminal=True)
+            set_status(status, f"Configured - {msg}", CLR_YELLOW, emit_terminal=True, side=side)
         else:
             self._configured[side] = False
-            set_status(status, f"Apply failed - {msg}", CLR_RED, emit_terminal=True)
+            set_status(status, f"Apply failed - {msg}", CLR_RED, emit_terminal=True, side=side)
         self._sync_side_controls(side)
 
     def _on_clear(self, side: str) -> None:
@@ -444,7 +450,7 @@ class FloatingPanel:
         self._tm.clear_floating_side(side)
         self._sync_side_controls(side)
         status = self._get_field(side, "status")
-        set_status(status, "Cleared", CLR_DIM, emit_terminal=True)
+        set_status(status, "Cleared", CLR_DIM, emit_terminal=True, side=side)
 
     def _on_toggle(self, side: str) -> None:
         if self._is_playing:
@@ -455,7 +461,7 @@ class FloatingPanel:
             self._desired_enabled[side] = False
             self._fc.disable(side)
             self._tm.clear_floating_side(side)
-            set_status(status, "Disabled", CLR_YELLOW, emit_terminal=True)
+            set_status(status, "Disabled", CLR_YELLOW, emit_terminal=True, side=side)
         else:
             if not self._configured[side]:
                 set_status(status, "Apply first", CLR_YELLOW)
@@ -468,12 +474,18 @@ class FloatingPanel:
             if self._fc.configure(side):
                 self._desired_enabled[side] = True
                 self._tm.set_floating_side_assigned(side, True)
-                set_status(status, "Standby", CLR_YELLOW, emit_terminal=True)
+                set_status(status, "Standby", CLR_YELLOW, emit_terminal=True, side=side)
             else:
                 self._desired_enabled[side] = False
                 self._configured[side] = False
                 _, msg = self._fc.validate(side)
-                set_status(status, f"Apply failed - {msg}" if msg else "Apply failed", CLR_RED, emit_terminal=True)
+                set_status(
+                    status,
+                    f"Apply failed - {msg}" if msg else "Apply failed",
+                    CLR_RED,
+                    emit_terminal=True,
+                    side=side,
+                )
 
         self._sync_side_controls(side)
 

@@ -62,7 +62,7 @@ Prerequisites
 *   |isaac-sim_short| built and launchable.
 *   `Isaac Teleop <https://github.com/NVIDIA/IsaacTeleop>`_ installed --- follow the `install instructions <https://nvidia.github.io/IsaacTeleop/main/getting_started/quick_start.html#install-the-isaacteleop-pip-package>`_.
 *   CloudXR server started and headset connected --- follow the `CloudXR server guide <https://nvidia.github.io/IsaacTeleop/main/getting_started/quick_start.html#run-cloudxr-server>`_.
-*   A stage with a robot (e.g. a UR3e arm with a gripper on a mobile base).
+*   A stage with a robot (e.g. ``omniverse://isaac-dev.ov.nvidia.com/Isaac/Samples/Replicator/Teleop/teleop_scenario_floating_xarm_dex3.usd``).
 
 Start Isaac Teleop CloudXR in another terminal before connecting from the Teleop window:
 
@@ -89,7 +89,7 @@ Overview
 
 The extension has two layers:
 
-*   ``isaacsim.replicator.teleop`` --- runtime that handles VR input, frame markers, and four controllers (Floating, IK, Grasp, Locomotion).
+*   ``isaacsim.replicator.teleop`` --- runtime that handles VR input, frame markers, and four controllers (Floating, IK, Grasp, Locomotion). On construction, :class:`TeleopManager <isaacsim.replicator.teleop.TeleopManager>` automatically installs a session injector with ``isaacsim.replicator.episode_recorder`` (teleop controller / head-pose channels are appended to any open recorder session) and auto-attaches a :class:`VRRecordingButton <isaacsim.replicator.teleop.VRRecordingButton>` bound to the Meta Quest left-Y button so recording can be started / stopped from VR.
 *   ``isaacsim.replicator.teleop.ui`` --- UI window with six collapsible panels (Profiles, Session, Floating, IK, Grasp, Locomotion) that configure and drive the runtime.
 
 Every controller follows the same lifecycle: **Apply** validates the prim path,
@@ -99,6 +99,24 @@ All tuning controls (gains, rotation offsets, speed sliders) are live-editable
 during Play and persist across sessions. Values can be saved to a teleop profile
 YAML for sharing or version control.
 
+Recording and replay are handled by the standalone Episode Recorder window
+(``isaacsim.replicator.episode_recorder.ui``, opened from *Tools > Replicator >
+Episode Recorder* --- see :ref:`Record and replay
+<isaac_sim_app_tutorial_replicator_teleop_episode_recorder>`). The window
+produces multi-episode HDF5 files using an :class:`EpisodeRecorder
+<isaacsim.replicator.episode_recorder.EpisodeRecorder>` and plays them back
+through the Kit timeline using :class:`EpisodeReplayer
+<isaacsim.replicator.episode_recorder.EpisodeReplayer>`. While a live
+:class:`TeleopManager <isaacsim.replicator.teleop.TeleopManager>` is running,
+every session opened from that window automatically captures teleop
+controller / aim-pose / headset channels in addition to the articulation /
+rigid-body / xform channels selected in the UI. For scripted workflows,
+:func:`build_teleop_recorder <isaacsim.replicator.teleop.build_teleop_recorder>`
+returns an equivalent recorder preconfigured with both teleop and scene
+recordables. The recorded HDF5 files feed the offline
+:ref:`synthetic-data pipeline
+<isaac_sim_app_tutorial_replicator_teleop_sdg_replay>`.
+
 
 .. _isaac_sim_app_tutorial_replicator_teleop_ui:
 
@@ -107,6 +125,10 @@ UI reference
 
 The Teleop window contains six collapsible panels, described here from top to
 bottom. Open the window from **Tools** > **Replicator** > **Teleop**.
+
+Recording and replay live in a separate window (**Tools** > **Replicator** >
+**Episode Recorder**, provided by ``isaacsim.replicator.episode_recorder.ui``);
+see :ref:`Record and replay <isaac_sim_app_tutorial_replicator_teleop_episode_recorder>`.
 
 
 .. _isaac_sim_app_tutorial_replicator_teleop_ui_profiles:
@@ -486,6 +508,208 @@ During Play the controller reads the following VR inputs:
     origin, carry is implicit and the toggle has no additional effect.
 
 
+.. _isaac_sim_app_tutorial_replicator_teleop_episode_recorder:
+
+Record and replay (Episode Recorder)
+------------------------------------
+
+Recording and replay are handled by the standalone Episode Recorder window
+from the ``isaacsim.replicator.episode_recorder.ui`` extension (**Tools** >
+**Replicator** > **Episode Recorder**). The window is fully independent of
+teleop --- it works on any stage --- but when a live
+:class:`TeleopManager <isaacsim.replicator.teleop.TeleopManager>` is running,
+teleop controller / aim-pose / headset channels are automatically appended to
+any session opened from the window via the session-injector hook installed by
+:func:`install_teleop_session_injector
+<isaacsim.replicator.teleop.install_teleop_session_injector>`.
+
+Under the hood, the window captures per-physics-step simulation state (and
+optionally teleop inputs) into a multi-episode HDF5 file and replays those
+episodes through the Kit timeline via
+:class:`EpisodeRecorder <isaacsim.replicator.episode_recorder.EpisodeRecorder>`
+and :class:`EpisodeReplayer <isaacsim.replicator.episode_recorder.EpisodeReplayer>`.
+All recorder commands (**Start**, **End**, **toggle**) are dispatched on the
+shared ``EPISODE_CMD_EVENT`` event bus, so the window, the auto-bound VR
+button, and any scripted caller drive the same underlying session.
+
+A recording *session* is one HDF5 file that contains many *episodes*. Episodes
+auto-start on timeline **Play** and auto-end on timeline **Stop**; the window
+buttons and the VR button add a manual start / end / toggle edge on top of
+that.
+
+.. rubric:: HDF5 layout
+
+Each session produces a single HDF5 file with one group per episode. Datasets
+are preallocated per episode and trimmed to their true length on
+``end_episode``.
+
+.. code-block:: text
+
+    <file>.hdf5                             # one file per open_session()
+    ├── @schema_version, @stage_snapshot, manifest/, ...  # file-level attrs + manifest
+    └── episodes/
+        ├── episode_00000/                  # @episode_index, @started_at, @ended_at,
+        │   │                               # @num_frames, @success, @start_sim_time,
+        │   │                               # @end_sim_time, ...
+        │   ├── meta/time/
+        │   │   ├── sim_time            (N,)     float64
+        │   │   ├── physics_step        (N,)     int64
+        │   │   └── wall_time           (N,)     float64
+        │   ├── state/<name>/                  # articulation, xform, or rigid body (UI naming)
+        │   │   ├── dof_positions       (N, dof)  float32   # articulation
+        │   │   ├── dof_velocities      (N, dof)  float32
+        │   │   ├── dof_targets         (N, dof)  float32
+        │   │   ├── root_position       (N, 3)    float32   # articulation root
+        │   │   ├── root_orientation    (N, 4)    float32   # wxyz
+        │   │   ├── position            (N, 3)    float32   # xform / rigid body
+        │   │   ├── orientation         (N, 4)    float32   # wxyz
+        │   │   ├── linear_velocity     (N, 3)    float32   # rigid body
+        │   │   └── angular_velocity    (N, 3)    float32
+        │   └── teleop/                        # present when a live TeleopManager is active
+        │       ├── <side>/{trigger, squeeze, thumbstick_x, thumbstick_y}     (N,)    float32
+        │       ├── <side>/{primary_click, secondary_click, thumbstick_click} (N,)    uint8
+        │       ├── <side>/aim_position          (N, 3)  float32   # record_aim_pose=True
+        │       ├── <side>/aim_orientation       (N, 4)  float32   # wxyz
+        │       └── head/{position, orientation} (N, 3 | 4)  float32   # record_head_pose=True
+        ├── episode_00001/ ...
+        └── episode_00002/ ...
+
+:meth:`EpisodeReplayer.list_episodes
+<isaacsim.replicator.episode_recorder.EpisodeReplayer.list_episodes>` iterates
+the ``episodes/episode_NNNNN`` groups for per-episode playback.
+
+.. rubric:: Recorded data vs. replayed data
+
+The recorder captures two kinds of data per frame:
+
+*   **World state** (under ``state/<name>/`` --- one HDF5 group per recorded
+    articulation, Xform, or rigid body): articulation DOF positions /
+    velocities, articulation root pose, prim poses, and rigid-body velocities
+    where enabled. This is the *only* data the replayer applies. Every
+    gripper-drive joint is part of ``dof_positions``, so replaying correctly
+    reproduces open / closed grippers without running any teleop logic.
+*   **Teleop input channels** (under ``teleop/<side>/...``, present only when
+    a live :class:`TeleopManager` is active at record time): trigger,
+    squeeze, thumbstick, button clicks, and optional OpenXR aim-pose /
+    headset-pose channels. These are recorded for offline analysis, policy
+    learning, and re-simulation, but the replayer *ignores* them entirely.
+
+Aim-pose / head-pose capture is controlled by carb settings
+``/persistent/exts/isaacsim.replicator.teleop/record/record_aim_pose`` and
+``.../record_head_pose`` (both default ``True``). Toggle them from the Script
+Editor (``carb.settings.get_settings().set_bool(...)``) before opening a
+session if you want to skip them.
+
+On replay, :meth:`EpisodeReplayer.apply_frame
+<isaacsim.replicator.episode_recorder.EpisodeReplayer.apply_frame>` teleports
+each articulation via :meth:`Articulation.set_dof_positions
+<isaacsim.core.prims.Articulation.set_dof_positions>` and
+:meth:`set_world_poses <isaacsim.core.prims.Articulation.set_world_poses>`
+and each prim via :meth:`XformPrim.set_world_poses
+<isaacsim.core.prims.XformPrim.set_world_poses>`. The teleop controllers
+(**IK**, **Grasp**, **Floating**, **Locomotion**) are **not** active during
+replay --- no IK is solved, no trigger command is re-dispatched, no OpenXR
+input is consumed. Replay is strictly a world-state playback.
+
+Targets and options
+^^^^^^^^^^^^^^^^^^^
+
+*   **USD Root** --- prim path scanned by the discovery helpers.
+    ``/World`` is a sensible default.
+*   **Discover** --- lists every articulation (via ArticulationRootAPI),
+    rigid body (via RigidBodyAPI), and plain Xform prim under the root.
+    Plain Xforms are always included so a locomotion-driven robot-base
+    cube, a hand-placed tracker, or a visual tool tip under an articulation
+    show up without extra opt-in. Untick individual rows in the
+    **Discovered Targets** list for anything you don't want recorded.
+*   **Discovered Targets** (collapsible, scrollable) --- articulations and
+    prims found under the root. Tick the boxes for every target you want
+    recorded. Each tick maps to a group or dataset inside the HDF5 file.
+*   **Output Dir** --- directory where the HDF5 file is written (defaults to
+    ``<cwd>/_episode_recorder``). Created if missing.
+*   **Export Scene** --- button next to the Output Dir field. Writes a
+    flattened USD of the current stage as ``<output_dir>/stage_snapshot.usd``
+    together with ``stage_snapshot.sidecar.json`` describing the export. The
+    snapshot is scene-level, so one click per scene is enough: subsequent
+    **Open Session** calls detect the file and stamp its basename into the
+    HDF5 ``stage_snapshot`` attribute automatically, with no per-session
+    flatten-export cost.
+*   **File Prefix** --- filename prefix. The final path is
+    ``{prefix}_{timestamp}.hdf5``.
+
+Session and episode control
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+*   **Open Session** / **Close Session** --- single toggle button. On open,
+    the recorder creates the HDF5 file, subscribes to simulation events,
+    and the filename appears below. All configuration options are locked
+    while a session is open.
+*   **Start** / **End** --- single toggle button that manually starts or
+    ends an episode inside the open session. Only enabled while a session
+    is open. Also driven by the VR left-Y button (see below) and by the
+    automatic timeline PLAY / STOP hooks.
+*   Status label --- colour-coded feedback: *Idle* (dim), *Session open*
+    (yellow), *Recording episode #K* (green), *Standby - K episode(s)
+    captured* (yellow), *Session closed* (green). Errors and warnings are
+    shown in red / yellow.
+
+VR recording button
+^^^^^^^^^^^^^^^^^^^
+
+:class:`TeleopManager <isaacsim.replicator.teleop.TeleopManager>`
+auto-attaches the Meta Quest left-Y button
+(:class:`VRButton.LEFT_SECONDARY <isaacsim.replicator.teleop.VRButton>`) to
+the ``toggle`` command via :class:`VRRecordingButton
+<isaacsim.replicator.teleop.VRRecordingButton>` on construction and keeps the
+binding alive for its lifetime. One press starts a new episode; a second
+press ends it. The binding is rising-edge triggered, so holding the button
+does not retrigger. When no session is open the dispatch is a no-op.
+
+Replay
+^^^^^^
+
+The **Replay** section (collapsible, collapsed by default) plays any
+previously recorded HDF5 back through the Kit timeline. Replay is mutually
+exclusive with recording: while a session is open the Replay controls are
+locked, and while replay is attached the recording controls are locked.
+
+*   **File** --- full path to an HDF5 session file. Use **Latest** to fill in
+    the newest ``{prefix}_*.hdf5`` in the current **Output Dir**.
+*   **Load** --- opens the HDF5 and populates the **Episode** dropdown with
+    every episode name and its frame count. The info label next to the
+    dropdown also shows ``success=True/False`` if it was recorded.
+*   **Start Replay** / **Stop Replay** --- single toggle button that drives
+    :meth:`EpisodeReplayer.start_replay
+    <isaacsim.replicator.episode_recorder.EpisodeReplayer.start_replay>`.
+    Each Kit app update applies one recorded frame and seeks (never plays)
+    the Kit timeline to the recorded ``sim_time``, so any stage-authored
+    USD animations play back in lockstep without stepping physics. Pose
+    writes land in an anonymous USD sublayer so the root stage is never
+    mutated. Pressing **Stop Replay** (or reaching the last frame in
+    non-loop mode) pops that sublayer, returning every prim to its
+    pre-replay pose; the HDF5 session stays loaded so a fresh replay can
+    be started immediately.
+
+.. rubric:: Pure-USD visual replay
+
+The replayer never plays the Kit timeline and never calls into the physics
+engine --- it only authors recorded poses onto the anonymous sublayer and
+seeks the timeline so animations advance with the recording. This keeps
+teleop controllers (Floating, IK, Locomotion) dormant during replay and
+avoids the ``Simulation view object is invalidated`` errors that playing
+the timeline against a stopped simulation would otherwise trigger. The
+start / stop lifecycle emits ``[EpisodeRecorder][UI] Replay: starting
+(episode ..., N frames, file=...)`` and ``Replay: stopped`` / ``Replay:
+finished.`` on the terminal.
+
+For the replay to work, every prim path recorded in the HDF5 must exist on
+the currently loaded stage. The Replay panel uses a lenient replayer
+(``strict=False``) that skips missing paths with a warning rather than
+erroring. To guarantee a reproducible setup, click **Export Scene** once
+before recording; the resulting ``stage_snapshot.usd`` can be opened on any
+machine to reproduce the authored stage before replaying.
+
+
 .. _isaac_sim_app_tutorial_replicator_teleop_profiles:
 
 Teleop profiles
@@ -679,11 +903,12 @@ detailed descriptions of each control.
 #. Open **Tools** > **Replicator** > **Teleop**.
 #. Verify the window appears and docks in the **Property** panel.
 #. Verify six collapsible sections: **Profiles**, **Session**, **Floating Controller**, **IK Controller**, **Grasp Controller**, **Locomotion**.
+#. Open **Tools** > **Replicator** > **Episode Recorder** and verify the separate recorder / replay window also appears.
 
 2. Session --- connect and frame markers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-#. Open a stage with a robot.
+#. Open a stage with a robot (e.g. ``http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Replicator/Teleop/teleop_scenario_floating_xarm_dex3.usd``).
 #. Expand **Session** and click **Connect**. Verify:
 
    *   Status turns green (**Connected**).
@@ -732,7 +957,7 @@ detailed descriptions of each control.
 5. IK controller
 ^^^^^^^^^^^^^^^^^
 
-#. Open a stage with an articulated robot arm (e.g. UR3e).
+#. Open a stage with an articulated robot arm (e.g. ``http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Replicator/Teleop/teleop_scenario_dual_ur3_xarm_dex3.usd``).
 #. Expand **IK Controller**. In the **Left** or **Right** sub-panel, enter the
    articulation prim path and click **Apply**.
 #. Verify the **EE Link** dropdown populates with the kinematic chain links.
@@ -807,20 +1032,126 @@ detailed descriptions of each control.
 #. Press **X** (left primary). Verify the console reports carry is implicit and
    the toggle has no additional effect.
 
-9. Stage close and reopen
-##########################
+9. Record and replay
+#####################
+
+#. Open the Episode Recorder window from **Tools** > **Replicator** >
+   **Episode Recorder**. Keep the Teleop window open in the background so
+   :class:`TeleopManager` is alive and its session injector is active.
+#. Set **USD Root** to a prim path that contains the robot and the prims you
+   want recorded (e.g. ``/World``). Click **Discover**. Verify:
+
+   *   The status line reports the number of articulations and prims found.
+   *   The **Discovered Targets** section lists each target with a checkbox.
+
+#. Tick the checkboxes next to the targets you want to record.
+#. Keep the default **Output Dir** (``<cwd>/_episode_recorder``) and **File
+   Prefix** (``episode``), or set custom values. If you plan to replay on a
+   different stage later, click **Export Scene** once --- it writes
+   ``stage_snapshot.usd`` into the output dir and subsequent sessions
+   auto-link it.
+#. Click **Open Session**. Verify:
+
+   *   The status turns yellow with ``Session open - N articulation(s), M prim(s)``.
+   *   The session label below shows ``File: episode_<timestamp>.hdf5``.
+   *   The configuration options above are greyed out.
+
+#. Press **Play** on the timeline. Verify the status turns green with
+   ``Recording episode #1``. Drive the robot with the VR controllers (or
+   debug sliders) for a few seconds.
+#. Press **Stop** on the timeline. Verify the status turns yellow with
+   ``Standby - 1 episode(s) captured``.
+#. Press **Play** again and drive a second episode. Press **Stop**. Verify
+   ``Standby - 2 episode(s) captured``.
+#. Optional --- press the VR left-**Y** button during Play to manually
+   toggle start / end instead of using the timeline. Each rising edge flips
+   the recording state; the **Start** / **End** button text updates
+   accordingly.
+#. Click **Close Session**. Verify the status turns green with
+   ``Session closed (K episode(s))``.
+#. Expand the **Replay** section. Click **Latest**. Verify the **File**
+   field is populated with the HDF5 you just wrote.
+#. Click **Load**. Verify:
+
+   *   Status: ``Loaded episode_<timestamp>.hdf5 (K episode(s))``.
+   *   The **Episode** dropdown lists every episode with its frame count.
+
+#. Select an episode and click **Start Replay**. Verify:
+
+   *   The timeline automatically starts playing.
+   *   After one or two ticks, the status turns green with
+       ``Replaying episode_00000 (N frames)``.
+   *   The articulation / prim states track the recorded motion in real
+       time.
+   *   The terminal prints::
+
+          [EpisodeRecorder][UI] Replay: freezing dynamics (articulation velocities zeroed + drive targets pinned per frame)
+          [EpisodeRecorder][UI] Replay: starting (episode episode_00000, N frames, file=...)
+
+   *   No articulation drifts despite the timeline (and therefore PhysX)
+       still running --- freezes are applied every tick.
+
+#. Press **Pause** on the timeline. Verify the stage freezes on the current
+   frame. Scrub the timeline left / right and verify the stage jumps to the
+   nearest recorded frame.
+#. Click **Stop Replay**. Verify the timeline stops, the status returns to
+   ``Replay stopped.``, and the terminal prints::
+
+       [EpisodeRecorder][UI] Replay: stopped
+       [EpisodeRecorder][UI] Replay: dynamics restored
+
+10. Stage close and reopen
+###########################
 
 #. While controllers are active and the timeline is playing, close the current
    stage.
 #. Verify all panels reset to idle state without errors in the console.
 #. Open a new stage and reconfigure a controller. Verify it activates cleanly.
 
-10. Disconnect
+11. Disconnect
 ###############
 
 #. Click **Disconnect** in the **Session** panel.
 #. Verify status turns red (**Disconnected**), markers are removed, and all
    controllers deactivate.
+
+
+.. _isaac_sim_app_tutorial_replicator_teleop_sdg_episode_recorder:
+
+Testing the extension (Episode Recorder)
+-----------------------------------------
+
+The standalone Episode Recorder window can be tested independently of the Teleop extension, though they integrate seamlessly when both are active.
+
+1. Record a session
+^^^^^^^^^^^^^^^^^^^
+
+#. Open a stage with some articulations or rigid bodies (e.g. ``http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Replicator/Teleop/teleop_scenario_floating_xarm_dex3.usd``).
+#. Open **Tools** > **Replicator** > **Episode Recorder**.
+#. Set **USD Root** to ``/World`` and click **Discover**.
+#. Verify the **Discovered Targets** list populates with the articulations and prims found under the root.
+#. Tick the checkboxes next to the targets you want to record.
+#. Click **Export Scene** to save a snapshot of the current stage. Verify ``stage_snapshot.usd`` is created in the output directory.
+#. Click **Open Session**. Verify the status turns yellow with ``Session open`` and the filename appears below.
+#. Press **Play** on the timeline. Verify the status turns green with ``Recording episode #1``.
+#. Move the robot or wait a few seconds, then press **Stop** on the timeline. Verify the status turns yellow with ``Standby - 1 episode(s) captured``.
+#. Click **Close Session**. Verify the status turns green with ``Session closed (1 episode(s))``.
+
+2. Replay a session
+^^^^^^^^^^^^^^^^^^^
+
+#. Expand the **Replay** section in the Episode Recorder window.
+#. Click **Latest**. Verify the **File** field is populated with the HDF5 file you just recorded.
+#. Click **Load**. Verify the **Episode** dropdown lists the recorded episode with its frame count.
+#. Click **Start Replay** (the play icon). Verify:
+   * The timeline starts playing.
+   * The articulation / prim states track the recorded motion.
+   * The Replay button icon changes to a stop icon.
+#. While replaying, click the **Pause** button. Verify the stage freezes on the current frame and the timeline continues playing.
+#. Click the **Step Forward** and **Step Backward** buttons. Verify the stage updates to the next/previous recorded frame.
+#. Click the **Pause** button again to resume the replay.
+#. Uncheck the **Seek timeline** checkbox. Verify the replay continues, but the timeline is no longer seeked to the recorded ``sim_time``.
+#. Click **Stop Replay** (the stop icon). Verify the timeline stops and the prims return to their pre-replay poses.
 
 
 .. _isaac_sim_app_tutorial_replicator_teleop_sdg_debug:
@@ -852,7 +1183,7 @@ The markers form a parent--child hierarchy under
 1. Enable debug tracking
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-#. Launch |isaac-sim_short| and open a stage with a robot.
+#. Launch |isaac-sim_short| and open a stage with a robot (e.g. ``http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Replicator/Teleop/teleop_scenario_floating_xarm_dex3.usd``).
 #. Open **Tools** > **Replicator** > **Teleop**.
 #. Expand the **Session** panel and then the **Debug** sub-section.
 #. Check the **Debug Tracking** checkbox. Verify:
@@ -895,7 +1226,7 @@ The markers form a parent--child hierarchy under
 3. IK controller (debug)
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-#. Open a stage with an articulated robot arm (e.g. UR3e).
+#. Open a stage with an articulated robot arm (e.g. ``http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Replicator/Teleop/teleop_scenario_dual_ur3_xarm_dex3.usd``).
 #. Expand **IK Controller**. In the **Left** or **Right** sub-panel, enter the
    articulation prim path and click **Apply**.
 #. Verify the **EE Link** dropdown populates with the kinematic chain links.
@@ -1003,3 +1334,90 @@ The markers form a parent--child hierarchy under
 #. Open a new stage. Re-enable **Debug Tracking** and configure a controller.
    Verify it activates cleanly without residual state from the previous
    session.
+
+
+.. _isaac_sim_app_tutorial_replicator_teleop_sdg_replay:
+
+Synthetic data generation from recorded episodes
+-------------------------------------------------
+
+The UI replay discussed in :ref:`Record and replay <isaac_sim_app_tutorial_replicator_teleop_episode_recorder>`
+is a quick visual preview that drives the Kit timeline. For offline synthetic
+data generation you drive
+:class:`EpisodeReplayer <isaacsim.replicator.episode_recorder.EpisodeReplayer>` frame by
+frame and call ``rep.orchestrator.step_async`` after each
+:meth:`apply_frame <isaacsim.replicator.episode_recorder.EpisodeReplayer.apply_frame>`.
+That detaches recording time from rendering time, so an expensive writer or
+DLSS mode can run per frame without slowing teleop and without time drift.
+
+Prerequisites:
+
+*   An HDF5 session produced by the :ref:`Episode Recorder window <isaac_sim_app_tutorial_replicator_teleop_episode_recorder>`
+    (or any :class:`EpisodeRecorder <isaacsim.replicator.episode_recorder.EpisodeRecorder>`
+    subclass).
+*   A USD stage to replay against; every prim path in the HDF5 must resolve on
+    this stage. Point ``STAGE_PATH`` at the original authored scene used for
+    recording, or at an exported snapshot - click **Export Scene** in the
+    Episode Recorder window, or call
+    :func:`export_stage_snapshot <isaacsim.replicator.episode_recorder.export_stage_snapshot>`
+    from a script, to produce ``stage_snapshot.usd`` next to the HDF5.
+*   |isaac-sim_short| running (VR / CloudXR connection not required for replay).
+
+The script below opens ``STAGE_PATH``, resolves the cameras listed in
+``CAMERA_PATHS`` (or falls back to a default camera if none resolve), attaches
+both a :class:`BasicWriter <omni.replicator.core.BasicWriter>` (RGB PNGs) and a
+:class:`CosmosWriter <omni.replicator.core.CosmosWriter>` (video clips) to the
+camera render products, and then iterates every recorded frame, calling
+``rep.orchestrator.step_async`` after each
+:meth:`apply_frame <isaacsim.replicator.episode_recorder.EpisodeReplayer.apply_frame>`.
+Outputs land under ``_out_teleop_replay/basic/`` and
+``_out_teleop_replay/cosmos/`` next to the current working directory.
+
+Before running either variant below, edit ``HDF5_PATH`` and ``STAGE_PATH`` at
+the top of the script to point at your recorded session and its matching USD
+stage.
+
+.. tab-set::
+
+    .. tab-item:: Standalone Application
+
+        The example can be run as a standalone application using the following commands in the terminal (on Windows use ``python.bat`` instead of ``python.sh``):
+
+        .. code-block:: bash
+
+            ./python.sh standalone_examples/api/isaacsim.replicator.teleop/sdg_teleop_replay.py
+
+        .. raw:: html
+
+            <details closed>
+            <summary>Full Standalone Script</summary>
+
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.teleop/sdg_teleop_replay.py
+            :language: python
+            :lines: 16-
+
+        .. raw:: html
+
+            </details>
+
+    .. tab-item:: Script Editor
+
+        Paste the snippet below into the **Script Editor** (``Window > Script Editor``).
+
+        .. raw:: html
+
+            <details closed>
+            <summary>Full Script Editor Script</summary>
+
+        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_teleop/sdg_teleop_replay_script_editor.py
+            :language: python
+            :lines: 16-
+
+        .. raw:: html
+
+            </details>
+
+Adapt the script to your pipeline by swapping or adding any other Replicator
+writer (depth, semantic segmentation, instance segmentation, normals, motion
+vectors, etc.) or by inserting randomizers between ``apply_frame`` and
+``step_async`` to produce scene variants per recorded trajectory.

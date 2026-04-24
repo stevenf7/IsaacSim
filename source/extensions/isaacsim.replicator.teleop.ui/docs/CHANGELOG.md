@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0] - 2026-04-22
+### Changed
+- Removed the record panel: episode recording and replay now live in the
+  standalone `isaacsim.replicator.episode_recorder.ui` window, and teleop
+  channels are contributed to its sessions via a session-injector installed
+  by `TeleopManager`.
+
 ## [0.2.1] - 2026-04-18
 ### Changed
 - Added return type annotations and imperative-mood docstrings

@@ -108,7 +108,7 @@
   - def validate(self) -> tuple[bool, str]
   - def enable(self) -> tuple[bool, str]
   - def disable(self)
-  - def update(self, left_ctrl, right_ctrl)
+  - def update(self, left_ctrl: Any, right_ctrl: Any)
   - [property] def carries_tracking_space_implicitly(self) -> bool
 
 - class PositionBasedIKController
@@ -213,6 +213,28 @@
   - def reset_marker_transform(self, name: str)
   - def reset_marker_transforms(self)
 
+- class TeleopControllerRecordable(Recordable)
+  - TYPE_ID: str
+  - def __init__(self)
+  - def describe_channels(self) -> dict[str, ChannelDescriptor]
+  - def on_session_open(self, stage: Any)
+  - def on_session_close(self)
+  - def sample(self) -> dict[str, Any]
+  - def apply(self, frame: Mapping[str, Any])
+  - def to_manifest(self) -> dict[str, Any]
+  - class def from_manifest(cls, entry: Mapping[str, Any]) -> TeleopControllerRecordable
+
+- class TeleopHeadRecordable(Recordable)
+  - TYPE_ID: str
+  - def __init__(self)
+  - def describe_channels(self) -> dict[str, ChannelDescriptor]
+  - def on_session_open(self, stage: Any)
+  - def on_session_close(self)
+  - def sample(self) -> dict[str, np.ndarray]
+  - def apply(self, frame: Mapping[str, Any])
+  - def to_manifest(self) -> dict[str, Any]
+  - class def from_manifest(cls, entry: Mapping[str, Any]) -> TeleopHeadRecordable
+
 - class TeleopCommand(Enum)
   - CONNECT: str
   - START: str
@@ -260,6 +282,10 @@
   - [property] def is_grasp_tracking(self) -> bool
   - def set_floating_tracking(self, enabled: bool)
   - [property] def is_floating_tracking(self) -> bool
+  - def add_controller_inputs_observer(self, observer: Callable[[object | None, object | None], None])
+  - def remove_controller_inputs_observer(self, observer: Callable[[object | None, object | None], None])
+  - def add_head_observer(self, observer: Callable[[object | None], None])
+  - def remove_head_observer(self, observer: Callable[[object | None], None])
   - def destroy(self)
 
 - class BimanualControllerProfile
@@ -322,6 +348,21 @@
   - blocks_tracking: bool
   - [property] def is_valid(self) -> bool
 
+- class VRButton(str, Enum)
+  - LEFT_PRIMARY: str
+  - LEFT_SECONDARY: str
+  - LEFT_THUMBSTICK: str
+  - RIGHT_PRIMARY: str
+  - RIGHT_SECONDARY: str
+  - RIGHT_THUMBSTICK: str
+
+- class VRRecordingButton
+  - def __init__(self, teleop_manager: Any)
+  - [property] def is_attached(self) -> bool
+  - def attach(self)
+  - def detach(self)
+  - def destroy(self)
+
 - class AnchorRotationMode(Enum)
   - FIXED: str
   - FOLLOW_PRIM: str
@@ -348,14 +389,16 @@
 
 - def get_teleop_backend() -> str
 - def set_teleop_backend(backend: Literal['usd', 'usdrt', 'fabric'] | None)
-- def teleop_backend_ctx()
+- def teleop_backend_ctx() -> Generator[None, None, None]
 - def get_builtin_grasp_config_uri(name: str) -> str
 - def get_builtin_grasp_configs() -> list[tuple[str, str]]
 - def load_grasp_config(path: str) -> tuple[GraspConfig | None, list[str]]
 - def normalize_grasp_config_path(path: str) -> str
 - def transform_pose(position: tuple[float, float, float], orientation: tuple[float, float, float, float] | None, target_system: CoordinateSystem) -> tuple[tuple[float, float, float], tuple[float, float, float, float] | None]
 - def transform_pose_openxr_to_isaacsim(position: tuple[float, float, float], orientation: tuple[float, float, float, float] | None = None) -> tuple[tuple[float, float, float], tuple[float, float, float, float] | None]
+- def build_teleop_recorder(output_dir: str) -> EpisodeRecorder
 - def dispatch_command(command: TeleopCommand | str)
+- def install_teleop_session_injector(teleop_manager: Any) -> Callable[[], None]
 - def get_builtin_teleop_profiles_dir() -> str
 - def get_last_teleop_profile_path() -> str
 - def load_teleop_profile(path: str) -> tuple[TeleopProfile | None, list[str]]

@@ -7,9 +7,9 @@
 python = "../_build/target-deps/python"
 packages = [
     # -- Direct dependencies ------------------------------------------------
-    "isaacteleop~=1.0.0",                  # SWIPAT filed under: TODO # Used by: isaacsim.replicator.teleop (teleop controller)
+    "isaacteleop~=1.0.0",                  # SWIPAT filed under: N/A (NVIDIA-authored) # Used by: isaacsim.replicator.teleop
     # -- QP solver backend for pink -----------------------------------------
-    "daqp==0.8.5",                         # SWIPAT filed under: TODO # Used by: isaacsim.replicator.teleop (QP solver backend for pink)
+    "daqp==0.8.5",                         # SWIPAT filed under: https://nvbugspro.nvidia.com/bug/6047066 # Used by: isaacsim.replicator.teleop
 ]
 target = "../_build/target-deps/pip_teleop_prebundle"
 platforms = ["linux-x86_64"]

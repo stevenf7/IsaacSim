@@ -45,8 +45,16 @@ class TeleopWindow(ui.Window):
     """Main window for the Teleop UI extension.
 
     Composes six panels: Profiles, Session, Floating, IK, Grasp, Locomotion.
-    The Profiles panel manages unified teleop profile save/load/validate.
-    All other panels are independent — only the TeleopManager is shared.
+    The Profiles panel manages unified teleop profile save/load/validate; all
+    other panels are independent — only the :class:`TeleopManager` is shared.
+
+    Recording and replay live in the standalone
+    ``isaacsim.replicator.episode_recorder.ui`` extension
+    (*Tools > Replicator > Episode Recorder*). While :class:`TeleopManager` is
+    alive, teleop controller / head-pose channels are attached to any session
+    opened from that window via the session-injector hook registered by
+    :func:`install_teleop_session_injector
+    <isaacsim.replicator.teleop.install_teleop_session_injector>`.
     """
 
     def __init__(self, title: str) -> None:

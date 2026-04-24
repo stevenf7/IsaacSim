@@ -42,6 +42,8 @@ from .coordinate_utils import (
     transform_pose_openxr_to_isaacsim,
 )
 from .markers_manager import MarkersManager
+from .recordables import TeleopControllerRecordable, TeleopHeadRecordable
+from .recorder_factory import build_teleop_recorder
 from .teleop_manager import (
     TELEOP_CMD_EVENT,
     TELEOP_STATUS_EVENT,
@@ -73,11 +75,13 @@ from .teleop_resolver import (
     TeleopResolverIssue,
     resolve_teleop_profile,
 )
+from .teleop_session_injector import install_teleop_session_injector
 from .validation import (
     ValidationResult,
     validate_floating_end_effector,
     validate_marker_path,
 )
+from .vr_recording_button import VRButton, VRRecordingButton
 from .xr_anchor_manager import AnchorRotationMode, XrAnchorManager
 
 __all__ = [
@@ -108,11 +112,15 @@ __all__ = [
     "transform_pose",
     "transform_pose_openxr_to_isaacsim",
     "MarkersManager",
+    "TeleopControllerRecordable",
+    "TeleopHeadRecordable",
+    "build_teleop_recorder",
     "TELEOP_CMD_EVENT",
     "TELEOP_STATUS_EVENT",
     "TeleopCommand",
     "TeleopManager",
     "dispatch_command",
+    "install_teleop_session_injector",
     "BimanualControllerProfile",
     "ControllerSideProfile",
     "GraspControllerProfile",
@@ -136,6 +144,8 @@ __all__ = [
     "ValidationResult",
     "validate_floating_end_effector",
     "validate_marker_path",
+    "VRButton",
+    "VRRecordingButton",
     "AnchorRotationMode",
     "XrAnchorManager",
 ]

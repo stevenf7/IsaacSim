@@ -16,7 +16,7 @@
 """Extension entry point for the Isaac Sim Teleop UI window."""
 
 import omni.ext
-from omni.kit.menu.utils import MenuHelperExtensionFull
+from omni.kit.menu.utils import MenuHelperExtensionFull, MenuItemOrder
 
 from .teleop_window import TeleopWindow
 
@@ -34,6 +34,7 @@ class TeleopUIExtension(omni.ext.IExt, MenuHelperExtensionFull):
             self.WINDOW_NAME,
             self.WINDOW_NAME,
             self.MENU_GROUP,
+            argv={"appear_after": ["Synthetic Data Recorder", MenuItemOrder.LAST]},
         )
 
     def on_shutdown(self) -> None:

@@ -477,6 +477,8 @@ inventory.includes.all = [
     "exts/isaacsim.replicator.behavior",
     "exts/isaacsim.replicator.behavior.ui",
     "extsDeprecated/isaacsim.replicator.domain_randomization",
+    "exts/isaacsim.replicator.episode_recorder",
+    "exts/isaacsim.replicator.episode_recorder.ui",
     "exts/isaacsim.replicator.experimental.domain_randomization",
     "exts/isaacsim.replicator.experimental.mobility_gen",
     "exts/isaacsim.replicator.examples",

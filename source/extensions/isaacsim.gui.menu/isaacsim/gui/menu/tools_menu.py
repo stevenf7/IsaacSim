@@ -88,6 +88,9 @@ class ToolsMenuExtension:
                             MenuLayout.Item(name="Stop"),
                             MenuLayout.Seperator("Grasping"),
                             MenuLayout.Item(name="Grasping"),
+                            MenuLayout.Seperator("Teleop"),
+                            MenuLayout.Item(name="Teleop"),
+                            MenuLayout.Item(name="Episode Recorder"),
                         ],
                     ),
                     MenuLayout.SubMenu(

@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
+import carb
 import carb.eventdispatcher
 import carb.events
 import omni.kit.app
@@ -34,6 +35,8 @@ from pxr import Gf, Usd, UsdGeom
 
 from ._xform_utils import WorldPosePrimCache, read_world_pose_gf
 from .coordinate_utils import CoordinateSystem, transform_pose
+from .teleop_session_injector import install_teleop_session_injector
+from .vr_recording_button import VRButton, VRRecordingButton
 from .xr_anchor_manager import AnchorRotationMode, XrAnchorManager
 
 if TYPE_CHECKING:
@@ -185,6 +188,28 @@ class TeleopManager:
             .get_timeline_event_stream()
             .create_subscription_to_pop(self._on_timeline_event, name="TeleopManager_timeline")
         )
+        self._controller_inputs_observers: list[Callable[[object | None, object | None], None]] = []
+        self._head_observers: list[Callable[[object | None], None]] = []
+        self._uninstall_session_injector: Callable[[], None] | None = install_teleop_session_injector(self)
+        self._vr_recording_button: VRRecordingButton | None = self._auto_attach_vr_recording_button()
+
+    def _auto_attach_vr_recording_button(self) -> VRRecordingButton | None:
+        """Attach the Meta Quest left-Y button to the recorder ``toggle`` command.
+
+        The button dispatches :data:`EPISODE_CMD_EVENT
+        <isaacsim.replicator.episode_recorder.EPISODE_CMD_EVENT>` with
+        ``session_id=None`` (broadcast). When no recorder has an open session
+        the dispatch is a no-op, so keeping the binding alive for the whole
+        lifetime of :class:`TeleopManager` is safe whether the user is
+        recording or not.
+        """
+        try:
+            button = VRRecordingButton(self, button=VRButton.LEFT_SECONDARY, command="toggle")
+            button.attach()
+            return button
+        except Exception as exc:  # noqa: BLE001
+            carb.log_warn(f"TeleopManager: auto-attach VR recording button failed: {exc}")
+            return None
 
     def set_on_stage_closing(self, callback: Callable[[], None] | None) -> None:
         """Register a callback invoked when the USD stage is about to close.
@@ -1179,6 +1204,70 @@ class TeleopManager:
         self._controller_tracker = None
         self._head_tracker = None
 
+    def add_controller_inputs_observer(self, observer: Callable[[object | None, object | None], None]) -> None:
+        """Register an observer invoked once per update with the current controller snapshots.
+
+        The observer is called with ``(left_ctrl, right_ctrl)`` on every update in both live-VR and
+        debug tracking modes. Either argument may be ``None`` when the corresponding controller is not
+        tracked. Observers are intended to be lightweight (e.g. rising-edge button detection for the
+        recording button); long-running work should be deferred to a background task.
+
+        The same observer may be registered multiple times; each registration is independent.
+        """
+        self._controller_inputs_observers.append(observer)
+
+    def remove_controller_inputs_observer(self, observer: Callable[[object | None, object | None], None]) -> None:
+        """Deregister a previously added controller-inputs observer. Silently ignores unknown observers."""
+        try:
+            self._controller_inputs_observers.remove(observer)
+        except ValueError:
+            pass
+
+    def _notify_controller_inputs_observers(self, left_ctrl: object | None, right_ctrl: object | None) -> None:
+        """Invoke every registered observer with the current controller snapshots.
+
+        Each observer is wrapped in try/except so a faulty subscriber cannot break the tracking loop.
+        """
+        if not self._controller_inputs_observers:
+            return
+        for observer in list(self._controller_inputs_observers):
+            try:
+                observer(left_ctrl, right_ctrl)
+            except Exception as exc:  # Keep the update loop alive even if a subscriber raises.
+                carb.log_warn(f"[Teleop] controller-inputs observer error: {exc}")
+
+    def add_head_observer(self, observer: Callable[[object | None], None]) -> None:
+        """Register an observer invoked once per update with the current headset snapshot.
+
+        The observer is called with a single ``head`` argument on every update — the raw snapshot
+        returned by the deviceio ``HeadTracker`` (``is_valid`` / ``pose.position`` / ``pose.orientation``
+        attributes, OpenXR ``xyzw`` orientation convention), or ``None`` when the head is not
+        tracked (e.g. debug tracking mode, or no VR session). The snapshot is forwarded raw — no
+        coordinate-system conversion or tracking-space offset is applied, so consumers that need a
+        world-space pose should transform it themselves (or read the ``head`` marker instead).
+
+        Used by :class:`TeleopHeadRecordable` to record head pose channels. Observers are invoked
+        from the tracking update loop and should be lightweight.
+        """
+        self._head_observers.append(observer)
+
+    def remove_head_observer(self, observer: Callable[[object | None], None]) -> None:
+        """Deregister a previously added head observer. Silently ignores unknown observers."""
+        try:
+            self._head_observers.remove(observer)
+        except ValueError:
+            pass
+
+    def _notify_head_observers(self, head: object | None) -> None:
+        """Invoke every registered head observer with the current head snapshot (or ``None``)."""
+        if not self._head_observers:
+            return
+        for observer in list(self._head_observers):
+            try:
+                observer(head)
+            except Exception as exc:  # Keep the update loop alive even if a subscriber raises.
+                carb.log_warn(f"[Teleop] head observer error: {exc}")
+
     def _get_controller_snapshots(self) -> tuple[object | None, object | None]:
         """Return left/right controller snapshots from the current deviceio session."""
         if self._controller_tracker is None or self._deviceio_session is None:
@@ -1230,6 +1319,9 @@ class TeleopManager:
         left_ctrl = self._debug_left_snapshot
         right_ctrl = self._debug_right_snapshot
 
+        self._notify_controller_inputs_observers(left_ctrl, right_ctrl)
+        self._notify_head_observers(None)
+
         if self._floating_tracking_enabled:
             self._update_floating_targets(left_pos, left_orient, right_pos, right_orient)
 
@@ -1280,6 +1372,8 @@ class TeleopManager:
 
         left_ctrl, right_ctrl = self._get_controller_snapshots()
 
+        self._notify_controller_inputs_observers(left_ctrl, right_ctrl)
+
         # --- Extract raw VR poses (OpenXR aim pose) ---
 
         left_pos, left_orient = None, None
@@ -1298,6 +1392,7 @@ class TeleopManager:
 
         head_pos, head_orient = None, None
         head = self._get_head_snapshot()
+        self._notify_head_observers(head)
         if head is not None and head.is_valid and head.pose is not None:
             p = head.pose.position
             o = head.pose.orientation
@@ -1445,6 +1540,20 @@ class TeleopManager:
         self._stage_closing_sub = None
         self._on_stage_closing = None
         self._on_command_executed = None
+        self._controller_inputs_observers.clear()
+        self._head_observers.clear()
+        if self._uninstall_session_injector is not None:
+            try:
+                self._uninstall_session_injector()
+            except Exception as exc:  # noqa: BLE001
+                carb.log_warn(f"TeleopManager: uninstall session injector raised: {exc}")
+            self._uninstall_session_injector = None
+        if self._vr_recording_button is not None:
+            try:
+                self._vr_recording_button.destroy()
+            except Exception as exc:  # noqa: BLE001
+                carb.log_warn(f"TeleopManager: VRRecordingButton.destroy raised: {exc}")
+            self._vr_recording_button = None
         if self._xr_anchor is not None:
             self._xr_anchor.cleanup()
             self._xr_anchor = None

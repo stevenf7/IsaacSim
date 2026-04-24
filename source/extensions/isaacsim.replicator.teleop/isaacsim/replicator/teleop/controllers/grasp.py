@@ -391,16 +391,20 @@ class GraspController:
 
         state.active_joints = self._match_config_joints(config, result.drive_joint_paths)
 
-        if not state.active_joints:
-            print(f"[Teleop][Grasp] No joints matched for {side}")
-            return False
-
         # Try to bind to the owning Articulation so drive targets go through
         # the tensor backend (required when an IK controller or similar is
-        # managing the same articulation).
+        # managing the same articulation). Any failure here is only reported
+        # below if the DriveAPI fallback is also unusable.
+        art_bind_error: str | None = None
         art_root = find_owning_articulation_root(prim_path)
         if art_root:
-            self._bind_articulation(state, art_root)
+            art_bind_error = self._bind_articulation(state, art_root)
+
+        if not state.active_joints and not state.art_joint_map:
+            if art_bind_error:
+                print(f"[Teleop][Grasp] {art_bind_error}")
+            print(f"[Teleop][Grasp] No joints matched for {side}")
+            return False
 
         self._tracking_enabled[side.lower()] = False
         self._enabled = True
@@ -409,20 +413,28 @@ class GraspController:
         print(f"[Teleop][Grasp] Configured {side}: '{prim_path}' ({matched} joint(s), {mode})")
         return True
 
-    def _bind_articulation(self, state: _GraspState, art_root_path: str) -> None:
+    def _bind_articulation(self, state: _GraspState, art_root_path: str) -> str | None:
         """Bind matched joints to an Articulation's DOF indices.
 
         Uses ``dof_names`` (from the physics tensor) for matching rather
         than ``dof_paths`` (from USD), because assembled robots can have
         DOF type mismatches that make USD-derived paths unreliable.
+
+        Returns an error message describing why binding did not happen, or
+        ``None`` on success or when the articulation simply has no matching
+        DOFs. Callers decide whether to surface the message based on whether
+        the DriveAPI fallback is viable.
         """
         try:
             robot = Articulation(art_root_path)
-            dof_names = list(robot.dof_names)
+            dof_names_attr = robot.dof_names
         except Exception as exc:
-            print(f"[Teleop][Grasp] Could not create Articulation at '{art_root_path}': {exc}")
-            return
+            return f"Could not create Articulation at '{art_root_path}': {exc}"
 
+        if not dof_names_attr:
+            return f"Articulation at '{art_root_path}' exposes no DOFs yet"
+
+        dof_names = list(dof_names_attr)
         dof_name_to_idx: dict[str, int] = {name: idx for idx, name in enumerate(dof_names)}
 
         art_map: dict[str, tuple[JointMapping, int]] = {}
@@ -438,6 +450,7 @@ class GraspController:
         if art_map:
             state.articulation = robot
             state.art_joint_map = art_map
+        return None
 
     def _match_config_joints(
         self,
