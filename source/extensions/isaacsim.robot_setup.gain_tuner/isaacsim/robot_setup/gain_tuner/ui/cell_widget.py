@@ -37,7 +37,7 @@ class CellLabelField:
 
     def __init__(
         self, value_model: object, field_type: object, format: str, alignment: object = ui.Alignment.LEFT_CENTER
-    ):
+    ) -> None:
         self._value_model = value_model
         self._init_value = format % (self.get_model_value(value_model))
         self._field_type = field_type
@@ -56,7 +56,7 @@ class CellLabelField:
         """
         return self._enable
 
-    def update_default_value(self):
+    def update_default_value(self) -> None:
         """Updates the default value of the field to the current model value."""
         self._init_value = self.get_model_value(self._value_model)
 
@@ -70,16 +70,16 @@ class CellLabelField:
         return self._frame.visible
 
     @visible.setter
-    def visible(self, value):
+    def visible(self, value: bool) -> None:
         self._frame.visible = value
 
     @enabled.setter
-    def enabled(self, enable):
+    def enabled(self, enable: bool) -> None:
         self._enable = enable
         self._field.enabled = enable
 
     @property
-    def field(self):
+    def field(self) -> object:
         """The underlying UI field widget for the cell label.
 
         Returns:
@@ -87,7 +87,7 @@ class CellLabelField:
         """
         return self._field
 
-    def get_model_value(self, model: object):
+    def get_model_value(self, model: object) -> str | int | float:
         """Extracts the value from a UI model based on its type.
 
         Args:
@@ -104,7 +104,7 @@ class CellLabelField:
             return model.get_value_as_float()
         return ""
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         """Builds the UI components for the cell label field including the frame, field widget, and event handlers."""
         with self._frame:
             ui.Spacer(width=1)
@@ -120,7 +120,7 @@ class CellLabelField:
             # it used to bulk edit, we need the field hook with the value model' value
             self._value_model.add_value_changed_fn(lambda m: self._update_field(m))
 
-    def _update_value(self, model: object):
+    def _update_value(self, model: object) -> None:
         """Updates the value model when the field value changes.
 
         Args:
@@ -131,7 +131,7 @@ class CellLabelField:
         if new_value != current_value:
             self._value_model.set_value(new_value)
 
-    def _update_field(self, model: object):
+    def _update_field(self, model: object) -> None:
         """Updates the field display when the value model changes.
 
         Args:
@@ -142,7 +142,7 @@ class CellLabelField:
         if new_value != current_value:
             self._field.model.set_value(new_value)
 
-    def _end_edit(self, model: object):
+    def _end_edit(self, model: object) -> None:
         """Handles the end of an edit operation on the field.
 
         Args:
@@ -170,7 +170,7 @@ class CellColor:
             used. When selected, up to three colors are displayed as separate rectangles.
     """
 
-    def __init__(self, colors: list):
+    def __init__(self, colors: list) -> None:
         self._colors = colors
         self._selected = ui.SimpleBoolModel(False)
         self._selected.add_value_changed_fn(lambda m: self._update_value(m))
@@ -187,7 +187,7 @@ class CellColor:
         return self._selected.get_value_as_bool()
 
     @selected.setter
-    def selected(self, value):
+    def selected(self, value: bool) -> None:
         self._selected.set_value(value)
 
     @property
@@ -200,10 +200,10 @@ class CellColor:
         return self._frame.visible
 
     @visible.setter
-    def visible(self, value):
+    def visible(self, value: bool) -> None:
         self._frame.visible = value
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         """Builds the UI elements for the color cell.
 
         Creates rectangles displaying the colors based on the selection state. When selected, displays three
@@ -238,7 +238,7 @@ class CellColor:
                     style={"background_color": self._colors[0], "border_radius": 0},
                 )
 
-    def _update_value(self, model: object):
+    def _update_value(self, model: object) -> None:
         """Updates the color cell display when the selection state changes.
 
         Clears the current frame and rebuilds the UI to reflect the new selection state.

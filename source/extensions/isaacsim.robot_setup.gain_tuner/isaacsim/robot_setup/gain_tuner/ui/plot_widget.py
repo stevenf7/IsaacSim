@@ -16,8 +16,6 @@
 """A customizable XY plot widget module for displaying multiple data series with enhanced visualization features."""
 
 
-from typing import List, Union
-
 import numpy as np
 import omni.ui as ui
 from isaacsim.gui.components.element_wrappers import Frame, XYPlot
@@ -43,13 +41,17 @@ class CustomXYPlot(XYPlot):
 
     def __init__(
         self,
-        x_data: Union[List[List], List] = [],
-        y_data: Union[List[List], List] = [],
+        x_data: list[list] | list = None,
+        y_data: list[list] | list = None,
         header_count: int = 0,
         show_legend: bool = False,
-        legends: List[str] = None,
-        data_colors: List[List[int]] = None,
-    ):
+        legends: list[str] = None,
+        data_colors: list[list[int]] = None,
+    ) -> None:
+        if y_data is None:
+            y_data = []
+        if x_data is None:
+            x_data = []
         self._data_colors = data_colors
         self._header_count = header_count
         super().__init__(
@@ -60,7 +62,7 @@ class CustomXYPlot(XYPlot):
             legends=legends,
         )
 
-    def set_data_colors(self, data_colors: List[int]):
+    def set_data_colors(self, data_colors: list[int]) -> None:
         """Sets the colors for plot data lines.
 
         Args:
@@ -69,7 +71,7 @@ class CustomXYPlot(XYPlot):
         self._data_colors = data_colors
         self._container_frame.rebuild()
 
-    def _build_widget(self):
+    def _build_widget(self) -> None:
         """Constructs the complete plot widget with all UI components.
 
         Builds the legend frame, plot area with data lines, axis controls, and interactive tooltip functionality.
@@ -100,7 +102,7 @@ class CustomXYPlot(XYPlot):
         self._data_colors = self._get_data_colors(len(y_data))
         group_num = int(len(self._x_data) / (self._header_count))
 
-        def on_show_legend(model):
+        def on_show_legend(model: object) -> None:
             if model.get_value_as_bool():
                 self._show_legend = True
                 self._legend_frame.visible = True
@@ -109,8 +111,8 @@ class CustomXYPlot(XYPlot):
                 self._show_legend = False
                 self._legend_frame.visible = False
 
-        def build_legend_frame():
-            def toggle_plot_visibility(show, i):
+        def build_legend_frame() -> None:
+            def toggle_plot_visibility(show: bool, i: int) -> None:
                 for j in range(group_num * i, group_num * (i + 1)):
                     self._is_plot_visible[j] = show
                     if j < len(self._plot_frames):
@@ -142,7 +144,7 @@ class CustomXYPlot(XYPlot):
                                 )
                     ui.Spacer(width=10)
 
-        def set_x_axis_values(low, high):
+        def set_x_axis_values(low: float, high: float) -> None:
             assert high >= low
 
             if high == low:
@@ -161,7 +163,7 @@ class CustomXYPlot(XYPlot):
             for i, float_field in enumerate(self._x_axis_float_fields):
                 float_field.text = str(np.round(low + spacing / 2 + spacing * i, decimals=num_decimals))
 
-        def set_y_axis_values(low, high):
+        def set_y_axis_values(low: float, high: float) -> None:
             assert high >= low
 
             if high == low:
@@ -179,10 +181,10 @@ class CustomXYPlot(XYPlot):
             for i, float_field in enumerate(self._y_axis_float_fields):
                 float_field.text = str(np.round(high - spacing / 2 - spacing * i, decimals=num_decimals))
 
-        def build_x_axis_frame():
+        def build_x_axis_frame() -> None:
             self._x_axis_float_fields = []
 
-            def update_x_min(model):
+            def update_x_min(model: object) -> None:
                 self._x_min = model.as_float
                 if self._x_min >= self._x_max:
                     self._x_max = self._x_min + 1.0
@@ -200,7 +202,7 @@ class CustomXYPlot(XYPlot):
 
                 set_x_axis_values(self._x_min, self._x_max)
 
-            def update_x_max(model):
+            def update_x_max(model: object) -> None:
                 self._x_max = model.as_float
                 if self._x_max <= self._x_min:
                     self._x_min = self._x_max - 1.0
@@ -237,9 +239,9 @@ class CustomXYPlot(XYPlot):
 
             set_x_axis_values(x_min, x_max)
 
-        def build_y_axis_frame():
+        def build_y_axis_frame() -> None:
             # Add fields for controlling min and max y values on plot
-            def update_y_min(model):
+            def update_y_min(model: object) -> None:
                 self._y_min = model.as_float
 
                 if self._y_min >= self._y_max:
@@ -251,7 +253,7 @@ class CustomXYPlot(XYPlot):
 
                 set_y_axis_values(self._y_min, self._y_max)
 
-            def update_y_max(model):
+            def update_y_max(model: object) -> None:
                 self._y_max = model.as_float
                 if self._y_max <= self._y_min:
                     self._y_min = self._y_max - 1.0

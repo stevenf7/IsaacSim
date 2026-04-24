@@ -16,7 +16,7 @@
 """UI components for the gain tuner frame widget interface."""
 
 
-from typing import Callable
+from collections.abc import Callable
 
 import omni.ui as ui
 from isaacsim.gui.components.element_wrappers import CollapsableFrame
@@ -40,13 +40,13 @@ class CustomCollapsableFrame(CollapsableFrame):
             the frame header, and other arguments passed to the parent CollapsableFrame.
     """
 
-    def __init__(self, *args: object, **kwargs: object):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         self._show_copy_button = kwargs.get("show_copy_button", False)
         kwargs.pop("show_copy_button", None)
         self._copy_content = None
         super().__init__(*args, **kwargs)
 
-    def set_copy_content(self, copy_content: any):
+    def set_copy_content(self, copy_content: any) -> None:
         """Sets the content to be copied when the copy button is clicked.
 
         Args:
@@ -54,7 +54,7 @@ class CustomCollapsableFrame(CollapsableFrame):
         """
         self._copy_content = copy_content
 
-    def _build_header(self, collapsed: bool, title: str):
+    def _build_header(self, collapsed: bool, title: str) -> None:
         """Builds the header UI for the collapsable frame.
 
         Creates a horizontal stack containing a triangle indicator, title label, and optional copy button.

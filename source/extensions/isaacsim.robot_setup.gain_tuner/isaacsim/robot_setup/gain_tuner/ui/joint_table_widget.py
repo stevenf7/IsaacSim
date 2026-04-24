@@ -166,11 +166,11 @@ class ComboListModel(ui.AbstractItemModel):
             item: The string value to be displayed in the combo box item.
         """
 
-        def __init__(self, item: str):
+        def __init__(self, item: str) -> None:
             super().__init__()
             self.model = ui.SimpleStringModel(item)
 
-    def __init__(self, item_list: list, default_index: object):
+    def __init__(self, item_list: list, default_index: object) -> None:
         super().__init__()
         self._default_index = default_index.value
         self._current_index = ui.SimpleIntModel(default_index.value)
@@ -192,7 +192,7 @@ class ComboListModel(ui.AbstractItemModel):
         """
         return self._items
 
-    def set_items(self, items: list):
+    def set_items(self, items: list) -> None:
         """Sets the items in the combo box list.
 
         Args:
@@ -202,7 +202,7 @@ class ComboListModel(ui.AbstractItemModel):
         for item in items:
             self._items.append(ComboListModel.ComboListItem(item))
 
-    def get_item_list(self):
+    def get_item_list(self) -> list:
         """Returns the original item list passed to the model.
 
         Returns:
@@ -234,7 +234,7 @@ class ComboListModel(ui.AbstractItemModel):
         """
         return self._current_index.get_value_as_int()
 
-    def set_current_index(self, index: int):
+    def set_current_index(self, index: int) -> None:
         """Sets the currently selected item by index.
 
         Args:
@@ -440,7 +440,7 @@ class JointItem(ui.AbstractItem):
     joint_drive_type_with_mimic = [""]
     """List of joint drive types for mimic joints: empty string."""
 
-    def __init__(self, joint_entry: object, inertia_provider: object, value_changed_fn: callable = None):
+    def __init__(self, joint_entry: object, inertia_provider: object, value_changed_fn: callable = None) -> None:
         super().__init__()
 
         self.entry = joint_entry
@@ -549,7 +549,7 @@ class JointItem(ui.AbstractItem):
             value = 0.0
         return value if value is not None else 0.0
 
-    def on_update_drive_type(self, model: object, *args: object):
+    def on_update_drive_type(self, model: object, *args: object) -> None:
         """Handles updates to the joint drive type.
 
         Args:
@@ -563,7 +563,7 @@ class JointItem(ui.AbstractItem):
         if self.mode == JointSettingMode.NATURAL_FREQUENCY:
             self.compute_drive_stiffness()
 
-    def on_update_stiffness(self, model: object, *args: object):
+    def on_update_stiffness(self, model: object, *args: object) -> None:
         """Handles updates to the joint stiffness parameter.
 
         Args:
@@ -578,7 +578,7 @@ class JointItem(ui.AbstractItem):
                 attr.Set(0.0)
             self.natural_frequency = self.compute_natural_frequency()
 
-    def on_update_damping(self, model: object, *args: object):
+    def on_update_damping(self, model: object, *args: object) -> None:
         """Handles updates to the joint damping parameter.
 
         Args:
@@ -593,7 +593,7 @@ class JointItem(ui.AbstractItem):
             new_damping_ratio = self.compute_damping_ratio()
             self.damping_ratio = new_damping_ratio
 
-    def on_update_natural_frequency(self, model: object, *args: object):
+    def on_update_natural_frequency(self, model: object, *args: object) -> None:
         """Handles updates to the joint natural frequency parameter.
 
         Args:
@@ -607,7 +607,7 @@ class JointItem(ui.AbstractItem):
         else:
             self.compute_drive_stiffness()
 
-    def on_update_damping_ratio(self, model: object, *args: object):
+    def on_update_damping_ratio(self, model: object, *args: object) -> None:
         """Handles updates to the joint damping ratio parameter.
 
         Args:
@@ -659,7 +659,7 @@ class JointItem(ui.AbstractItem):
         return self.model_cols[WidgetColumns.NATURAL_FREQUENCY].get_value_as_float()
 
     @natural_frequency.setter
-    def natural_frequency(self, value: float):
+    def natural_frequency(self, value: float) -> None:
         self.model_cols[WidgetColumns.NATURAL_FREQUENCY].set_value(value)
 
     @property
@@ -672,7 +672,7 @@ class JointItem(ui.AbstractItem):
         return self.model_cols[WidgetColumns.DAMPING_RATIO].get_value_as_float()
 
     @damping_ratio.setter
-    def damping_ratio(self, value: float):
+    def damping_ratio(self, value: float) -> None:
         self.model_cols[WidgetColumns.DAMPING_RATIO].set_value(value)
 
     @property
@@ -685,7 +685,7 @@ class JointItem(ui.AbstractItem):
         return self.model_cols[WidgetColumns.STIFFNESS].get_value_as_float()
 
     @stiffness.setter
-    def stiffness(self, value: float):
+    def stiffness(self, value: float) -> None:
         if self.drive_mode != JointDriveMode.MIMIC:
             self.model_cols[WidgetColumns.STIFFNESS].set_value(value)
 
@@ -699,7 +699,7 @@ class JointItem(ui.AbstractItem):
         return self.model_cols[WidgetColumns.DAMPING].get_value_as_float()
 
     @damping.setter
-    def damping(self, value: float):
+    def damping(self, value: float) -> None:
         self.model_cols[WidgetColumns.DAMPING].set_value(value)
 
     @property
@@ -712,7 +712,7 @@ class JointItem(ui.AbstractItem):
         return JointDriveMode(self.model_cols[WidgetColumns.DRIVE_MODE].get_item_value_model().get_value_as_int())
 
     @drive_mode.setter
-    def drive_mode(self, value: JointDriveMode):
+    def drive_mode(self, value: JointDriveMode) -> None:
         self.set_item_target_type(value.value)
         self.on_update_stiffness(self.model_cols[WidgetColumns.STIFFNESS], None)
         self.on_update_damping(self.model_cols[WidgetColumns.DAMPING], None)
@@ -727,14 +727,14 @@ class JointItem(ui.AbstractItem):
         return JointDriveType(self.model_cols[WidgetColumns.DRIVE_TYPE].get_item_value_model().get_value_as_int())
 
     @drive_type.setter
-    def drive_type(self, value: JointDriveType):
+    def drive_type(self, value: JointDriveType) -> None:
         drive_type_attr = get_joint_drive_type_attr(self.joint, self.drive_axis)
         if drive_type_attr:
             drive_type_attr.Set(value.to_token())
             if self.mode == JointSettingMode.NATURAL_FREQUENCY:
                 self.compute_drive_stiffness()
 
-    def set_item_target_type(self, value: int):
+    def set_item_target_type(self, value: int) -> None:
         """Sets the target type for the joint item.
 
         Args:
@@ -755,7 +755,7 @@ class JointItem(ui.AbstractItem):
         else:
             return self.model_cols[WidgetColumns.DRIVE_MODE].get_item_value_model().get_value_as_int()
 
-    def _on_value_changed(self, col_id: int = 1, _: object = None):
+    def _on_value_changed(self, col_id: int = 1, _: object = None) -> None:
         """Handles value changes in the joint item UI columns.
 
         Args:
@@ -797,7 +797,7 @@ class JointItem(ui.AbstractItem):
             stiffness_rad = self.stiffness / DEG_TO_RAD
             return (np.sqrt(stiffness_rad / m_eq)) / (2 * np.pi)
 
-    def compute_drive_stiffness(self):
+    def compute_drive_stiffness(self) -> None:
         """Computes and updates the drive stiffness based on natural frequency mode."""
         m_eq = 1
         if self.drive_type == JointDriveType.FORCE:
@@ -840,7 +840,7 @@ class JointItem(ui.AbstractItem):
             else:
                 return self.model_cols[col_id].get_value_as_float()
 
-    def set_item_value(self, col_id: int, value: object):
+    def set_item_value(self, col_id: int, value: object) -> None:
         """Sets the value for a specific column in the joint item.
 
         Args:
@@ -896,7 +896,7 @@ class JointItemDelegate(ui.AbstractItemDelegate):
     header = ["Name", "Mode", "Type", "Stiffness", "Damping", "Nat. Freq.", "Damping R."]
     """Display text for each column header in the joint table widget."""
 
-    def __init__(self, model: object):
+    def __init__(self, model: object) -> None:
         super().__init__()
         self.__model = model
         self.__name_sort_options_menu = None
@@ -904,7 +904,7 @@ class JointItemDelegate(ui.AbstractItemDelegate):
         self.__mode = JointSettingMode.STIFFNESS
         self.column_headers = {}
 
-    def set_mode(self, mode: object):
+    def set_mode(self, mode: object) -> None:
         """Sets the joint setting mode for the delegate.
 
         Args:
@@ -915,7 +915,7 @@ class JointItemDelegate(ui.AbstractItemDelegate):
 
     def build_branch(
         self, model: object, item: object = None, column_id: int = 0, level: int = 0, expanded: bool = False
-    ):
+    ) -> None:
         """Builds the branch widget for tree view items.
 
         Args:
@@ -926,7 +926,7 @@ class JointItemDelegate(ui.AbstractItemDelegate):
             expanded: Whether the branch is expanded.
         """
 
-    def build_header(self, column_id: int = 0):
+    def build_header(self, column_id: int = 0) -> None:
         """Builds the header widget for the specified column.
 
         Creates column headers with labels and sort buttons. Headers display different text based on
@@ -988,7 +988,7 @@ class JointItemDelegate(ui.AbstractItemDelegate):
                         ),
                     )
 
-    def update_mimic(self):
+    def update_mimic(self) -> None:
         """Updates mimic joint configuration for all items in the model."""
         # for item in self.__model.get_item_children():
         #     if 1 in item.value_field:
@@ -1003,7 +1003,7 @@ class JointItemDelegate(ui.AbstractItemDelegate):
         #                 item.value_field[1].model.set_current_index(3)
         #         self.__on_target_change(item, item.value_field[1].model.get_value_as_string())
 
-    def update_defaults(self):
+    def update_defaults(self) -> None:
         """Updates default values for all joint parameter fields.
 
         Refreshes the default values displayed in stiffness, damping, natural frequency,
@@ -1020,7 +1020,9 @@ class JointItemDelegate(ui.AbstractItemDelegate):
                 if field:
                     field.update_default_value()
 
-    def build_widget(self, model: object, item: object = None, index: int = 0, level: int = 0, expanded: bool = False):
+    def build_widget(
+        self, model: object, item: object = None, index: int = 0, level: int = 0, expanded: bool = False
+    ) -> None:
         """Builds the widget for a specific cell in the joint table.
 
         Creates different UI elements based on the column type: labels for names,
@@ -1120,7 +1122,7 @@ class JointItemDelegate(ui.AbstractItemDelegate):
         if b != 0:
             return
 
-        def on_sort_policy_changed(policy, value):
+        def on_sort_policy_changed(policy: object, value: object) -> None:
             if self.__items_sort_policy[column_id] != policy:
                 self.__items_sort_policy[column_id] = policy
                 self.__model.sort_by_name(policy, column_id)
@@ -1146,7 +1148,7 @@ class JointItemDelegate(ui.AbstractItemDelegate):
             )
         self.__name_sort_options_menu.show()
 
-    def on_joint_mode_changed(self, item: object, mode: object):
+    def on_joint_mode_changed(self, item: object, mode: object) -> None:
         """Handles changes to the joint drive mode.
 
         Updates the joint item's drive mode when the user selects a different mode
@@ -1158,7 +1160,7 @@ class JointItemDelegate(ui.AbstractItemDelegate):
         """
         item.drive_mode = mode
 
-    def __on_target_change(self, item: object, current_target: str):
+    def __on_target_change(self, item: object, current_target: str) -> None:
         """Handles changes to the target mode of a joint item.
 
         Updates the visibility and enabled state of UI fields based on the selected target mode.
@@ -1235,7 +1237,9 @@ class JointListModel(ui.AbstractItemModel):
         **kwargs: Additional keyword arguments passed to the parent class.
     """
 
-    def __init__(self, joints_list: list, inertia_provider: object, value_changed_fn: callable, **kwargs: object):
+    def __init__(
+        self, joints_list: list, inertia_provider: object, value_changed_fn: callable, **kwargs: object
+    ) -> None:
         super().__init__()
         self._inertia_provider = inertia_provider or (lambda *_: 0.0)
         self._children = [JointItem(entry, self._inertia_provider, self._on_joint_changed) for entry in joints_list]
@@ -1244,7 +1248,7 @@ class JointListModel(ui.AbstractItemModel):
         self._items_sort_reversed = False
         self._mode = JointSettingMode.STIFFNESS
 
-    def _on_joint_changed(self, joint: object, col_id: int):
+    def _on_joint_changed(self, joint: object, col_id: int) -> None:
         """Handles joint value changes and forwards them to the registered callback.
 
         Args:
@@ -1285,7 +1289,7 @@ class JointListModel(ui.AbstractItemModel):
         if item:
             return item.get_item_value(column_id)
 
-    def set_item_value(self, item: object, column_id: int, value: object):
+    def set_item_value(self, item: object, column_id: int, value: object) -> None:
         """Sets the value for a joint item at the specified column.
 
         Args:
@@ -1323,7 +1327,7 @@ class JointListModel(ui.AbstractItemModel):
             if isinstance(item, JointItem):
                 return item.get_value_model(column_id)
 
-    def sort_by_name(self, policy: object, column_id: int):
+    def sort_by_name(self, policy: object, column_id: int) -> None:
         """Sorts the joint items based on the specified policy and column.
 
         Args:
@@ -1345,7 +1349,7 @@ class JointListModel(ui.AbstractItemModel):
                 self._items_sort_func = lambda item: self.get_item_value_model(item, column_id).get_value_as_int()
         self._item_changed(None)
 
-    def set_mode(self, mode: object):
+    def set_mode(self, mode: object) -> None:
         """Sets the joint setting mode and updates all joint items accordingly.
 
         Args:
@@ -1362,7 +1366,7 @@ class JointListModel(ui.AbstractItemModel):
                 self._item_changed(item)
             self._item_changed(None)
 
-    def set_drive_type(self, drive_type: object):
+    def set_drive_type(self, drive_type: object) -> None:
         """Sets the drive type for all joint items and recalculates drive stiffness.
 
         Args:
@@ -1390,7 +1394,7 @@ class JointWidget(TableWidget):
             joint prim as argument.
     """
 
-    def __init__(self, joint_entries: list, inertia_provider: object, value_changed_fn: callable = None):
+    def __init__(self, joint_entries: list, inertia_provider: object, value_changed_fn: callable = None) -> None:
         self.joints = joint_entries or []
         self.inertia_provider = inertia_provider or (lambda *_: 0.0)
         self.model = JointListModel(self.joints, self.inertia_provider, self._on_value_changed)
@@ -1401,11 +1405,11 @@ class JointWidget(TableWidget):
         self.drive_type = JointDriveType.ACCELERATION
         super().__init__(value_changed_fn, self.model, self.delegate)
 
-    def update_mimic(self):
+    def update_mimic(self) -> None:
         """Updates the mimic joint settings in the delegate."""
         self.delegate.update_mimic()
 
-    def build_tree_view(self):
+    def build_tree_view(self) -> None:
         """Builds the tree view widget for displaying joint parameters.
 
         Creates a TreeView with columns for joint name, drive mode, drive type, stiffness, and damping parameters.
@@ -1424,7 +1428,7 @@ class JointWidget(TableWidget):
             # height=ui.Fraction(1),
         )
 
-    def switch_mode(self, switch: JointSettingMode):
+    def switch_mode(self, switch: JointSettingMode) -> None:
         """Switches between stiffness and natural frequency parameter modes.
 
         Args:
@@ -1433,7 +1437,7 @@ class JointWidget(TableWidget):
         super().switch_mode(switch)
         self.update_mimic()
 
-    def switch_drive_type(self, drive_type: JointDriveType):
+    def switch_drive_type(self, drive_type: JointDriveType) -> None:
         """Switches the drive type for all joints in the widget.
 
         Disables bulk editing, updates the drive type for all joints in the model, updates default values
@@ -1452,7 +1456,7 @@ class JointWidget(TableWidget):
         self.drive_type = drive_type
         self.set_bulk_edit(True)
 
-    def _on_value_changed(self, joint_item: object, col_id: int = 1):
+    def _on_value_changed(self, joint_item: object, col_id: int = 1) -> None:
         """Handles value changes in joint parameters.
 
         When bulk edit is enabled, applies the changed value to all selected joints. Temporarily disables

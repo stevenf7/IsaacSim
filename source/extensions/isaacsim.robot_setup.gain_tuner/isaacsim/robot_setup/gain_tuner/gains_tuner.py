@@ -17,9 +17,9 @@
 
 
 import asyncio
+from collections.abc import Generator
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Dict, Generator, List, Set, Tuple
 
 import carb
 import numpy as np
@@ -31,6 +31,8 @@ import usd.schema.isaac.robot_schema.utils as rs_utils
 from isaacsim.core.experimental.prims import Articulation
 from pxr import Gf, Sdf, Usd, UsdPhysics
 
+from .base import RobotTest, TestResult
+
 
 class GainsTestMode(IntEnum):
     """Enumeration of available test signal modes for gain tuning."""
@@ -41,6 +43,10 @@ class GainsTestMode(IntEnum):
     """Test mode that generates step response signals for gain tuning analysis."""
     USER_PROVIDED = 2
     """Test mode that allows custom user-defined signals for gain tuning analysis."""
+    SNAP_TO_LIMITS = 3
+    """Test mode that commands joints to their lower and upper limits to verify reachability."""
+    STRESS_TEST = 4
+    """Stress test that bombards joints with extreme random commands to surface solver instabilities."""
 
 
 class JointMode(IntEnum):
@@ -87,7 +93,7 @@ _AXIS_TOKEN_TO_VECTOR = {
 }
 
 
-def _extract_d6_axis_token(dof_name: str):
+def _extract_d6_axis_token(dof_name: str) -> str | None:
     """Extract the D6 axis token from a DOF name if present.
 
     Args:
@@ -103,7 +109,7 @@ def _extract_d6_axis_token(dof_name: str):
     return None
 
 
-def _assign_d6_axis_token(joint_identifier: str, dof_name: str, usage_map: Dict[str, Set]) -> str:
+def _assign_d6_axis_token(joint_identifier: str, dof_name: str, usage_map: dict[str, set]) -> str:
     """Assign an unused D6 axis token for a joint.
 
     Args:
@@ -168,7 +174,7 @@ def _format_d6_display_name(joint_prim: pxr.Usd.Prim, dof_name: str, axis_token:
     return f"{joint_prim.GetName()}:{suffix}"
 
 
-def get_original_spec_for_drive_API(
+def get_original_spec_for_drive_api(
     stage: pxr.Usd.Stage, joint_drive_path: str, drive_type: str
 ) -> pxr.Sdf.PropertySpec:
     """Get the original property spec where a drive attribute was authored.
@@ -265,6 +271,7 @@ def get_joint_axis_world_direction(joint_prim: pxr.Usd.Prim, joint_pose: Gf.Matr
 
     axis_attr = _get_axis_attr_from_joint(joint_prim)
     if axis_attr:
+
         axis_token = axis_attr.Get()
         local_axis = _AXIS_TOKEN_TO_VECTOR.get(axis_token, local_axis)
 
@@ -360,6 +367,30 @@ def find_articulation_root(stage: pxr.Usd.Stage, robot_path: str) -> str:
     return find_articulation_root(stage, pxr.Sdf.Path(robot_path).GetParentPath())
 
 
+class SinusoidalTest(RobotTest):
+    """Registry adapter for the built-in sinusoidal test.
+
+    Execution is handled by GainTuner's native code path.  This class
+    exists so the test appears in the registry and can be discovered by
+    name.  A full standalone ``run()`` implementation will be added when
+    the test is extracted to ``isaacsim.robot_setup.validation_tests``.
+    """
+
+    name = "Sinusoidal"
+
+
+class StepFunctionTest(RobotTest):
+    """Registry adapter for the built-in step-function test.
+
+    Execution is handled by GainTuner's native code path.  This class
+    exists so the test appears in the registry and can be discovered by
+    name.  A full standalone ``run()`` implementation will be added when
+    the test is extracted to ``isaacsim.robot_setup.validation_tests``.
+    """
+
+    name = "Step Function"
+
+
 class GainTuner:
     """Controller for tuning joint gains on articulated robots.
 
@@ -372,13 +403,19 @@ class GainTuner:
     Initializes the gain tuner with default values.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._timeline = timeline.get_timeline_interface()
         self._test_duration = 5.0
+        self._test_registry: dict[int, RobotTest] = {}
+        self._active_test: RobotTest = None
         self.reset()
 
-    def reset(self):
-        """Reset all internal state to initial values."""
+    def reset(self) -> None:
+        """Reset all internal state to initial values.
+
+        The test registry is intentionally preserved across resets so that
+        tests registered at startup remain available.
+        """
         self._initialized = False
         self._articulation = None
         self._articulation_root = None
@@ -395,13 +432,45 @@ class GainTuner:
         self._gains_test_generator = None
         self._joint_accumulated_inertia = {}
         self._joint_entries = []
+        self._active_test = None
+        self._test_result_metrics = {}
         self.step = 0
 
-    def stop_test(self):
+    def stop_test(self) -> None:
         """Stop the current test and reset the articulation to default state."""
+        if self._active_test is not None:
+            self._active_test.stop()
+            self._active_test = None
         self._articulation.reset_to_default_state()
 
-    def on_reset(self):
+    # ======================== Test Registry ========================
+
+    def register_test(self, mode_id: int, test: RobotTest) -> None:
+        """Register a RobotTest under the given mode ID.
+
+        Args:
+            mode_id: Integer key (typically a GainsTestMode value).
+            test: RobotTest instance to register.
+        """
+        self._test_registry[mode_id] = test
+
+    def unregister_test(self, mode_id: int) -> None:
+        """Remove a previously registered test.
+
+        Args:
+            mode_id: Integer key of the test to remove.
+        """
+        self._test_registry.pop(mode_id, None)
+
+    def get_registered_tests(self) -> dict[int, RobotTest]:
+        """Return a copy of the test registry.
+
+        Returns:
+            Dictionary mapping mode IDs to RobotTest instances.
+        """
+        return dict(self._test_registry)
+
+    def on_reset(self) -> None:
         """Handle simulation reset event."""
         self._initialized = False
         if self._robot_prim_path:
@@ -430,13 +499,13 @@ class GainTuner:
         self._setup_fixed_links(stage)
         self._setup_joint_entries(stage)
 
-        self._joint_names = {i: self._joint_entries[i].joint.GetName() for i in self._joints.keys()}
-        self._joint_map = {self._joint_names[i]: self._joints[i] for i in self._joints.keys()}
+        self._joint_names = {i: self._joint_entries[i].joint.GetName() for i in self._joints}
+        self._joint_map = {self._joint_names[i]: self._joints[i] for i in self._joints}
         self._all_joint_indices = self._articulation.get_dof_indices(self._joint_names.values()).list()
 
         self.initialize()
 
-    def _setup_robot_links(self, stage: pxr.Usd.Stage):
+    def _setup_robot_links(self, stage: pxr.Usd.Stage) -> None:
         """Set up robot link mass properties.
 
         Args:
@@ -446,7 +515,7 @@ class GainTuner:
             link for link in pxr.Usd.PrimRange(self._robot) if link.HasAPI(robot_schema.Classes.LINK_API.value)
         ]
 
-        async def update_link_mass():
+        async def update_link_mass() -> None:
             was_playing = self._timeline.is_playing()
             if not was_playing:
                 self._timeline.play()
@@ -458,7 +527,7 @@ class GainTuner:
         asyncio.ensure_future(update_link_mass())
         self._robot_tree = rs_utils.GenerateRobotLinkTree(stage, self._robot)
 
-    def _setup_articulation(self, stage: pxr.Usd.Stage):
+    def _setup_articulation(self, stage: pxr.Usd.Stage) -> None:
         """Set up the articulation wrapper.
 
         Args:
@@ -467,7 +536,7 @@ class GainTuner:
         self._articulation_root = find_articulation_root(stage, self._robot_prim_path)
         self._articulation = Articulation(self._articulation_root)
 
-    def _setup_fixed_links(self, stage: pxr.Usd.Stage):
+    def _setup_fixed_links(self, stage: pxr.Usd.Stage) -> None:
         """Identify links that are fixed to the world.
 
         Args:
@@ -504,7 +573,7 @@ class GainTuner:
         self._fixed_links = fixed_links
         self._robot_joints = robot_joints
 
-    def _setup_joint_entries(self, stage: pxr.Usd.Stage):
+    def _setup_joint_entries(self, stage: pxr.Usd.Stage) -> None:
         """Build the list of joint entries for the UI.
 
         Args:
@@ -532,7 +601,7 @@ class GainTuner:
             dof_offset = self._add_multi_axis_joint_entries(joint, dof_index, dof_offset)
             dof_index += 1
 
-    def _add_single_axis_joint_entry(self, joint: pxr.Usd.Prim, display_name: str, dof_index: int):
+    def _add_single_axis_joint_entry(self, joint: pxr.Usd.Prim, display_name: str, dof_index: int) -> None:
         """Add a single-axis joint to the entries list.
 
         Args:
@@ -591,11 +660,11 @@ class GainTuner:
         """
         return self._articulation.dof_types[dof_index]
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Clean up resources."""
         self._articulation = None
 
-    def initialize(self):
+    def initialize(self) -> None:
         """Initialize the gain tuner with the current articulation state."""
         if self._articulation and self._timeline.is_playing():
             positions, orientations = self._articulation.get_world_poses()
@@ -625,7 +694,7 @@ class GainTuner:
         return self._initialized
 
     @initialized.setter
-    def initialized(self, value: bool):
+    def initialized(self, value: bool) -> None:
         """Set the initialized state.
 
         Args:
@@ -643,7 +712,7 @@ class GainTuner:
         return self._joint_range_maximum
 
     @joint_range_maximum.setter
-    def joint_range_maximum(self, value: float):
+    def joint_range_maximum(self, value: float) -> None:
         """Set the joint range maximum.
 
         Args:
@@ -661,7 +730,7 @@ class GainTuner:
         return self._position_impulse
 
     @position_impulse.setter
-    def position_impulse(self, value: float):
+    def position_impulse(self, value: float) -> None:
         """Set the position impulse.
 
         Args:
@@ -679,7 +748,7 @@ class GainTuner:
         return self._velocity_impulse
 
     @velocity_impulse.setter
-    def velocity_impulse(self, value: float):
+    def velocity_impulse(self, value: float) -> None:
         """Set the velocity impulse.
 
         Args:
@@ -698,15 +767,15 @@ class GainTuner:
 
     def _accumulate_link_inertia(
         self,
-        links: List[pxr.Usd.Prim],
+        links: list[pxr.Usd.Prim],
         joint_pose: Gf.Matrix4d,
         robot_transform: Gf.Matrix4d,
         is_prismatic: bool,
-        link_path_to_index: Dict[Sdf.Path, int],
+        link_path_to_index: dict[Sdf.Path, int],
         link_masses: np.ndarray,
         link_com_positions: np.ndarray,
         link_inertias: np.ndarray,
-    ) -> Tuple[float, Gf.Matrix3f, bool]:
+    ) -> tuple[float, Gf.Matrix3f, bool]:
         """Accumulate mass and inertia for a set of links.
 
         Args:
@@ -889,7 +958,7 @@ class GainTuner:
         """
         return self._articulation
 
-    def get_all_joint_indices(self) -> List[int]:
+    def get_all_joint_indices(self) -> list[int]:
         """Get all joint DOF indices.
 
         Returns:
@@ -897,7 +966,7 @@ class GainTuner:
         """
         return self._all_joint_indices
 
-    def get_joint_entries(self) -> List[JointListEntry]:
+    def get_joint_entries(self) -> list[JointListEntry]:
         """Get the list of joint entries.
 
         Returns:
@@ -905,7 +974,7 @@ class GainTuner:
         """
         return list(self._joint_entries)
 
-    def get_permanent_fixed_joint_indices(self) -> List[int]:
+    def get_permanent_fixed_joint_indices(self) -> list[int]:
         """Get indices of permanently fixed joints.
 
         Returns:
@@ -929,7 +998,16 @@ class GainTuner:
         """
         return self._data_ready
 
-    def set_test_duration(self, duration: float):
+    def get_test_result_metrics(self) -> dict[int, dict]:
+        """Return per-joint metrics from the last registered test run.
+
+        Returns:
+            Dict mapping DOF index to a metrics dict, or empty dict if
+            no registered test has been run.
+        """
+        return self._test_result_metrics
+
+    def set_test_duration(self, duration: float) -> None:
         """Set the test duration.
 
         Args:
@@ -939,7 +1017,7 @@ class GainTuner:
 
     # ======================== Run Gains Test ========================
 
-    def _partition_joints_by_mode(self, sequence_index: int) -> Tuple[List[int], List[int], List[int], List[int]]:
+    def _partition_joints_by_mode(self, sequence_index: int) -> tuple[list[int], list[int], list[int], list[int]]:
         """Partition joints into position and velocity control groups.
 
         Args:
@@ -958,7 +1036,7 @@ class GainTuner:
 
         return position_dof_indices, velocity_dof_indices, position_param_indices, velocity_param_indices
 
-    def _get_sequence_params(self, sequence_index: int, param_indices: List[int], param_name: str) -> np.ndarray:
+    def _get_sequence_params(self, sequence_index: int, param_indices: list[int], param_name: str) -> np.ndarray:
         """Extract parameter values for specific joint indices from a sequence.
 
         Args:
@@ -974,7 +1052,7 @@ class GainTuner:
 
     def sinusoidal_step(
         self, timestep: float, sequence_index: int
-    ) -> Tuple[List[int], np.ndarray, List[int], np.ndarray]:
+    ) -> tuple[list[int], np.ndarray, list[int], np.ndarray]:
         """Generate sinusoidal position and velocity commands.
 
         Args:
@@ -1014,7 +1092,7 @@ class GainTuner:
 
         return pos_dof_idx, position_command, vel_dof_idx, velocity_command
 
-    def step_step(self, timestep: float, sequence_index: int) -> Tuple[List[int], np.ndarray, List[int], np.ndarray]:
+    def step_step(self, timestep: float, sequence_index: int) -> tuple[list[int], np.ndarray, list[int], np.ndarray]:
         """Generate square wave position and velocity commands.
 
         Args:
@@ -1050,7 +1128,7 @@ class GainTuner:
 
         return pos_dof_idx, position_command, vel_dof_idx, velocity_command
 
-    def initialize_gains_test(self, test_params: dict):
+    def initialize_gains_test(self, test_params: dict) -> None:
         """Initialize a gains test with the given parameters.
 
         Args:
@@ -1058,7 +1136,8 @@ class GainTuner:
                 test_mode, joint_indices, test_duration, and sequence data.
         """
         self.test_params = test_params
-        self._test_duration = test_params["test_duration"]
+        self._test_duration = test_params.get("test_duration", self._test_duration)
+        self._test_result_metrics = {}
         indices = self.test_params["joint_indices"]
         stiffnesses, dampings = [gains.list() for gains in self._articulation.get_dof_gains()]
 
@@ -1077,7 +1156,7 @@ class GainTuner:
         self._data_ready = False
         self._gains_test_generator = self._gains_test_generator_fn()
 
-    def _compute_gains_test_dof_error_terms(self, joint_index: int) -> Tuple[float, float]:
+    def _compute_gains_test_dof_error_terms(self, joint_index: int) -> tuple[float, float]:
         """Compute RMSE error terms for a single DOF.
 
         Args:
@@ -1114,7 +1193,7 @@ class GainTuner:
             vel_rmse = np.sqrt(np.mean(np.square(self._observed_joint_velocities[:, joint_index])))
         return pos_rmse, vel_rmse
 
-    def compute_gains_test_error_terms(self) -> Tuple[np.ndarray, np.ndarray]:
+    def compute_gains_test_error_terms(self) -> tuple[np.ndarray, np.ndarray]:
         """Compute RMSE error terms for all DOFs.
 
         Returns:
@@ -1139,16 +1218,25 @@ class GainTuner:
         """
         try:
             self.step = step
+            if self._active_test is not None:
+                self._active_test._step = step
             next(self._gains_test_generator)
             self._test_timestep += step
             return False
         except StopIteration:
+            self._active_test = None
             self._v_max = None
             self._T = None
             return True
 
-    def _gains_test_generator_fn(self):
+    def _gains_test_generator_fn(self) -> Generator:
         """Generator function that runs the gains test sequence.
+
+        For built-in modes (SINUSOIDAL, STEP) the original code path is
+        used unchanged.  For any other mode that has a registered
+        :class:`RobotTest`, execution is delegated to the test's
+        ``run()`` generator and results are translated back into the
+        internal arrays used by the plotting pipeline.
 
         Yields:
             Control back to the simulation loop after each physics step.
@@ -1160,6 +1248,13 @@ class GainTuner:
             return
 
         test_mode = self.test_params["test_mode"]
+
+        registered_test = self._test_registry.get(int(test_mode))
+        is_builtin = test_mode in (GainsTestMode.SINUSOIDAL, GainsTestMode.STEP, GainsTestMode.USER_PROVIDED)
+        if registered_test is not None and not is_builtin:
+            yield from self._run_registered_test(registered_test)
+            return
+
         step_fn = self.sinusoidal_step if test_mode == GainsTestMode.SINUSOIDAL else self.step_step
 
         # Initialize data storage
@@ -1176,6 +1271,50 @@ class GainTuner:
 
         self._articulation.reset_to_default_state()
         self._finalize_test_data()
+
+    def _run_registered_test(self, test: RobotTest) -> Generator:
+        """Run a registered RobotTest and translate its results.
+
+        Args:
+            test: The RobotTest instance to run.
+
+        Yields:
+            Empty tuple to yield control to simulation.
+        """
+        self._active_test = test
+        test.setup(
+            self._articulation,
+            self.test_params["joint_indices"],
+            self.joint_modes,
+            self.test_params,
+        )
+        gen = test.run()
+        try:
+            while True:
+                test._step = self.step
+                next(gen)
+                yield ()
+        except StopIteration as e:
+            result = e.value
+            self._active_test = None
+            if isinstance(result, TestResult):
+                self._apply_test_result(result)
+            else:
+                self._finalize_test_data()
+
+    def _apply_test_result(self, result: TestResult) -> None:
+        """Translate a TestResult into the internal arrays used by plotting.
+
+        Args:
+            result: Structured result from a RobotTest.
+        """
+        self._joint_position_commands = result.joint_position_commands
+        self._joint_velocity_commands = result.joint_velocity_commands
+        self._observed_joint_positions = result.observed_joint_positions
+        self._observed_joint_velocities = result.observed_joint_velocities
+        self._command_times = result.command_times
+        self._test_result_metrics = result.joint_metrics
+        self._data_ready = True
 
     def _run_test_sequence(self, sequence_index: int, step_fn: callable) -> Generator:
         """Run a single test sequence.
@@ -1220,7 +1359,7 @@ class GainTuner:
             self._observed_joint_positions.append(self._articulation.get_dof_positions().numpy()[0])
             self._observed_joint_velocities.append(self._articulation.get_dof_velocities().numpy()[0])
 
-    def _record_test_sample(self, position_targets: np.ndarray, velocity_targets: np.ndarray):
+    def _record_test_sample(self, position_targets: np.ndarray, velocity_targets: np.ndarray) -> None:
         """Record a single test sample.
 
         Args:
@@ -1233,7 +1372,7 @@ class GainTuner:
         self._observed_joint_velocities.append(self._articulation.get_dof_velocities().numpy()[0])
         self._command_times.append(self._test_timestep)
 
-    def _finalize_test_data(self):
+    def _finalize_test_data(self) -> None:
         """Convert test data lists to numpy arrays and mark data as ready."""
         self._joint_position_commands = np.array(self._joint_position_commands)
         self._joint_velocity_commands = np.array(self._joint_velocity_commands)
@@ -1246,7 +1385,7 @@ class GainTuner:
 
     def get_joint_states_from_gains_test(
         self, joint_index: int
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Get recorded joint states from the last gains test.
 
         Args:
