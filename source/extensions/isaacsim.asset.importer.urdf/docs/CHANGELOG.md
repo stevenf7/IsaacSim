@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.9.1] - 2026-04-23
+### Changed
+- Update urdf-usd-converter to v0.1.2
+
 ## [3.9.0] - 2026-04-20
 ### Changed
 - `URDFImporter.import_urdf()` now writes all intermediate artifacts (merged-joints URDF, usdex layers, temp stage) to a system temp directory via `tempfile.mkdtemp()` in non-debug mode, instead of the source URDF directory. This avoids `PermissionError` when importing URDFs from read-only locations (packman cache, mounted volumes, installed extension data). In `debug_mode`, intermediates are still written next to the final USD output for inspection.

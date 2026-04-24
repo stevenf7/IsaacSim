@@ -330,7 +330,7 @@ pyproject.dependencies.all = [
     "python-utils",
     "tinyobjloader==2.0.0rc13",
     # archives (isaacsim.asset.importer.urdf)
-    "urdf-usd-converter==0.1.1",
+    "urdf-usd-converter==0.1.2",
     "pycollada==0.9.3",
 ]
 pyproject.dependencies.linux-x86_64 = [
