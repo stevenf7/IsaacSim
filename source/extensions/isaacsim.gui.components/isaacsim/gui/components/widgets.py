@@ -15,8 +15,10 @@
 
 """Module providing custom UI widgets and components for GUI applications."""
 
+from __future__ import annotations
 
 from collections import namedtuple
+from typing import Any
 
 import omni
 import omni.ui as ui
@@ -35,7 +37,7 @@ class DynamicComboBoxItem(ui.AbstractItem):
         text: The display text for this combo box item.
     """
 
-    def __init__(self, text: str):
+    def __init__(self, text: str) -> None:
         super().__init__()
         self.model = ui.SimpleStringModel(text)
 
@@ -51,16 +53,16 @@ class DynamicComboBoxModel(ui.AbstractItemModel):
         args: List of string values to populate the combo box options.
     """
 
-    def __init__(self, args: list):
+    def __init__(self, args: list) -> None:
         super().__init__()
 
         self._current_index = ui.SimpleIntModel()
         self._current_index.add_value_changed_fn(lambda a: self._item_changed(None))
-        self._items = []
+        self._items: list[DynamicComboBoxItem] = []
         for i in range(len(args)):
             self._items.append(DynamicComboBoxItem(args[i]))
 
-    def get_item_children(self, item: object):
+    def get_item_children(self, item: object) -> list[DynamicComboBoxItem]:
         """Returns the list of all combo box items.
 
         Args:
@@ -71,7 +73,7 @@ class DynamicComboBoxModel(ui.AbstractItemModel):
         """
         return self._items
 
-    def get_item_value_model(self, item: ui.AbstractItem = None, column_id: int = 0):
+    def get_item_value_model(self, item: ui.AbstractItem | None = None, column_id: int = 0) -> ui.AbstractValueModel:
         """Returns the value model for the specified item or current selection.
 
         Args:
@@ -85,7 +87,7 @@ class DynamicComboBoxModel(ui.AbstractItemModel):
             return self._current_index
         return item.model
 
-    def set_item_value_model(self, item: ui.AbstractItem = None, column_id: int = 0):
+    def set_item_value_model(self, item: ui.AbstractItem | None = None, column_id: int = 0) -> None:
         """Sets the current index model and updates change listeners.
 
         Args:
@@ -106,14 +108,14 @@ class SelectPrimWidget:
         tooltip: Tooltip text displayed when hovering over the label.
     """
 
-    def __init__(self, label: str = None, default: str = None, tooltip: str = ""):
+    def __init__(self, label: str | None = None, default: str | None = None, tooltip: str = "") -> None:
         self._label = label
         self._default_path = default
         self._tooltip = tooltip
 
         self._build_ui()
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         """Builds the UI components for the prim selection widget.
 
         Creates a horizontal layout with a label, string field for the prim path, and an "Add" button that opens the relationship target picker.
@@ -134,7 +136,7 @@ class SelectPrimWidget:
             ui.Spacer(width=ui.Percent(1))
             ui.Button("Add", width=ui.Percent(19), clicked_fn=self._on_select_prim)
 
-    def _on_select_prim(self):
+    def _on_select_prim(self) -> None:
         """Opens the relationship target picker for prim selection.
 
         Shows the RelationshipTargetPicker dialog to allow the user to select a prim from the stage.
@@ -149,7 +151,7 @@ class SelectPrimWidget:
         )
         self.stage_picker.show(1, on_targets_selected=self._on_target_selected)
 
-    def _on_target_selected(self, paths: list):
+    def _on_target_selected(self, paths: list) -> None:
         """Updates the string field with the selected prim path.
 
         Args:
@@ -165,7 +167,7 @@ class SelectPrimWidget:
         """
         return self._prim.model.get_value_as_string()
 
-    def destroy(self):
+    def destroy(self) -> None:
         """Cleans up the widget by clearing the prim field reference."""
         self._prim = None
 
@@ -182,13 +184,13 @@ class ParamWidget:
             e.g. FormDialog.FieldDef("name", "Name:  ", omni.ui.StringField, "Bob").
     """
 
-    FieldDef = namedtuple("FormDialogFieldDef", "name label type default tooltip focused", defaults=["", False])
+    FieldDef = namedtuple("FieldDef", "name label type default tooltip focused", defaults=["", False])
 
-    def __init__(self, field_def: FieldDef):
-        self._field = None
+    def __init__(self, field_def: FieldDef) -> None:
+        self._field: Any = None
         self._build_ui(field_def)
 
-    def _build_ui(self, field_def: object):
+    def _build_ui(self, field_def: FieldDef) -> None:
         """Creates the user interface for the parameter widget.
 
         Builds a horizontal layout with a label, spacer, and input field based on the field definition.
@@ -211,7 +213,7 @@ class ParamWidget:
             if "set_value" in dir(self._field.model):
                 self._field.model.set_value(field_def.default)
 
-    def get_value(self):
+    def get_value(self) -> Any:
         """Current value of the parameter field.
 
         Returns:
@@ -219,6 +221,6 @@ class ParamWidget:
         """
         return get_field_value(self._field)
 
-    def destroy(self):
+    def destroy(self) -> None:
         """Cleans up the parameter widget by releasing the field reference."""
         self._field = None

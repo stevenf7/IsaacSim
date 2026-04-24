@@ -18,3 +18,4 @@
 from ._urdf import _urdf as _urdf
 from .config import URDFImporterConfig as URDFImporterConfig
 from .converter import URDFImporter as URDFImporter
+from .urdf_utils import merge_fixed_joints as merge_fixed_joints

@@ -41,12 +41,66 @@ __all__ = [
     "add_rigid_body_schemas",
     "remove_custom_scopes",
     "create_physx_mimic_joint",
+    "resolve_unique_path",
 ]
 
 _logger = logging.getLogger(__name__)
 
 # USD Geometry types that should be considered as collision shapes.
 USD_GEOMETRY_TYPES = {"Mesh", "Cube", "Sphere", "Capsule", "Cylinder", "Cone"}
+
+
+def resolve_unique_path(path: str, *, is_file: bool | None = None) -> str:
+    """Return *path* or a numerically suffixed variant that does not collide on disk.
+
+    A path is considered colliding if it is an existing file or a non-empty
+    directory.  For files the counter is inserted before the extension
+    (``robot_1.usda``); for directories it is appended (``usdex_robot_1``).
+
+    Args:
+        path: File or directory path to resolve.
+        is_file: Explicit file/directory hint.  When ``None`` the type is
+            inferred from the filesystem or from a conventional extension
+            to avoid mangling directories with dots in their name.
+
+    Returns:
+        A path that does not cause a conflict on disk.
+
+    Raises:
+        RuntimeError: If no unique path could be resolved after 1000 attempts.
+    """
+
+    def _collides(candidate: str) -> bool:
+        if not os.path.exists(candidate):
+            return False
+        if os.path.isdir(candidate):
+            try:
+                return any(os.scandir(candidate))
+            except OSError:
+                return True
+        return True
+
+    if not _collides(path):
+        return path
+
+    if is_file is None:
+        if os.path.isdir(path):
+            is_file = False
+        elif os.path.isfile(path):
+            is_file = True
+        else:
+            _, ext_guess = os.path.splitext(path)
+            ext_body = ext_guess.lstrip(".")
+            is_file = bool(ext_guess) and 1 <= len(ext_body) <= 5 and ext_body.isalnum()
+
+    base, ext = os.path.splitext(path) if is_file else (path, "")
+
+    for counter in range(1, 1001):
+        candidate = f"{base}_{counter}{ext}"
+        if not _collides(candidate):
+            return candidate
+    raise RuntimeError(f"Could not find a unique path after 1000 attempts for: {path}")
+
 
 # Mapping from UI-friendly labels to mesh collision approximation tokens.
 MESH_APPROXIMATION_MAP = {
@@ -380,7 +434,8 @@ def create_physx_mimic_joint(prim: Usd.Prim) -> None:
         # Check if the target joint is flipped, and if so, invert the gearing (mimic_coef1)
         local_rot1 = target_joint.GetLocalRot1Attr().Get()
         if local_rot1.GetReal() == -1 or any(v == -1 for v in local_rot1.GetImaginary()):
-            mimic_coef1 = -mimic_coef1
+            if mimic_coef1 is not None:
+                mimic_coef1 = -mimic_coef1
             _logger.info(f"Inverted gearing for prim {prim.GetPath()} because target joint is flipped")
 
         # Create the PhysX mimic joint attribute on the current prim
@@ -400,3 +455,108 @@ def create_physx_mimic_joint(prim: Usd.Prim) -> None:
         prim.CreateAttribute(
             PhysxMimicAttr.REFERENCE_JOINT_AXIS.format(axis_token), PhysxMimicAttr.REFERENCE_JOINT_AXIS.type
         ).Set(PHYSICS_AXIS_MAP[target_axis])
+
+
+ROBOT_TYPE_TOKENS = [
+    "Default",
+    "End Effector",
+    "Manipulator",
+    "Humanoid",
+    "Wheeled",
+    "Holonomic",
+    "Quadruped",
+    "Mobile Manipulators",
+    "Aerial",
+]
+
+
+def create_robot_schema(
+    stage: Usd.Stage,
+    robot_type: str = "Default",
+    *,
+    prim_path: str | None = None,
+    add_sites: bool = True,
+    sites_last: bool = False,
+) -> tuple[Usd.Prim | None, Usd.Prim | None]:
+    """Apply the Isaac robot schema to a prim and populate link/joint relationships.
+
+    If the target prim already has the ``IsaacRobotAPI`` applied, the schema is
+    recalculated (preserving existing ordering).  Otherwise a fresh
+    ``RobotAPI`` is applied and populated from the articulation hierarchy.
+
+    No-op with a warning if ``usd.schema.isaac.robot_schema`` is unavailable.
+
+    Args:
+        stage: The USD stage containing the robot.
+        robot_type: Robot category token.  Must be one of
+            :data:`ROBOT_TYPE_TOKENS` (e.g. ``"Manipulator"``, ``"Humanoid"``).
+        prim_path: Prim path to apply the schema to.  Defaults to the stage
+            default prim when ``None``.
+        add_sites: Detect child Xforms with no children under each link and
+            apply ``IsaacSiteAPI`` to them.
+        sites_last: When ``True`` all sites are appended at the end of the
+            links list; when ``False`` each site follows its parent link.
+
+    Returns:
+        A ``(root_link, root_joint)`` tuple of the detected articulation root
+        link and root joint.  Either may be ``None``; both are ``None`` when
+        the robot schema module is unavailable.
+
+    Raises:
+        ValueError: If *robot_type* is not in :data:`ROBOT_TYPE_TOKENS` or
+            the resolved prim is invalid.
+    """
+    if robot_type not in ROBOT_TYPE_TOKENS:
+        raise ValueError(f"Invalid robot_type '{robot_type}'. Must be one of: {ROBOT_TYPE_TOKENS}")
+
+    try:
+        import usd.schema.isaac.robot_schema as rs
+        from usd.schema.isaac.robot_schema import utils as robot_schema_utils
+    except ImportError:
+        _logger.warning(
+            "usd.schema.isaac.robot_schema is not available; skipping IsaacRobotAPI. "
+            "Enable the 'isaacsim.robot.schema' extension to populate robot schema attributes."
+        )
+        return None, None
+
+    if prim_path:
+        robot_prim = stage.GetPrimAtPath(prim_path)
+    else:
+        robot_prim = stage.GetDefaultPrim()
+
+    if not robot_prim or not robot_prim.IsValid():
+        raise ValueError(f"Invalid prim at path '{prim_path or '<default prim>'}'")
+
+    has_existing_schema = robot_prim.HasAPI(rs.Classes.ROBOT_API.value)
+
+    if has_existing_schema:
+        _logger.info("RobotAPI already applied — recalculating schema while preserving order")
+        robot_schema_utils.UpdateDeprecatedSchemas(robot_prim)
+        root_link, root_joint = robot_schema_utils.RecalculateRobotSchema(
+            stage,
+            robot_prim,
+            robot_prim,
+            detect_sites=add_sites,
+            sites_last=sites_last,
+        )
+    else:
+        rs.ApplyRobotAPI(robot_prim)
+        _logger.info("Applied RobotAPI to prim %s", robot_prim.GetPath())
+        root_link, root_joint = robot_schema_utils.PopulateRobotSchemaFromArticulation(
+            stage,
+            robot_prim,
+            robot_prim,
+            detect_sites=add_sites,
+            sites_last=sites_last,
+        )
+
+    robot_type_attr = robot_prim.GetAttribute("isaac:robotType")
+    if robot_type_attr and robot_type_attr.IsValid():
+        robot_type_attr.Set(robot_type)
+    else:
+        robot_type_attr = robot_prim.CreateAttribute("isaac:robotType", Sdf.ValueTypeNames.Token)
+        robot_type_attr.Set(robot_type)
+
+    _logger.info("Set isaac:robotType = '%s' on %s", robot_type, robot_prim.GetPath())
+
+    return root_link, root_joint

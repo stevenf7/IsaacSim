@@ -1,8 +1,19 @@
 # Changelog
 
-## [1.8.0] - 2026-03-09
+## [1.8.2] - 2026-04-20
+### Fixed
+- Return-type annotations in `style.get_folder_picker_icon_button_style()` and `style.get_style()` referenced the builtin `any` function instead of `typing.Any`, making the annotation semantically meaningless. Replaced with `typing.Any`.
+- Widened `style.get_style()` return type to `dict[str, Any]` to accurately describe the `"Tooltip"` entry which is a tuple of style dicts, not a plain dict.
+- Removed a duplicate `"background_color"` key in the `Checkbox` style dict that caused ruff `F601` warnings (the second entry silently overwrote the first).
+- Added missing return type annotations and parameter-type fixes in `widgets.py` (`ANN201`/`ANN202`/`ANN204`); replaced implicit `Optional` defaults (`str = None` → `str | None = None`) on `SelectPrimWidget.__init__` and `DynamicComboBoxModel.get_item_value_model`/`set_item_value_model`; tightened `ParamWidget._build_ui` parameter from `object` to `ParamWidget.FieldDef`; fixed `namedtuple` internal class name (`FormDialogFieldDef` → `FieldDef`) to match the attribute binding.
+
+## [1.8.1] - 2026-04-15
 ### Changed
-- Update UI utils functions based on requriements from isaac sim importers
+- UI tweaks for the file icon
+
+## [1.8.0] - 2026-03-21
+### Changed
+- Update UI utils functions based on requirements from isaac sim importers
 
 ## [1.7.3] - 2026-03-20
 ### Fixed

@@ -1,5 +1,5 @@
 [package]
-version = "1.5.0"
+version = "1.6.0"
 category = "Simulation"
 title = "Isaac Sim Asset Importer Utils"
 description = "Shared utility functions for asset importers."
@@ -13,7 +13,7 @@ writeTarget.kit = true
 
 [dependencies]
 "isaacsim.asset.transformer" = {}
-"omni.kit.commands" = {}
+"isaacsim.robot.schema" = {}
 "omni.scene.optimizer.core" = {}
 "omni.usd.schema.newton" = {}
 "omni.usd.schema.physx" = {}

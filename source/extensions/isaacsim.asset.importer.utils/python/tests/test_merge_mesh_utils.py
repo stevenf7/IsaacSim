@@ -28,7 +28,6 @@ class TestMergeMeshUtils(omni.kit.test.AsyncTestCase):
     async def test_merge_mesh_reduces_mesh_count(self) -> None:
         """Merge multiple meshes when Scene Optimizer is available."""
         try:
-            import omni.kit.commands  # noqa: F401
             import omni.scene.optimizer.core  # noqa: F401
         except ImportError:
             self.skipTest("Scene Optimizer modules are not available")

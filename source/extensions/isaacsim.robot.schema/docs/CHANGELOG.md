@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.3.1] - 2026-04-22
+### Added
+- `get_allowed_tokens(attribute)` helper that reads `allowedTokens` directly from the bundled `RobotSchema.usda` so Python consumers can populate UI choice lists without duplicating the schema's token lists.
+
 ## [6.3.0] - 2026-04-22
 ### Deprecated
 - Deprecated `rangeSensorSchema` plugin types: `RangeSensor`, `Lidar`, `Generic` — used only by the deprecated `isaacsim.sensors.physx` extension. Use `IsaacRaycastSensor` with `isaacsim.sensors.experimental.physics` or `isaacsim.sensors.experimental.rtx` instead.
@@ -24,6 +28,7 @@
 - `PopulateRobotSchemaFromArticulation` only registers `RigidBodyAPI` prims as `robotLinks` and `JointAPI` prims as `robotJoints`; grouping Xforms skipped.
 - Targets now written as prepend list ops via `_set_targets_as_prepend`, preserving additive composition with downstream layers.
 - `_apply_api` is a no-op when the schema is already applied, preventing `apiSchemas` churn on recalc.
+
 
 ## [6.0.0] - 2026-04-15
 ### Changed

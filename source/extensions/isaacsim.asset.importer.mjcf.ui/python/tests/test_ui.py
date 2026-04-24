@@ -19,6 +19,7 @@ import asyncio
 import gc
 import os
 import shutil
+import tempfile
 
 import carb
 
@@ -66,7 +67,15 @@ class TestImporterUI(MenuUITestCase):
         mjcf_ext_id = ext_manager.get_enabled_extension_id("isaacsim.asset.importer.mjcf")
         self._extension_path = ext_manager.get_extension_path(ext_id)
         self._mjcf_extension_path = ext_manager.get_extension_path(mjcf_ext_id)
-        self._mjcf_path = os.path.normpath(os.path.join(self._mjcf_extension_path, "data", "mjcf", "nv_ant.xml"))
+        self._mjcf_data_dir = os.path.normpath(os.path.join(self._mjcf_extension_path, "data", "mjcf"))
+        self._mjcf_path = os.path.normpath(os.path.join(self._mjcf_data_dir, "nv_ant.xml"))
+        self._tmpdir = tempfile.mkdtemp(prefix="mjcf_ui_test_")
+        # Redirect tempfile's default directory to self._tmpdir so any
+        # mkdtemp() calls made during the test (e.g. the MJCF importer's
+        # private scratch dir in non-debug mode) are rooted inside
+        # self._tmpdir and cleaned up deterministically in tearDown.
+        self._prev_tempdir = tempfile.tempdir
+        tempfile.tempdir = self._tmpdir
 
     # After running each test
     async def tearDown(self) -> None:
@@ -83,7 +92,10 @@ class TestImporterUI(MenuUITestCase):
             carb.log_info("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
-        # await omni.usd.get_context().new_stage_async()
+        self._stage = None
+        gc.collect()
+        tempfile.tempdir = self._prev_tempdir
+        shutil.rmtree(self._tmpdir, ignore_errors=True)
 
     def find_content_file(self, window_name: str, filename: str) -> object | None:
         """Find a file row in the picker tree view by label text.
@@ -303,3 +315,173 @@ class TestImporterUI(MenuUITestCase):
             carb.log_warn(
                 f"Warning: unable to delete {os.path.normpath(os.path.dirname(mjcf_importer_output_path))} : {e.strerror}"
             )
+
+    async def test_multiselect_per_file_state_isolation(self) -> None:
+        """Multi-select nv_ant.xml and nv_humanoid.xml and import with UI settings.
+
+        Opens File > Import, navigates to the data/mjcf folder, then
+        programmatically multi-selects both files via the file-browser
+        TreeView ``selection`` property.  Each file's option panel is
+        configured via UI widgets, then the Import button is clicked.
+        The test verifies the config from the last imported file matches
+        the UI-driven settings.
+        """
+        extension = mjcf_ui_extension.get_instance()
+        self.assertIsNotNone(extension)
+
+        path_ant = os.path.join(self._mjcf_data_dir, "nv_ant.xml")
+        path_humanoid = os.path.join(self._mjcf_data_dir, "nv_humanoid.xml")
+
+        # ----------------------------------------------------------------
+        # Open File > Import and navigate to the mjcf data folder
+        # ----------------------------------------------------------------
+        await self.menu_click_with_retry("File/Import")
+
+        dir_widget = await self.find_widget_with_retry(
+            "Select File//Frame/**/StringField[*].identifier=='filepicker_directory_path'"
+        )
+        await dir_widget.input(path_ant)
+        await ui_test.human_delay()
+        await omni.kit.app.get_app().next_update_async()
+
+        grid_view = await self.find_widget_with_retry(
+            "Select File//Frame/**/VGrid[*].identifier=='filebrowser_grid_view'"
+        )
+        await ui_test.human_delay()
+        await omni.kit.app.get_app().next_update_async()
+
+        # ----------------------------------------------------------------
+        # Multi-select both files via TreeView.selection
+        # ----------------------------------------------------------------
+        item_ant = None
+        item_humanoid = None
+        target_tv = None
+
+        for tv_wrapper in ui_test.find_all("Select File//Frame/**/TreeView[*]"):
+            tv = tv_wrapper.widget
+            if tv.model is None:
+                continue
+            items = tv.model.get_item_children(None)
+            for item in items:
+                if item.name == "nv_ant.xml":
+                    item_ant = item
+                elif item.name == "nv_humanoid.xml":
+                    item_humanoid = item
+            if item_ant and item_humanoid:
+                target_tv = tv
+                break
+
+        self.assertIsNotNone(target_tv, "Could not find TreeView with target file items")
+        self.assertIsNotNone(item_ant, "nv_ant.xml not found in file model")
+        self.assertIsNotNone(item_humanoid, "nv_humanoid.xml not found in file model")
+
+        target_tv.selection = [item_ant, item_humanoid]
+        await ui_test.human_delay()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Use DIFFERENT values per panel so any state bleed is caught below.
+        async def find_nth(query: str, index: int = 0, max_frames: int = 100) -> object:
+            for _ in range(max_frames):
+                widgets = ui_test.find_all(query)
+                if len(widgets) > index:
+                    return widgets[index]
+                await omni.kit.app.get_app().next_update_async()
+            raise TimeoutError(
+                f"Expected at least {index + 1} widget(s) for '{query}' after {max_frames} frames, found {len(widgets)}"
+            )
+
+        # -- Panel 0: nv_ant.xml --
+        (await find_nth("Select File//Frame/**/StringField[*].identifier=='mjcf_output_path'", 0)).model.set_value(
+            self._tmpdir
+        )
+        (
+            await find_nth("Select File//Frame/**/CheckBox[*].identifier=='mjcf_allow_self_collision'", 0)
+        ).model.set_value(False)
+        await ui_test.human_delay()
+        (await find_nth("Select File//Frame/**/CheckBox[*].identifier=='mjcf_merge_mesh'", 0)).model.set_value(False)
+        await ui_test.human_delay()
+        (await find_nth("Select File//Frame/**/CheckBox[*].identifier=='mjcf_debug_mode'", 0)).model.set_value(False)
+        await ui_test.human_delay()
+
+        # -- Panel 1: nv_humanoid.xml --
+        (await find_nth("Select File//Frame/**/StringField[*].identifier=='mjcf_output_path'", 1)).model.set_value(
+            self._tmpdir
+        )
+        (
+            await find_nth("Select File//Frame/**/CheckBox[*].identifier=='mjcf_collision_from_visuals'", 1)
+        ).model.set_value(True)
+        await ui_test.human_delay()
+        (
+            await find_nth("Select File//Frame/**/ComboBox[*].identifier=='mjcf_collision_type'", 1)
+        ).model.get_item_value_model(None, 0).set_value(2)
+        await ui_test.human_delay()
+        (
+            await find_nth("Select File//Frame/**/CheckBox[*].identifier=='mjcf_allow_self_collision'", 1)
+        ).model.set_value(True)
+        await ui_test.human_delay()
+        (await find_nth("Select File//Frame/**/CheckBox[*].identifier=='mjcf_import_scene'", 1)).model.set_value(False)
+        await ui_test.human_delay()
+        (await find_nth("Select File//Frame/**/CheckBox[*].identifier=='mjcf_merge_mesh'", 1)).model.set_value(True)
+        await ui_test.human_delay()
+        (await find_nth("Select File//Frame/**/CheckBox[*].identifier=='mjcf_debug_mode'", 1)).model.set_value(True)
+        await ui_test.human_delay()
+
+        # Snapshot state before Import (``_start_import`` pops it).
+        ant_key = os.path.normcase(os.path.normpath(path_ant))
+        humanoid_key = os.path.normcase(os.path.normpath(path_humanoid))
+        ant_state = extension._per_file_state.get(ant_key)
+        humanoid_state = extension._per_file_state.get(humanoid_key)
+        self.assertIsNotNone(ant_state, "nv_ant.xml has no per-file state")
+        self.assertIsNotNone(humanoid_state, "nv_humanoid.xml has no per-file state")
+        self.assertIsNot(ant_state, humanoid_state, "Per-file states must be distinct instances")
+        self.assertIsNot(ant_state.config, humanoid_state.config, "Per-file configs must be distinct instances")
+        self.assertIsNot(ant_state.models, humanoid_state.models, "Per-file models dicts must be distinct instances")
+        self.assertIsNot(
+            ant_state.option_builder,
+            humanoid_state.option_builder,
+            "Per-file OptionWidgets must be distinct instances",
+        )
+
+        # Panel 0 values — must not leak from panel 1.
+        self.assertEqual(ant_state.config.merge_mesh, False)
+        self.assertEqual(ant_state.config.debug_mode, False)
+        self.assertEqual(ant_state.config.collision_from_visuals, False)
+        self.assertEqual(ant_state.config.allow_self_collision, False)
+
+        # Panel 1 values — must not be overwritten by panel 0.
+        self.assertEqual(humanoid_state.config.import_scene, False)
+        self.assertEqual(humanoid_state.config.merge_mesh, True)
+        self.assertEqual(humanoid_state.config.debug_mode, True)
+        self.assertEqual(humanoid_state.config.collision_from_visuals, True)
+        self.assertEqual(humanoid_state.config.collision_type, "Bounding Sphere")
+        self.assertEqual(humanoid_state.config.allow_self_collision, True)
+
+        import_button = await self.find_widget_with_retry("Select File//Frame/VStack[0]/HStack[2]/Button[0]")
+        await import_button.click()
+        await ui_test.human_delay()
+
+        for _ in range(10):
+            await omni.kit.app.get_app().next_update_async()
+
+        # ``_last_config`` is the last imported file; import order is unspecified.
+        config = extension._get_config()
+        self.assertIsNotNone(config)
+        ant_signature = (False, False, False, False)
+        humanoid_signature = (True, True, True, True)
+        actual_signature = (
+            config.merge_mesh,
+            config.debug_mode,
+            config.collision_from_visuals,
+            config.allow_self_collision,
+        )
+        self.assertIn(
+            actual_signature,
+            (ant_signature, humanoid_signature),
+            "Last imported config must match one panel's settings exactly",
+        )
+
+        # Per-file states should be consumed (popped) after import
+        self.assertNotIn(ant_key, extension._per_file_state)
+        self.assertNotIn(humanoid_key, extension._per_file_state)
+
+        await omni.kit.app.get_app().next_update_async()

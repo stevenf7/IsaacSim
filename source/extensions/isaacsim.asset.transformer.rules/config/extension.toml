@@ -1,5 +1,5 @@
 [package]
-version = "1.6.0"
+version = "1.7.0"
 category = "Simulation"
 title = "Isaac Sim Asset Transformer Rules"
 description = "Rule implementations for the Asset Transformer"
@@ -11,6 +11,7 @@ preview_image = "data/preview.png"
 icon = "data/icon.png"
 
 [dependencies]
+"isaacsim.asset.importer.utils" = {}
 "isaacsim.asset.transformer" = {}
 "isaacsim.robot.schema" = {}
 "omni.kit.pip_archive" = {} # provides numpy, used by GeometriesRoutingRule._quantize_value

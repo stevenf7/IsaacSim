@@ -39,12 +39,24 @@
 - def add_rigid_body_schemas(stage: Usd.Stage)
 - def remove_custom_scopes(stage: Usd.Stage)
 - def create_physx_mimic_joint(prim: Usd.Prim)
+- def create_robot_schema(stage: Usd.Stage, robot_type: str = 'Default', *, prim_path: str | None = None, add_sites: bool = True, sites_last: bool = False) -> tuple[Usd.Prim | None, Usd.Prim | None]
 
 ## Variables
 
 - USD_GEOMETRY_TYPES: Set
 - MESH_APPROXIMATION_MAP: Dict
 - PHYSICS_AXIS_MAP: Dict
+- ROBOT_TYPE_TOKENS: list[str]
+
+# Public API for module isaacsim.asset.importer.utils.impl.asset_utils:
+
+## Functions
+
+- def apply_fix_base(stage: Usd.Stage)
+- def fix_articulation_root_for_fixed_base(stage: Usd.Stage) -> int
+- def apply_link_density(stage: Usd.Stage, density: float)
+- def apply_joint_drives(stage: Usd.Stage, drive_type: str | dict[str, str] | None = None, target_type: str | dict[str, str] | None = None, stiffness: float | dict[str, float] | None = None, damping: float | dict[str, float] | None = None)
+- def apply_mjc_actuator_gains(stage: Usd.Stage, gain_type: str, bias_type: str, gain_prm: list[float], bias_prm: list[float]) -> int
 
 
 # Public API for module isaacsim.asset.importer.utils.impl.merge_mesh_utils:

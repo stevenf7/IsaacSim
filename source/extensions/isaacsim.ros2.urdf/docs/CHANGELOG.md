@@ -1,4 +1,7 @@
 # Changelog
+## [2.3.2] - 2026-04-23
+### Changed
+- Added robot type dropdown to UI
 
 ## [2.3.1] - 2026-04-23
 ### Changed

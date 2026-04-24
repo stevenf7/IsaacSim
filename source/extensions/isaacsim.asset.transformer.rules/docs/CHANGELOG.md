@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.7.0] - 2026-04-22
+### Added
+- MergeMeshRule to merge visual mesh prims grouped under rigid bodies via Scene Optimizer
+- MjcToPhysxConversionRule to convert MJCF actuator/joint attributes to PhysX drive and joint schemas
+- UrdfToMjcPhysxConversionRule to convert URDF joint attributes to MJCF actuators and PhysX schemas
+
 ## [1.6.0] - 2026-04-20
 ### Added
 - `GeometriesRoutingRule` now quantizes hashed geometry values to a physical 1 mm grid derived from the stage's `metersPerUnit` (and the mesh's extent magnitude), so meshes authored in m, cm, or mm deduplicate against the same resolution instead of relying on raw float string comparison. Large arrays (points, normals, UVs) are quantized via NumPy in C.

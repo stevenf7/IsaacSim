@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import importer_utils, merge_mesh_utils, physx_types, stage_utils
+from . import asset_utils, importer_utils, merge_mesh_utils, physx_types, stage_utils
 
-__all__ = ["importer_utils", "merge_mesh_utils", "physx_types", "stage_utils"]
+__all__ = ["asset_utils", "importer_utils", "merge_mesh_utils", "physx_types", "stage_utils"]

@@ -62,6 +62,12 @@ class TestURDFCommands(omni.kit.test.AsyncTestCase):
             self._urdf_extension_path, "data", "urdf", "robots", "carter", "urdf", "carter.urdf"
         )
         self._tmpdir = tempfile.mkdtemp(prefix="urdf_cmd_test_")
+        # Redirect tempfile's default directory to self._tmpdir so any
+        # mkdtemp() calls made during the test (e.g. the URDF importer's
+        # private scratch dir in non-debug mode) are rooted inside
+        # self._tmpdir and cleaned up deterministically in tearDown.
+        self._prev_tempdir = tempfile.tempdir
+        tempfile.tempdir = self._tmpdir
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         self._stage = omni.usd.get_context().get_stage()
@@ -82,6 +88,7 @@ class TestURDFCommands(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         self._stage = None
         gc.collect()
+        tempfile.tempdir = self._prev_tempdir
         shutil.rmtree(self._tmpdir, ignore_errors=True)
 
     def test_urdf_create_import_config(self) -> None:

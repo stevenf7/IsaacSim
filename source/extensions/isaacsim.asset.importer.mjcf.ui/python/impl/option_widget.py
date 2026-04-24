@@ -238,17 +238,32 @@ class OptionWidget:
         """Build the Options frame.
 
         Creates UI elements for:
-        - Layer Structure checkbox (default: True)
+        - Robot Type dropdown
+        - Import Scene checkbox (default: True)
         - Merge Mesh checkbox (default: False)
         - Debug Mode checkbox (default: False)
-        - Open Gains Tuner checkbox (default: False)
         """
 
         def build_options_content() -> None:
             """Build general option content."""
+            from isaacsim.asset.importer.utils.impl.importer_utils import ROBOT_TYPE_TOKENS
+
+            def set_robot_type(value: str) -> None:
+                self._config.robot_type = value
+
             with ui.VStack(spacing=4):
 
-                # Import Scene checkbox
+                self._models["robot_type"] = dropdown_builder(
+                    "Robot Type",
+                    tooltip="Category of robot for the Isaac robot schema (e.g. Manipulator, Humanoid)",
+                    default_val=ROBOT_TYPE_TOKENS.index(self._config.robot_type),
+                    items=ROBOT_TYPE_TOKENS,
+                    on_clicked_fn=set_robot_type,
+                    identifier="mjcf_robot_type",
+                    show_flourish=False,
+                    label_width=90,
+                )
+
                 def set_import_scene(value: bool) -> None:
                     self._config.import_scene = value
 
@@ -260,7 +275,6 @@ class OptionWidget:
                     identifier="mjcf_import_scene",
                 )
 
-                # Merge Mesh checkbox
                 def set_merge_mesh(value: bool) -> None:
                     self._config.merge_mesh = value
 
@@ -272,7 +286,6 @@ class OptionWidget:
                     identifier="mjcf_merge_mesh",
                 )
 
-                # Debug Mode checkbox
                 def set_debug_mode(value: bool) -> None:
                     self._config.debug_mode = value
 
@@ -283,14 +296,6 @@ class OptionWidget:
                     on_clicked_fn=set_debug_mode,
                     identifier="mjcf_debug_mode",
                 )
-
-                # Open Gains Tuner checkbox
-                # self._models["open_gains_tuner"] = checkbox_builder(
-                #     "Open Gains Tuner",
-                #     tooltip="If True, opens the gains tuner after import for PID tuning",
-                #     default_val=False,
-                #     on_clicked_fn=lambda m, config=self._config: config.set_open_gains_tuner(m),
-                # )
 
         option_frame("Options", build_options_content)
 

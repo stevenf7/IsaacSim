@@ -15,6 +15,8 @@
 
 """MJCF importer configuration utilities."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 
@@ -31,8 +33,25 @@ class MJCFImporterConfig:
         merge_mesh: If True, merges meshes where possible to optimize the model.
         debug_mode: If True, enables debug mode with additional logging and visualization.
         collision_from_visuals: If True, collision geometry is generated from visual geometries.
-        collision_type: Type of collision geometry to use. Options: "Convex Hull", "Convex Decomposition", "Bounding Sphere", "Bounding Cube".
+        collision_type: Type of collision geometry to use. Options: "Convex Hull",
+            "Convex Decomposition", "Bounding Sphere", "Bounding Cube".
         allow_self_collision: If True, allows the model to collide with itself.
+        fix_base: If True, adds a fixed joint from the world to the root rigid-body link and
+            relocates ArticulationRootAPI to the correct ancestor prim.
+        link_density: Default density (kg/m^3) applied to rigid body links that have no
+            explicit mass.  ``None`` means no density override.
+        override_gain_type: MuJoCo actuator gain type (e.g. ``"fixed"``).  ``None`` leaves
+            existing value.
+        override_bias_type: MuJoCo actuator bias type (e.g. ``"affine"``).  ``None`` leaves
+            existing value.
+        override_gain_prm: MuJoCo actuator gain parameter array (10 floats).  ``None`` leaves
+            existing value.  Position control example: ``[kp, 0, 0, 0, 0, 0, 0, 0, 0, 0]``.
+        override_bias_prm: MuJoCo actuator bias parameter array (10 floats).  ``None`` leaves
+            existing value.  Position control example: ``[0, -kp, -kd, 0, 0, 0, 0, 0, 0, 0]``.
+        run_asset_transformer: If True, runs the asset transformer profile after conversion
+            to restructure the USD output.
+        run_multi_physics_conversion: If True, runs MuJoCo-to-PhysX physics conversion on
+            the imported stage.
 
     Example:
 
@@ -57,3 +76,14 @@ class MJCFImporterConfig:
     collision_from_visuals: bool = False
     collision_type: str = "Convex Hull"
     allow_self_collision: bool = False
+    robot_type: str = "Default"
+    fix_base: bool = False
+    link_density: float | None = None
+    joint_drive_type: str | dict[str, str] | None = None
+    joint_target_type: str | dict[str, str] | None = None
+    override_gain_type: str | None = None
+    override_bias_type: str | None = None
+    override_gain_prm: list[float] | None = None
+    override_bias_prm: list[float] | None = None
+    run_asset_transformer: bool = True
+    run_multi_physics_conversion: bool = True

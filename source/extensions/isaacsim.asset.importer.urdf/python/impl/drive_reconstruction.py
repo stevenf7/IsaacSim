@@ -63,7 +63,14 @@ def parse_source_drive_breadcrumbs(urdf_path: str) -> list[SourceDriveInfo]:
 
 
 def _parse_with_standard_tree(urdf_path: str) -> list[SourceDriveInfo]:
-    """Try parsing comments from the standard ElementTree."""
+    """Try parsing comments from the standard ElementTree.
+
+    Args:
+        urdf_path: Path to the URDF file.
+
+    Returns:
+        Parsed ``isaac:source_drive`` breadcrumb records, or an empty list on parse failure.
+    """
     try:
         tree = ET.parse(urdf_path)
     except ET.ParseError:
@@ -85,13 +92,20 @@ def _parse_with_standard_tree(urdf_path: str) -> list[SourceDriveInfo]:
 
 
 def _parse_with_comment_builder(urdf_path: str) -> list[SourceDriveInfo]:
-    """Parse using a custom TreeBuilder that captures XML comments."""
+    """Parse using a custom TreeBuilder that captures XML comments.
+
+    Args:
+        urdf_path: Path to the URDF file.
+
+    Returns:
+        Parsed ``isaac:source_drive`` breadcrumb records, or an empty list on parse failure.
+    """
 
     class _CommentedTreeBuilder(ET.TreeBuilder):
-        def comment(self, data: str) -> None:
+        def comment(self, data: str) -> None:  # type: ignore[override]
             self.start(ET.Comment, {})
             self.data(data)
-            self.end(ET.Comment)
+            self.end(ET.Comment)  # type: ignore[arg-type]
 
     try:
         parser = ET.XMLParser(target=_CommentedTreeBuilder())
@@ -113,7 +127,16 @@ def _parse_with_comment_builder(urdf_path: str) -> list[SourceDriveInfo]:
 
 
 def _parse_comment(text: str, joint_name: str, urdf_path: str) -> SourceDriveInfo | None:
-    """Parse a single comment string for an ``isaac:source_drive`` breadcrumb."""
+    """Parse a single comment string for an ``isaac:source_drive`` breadcrumb.
+
+    Args:
+        text: Raw XML comment body.
+        joint_name: Name of the enclosing URDF joint element.
+        urdf_path: Path to the URDF file (for logging).
+
+    Returns:
+        Parsed breadcrumb, or ``None`` if the text is not a drive breadcrumb or JSON is invalid.
+    """
     if _BREADCRUMB_PREFIX not in text:
         return None
     json_str = text.split(_BREADCRUMB_PREFIX, 1)[1].strip()
@@ -157,7 +180,15 @@ def reconstruct_source_drives(stage: Usd.Stage, breadcrumbs: list[SourceDriveInf
 
 
 def _find_prim_by_name(stage: Usd.Stage, name: str) -> Usd.Prim | None:
-    """Find a prim anywhere on the stage whose GetName() matches *name*."""
+    """Find a prim anywhere on the stage whose GetName() matches *name*.
+
+    Args:
+        stage: USD stage to search.
+        name: Prim name to match (``GetName()``).
+
+    Returns:
+        The first matching prim, or ``None`` if not found.
+    """
     for prim in stage.Traverse():
         if prim.GetName() == name:
             return prim
@@ -165,7 +196,15 @@ def _find_prim_by_name(stage: Usd.Stage, name: str) -> Usd.Prim | None:
 
 
 def _reconstruct_one(stage: Usd.Stage, bc: SourceDriveInfo) -> bool:
-    """Reconstruct actuation data for a single joint."""
+    """Reconstruct actuation data for a single joint.
+
+    Args:
+        stage: USD stage to modify.
+        bc: Parsed drive breadcrumb for one joint.
+
+    Returns:
+        ``True`` if any drive, actuator, or armature data was applied.
+    """
     if not bc.joint_name:
         return False
 

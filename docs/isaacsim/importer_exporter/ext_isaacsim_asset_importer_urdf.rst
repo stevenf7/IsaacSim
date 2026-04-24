@@ -81,13 +81,16 @@ Import Options
         - **Bounding Cube**: Uses a simple bounding box approximation.
 
 **General Options**:
+    - **Robot Type**: Sets the ``isaac:robotType`` attribute on the imported robot's schema. Choose from: Default, End Effector,
+      Manipulator, Humanoid, Wheeled, Holonomic, Quadruped, Mobile Manipulators, or Aerial.
+
     - **Allow Self-Collision**: When enabled, allows the robot model to collide with itself. This can be useful for certain simulation
       scenarios but may cause instability if collision meshes between links are self-intersecting.
 
     - **Merge Mesh**: When enabled, merges meshes where possible to optimize the model. This can reduce the number of prims in the
       resulting USD file and improve performance.
 
-    - **Debug Mode**: When enabled, activates debug mode to preserve the intemediate files and asset transformer reports
+    - **Debug Mode**: When enabled, activates debug mode to preserve the intermediate files and asset transformer reports
 
 
 Importing URDF from a ROS 2 Node
@@ -105,6 +108,9 @@ To select the appropriate node, type in the name of the node in the :code:`Node`
     :alt: Interface when Importing from a ROS 2 Node
 
 For more on how to use the ROS 2 URDF Importer, refer to the :ref:`Import from ROS 2 Node <isaac_sim_urdf_from_ros>` Tutorial.
+
+.. note::
+    The default output folder is <isaacsim.ros2.urdf>/data/urdf if no output folder is selected.
 
 .. _isaac_sim_urdf_robot_properties:
 

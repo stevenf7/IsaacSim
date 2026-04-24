@@ -22,7 +22,7 @@ from isaacsim.asset.importer.urdf import URDFImporterConfig
 from isaacsim.gui.components.ui_utils import checkbox_builder, dropdown_builder, string_filed_builder
 
 from .style import get_option_style
-from .ui_utils import RosPackageDelegate, RosPackageModel
+from .ui_utils import RosPackageDelegate, RosPackageItem, RosPackageModel
 
 
 def option_header(collapsed: bool, title: str) -> None:
@@ -85,7 +85,7 @@ class OptionWidget:
         self._models = models
         self._config = config
         self._ros_package_table_frame = None
-        self._ros_package_model = None
+        self._ros_package_model: RosPackageModel | None = None
         self._ros_package_delegate = None
         self._ros_package_tree = None
 
@@ -215,13 +215,17 @@ class OptionWidget:
         """Build the Options frame.
 
         Creates UI elements for:
-        - Layer Structure checkbox (default: True)
+        - Robot Type dropdown
         - Merge Mesh checkbox (default: False)
         - Debug Mode checkbox (default: False)
-        - Open Gains Tuner checkbox (default: False)
         """
 
         def build_options_content() -> None:
+            from isaacsim.asset.importer.utils.impl.importer_utils import ROBOT_TYPE_TOKENS
+
+            def set_robot_type(value: str) -> None:
+                self._config.robot_type = value
+
             def set_merge_mesh(value: bool) -> None:
                 self._config.merge_mesh = value
 
@@ -230,7 +234,17 @@ class OptionWidget:
 
             with ui.VStack(spacing=4):
 
-                # Merge Mesh checkbox
+                self._models["robot_type"] = dropdown_builder(
+                    "Robot Type",
+                    tooltip="Category of robot for the Isaac robot schema (e.g. Manipulator, Humanoid)",
+                    default_val=ROBOT_TYPE_TOKENS.index(self._config.robot_type),
+                    items=ROBOT_TYPE_TOKENS,
+                    on_clicked_fn=set_robot_type,
+                    identifier="urdf_robot_type",
+                    show_flourish=False,
+                    label_width=90,
+                )
+
                 self._models["merge_mesh"] = checkbox_builder(
                     "Merge Mesh",
                     tooltip="If True, merges meshes where possible to optimize the model",
@@ -239,7 +253,6 @@ class OptionWidget:
                     identifier="urdf_merge_mesh",
                 )
 
-                # Debug Mode checkbox
                 self._models["debug_mode"] = checkbox_builder(
                     "Debug Mode",
                     tooltip="If True, enables debug mode with additional logging and visualization",
@@ -273,7 +286,7 @@ class OptionWidget:
         row_height = 28
         column_widths = [ui.Fraction(0.3), ui.Fraction(0.7)]
 
-        if not self._ros_package_model:
+        if self._ros_package_model is None:
             self._ros_package_model = RosPackageModel(rows_data)
         elif not self._ros_package_model.get_rows():
             self._ros_package_model.add_row("", "")
@@ -337,7 +350,7 @@ class OptionWidget:
         self._ros_package_model = RosPackageModel(packages)
         self._build_ros_package_table(packages)
 
-    def _delete_ros_package_row(self, item: object) -> None:
+    def _delete_ros_package_row(self, item: RosPackageItem) -> None:
         if not self._ros_package_model:
             return
         self._ros_package_model.remove_row(item)

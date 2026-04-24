@@ -87,6 +87,13 @@ def _any_file_exists(base: pathlib.Path, rel_paths: list[str]) -> bool:
 
     When *rel_paths* is empty the check cannot be performed and True is returned
     so callers degrade gracefully.
+
+    Args:
+        base: Directory to resolve each relative path against.
+        rel_paths: Relative file paths to test under *base*.
+
+    Returns:
+        True if *rel_paths* is empty or any ``base / rel`` exists as a file.
     """
     if not rel_paths:
         return True
@@ -98,6 +105,14 @@ def _try_ament_resolve(pkg_name: str, rel_paths: list[str]) -> str | None:
 
     The resolved share directory is only accepted when at least one of the
     URDF-referenced files is actually present under it.
+
+    Args:
+        pkg_name: ROS 2 package name from a ``package://`` URI.
+        rel_paths: Relative paths referenced by the URDF for that package.
+
+    Returns:
+        Absolute path to the package share directory, or None if unavailable
+        or no referenced file exists there.
     """
     try:
         from ament_index_python.packages import get_package_share_directory  # type: ignore[import-untyped]
@@ -111,7 +126,16 @@ def _try_ament_resolve(pkg_name: str, rel_paths: list[str]) -> str | None:
 
 
 def _try_directory_walk(urdf_dir: pathlib.Path, rel_paths: list[str]) -> str | None:
-    """Walk up from *urdf_dir* looking for a parent where any *rel_paths* entry exists."""
+    """Walk up from *urdf_dir* looking for a parent where any *rel_paths* entry exists.
+
+    Args:
+        urdf_dir: Directory containing the URDF file (starting search point).
+        rel_paths: Relative paths from the URDF that should exist under a candidate root.
+
+    Returns:
+        Absolute path to the first ancestor directory where a referenced file
+        exists, or None if none found within the walk limit.
+    """
     if not rel_paths:
         return None
 
@@ -133,6 +157,14 @@ def _try_meshes_folder(urdf_dir: pathlib.Path, pkg_name: str, rel_paths: list[st
     Checks each ancestor (and its ``{pkg_name}/`` subdirectory) as a
     candidate package root.  A candidate is accepted when at least one
     of the URDF-referenced relative paths resolves to an existing file.
+
+    Args:
+        urdf_dir: Directory containing the URDF file (starting search point).
+        pkg_name: ROS package name; used to test a ``{pkg_name}/`` subfolder.
+        rel_paths: Relative paths from the URDF that should exist under a candidate root.
+
+    Returns:
+        Absolute path to an accepted candidate directory, or None if none found.
     """
     if not rel_paths:
         return None
