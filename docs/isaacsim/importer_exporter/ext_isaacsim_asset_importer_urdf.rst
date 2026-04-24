@@ -110,7 +110,7 @@ To select the appropriate node, type in the name of the node in the :code:`Node`
 For more on how to use the ROS 2 URDF Importer, refer to the :ref:`Import from ROS 2 Node <isaac_sim_urdf_from_ros>` Tutorial.
 
 .. note::
-    The default output folder is <isaacsim.ros2.urdf>/data/urdf if no output folder is selected.
+    If no output folder is selected, the USD is written to a system temp directory alongside the intermediate URDF file. A warning is logged with the output path. Set the **USD Output** folder in the import window to control where the USD is saved.
 
 .. _isaac_sim_urdf_robot_properties:
 

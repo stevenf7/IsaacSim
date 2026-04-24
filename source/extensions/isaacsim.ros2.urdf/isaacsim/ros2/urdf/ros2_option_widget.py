@@ -242,7 +242,7 @@ class Ros2UrdfOptionWidget:
                 ui.Label("USD Output")
                 self._models["dst_path"] = string_filed_builder(
                     tooltip="USD output folder for the imported robot",
-                    default_val="Same as Imported Model(Default)",
+                    default_val="System temp directory (Default)",
                     folder_dialog_title="Select Output Folder",
                     folder_button_title="Select Folder",
                     read_only=True,

@@ -212,6 +212,8 @@ class TestRos2Publisher(ROS2TestCase):
             def spin_callback():
                 rclpy.spin_once(ros2_node, timeout_sec=0)
 
+            await self.wait_for_publishers_on_topic(ros2_node, "custom_topic", per_frame_callback=spin_callback)
+
             condition_met = await self.simulate_until_condition(
                 condition_func=lambda: self._ros_message is not None,
                 max_frames=300,

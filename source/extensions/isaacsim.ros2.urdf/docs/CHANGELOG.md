@@ -1,4 +1,12 @@
 # Changelog
+
+## [2.3.3] - 2026-04-23
+### Fixed
+- Handled RCLError when ROS 2 context is shut down during background service call in RobotDefinitionReader
+- Intermediate URDF file now written to a system temp directory instead of the extension build directory. When no explicit USD output folder is set, the USD is also written to the temp directory; set the **USD Output** folder in the UI to control the final location.
+### Changed
+- Tests preserve temp output on failure for debugging, matching the pattern used in isaacsim.asset.importer.urdf
+
 ## [2.3.2] - 2026-04-23
 ### Changed
 - Added robot type dropdown to UI

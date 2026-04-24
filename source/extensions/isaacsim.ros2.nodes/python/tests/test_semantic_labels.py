@@ -157,6 +157,7 @@ class TestRos2SemanticLabels(ROS2TestCase):
 
         # Run first test, with camera pointing at cube0
         self._timeline.play()
+        await self.wait_for_publishers_on_topic(node, "/clock", per_frame_callback=spin)
         await omni.syntheticdata.sensors.next_sensor_data_async(viewport_api)
         await self.simulate_until_condition(
             lambda: self._semantic_label_data is not None,
@@ -184,6 +185,7 @@ class TestRos2SemanticLabels(ROS2TestCase):
         self._unexpected_classes = ["cube0"]
 
         self._timeline.play()
+        await self.wait_for_publishers_on_topic(node, "/clock", per_frame_callback=spin)
         await self.simulate_until_condition(
             lambda: self._semantic_labels_callback_count > 5,
             max_frames=60,

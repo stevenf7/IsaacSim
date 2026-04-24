@@ -218,6 +218,81 @@ class ROS2TestCase(TimedAsyncTestCase):
                 return True
         return False
 
+    async def wait_for_publishers_on_topic(
+        self, node, topic_name: str, count: int = 1, timeout_sec: float = 10.0, per_frame_callback=None
+    ):
+        """Wait until a node discovers the expected number of publishers on a topic.
+
+        Uses wall-clock time rather than frame count because tests run with no
+        rate limiter, so frames can be extremely fast on some platforms.  Must be
+        called *after* ``timeline.play()`` so the OmniGraph ROS 2 publisher node
+        has evaluated and created its DDS endpoint.
+
+        Args:
+            node: The rclpy node used for discovery queries.
+            topic_name: Fully-qualified topic name to check.
+            count: Minimum number of publishers to wait for.
+            timeout_sec: Maximum wall-clock seconds to wait.
+            per_frame_callback: Optional callable invoked every frame (e.g. rclpy spin).
+        """
+        import time as _time
+
+        deadline = _time.monotonic() + timeout_sec
+        while _time.monotonic() < deadline:
+            await omni.kit.app.get_app().next_update_async()
+            if per_frame_callback is not None:
+                per_frame_callback()
+            if node.count_publishers(topic_name) >= count:
+                return
+        self.fail(f"Timed out ({timeout_sec}s) waiting for {count} publisher(s) on topic '{topic_name}'")
+
+    async def wait_for_subscribers_on_topic(
+        self, publisher, count: int = 1, timeout_sec: float = 10.0, per_frame_callback=None
+    ):
+        """Wait until a publisher discovers the expected number of matching subscribers.
+
+        Uses wall-clock time rather than frame count because tests run with no
+        rate limiter, so frames can be extremely fast on some platforms.  Must be
+        called *after* ``timeline.play()`` so the OmniGraph ROS 2 subscriber node
+        has evaluated and created its DDS endpoint.
+
+        When the subscription count is already at or above *count* on entry
+        (e.g. after a timeline stop / play cycle) the method first waits for
+        the count to drop below *count* — indicating the old endpoint was
+        torn down — before waiting for it to reach *count* again.
+
+        Args:
+            publisher: The rclpy publisher to query.
+            count: Minimum number of subscribers to wait for.
+            timeout_sec: Maximum wall-clock seconds to wait.
+            per_frame_callback: Optional callable invoked every frame (e.g. rclpy spin).
+        """
+        import time as _time
+
+        deadline = _time.monotonic() + timeout_sec
+
+        if publisher.get_subscription_count() >= count:
+            cycle_deadline = min(_time.monotonic() + 1.0, deadline)
+            while _time.monotonic() < cycle_deadline:
+                await omni.kit.app.get_app().next_update_async()
+                if per_frame_callback is not None:
+                    per_frame_callback()
+                if publisher.get_subscription_count() < count:
+                    break
+
+        while _time.monotonic() < deadline:
+            await omni.kit.app.get_app().next_update_async()
+            if per_frame_callback is not None:
+                per_frame_callback()
+            if publisher.get_subscription_count() >= count:
+                stable_until = min(_time.monotonic() + 0.25, deadline)
+                while _time.monotonic() < stable_until:
+                    await omni.kit.app.get_app().next_update_async()
+                    if per_frame_callback is not None:
+                        per_frame_callback()
+                return
+        self.fail(f"Timed out ({timeout_sec}s) waiting for {count} subscriber(s) on topic '{publisher.topic_name}'")
+
     async def tearDown(self):
         """Tear down test fixtures."""
         self._timeline.stop()

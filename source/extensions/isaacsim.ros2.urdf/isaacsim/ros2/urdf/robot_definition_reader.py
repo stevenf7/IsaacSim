@@ -113,7 +113,10 @@ class RobotDefinitionReader:
         import rclpy
 
         if self.node:
-            self.node.destroy_node()
+            try:
+                self.node.destroy_node()
+            except Exception:
+                pass
         rclpy.try_shutdown()
 
     def on_description_received(self, _: str) -> None:
@@ -137,37 +140,43 @@ class RobotDefinitionReader:
         import rclpy
         from rcl_interfaces.srv import GetParameters
 
-        client = node.create_client(GetParameters, f"/{self.node_name}/get_parameters")
-        if client.wait_for_service(timeout_sec=1.0):
-            request = GetParameters.Request()
-            request.names = ["robot_description"]
-            self.future = client.call_async(request)
+        try:
+            client = node.create_client(GetParameters, f"/{self.node_name}/get_parameters")
+            if client.wait_for_service(timeout_sec=1.0):
+                request = GetParameters.Request()
+                request.names = ["robot_description"]
+                self.future = client.call_async(request)
 
-            while rclpy.ok():
-                if self.future.cancelled():
-                    break
-                rclpy.spin_once(node)
+                while rclpy.ok():
+                    if self.future.cancelled():
+                        break
+                    rclpy.spin_once(node)
+                    if self.future.done():
+                        break
+
                 if self.future.done():
-                    break
+                    try:
+                        response = self.future.result()
+                        if response.values:
+                            for param in response.values:
+                                self.urdf_doc = param.string_value
+                                self.urdf_abs, self.package_found = replace_package_urls_with_paths(self.urdf_doc)
+                                self.on_description_received(self.urdf_abs)
+                    except Exception as e:
+                        carb.log_error(f"Service call failed {e!r}")
+                        if self.status_fn:
+                            self.status_fn("ROS node error", 0xFF0000FF)
+            else:
+                carb.log_error(f"node '{self.node_name}' not found. is the spelling correct?")
+                if self.status_fn:
+                    self.status_fn(f"ROS node '{self.node_name}' not found", 0xFF0000FF)
+        except rclpy._rclpy_pybind11.RCLError:
+            carb.log_warn(f"ROS 2 context shut down while querying node '{self.node_name}'")
 
-            if self.future.done():
-                try:
-                    response = self.future.result()
-                    if response.values:
-                        for param in response.values:
-                            self.urdf_doc = param.string_value
-                            self.urdf_abs, self.package_found = replace_package_urls_with_paths(self.urdf_doc)
-                            self.on_description_received(self.urdf_abs)
-                except Exception as e:
-                    carb.log_error(f"Service call failed {e!r}")
-                    if self.status_fn:
-                        self.status_fn("ROS node error", 0xFF0000FF)
-        else:
-            carb.log_error(f"node '{self.node_name}' not found. is the spelling correct?")
-            if self.status_fn:
-                self.status_fn(f"ROS node '{self.node_name}' not found", 0xFF0000FF)
-
-        node.destroy_node()
+        try:
+            node.destroy_node()
+        except rclpy._rclpy_pybind11.RCLError:
+            pass
         rclpy.try_shutdown()
 
     def start_get_robot_description(self, node_name: str) -> None:

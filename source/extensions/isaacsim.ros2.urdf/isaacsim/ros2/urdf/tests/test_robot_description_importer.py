@@ -16,6 +16,8 @@
 """UI tests for importing URDF from a ROS 2 node."""
 
 import os
+import shutil
+import tempfile
 import threading
 
 import omni.kit.ui_test as ui_test
@@ -44,6 +46,10 @@ class TestRos2UrdfNodeImporter(ROS2TestCase):
                 "test_basic.urdf",
             )
         )
+        self._tmpdir = tempfile.mkdtemp(prefix="ros2_urdf_test_")
+        self._prev_tempdir = tempfile.tempdir
+        tempfile.tempdir = self._tmpdir
+        self._success = False
         stage_utils.create_new_stage()
         await omni.kit.app.get_app().next_update_async()
 
@@ -70,6 +76,9 @@ class TestRos2UrdfNodeImporter(ROS2TestCase):
                 rclpy.shutdown(context=self._server_context)
             except Exception:
                 pass
+        tempfile.tempdir = self._prev_tempdir
+        if self._success:
+            shutil.rmtree(self._tmpdir, ignore_errors=True)
         await super().tearDown()
 
     async def test_import_basic_urdf_from_ros2_node(self) -> None:
@@ -149,3 +158,4 @@ class TestRos2UrdfNodeImporter(ROS2TestCase):
             Sdf.Path.emptyPath,
             f"Default prim path is empty after importing URDF from '{self._node_name}'.",
         )
+        self._success = True
