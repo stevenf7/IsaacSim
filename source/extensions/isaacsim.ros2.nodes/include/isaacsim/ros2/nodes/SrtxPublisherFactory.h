@@ -60,6 +60,21 @@ ISAACSIM_ROS2_NODES_API SrtxFrameCallbackDescriptor* createImagePublisherDescrip
                                                                                     uint64_t queueSize,
                                                                                     const std::string& qosProfile);
 
+/// Create a camera info publisher callback descriptor.
+/// Returns a heap-allocated descriptor (caller owns it), or nullptr on failure.
+ISAACSIM_ROS2_NODES_API SrtxFrameCallbackDescriptor* createCameraInfoPublisherDescriptor(const std::string& topicName,
+                                                                                         const std::string& frameId,
+                                                                                         const std::string& nodeNamespace,
+                                                                                         uint64_t queueSize,
+                                                                                         const std::string& qosProfile,
+                                                                                         uint32_t width,
+                                                                                         uint32_t height,
+                                                                                         const std::string& distortionModel,
+                                                                                         const std::vector<double>& k,
+                                                                                         const std::vector<double>& r,
+                                                                                         const std::vector<double>& p,
+                                                                                         const std::vector<double>& d);
+
 /// Create a lidar publisher callback descriptor.
 /// Returns a heap-allocated descriptor (caller owns it), or nullptr on failure.
 ISAACSIM_ROS2_NODES_API SrtxFrameCallbackDescriptor* createLidarPublisherDescriptor(const std::string& topicName,
