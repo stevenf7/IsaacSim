@@ -15,6 +15,8 @@
 
 """UCX Nodes Extension - manages lifecycle of native plugin."""
 
+import os
+
 import carb
 import omni
 import omni.ext
@@ -38,6 +40,9 @@ class UCXBridgeExtension(omni.ext.IExt):
             ext_id: The extension identifier.
         """
         carb.log_info("UCX Bridge Extension starting up")
+
+        # Must be set before UCX context creation.
+        os.environ["UCX_CM_USE_ALL_DEVICES"] = "n"
 
         # Acquire the native plugin interface - this triggers plugin load
         from .bindings._ucx_nodes import acquire_interface

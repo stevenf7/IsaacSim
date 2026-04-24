@@ -15,7 +15,6 @@
 
 """Test UCX joint state publishing node functionality."""
 
-import struct
 import time
 
 import isaacsim.core.experimental.utils.app as app_utils
@@ -29,9 +28,10 @@ import ucxx._lib.libucxx as ucx_api
 import usdrt.Sdf
 from isaacsim.core.experimental.prims import Articulation
 from isaacsim.storage.native import get_assets_root_path
+from isaacsim.ucx.nodes.messages.isaac import JointState
 from ucxx._lib.arr import Array
 
-from .common import UCXTestCase
+from .common import UCXTestCase, _read_tensor_f32
 
 # Test configuration constants
 CONNECTION_WAIT_FRAMES = 60  # Frames to wait for node listener to initialize
@@ -40,46 +40,21 @@ RECEIVE_TIMEOUT_FRAMES = 1000  # Maximum frames to wait for a message
 
 
 def unpack_joint_state_message(buffer: object):
-    """Unpack a UCX joint state message.
-
-    Message format (updated to use doubles):
-    - timestamp (double, 8 bytes)
-    - num_joints (uint32_t, 4 bytes)
-    - For each joint:
-      - position (double, 8 bytes)
-      - velocity (double, 8 bytes)
-      - effort (double, 8 bytes)
+    """Unpack a UCX joint state FlatBuffers message.
 
     Args:
-        buffer: Buffer containing the packed joint state message.
+        buffer: Buffer containing the FlatBuffers-encoded joint state message.
 
     Returns:
         Tuple of (timestamp, num_joints, positions, velocities, efforts).
     """
-    offset = 0
-    timestamp = struct.unpack("<d", buffer[offset : offset + 8].tobytes())[0]
-    offset += 8
-
-    num_joints = struct.unpack("<I", buffer[offset : offset + 4].tobytes())[0]
-    offset += 4
-
-    positions = []
-    velocities = []
-    efforts = []
-
-    for i in range(num_joints):
-        position = struct.unpack("<d", buffer[offset : offset + 8].tobytes())[0]
-        offset += 8
-        positions.append(position)
-
-        velocity = struct.unpack("<d", buffer[offset : offset + 8].tobytes())[0]
-        offset += 8
-        velocities.append(velocity)
-
-        effort = struct.unpack("<d", buffer[offset : offset + 8].tobytes())[0]
-        offset += 8
-        efforts.append(effort)
-
+    buf = bytearray(buffer.tobytes())
+    msg = JointState.JointState.GetRootAs(buf, 0)
+    timestamp = msg.Header().Stamp().TimeNs() / 1e9
+    num_joints = int(msg.Position().Shape(0))
+    positions = _read_tensor_f32(msg.Position())
+    velocities = _read_tensor_f32(msg.Velocity())
+    efforts = _read_tensor_f32(msg.Effort())
     return timestamp, num_joints, positions, velocities, efforts
 
 

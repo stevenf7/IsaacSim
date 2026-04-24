@@ -16,13 +16,13 @@
 """Test UCX clock publishing node functionality."""
 
 import asyncio
-import struct
 import time
 
 import numpy as np
 import omni
 import omni.graph.core as og
 import ucxx._lib.libucxx as ucx_api
+from isaacsim.ucx.nodes.messages.isaac import Time
 from isaacsim.ucx.nodes.tests.common import UCXTestCase, find_available_port
 from ucxx._lib.arr import Array
 
@@ -37,7 +37,7 @@ SIMULATION_SHORT_ADVANCE_TIME = 0.5
 SIMULATION_VERY_SHORT_ADVANCE_TIME = 0.1
 DEFAULT_TEST_PORT = 13337
 DEFAULT_TEST_TAG = 5
-CLOCK_MESSAGE_SIZE_BYTES = 8
+CLOCK_MESSAGE_SIZE_BYTES = 24
 
 
 class TestUCXPublishClock(UCXTestCase):
@@ -91,14 +91,8 @@ class TestUCXPublishClock(UCXTestCase):
         self.assertTrue(request.completed, f"Did not receive clock message after {timeout_frames} frames")
         request.check_error()
 
-        # Debug: print raw buffer
-        print(f"DEBUG: Clock buffer (hex): {buffer.tobytes().hex()}")
-        print(f"DEBUG: Clock buffer (bytes): {list(buffer.tobytes())}")
-
-        # Unpack timestamp (double, native byte order to match the C++ memcpy)
-        timestamp = struct.unpack("d", buffer.tobytes())[0]
-        print(f"DEBUG: Unpacked timestamp: {timestamp}")
-        return timestamp
+        time_msg = Time.Time.GetRootAs(bytearray(buffer.tobytes()), 0)
+        return time_msg.TimeNs() / 1e9
 
     async def test_sim_clock(self):
         """Test clock publishing with simulation time."""
@@ -157,7 +151,8 @@ class TestUCXPublishClock(UCXTestCase):
         request.check_error()
 
         # Unpack timestamp
-        timestamp = struct.unpack("d", buffer.tobytes())[0]
+        time_msg = Time.Time.GetRootAs(bytearray(buffer.tobytes()), 0)
+        timestamp = time_msg.TimeNs() / 1e9
 
         # Verify timestamp is reasonable (simulation time should be positive)
         self.assertGreater(timestamp, 0.0, "Timestamp should be greater than 0.0 seconds")
@@ -220,7 +215,8 @@ class TestUCXPublishClock(UCXTestCase):
             request.check_error()
 
             # Unpack and store timestamp
-            timestamp = struct.unpack("d", buffer.tobytes())[0]
+            time_msg = Time.Time.GetRootAs(bytearray(buffer.tobytes()), 0)
+            timestamp = time_msg.TimeNs() / 1e9
             timestamps.append(timestamp)
             print(f"Clock sample {i}: {timestamp}")
 

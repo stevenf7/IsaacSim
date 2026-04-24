@@ -36,7 +36,7 @@ namespace isaacsim::ucx::nodes
 struct JointCommandData
 {
     double timestamp; //!< Timestamp value in seconds
-    uint32_t numJoints; //!< Number of joints
+    int64_t numJoints; //!< Number of joints
     std::vector<double> positionCommand; //!< Joint position commands
     std::vector<double> velocityCommand; //!< Joint velocity commands
     std::vector<double> effortCommand; //!< Joint effort commands

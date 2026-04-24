@@ -18,12 +18,12 @@
             "port": {
                 "type": "uint",
                 "description": "Port number for UCX communication",
-                "default": 13337
+                "default": 50008
             },
             "tag": {
                 "type": "uint64",
-                "description": "UCX tag for message identification",
-                "default": 1
+                "description": "UCX tag for message identification. Default is FNV-1a 32-bit hash of 'isaac.JointState'.",
+                "default": 3806437495
             },
             "timeStamp": {
                 "type": "double",
@@ -35,7 +35,7 @@
                 "type": "uint",
                 "description": "Timeout in milliseconds for UCX send requests. If 0, waits indefinitely.",
                 "uiName": "Timeout (ms)",
-                "default": 1
+                "default": 0
             },
             "jointPositions": {
                 "type": "double[]",

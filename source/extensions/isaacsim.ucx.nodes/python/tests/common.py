@@ -17,7 +17,8 @@
 
 import os
 import socket
-import struct
+
+import numpy as np
 
 try:
     from isaacsim.test.utils import TimedAsyncTestCase
@@ -30,6 +31,13 @@ except ImportError:
 import omni
 import omni.timeline
 import ucxx._lib.libucxx as ucx_api
+
+
+def _read_tensor_f32(tensor) -> list:
+    """Read float32 values from a FlatBuffers Tensor's ubyte data vector."""
+    n_bytes = tensor.DataLength()
+    raw = bytes(tensor.Data(i) for i in range(n_bytes))
+    return np.frombuffer(raw, dtype=np.float32).tolist()
 
 
 def find_available_port() -> int:
@@ -121,78 +129,47 @@ class UCXTestCase(TimedAsyncTestCase):
         return self.client_context, self.client_worker, self.client_endpoint
 
 
-def unpack_image_message(buffer: object):
-    """Unpack a UCX image message.
+_ENCODING_MAP = {
+    0: "custom",
+    1: "rgb8",
+    2: "rgba8",
+    3: "bgr8",
+    4: "bgra8",
+    5: "r8_g8_b8",
+    6: "b8_g8_r8",
+    7: "mono8",
+    8: "mono16",
+    9: "mono32",
+    10: "mono32f",
+}
 
-    Message format:
-    - timestamp (double, 8 bytes)
-    - width (uint32_t, 4 bytes)
-    - height (uint32_t, 4 bytes)
-    - encoding length (uint32_t, 4 bytes)
-    - encoding (variable bytes, padded to 4-byte boundary)
-    - step (uint32_t, 4 bytes) - row length in bytes
-    - image data (variable bytes)
+
+def unpack_image_message(buffer: object):
+    """Unpack a UCX image FlatBuffers message.
 
     Args:
-        buffer: Buffer containing the packed image message.
+        buffer: Buffer containing the FlatBuffers-encoded Image message.
 
     Returns:
         Tuple of (timestamp, width, height, encoding, step, image_data).
-
-    Raises:
-        ValueError: If the buffer contains invalid data.
+        encoding is a lowercase string (e.g. "rgb8").
+        step is derived as total_bytes / height.
+        image_data is a bytes object containing the raw pixel data.
     """
-    offset = 0
+    from isaacsim.ucx.nodes.messages.isaac import Image as ImageFb
 
-    # Ensure buffer has minimum size for header
-    if len(buffer) < 24:
-        raise ValueError(f"Buffer too small: {len(buffer)} bytes, need at least 24")
+    buf = bytearray(buffer.tobytes())
+    msg = ImageFb.Image.GetRootAs(buf, 0)
 
-    timestamp = struct.unpack("<d", buffer[offset : offset + 8].tobytes())[0]
-    offset += 8
+    timestamp = msg.Header().Stamp().TimeNs() / 1e9
+    height = msg.Height()
+    width = msg.Width()
+    encoding = _ENCODING_MAP.get(msg.Encoding(), "custom")
 
-    width = struct.unpack("<I", buffer[offset : offset + 4].tobytes())[0]
-    offset += 4
+    tensor = msg.Data()
+    n_bytes = tensor.DataLength()
+    image_data = bytes(tensor.Data(i) for i in range(n_bytes))
 
-    height = struct.unpack("<I", buffer[offset : offset + 4].tobytes())[0]
-    offset += 4
-
-    # Read encoding
-    encoding_len = struct.unpack("<I", buffer[offset : offset + 4].tobytes())[0]
-    offset += 4
-
-    # Validate encoding length
-    if encoding_len == 0 or encoding_len > 100:
-        raise ValueError(f"Invalid encoding length: {encoding_len}")
-
-    if offset + encoding_len > len(buffer):
-        raise ValueError(f"Buffer too small for encoding: need {offset + encoding_len}, have {len(buffer)}")
-
-    try:
-        encoding = buffer[offset : offset + encoding_len].tobytes().decode("utf-8")
-    except UnicodeDecodeError as e:
-        # Print buffer content for debugging
-        raw_bytes = buffer[offset : offset + encoding_len].tobytes()
-        raise ValueError(f"Failed to decode encoding string (length {encoding_len}): {raw_bytes.hex()} - {e}")
-
-    offset += encoding_len
-    offset = (offset + 3) & ~3  # Align to 4-byte boundary
-
-    if offset + 4 > len(buffer):
-        raise ValueError(f"Buffer too small for step field: need {offset + 4}, have {len(buffer)}")
-
-    step = struct.unpack("<I", buffer[offset : offset + 4].tobytes())[0]
-    offset += 4
-
-    # Validate dimensions
-    if width == 0 or height == 0:
-        raise ValueError(f"Invalid dimensions: width={width}, height={height}")
-
-    # Read image data
-    data_size = height * step
-    if offset + data_size > len(buffer):
-        raise ValueError(f"Buffer too small for image data: need {offset + data_size}, have {len(buffer)}")
-
-    image_data = buffer[offset : offset + data_size]
+    step = n_bytes // height if height > 0 else 0
 
     return timestamp, width, height, encoding, step, image_data

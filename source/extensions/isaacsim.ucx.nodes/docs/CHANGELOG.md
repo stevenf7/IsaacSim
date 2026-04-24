@@ -1,4 +1,13 @@
 # Changelog
+
+## [Unreleased]
+
+### Added
+- FlatBuffers schemas and package dependency for UCX bridge message types
+
+### Changed
+- UCX publish and subscribe nodes now use the Isaac OS FlatBuffers wire format
+
 ## [1.4.1] - 2026-04-17
 ### Fixed
 - Fixed crash during shutdown caused by async send request outliving the UCX listener, triggering a close callback on a destroyed mutex
