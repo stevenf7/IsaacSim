@@ -64,10 +64,14 @@ def set_status(
     color: int = CLR_DIM,
     source: str = "",
     emit_terminal: bool = False,
+    side: str | None = None,
 ) -> None:
     """Set a status label's text and color, and optionally prints the change to terminal.
 
-    Skips redundant updates when the label already shows the same text.
+    Skips redundant updates when the label already shows the same text. When
+    ``side`` is provided, the terminal message is tagged ``[Teleop][Source][Side]``
+    (e.g. ``[Teleop][Floating][Left] Active``) so per-side logs can be
+    distinguished at a glance.
     """
     if label:
         if label.text == text:
@@ -76,7 +80,8 @@ def set_status(
         label.style = {"color": color}
     if text and emit_terminal:
         tag = f"[{source}]" if source else ""
-        print(f"[Teleop]{tag} {text}")
+        side_tag = f"[{side.capitalize()}]" if side else ""
+        print(f"[Teleop]{tag}{side_tag} {text}")
 
 
 def build_prim_path_row(

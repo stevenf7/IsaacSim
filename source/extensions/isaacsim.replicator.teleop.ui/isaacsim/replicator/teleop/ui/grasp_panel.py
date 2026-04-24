@@ -54,9 +54,15 @@ _PANEL_NAME = "Grasp Controller"
 _LOG_NAMESPACE = "Grasp"
 
 
-def set_status(label: ui.Label | None, text: str, color: int = CLR_DIM, emit_terminal: bool = False) -> None:
+def set_status(
+    label: ui.Label | None,
+    text: str,
+    color: int = CLR_DIM,
+    emit_terminal: bool = False,
+    side: str | None = None,
+) -> None:
     """Set the status label text and color for this panel."""
-    _set_status_base(label, text, color, source=_LOG_NAMESPACE, emit_terminal=emit_terminal)
+    _set_status_base(label, text, color, source=_LOG_NAMESPACE, emit_terminal=emit_terminal, side=side)
 
 
 _SETTINGS_PREFIX = "/persistent/exts/isaacsim.replicator.teleop/grasp"
@@ -268,7 +274,7 @@ class GraspPanel:
         config, errors = load_grasp_config(path)
         if errors:
             ss.loaded_config = None
-            set_status(ss.status_label, "; ".join(errors), CLR_RED, emit_terminal=emit_terminal)
+            set_status(ss.status_label, "; ".join(errors), CLR_RED, emit_terminal=emit_terminal, side=side)
             return
 
         ss.loaded_config = config
@@ -279,6 +285,7 @@ class GraspPanel:
             f'Config "{name}" loaded ({n} joint{"s" if n != 1 else ""})',
             CLR_YELLOW,
             emit_terminal=emit_terminal,
+            side=side,
         )
 
     def _on_timeline_event(self, event: object) -> None:
@@ -313,6 +320,7 @@ class GraspPanel:
                 "; ".join(validation.errors) if validation.errors else "Invalid path",
                 CLR_RED,
                 emit_terminal=True,
+                side=side,
             )
             self._sync_side_controls(side)
             return
@@ -337,10 +345,10 @@ class GraspPanel:
         if ok:
             ss.is_configured = True
             self._gc.set_side_tracking_enabled(side, False)
-            set_status(ss.status_label, "Configured", CLR_YELLOW, emit_terminal=True)
+            set_status(ss.status_label, "Configured", CLR_YELLOW, emit_terminal=True, side=side)
         else:
             ss.is_configured = False
-            set_status(ss.status_label, "Apply failed - check config/path", CLR_RED, emit_terminal=True)
+            set_status(ss.status_label, "Apply failed - check config/path", CLR_RED, emit_terminal=True, side=side)
         self._sync_manager_tracking()
         self._sync_side_controls(side)
 
@@ -351,7 +359,7 @@ class GraspPanel:
         if ss.desired_enabled:
             ss.desired_enabled = False
             self._gc.set_side_tracking_enabled(side, False)
-            set_status(ss.status_label, "Disabled", CLR_YELLOW, emit_terminal=True)
+            set_status(ss.status_label, "Disabled", CLR_YELLOW, emit_terminal=True, side=side)
         else:
             if not ss.is_configured:
                 set_status(ss.status_label, "Apply first", CLR_YELLOW)
@@ -359,7 +367,7 @@ class GraspPanel:
                 return
             ss.desired_enabled = True
             self._gc.set_side_tracking_enabled(side, True)
-            set_status(ss.status_label, "Standby", CLR_YELLOW, emit_terminal=True)
+            set_status(ss.status_label, "Standby", CLR_YELLOW, emit_terminal=True, side=side)
         self._sync_manager_tracking()
         self._sync_side_controls(side)
 
@@ -375,7 +383,7 @@ class GraspPanel:
         ss.desired_enabled = False
         self._sync_manager_tracking()
         self._sync_side_controls(side)
-        set_status(ss.status_label, "Cleared", CLR_DIM, emit_terminal=True)
+        set_status(ss.status_label, "Cleared", CLR_DIM, emit_terminal=True, side=side)
 
     def _sync_manager_tracking(self) -> None:
         self._tm.set_grasp_tracking(self._gc.has_any_side_tracking_enabled)
@@ -466,9 +474,9 @@ class GraspPanel:
             if not ss.status_label:
                 continue
             if ss.is_configured and self._is_playing and self._gc.is_side_tracking_enabled(side):
-                set_status(ss.status_label, "Active", CLR_GREEN, emit_terminal=True)
+                set_status(ss.status_label, "Active", CLR_GREEN, emit_terminal=True, side=side)
             elif ss.is_configured:
-                set_status(ss.status_label, "Standby", CLR_YELLOW, emit_terminal=True)
+                set_status(ss.status_label, "Standby", CLR_YELLOW, emit_terminal=True, side=side)
 
     def reset_ui(self) -> None:
         """Reset all UI widgets to idle state."""

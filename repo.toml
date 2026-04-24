@@ -97,6 +97,7 @@ fetch.pip.files_to_pull = [
   "${root}/deps/pip_cloud.toml",
   "${root}/deps/pip_ucx.toml",
   "${root}/deps/pip_newton.toml",
+  "${root}/deps/pip_episode_recorder.toml",
   "${root}/deps/pip_teleop.toml",
 ]
 
@@ -131,6 +132,7 @@ vscode.python_env.PYTHONPATH = [
   "$root/_build/$platform/$config/exts/isaacsim.simulation_app",
   "$root/_build/$platform/$config/kit/kernel/py",
   "$root/_build/$platform/$config/kit/plugins/bindings-python/",
+  "$root/_build/$platform/$config/exts/isaacsim.replicator.episode_recorder/pip_prebundle",
   "$root/_build/$platform/$config/exts/isaacsim.replicator.teleop/pip_prebundle",
   "$root/_build/$platform/$config/extsDeprecated/isaacsim.robot_motion.lula/pip_prebundle",
   "$root/_build/$platform/$config/exts/isaacsim.robot_motion.cumotion/pip_prebundle",

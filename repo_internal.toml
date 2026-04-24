@@ -875,6 +875,7 @@ exts_exclude = [
   "omni.isaac.core_archive",
   "isaacsim.xr.input_devices",
   "isaacsim.kit.xr.teleop.bridge",
+  "isaacsim.replicator.episode_recorder",
 ]
 kit_extra_args = [
   "--/app/extensions/fastImporter/enabled=1",

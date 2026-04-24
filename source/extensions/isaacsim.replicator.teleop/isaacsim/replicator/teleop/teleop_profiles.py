@@ -144,7 +144,12 @@ def get_builtin_teleop_profiles_dir() -> str:
 
 
 def get_last_teleop_profile_path() -> str:
-    """Return the extension-managed path for the auto-saved last profile."""
+    """Return the extension-managed path for the auto-saved last profile.
+
+    This is ``<builtin data>/teleop_profiles/last_profile.yaml``. The repo ships a
+    default YAML at that path; the Teleop window overwrites it when the session state
+    is persisted, so treat it as the autosave slot rather than a static preset.
+    """
     profiles_dir = get_builtin_teleop_profiles_dir()
     if not profiles_dir:
         return ""

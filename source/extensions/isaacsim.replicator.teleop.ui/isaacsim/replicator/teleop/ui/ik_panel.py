@@ -60,9 +60,15 @@ _PANEL_NAME = "IK Controller"
 _LOG_NAMESPACE = "IK"
 
 
-def set_status(label: ui.Label | None, text: str, color: int = CLR_DIM, emit_terminal: bool = False) -> None:
+def set_status(
+    label: ui.Label | None,
+    text: str,
+    color: int = CLR_DIM,
+    emit_terminal: bool = False,
+    side: str | None = None,
+) -> None:
     """Set the status label text and color for this panel."""
-    _set_status_base(label, text, color, source=_LOG_NAMESPACE, emit_terminal=emit_terminal)
+    _set_status_base(label, text, color, source=_LOG_NAMESPACE, emit_terminal=emit_terminal, side=side)
 
 
 _SETTINGS_PREFIX = "/persistent/exts/isaacsim.replicator.teleop/ik"
@@ -502,14 +508,14 @@ class IKPanel:
                 self._sync_side_controls(side)
                 status = self._get_field(side, "status")
                 if self._ik.is_running(side):
-                    set_status(status, "Active", CLR_GREEN, emit_terminal=True)
+                    set_status(status, "Active", CLR_GREEN, emit_terminal=True, side=side)
         elif event.type == int(omni.timeline.TimelineEventType.STOP):
             self._is_playing = False
             for side in ("left", "right"):
                 self._sync_side_controls(side)
                 status = self._get_field(side, "status")
                 if self._ik.is_configured(side):
-                    set_status(status, "Standby", CLR_YELLOW, emit_terminal=True)
+                    set_status(status, "Standby", CLR_YELLOW, emit_terminal=True, side=side)
                 else:
                     set_status(status, "", CLR_DIM)
 
@@ -561,12 +567,12 @@ class IKPanel:
             solver_combo = self._get_field(side, "solver_combo")
             if solver_combo is not None and actual_solver in self._available_solvers:
                 self._set_combo_silent(side, "solver_combo", solver_combo, self._available_solvers.index(actual_solver))
-            set_status(status, message, CLR_RED, emit_terminal=True)
+            set_status(status, message, CLR_RED, emit_terminal=True, side=side)
             self._sync_side_controls(side)
             return
         self._save(side, "solver", solver.value)
         if self._ik.is_running(side):
-            set_status(status, message, CLR_GREEN, emit_terminal=True)
+            set_status(status, message, CLR_GREEN, emit_terminal=True, side=side)
         self._sync_side_controls(side)
 
     def _set_method_from_string(self, side: str, method_str: str) -> None:
@@ -609,7 +615,7 @@ class IKPanel:
         self._refresh_solver_method_tooltips(side)
         status = self._get_field(side, "status")
         if self._ik.is_running(side):
-            set_status(status, f"Switched method to {method.value}", CLR_GREEN, emit_terminal=True)
+            set_status(status, f"Switched method to {method.value}", CLR_GREEN, emit_terminal=True, side=side)
 
     def _on_pink_qp_solver_changed(self, side: str, index: int) -> None:
         if self._updating_pink_qp_solver_combo.get(side, False):
@@ -621,13 +627,13 @@ class IKPanel:
         status = self._get_field(side, "status")
         if not success:
             self._set_pink_qp_solver_combo(side, self._ik.get_pink_qp_solver(side))
-            set_status(status, message, CLR_RED, emit_terminal=True)
+            set_status(status, message, CLR_RED, emit_terminal=True, side=side)
             return
         actual_solver = self._ik.get_pink_qp_solver(side)
         self._set_pink_qp_solver_combo(side, actual_solver)
         self._save(side, "pink_qp_solver", actual_solver)
         if self._ik.is_running(side) and self._get_solver(side).supports_pink_advanced:
-            set_status(status, message, CLR_GREEN, emit_terminal=True)
+            set_status(status, message, CLR_GREEN, emit_terminal=True, side=side)
 
     def _refresh_solver_method_tooltips(self, side: str) -> None:
         solver = self._get_solver(side)
@@ -909,11 +915,11 @@ class IKPanel:
 
         if result.valid:
             self._configured[side] = True
-            set_status(status, f"Configured - {result.message}", CLR_YELLOW, emit_terminal=True)
+            set_status(status, f"Configured - {result.message}", CLR_YELLOW, emit_terminal=True, side=side)
         else:
             self._configured[side] = False
             color = CLR_YELLOW if result.link_names else CLR_RED
-            set_status(status, result.message, color, emit_terminal=True)
+            set_status(status, result.message, color, emit_terminal=True, side=side)
 
         self._sync_side_controls(side)
 
@@ -927,7 +933,7 @@ class IKPanel:
         self._desired_enabled[side] = False
         self._sync_side_controls(side)
         status = self._get_field(side, "status")
-        set_status(status, "Cleared", CLR_DIM, emit_terminal=True)
+        set_status(status, "Cleared", CLR_DIM, emit_terminal=True, side=side)
 
     def _on_toggle(self, side: str) -> None:
         if self._is_playing:
@@ -937,7 +943,7 @@ class IKPanel:
         if self._desired_enabled[side]:
             self._desired_enabled[side] = False
             self._ik.disable(side)
-            set_status(status, "Disabled", CLR_YELLOW, emit_terminal=True)
+            set_status(status, "Disabled", CLR_YELLOW, emit_terminal=True, side=side)
         else:
             if not self._configured[side]:
                 set_status(status, "Apply first", CLR_YELLOW)
@@ -948,15 +954,15 @@ class IKPanel:
             if not result.valid:
                 self._desired_enabled[side] = False
                 self._configured[side] = False
-                set_status(status, result.message, CLR_RED, emit_terminal=True)
+                set_status(status, result.message, CLR_RED, emit_terminal=True, side=side)
                 self._sync_side_controls(side)
                 return
             if self._ik.enable(side):
                 self._desired_enabled[side] = True
-                set_status(status, "Standby", CLR_YELLOW, emit_terminal=True)
+                set_status(status, "Standby", CLR_YELLOW, emit_terminal=True, side=side)
             else:
                 self._desired_enabled[side] = False
-                set_status(status, result.message, CLR_RED, emit_terminal=True)
+                set_status(status, result.message, CLR_RED, emit_terminal=True, side=side)
 
         self._sync_side_controls(side)
 
@@ -1023,9 +1029,9 @@ class IKPanel:
             return
         status = self._get_field(side, "status")
         if reachable:
-            set_status(status, "Active", CLR_GREEN, emit_terminal=True)
+            set_status(status, "Active", CLR_GREEN, emit_terminal=True, side=side)
         else:
-            set_status(status, "Out of reach", CLR_YELLOW, emit_terminal=True)
+            set_status(status, "Out of reach", CLR_YELLOW, emit_terminal=True, side=side)
 
     def reset_ui(self) -> None:
         """Reset all UI widgets to idle state (e.g. after stage close)."""

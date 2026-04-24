@@ -1,5 +1,5 @@
 [package]
-version = "0.2.1"
+version = "0.3.0"
 category = "Simulation"
 title = "Replicator Teleop"
 description = "Teleoperation utilities and marker management for replicator workflows"
@@ -15,10 +15,12 @@ writeTarget.platform = true
 writeTarget.python = true
 
 [dependencies]
+"isaacsim.replicator.episode_recorder" = {}
 "isaacsim.robot_motion.pink" = {}
 "isaacsim.storage.native" = {}
 "omni.kit.pip_archive" = {}
 "omni.pip.compute" = {}
+"omni.ui" = {}
 "omni.usd" = {}
 
 [[python.module]]

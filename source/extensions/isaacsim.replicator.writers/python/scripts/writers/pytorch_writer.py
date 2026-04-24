@@ -22,7 +22,7 @@ import warp as wp
 from isaacsim.core.deprecation_manager import import_module
 from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer
 
-from . import PytorchListener
+from .pytorch_listener import PytorchListener
 
 __version__ = "0.0.1"
 
@@ -133,7 +133,6 @@ class PytorchWriter(Writer):
             if annotator.startswith("LdrColor"):
                 data_tensors.append(wp.to_torch(data[annotator]).unsqueeze(0))
             elif annotator.startswith("RtxSensor"):
-                breakpoint()
                 width, height = rp_info["resolution"][0], rp_info["resolution"][1]
                 img_data = data[annotator]
                 data_tensors.append(wp.to_torch(img_data).reshape(height, width, -1).unsqueeze(0))

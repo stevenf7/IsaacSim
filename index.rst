@@ -137,6 +137,8 @@ Extensions
    isaacsim.replicator.behavior <source/extensions/isaacsim.replicator.behavior/docs/index>
    isaacsim.replicator.behavior.ui <source/extensions/isaacsim.replicator.behavior.ui/docs/index>
    isaacsim.replicator.domain_randomization <source/deprecated/isaacsim.replicator.domain_randomization/docs/index>
+   isaacsim.replicator.episode_recorder <source/extensions/isaacsim.replicator.episode_recorder/docs/index>
+   isaacsim.replicator.episode_recorder.ui <source/extensions/isaacsim.replicator.episode_recorder.ui/docs/index>
    isaacsim.replicator.experimental.domain_randomization <source/extensions/isaacsim.replicator.experimental.domain_randomization/docs/index>
    isaacsim.replicator.experimental.mobility_gen <source/extensions/isaacsim.replicator.experimental.mobility_gen/docs/index>
    isaacsim.replicator.examples <source/extensions/isaacsim.replicator.examples/docs/index>
