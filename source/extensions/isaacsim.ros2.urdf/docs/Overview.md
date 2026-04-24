@@ -34,7 +34,7 @@ updated_urdf, package_found = replace_package_urls_with_paths(urdf_string)
 
 ### Import Window
 
-**{class}`RobotDescription <isaacsim.ros2.urdf.RobotDescription>`** manages the import window opened from the File menu. It orchestrates the full workflow: building the option widget, querying the ROS 2 node for the URDF, writing a temporary URDF file, running the standard URDF import pipeline, and opening the resulting USD stage. Status feedback is displayed in the UI — green when a node is found successfully, red when the node or parameter is unavailable.
+**{class}`RobotDescription <isaacsim.ros2.urdf.RobotDescription>`** manages the import window opened from the File menu. It orchestrates the full workflow: building the option widget, querying the ROS 2 node for the URDF, writing a temporary URDF file, running the standard URDF import pipeline, and opening the resulting USD stage. The retrieved URDF is written to a system temp directory and deleted after import. When no explicit USD output folder is set in the UI, the URDF importer writes the USD alongside the temporary URDF; set the **USD Output** folder in the Model section to control where the final USD is saved. Status feedback is displayed in the UI — green when a node is found successfully, red when the node or parameter is unavailable.
 
 ### Import UI Widget
 

@@ -15,6 +15,8 @@
 
 """Tests for the deprecated URDFImportFromROS2Node command."""
 
+import shutil
+import tempfile
 import threading
 
 import omni.kit.commands
@@ -30,6 +32,10 @@ class TestURDFImportFromROS2NodeCommand(ROS2TestCase):
     async def setUp(self) -> None:
         """Prepare the test fixture."""
         await super().setUp()
+        self._tmpdir = tempfile.mkdtemp(prefix="ros2_urdf_cmd_test_")
+        self._prev_tempdir = tempfile.tempdir
+        tempfile.tempdir = self._tmpdir
+        self._success = False
         stage_utils.create_new_stage()
         await omni.kit.app.get_app().next_update_async()
 
@@ -56,6 +62,9 @@ class TestURDFImportFromROS2NodeCommand(ROS2TestCase):
                 rclpy.shutdown(context=self._server_context)
             except Exception:
                 pass
+        tempfile.tempdir = self._prev_tempdir
+        if self._success:
+            shutil.rmtree(self._tmpdir, ignore_errors=True)
         await super().tearDown()
 
     async def test_command_returns_ok(self) -> None:
@@ -89,3 +98,4 @@ class TestURDFImportFromROS2NodeCommand(ROS2TestCase):
         )
         self.assertTrue(status)
         self.assertEqual(result, Result.OK)
+        self._success = True

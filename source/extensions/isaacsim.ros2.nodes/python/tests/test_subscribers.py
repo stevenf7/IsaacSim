@@ -89,7 +89,7 @@ class TestRos2Subscribers(ROS2TestCase):
 
         node = self.create_node("isaac_sim_test_joint_state_sub_queue")
         ros_topic = "joint_sub"
-        test_pub = self.create_publisher(node, JointState, ros_topic, 1)
+        test_pub = self.create_publisher(node, JointState, ros_topic, self.MAX_COUNT)
 
         self.graph_path = "/ActionGraph"
 
@@ -141,6 +141,7 @@ class TestRos2Subscribers(ROS2TestCase):
                 test_pub.publish(msg)
                 time.sleep(0.005)
 
+        await self.wait_for_subscribers_on_topic(test_pub)
         publish_data()
 
         # Wait until we receive enough data or timeout
@@ -169,6 +170,7 @@ class TestRos2Subscribers(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 
+        await self.wait_for_subscribers_on_topic(test_pub)
         publish_data()
 
         # Wait until we receive enough data or timeout
@@ -200,7 +202,7 @@ class TestRos2Subscribers(ROS2TestCase):
 
         node = self.create_node("isaac_sim_test_clock_sub_queue")
         ros_topic = "clock_sub"
-        test_pub = self.create_publisher(node, Clock, ros_topic, 1)
+        test_pub = self.create_publisher(node, Clock, ros_topic, self.MAX_COUNT)
 
         self.graph_path = "/ActionGraph"
 
@@ -249,6 +251,7 @@ class TestRos2Subscribers(ROS2TestCase):
                 test_pub.publish(msg)
                 time.sleep(0.005)
 
+        await self.wait_for_subscribers_on_topic(test_pub)
         publish_data()
 
         # Wait until we receive enough data or timeout
@@ -277,6 +280,7 @@ class TestRos2Subscribers(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 
+        await self.wait_for_subscribers_on_topic(test_pub)
         publish_data()
 
         # Wait until we receive enough data or timeout
@@ -307,7 +311,7 @@ class TestRos2Subscribers(ROS2TestCase):
 
         node = self.create_node("isaac_sim_test_twist_sub_queue")
         ros_topic = "twist_sub"
-        test_pub = self.create_publisher(node, Twist, ros_topic, 1)
+        test_pub = self.create_publisher(node, Twist, ros_topic, self.MAX_COUNT)
 
         self.graph_path = "/ActionGraph"
 
@@ -354,6 +358,7 @@ class TestRos2Subscribers(ROS2TestCase):
                 test_pub.publish(msg)
                 time.sleep(0.005)
 
+        await self.wait_for_subscribers_on_topic(test_pub)
         publish_data()
 
         # Wait until we receive enough data or timeout
@@ -382,6 +387,7 @@ class TestRos2Subscribers(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 
+        await self.wait_for_subscribers_on_topic(test_pub)
         publish_data()
 
         # Wait until we receive enough data or timeout
@@ -413,7 +419,7 @@ class TestRos2Subscribers(ROS2TestCase):
 
         node = self.create_node("isaac_sim_test_AckermannDrive_sub_queue")
         ros_topic = "ackermann_sub"
-        test_pub = self.create_publisher(node, AckermannDriveStamped, ros_topic, 1)
+        test_pub = self.create_publisher(node, AckermannDriveStamped, ros_topic, self.MAX_COUNT)
 
         self.graph_path = "/ActionGraph"
 
@@ -462,6 +468,7 @@ class TestRos2Subscribers(ROS2TestCase):
                 test_pub.publish(msg)
                 time.sleep(0.005)
 
+        await self.wait_for_subscribers_on_topic(test_pub)
         publish_data()
 
         # Wait until we receive enough data or timeout
@@ -490,6 +497,7 @@ class TestRos2Subscribers(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 
+        await self.wait_for_subscribers_on_topic(test_pub)
         publish_data()
 
         # Wait until we receive enough data or timeout
@@ -522,7 +530,7 @@ class TestRos2Subscribers(ROS2TestCase):
         # Create a node to subscribe to TFs
         node = self.create_node("isaac_sim_test_transform_tree_sub_queue")
         ros_topic = "tf_sub"
-        test_pub = self.create_publisher(node, TFMessage, ros_topic, 1)
+        test_pub = self.create_publisher(node, TFMessage, ros_topic, self.MAX_COUNT)
 
         self.graph_path = "/ActionGraph"
 
@@ -633,7 +641,7 @@ class TestRos2Subscribers(ROS2TestCase):
         # Create a node to subscribe to TFs
         node = self.create_node("isaac_sim_test_transform_tree_sub_nova_carter")
         ros_topic = "tf_sub"
-        test_pub = self.create_publisher(node, TFMessage, ros_topic, 1)
+        test_pub = self.create_publisher(node, TFMessage, ros_topic, self.MAX_COUNT)
 
         self.graph_path = "/ActionGraph"
 

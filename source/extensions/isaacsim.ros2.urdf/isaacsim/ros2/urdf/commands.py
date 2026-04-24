@@ -16,6 +16,7 @@
 """Deprecated Kit command helpers for importing URDF from ROS 2 nodes."""
 
 import os
+import tempfile
 import typing
 from functools import partial
 
@@ -76,17 +77,14 @@ class URDFImportFromROS2Node(omni.kit.commands.Command):
                 self.import_robot(self.urdf_path)
             return
 
-    def on_description_received(self, urdf_description: str) -> None:
+    def on_description_received(self, urdf_description: str, package_found: bool = False) -> None:
         """Persist the received URDF description to disk.
 
         Args:
             urdf_description: URDF document string from the node.
+            package_found: Whether ROS package URLs were resolved.
         """
-        ext_manager = omni.kit.app.get_app().get_extension_manager()
-        ext_id = ext_manager.get_enabled_extension_id("isaacsim.ros2.urdf")
-        self._extension_path = ext_manager.get_extension_path(ext_id)
-        data_folder = os.path.join(self._extension_path, "data", "urdf", "temp")
-        os.makedirs(data_folder, exist_ok=True)
+        data_folder = tempfile.mkdtemp(prefix="ros2_urdf_cmd_")
         urdf_path = os.path.join(data_folder, "urdf_description.urdf")
         with open(urdf_path, "w", encoding="utf-8") as f:
             f.write(urdf_description)

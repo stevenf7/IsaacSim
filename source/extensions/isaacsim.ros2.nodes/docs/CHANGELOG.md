@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.17.1] - 2026-04-23
+### Fixed
+- Fixed test failures caused by slow DDS endpoint discovery. Added discovery waits after `timeline.play()` in `test_laser_scan.py`, `test_publisher.py`, `test_subscribers.py`, and `test_semantic_labels.py`.
+- Fixed DDS message drops in subscriber queue tests by increasing publisher QoS depth from 1 to `MAX_COUNT` so the DDS writer can buffer all messages during burst publishing.
+
 ## [1.17.0] - 2026-04-23
 ### Added
 - `OgnROS2RtxRadarHelper` node for publishing RTX Radar data as `PointCloud2` messages to ROS 2

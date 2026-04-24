@@ -103,7 +103,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
             rclpy.spin_once(node, timeout_sec=0.1)
 
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
+        await self.wait_for_publishers_on_topic(node, "point_cloud", per_frame_callback=spin)
         await self.simulate_until_condition(
             lambda: self._point_cloud_data is not None, max_frames=60, per_frame_callback=spin
         )
@@ -190,7 +190,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
             rclpy.spin_once(node, timeout_sec=0.1)
 
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
+        await self.wait_for_publishers_on_topic(node, "point_cloud", per_frame_callback=spin)
         await self.simulate_until_condition(
             lambda: self._point_cloud_data is not None, max_frames=60, per_frame_callback=spin
         )
@@ -272,7 +272,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
             rclpy.spin_once(node, timeout_sec=0.1)
 
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
+        await self.wait_for_publishers_on_topic(node, "point_cloud", per_frame_callback=spin)
 
         condition_met = await self.simulate_until_condition(
             lambda: self._point_cloud_data is not None, max_frames=120, per_frame_callback=spin
@@ -371,6 +371,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
         # 0.0 Hz rotation — time_increment should be 0
         self._lidar_callback_count = 0
         self._timeline.play()
+        await self.wait_for_publishers_on_topic(node, "scan", per_frame_callback=spin)
         await simulate_async(0.5, 60, spin)
         self.assertGreater(self._lidar_callback_count, 0)
         self.assertEqual(self._lidar_data.time_increment, 0)
@@ -388,6 +389,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
         self._timeline.play()
+        await self.wait_for_publishers_on_topic(node, "scan", per_frame_callback=spin)
         await simulate_async(0.5, 60, spin)
         self.assertGreater(self._lidar_callback_count, 0)
         self.assertGreater(self._lidar_data.time_increment, 0.0)
@@ -407,6 +409,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
         self._timeline.play()
+        await self.wait_for_publishers_on_topic(node, "scan", per_frame_callback=spin)
         await simulate_async(0.5, 60, spin)
         self.assertGreater(self._lidar_callback_count, 0)
         self.assertGreater(prev_time_increment, self._lidar_data.time_increment)
@@ -477,7 +480,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
             rclpy.spin_once(node, timeout_sec=0.01)
 
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
+        await self.wait_for_publishers_on_topic(node, "scan", per_frame_callback=spin)
         await self.simulate_until_condition(
             lambda: self._lidar_data is not None, max_frames=60, per_frame_callback=spin
         )
@@ -562,7 +565,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
             rclpy.spin_once(node, timeout_sec=0.1)
 
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
+        await self.wait_for_publishers_on_topic(node, "point_cloud", per_frame_callback=spin)
         await self.simulate_until_condition(
             lambda: self._point_cloud_data is not None, max_frames=60, per_frame_callback=spin
         )

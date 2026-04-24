@@ -160,7 +160,7 @@ Getting Started
             - Open the URDF Importer using the **File > Import from ROS 2 URDF Node** menu
             - Put the node name in the text box
             - Click Find Node to find the node
-            - Define an output directory, if it's not defined, it will be stored in the extension(isaacsim.ros2.urdf)'s data folder
+            - Define an output directory. If not defined, the USD is written to a system temp directory and a warning is logged with the path.
             - Import
 
         **Extra steps to try:**

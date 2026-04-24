@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.1] - 2026-04-22
+### Added
+- Added `wait_for_publishers_on_topic` and `wait_for_subscribers_on_topic` helpers to `ROS2TestCase` for waiting on DDS endpoint discovery before asserting on message delivery. Uses wall-clock timeout to handle platforms with no frame rate limiter.
+
 ## [1.8.0] - 2026-04-21
 ### Changed
 - Migrated `camera_info_utils` from deprecated `isaacsim.sensors.camera` to `isaacsim.sensors.experimental.rtx` APIs
