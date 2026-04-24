@@ -4575,10 +4575,6 @@ class Articulation(XformPrim):
             indices: Indices of prims to process. If None, all wrapped prims are processed.
             dof_indices: Indices of DOFs to process. If None, all DOFs are processed.
         """
-        # Skip if remote push to SimState is disabled (e.g., in world simulator mode)
-        if not carb.settings.get_settings().get_as_bool("/isaacsim/mega/simstate/remote_push/enabled"):
-            return
-
         storage = self._get_simstate_storage()
         if storage is None:
             return

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.2] - 2026-04-24
+### Fixed
+- Removed the obsolete SimState remote-push gate so articulation DOF commands continue writing to SimStateStorage when SimState mode is enabled.
+
 ## [1.8.1] - 2026-04-22
 ### Added
 - Add `Articulation._deferred_switch_remotesim()` static method that switches to the remotesim engine after PhysX prim query completes
