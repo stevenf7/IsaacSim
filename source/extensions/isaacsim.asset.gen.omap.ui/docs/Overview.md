@@ -14,20 +14,19 @@ To enable this extension, go to the Extension Manager menu and enable isaacsim.a
 
 ## Visualization Window
 
-The visualization window lets you configure the output before saving:
+The **Occupancy Map Visualization** window lets you configure the output before saving:
 
-- **Occupied / Freespace / Unknown Color** — choose the colors used to render each cell type in the image.
-- **Rotate Image** — apply a clockwise rotation (0°, 90°, −90°, 180°) to the output image.
-- **Coordinate Type** — select the format of the configuration data displayed in the text field:
-  - *ROS Occupancy Map Parameters File (YAML)* — generates a ROS-compatible `.yaml` file referencing the image and its map parameters (resolution, origin, thresholds).
-  - *Coordinates in Stage Space* — displays the corner coordinates of the map in stage units.
-- **Re-Generate Image** — recompute the image after changing any of the above settings.
+- **Occupied / Freespace / Unknown Color** — colors used for each cell type in the image.
+- **Rotate Image** — clockwise rotation (0°, 90°, −90°, 180°) applied to the output image.
+- **Coordinate Type** — format of the config data shown in the text field: ROS YAML or stage-space coordinates.
+- **Re-Generate Image** — recompute the image after changing settings.
+- **Filename** — base name used for both the PNG and YAML saves; also written into the YAML `image` field. Updates the YAML preview automatically as you type.
 
 ## Saving the Outputs
 
 After generating the image, two save buttons appear below the map preview:
 
-- **Save Image** — opens a file dialog to save the occupancy map as a `.png` file.
-- **Save YAML** — opens a file dialog to save the ROS occupancy map parameters as a `.yaml` file. The YAML file references the image by name and includes the map resolution, origin, and occupancy thresholds. This file can be used directly with ROS navigation tools such as `map_server`.
+- **Save Image** — saves the occupancy map as a `.png` file.
+- **Save YAML** — saves the ROS occupancy map parameters as a `.yaml` file, usable with tools like `map_server`. Both dialogs pre-fill the filename from the **Filename** field.
 
-> **Note:** The YAML file is always saved in ROS format regardless of which Coordinate Type is selected in the dropdown.
+> **Note:** The YAML file is always saved in ROS format regardless of which Coordinate Type is selected.

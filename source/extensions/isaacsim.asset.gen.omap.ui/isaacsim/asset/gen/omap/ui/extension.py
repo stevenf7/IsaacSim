@@ -210,7 +210,7 @@ class OccupancyMapWindow(MenuHelperWindow):
         super().__init__(
             Extension.EXTENSION_NAME, width=WINDOW_DEFAULT_WIDTH, height=WINDOW_DEFAULT_HEIGHT, focused=True
         )
-        self.deferred_dock_in("Console")
+        self.deferred_dock_in("Property", ui.DockPolicy.CURRENT_WINDOW_IS_ACTIVE)
 
         # Initialize variables
         self._timeline = omni.timeline.get_timeline_interface()
@@ -698,17 +698,13 @@ class OccupancyMapWindow(MenuHelperWindow):
             self._models["config_data"].set_value(image_details_text)
 
     def _update_yaml(self) -> None:
-        """Rebuilds the YAML text using the current image filename field value.
-
-        Warns if the filename field is empty. Does not regenerate the image.
-        """
+        """Rebuilds the YAML text using the current image filename field value."""
         if self._map_bottom_left is None:
             carb.log_warn("No map data available. Please generate the image first.")
             return
 
         stem = self._models["image_name"].as_string.strip()
         if not stem:
-            carb.log_warn("Image filename is empty. Please enter a filename before updating the YAML.")
             return
 
         ros_yaml_file_text = "image: " + stem + ".png"
@@ -756,6 +752,11 @@ class OccupancyMapWindow(MenuHelperWindow):
         Creates a file picker dialog that filters for PNG files and allows the user
         to select a save location for the generated occupancy map image.
         """
+        image_name_model = self._models.get("image_name")
+        if image_name_model is not None and not image_name_model.as_string.strip():
+            carb.log_warn("Image filename is empty. Please enter a filename before saving.")
+            return
+
         from omni.kit.widget.filebrowser import FileBrowserItem
         from omni.kit.window.filepicker import FilePickerDialog
 
@@ -818,6 +819,11 @@ class OccupancyMapWindow(MenuHelperWindow):
 
     def save_yaml_file(self) -> None:
         """Opens a file picker dialog for saving the occupancy map YAML parameters file."""
+        image_name_model = self._models.get("image_name")
+        if image_name_model is not None and not image_name_model.as_string.strip():
+            carb.log_warn("Image filename is empty. Please enter a filename before saving.")
+            return
+
         from omni.kit.widget.filebrowser import FileBrowserItem
         from omni.kit.window.filepicker import FilePickerDialog
 
@@ -835,6 +841,14 @@ class OccupancyMapWindow(MenuHelperWindow):
             item_filter_options=[".yaml Files (*.yaml, *.yml)"],
             item_filter_fn=_on_filter_yaml_files,
         )
+        stage = omni.usd.get_context().get_stage()
+        default_stem = stage.GetRootLayer().GetDisplayName().rsplit(".", 1)[0]
+        image_name_model = self._models.get("image_name")
+        if image_name_model is not None:
+            stem = image_name_model.as_string.strip() or default_stem
+        else:
+            stem = default_stem
+        self._yaml_filepicker.set_filename(stem)
 
     def rebuild_frame(self) -> None:
         """Rebuilds the image visualization frame.
@@ -869,7 +883,7 @@ class OccupancyMapWindow(MenuHelperWindow):
         default_image_stem = root.GetDisplayName().rsplit(".", 1)[0]
 
         self._rgb_byte_provider = omni.ui.ByteImageProvider()
-        self.visualize_window = omni.ui.Window("Visualization", width=500, height=600)
+        self.visualize_window = omni.ui.Window("Occupancy Map Visualization", width=500, height=600)
         with self.visualize_window.frame:
             with ui.VStack(spacing=5):
                 with ui.VStack(height=0, spacing=5):
@@ -894,10 +908,10 @@ class OccupancyMapWindow(MenuHelperWindow):
                     )
                     with ui.HStack(height=0, spacing=5):
                         ui.Label(
-                            "Image File Name",
+                            "Map Name",
                             width=120,
                             alignment=ui.Alignment.LEFT_CENTER,
-                            tooltip="Stem of the image filename written into the YAML 'image' field. Save your PNG with this same name.",
+                            tooltip="Stem used as the default filename when saving the PNG image or YAML file, and written into the YAML 'image' field.",
                         )
                         self._models["image_name"] = ui.StringField(
                             name="StringField",
@@ -906,8 +920,7 @@ class OccupancyMapWindow(MenuHelperWindow):
                             alignment=ui.Alignment.LEFT_CENTER,
                         ).model
                         self._models["image_name"].set_value(default_image_stem)
-                        ui.Label(".png", width=0, alignment=ui.Alignment.LEFT_CENTER)
-                        ui.Button("Update YAML", clicked_fn=self._update_yaml, height=0, width=110)
+                        self._models["image_name"].add_value_changed_fn(lambda _: self._update_yaml())
                     self._models["config_data"] = ui.StringField(height=100, multiline=True).model
                 self._image_frame = ui.Frame()
                 self._image_frame.set_build_fn(self.rebuild_frame)

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.1] - 2026-04-14
+### Changed
+- UI improvements: unified filename field, auto-updating YAML, window docks to Property panel
+
 ## [2.6.0] - 2026-04-08
 ### Changed
 - Improve Python API documentation (`config/python_api.md` and/or module docstrings).

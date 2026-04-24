@@ -53,7 +53,7 @@ See the `API Documentation <../py/source/extensions/isaacsim.asset.gen.omap/docs
 User Interface
 ^^^^^^^^^^^^^^^^^
 
-The user interface is composed of two parts, the configuration window (named *Occupancy Map*) and the *Visualization* window.
+The user interface is composed of two parts, the configuration window (named *Occupancy Map*) and the *Occupancy Map Visualization* window.
 
 Occupancy Map window
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -85,13 +85,13 @@ The following steps show how to create and visualize an occupancy map of a certa
 
     #. Create a new Cone shape (**Create > Shape > Cone** menu) and add the physics Collision property to it (right click and **Add > Physics > Collider Preset**, or in the *Property* panel).
     #. Translate the shape 0.3 meters in the X-axis and orient it 90º in the X-axis Euler angles by modifying its *Transform* in the *Property* panel.
-    #. Click on the **Tools > Robotics > Occupancy Map** menu to open the *Occupancy Map* window docked to the button panel.
+    #. Click on the **Tools > Robotics > Occupancy Map** menu to open the *Occupancy Map* window docked to the *Property* panel.
     #. Set the Occupancy Map's Origin Z-axis value to 0.1 meters to map the area at that height
-    #. Click on **CALCULATE** followed by **VISUALIZE IMAGE**. A Visualization popup will appear as shown in the image in the next subsection.
+    #. Click on **CALCULATE** followed by **VISUALIZE IMAGE**. The *Occupancy Map Visualization* window will appear as shown in the image in the next subsection.
     #. Finally, click **Save Image** to save the map to an easily accessible location.  You will need it for later steps in this guide!
 
-Visualization window
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Occupancy Map Visualization window
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. figure:: /images/isaac_occupancy_map_visualize_image.png
     :align: center
@@ -104,11 +104,10 @@ Visualization window
 - **Unknown Color**: The color chosen to represent space that is interstitial or "unknown".
 - **Rotate Image**: Rotates the coordinates of the image space.  A rotation of :math:`\text{180}^{\circ}` will result in a Heightmap orientation that matches that of the original source stage of the occupancy map.
 - **Coordinate Type**: Determines the format of the output in the information window.  Stage Space coordinates reports values in the space of the stage, while the "ROS Occupancy Map Parameters File" returns the needed parameters for the ROS Occupancy Map.
-- **Image File Name**: The name of the map image file to be displayed in the YAML file for the ROS coordinate system.
-- **Update YAML**: Updates the YAML file with the new image file name.
+- **Filename**: Base name used when saving the PNG image or YAML file, and written into the YAML ``image`` field. Defaults to the stage name. 
 - **RE-GENERATE IMAGE**: This will regenerate the image and information window if you changed the stage.
-- **Save Image**: Opens the file picker interface to save the image.
-- **Save YAML**: Opens the file picker interface to save the YAML file.
+- **Save Image**: Opens a file dialog pre-filled with the Filename to save the occupancy map as a ``.png`` file.
+- **Save YAML**: Opens a file dialog pre-filled with the Filename to save the ROS occupancy map parameters as a ``.yaml`` file.
 
 
 Heightmap Importer
