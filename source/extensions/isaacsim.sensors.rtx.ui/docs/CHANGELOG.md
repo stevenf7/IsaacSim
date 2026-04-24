@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.1] - 2026-04-24
+### Removed
+- Remove the `omni.isaac.ml_archive` test dependency
+
 ## [1.4.0] - 2026-04-21
 ### Changed
 - Migrated Lidar creation from `IsaacSensorCreateRtxLidar` Kit command to `Lidar.create()` from `isaacsim.sensors.experimental.rtx`
