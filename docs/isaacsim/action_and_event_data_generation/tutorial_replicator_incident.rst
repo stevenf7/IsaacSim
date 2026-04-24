@@ -33,7 +33,7 @@ over in a topple event, 'spillable items'
 that can leak or spill liquid in a spill event, or 'flammable items' that can catch fire in a fire event.
 
 
-2. Save the scene to save the tagging information if you wish to save your progress. 
+2. Save the scene to a usd file to commit that tagging information if you plan on closing and re-opening the scene. 
 A sample scene with tags already applied is provided in the Content Browser 
 
 ``[Isaac Sim Assets Path]/Isaac/Samples/Replicator/Incidents/full_warehouse_with_incident_tags.usd``.
@@ -44,8 +44,9 @@ A sample scene with tags already applied is provided in the Content Browser
 
 3. (IRI standalone) Set up an event configuration file which defines what events will occur in the scene by using the **Event Config File** window
 located in the menu **Tools > Action and Event Data Generation > Event Config File**.
-This configuration can also be saved and loaded later.
-Press **Set Up Events** to load the demons that will trigger the events at the specified times.
+This configuration can also be saved and loaded later, though it is not saved into the scene's usd file and must be saved and loaded separately through
+the **Event Config File** panel.
+After configuring the events or loading an event config file, press **Set Up Events** to load the demons that will trigger the events at the specified times.
 
 4. Run the simulation with the play button to preview the scene. To generate SDG data you can also use the **Record Events** button in the **Event Config File** window
 Event items are given semantic labels as the simulation runs to support replicator's SDG collection. A separate event log is also generated
@@ -82,7 +83,8 @@ An event report will be generated in the specified output directory.
 
 Scene Tagging
 --------------------------
-To begin using IRI in a scene, tag the desired possible event items using the custom UI and then save the scene. 
+To begin using IRI in a scene, tag the desired possible event items using the custom UI and then save the scene to a usd file using the 
+standard save dialogue **File > Save**. 
 Right-click a prim in the stage window or viewport and select **+ Add > Incident
 Tagging** and select either ``loose items``, ``spillable items``, or ``flammable items``.
 This menu is also accessible in the Property tab under the ``+ Add``
@@ -155,7 +157,8 @@ The currently supported triggers are
 
 - ``physical_event``: Use the beginning of another IRI event to trigger this event.
 
-The commands are generated as a YAML file, which can be saved and loaded later, or edited directly to change the events configuration.
+The commands are generated as a YAML file, which can be saved and loaded later, or edited directly to change the events configuration. As this file 
+is not a part of the usd scene, saving and loading must be done separately using the save and load features in the **Event Config File** panel.
 
 .. _iri_conifg_script:
 
