@@ -18,6 +18,7 @@
 
 #include <isaacsim/ros2/nodes/IRos2Nodes.h>
 #include <isaacsim/ros2/nodes/SrtxPublisherFactory.h>
+#include <pybind11/stl.h>
 
 CARB_BINDINGS("isaacsim.ros2.nodes.python")
 
@@ -106,6 +107,48 @@ PYBIND11_MODULE(_ros2_nodes, m)
 
               Returns:
                   PyCapsule containing the callback descriptor.
+          )pbdoc");
+
+    m.def("create_camera_info_publisher_capsule",
+          [](const std::string& topicName,
+             const std::string& frameId,
+             const std::string& nodeNamespace,
+             uint64_t queueSize,
+             const std::string& qosProfile,
+             uint32_t width,
+             uint32_t height,
+             const std::string& distortionModel,
+             const std::vector<double>& k,
+             const std::vector<double>& r,
+             const std::vector<double>& p,
+             const std::vector<double>& d) -> py::capsule
+          {
+              auto* desc = createCameraInfoPublisherDescriptor(
+                  topicName, frameId, nodeNamespace, queueSize, qosProfile, width, height, distortionModel, k, r, p, d);
+              if (!desc)
+              {
+                  throw std::runtime_error("Failed to initialize Ros2SrtxCameraInfoPublisher");
+              }
+              return wrapDescriptorAsCapsule(desc);
+          },
+          py::arg("topic_name"),
+          py::arg("frame_id"),
+          py::arg("node_namespace"),
+          py::arg("queue_size"),
+          py::arg("qos_profile"),
+          py::arg("width"),
+          py::arg("height"),
+          py::arg("distortion_model"),
+          py::arg("k"),
+          py::arg("r"),
+          py::arg("p"),
+          py::arg("d"),
+          R"pbdoc(
+              Create a ROS 2 CameraInfo publisher and return a PyCapsule wrapping
+              the C-ABI callback descriptor.
+
+              The capsule is named "SrtxFrameCallbackDescriptor" and is intended
+              to be passed to omni.replicator.srtx's register_frame_callback().
           )pbdoc");
 
     m.def("create_lidar_publisher_capsule",

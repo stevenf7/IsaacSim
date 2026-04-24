@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+import contextlib
+
 import carb
 import cv2 as cv
 import numpy as np
@@ -25,7 +27,14 @@ import omni.replicator.core as rep
 import omni.syntheticdata
 from isaacsim.core.nodes import BaseWriterNode
 from isaacsim.ros2.core import collect_namespace, compute_relative_pose, read_camera_info
+from isaacsim.ros2.nodes.impl.ros2_common import (
+    USE_SRTX_SETTING,
+    get_srtx_sensor_set_name,
+)
 from pxr import Usd
+
+SRTX_CAMERA_INFO_LEGACY_TRIGGER_NAME = "CameraInfoTrigger"
+SRTX_CAMERA_INFO_PREFERRED_SOURCES = ("LdrColorSD", "LdrColor", "DistanceToImagePlaneSD", "DistanceToCameraSD")
 
 
 class OgnROS2CameraInfoHelperInternalState(BaseWriterNode):
@@ -39,8 +48,16 @@ class OgnROS2CameraInfoHelperInternalState(BaseWriterNode):
         self.rvRight = ""
         self.resetSimulationTimeOnStop = False
         self.publishStepSize = 1
+        self._srtx_callback_handles = []
+        self._srtx_capsules = []
+        self._srtx_sensor_set = None
 
         super().__init__(initialize=False)
+
+    def custom_reset(self) -> None:
+        """Reset the internal state."""
+        cleanup_srtx_camera_info_state(self)
+        super().custom_reset()
 
     def post_attach(self, writer, render_product) -> None:
         """Configure writer attributes after attaching to a render product."""
@@ -59,6 +76,74 @@ class OgnROS2CameraInfoHelperInternalState(BaseWriterNode):
             )
         except Exception:
             pass
+
+
+def cleanup_srtx_camera_info_state(state: OgnROS2CameraInfoHelperInternalState) -> None:
+    """Unregister SRTX camera info callbacks owned by a CameraInfo helper state."""
+    handles = getattr(state, "_srtx_callback_handles", [])
+    sensor_set = getattr(state, "_srtx_sensor_set", None)
+    if handles and sensor_set:
+        try:
+            from omni.replicator.srtx import SrtxCore
+
+            stage = omni.usd.get_context().get_stage()
+            if stage:
+                usd_scene = str(stage.GetRootLayer().identifier)
+                srtx_instance = SrtxCore.get_instance(usd_scene)
+                if srtx_instance is not None:
+                    for handle in handles:
+                        srtx_instance.unregister_frame_callback(sensor_set, handle)
+        except Exception as e:
+            carb.log_warn(f"Error during SRTX camera info cleanup: {e}")
+
+    state._srtx_callback_handles = []
+    state._srtx_capsules = []
+    state._srtx_sensor_set = None
+
+
+def get_srtx_camera_info_callback_output(stage, render_product_path: str) -> str | None:
+    """Return an existing RenderVar path to use as the CameraInfo timing source."""
+    rp_prim = stage.GetPrimAtPath(render_product_path)
+    if not rp_prim or not rp_prim.IsValid():
+        return None
+
+    ordered_vars_rel = rp_prim.GetRelationship("orderedVars")
+    ordered_var_paths = ordered_vars_rel.GetTargets() if ordered_vars_rel else []
+    candidates = []
+    for ordered_var_path in ordered_var_paths:
+        render_var_path = str(ordered_var_path)
+        if render_var_path.rsplit("/", 1)[-1] == SRTX_CAMERA_INFO_LEGACY_TRIGGER_NAME:
+            continue
+        if not render_var_path.startswith(render_product_path + "/"):
+            continue
+
+        render_var_prim = stage.GetPrimAtPath(render_var_path)
+        if not render_var_prim or not render_var_prim.IsValid():
+            continue
+
+        source_name_attr = render_var_prim.GetAttribute("sourceName")
+        if not source_name_attr:
+            continue
+
+        source_name = source_name_attr.Get()
+        if source_name is None:
+            continue
+
+        candidates.append((render_var_path, str(source_name)))
+
+    for preferred_source in SRTX_CAMERA_INFO_PREFERRED_SOURCES:
+        for render_var_path, source_name in candidates:
+            if source_name == preferred_source:
+                return render_var_path
+
+    if candidates:
+        return candidates[0][0]
+
+    carb.log_warn(
+        f"SRTX CameraInfo helper found no existing RenderVar outputs on '{render_product_path}'. "
+        "CameraInfo will retry until a camera image/depth helper has registered the sensor output."
+    )
+    return None
 
 
 class OgnROS2CameraInfoHelper:
@@ -94,6 +179,53 @@ class OgnROS2CameraInfoHelper:
         db.per_instance_state.attach_writer(writer, render_product_path)
 
     @staticmethod
+    def add_srtx_camera_info_publisher(
+        state,
+        stage,
+        srtx_instance,
+        sensor_set_name,
+        frameId,
+        topicName,
+        nodeNamespace,
+        queueSize,
+        qosProfile,
+        camera_info,
+        render_product_path: str,
+    ) -> bool:
+        """Add an SRTX callback-backed camera info publisher for the given render product."""
+        from isaacsim.ros2.nodes.bindings._ros2_nodes import create_camera_info_publisher_capsule
+
+        render_var_path = get_srtx_camera_info_callback_output(stage, render_product_path)
+        if render_var_path is None:
+            carb.log_error("No render_var_path from get_srtx_camera_info_callback_output was found")
+            return False
+
+        capsule = create_camera_info_publisher_capsule(
+            topic_name=topicName,
+            frame_id=frameId,
+            node_namespace=nodeNamespace,
+            queue_size=queueSize,
+            qos_profile=qosProfile,
+            width=camera_info.width,
+            height=camera_info.height,
+            distortion_model=camera_info.distortion_model,
+            k=camera_info.k,
+            r=camera_info.r,
+            p=camera_info.p,
+            d=camera_info.d,
+        )
+
+        handle = srtx_instance.register_frame_callback(sensor_set_name, render_var_path, capsule)
+        if handle == 0:
+            carb.log_error(f"Failed to register SRTX camera info callback for {render_var_path}")
+            return False
+
+        state._srtx_callback_handles.append(handle)
+        state._srtx_capsules.append(capsule)
+        state._srtx_sensor_set = sensor_set_name
+        return True
+
+    @staticmethod
     def compute(db) -> bool:
         """Compute the node outputs."""
         state = db.per_instance_state
@@ -111,13 +243,23 @@ class OgnROS2CameraInfoHelper:
         render_product_path_right = db.inputs.renderProductPathRight
 
         stage = omni.usd.get_context().get_stage()
-        with Usd.EditContext(stage, stage.GetSessionLayer()):
+        use_srtx = carb.settings.get_settings().get_as_bool(USE_SRTX_SETTING)
+        ctx = contextlib.nullcontext() if use_srtx else Usd.EditContext(stage, stage.GetSessionLayer())
+        with ctx:
             is_stereo = False
             if not render_product_path:
                 carb.log_warn(f"Render product '{render_product_path}' not valid")
                 return False
+            if stage.GetPrimAtPath(render_product_path) is None:
+                carb.log_warn(f"Render product '{render_product_path}' not created yet, retrying on next call")
+                return False
             if render_product_path_right:
                 is_stereo = True
+                if stage.GetPrimAtPath(render_product_path_right) is None:
+                    carb.log_warn(
+                        f"Render product '{render_product_path_right}' not created yet, retrying on next call"
+                    )
+                    return False
 
             db.per_instance_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
             db.per_instance_state.publishStepSize = db.inputs.frameSkipCount + 1
@@ -190,6 +332,52 @@ class OgnROS2CameraInfoHelper:
                 camera_info_left.p = P1.ravel().tolist()
                 camera_info_right.p = P2.ravel().tolist()
 
+                if use_srtx:
+                    from omni.replicator.srtx import SrtxCore
+
+                    usd_scene = str(stage.GetRootLayer().identifier) if stage else ""
+                    srtx_instance = SrtxCore.get_instance(usd_scene)
+                    if srtx_instance is None:
+                        carb.log_error(f"No SRTX instance for stage '{usd_scene}'")
+                        return False
+
+                    sensor_set_name = get_srtx_sensor_set_name()
+                    node_namespace_left = collect_namespace(db.inputs.nodeNamespace, render_product_path)
+                    node_namespace_right = collect_namespace(db.inputs.nodeNamespace, render_product_path_right)
+                    if not OgnROS2CameraInfoHelper.add_srtx_camera_info_publisher(
+                        state,
+                        stage,
+                        srtx_instance,
+                        sensor_set_name,
+                        db.inputs.frameIdRight,
+                        db.inputs.topicNameRight,
+                        node_namespace_right,
+                        db.inputs.queueSize,
+                        db.inputs.qosProfile,
+                        camera_info_right,
+                        render_product_path_right,
+                    ):
+                        cleanup_srtx_camera_info_state(state)
+                        return False
+                    if not OgnROS2CameraInfoHelper.add_srtx_camera_info_publisher(
+                        state,
+                        stage,
+                        srtx_instance,
+                        sensor_set_name,
+                        db.inputs.frameId,
+                        db.inputs.topicName,
+                        node_namespace_left,
+                        db.inputs.queueSize,
+                        db.inputs.qosProfile,
+                        camera_info_left,
+                        render_product_path,
+                    ):
+                        cleanup_srtx_camera_info_state(state)
+                        return False
+
+                    state.initialized = True
+                    return True
+
                 # Create right-side writer
                 db.per_instance_state.rvRight = "PostProcessDispatchRight"
                 OgnROS2CameraInfoHelper.add_camera_info_writer(
@@ -200,6 +388,35 @@ class OgnROS2CameraInfoHelper:
                     render_product_path=render_product_path_right,
                     time_type=time_type_input,
                 )
+
+            elif use_srtx:
+                from omni.replicator.srtx import SrtxCore
+
+                usd_scene = str(stage.GetRootLayer().identifier) if stage else ""
+                srtx_instance = SrtxCore.get_instance(usd_scene)
+                if srtx_instance is None:
+                    carb.log_error(f"No SRTX instance for stage '{usd_scene}'")
+                    return False
+
+                sensor_set_name = get_srtx_sensor_set_name()
+                node_namespace = collect_namespace(db.inputs.nodeNamespace, render_product_path)
+                if not OgnROS2CameraInfoHelper.add_srtx_camera_info_publisher(
+                    state,
+                    stage,
+                    srtx_instance,
+                    sensor_set_name,
+                    db.inputs.frameId,
+                    db.inputs.topicName,
+                    node_namespace,
+                    db.inputs.queueSize,
+                    db.inputs.qosProfile,
+                    camera_info_left,
+                    render_product_path,
+                ):
+                    return False
+
+                state.initialized = True
+                return True
 
             # Create left-side writer
             db.per_instance_state.rv = "PostProcessDispatch"
@@ -224,4 +441,5 @@ class OgnROS2CameraInfoHelper:
             state = None
 
         if state is not None:
+            cleanup_srtx_camera_info_state(state)
             state.reset()

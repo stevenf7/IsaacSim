@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.17.2] - 2026-04-24
+### Added
+- SRTX-aware code path for publishing camera info topics.
+
 ## [1.17.1] - 2026-04-23
 ### Fixed
 - Fixed test failures caused by slow DDS endpoint discovery. Added discovery waits after `timeline.play()` in `test_laser_scan.py`, `test_publisher.py`, `test_subscribers.py`, and `test_semantic_labels.py`.
