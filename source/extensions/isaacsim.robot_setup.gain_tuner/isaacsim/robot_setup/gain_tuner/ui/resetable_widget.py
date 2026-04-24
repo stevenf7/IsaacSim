@@ -31,7 +31,7 @@ class ResetButton:
         on_reset_fn: Callback function to execute when the reset button is clicked.
     """
 
-    def __init__(self, init_value: object, on_reset_fn: callable):
+    def __init__(self, init_value: object, on_reset_fn: callable) -> None:
         self._init_value = init_value
         self._on_reset_fn = on_reset_fn
         self._enable = True
@@ -43,11 +43,11 @@ class ResetButton:
         return self._enable
 
     @enable.setter
-    def enable(self, enable):
+    def enable(self, enable: bool) -> None:
         self._enable = enable
         self._reset_button.enabled = enable
 
-    def refresh(self, new_value: object):
+    def refresh(self, new_value: object) -> None:
         """Updates the visibility of the reset button based on value changes.
 
         Args:
@@ -55,7 +55,7 @@ class ResetButton:
         """
         self._reset_button.visible = bool(self._init_value != new_value)
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         """Constructs the reset button UI with layered visual elements."""
         with ui.VStack(width=0, height=0):
             ui.Spacer()
@@ -115,7 +115,7 @@ class ResetableLabelField:
 
     def __init__(
         self, value_model: object, field_type: object, format: str, alignment: object = ui.Alignment.RIGHT_CENTER
-    ):
+    ) -> None:
         self._value_model = value_model
         self._init_value = self.get_model_value(value_model)
         self._field_type = field_type
@@ -136,7 +136,7 @@ class ResetableLabelField:
         return self._enable
 
     @property
-    def field(self):
+    def field(self) -> object:
         """The UI field widget used for value input.
 
         Returns:
@@ -144,7 +144,7 @@ class ResetableLabelField:
         """
         return self._field
 
-    def update_default_value(self):
+    def update_default_value(self) -> None:
         """Updates the default value used by the reset button to the current model value."""
         self._init_value = self.get_model_value(self._value_model)
         self._reset_button._init_value = self._init_value
@@ -160,16 +160,16 @@ class ResetableLabelField:
         return self._frame.visible
 
     @visible.setter
-    def visible(self, value):
+    def visible(self, value: bool) -> None:
         self._frame.visible = value
 
     @enabled.setter
-    def enabled(self, enable):
+    def enabled(self, enable: bool) -> None:
         self._enable = enable
         self._field.enabled = enable
         self._reset_button.enable = enable
 
-    def get_model_value(self, model: object):
+    def get_model_value(self, model: object) -> str | int | float:
         """Extracts the appropriate value from a UI model based on its type.
 
         Args:
@@ -186,7 +186,7 @@ class ResetableLabelField:
             return model.get_value_as_float()
         return ""
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         """Builds the UI components including the input field and reset button."""
         with self._frame:
             ui.Spacer(width=1)
@@ -207,14 +207,14 @@ class ResetableLabelField:
                 self._reset_button = ResetButton(self._init_value, self._on_reset_fn)
                 ui.Spacer()
 
-    def _on_reset_fn(self):
+    def _on_reset_fn(self) -> None:
         """Handles the reset button click by restoring the field and value model to the initial value."""
         current_value = self.get_model_value(self._field.model)
         if current_value != self._init_value:
             self._field.model.set_value(self._init_value)
             self._value_model.set_value(self._init_value)
 
-    def _update_value(self, model: object):
+    def _update_value(self, model: object) -> None:
         """Updates the value model when the field value changes and refreshes the reset button visibility.
 
         Args:
@@ -226,7 +226,7 @@ class ResetableLabelField:
             self._value_model.set_value(new_value)
             self._reset_button.refresh(new_value)
 
-    def _update_field(self, model: object):
+    def _update_field(self, model: object) -> None:
         """Updates the field value when the value model changes and refreshes the reset button visibility.
 
         Args:
@@ -238,7 +238,7 @@ class ResetableLabelField:
             self._field.model.set_value(new_value)
             self._reset_button.refresh(new_value)
 
-    def _end_edit(self, model: object):
+    def _end_edit(self, model: object) -> None:
         """Called when field editing ends.
 
         Args:

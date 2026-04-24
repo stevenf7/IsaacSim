@@ -45,7 +45,7 @@ def generate_distinct_colors(n: int) -> list[list[int]]:
             v = 0.9  # Value
             r, g, b = colorsys.hsv_to_rgb(h, s, v)
             # Set the alpha channel to 1.0 (fully opaque)
-            hex_color = "#{:02X}{:02X}{:02X}{:02X}".format(255, int(r * 255), int(g * 255), int(b * 255))
+            hex_color = f"#{255:02X}{int(r * 255):02X}{int(g * 255):02X}{int(b * 255):02X}"
             hex_color_int = int(hex_color[1:], 16)  # Convert to integer
             colors.append(hex_color_int)
         group_colors.append(colors)
@@ -65,13 +65,13 @@ class ColorJointItem(TableItem):
         color: List of colors associated with the joint for visual representation.
     """
 
-    def __init__(self, name: str, joint_index: int, color: list):
+    def __init__(self, name: str, joint_index: int, color: list) -> None:
         super().__init__(joint_index)
         self.colors = color
         self.name = name
         self.color_cell = None
 
-    def get_item_value(self, col_id: int = 0):
+    def get_item_value(self, col_id: int = 0) -> list | str:
         """Retrieves the value for the specified column.
 
         Args:
@@ -85,7 +85,7 @@ class ColorJointItem(TableItem):
         elif col_id == 1:
             return self.name
 
-    def set_item_value(self, col_id: int, value: object):
+    def set_item_value(self, col_id: int, value: object) -> None:
         """Sets the value for the specified column.
 
         Args:
@@ -97,7 +97,7 @@ class ColorJointItem(TableItem):
         elif col_id == 1:
             self.name = value
 
-    def get_value_model(self, col_id: int = 0):
+    def get_value_model(self, col_id: int = 0) -> None:
         """Gets the value model for the specified column.
 
         Args:
@@ -127,14 +127,14 @@ class ColorJointItemDelegate(TableItemDelegate):
     header = ["", "Joint"]
     """Header labels for each column in the color joint table."""
 
-    def __init__(self, model: object):
+    def __init__(self, model: object) -> None:
         super().__init__(model)
         self.column_headers = {}
 
-    def init_model(self):
+    def init_model(self) -> None:
         """Initialize the model for the delegate."""
 
-    def build_header(self, column_id: int = 0):
+    def build_header(self, column_id: int = 0) -> None:
         """Build the header widget for a specific column.
 
         Args:
@@ -160,12 +160,12 @@ class ColorJointItemDelegate(TableItemDelegate):
                     )
                 self.build_sort_button(column_id)
 
-    def update_defaults(self):
+    def update_defaults(self) -> None:
         """Update default settings for the delegate."""
 
     def build_widget(
         self, model: object, item: ColorJointItem | None = None, index: int = 0, level: int = 0, expanded: bool = False
-    ):
+    ) -> None:
         """Build the widget for a table item at the specified column.
 
         Args:
@@ -200,7 +200,7 @@ class ColorJointItemDelegate(TableItemDelegate):
                             ui.Spacer(width=1)
                         ui.Spacer()
 
-    def select_changed(self, selection: list):
+    def select_changed(self, selection: list) -> None:
         """Handle changes in item selection by updating the visual state of color cells.
 
         Args:
@@ -227,7 +227,7 @@ class ColorJointModel(TableModel):
         **kwargs: Additional keyword arguments passed to the parent TableModel class.
     """
 
-    def __init__(self, gains_tuner: object, value_changed_fn: callable, **kwargs: object):
+    def __init__(self, gains_tuner: object, value_changed_fn: callable, **kwargs: object) -> None:
         super().__init__(value_changed_fn)
         self.gains_tuner = gains_tuner
         colors = generate_distinct_colors(self.gains_tuner.get_articulation().num_dofs)
@@ -270,7 +270,9 @@ class ColorJointWidget(TableWidget):
         selected_changed_fn: Callback function called when joint selection changes.
     """
 
-    def __init__(self, gains_tuner: object, value_changed_fn: callable = None, selected_changed_fn: callable = None):
+    def __init__(
+        self, gains_tuner: object, value_changed_fn: callable = None, selected_changed_fn: callable = None
+    ) -> None:
         self.gains_tuner = gains_tuner
         model = ColorJointModel(gains_tuner, self._on_value_changed)
         delegate = ColorJointItemDelegate(model)
@@ -278,7 +280,7 @@ class ColorJointWidget(TableWidget):
         self.selected_changed_fn = selected_changed_fn
         super().__init__(value_changed_fn, model, delegate)
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         """Builds the UI components for the color joint widget.
 
         Creates a scrolling frame containing the tree view for displaying joint colors and names.
@@ -293,7 +295,7 @@ class ColorJointWidget(TableWidget):
             with ui.HStack():
                 self.build_tree_view()
 
-    def build_tree_view(self):
+    def build_tree_view(self) -> None:
         """Builds the tree view component for displaying joints with their colors.
 
         Creates a TreeView widget with fixed column widths for color and joint name display,

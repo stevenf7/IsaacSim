@@ -1,11 +1,25 @@
 # Changelog
+## [3.5.0] - 2026-04-23
+### Added
+- `Snap to Limits` test mode with per-joint pass/blocked/fail results
+- `Stress Test` mode with Random Walk and Adversarial sub-modes
+- Pluggable `RobotTest` registry on `GainTuner`
+- Disable self-collisions and disable velocity limits toggles
+- `get_test_result_metrics()` API
+
+### Changed
+- Default test mode is now `Snap to Limits`
+- Per-mode duration controls replace shared `Test Duration` field
+
+### Fixed
+- Bulk edit preserves multi-selection across widget clicks
+- Self-collision restore auto-restarts timeline for re-cook
+- Stale test metrics cleared on new run
+- Creep vs blocked classification uses error variance check
+
 ## [3.4.2] - 2026-03-06
 ### Fixed
 - Clear physics, render, and assets-loaded subscriptions when window is hidden to avoid per-frame callbacks running while the panel is not visible
-
-## [3.4.1] - 2026-03-04
-### Changed
-- Fix api errors
 
 ## [3.4.1] - 2026-03-04
 ### Fixed

@@ -18,7 +18,7 @@
 import asyncio
 import math
 from enum import Enum
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -62,7 +62,7 @@ class DriveSubmodality(Enum):
 
 def _compute_stiffness_damping_prismatic(
     mass: float, natural_freq_hz: float, damping_ratio: float
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     """Compute stiffness and damping for prismatic joint from natural freq and damping ratio.
 
     For m*x'' + D*x' + K*x = 0:
@@ -85,7 +85,7 @@ def _compute_stiffness_damping_prismatic(
 
 def _compute_stiffness_damping_revolute(
     inertia: float, natural_freq_hz: float, damping_ratio: float
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     """Compute stiffness and damping for revolute joint from natural freq and damping ratio.
 
     For I*theta'' + D*theta' + K*theta = 0:
@@ -106,7 +106,7 @@ def _compute_stiffness_damping_revolute(
     return stiffness, damping
 
 
-def _compute_natural_freq_damping_revolute(stiffness: float, damping: float, inertia: float) -> Tuple[float, float]:
+def _compute_natural_freq_damping_revolute(stiffness: float, damping: float, inertia: float) -> tuple[float, float]:
     """Compute natural frequency (Hz) and damping ratio from revolute drive gains.
 
     Inverse of _compute_stiffness_damping_revolute: w_n = sqrt(K/I), zeta = D/(2*sqrt(I*K)).
@@ -127,7 +127,7 @@ def _compute_natural_freq_damping_revolute(stiffness: float, damping: float, ine
     return natural_freq_hz, zeta
 
 
-def _compute_natural_freq_damping_prismatic(stiffness: float, damping: float, mass: float) -> Tuple[float, float]:
+def _compute_natural_freq_damping_prismatic(stiffness: float, damping: float, mass: float) -> tuple[float, float]:
     """Compute natural frequency (Hz) and damping ratio from prismatic drive gains.
 
     Inverse of _compute_stiffness_damping_prismatic: w_n = sqrt(K/m), zeta = D/(2*sqrt(m*K)).
@@ -257,7 +257,7 @@ def _compute_natural_freq_damping_prismatic(stiffness: float, damping: float, ma
 class TestGainTuner(omni.kit.test.AsyncTestCase):
     """Unit tests for Gain Tuner functionality."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment with physics timeline and gain tuner."""
         self._physics_fps = 60
         self._physics_dt = 1.0 / self._physics_fps
@@ -272,7 +272,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         SimulationManager.set_physics_dt(self._physics_dt)
         await app_utils.update_app_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment and reset gain tuner."""
         self._timeline.stop()
         self._gain_tuner.reset()
@@ -286,7 +286,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
 
     def _create_articulation(
         self,
-        joint_modalities: List[JointModality],
+        joint_modalities: list[JointModality],
         drive_submodality: DriveSubmodality,
         distance: float,
         mass: float,
@@ -296,8 +296,8 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         *,
         chain: bool = False,
         fixed_base: bool = True,
-        joint_axes: Optional[List[str]] = None,
-        link_positions: Optional[List[Tuple[float, float, float]]] = None,
+        joint_axes: Optional[list[str]] = None,
+        link_positions: Optional[list[tuple[float, float, float]]] = None,
         base_mass: float = 1000.0,
         base_inertia: float = 1.0,
     ) -> str:
@@ -424,7 +424,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
 
         return robot_path
 
-    async def _run_setup_and_compute_inertia(self, robot_path: str, num_physics_steps: int = 60):
+    async def _run_setup_and_compute_inertia(self, robot_path: str, num_physics_steps: int = 60) -> None:
         """Setup gain tuner, run physics so mass query completes, then compute joint inertias.
 
         Args:
@@ -448,7 +448,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         natural_freq_hz: float,
         damping_ratio: float,
         second_axis_z: bool = True,
-    ) -> Tuple[str, List[float]]:
+    ) -> tuple[str, list[float]]:
         """Create fixed base -> revolute0 -> link0 -> revolute1 -> link1. Same plane if second_axis_z True.
 
         Args:
@@ -487,7 +487,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         natural_freq_hz: float,
         damping_ratio: float,
         same_axis: bool = True,
-    ) -> Tuple[str, List[float]]:
+    ) -> tuple[str, list[float]]:
         """Create fixed base -> prism0 -> link0 -> prism1 -> link1. Same axis X if same_axis else second Y.
 
         Args:
@@ -526,7 +526,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         link_inertia_diag: float,
         natural_freq_hz: float,
         damping_ratio: float,
-    ) -> Tuple[str, List[float]]:
+    ) -> tuple[str, list[float]]:
         """Create floating base -> single joint -> link. No fixed joint. ArticulationRootAPI on base.
 
         Args:
@@ -568,7 +568,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         inertia_diag: float,
         natural_freq_hz: float,
         damping_ratio: float,
-    ) -> Tuple[str, List[float]]:
+    ) -> tuple[str, list[float]]:
         """Create fixed base -> revolute -> link0 -> prismatic -> link1.
 
         Args:
@@ -601,7 +601,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
     # Hand-computed expected equivalent inertia and optional stiffness/damping from natural frequency
     # are asserted against the implementation. Relative tolerance 5% to allow PhysX vs analytical differences.
 
-    async def test_compute_joints_accumulated_inertia_fixed_base_single_revolute(self):
+    async def test_compute_joints_accumulated_inertia_fixed_base_single_revolute(self) -> None:
         """Fixed base + single revolute: I_eq = link inertia about joint axis (backward fixed)."""
         robot_path = self._create_articulation(
             [JointModality.REVOLUTE],
@@ -630,7 +630,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(nat_freq, expected_nat_freq, delta=0.2)
         self.assertAlmostEqual(zeta, 0.05, delta=0.02)
 
-    async def test_compute_joints_accumulated_inertia_fixed_base_single_prismatic(self):
+    async def test_compute_joints_accumulated_inertia_fixed_base_single_prismatic(self) -> None:
         """Fixed base + single prismatic: I_eq = link mass (backward fixed)."""
         robot_path = self._create_articulation(
             [JointModality.PRISMATIC],
@@ -655,7 +655,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(nat_freq, 5.0, delta=0.3)
         self.assertAlmostEqual(zeta, 0.1, delta=0.03)
 
-    async def test_compute_joints_accumulated_inertia_fixed_base_two_revolute_same_plane(self):
+    async def test_compute_joints_accumulated_inertia_fixed_base_two_revolute_same_plane(self) -> None:
         """Fixed base + two revolute joints in the same plane: hand-computed I_eq for each joint."""
         distance = 0.5
         mass, inertia_diag = 1.0, 1.0
@@ -675,7 +675,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
             self.assertIsNotNone(computed, f"Inertia for {entry.joint.GetPath()}")
             self.assertAlmostEqual(computed, expected, delta=0.05 * max(expected, 1e-6))
 
-    async def test_compute_joints_accumulated_inertia_fixed_base_two_revolute_orthogonal(self):
+    async def test_compute_joints_accumulated_inertia_fixed_base_two_revolute_orthogonal(self) -> None:
         """Fixed base + two revolute joints in orthogonal planes."""
         distance = 0.5
         mass, inertia_diag = 1.0, 1.0
@@ -695,7 +695,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
             self.assertIsNotNone(computed)
             self.assertAlmostEqual(computed, expected, delta=0.05 * max(expected, 1e-6))
 
-    async def test_compute_joints_accumulated_inertia_moving_base_single_revolute(self):
+    async def test_compute_joints_accumulated_inertia_moving_base_single_revolute(self) -> None:
         """Moving base + single revolute: I_eq = (I_base * I_link_about_joint) / (I_base + I_link_about_joint).
 
         Implementation uses inertia about the joint: link contributes I_d + m*d^2.
@@ -722,7 +722,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(computed)
         self.assertAlmostEqual(computed, expected_I_eq, delta=0.05 * max(expected_I_eq, 1e-6))
 
-    async def test_compute_joints_accumulated_inertia_fixed_base_two_prismatic_same_axis(self):
+    async def test_compute_joints_accumulated_inertia_fixed_base_two_prismatic_same_axis(self) -> None:
         """Fixed base + two prismatic joints on the same axis: j0 I_eq = m0+m1, j1 I_eq = m0*m1/(m0+m1)."""
         robot_path, expected_list = self._create_fixed_base_two_prismatic_chain(
             distance=0.5,
@@ -739,7 +739,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
             self.assertIsNotNone(computed)
             self.assertAlmostEqual(computed, expected, delta=0.05 * max(expected, 1e-6))
 
-    async def test_compute_joints_accumulated_inertia_fixed_base_two_prismatic_orthogonal(self):
+    async def test_compute_joints_accumulated_inertia_fixed_base_two_prismatic_orthogonal(self) -> None:
         """Fixed base + two prismatic joints on orthogonal axes."""
         robot_path, expected_list = self._create_fixed_base_two_prismatic_chain(
             distance=0.5,
@@ -756,7 +756,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
             self.assertIsNotNone(computed)
             self.assertAlmostEqual(computed, expected, delta=0.05 * max(expected, 1e-6))
 
-    async def test_compute_joints_accumulated_inertia_moving_base_single_prismatic(self):
+    async def test_compute_joints_accumulated_inertia_moving_base_single_prismatic(self) -> None:
         """Moving base + single prismatic: I_eq = (m_base * m_link) / (m_base + m_link)."""
         robot_path, expected_list = self._create_moving_base_single_joint(
             joint_revolute=False,
@@ -776,7 +776,7 @@ class TestGainTuner(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(computed)
         self.assertAlmostEqual(computed, expected_I_eq, delta=0.05 * max(expected_I_eq, 1e-6))
 
-    async def test_compute_joints_accumulated_inertia_fixed_base_revolute_prismatic_chain(self):
+    async def test_compute_joints_accumulated_inertia_fixed_base_revolute_prismatic_chain(self) -> None:
         """Fixed base + revolute then prismatic: j0 I_eq = inertia of (link0+link1) about axis, j1 I_eq = m0*m1/(m0+m1)."""
         robot_path, expected_list = self._create_fixed_base_revolute_prismatic_chain(
             distance=0.5,
