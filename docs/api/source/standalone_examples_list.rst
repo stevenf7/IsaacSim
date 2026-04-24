@@ -29,22 +29,6 @@ isaacsim.asset.transformer
 
 * ``run_asset_transformer.py``
 
-isaacsim.core.api
-~~~~~~~~~~~~~~~~~
-
-* ``add_cubes.py``
-* ``add_frankas.py``
-* ``control_robot.py``
-* ``data_logging.py``
-* ``deformable.py``
-* ``detailed_contact_data.py``
-* ``omnigraph_triggers.py``
-* ``rigid_contact_view.py``
-* ``simulate_robot.py``
-* ``simulation_callbacks.py``
-* ``time_stepping.py``
-* ``visual_materials.py``
-
 isaacsim.core.cloner
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -69,11 +53,6 @@ isaacsim.replicator.behavior
 
 * ``behaviors.py``
 
-isaacsim.replicator.domain_randomization
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* ``randomization_demo.py``
-
 isaacsim.replicator.examples
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -83,6 +62,7 @@ isaacsim.replicator.examples
 * ``motion_blur.py``
 * ``multi_camera.py``
 * ``sdg_deformables.py``
+* ``sdg_geomsubset.py``
 * ``sdg_getting_started_01.py``
 * ``sdg_getting_started_02.py``
 * ``sdg_getting_started_03.py``
@@ -101,6 +81,11 @@ isaacsim.replicator.grasping
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * ``grasping_workflow_sdg.py``
+
+isaacsim.replicator.teleop
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``sdg_teleop_replay.py``
 
 isaacsim.robot.experimental.manipulators
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -196,13 +181,6 @@ isaacsim.sensors.experimental.rtx
 * ``lidar_robot_integration.py``
 * ``resolve_lidar_object_ids.py``
 
-isaacsim.sensors.physics
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-* ``contact_sensor.py``
-* ``effort_sensor.py``
-* ``imu_sensor.py``
-
 isaacsim.sensors.physx
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -273,6 +251,22 @@ standalone_examples/deprecated
 api
 ~~~
 
+isaacsim.core.api
+^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.core.api/add_cubes.py``
+* ``isaacsim.core.api/add_frankas.py``
+* ``isaacsim.core.api/control_robot.py``
+* ``isaacsim.core.api/data_logging.py``
+* ``isaacsim.core.api/deformable.py``
+* ``isaacsim.core.api/detailed_contact_data.py``
+* ``isaacsim.core.api/omnigraph_triggers.py``
+* ``isaacsim.core.api/rigid_contact_view.py``
+* ``isaacsim.core.api/simulate_robot.py``
+* ``isaacsim.core.api/simulation_callbacks.py``
+* ``isaacsim.core.api/time_stepping.py``
+* ``isaacsim.core.api/visual_materials.py``
+
 isaacsim.cortex.framework
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -286,6 +280,11 @@ isaacsim.cortex.framework/behaviors/franka
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * ``isaacsim.cortex.framework/behaviors/franka/franka_behaviors.py``
+
+isaacsim.replicator.domain_randomization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.replicator.domain_randomization/randomization_demo.py``
 
 isaacsim.robot.manipulators
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -360,6 +359,13 @@ isaacsim.robot.manipulators/ur10e/tasks
 * ``isaacsim.robot.manipulators/ur10e/tasks/follow_target.py``
 * ``isaacsim.robot.manipulators/ur10e/tasks/pick_place.py``
 
+isaacsim.sensors.physics
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.sensors.physics/contact_sensor.py``
+* ``isaacsim.sensors.physics/effort_sensor.py``
+* ``isaacsim.sensors.physics/imu_sensor.py``
+
 standalone_examples/replicator
 ------------------------------
 
@@ -372,6 +378,11 @@ augmentation
 * ``annotator_augmentation.py``
 * ``writer_augmentation.py``
 
+episode_record_replay
+~~~~~~~~~~~~~~~~~~~~~
+
+* ``episode_record_replay.py``
+
 infinigen
 ~~~~~~~~~
 
@@ -381,6 +392,7 @@ infinigen
 mobility_gen
 ~~~~~~~~~~~~
 
+* ``migrate_recordings.py``
 * ``replay_directory.py``
 
 object_based_sdg

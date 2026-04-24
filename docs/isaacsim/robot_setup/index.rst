@@ -30,8 +30,9 @@ Tools
 
 .. toctree::
    :maxdepth: 2
-   
+
    editing_tools
+   inspector_tools
 
 Asset Structure
 ===============================

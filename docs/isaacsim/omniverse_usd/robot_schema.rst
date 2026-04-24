@@ -255,6 +255,7 @@ This applies ``IsaacRobotAPI`` to the root prim and automatically traverses the 
 .. image:: ../images/isim_6.0_base_ref_gui_robot_schema_apply.png
    :width: 400px
    :align: center
+   :alt: Properties panel + Add menu showing the Isaac > Robot Schema > Robot API entry.
 
 Properties for each schema appear in the Properties panel under their respective API sections (displayed in purple).
 
@@ -269,6 +270,113 @@ The following snippet applies the Robot Schema programmatically. Following the :
 
 .. literalinclude:: ../snippets/omniverse_usd/robot_schema/applying_the_robot_schema_through_code.py
     :language: python
+
+
+.. _isaac_sim_robot_schema_property_widget:
+
+Editing in the Properties Panel
+===============================
+
+When a prim with ``IsaacRobotAPI`` is selected, the Properties panel shows a dedicated **Robot Schema** widget that consolidates the robot metadata, the link/joint relationship lists, and a maintenance toolbar in a single Figma-style layout. The widget is provided by ``isaacsim.gui.property`` and replaces the generic relationship/attribute editors that previously surfaced these properties.
+
+.. image:: ../images/isim_6.0_base_ref_gui_robot_schema_widget_overview.png
+   :width: 700px
+   :align: center
+   :alt: Robot Schema Properties panel widget showing the Robot Schema, Robot Joints, and Robot Links collapsible sections, with the Re-Calculate Robot Tree and Save to Robot Layer buttons at the bottom.
+
+The widget is split into three collapsible sections.
+
+Robot Schema (Metadata)
+-----------------------
+
+The first collapsible section binds each scalar :ref:`Robot API <isaac_sim_robot_schema_robot_api>` attribute to an inline editor.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 25 50
+
+   * - Field
+     - Editor
+     - Notes
+   * - **Description**
+     - Text field
+     - Free-form text. Updated on field commit (Enter / focus loss).
+   * - **License**
+     - Drop-down
+     - Populated from the schema's ``allowedTokens`` so only recognized SPDX-style identifiers can be selected.
+   * - **Namespace**
+     - Text field
+     - Used for component messaging.
+   * - **Robot Type**
+     - Drop-down with **(Other)** entry
+     - Selecting **(Other)** appends a side text field for typing a custom token; selecting any predefined value clears the override.
+   * - **Source**
+     - Text field
+     - URL or reference to the original asset.
+   * - **Version**
+     - Text field
+     - Semantic version string.
+   * - **Changelog**
+     - Inline editable list with **+** and **−** buttons
+     - New entries are prepended; each entry exposes a remove button. The full list is written back as a USD string array.
+
+
+Robot Joints and Robot Links
+----------------------------
+
+The next two sections expose the ``isaac:physics:robotJoints`` and ``isaac:physics:robotLinks`` relationships as scrollable, drag-reorderable lists.
+
+Each row shows:
+
+- A numeric index (only for direct children, not for sub-robot rows).
+- A grab handle for drag-and-drop reordering. Dragging a row reveals a horizontal drop indicator at the insertion point.
+- The target prim's display name. Hovering shows a tooltip with the full prim path. Double-clicking selects the prim on the stage.
+- A trailing remove button that drops the entry from the relationship.
+
+
+Adding entries
+^^^^^^^^^^^^^^
+
+The **Add Joint** and **Add Link** buttons open a stage prim picker pre-filtered to compatible prims:
+
+- **Add Joint** -- shows prims with ``IsaacJointAPI`` or ``IsaacRobotAPI``.
+- **Add Link** -- shows prims with ``IsaacLinkAPI``, ``IsaacSiteAPI``, or ``IsaacRobotAPI``.
+
+Sub-robot rows
+^^^^^^^^^^^^^^
+
+When a row targets a prim that itself has ``IsaacRobotAPI``, a disclosure triangle appears next to the label. Expanding the row displays a read-only, indented preview of that sub-robot's matching relationship -- joints in the joints list, links in the links list. The preview recurses up to four levels deep so deeply nested compositions stay legible.
+
+.
+Maintenance Toolbar
+-------------------
+
+Two buttons at the bottom of the widget keep the relationships consistent with the underlying physics articulation and the asset's layer stack:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 65
+
+   * - Control
+     - Behavior
+   * - **Re-Calculate Robot Tree**
+     - Calls ``RecalculateRobotSchema``: rescans the articulation, appends newly discovered links and joints, and removes invalid targets. Existing valid items keep their order.
+   * - **Force Update** (checkbox)
+     - When ticked, the next **Re-Calculate Robot Tree** discards the current ``robotLinks``/``robotJoints`` order and rewrites both relationships from scratch.
+   * - **Save to Robot Layer**
+     - Calls ``SaveRobotSchemaToRobotLayer`` to flush the current order to the layer that authors ``IsaacRobotAPI``. Other layers (references, attachments, sublayers) are left untouched. A warning is logged if no authoring layer can be located.
+
+
+Other Robot Schema Widgets
+--------------------------
+
+Selecting a prim with one of the other Robot Schema APIs surfaces a focused widget for that schema:
+
+- **Robot Link** (``IsaacLinkAPI``) -- exposes the optional ``isaac:nameOverride`` attribute.
+- **Robot Joint** (``IsaacJointAPI``) -- exposes ``isaac:nameOverride``, ``isaac:physics:DofOffsetOpOrder``, and the ``isaac:actuator`` flag.
+- **Robot Site** (``IsaacSiteAPI``) -- exposes the site description and forward-axis token; available on any ``Xformable`` prim.
+
+Each widget has a remove button in its header that drops the schema and clears its authored properties. Use the **+ Add** menu's ``Isaac/Robot Schema/...`` entries to apply any of these schemas to a new prim.
 
 
 Parsing Robot Structure
@@ -389,7 +497,7 @@ Schema Population
    * - Function
      - Description
    * - ``PopulateRobotSchemaFromArticulation(stage, robot_prim, articulation_prim, *, detect_sites, sites_last)``
-     - Traverses the physics articulation graph via BFS, applies ``IsaacLinkAPI`` and ``IsaacJointAPI`` to discovered prims, and writes the ordered ``robotLinks`` and ``robotJoints`` relationships. Optionally detects and applies ``IsaacSiteAPI`` to leaf Xforms under links.
+     - Traverses the physics articulation graph via DFS, applies ``IsaacLinkAPI`` and ``IsaacJointAPI`` to discovered prims, and writes the ordered ``robotLinks`` and ``robotJoints`` relationships. Optionally detects and applies ``IsaacSiteAPI`` to leaf Xforms under links.
    * - ``RecalculateRobotSchema(stage, robot_prim, articulation_prim, *, detect_sites, sites_last)``
      - Similar to ``PopulateRobotSchemaFromArticulation`` but preserves the existing order of valid items. New links and joints are appended; invalid targets are removed. Use this for incremental updates.
 

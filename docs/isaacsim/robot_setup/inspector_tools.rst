@@ -6,16 +6,15 @@
    distribution of this software and related documentation without an express
    license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-.. _isaac_sim_robot_editor_tools:
+.. _isaac_sim_robot_inspector_tools:
 
 =======================
-Editor Tools
+Inspector Tools
 =======================
 
 .. toctree::
    :maxdepth: 1
 
-   ext_isaacsim_util_merge_mesh
-   ext_isaacsim_robot_setup_gain_tuner
-   ext_isaacsim_robot_setup_collision_detector
-   assemble_robots
+   joint_inspector
+   ../physics/joint_inspector
+   ../physics/ext_isaacsim_inspect_physics
