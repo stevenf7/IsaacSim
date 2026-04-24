@@ -32,6 +32,9 @@
 <dependency name="nlohmann_json" linkPath="../_build/target-deps/nlohmann_json">
         <package name="nlohmann_json" version="3.11.3-a3143f5-0"/>
    </dependency>
+    <dependency name="flatbuffers" linkPath="../_build/target-deps/flatbuffers-release">
+        <package name="flatbuffers" version="22.12.06-0-${platform}-static-release" />
+    </dependency>
   <dependency name="generic_model_output_${config}" linkPath="../_build/target-deps/generic_model_output/${platform_target}/${config}">
     <package name="generic-model-output" version="110.1.1+production.301300.43f6f88d.gl.${platform_target_abi}.${config}"/>
   </dependency>

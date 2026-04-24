@@ -15,8 +15,6 @@
 
 """Test UCX odometry publishing node functionality."""
 
-import struct
-
 import numpy as np
 import omni.graph.core as og
 import omni.kit.app
@@ -25,9 +23,10 @@ import omni.kit.test
 import omni.kit.usd
 import ucxx._lib.libucxx as ucx_api
 import usdrt.Sdf
+from isaacsim.ucx.nodes.messages.isaac import Odometry
 from ucxx._lib.arr import Array
 
-from .common import UCXTestCase
+from .common import UCXTestCase, _read_tensor_f32
 
 # Test configuration constants
 CONNECTION_WAIT_FRAMES = 60  # Frames to wait for node listener to initialize
@@ -65,46 +64,34 @@ async def add_cube(path: str, size: float, offset: list):
 
 
 def unpack_odometry_message(buffer: object):
-    """Unpack a UCX odometry message.
-
-    Message format:
-    - timestamp (double, 8 bytes)
-    - position (3 doubles, 24 bytes) - relative position in body frame
-    - orientation (4 doubles, 32 bytes) - relative quaternion (w, x, y, z)
-    - linear_velocity (3 doubles, 24 bytes) - body frame
-    - angular_velocity (3 doubles, 24 bytes) - body frame
-    - linear_acceleration (3 doubles, 24 bytes) - body frame
-    - angular_acceleration (3 doubles, 24 bytes) - body frame
-    Total: 160 bytes
+    """Unpack a UCX odometry FlatBuffers message.
 
     Args:
-        buffer: Buffer containing the packed odometry message.
+        buffer: Buffer containing the FlatBuffers-encoded odometry message.
 
     Returns:
         Tuple of (timestamp, position, orientation, linear_velocity, angular_velocity,
                 linear_acceleration, angular_acceleration).
+        position is [x, y, z], orientation is [w, x, y, z], velocities are [x, y, z].
+        linear_acceleration and angular_acceleration are always (0, 0, 0) as they are
+        not encoded in the Odometry schema.
     """
-    offset = 0
-    timestamp = struct.unpack("<d", buffer[offset : offset + 8].tobytes())[0]
-    offset += 8
+    buf = bytearray(buffer.tobytes())
+    msg = Odometry.Odometry.GetRootAs(buf, 0)
 
-    position = struct.unpack("<3d", buffer[offset : offset + 24].tobytes())
-    offset += 24
+    timestamp = msg.Header().Stamp().TimeNs() / 1e9
 
-    orientation = struct.unpack("<4d", buffer[offset : offset + 32].tobytes())
-    offset += 32
+    pose = msg.Pose().Pose()
+    position = _read_tensor_f32(pose.Position())
+    orientation = _read_tensor_f32(pose.Orientation())
 
-    linear_velocity = struct.unpack("<3d", buffer[offset : offset + 24].tobytes())
-    offset += 24
+    twist = msg.Twist().Twist()
+    linear_velocity = _read_tensor_f32(twist.Linear())
+    angular_velocity = _read_tensor_f32(twist.Angular())
 
-    angular_velocity = struct.unpack("<3d", buffer[offset : offset + 24].tobytes())
-    offset += 24
-
-    linear_acceleration = struct.unpack("<3d", buffer[offset : offset + 24].tobytes())
-    offset += 24
-
-    angular_acceleration = struct.unpack("<3d", buffer[offset : offset + 24].tobytes())
-    offset += 24
+    # Acceleration is not in the Odometry schema
+    linear_acceleration = (0.0, 0.0, 0.0)
+    angular_acceleration = (0.0, 0.0, 0.0)
 
     return (
         timestamp,
@@ -167,7 +154,7 @@ class TestUCXPublishOdometry(UCXTestCase):
 
         for attempt in range(retry_count):
             try:
-                max_buffer_size = 512
+                max_buffer_size = 1024
                 buffer = np.empty(max_buffer_size, dtype=np.uint8)
 
                 # Receive using the endpoint
@@ -247,7 +234,7 @@ class TestUCXPublishOdometry(UCXTestCase):
         print(f"Received odometry (input mode):")
         print(f"  Timestamp: {timestamp}")
         print(f"  Position: {position}")
-        print(f"  Orientation (WXYZ): {orientation}")
+        print(f"  Orientation (w,x,y,z): {orientation}")
         print(f"  Linear velocity: {lin_vel}")
         print(f"  Angular velocity: {ang_vel}")
 
@@ -316,7 +303,7 @@ class TestUCXPublishOdometry(UCXTestCase):
         print(f"Received odometry from cube:")
         print(f"  Timestamp: {timestamp}")
         print(f"  Relative Position: {position}")
-        print(f"  Orientation (WXYZ): {orientation}")
+        print(f"  Orientation (w,x,y,z): {orientation}")
 
         # Verify we got valid data
         self.assertGreater(timestamp, 0.0, "Timestamp should be positive")

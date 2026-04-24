@@ -15,13 +15,14 @@
 
 """Test UCX joint command subscribing node functionality."""
 
-import struct
-
+import flatbuffers
 import isaacsim.core.experimental.utils.app as app_utils
 import numpy as np
 import omni
 import omni.graph.core as og
 import ucxx._lib.libucxx as ucx_api
+from isaacsim.ucx.nodes.messages.isaac import Header, JointCommand, Tensor
+from isaacsim.ucx.nodes.messages.isaac import Time as TimeMsg
 from isaacsim.ucx.nodes.tests.common import UCXTestCase
 from ucxx._lib.arr import Array
 
@@ -37,20 +38,14 @@ class TestUCXSubscribeJointCommand(UCXTestCase):
 
     async def setup_ucx_client_with_listener(self):
         """Setup UCX client."""
-        for _ in range(5):
+        for _ in range(60):
             await omni.kit.app.get_app().next_update_async()
         self.create_ucx_client(self.port)
+        for _ in range(20):
+            await omni.kit.app.get_app().next_update_async()
 
     def pack_joint_command_message(self, timestamp: float, positions: list, velocities: list, efforts: list):
-        """Pack a joint command message for UCX.
-
-        Message format (updated to use doubles):
-        - timestamp (double, 8 bytes)
-        - num_joints (uint32_t, 4 bytes)
-        - For each joint:
-          - position (double, 8 bytes)
-          - velocity (double, 8 bytes)
-          - effort (double, 8 bytes)
+        """Pack a joint command FlatBuffers message for UCX.
 
         Args:
             timestamp: Timestamp value for the message.
@@ -59,21 +54,47 @@ class TestUCXSubscribeJointCommand(UCXTestCase):
             efforts: List of joint effort values.
 
         Returns:
-            Packed binary buffer containing the joint command message.
+            Packed binary buffer containing the FlatBuffers-encoded joint command message.
         """
-        num_joints = len(positions)
-        buffer = struct.pack("<d", timestamp)
-        buffer += struct.pack("<I", num_joints)
+        builder = flatbuffers.Builder(1024)
 
-        # Pack all positions, then all velocities, then all efforts (NOT interleaved)
-        for i in range(num_joints):
-            buffer += struct.pack("<d", positions[i])
-        for i in range(num_joints):
-            buffer += struct.pack("<d", velocities[i])
-        for i in range(num_joints):
-            buffer += struct.pack("<d", efforts[i])
+        def build_f32_tensor(values):
+            data_bytes = np.array(values, dtype=np.float32).tobytes()
+            Tensor.TensorStartDataVector(builder, len(data_bytes))
+            for b in reversed(data_bytes):
+                builder.PrependByte(b)
+            data_vec = builder.EndVector()
 
-        return buffer
+            Tensor.TensorStartShapeVector(builder, 1)
+            builder.PrependInt64(len(values))
+            shape_vec = builder.EndVector()
+
+            Tensor.TensorStart(builder)
+            Tensor.TensorAddData(builder, data_vec)
+            Tensor.TensorAddShape(builder, shape_vec)
+            return Tensor.TensorEnd(builder)
+
+        pos_tensor = build_f32_tensor(positions)
+        vel_tensor = build_f32_tensor(velocities)
+        eff_tensor = build_f32_tensor(efforts)
+
+        TimeMsg.TimeStart(builder)
+        TimeMsg.TimeAddTimeNs(builder, int(timestamp * 1e9))
+        time_obj = TimeMsg.TimeEnd(builder)
+
+        Header.HeaderStart(builder)
+        Header.HeaderAddStamp(builder, time_obj)
+        header_obj = Header.HeaderEnd(builder)
+
+        JointCommand.JointCommandStart(builder)
+        JointCommand.JointCommandAddHeader(builder, header_obj)
+        JointCommand.JointCommandAddPosition(builder, pos_tensor)
+        JointCommand.JointCommandAddVelocity(builder, vel_tensor)
+        JointCommand.JointCommandAddEffort(builder, eff_tensor)
+        joint_cmd = JointCommand.JointCommandEnd(builder)
+
+        builder.Finish(joint_cmd)
+        return bytes(builder.Output())
 
     async def send_joint_command(
         self, timestamp: float, positions: list, velocities: list, efforts: list, tag: int = 3

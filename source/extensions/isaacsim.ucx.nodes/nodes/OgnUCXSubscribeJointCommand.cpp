@@ -14,9 +14,11 @@
 // limitations under the License.
 
 
+#include <flatbuffers/flatbuffers.h>
 #include <isaacsim/ucx/nodes/UcxSubscribeJointCommandNodeBase.h>
 
 #include <OgnUCXSubscribeJointCommandDatabase.h>
+#include <joint_command_generated.h>
 
 using namespace isaacsim::ucx::nodes;
 
@@ -83,45 +85,48 @@ protected:
     /**
      * @brief Parse joint command message from raw bytes.
      * @details
-     * Parses the message buffer into a JointCommandData structure.
-     * Message format: timestamp(8) + num_dofs(4) + positions(double*num_dofs) +
-     *                 velocities(double*num_dofs) + efforts(double*num_dofs)
+     * Deserializes the FlatBuffers-encoded JointCommand message into a JointCommandData structure.
      *
      * @param[in] buffer Raw message buffer
      * @return JointCommandData Parsed joint command data
      */
     JointCommandData parseMessage(const std::vector<uint8_t>& buffer) override
     {
+        auto* message = isaac::GetJointCommand(buffer.data());
+
         JointCommandData data;
         data.valid = false;
-        data.numJoints = 0;
+        if (!message || !message->header() || !message->header()->stamp() || !message->position() ||
+            !message->position()->shape() || !message->velocity() || !message->effort())
+        {
+            return data;
+        }
+        data.timestamp = static_cast<double>(message->header()->stamp()->time_ns()) / 1e9;
+        data.numJoints = message->position()->shape()->Get(0);
 
-        size_t offset = 0;
-
-        // Parse timestamp
-        std::memcpy(&data.timestamp, buffer.data() + offset, sizeof(double));
-        offset += sizeof(double);
-
-        // Parse number of DOFs
-        std::memcpy(&data.numJoints, buffer.data() + offset, sizeof(uint32_t));
-        offset += sizeof(uint32_t);
-
-        // Resize vectors
         data.positionCommand.resize(data.numJoints);
         data.velocityCommand.resize(data.numJoints);
         data.effortCommand.resize(data.numJoints);
 
-        // Parse position commands
-        std::memcpy(data.positionCommand.data(), buffer.data() + offset, sizeof(double) * data.numJoints);
-        offset += sizeof(double) * data.numJoints;
+        auto copyTensor = [&](std::vector<double>& dst, const isaac::Tensor* tensor) -> bool
+        {
+            if (!tensor->data() || tensor->data()->size() < static_cast<size_t>(data.numJoints) * sizeof(float))
+            {
+                return false;
+            }
+            const float* src = reinterpret_cast<const float*>(tensor->data()->data());
+            for (int64_t i = 0; i < data.numJoints; ++i)
+            {
+                dst[i] = static_cast<double>(src[i]);
+            }
+            return true;
+        };
 
-        // Parse velocity commands
-        std::memcpy(data.velocityCommand.data(), buffer.data() + offset, sizeof(double) * data.numJoints);
-        offset += sizeof(double) * data.numJoints;
-
-        // Parse effort commands
-        std::memcpy(data.effortCommand.data(), buffer.data() + offset, sizeof(double) * data.numJoints);
-        offset += sizeof(double) * data.numJoints;
+        if (!copyTensor(data.positionCommand, message->position()) ||
+            !copyTensor(data.velocityCommand, message->velocity()) || !copyTensor(data.effortCommand, message->effort()))
+        {
+            return data; // data.valid remains false
+        }
 
         data.valid = true;
         return data;

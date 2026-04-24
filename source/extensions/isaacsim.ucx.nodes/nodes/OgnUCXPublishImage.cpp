@@ -16,17 +16,20 @@
 
 #include <carb/RenderingTypes.h>
 
+#include <flatbuffers/flatbuffers.h>
 #include <isaacsim/ucx/nodes/UcxPublishImageNodeBase.h>
 
 #include <OgnUCXPublishImageDatabase.h>
+#include <image_generated.h>
 
 /**
  * @class OgnUCXPublishImage
  * @brief OmniGraph node for publishing camera images via UCX.
  * @details
  * This node publishes camera image data over UCX using tagged communication.
- * It supports RGB8, RGBA8, and BGRA8 image formats.
- * Supports both CPU and GPU memory sources.
+ * It supports RGB8, RGBA8, BGR8, BGRA8, and other image formats.
+ * Messages are serialized as FlatBuffers Image messages.
+ * GPU sources are copied to CPU before serialization.
  */
 class OgnUCXPublishImage : public UCXPublishImageNodeBase<OgnUCXPublishImageDatabase>
 {
@@ -67,19 +70,13 @@ protected:
     /**
      * @brief Generate message from image metadata and pixel data.
      * @details
-     * Serializes image metadata and data, handling both CPU and GPU memory sources.
-     * Message format (ROS2-compatible):
-     * - timestamp (double, 8 bytes)
-     * - width (uint32_t, 4 bytes)
-     * - height (uint32_t, 4 bytes)
-     * - encoding_length (uint32_t, 4 bytes)
-     * - encoding (variable length string, padded to 4-byte boundary)
-     * - step (uint32_t, 4 bytes) - row length in bytes
-     * - image_data (variable length)
+     * Serializes image metadata and data as a FlatBuffers Image message.
+     * Pixel data is stored as a Tensor with dtype uint8 and shape [dataSize].
+     * GPU sources are first copied to CPU memory, then serialized.
      *
-     * @param[in] metadata Image metadata
+     * @param[in] metadata Image metadata (timestamp, dimensions, encoding)
      * @param[in] db Database accessor for pixel data access
-     * @return std::vector<uint8_t> Serialized message data
+     * @return std::vector<uint8_t> Serialized FlatBuffers message, or empty on error
      */
     std::vector<uint8_t> generateMessage(const isaacsim::ucx::nodes::ImageMetadata& metadata,
                                          OgnUCXPublishImageDatabase& db) override
@@ -87,11 +84,11 @@ protected:
         const int cudaDeviceIndex = db.inputs.cudaDeviceIndex();
         const size_t bufferSize = db.inputs.bufferSize();
 
-        // Determine data size - may need to calculate for GPU textures
+        // Determine data size
         size_t dataSize = metadata.dataSize;
         if (dataSize == 0 && cudaDeviceIndex != -1)
         {
-            // GPU texture - calculate size based on format
+            // GPU texture — calculate size based on format
             const carb::Format resourceFormat = static_cast<carb::Format>(db.inputs.format());
             if (resourceFormat == carb::Format::eR32_SFLOAT)
             {
@@ -110,66 +107,21 @@ protected:
             return {};
         }
 
-        // Calculate step if not set
-        uint32_t step = metadata.step;
-        if (step == 0 && metadata.height > 0)
-        {
-            step = static_cast<uint32_t>(dataSize / metadata.height);
-        }
-
-        // Calculate message size with 4-byte alignment after encoding
-        const size_t encodingLength = metadata.encoding.length();
-        const size_t encodingPadded = (encodingLength + 3) & ~3; // Round up to 4-byte boundary
-        const size_t messageSize = sizeof(double) + sizeof(uint32_t) * 4 + encodingPadded + dataSize;
-
-        // Allocate message buffer
-        std::vector<uint8_t> messageData(messageSize);
-        size_t offset = 0;
-
-        // Write header
-        std::memcpy(messageData.data() + offset, &metadata.timestamp, sizeof(double));
-        offset += sizeof(double);
-
-        std::memcpy(messageData.data() + offset, &metadata.width, sizeof(uint32_t));
-        offset += sizeof(uint32_t);
-
-        std::memcpy(messageData.data() + offset, &metadata.height, sizeof(uint32_t));
-        offset += sizeof(uint32_t);
-
-        const uint32_t encLen = static_cast<uint32_t>(encodingLength);
-        std::memcpy(messageData.data() + offset, &encLen, sizeof(uint32_t));
-        offset += sizeof(uint32_t);
-
-        std::memcpy(messageData.data() + offset, metadata.encoding.c_str(), encodingLength);
-        offset += encodingLength;
-
-        // Pad to 4-byte boundary (fill with zeros)
-        while (offset % 4 != 0)
-        {
-            messageData[offset] = 0;
-            offset++;
-        }
-
-        // Write step (bytes per row)
-        std::memcpy(messageData.data() + offset, &step, sizeof(uint32_t));
-        offset += sizeof(uint32_t);
-
-        // Copy image data based on source location
-        uint8_t* imageDataDest = messageData.data() + offset;
+        // Collect pixel bytes into a CPU buffer
+        std::vector<uint8_t> pixelBuf(dataSize);
+        uint8_t* dest = pixelBuf.data();
 
         if (cudaDeviceIndex == -1)
         {
-            // Data is on CPU
+            // CPU source
             if (db.inputs.dataPtr() != 0 && bufferSize > 0)
             {
-                // Use pointer-based input
-                std::memcpy(imageDataDest, reinterpret_cast<const void*>(db.inputs.dataPtr()), dataSize);
+                std::memcpy(dest, reinterpret_cast<const void*>(db.inputs.dataPtr()), dataSize);
             }
             else if (db.inputs.data.size() > 0)
             {
-                // Use array-based input
                 const auto& imageData = db.inputs.data.cpu();
-                std::memcpy(imageDataDest, imageData.data(), dataSize);
+                std::memcpy(dest, imageData.data(), dataSize);
             }
             else
             {
@@ -179,15 +131,13 @@ protected:
         }
         else
         {
-            // Data is on GPU - copy to host
+            // GPU source — copy to host
             isaacsim::core::includes::ScopedDevice scopedDev(cudaDeviceIndex);
-
-            // Manage CUDA stream
             ensureCudaStream(cudaDeviceIndex);
 
             if (bufferSize == 0)
             {
-                // Data in GPU texture
+                // Data in GPU texture (mipmapped array)
                 cudaArray_t levelArray = nullptr;
                 CUDA_CHECK(cudaGetMipmappedArrayLevel(
                     &levelArray, reinterpret_cast<cudaMipmappedArray_t>(db.inputs.dataPtr()), 0));
@@ -201,8 +151,8 @@ protected:
                         db.logError("Data size mismatch for eR32_SFLOAT format");
                         return {};
                     }
-                    CUDA_CHECK(cudaMemcpy2DFromArrayAsync(imageDataDest, metadata.width * sizeof(float), levelArray, 0,
-                                                          0, metadata.width * sizeof(float), metadata.height,
+                    CUDA_CHECK(cudaMemcpy2DFromArrayAsync(dest, metadata.width * sizeof(float), levelArray, 0, 0,
+                                                          metadata.width * sizeof(float), metadata.height,
                                                           cudaMemcpyDeviceToHost, getCudaStream()));
                     CUDA_CHECK(cudaStreamSynchronize(getCudaStream()));
                     break;
@@ -214,13 +164,62 @@ protected:
             else
             {
                 // Data in GPU buffer
-                CUDA_CHECK(cudaMemcpyAsync(imageDataDest, reinterpret_cast<void*>(db.inputs.dataPtr()), bufferSize,
+                CUDA_CHECK(cudaMemcpyAsync(dest, reinterpret_cast<void*>(db.inputs.dataPtr()), bufferSize,
                                            cudaMemcpyDeviceToHost, getCudaStream()));
                 CUDA_CHECK(cudaStreamSynchronize(getCudaStream()));
             }
         }
 
-        return messageData;
+        // Map encoding string to ImageEncoding enum
+        isaac::ImageEncoding encoding = isaac::ImageEncoding_CUSTOM;
+        const std::string& enc = metadata.encoding;
+        if (enc == "rgb8")
+            encoding = isaac::ImageEncoding_RGB8;
+        else if (enc == "rgba8")
+            encoding = isaac::ImageEncoding_RGBA8;
+        else if (enc == "bgr8")
+            encoding = isaac::ImageEncoding_BGR8;
+        else if (enc == "bgra8")
+            encoding = isaac::ImageEncoding_BGRA8;
+        else if (enc == "r8_g8_b8")
+            encoding = isaac::ImageEncoding_R8_G8_B8;
+        else if (enc == "b8_g8_r8")
+            encoding = isaac::ImageEncoding_B8_G8_R8;
+        else if (enc == "mono8")
+            encoding = isaac::ImageEncoding_MONO8;
+        else if (enc == "mono16")
+            encoding = isaac::ImageEncoding_MONO16;
+        else if (enc == "mono32")
+            encoding = isaac::ImageEncoding_MONO32;
+        else if (enc == "mono32f")
+            encoding = isaac::ImageEncoding_MONO32F;
+
+        // Build FlatBuffers message
+        flatbuffers::FlatBufferBuilder builder;
+
+        // Data Tensor: raw bytes as ubyte, dtype=uint8, shape=[dataSize]
+        auto pixel_bytes = builder.CreateVector(dest, dataSize);
+        std::vector<int64_t> shape = { static_cast<int64_t>(dataSize) };
+        auto shape_fb = builder.CreateVector(shape);
+        isaac::DLDataType dtype(isaac::DLDataTypeCode_kDLUInt, 8, 1);
+        isaac::DLDevice device(isaac::DLDeviceType_kDLCPU, 0);
+        std::vector<int64_t> strides = { 1 };
+        auto strides_fb = builder.CreateVector(strides);
+        auto data_tensor = isaac::CreateTensor(builder, pixel_bytes, shape_fb, &dtype, &device, 1, strides_fb);
+
+        // Header
+        const int64_t time_ns = static_cast<int64_t>(metadata.timestamp * 1e9);
+        auto frame_id_fb = builder.CreateString("");
+        auto stamp_fb = isaac::CreateTime(builder, time_ns, 0);
+        auto header_fb = isaac::CreateHeader(builder, stamp_fb, frame_id_fb);
+
+        // Image table
+        auto image_fb = isaac::CreateImage(builder, header_fb, static_cast<int32_t>(metadata.height),
+                                           static_cast<int32_t>(metadata.width), encoding, data_tensor);
+        builder.Finish(image_fb);
+
+        uint8_t const* bufPtr = builder.GetBufferPointer();
+        return std::vector<uint8_t>(bufPtr, bufPtr + builder.GetSize());
     }
 };
 
