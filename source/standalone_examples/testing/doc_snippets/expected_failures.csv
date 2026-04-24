@@ -135,3 +135,6 @@ utilities/vscode_extension_template_generator/running_the_extension.py
 utilities/custom_interactive_examples/add_the_following_lines_to_codeextsisaacsimexample.py
 utilities/custom_interactive_examples/edit_the_highlighted_lines_in_codeextsisaacsimexam.py
 overview/extensions_renaming/renaming_extension_apis.py
+#
+# ---- WG11: digital_twin/ (extension not auto-enabled in default experience) ----
+digital_twin/warehouse_logistics/ext_omni_warehouse_creator/headless_generation.py,ModuleNotFoundError.*omni\.warehouse\.creator\.api
