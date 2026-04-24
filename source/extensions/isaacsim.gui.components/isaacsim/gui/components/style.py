@@ -15,6 +15,7 @@
 
 """Defines styling constants and configuration for Isaac Sim GUI components."""
 
+from typing import Any
 
 import carb.settings
 import omni.ui as ui
@@ -32,7 +33,27 @@ COLOR_Z = 0xFFA07D4F
 COLOR_W = 0xFFAA5555
 
 
-def get_style() -> dict[str, dict[str, any]]:
+def get_folder_picker_icon_button_style() -> dict[str, dict[str, Any]]:
+    """Returns a reusable style dict for an icon-only "folder picker" button.
+
+    Resolves the ``IconButton.Image::FolderPicker`` entries from the currently
+    active theme so callers do not need to hardcode image URLs or colors.
+
+    Returns:
+        A style dict suitable for passing to ``omni.ui.Button(style=...)``.
+    """
+    folder_picker_image = get_style()["IconButton.Image::FolderPicker"]
+    return {
+        "": {"background_color": 0x0, "margin": 0, "padding": 0},
+        ":hovered": {"background_color": 0x0},
+        "Button.Image": {
+            "image_url": folder_picker_image["image_url"],
+            "color": folder_picker_image["color"],
+        },
+    }
+
+
+def get_style() -> dict[str, Any]:
     """Returns the GUI style configuration dictionary for the isaacsim.gui.components extension.
 
     The style configuration adapts to the current UI style setting (NvidiaLight or NvidiaDark) and provides
@@ -232,7 +253,6 @@ def get_style() -> dict[str, dict[str, any]]:
                 "padding": 0,
                 "radius": 0,
                 "font_size": 10,
-                "background_color": 0xFFA8A8A8,
                 "background_color": 0xFFA8A8A8,
             },
             "CheckBox::greenCheck": {"font_size": 10, "background_color": KIT_GREEN, "color": 0xFF23211F},

@@ -105,15 +105,25 @@ Getting Started
                 ./python.sh standalone_examples/api/isaacsim.asset.importer.urdf/urdf_import.py 
 
             **Args:**
-                - ``--urdf``: Path to the URDF file (.urdf) to import.
+                - ``--urdf``: Path to a URDF file (.urdf) or a directory containing URDF files to import.
                 - ``--usd-path``: Directory to write converted USD assets.
+                - ``--robot-type``: Robot type for the Isaac robot schema. One of: Default, End Effector, Manipulator, Humanoid, Wheeled, Holonomic, Quadruped, Mobile Manipulators, Aerial (default: Default).
                 - ``--merge-mesh``: Merge meshes after conversion.
+                - ``--merge-fixed-joints``: Merge fixed joints where possible to optimize the model.
                 - ``--debug-mode``: Enable debug mode and keep intermediate outputs.
                 - ``--collision-from-visuals``: Generate collision geometry from visuals.
                 - ``--collision-type``: Collision geometry type (e.g. "Convex Hull", "Convex Decomposition", "Bounding Sphere", "Bounding Cube").
                 - ``--allow-self-collision``: Allow self-collision for the imported asset.
-                - ``--test``: uses nv_ant.xml test asset into a temp directory
-                - ``--ros-package``: ROS package mapping in format 'name:path'. Can be specified multiple times for multiple packages.
+                - ``--fix-base``: Add a fixed joint from the world to the root rigid-body link.
+                - ``--link-density``: Default density (kg/m^3) for rigid body links with no explicit mass.
+                - ``--joint-drive-type``: Joint drive type applied to all joints (``force`` or ``acceleration``).
+                - ``--joint-target-type``: Joint target type applied to all joints (``none``, ``position``, or ``velocity``).
+                - ``--override-joint-stiffness``: Joint stiffness in Nm/rad (revolute) or N/m (prismatic) applied to all joints.
+                - ``--override-joint-damping``: Joint damping in Nm*s/rad (revolute) or N*s/m (prismatic) applied to all joints.
+                - ``--ros-package``: ROS package mapping in format ``name:path``. Can be specified multiple times for multiple packages.
+                - ``--run-asset-transformer``: Run asset transformer after conversion (default: True).
+                - ``--run-multi-physics-conversion``: Run multi-physics conversion after conversion (default: True).
+                - ``--test``: Use the built-in ``carter.urdf`` test asset and write output to a temp directory.
 
         Example:
 

@@ -1,4 +1,13 @@
 # Changelog
+## [1.4.1] - 2026-04-22
+### Fixed
+- Multi-select import: build an independent `OptionWidget` / config / models per selected MJCF file so edits to one file's panel no longer bleed into another's settings
+
+## [1.4.0] - 2026-04-22
+### Changed
+- Linting
+- Robot Type dropbox
+- UI for multi file selection and import
 
 ## [1.3.2] - 2026-04-21
 ### Changed

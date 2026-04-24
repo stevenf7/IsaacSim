@@ -1,4 +1,18 @@
 # Changelog
+## [3.9.0] - 2026-04-20
+### Changed
+- `URDFImporter.import_urdf()` now writes all intermediate artifacts (merged-joints URDF, usdex layers, temp stage) to a system temp directory via `tempfile.mkdtemp()` in non-debug mode, instead of the source URDF directory. This avoids `PermissionError` when importing URDFs from read-only locations (packman cache, mounted volumes, installed extension data). In `debug_mode`, intermediates are still written next to the final USD output for inspection.
+- When the merged URDF is relocated to a temp directory, any relative `<mesh filename="..."/>` entries are rewritten to absolute paths so downstream mesh resolution is preserved. `package://` URIs and already-absolute paths are left untouched.
+- Intermediate-artifact cleanup is now wrapped in a `try/finally` so the scratch directory is removed even if an exception is raised mid-conversion.
+
+### Fixed
+- With `run_asset_transformer=False`, `import_urdf()` no longer crashes trying to write to a non-existent output directory. The intermediate stage is now only materialized when the transformer needs it, and the final USD is written directly to the output directory (which is created via `os.makedirs(..., exist_ok=True)`).
+
+## [3.8.0] - 2026-04-15
+- Added utilities for merging fixed joints
+- Added configs to set default joint dynamics, density, and fix robot
+- Added configs to run asset transformer, multi-physics conversion
+- Added robot name into the debug folder path to avoid duplication
 
 ## [3.7.0] - 2026-04-14
 ### Changed

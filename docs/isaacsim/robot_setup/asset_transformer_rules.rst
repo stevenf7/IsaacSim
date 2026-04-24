@@ -37,7 +37,7 @@ Rules are organized into four packages based on their function:
      - FlattenRule, VariantRoutingRule, InterfaceConnectionRule
      - Reorganize USD composition structure
    * - **Isaac Sim**
-     - RobotSchemaRule, MakeListsNonExplicitRule, PhysicsJointPoseFixRule
+     - RobotSchemaRule, MakeListsNonExplicitRule, PhysicsJointPoseFixRule, MergeMeshRule, MjcToPhysxConversionRule, UrdfToMjcPhysxConversionRule
      - Apply Isaac Sim-specific transformations
 
 Available Rules
@@ -562,6 +562,53 @@ Select a category tab to view available rules. Expand each rule for detailed par
          5. **Local Pose Fix**: Computes the corrective local pose as ``joint_world_orig * inverse(body_world_entry)`` and writes the resulting translation and rotation back to the joint's ``localPos`` and ``localRot`` attributes.
          6. **Layer Save**: Saves the modified edit layer if any corrections were applied.
 
+      .. dropdown:: MergeMeshRule
+         :color: primary
+
+         Merges visual mesh prims that share a common rigid-body parent using the Scene Optimizer merge operation. This reduces the number of geometry prims and can improve rendering and simulation performance.
+
+         **Fully Qualified Type**: ``isaacsim.asset.transformer.rules.isaac_sim.merge_mesh.MergeMeshRule``
+
+         **Parameters**: None
+
+         **Execution Logic**:
+
+         1. **Rigid Body Discovery**: Traverses the stage for all prims with ``RigidBodyAPI`` applied.
+         2. **Mesh Grouping**: For each rigid body, collects child geometry prims (Mesh, Cube, Sphere, etc.) with ``default`` or ``render`` purpose, stopping at nested rigid body boundaries.
+         3. **Scene Optimizer Merge**: For each non-empty mesh group, invokes the Scene Optimizer ``merge`` command to combine the meshes into a single geometry prim while preserving material attributes.
+
+      .. dropdown:: MjcToPhysxConversionRule
+         :color: primary
+
+         Converts MJCF actuator and joint attributes to PhysX drive and joint schemas. This enables multi-physics engine support by translating MJCF gain/bias parameters into PhysX stiffness/damping.
+
+         **Fully Qualified Type**: ``isaacsim.asset.transformer.rules.isaac_sim.mjc_to_physx_conversion.MjcToPhysxConversionRule``
+
+         **Parameters**: None
+
+         **Execution Logic**:
+
+         1. **Actuator Conversion**: For each ``MjcActuator`` prim, reads ``gainPrm``, ``biasPrm``, ``gainType``, ``biasType``, and ``forceRange`` attributes. Converts position-control (kp/kd) and velocity-control (kd) patterns to ``DriveAPI`` stiffness and damping.
+         2. **Joint Conversion**: For each revolute/prismatic joint, converts MJCF-specific attributes (``frictionloss`` → ``PhysxJointAPI.jointFriction``, ``armature`` → ``PhysxJointAPI.armature``, ``ref`` → ``DriveAPI.targetPosition``).
+         3. **Mimic Joint Creation**: Creates ``PhysxMimicJointAPI`` for joints with ``NewtonMimicAPI`` relationships.
+
+      .. dropdown:: UrdfToMjcPhysxConversionRule
+         :color: primary
+
+         Converts URDF joint attributes to both MJCF actuators and PhysX joint schemas. This is the multi-physics conversion step for URDF-imported assets that creates the dual-backend representation.
+
+         **Fully Qualified Type**: ``isaacsim.asset.transformer.rules.isaac_sim.urdf_to_mjc_physx_conversion.UrdfToMjcPhysxConversionRule``
+
+         **Parameters**: None
+
+         **Execution Logic**:
+
+         1. **Physics Scope Creation**: Ensures a ``Physics`` scope exists under the default prim for actuator prims.
+         2. **URDF to PhysX Conversion**: For each revolute/prismatic joint, converts URDF attributes (``effort`` → ``DriveAPI.maxForce``, ``velocity`` → ``PhysxJointAPI.maxJointVelocity``, ``damping`` → ``DriveAPI.damping``, ``friction`` → ``PhysxJointAPI.jointFriction``, ``calibration`` → ``DriveAPI.targetPosition``).
+         3. **MjcActuator Creation**: Creates ``MjcActuator`` prims with ``gainPrm``/``biasPrm`` arrays derived from drive stiffness and damping for position or velocity control modes.
+         4. **PhysX to MJC Conversion**: Converts PhysX joint attributes back to MJCF attributes (``targetPosition`` → ``mjc:ref``, ``jointFriction`` → ``mjc:frictionloss``, ``armature`` → ``mjc:armature``).
+         5. **Mimic Joint Creation**: Creates ``PhysxMimicJointAPI`` for joints with ``NewtonMimicAPI`` relationships.
+
 
 Idempotency Requirement
 -----------------------
@@ -603,4 +650,7 @@ Use these fully qualified type names in rule profiles:
    isaacsim.asset.transformer.rules.isaac_sim.robot_schema.RobotSchemaRule
    isaacsim.asset.transformer.rules.isaac_sim.make_lists_non_explicit.MakeListsNonExplicitRule
    isaacsim.asset.transformer.rules.isaac_sim.physics_joint_pose_fix.PhysicsJointPoseFixRule
+   isaacsim.asset.transformer.rules.isaac_sim.merge_mesh.MergeMeshRule
+   isaacsim.asset.transformer.rules.isaac_sim.mjc_to_physx_conversion.MjcToPhysxConversionRule
+   isaacsim.asset.transformer.rules.isaac_sim.urdf_to_mjc_physx_conversion.UrdfToMjcPhysxConversionRule
 

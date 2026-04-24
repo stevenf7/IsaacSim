@@ -138,7 +138,7 @@ class RosPackageDelegate(ui.AbstractItemDelegate):
         self._border_width = border_width
         self._on_delete = on_delete
         self._row_style = {
-            "background_color": 0xFF111111,
+            "background_color": 0xFF23211F,
             "border_color": 0xFF5A5A5A,
             "border_width": border_width,
         }

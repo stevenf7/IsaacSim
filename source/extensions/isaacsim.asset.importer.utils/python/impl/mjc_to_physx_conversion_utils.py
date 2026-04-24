@@ -139,6 +139,7 @@ def convert_mjc_actuator_to_physics(mjc_actuator: Usd.Prim, stage: Usd.Stage) ->
     ):
         actuator_stiffness = gain_prm[0]
         actuator_damping = -bias_prm[2]
+
         drive_api.CreateStiffnessAttr().Set(actuator_stiffness)
         drive_api.CreateDampingAttr().Set(actuator_damping)
 
@@ -158,9 +159,9 @@ def convert_mjc_actuator_to_physics(mjc_actuator: Usd.Prim, stage: Usd.Stage) ->
         and gain_prm[0] == -bias_prm[2]
     ):
         actuator_damping = -bias_prm[2]
-        drive_api.CreateDampingAttr().Set(actuator_damping)
-        drive_api.CreateStiffnessAttr().Set(0)
 
+        drive_api.CreateStiffnessAttr().Set(0)
+        drive_api.CreateDampingAttr().Set(actuator_damping)
     else:
         _logger.warning(
             "Gain and bias prm arrays are not in the expected format for actuator "

@@ -14,12 +14,50 @@
 # limitations under the License.
 """Robot schema helpers and applied schema utilities."""
 import logging
+import os
 from enum import Enum
+from functools import lru_cache
 
 import pxr
-from pxr import Sdf, Usd
+from pxr import Sdf
 
 logger = logging.getLogger(__name__)
+
+_SCHEMA_USDA_PATH = os.path.join(os.path.dirname(__file__), "RobotSchema.usda")
+
+
+@lru_cache(maxsize=None)
+def _get_schema_layer() -> Sdf.Layer | None:
+    """Open the RobotSchema.usda file as an Sdf layer (cached)."""
+    return Sdf.Layer.FindOrOpen(_SCHEMA_USDA_PATH)
+
+
+def get_allowed_tokens(attribute: "Attributes") -> tuple[str, ...]:
+    """Return the ``allowedTokens`` list for a robot schema attribute.
+
+    Reads the list directly from the bundled ``RobotSchema.usda`` so the
+    Python-side tuple stays in sync with the authored schema.
+
+    Args:
+        attribute: The schema attribute to query (only Token-typed
+            attributes define allowed tokens).
+
+    Returns:
+        Tuple of allowed token strings, or an empty tuple if the
+        attribute has no ``allowedTokens`` metadata.
+    """
+    layer = _get_schema_layer()
+    if layer is None:
+        logger.warning("Could not open RobotSchema.usda at %s", _SCHEMA_USDA_PATH)
+        return ()
+
+    # IsaacRobotAPI/isaac:robotType -> /IsaacRobotAPI.isaac:robotType
+    for class_name in ("IsaacRobotAPI", "IsaacJointAPI", "IsaacSurfaceGripper", "IsaacAttachmentPointAPI"):
+        attr_spec = layer.GetAttributeAtPath(f"/{class_name}.{attribute.name}")
+        if attr_spec is not None:
+            tokens = attr_spec.GetInfo("allowedTokens") or []
+            return tuple(str(t) for t in tokens)
+    return ()
 
 
 class Classes(Enum):

@@ -1,4 +1,10 @@
 # Changelog
+## [1.6.0] - 2026-04-20
+### Changed
+- Added robot schema related helpers
+- Added utilities to preset joint density and joint dynamics
+- Updated merge mesh utils to use the scene optimzier apis directly
+- Added file conflict collision checks
 
 ## [1.5.0] - 2026-04-14
 ### Changed

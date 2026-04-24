@@ -71,7 +71,14 @@ class TestImporterUI(MenuUITestCase):
         self._urdf_path = os.path.normpath(
             os.path.join(self._urdf_extension_path, "data", "urdf", "robots", "ur10", "urdf", "ur10.urdf")
         )
+        self._tests_dir = os.path.normpath(os.path.join(self._urdf_extension_path, "data", "urdf", "tests"))
         self._tmpdir = tempfile.mkdtemp(prefix="urdf_ui_test_")
+        # Redirect tempfile's default directory to self._tmpdir so any
+        # mkdtemp() calls made during the test (e.g. the URDF importer's
+        # private scratch dir in non-debug mode) are rooted inside
+        # self._tmpdir and cleaned up deterministically in tearDown.
+        self._prev_tempdir = tempfile.tempdir
+        tempfile.tempdir = self._tmpdir
 
     # After running each test
     async def tearDown(self) -> None:
@@ -90,6 +97,7 @@ class TestImporterUI(MenuUITestCase):
         await omni.kit.app.get_app().next_update_async()
         self._stage = None
         gc.collect()
+        tempfile.tempdir = self._prev_tempdir
         shutil.rmtree(self._tmpdir, ignore_errors=True)
 
     def find_content_file(self, window_name: str, filename: str) -> object | None:
@@ -315,5 +323,210 @@ class TestImporterUI(MenuUITestCase):
         print(f"ui_ur10_path: {ui_ur10_path}")
         result = await usd_utils.compare_usd_files([ui_ur10_path, urdf_importer_output_path])
         self.assertTrue(result, "USD comparison failed")
+
+        await omni.kit.app.get_app().next_update_async()
+
+    async def test_multiselect_per_file_state_isolation(self) -> None:
+        """Verify per-file settings and ROS package tables don't cross-contaminate.
+
+        Opens File > Import, navigates to the data/urdf/tests folder,
+        then programmatically multi-selects test_basic.urdf and
+        test_advanced.urdf via the file-browser TreeView ``selection``
+        property.  The framework creates two independent option panels
+        (one per file).  Each file is given different configs and ROS
+        package entries via its per-file state, then the Import button
+        is clicked.  The test asserts each file's ``_get_config`` matches
+        only its own settings — especially the ROS package table.
+        """
+        extension = urdf_ui_extension.get_instance()
+        self.assertIsNotNone(extension)
+
+        path_basic = os.path.join(self._tests_dir, "test_basic.urdf")
+        path_advanced = os.path.join(self._tests_dir, "test_advanced.urdf")
+
+        # ----------------------------------------------------------------
+        # Open File > Import and navigate to the tests folder
+        # ----------------------------------------------------------------
+        await self.menu_click_with_retry("File/Import")
+
+        dir_widget = await self.find_widget_with_retry(
+            "Select File//Frame/**/StringField[*].identifier=='filepicker_directory_path'"
+        )
+        await dir_widget.input(path_basic)
+        await ui_test.human_delay()
+        await omni.kit.app.get_app().next_update_async()
+
+        grid_view = await self.find_widget_with_retry(
+            "Select File//Frame/**/VGrid[*].identifier=='filebrowser_grid_view'"
+        )
+        await ui_test.human_delay()
+        await omni.kit.app.get_app().next_update_async()
+
+        # ----------------------------------------------------------------
+        # Multi-select both files by setting the TreeView selection
+        # property directly.  The file-browser table view (backed by a
+        # ui.TreeView) shares the same listview model as the grid view.
+        # Setting its ``selection`` triggers selection_changed_fn which
+        # propagates through the asset-importer callback chain.
+        # ----------------------------------------------------------------
+        item_basic = None
+        item_advanced = None
+        target_tv = None
+
+        for tv_wrapper in ui_test.find_all("Select File//Frame/**/TreeView[*]"):
+            tv = tv_wrapper.widget
+            if tv.model is None:
+                continue
+            items = tv.model.get_item_children(None)
+            for item in items:
+                if item.name == "test_basic.urdf":
+                    item_basic = item
+                elif item.name == "test_advanced.urdf":
+                    item_advanced = item
+            if item_basic and item_advanced:
+                target_tv = tv
+                break
+
+        self.assertIsNotNone(target_tv, "Could not find TreeView with target file items")
+        self.assertIsNotNone(item_basic, "test_basic.urdf not found in file model")
+        self.assertIsNotNone(item_advanced, "test_advanced.urdf not found in file model")
+
+        target_tv.selection = [item_basic, item_advanced]
+        await ui_test.human_delay()
+        await omni.kit.app.get_app().next_update_async()
+
+        # ----------------------------------------------------------------
+        # Both files are now selected.  The asset importer creates one
+        # option panel per file, so every widget identifier appears
+        # twice.  Use find_all and pick by index to target the correct
+        # file's panel (0 = first file, 1 = second file).
+        # ----------------------------------------------------------------
+        async def find_nth(query: str, index: int = 0, max_frames: int = 100) -> object:
+            for _ in range(max_frames):
+                widgets = ui_test.find_all(query)
+                if len(widgets) > index:
+                    return widgets[index]
+                await omni.kit.app.get_app().next_update_async()
+            raise TimeoutError(
+                f"Expected at least {index + 1} widget(s) for '{query}' after {max_frames} frames, found {len(widgets)}"
+            )
+
+        # Use DIFFERENT values per panel so any state bleed is caught below.
+
+        # -- Panel 0: test_basic.urdf --
+        (await find_nth("Select File//Frame/**/StringField[*].identifier=='urdf_output_path'", 0)).model.set_value(
+            self._tmpdir
+        )
+        (
+            await find_nth("Select File//Frame/**/StringField[*].identifier=='ros_package_table_name_field_0'", 0)
+        ).model.set_value("basic_package")
+        await ui_test.human_delay()
+        (
+            await find_nth("Select File//Frame/**/StringField[*].identifier=='ros_package_table_path_field_0'", 0)
+        ).model.set_value("basic_path")
+        await ui_test.human_delay()
+        # collision_from_visuals stays False on panel 0
+        (
+            await find_nth("Select File//Frame/**/CheckBox[*].identifier=='urdf_allow_self_collision'", 0)
+        ).model.set_value(False)
+        await ui_test.human_delay()
+        (await find_nth("Select File//Frame/**/CheckBox[*].identifier=='urdf_merge_mesh'", 0)).model.set_value(False)
+        await ui_test.human_delay()
+        (await find_nth("Select File//Frame/**/CheckBox[*].identifier=='urdf_debug_mode'", 0)).model.set_value(False)
+        await ui_test.human_delay()
+
+        # -- Panel 1: test_advanced.urdf --
+        (await find_nth("Select File//Frame/**/StringField[*].identifier=='urdf_output_path'", 1)).model.set_value(
+            self._tmpdir
+        )
+        (
+            await find_nth("Select File//Frame/**/StringField[*].identifier=='ros_package_table_name_field_0'", 1)
+        ).model.set_value("advanced_package")
+        await ui_test.human_delay()
+        (
+            await find_nth("Select File//Frame/**/StringField[*].identifier=='ros_package_table_path_field_0'", 1)
+        ).model.set_value("advanced_path")
+        await ui_test.human_delay()
+        (
+            await find_nth("Select File//Frame/**/CheckBox[*].identifier=='urdf_collision_from_visuals'", 1)
+        ).model.set_value(True)
+        await ui_test.human_delay()
+        (
+            await find_nth("Select File//Frame/**/ComboBox[*].identifier=='urdf_collision_type'", 1)
+        ).model.get_item_value_model(None, 0).set_value(2)
+        await ui_test.human_delay()
+        (
+            await find_nth("Select File//Frame/**/CheckBox[*].identifier=='urdf_allow_self_collision'", 1)
+        ).model.set_value(True)
+        await ui_test.human_delay()
+        (await find_nth("Select File//Frame/**/CheckBox[*].identifier=='urdf_merge_mesh'", 1)).model.set_value(True)
+        await ui_test.human_delay()
+        (await find_nth("Select File//Frame/**/CheckBox[*].identifier=='urdf_debug_mode'", 1)).model.set_value(True)
+        await ui_test.human_delay()
+
+        # Snapshot state before Import (``_start_import`` pops it).
+        basic_key = os.path.normcase(os.path.normpath(path_basic))
+        advanced_key = os.path.normcase(os.path.normpath(path_advanced))
+        basic_state = extension._per_file_state.get(basic_key)
+        advanced_state = extension._per_file_state.get(advanced_key)
+        self.assertIsNotNone(basic_state, "test_basic.urdf has no per-file state")
+        self.assertIsNotNone(advanced_state, "test_advanced.urdf has no per-file state")
+        self.assertIsNot(basic_state, advanced_state, "Per-file states must be distinct instances")
+        self.assertIsNot(basic_state.config, advanced_state.config, "Per-file configs must be distinct instances")
+        self.assertIsNot(basic_state.models, advanced_state.models, "Per-file models dicts must be distinct instances")
+        self.assertIsNot(
+            basic_state.option_builder,
+            advanced_state.option_builder,
+            "Per-file OptionWidgets must be distinct instances",
+        )
+
+        # Panel 0 values — must not leak from panel 1.
+        self.assertEqual(basic_state.config.merge_mesh, False)
+        self.assertEqual(basic_state.config.debug_mode, False)
+        self.assertEqual(basic_state.config.collision_from_visuals, False)
+        self.assertEqual(basic_state.config.allow_self_collision, False)
+        self.assertEqual(
+            basic_state.option_builder.get_ros_package_map(),
+            [{"name": "basic_package", "path": "basic_path"}],
+        )
+
+        # Panel 1 values — must not be overwritten by panel 0.
+        self.assertEqual(advanced_state.config.merge_mesh, True)
+        self.assertEqual(advanced_state.config.debug_mode, True)
+        self.assertEqual(advanced_state.config.collision_from_visuals, True)
+        self.assertEqual(advanced_state.config.collision_type, "Bounding Sphere")
+        self.assertEqual(advanced_state.config.allow_self_collision, True)
+        self.assertEqual(
+            advanced_state.option_builder.get_ros_package_map(),
+            [{"name": "advanced_package", "path": "advanced_path"}],
+        )
+
+        import_button = await self.find_widget_with_retry("Select File//Frame/VStack[0]/HStack[2]/Button[0]")
+        await import_button.click()
+        await ui_test.human_delay()
+
+        for _ in range(10):
+            await omni.kit.app.get_app().next_update_async()
+
+        # ``_last_config`` is the last imported file; import order is unspecified.
+        config = extension._get_config()
+        self.assertIsNotNone(config)
+        basic_signature = (False, False, False, False)
+        advanced_signature = (True, True, True, True)
+        actual_signature = (
+            config.merge_mesh,
+            config.debug_mode,
+            config.collision_from_visuals,
+            config.allow_self_collision,
+        )
+        self.assertIn(
+            actual_signature,
+            (basic_signature, advanced_signature),
+            "Last imported config must match one panel's settings exactly",
+        )
+
+        # Per-file states should be consumed (popped) after import
+        self.assertNotIn(basic_key, extension._per_file_state)
+        self.assertNotIn(advanced_key, extension._per_file_state)
 
         await omni.kit.app.get_app().next_update_async()

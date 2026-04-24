@@ -218,6 +218,7 @@ class Ros2UrdfOptionWidget:
                     tooltip="ROS 2 node containing the robot_description parameter",
                     use_folder_picker=False,
                     identifier="ros2_urdf_node_name",
+                    label_width=90,
                 )
                 if self._on_node_changed is not None:
                     self._models["ros2_node"].add_end_edit_fn(self._on_node_changed)
@@ -310,6 +311,11 @@ class Ros2UrdfOptionWidget:
         """Build the Options frame."""
 
         def build_options_content() -> None:
+            from isaacsim.asset.importer.utils.impl.importer_utils import ROBOT_TYPE_TOKENS
+
+            def set_robot_type(value: str) -> None:
+                self._config.robot_type = value
+
             def set_merge_mesh(value: bool) -> None:
                 self._config.merge_mesh = value
 
@@ -317,6 +323,17 @@ class Ros2UrdfOptionWidget:
                 self._config.debug_mode = value
 
             with ui.VStack(spacing=4):
+                self._models["robot_type"] = dropdown_builder(
+                    "Robot Type",
+                    tooltip="Category of robot for the Isaac robot schema (e.g. Manipulator, Humanoid)",
+                    default_val=ROBOT_TYPE_TOKENS.index(self._config.robot_type),
+                    items=ROBOT_TYPE_TOKENS,
+                    on_clicked_fn=set_robot_type,
+                    identifier="ros2_urdf_robot_type",
+                    show_flourish=False,
+                    label_width=90,
+                )
+
                 self._models["merge_mesh"] = checkbox_builder(
                     "Merge Mesh",
                     tooltip="If True, merges meshes where possible to optimize the model",

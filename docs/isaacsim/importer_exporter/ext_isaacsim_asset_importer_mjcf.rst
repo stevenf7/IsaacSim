@@ -80,6 +80,9 @@ Import Options
         - **Bounding Cube**: Uses a simple bounding box approximation.
 
 **General Options**:
+    - **Robot Type**: Sets the ``isaac:robotType`` attribute on the imported robot's schema. Choose from: Default, End Effector,
+      Manipulator, Humanoid, Wheeled, Holonomic, Quadruped, Mobile Manipulators, or Aerial.
+      
     - **Import Scene**: When enabled, imports the MJCF simulation settings along with the model.
     - **Allow Self-Collision**: When enabled, allows the robot model to collide with itself. This can be useful for certain simulation
       scenarios but may cause instability if collision meshes between links are self-intersecting.
@@ -87,7 +90,7 @@ Import Options
     - **Merge Mesh**: When enabled, merges meshes where possible to optimize the model. This can reduce the number of prims in the
       resulting USD file and improve performance.
 
-    - **Debug Mode**: When enabled, activates debug mode to preserve the intemediate files and asset transformer reports
+    - **Debug Mode**: When enabled, activates debug mode to preserve the intermediate files and asset transformer reports
 
 
 .. _isaac_sim_mjcf_robot_properties:

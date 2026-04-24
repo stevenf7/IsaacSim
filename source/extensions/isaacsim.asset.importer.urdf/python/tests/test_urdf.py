@@ -65,6 +65,12 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         ext_id = ext_manager.get_enabled_extension_id("isaacsim.asset.importer.urdf")
         self._extension_path = ext_manager.get_extension_path(ext_id)
         self._tmpdir = tempfile.mkdtemp(prefix="urdf_test_")
+        # Redirect tempfile's default directory to self._tmpdir so any
+        # mkdtemp() calls made during the test (e.g. the URDF importer's
+        # private scratch dir in non-debug mode) are rooted inside
+        # self._tmpdir and cleaned up deterministically in tearDown.
+        self._prev_tempdir = tempfile.tempdir
+        tempfile.tempdir = self._tmpdir
         self._success = False
         self.importer = URDFImporter()
         await omni.usd.get_context().new_stage_async()
@@ -91,6 +97,7 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         self._stage = None
         gc.collect()
+        tempfile.tempdir = self._prev_tempdir
         if self._success:
             shutil.rmtree(self._tmpdir, ignore_errors=True)
 
@@ -327,12 +334,11 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
 
         base_path = os.path.normpath(os.path.join(self._extension_path, "data", "urdf", "tests", "test_textures_urdf"))
         basename = "cube_dae"
-        mats_path = os.path.normpath(os.path.join(self._tmpdir, basename, "Textures"))
-        omni.client.create_folder(os.path.normpath(os.path.join(self._tmpdir, basename)))
-        omni.client.create_folder(mats_path)
 
         urdf_path = os.path.normpath(os.path.join(base_path, f"{basename}.urdf"))
         output_path, _ = self._import_urdf(urdf_path, usd_path=self._tmpdir)
+
+        mats_path = os.path.normpath(os.path.join(os.path.dirname(output_path), "Textures"))
 
         await omni.kit.app.get_app().next_update_async()
         result = omni.client.list(mats_path)
@@ -845,9 +851,11 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         urdf_path = os.path.normpath(os.path.join(self._extension_path, "data", "urdf", "tests", "test_basic.urdf"))
         output_path, _ = self._import_urdf(urdf_path, debug_mode=True)
 
-        # Check if expected intermediate files exist (debug mode should keep temporary outputs)
-        temp_usd_path = os.path.normpath(os.path.join(os.path.dirname(output_path), "..", "temp", "test_basic.usd"))
-        usdex_usd_path = os.path.normpath(os.path.join(os.path.dirname(output_path), "..", "usdex", "test_basic.usdc"))
+        debug_dir = os.path.normpath(os.path.join(os.path.dirname(output_path), "..", "_debug_test_basic"))
+        temp_usd_path = os.path.join(debug_dir, "temp_test_basic", "test_basic.usd")
+        usdex_usd_path = os.path.join(debug_dir, "usdex_test_basic", "test_basic.usdc")
+
+        self.assertTrue(os.path.isdir(debug_dir), f"Debug scratch directory not found: {debug_dir}")
         self.assertTrue(os.path.exists(temp_usd_path), f"Temp USD file not found: {temp_usd_path}")
         self.assertTrue(os.path.exists(usdex_usd_path), f"USDEx USD file not found: {usdex_usd_path}")
         self.assertTrue(os.path.exists(output_path), f"Output path not found: {output_path}")

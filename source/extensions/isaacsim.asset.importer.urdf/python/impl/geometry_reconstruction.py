@@ -105,13 +105,20 @@ def parse_source_geometry_breadcrumbs(urdf_path: str) -> list[SourceGeometryInfo
 
 
 def _parse_breadcrumbs_with_comments(urdf_path: str) -> list[SourceGeometryInfo]:
-    """Fallback parser that explicitly handles XML comments via TreeBuilder."""
+    """Fallback parser that explicitly handles XML comments via TreeBuilder.
+
+    Args:
+        urdf_path: Path to the URDF file.
+
+    Returns:
+        Parsed ``isaac:source_geometry`` breadcrumb records, or an empty list on parse failure.
+    """
 
     class _CommentedTreeBuilder(ET.TreeBuilder):
-        def comment(self, data: str) -> None:
+        def comment(self, data: str) -> None:  # type: ignore[override]
             self.start(ET.Comment, {})
             self.data(data)
-            self.end(ET.Comment)
+            self.end(ET.Comment)  # type: ignore[arg-type]
 
     try:
         parser = ET.XMLParser(target=_CommentedTreeBuilder())
@@ -186,7 +193,15 @@ def reconstruct_source_geometry(stage: Usd.Stage, breadcrumbs: list[SourceGeomet
 
 
 def _find_prim_by_name(stage: Usd.Stage, name: str) -> Usd.Prim | None:
-    """Find a prim anywhere on the stage whose GetName() matches *name*."""
+    """Find a prim anywhere on the stage whose GetName() matches *name*.
+
+    Args:
+        stage: USD stage to search.
+        name: Prim name to match (``GetName()``).
+
+    Returns:
+        The first matching prim, or ``None`` if not found.
+    """
     for prim in stage.Traverse():
         if prim.GetName() == name:
             return prim
@@ -194,7 +209,14 @@ def _find_prim_by_name(stage: Usd.Stage, name: str) -> Usd.Prim | None:
 
 
 def _find_geometry_child(prim: Usd.Prim) -> Usd.Prim | None:
-    """Find the first geometry-typed child of a prim."""
+    """Find the first geometry-typed child of a prim.
+
+    Args:
+        prim: Parent prim whose direct children are searched.
+
+    Returns:
+        First child whose type is a known geometry schema, or ``None``.
+    """
     for child in prim.GetAllChildren():
         if child.GetTypeName() in _GEOMETRY_TYPES:
             return child
@@ -202,7 +224,12 @@ def _find_geometry_child(prim: Usd.Prim) -> Usd.Prim | None:
 
 
 def _copy_xform(src: Usd.Prim, dst: Usd.Prim) -> None:
-    """Copy all XformOps from *src* to *dst*."""
+    """Copy all XformOps from *src* to *dst*.
+
+    Args:
+        src: Prim providing the ordered xform ops and values.
+        dst: Prim that receives a cleared op order and duplicated ops.
+    """
     src_xf = UsdGeom.Xformable(src)
     dst_xf = UsdGeom.Xformable(dst)
     if not src_xf or not dst_xf:
@@ -216,7 +243,12 @@ def _copy_xform(src: Usd.Prim, dst: Usd.Prim) -> None:
 
 
 def _copy_purpose(src: Usd.Prim, dst: Usd.Prim) -> None:
-    """Copy the imageable purpose attribute from *src* to *dst*."""
+    """Copy the imageable purpose attribute from *src* to *dst*.
+
+    Args:
+        src: Imageable prim whose purpose is read (if set).
+        dst: Imageable prim whose purpose is written.
+    """
     src_img = UsdGeom.Imageable(src)
     dst_img = UsdGeom.Imageable(dst)
     if src_img and dst_img:
@@ -226,7 +258,17 @@ def _copy_purpose(src: Usd.Prim, dst: Usd.Prim) -> None:
 
 
 def _reconstruct_capsule(stage: Usd.Stage, link_name: str, source_name: str, entries: list[SourceGeometryInfo]) -> bool:
-    """Replace cylinder + 2 sphere prims with a single UsdGeom.Capsule."""
+    """Replace cylinder + 2 sphere prims with a single UsdGeom.Capsule.
+
+    Args:
+        stage: USD stage to modify.
+        link_name: URDF link name for the capsule group.
+        source_name: Original USD prim name for the reconstructed capsule.
+        entries: Breadcrumb records for all capsule parts (body, caps, etc.).
+
+    Returns:
+        ``True`` if a capsule was created and old prims removed successfully.
+    """
     roles = {e.role: e for e in entries}
     body_entry = roles.get("body")
     if body_entry is None:
@@ -257,6 +299,9 @@ def _reconstruct_capsule(stage: Usd.Stage, link_name: str, source_name: str, ent
 
     # Determine where to create the capsule — use the body wrapper's parent
     body_wrapper = _find_prim_by_name(stage, body_entry.element_name)
+    if body_wrapper is None:
+        _logger.warning(f"Could not find body wrapper prim for capsule '{source_name}'")
+        return False
     parent_path = body_wrapper.GetPath().GetParentPath()
     capsule_path = parent_path.AppendChild(source_name)
 
@@ -303,7 +348,17 @@ def _reconstruct_capsule(stage: Usd.Stage, link_name: str, source_name: str, ent
 
 
 def _reconstruct_cone(stage: Usd.Stage, link_name: str, source_name: str, entry: SourceGeometryInfo) -> bool:
-    """Replace a mesh prim with a UsdGeom.Cone."""
+    """Replace a mesh prim with a UsdGeom.Cone.
+
+    Args:
+        stage: USD stage to modify.
+        link_name: URDF link name (for logging).
+        source_name: Original USD prim name for the reconstructed cone.
+        entry: Breadcrumb for this cone instance.
+
+    Returns:
+        ``True`` if a cone was created and the wrapper removed successfully.
+    """
     params = entry.params
     radius = params.get("radius", 1.0)
     height = params.get("height", 2.0)

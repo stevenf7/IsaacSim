@@ -235,7 +235,7 @@ class RobotDescription:
                 if path.rfind("/") < 0:
                     basepath = path[: path.rfind("\\")]
                 return os.path.normpath(basepath)
-        return "Same as Imported Model(Default)"
+        return "<isaacsim.ros2.urdf>/data/urdf (Default)"
 
     def _sync_config_from_models(self) -> None:
         """Update configuration values from UI models."""
@@ -253,7 +253,7 @@ class RobotDescription:
         if not model:
             return None
         output_path = model.get_value_as_string()
-        if output_path == "Same as Imported Model(Default)":
+        if output_path == "<isaacsim.ros2.urdf>/data/urdf (Default)":
             return None
         output_path = os.path.normpath(output_path)
         if output_path and not os.path.isdir(output_path):

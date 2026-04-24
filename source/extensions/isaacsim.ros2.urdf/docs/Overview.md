@@ -1,6 +1,6 @@
 # Overview
 
-This extension expands the URDF Importer to fetch and import robot descriptions directly from ROS 2 nodes. Instead of requiring local URDF files, it queries ROS 2 nodes for their robot_description parameters and resolves ROS 2 package URLs to filesystem paths, streamlining the workflow for importing robots that are already configured in a ROS 2 environment.
+The isaacsim.ros2.urdf extension expands the URDF Importer to fetch and import robot descriptions directly from ROS 2 nodes. Instead of requiring local URDF files, it queries ROS 2 nodes for their `robot_description` parameter and resolves `package://` URLs to filesystem paths, streamlining the workflow for importing robots that are already configured in a ROS 2 environment. The extension registers a **File → Import from ROS2 URDF Node** menu entry that opens a dedicated import window.
 
 ```{image} ../../../../source/extensions/isaacsim.ros2.urdf/data/preview.png
 ---
@@ -13,7 +13,7 @@ align: center
 
 ### Robot Description Retrieval
 
-The extension queries ROS 2 nodes to retrieve robot descriptions through the `robot_description` parameter. **{class}`RobotDefinitionReader <isaacsim.ros2.urdf.RobotDefinitionReader>`** handles this process as a {class}`singleton <isaacsim.ros2.urdf.singleton>` that maintains a ROS 2 node for querying. When a target node name is provided, it fetches the URDF content and automatically resolves any `package://` URLs to absolute filesystem paths.
+The extension queries ROS 2 nodes to retrieve robot descriptions through the `robot_description` parameter. **{class}`RobotDefinitionReader <isaacsim.ros2.urdf.RobotDefinitionReader>`** handles this process as a singleton that maintains a transient ROS 2 node for querying. When a target node name is provided, it calls the `GetParameters` service on that node in a background thread, fetches the URDF content, and automatically resolves any `package://` URLs to absolute filesystem paths.
 
 ```python
 reader = RobotDefinitionReader()
@@ -22,7 +22,7 @@ reader.start_get_robot_description("robot_state_publisher")
 
 ### Package URL Resolution
 
-ROS 2 URDF files commonly reference resources using `package://` URLs. The extension provides utilities to resolve these URLs to absolute filesystem paths by locating the package's share directory. **{class}`package_path_to_system_path <isaacsim.ros2.urdf.package_path_to_system_path>`** converts a package name and optional relative path into an absolute system path, while **{class}`replace_package_urls_with_paths <isaacsim.ros2.urdf.replace_package_urls_with_paths>`** processes entire URDF strings to replace all package URLs with their resolved paths.
+ROS 2 URDF files commonly reference resources using `package://` URLs. The extension provides utilities to resolve these URLs to absolute filesystem paths by locating the package's share directory. **{func}`package_path_to_system_path <isaacsim.ros2.urdf.package_path_to_system_path>`** converts a package name and optional relative path into an absolute system path, while **{func}`replace_package_urls_with_paths <isaacsim.ros2.urdf.replace_package_urls_with_paths>`** processes entire URDF strings to replace all package URLs with their resolved paths.
 
 ```python
 # Resolve a single package path
@@ -32,13 +32,22 @@ mesh_path = package_path_to_system_path("my_robot_description", "meshes/base_lin
 updated_urdf, package_found = replace_package_urls_with_paths(urdf_string)
 ```
 
+### Import Window
+
+**{class}`RobotDescription <isaacsim.ros2.urdf.RobotDescription>`** manages the import window opened from the File menu. It orchestrates the full workflow: building the option widget, querying the ROS 2 node for the URDF, writing a temporary URDF file, running the standard URDF import pipeline, and opening the resulting USD stage. Status feedback is displayed in the UI — green when a node is found successfully, red when the node or parameter is unavailable.
+
 ### Import UI Widget
 
-**{class}`Ros2UrdfOptionWidget <isaacsim.ros2.urdf.Ros2UrdfOptionWidget>`** provides a UI component for configuring the ROS 2 import process. Users can specify which ROS 2 node to query for the robot description, integrating with the existing URDF import interface.
+**{class}`Ros2UrdfOptionWidget <isaacsim.ros2.urdf.Ros2UrdfOptionWidget>`** provides the UI controls within the import window, organized into collapsible sections:
+
+- **Model** — ROS 2 node name field, a Find Node button to trigger the parameter fetch, a status label with color-coded feedback, and a USD output folder picker.
+- **Colliders** — Collision from visuals toggle, a collision type dropdown (Convex Hull, Convex Decomposition, Bounding Sphere, Bounding Cube) that appears when collision from visuals is enabled, and an allow self-collision toggle.
+- **Options** — Robot type dropdown (e.g. Manipulator, Humanoid), merge mesh toggle, and debug mode toggle.
+- **Import** — Button to execute the import with the current settings.
 
 ### Command Integration
 
-**{class}`URDFImportFromROS2Node <isaacsim.ros2.urdf.URDFImportFromROS2Node>`** encapsulates the import operation as a command, allowing the robot description import to be triggered programmatically or through UI interactions.
+**{class}`URDFImportFromROS2Node <isaacsim.ros2.urdf.URDFImportFromROS2Node>`** encapsulates the import operation as a Kit command, allowing the robot description import to be triggered programmatically or through UI interactions.
 
 ```{deprecated}
 The ``URDFImportFromROS2Node`` Kit command is deprecated. Use ``RobotDefinitionReader`` and ``URDFImporter`` directly instead.
@@ -46,4 +55,4 @@ The ``URDFImportFromROS2Node`` Kit command is deprecated. Use ``RobotDefinitionR
 
 ## Integration
 
-This extension builds upon isaacsim.asset.importer.urdf.ui by adding ROS 2-specific import capabilities. It uses isaacsim.ros2.bridge to communicate with ROS 2 nodes and query parameters. The workflow integrates with the existing URDF import pipeline - once the robot description is retrieved and package URLs are resolved, the standard URDF import process handles the actual asset creation.
+This extension builds upon isaacsim.asset.importer.urdf.ui by adding ROS 2-specific import capabilities. It uses isaacsim.ros2.bridge for the ROS 2 runtime environment and communicates with ROS 2 nodes via `rclpy` and the standard `GetParameters` service. The workflow integrates with the existing URDF import pipeline — once the robot description is retrieved and `package://` URLs are resolved, the standard URDF importer handles the actual USD asset creation.

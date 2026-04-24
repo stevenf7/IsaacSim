@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 from omni.kit.window.property.templates import LABEL_HEIGHT, LABEL_WIDTH
 
 from .callbacks import on_copy_to_clipboard, on_docs_link_clicked, on_open_folder_clicked, on_open_IDE_clicked
-from .style import BUTTON_WIDTH, COLOR_W, COLOR_X, COLOR_Y, COLOR_Z, get_style
+from .style import BUTTON_WIDTH, COLOR_W, COLOR_X, COLOR_Y, COLOR_Z, get_folder_picker_icon_button_style, get_style
 
 
 def btn_builder(
@@ -253,6 +253,7 @@ def str_builder(
     folder_dialog_title: str = "Select Output Folder",
     folder_button_title: str = "Select Folder",
     identifier: str | None = None,
+    label_width: int | None = None,
 ) -> ui.AbstractValueModel:
     """Creates a Stylized Stringfield Widget.
 
@@ -270,12 +271,14 @@ def str_builder(
         folder_dialog_title: Title for the folder picker dialog.
         folder_button_title: Title for the folder picker button.
         identifier: Optional identifier to simplify UI queries.
+        label_width: Width of the label in pixels. Defaults to LABEL_WIDTH.
 
     Returns:
         model of Stringfield
     """
     with ui.HStack():
-        ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
+        lbl_width = ui.Pixel(label_width) if label_width is not None else LABEL_WIDTH
+        ui.Label(label, width=lbl_width, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         sf_kwargs = {}
         if identifier is not None:
             sf_kwargs["identifier"] = identifier
@@ -444,6 +447,8 @@ def dropdown_builder(
     tooltip: str = "",
     on_clicked_fn: Callable | None = None,
     identifier: str | None = None,
+    show_flourish: bool = True,
+    label_width: int | None = None,
 ) -> ui.AbstractItemModel:
     """Creates a Stylized Dropdown Combobox.
 
@@ -455,6 +460,8 @@ def dropdown_builder(
         tooltip: Tooltip to display over the Label.
         on_clicked_fn: Call-back function when clicked.
         identifier: Optional identifier to simplify UI queries.
+        show_flourish: Whether to show the decorative rectangle flourish.
+        label_width: Width of the label in pixels. Defaults to LABEL_WIDTH.
 
     Returns:
         AbstractItemModel: model
@@ -462,7 +469,8 @@ def dropdown_builder(
     if items is None:
         items = ["Option 1", "Option 2", "Option 3"]
     with ui.HStack():
-        ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
+        lbl_width = ui.Pixel(label_width) if label_width is not None else LABEL_WIDTH
+        ui.Label(label, width=lbl_width, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         cb_kwargs = {}
         if identifier is not None:
             cb_kwargs["identifier"] = identifier
@@ -474,7 +482,8 @@ def dropdown_builder(
             alignment=ui.Alignment.LEFT_CENTER,
             **cb_kwargs,
         ).model
-        add_line_rect_flourish(False)
+        if show_flourish:
+            add_line_rect_flourish(False)
 
         def on_clicked_wrapper(model, val):
             on_clicked_fn(items[model.get_item_value_model().as_int])
@@ -1444,15 +1453,17 @@ def add_folder_picker_icon(
         if bookmark_label and bookmark_path:
             file_picker.toggle_bookmark_from_path(bookmark_label, bookmark_path, True)
 
-    with ui.Frame(width=0, tooltip=button_title):
+    with ui.VStack(width=size, tooltip=button_title):
+        ui.Spacer()
         ui.Button(
             name="IconButton",
             width=size,
             height=size,
             clicked_fn=open_file_picker,
-            style=get_style()["IconButton.Image::FolderPicker"],
+            style=get_folder_picker_icon_button_style(),
             alignment=ui.Alignment.RIGHT_TOP,
         )
+        ui.Spacer()
 
     return open_file_picker
 

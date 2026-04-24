@@ -1,4 +1,4 @@
-﻿
+
 .. _Visual Studio Code: https://code.visualstudio.com/download
 .. _isaac_sim_app_tutorial_advanced_import_mjcf:
 
@@ -75,15 +75,24 @@ Do the exact same thing with Python standalone instead.
         ./python.sh standalone_examples/api/isaacsim.asset.importer.mjcf/mjcf_import.py 
 
     **Args:**
-        - ``--mjcf``: Path to the MJCF file (.xml) to import.
+        - ``--mjcf``: Path to an MJCF file (.xml) or a directory containing MJCF files to import.
         - ``--usd-path``: Directory to write converted USD assets.
+        - ``--robot-type``: Robot type for the Isaac robot schema. One of: Default, End Effector, Manipulator, Humanoid, Wheeled, Holonomic, Quadruped, Mobile Manipulators, Aerial (default: Default).
+        - ``--import-scene``: Import the MJCF simulation settings along with the model (default: True).
         - ``--merge-mesh``: Merge meshes after conversion.
         - ``--debug-mode``: Enable debug mode and keep intermediate outputs.
-        - ``--import-scene``: Import the MJCF simulation settings along with the model (default True).
         - ``--collision-from-visuals``: Generate collision geometry from visuals.
         - ``--collision-type``: Collision geometry type (e.g. "Convex Hull", "Convex Decomposition", "Bounding Sphere", "Bounding Cube").
         - ``--allow-self-collision``: Allow self-collision for the imported asset.
-        - ``--test``: uses nv_ant.xml test asset into a temp directory
+        - ``--fix-base``: Add a fixed joint from the world to the root rigid-body link.
+        - ``--link-density``: Default density (kg/m^3) for rigid body links with no explicit mass.
+        - ``--override-gain-type``: MuJoCo actuator gain type (e.g. ``"fixed"``).
+        - ``--override-bias-type``: MuJoCo actuator bias type (e.g. ``"affine"``).
+        - ``--override-gain-prm``: MuJoCo actuator gain parameter array (up to 10 floats, space-separated).
+        - ``--override-bias-prm``: MuJoCo actuator bias parameter array (up to 10 floats, space-separated).
+        - ``--run-asset-transformer``: Run asset transformer after conversion (default: True).
+        - ``--run-multi-physics-conversion``: Run multi-physics conversion after conversion (default: True).
+        - ``--test``: Use the built-in ``nv_ant.xml`` test asset and write output to a temp directory.
 
     Example:
 
