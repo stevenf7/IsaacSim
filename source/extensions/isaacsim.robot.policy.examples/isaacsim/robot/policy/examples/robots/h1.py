@@ -23,8 +23,6 @@ from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.robot.policy.examples.controllers import PolicyController
 from isaacsim.storage.native import get_assets_root_path
 
-torch = import_module("torch")
-
 
 class H1FlatTerrainPolicy(PolicyController):
     """The H1 Humanoid running Flat Terrain Policy Locomotion Policy.
@@ -80,6 +78,8 @@ class H1FlatTerrainPolicy(PolicyController):
             object: Observation vector of shape [12 + 3*num_dofs] containing base lin/ang velocity,
             gravity direction, commands, joint position error, joint velocities, and previous action.
         """
+        torch = import_module("torch")
+
         lin_vel_I, ang_vel_I = self.robot.get_velocities()
         pos_IB, q_IB = self.robot.get_world_poses()
 
@@ -121,11 +121,12 @@ class H1FlatTerrainPolicy(PolicyController):
             dt: Timestep update in the world in seconds
             command: The robot command velocities (v_x, v_y, w_z) in m/s and rad/s
         """
+        torch = import_module("torch")
         device = torch.device(str(self.robot._device))
-        num_dofs = len(self.robot.dof_names)
 
         # Initialize action tensors on first call
         if self._previous_action is None:
+            num_dofs = len(self.robot.dof_names)
             self._previous_action = torch.zeros(num_dofs, device=device)
             self._current_action = torch.zeros(num_dofs, device=device)
 

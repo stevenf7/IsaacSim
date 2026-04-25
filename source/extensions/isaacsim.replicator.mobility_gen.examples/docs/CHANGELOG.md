@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.1] - 2026-04-23
+### Removed
+- Remove the `omni.isaac.ml_archive` test dependency
+
 ## [0.3.0] - 2026-04-22
 ### Added
 - `WheeledMultiSensorRobot` and `PolicyMultiSensorRobot` base classes for YAML-driven multi-camera robots

@@ -22,8 +22,6 @@ from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.robot.policy.examples.controllers import PolicyController
 from isaacsim.storage.native import get_assets_root_path
 
-torch = import_module("torch")
-
 
 class Go2FlatTerrainPolicy(PolicyController):
     """Policy controller for the Unitree Go2 quadruped robot executing flat terrain locomotion.
@@ -92,6 +90,8 @@ class Go2FlatTerrainPolicy(PolicyController):
             - [24:36]: Joint velocities
             - [36:48]: Previous action
         """
+        torch = import_module("torch")
+
         lin_vel_I, ang_vel_I = self.robot.get_velocities()
         pos_IB, q_IB = self.robot.get_world_poses()
 
@@ -131,6 +131,7 @@ class Go2FlatTerrainPolicy(PolicyController):
             dt: Timestep update in the world in seconds
             command: The robot command velocities (v_x, v_y, w_z) in m/s and rad/s
         """
+        torch = import_module("torch")
         device = torch.device(str(self.robot._device))
 
         # Initialize action tensors on first call

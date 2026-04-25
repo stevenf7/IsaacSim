@@ -26,8 +26,6 @@ from isaacsim.core.experimental.utils.backend import use_backend
 from isaacsim.robot.policy.examples.controllers import PolicyController
 from isaacsim.storage.native import get_assets_root_path
 
-torch = import_module("torch")
-
 
 class FrankaOpenDrawerPolicy(PolicyController):
     """The Franka Open Drawer Policy. In this policy, the robot will open the top drawer of the cabinet and hold it open.
@@ -64,8 +62,9 @@ class FrankaOpenDrawerPolicy(PolicyController):
             policy_path + "env.yaml",
         )
 
-        self._action_scale = 1.0
+        torch = import_module("torch")
         self._previous_action = torch.zeros(8)
+        self._action_scale = 1.0
         self._indices = wp.array([0, 1, 2, 3, 4, 5, 6, 7], dtype=wp.int32)  # index 8 is a mimic joint
         self._policy_counter = 0
 
@@ -113,7 +112,7 @@ class FrankaOpenDrawerPolicy(PolicyController):
                 - 0.0
                 - 0.1034
         """
-
+        torch = import_module("torch")
         with use_backend("usdrt"):
             # Get world poses of the links
             drawer_world_pos, drawer_world_orient = self.drawer_handle_top_prim.get_world_poses()

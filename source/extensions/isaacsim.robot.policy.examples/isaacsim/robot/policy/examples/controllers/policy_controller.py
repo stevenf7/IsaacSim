@@ -15,6 +15,7 @@
 
 """Contains the base PolicyController class for loading and executing robot control policies."""
 
+from __future__ import annotations
 
 import io
 from abc import ABC
@@ -30,8 +31,6 @@ from isaacsim.core.simulation_manager import SimulationManager
 from omni.physics.core import get_physics_simulation_interface
 
 from .config_loader import get_articulation_props, get_physics_properties, get_robot_joint_properties, parse_env_config
-
-torch = import_module("torch")
 
 
 class PolicyController(ABC):
@@ -105,6 +104,7 @@ class PolicyController(ABC):
             policy_file_path: The path to the policy file
             policy_env_path: The path to the environment configuration file
         """
+        torch = import_module("torch")
         file_content = omni.client.read_file(policy_file_path)[2]
         file = io.BytesIO(memoryview(file_content).tobytes())
         self.policy = torch.jit.load(file).to(torch.device(str(self.robot._device)))
@@ -150,6 +150,7 @@ class PolicyController(ABC):
             dof_velocities=default_vel,
         )
 
+        torch = import_module("torch")
         self.default_pos = torch.tensor(default_pos, device=torch.device(str(self.robot._device)))
         self.default_vel = torch.tensor(default_vel, device=torch.device(str(self.robot._device)))
 
@@ -187,7 +188,7 @@ class PolicyController(ABC):
         if sleep_threshold not in [None, float("inf")]:
             self.robot.set_sleep_thresholds([sleep_threshold])
 
-    def _compute_action(self, obs: torch.Tensor) -> torch.Tensor:
+    def _compute_action(self, obs: "torch.Tensor") -> "torch.Tensor":
         """Compute the action from the observation using the loaded policy.
 
         This method runs the policy network in inference mode to convert
@@ -199,11 +200,12 @@ class PolicyController(ABC):
         Returns:
             The action tensor matching the format expected by the robot controller
         """
+        torch = import_module("torch")
         with torch.no_grad():
             action = self.policy(obs).detach().view(-1)
         return action
 
-    def _compute_observation(self) -> torch.Tensor:
+    def _compute_observation(self) -> "torch.Tensor":
         """Compute the current observation vector for the policy.
 
         This method must be implemented by derived classes to construct
