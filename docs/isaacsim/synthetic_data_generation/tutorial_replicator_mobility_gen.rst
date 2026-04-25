@@ -190,13 +190,11 @@ Isaac Sim ships a standalone replay script for this. Run it from the Isaac Sim r
        standalone_examples/replicator/mobility_gen/replay_directory.py \
        --input  ~/MobilityGenData/recordings \
        --output ~/MobilityGenData/replays \
-       --render_interval 40 \
-       --enable isaacsim.replicator.mobility_gen.examples
+       --render_interval 40
 
 - ``--input`` — directory containing one or more recordings (each in its own subdirectory).
 - ``--output`` — directory where replays with rendered sensor data will be written.
 - ``--render_interval`` — render every Nth physics step. ``40`` renders roughly once per second and is a good starting point; set to ``1`` for full-frame-rate output.
-- ``--enable`` — comma-separated list of extra extensions to load. Required when your robot classes (e.g. ``CarterRobot``, ``H1Robot``) are defined in ``isaacsim.replicator.mobility_gen.examples``.
 
 Additional optional flags:
 

@@ -47,6 +47,8 @@ from isaacsim.core.simulation_manager import SimulationManager
 app_utils.enable_extension("isaacsim.replicator.experimental.mobility_gen")
 app_utils.enable_extension("isaacsim.replicator.mobility_gen.examples")
 
+simulation_app.update()
+
 from isaacsim.replicator.experimental.mobility_gen import (
     MobilityGenReader,
     MobilityGenWriter,
@@ -142,15 +144,6 @@ if __name__ == "__main__":
 
         SimulationManager.initialize_physics()
 
-        # Play the timeline briefly so the render pipeline (tonemapping, physical
-        # camera settings) initialises correctly — matching the develop branch's
-        # world.reset() path.  Pause immediately so simulation_app.update() in the
-        # replay loop does not tick physics on top of SimulationManager.step().
-        _timeline = omni.timeline.get_timeline_interface()
-        _timeline.play()
-        simulation_app.update()
-        _timeline.pause()
-
         if args.rgb_enabled:
             scenario.enable_rgb_rendering()
 
@@ -167,11 +160,8 @@ if __name__ == "__main__":
             scenario.enable_normals_rendering()
 
         # Re-enable hydra texture updates now that all annotators are attached.
-        # enable_rendering() disables updates to prevent OmniGraph from evaluating
-        # partially-constructed nodes while annotators are being set up.
         scenario.finalize_rendering()
 
-        simulation_app.update()
         rep.orchestrator.step(rt_subframes=args.render_rt_subframes, delta_time=0.0, pause_timeline=False)
 
         # Apply camera calibration overrides after the render graph is fully
