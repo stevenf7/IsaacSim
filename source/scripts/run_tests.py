@@ -144,8 +144,7 @@ def run_scripts(suites, dry_run=False, print_live_output=False, failure_keywords
                         # Build command with default arguments plus any additional user arguments
                         all_args = DEFAULT_SCRIPT_ARGS.copy()
                         if script_args:
-                            # Split user args and add them to defaults
-                            user_args = script_args.split()
+                            user_args = shlex.split(script_args)
                             all_args.extend(user_args)
 
                         command = [script] + all_args
@@ -399,20 +398,18 @@ def main():
             for bucket_name, scripts in filtered_suites[args.suite].items():
                 print(f"  Bucket: {bucket_name}")
                 for script in scripts:
-                    # Build command with default + user args (same logic as run_scripts)
                     all_args = DEFAULT_SCRIPT_ARGS.copy()
                     if args.script_args:
-                        user_args = args.script_args.split()
+                        user_args = shlex.split(args.script_args)
                         all_args.extend(user_args)
                     command = [script] + all_args
                     print(f"    {shlex.join(command)}")
         else:
             print(f"  Bucket: {args.bucket}")
             for script in filtered_suites[args.suite][args.bucket]:
-                # Build command with default + user args (same logic as run_scripts)
                 all_args = DEFAULT_SCRIPT_ARGS.copy()
                 if args.script_args:
-                    user_args = args.script_args.split()
+                    user_args = shlex.split(args.script_args)
                     all_args.extend(user_args)
                 command = [script] + all_args
                 print(f"    {shlex.join(command)}")

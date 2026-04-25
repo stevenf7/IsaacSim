@@ -17,6 +17,7 @@
 
 
 import os
+import shutil
 import subprocess
 import sys
 
@@ -48,20 +49,18 @@ def on_open_IDE_clicked(ext_path: str, file_path: str):
         ext_path: Path to the extension directory.
         file_path: Path to the specific file to open.
     """
-    if sys.platform == "win32":
-        try:
-            subprocess.Popen(["code", os.path.abspath(ext_path), os.path.abspath(file_path)], shell=True)
-        except Exception:
-            carb.log_warn(
-                "Could not open in VSCode. See Troubleshooting help here: https://code.visualstudio.com/docs/editor/command-line#_common-questions"
-            )
-    else:
-        try:
-            subprocess.run(["code", ext_path, file_path], check=True)
-        except Exception:
-            carb.log_warn(
-                "Could not open in VSCode. See Troubleshooting help here: https://code.visualstudio.com/docs/editor/command-line#_common-questions"
-            )
+    code_executable = shutil.which("code")
+    if code_executable is None:
+        carb.log_warn(
+            "Could not open in VSCode. See Troubleshooting help here: https://code.visualstudio.com/docs/editor/command-line#_common-questions"
+        )
+        return
+    try:
+        subprocess.Popen([code_executable, os.path.abspath(ext_path), os.path.abspath(file_path)])
+    except Exception:
+        carb.log_warn(
+            "Could not open in VSCode. See Troubleshooting help here: https://code.visualstudio.com/docs/editor/command-line#_common-questions"
+        )
 
 
 def on_open_folder_clicked(file_path: str):
@@ -70,14 +69,15 @@ def on_open_folder_clicked(file_path: str):
     Args:
         file_path: Path to the file whose directory should be opened.
     """
+    target_dir = os.path.abspath(os.path.dirname(file_path))
     if sys.platform == "win32":
         try:
-            subprocess.Popen(["start", os.path.abspath(os.path.dirname(file_path))], shell=True)
+            os.startfile(target_dir)
         except OSError:
             carb.log_warn("Could not open file browser.")
     else:
         try:
-            subprocess.run(["xdg-open", os.path.abspath(file_path.rpartition("/")[0])], check=True)
+            subprocess.run(["xdg-open", target_dir], check=True)
         except Exception:
             carb.log_warn("could not open file browser")
 

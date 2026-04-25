@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.8.3] - 2026-04-23
+### Fixed
+- Eliminated shell injection risk in `on_open_IDE_clicked` by resolving `code` via `shutil.which()` and removing `shell=True`
+- Eliminated shell injection risk in `on_open_folder_clicked` by replacing `subprocess.Popen(["start", ...], shell=True)` with `os.startfile()` on Windows
+
 ## [1.8.2] - 2026-04-20
 ### Fixed
 - Return-type annotations in `style.get_folder_picker_icon_button_style()` and `style.get_style()` referenced the builtin `any` function instead of `typing.Any`, making the annotation semantically meaningless. Replaced with `typing.Any`.

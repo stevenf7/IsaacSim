@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.2] - 2026-04-23
+### Fixed
+- Eliminated shell injection risk by resolving `code` via `shutil.which()` and removing `shell=True`
+
 ## [1.2.1] - 2026-03-25
 ### Changed
 - Replace deprecated onclick_fn with onclick_action for menu registration
