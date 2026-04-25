@@ -955,28 +955,11 @@ stdout_fail_patterns.exclude = [
 ]
 tc_report_enabled = false
 
-generate_report_cmd = [
-  "./repo${shell_ext}",
-  "ci",
-  "standalone_report",
-  "--",
-  "${test_root}/_testoutput",
-  "doc_snippets_async",
-]
-
-"platform:windows-x86_64".generate_report_cmd = [
-  "repo${shell_ext}",
-  "ci",
-  "standalone_report",
-  "--",
-  "${test_root}/_testoutput",
-  "doc_snippets_async",
-]
-
 [[repo_test.suites.doc_snippets_async.group]]
 include = ["*test_snippets_async*"]
 args = [
   "--experience-csv experiences.csv",
+  "--junit-xml ${test_root}/_testoutput/results.xml",
 ]
 timeout = 1800
 
