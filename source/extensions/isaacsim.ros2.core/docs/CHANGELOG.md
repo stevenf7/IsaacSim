@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.2] - 2026-04-24
+### Fixed
+- Fix joint state publisher writing no position/velocity data when effort retrieval fails
+
 ## [1.8.1] - 2026-04-22
 ### Added
 - Added `wait_for_publishers_on_topic` and `wait_for_subscribers_on_topic` helpers to `ROS2TestCase` for waiting on DDS endpoint discovery before asserting on message delivery. Uses wall-clock timeout to handle platforms with no frame rate limiter.

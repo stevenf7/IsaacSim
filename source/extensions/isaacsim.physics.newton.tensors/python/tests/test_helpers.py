@@ -217,8 +217,31 @@ class NewtonTensorTestBase(omni.kit.test.AsyncTestCase):
         if newton_stage is not None:
             newton_stage.playing = True
 
-    def step(self, n: int = 1, dt: float = 1.0 / 60.0) -> None:
-        """Step the Newton simulation n times."""
+    def get_sim_dt(self) -> float:
+        """Return the physics timestep used by SimulationManager if available, otherwise newton_stage.sim_dt."""
+        import sys
+
+        if "isaacsim.core.simulation_manager" in sys.modules:
+            try:
+                sm = sys.modules["isaacsim.core.simulation_manager"].SimulationManager
+                if sm.get_active_physics_engine() == "newton":
+                    return sm.get_physics_dt()
+            except Exception:
+                pass
+        from isaacsim.physics.newton.impl.extension import acquire_stage as acquire_newton_stage
+
+        newton_stage = acquire_newton_stage()
+        return newton_stage.sim_dt if newton_stage else 1.0 / 60.0
+
+    def step(self, n: int = 1, dt: float | None = None) -> None:
+        """Step the Newton simulation n times.
+
+        Args:
+            n: Number of steps.
+            dt: Per-step timestep. Defaults to Newton's configured sim_dt.
+        """
+        if dt is None:
+            dt = self.get_sim_dt()
         for _ in range(n):
             self._sim.step(dt)
 

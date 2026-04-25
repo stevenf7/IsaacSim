@@ -138,6 +138,9 @@ protected:
     float* m_cachedBodyInverseInertia = nullptr;
     float* m_cachedBodyCenterOfMass = nullptr;
 
+    std::vector<float> m_cachedComOrientation; ///< [count * 4] cached COM quaternion (xyzw), write-through from
+                                               ///< setCOMs.
+
     void _cacheWarpPointers();
 };
 

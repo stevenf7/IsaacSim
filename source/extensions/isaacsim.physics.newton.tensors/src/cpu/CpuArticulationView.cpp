@@ -411,23 +411,44 @@ bool CpuArticulationView::setRootTransforms(const TensorDesc* srcTensor, const T
     if (!validateFloat32Tensor(srcTensor, -1, size_t(m_count) * 7u, "root transform", __FUNCTION__) ||
         !validateOptionalIndexTensor(indexTensor, -1, __FUNCTION__))
         return false;
+    const float* srcData = static_cast<const float*>(srcTensor->data);
     const auto& artiIndices = _resolveIndices(indexTensor);
+
     m_scratchSourceOffset.clear();
     m_scratchDestinationIndex.clear();
+
+    std::vector<int> jointXpSrcOffsets;
+    std::vector<int> jointXpDstIndices;
+
     for (uint32_t idx : artiIndices)
     {
         if (idx >= m_count)
             continue;
         int qStart = m_rootJointQStartIndices[idx];
-        for (int e = 0; e < 7; ++e)
+        if (qStart >= 0)
         {
-            m_scratchSourceOffset.push_back(static_cast<int>(idx * 7 + e));
-            m_scratchDestinationIndex.push_back(qStart + e);
+            for (int e = 0; e < 7; ++e)
+            {
+                m_scratchSourceOffset.push_back(static_cast<int>(idx * 7 + e));
+                m_scratchDestinationIndex.push_back(qStart + e);
+            }
+        }
+        else
+        {
+            int rootJoint = m_rootJointIndices[idx];
+            for (int e = 0; e < 7; ++e)
+            {
+                jointXpSrcOffsets.push_back(static_cast<int>(idx * 7 + e));
+                jointXpDstIndices.push_back(rootJoint * 7 + e);
+            }
         }
     }
     if (!m_scratchSourceOffset.empty())
-        indirectScatterFloat(static_cast<const float*>(srcTensor->data), m_cachedJointQ, m_scratchSourceOffset.data(),
-                             m_scratchDestinationIndex.data(), m_scratchSourceOffset.size());
+        indirectScatterFloat(srcData, m_cachedJointQ, m_scratchSourceOffset.data(), m_scratchDestinationIndex.data(),
+                             m_scratchSourceOffset.size());
+    if (!jointXpSrcOffsets.empty())
+        indirectScatterFloat(
+            srcData, m_cachedJointXp, jointXpSrcOffsets.data(), jointXpDstIndices.data(), jointXpSrcOffsets.size());
     _evalForwardKinematics();
     return true;
 }
@@ -520,8 +541,8 @@ bool CpuArticulationView::getCOMs(const TensorDesc* dstTensor) const
         return false;
     if (!validateFloat32Tensor(dstTensor, -1, size_t(m_count) * m_maxLinks * 7u, "com", __FUNCTION__))
         return false;
-    gatherCenterOfMass(reinterpret_cast<const wp::vec3*>(m_cachedBodyCenterOfMass),
-                       static_cast<float*>(dstTensor->data), m_linkFlatIndices.data(), m_linkFlatIndices.size());
+    gatherCenterOfMass(reinterpret_cast<const wp::vec3*>(m_cachedBodyCenterOfMass), static_cast<float*>(dstTensor->data),
+                       m_linkFlatIndices.data(), m_linkFlatIndices.size(), m_cachedComOrientation.data());
     return true;
 }
 
@@ -530,6 +551,7 @@ bool CpuArticulationView::setCOMs(const TensorDesc* srcTensor, const TensorDesc*
     if (!validateFloat32Tensor(srcTensor, -1, size_t(m_count) * m_maxLinks * 7u, "com", __FUNCTION__) ||
         !validateOptionalIndexTensor(indexTensor, -1, __FUNCTION__))
         return false;
+    const float* srcData = static_cast<const float*>(srcTensor->data);
     const auto& artiIndices = _resolveIndices(indexTensor);
     m_scratchSourceOffset.clear();
     m_scratchDestinationIndex.clear();
@@ -547,12 +569,14 @@ bool CpuArticulationView::setCOMs(const TensorDesc* srcTensor, const TensorDesc*
                 m_scratchSourceOffset.push_back(srcBase + c);
                 m_scratchDestinationIndex.push_back(linkIdx * 3 + c);
             }
+            uint32_t flatLink = idx * m_maxLinks + j;
+            for (int c = 0; c < 4; ++c)
+                m_cachedComOrientation[flatLink * 4 + c] = srcData[srcBase + 3 + c];
         }
     }
     if (!m_scratchSourceOffset.empty())
-        indirectScatterFloat(static_cast<const float*>(srcTensor->data), m_cachedBodyCenterOfMass,
-                             m_scratchSourceOffset.data(), m_scratchDestinationIndex.data(),
-                             m_scratchSourceOffset.size());
+        indirectScatterFloat(srcData, m_cachedBodyCenterOfMass, m_scratchSourceOffset.data(),
+                             m_scratchDestinationIndex.data(), m_scratchSourceOffset.size());
     return true;
 }
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.7.5] - 2026-04-24
+### Changed
+- `OgnIsaacComputeOdometry` and `OgnIsaacComputeTransformTree` use `getActivePhysicsEngineName()` to select the simulation backend dynamically instead of hardcoding `"physx"`
+
 ## [5.7.4] - 2026-04-21
 ### Changed
 - `OgnIsaacComputeTransformTree`: deferred frame name resolution to compute time so `isaac:nameOverride` attributes are fully authored before lookup

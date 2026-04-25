@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.17.3] - 2026-04-24
+### Changed
+- Query active physics engine at runtime via `omni::physics::IPhysics` and pass it to `createSimulationView` so ROS 2 tensor-backed nodes work with any registered engine
+- Add Newton backend test configuration for joint state, pose tree, odometry, and differential base tests
+
 ## [1.17.2] - 2026-04-24
 ### Added
 - SRTX-aware code path for publishing camera info topics.

@@ -74,6 +74,7 @@ class NewtonStage:
         """Reset simulation state to initial values."""
         self.initialized = False
         self._initializing = False  # Reentrant guard
+        self._init_failed = False
         self.builder = None
         self.model = None
         self.state_0 = None
@@ -101,6 +102,7 @@ class NewtonStage:
         if e.type == int(omni.timeline.TimelineEventType.STOP):
             self.playing = False
             self.graph = None
+            self._init_failed = False
             self._restore_fabric_transforms()
         if e.type == int(omni.timeline.TimelineEventType.PAUSE):
             self.playing = False
@@ -317,6 +319,9 @@ class NewtonStage:
         if getattr(self, "_initializing", False):
             return
 
+        if getattr(self, "_init_failed", False):
+            return
+
         device_changed = False
         if device is not None:
             new_device_str = device if isinstance(device, str) else str(device)
@@ -332,6 +337,15 @@ class NewtonStage:
         if self.initialized and not device_changed:
             return
 
+        try:
+            self._initialize_newton_impl()
+        except Exception as e:
+            carb.log_error(f"[Newton] Initialization failed: {e}")
+            self.init()
+            self._init_failed = True
+
+    def _initialize_newton_impl(self) -> None:
+        """Internal implementation of Newton initialization."""
         self._initializing = True
         wp.set_device(self.device)
 
@@ -390,13 +404,24 @@ class NewtonStage:
             newton.solvers.SolverXPBD.register_custom_attributes(self.builder)
 
         # Parse USD using Newton API
-        self.parsing_results = self.builder.add_usd(
-            source=current_stage,
+        add_usd_kwargs = dict(
             verbose=False,
             collapse_fixed_joints=self.cfg.collapse_fixed_joints,
             joint_drive_gains_scaling=self.cfg.pd_scale,
+            only_load_enabled_rigid_bodies=True,
             schema_resolvers=[SchemaResolverNewton(), SchemaResolverMjc(), SchemaResolverPhysx()],
+            force_position_velocity_actuation=True,
         )
+        try:
+            self.parsing_results = self.builder.add_usd(source=current_stage, **add_usd_kwargs)
+        except RuntimeError as e:
+            if "Cycle detected" in str(e):
+                carb.log_warn("[Newton] USD stage has composition cycles; retrying with flattened stage")
+                flat_stage = Usd.Stage.CreateInMemory()
+                flat_stage.GetRootLayer().TransferContent(current_stage.Flatten())
+                self.parsing_results = self.builder.add_usd(source=flat_stage, **add_usd_kwargs)
+            else:
+                raise
 
         self.scene_scale = 1.0 / self.parsing_results["linear_unit"]
 

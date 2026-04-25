@@ -1,7 +1,7 @@
 display_name = "Isaac Policy Based Robot Control Examples"
 
 [package]
-version = "5.2.3"
+version = "5.2.4"
 category = "Simulation"
 title = "Reinforcement Learning Inference Example for Robots in Isaac Sim"
 description = "The Policy Based Robot Control Examples extension provides utilities for deploying reinforcement learning policies in Isaac Sim, as well as locomotion examples for humanoid and quadruped robots."
@@ -116,6 +116,7 @@ name = "newton"
 timeout = 1800
 dependencies = [
     "isaacsim.physics.newton",
+    "isaacsim.physics.newton.tensors",
     "isaacsim.test.utils", # Used to suppress NumPy coverage errors
     "omni.isaac.ml_archive"
 ]

@@ -211,7 +211,8 @@ bool CpuRigidContactView::getContactData(const TensorDesc* contactForceTensor,
                    static_cast<int>(m_filterCount), m_worldBodyIndex, dtScale, maxCount,
                    static_cast<float*>(contactForceTensor->data), static_cast<float*>(contactPointTensor->data),
                    static_cast<float*>(contactNormalTensor->data), static_cast<float*>(contactSeparationTensor->data),
-                   m_scratchFillCounts.data(), m_scratchStartIndices.data(), m_rigidContactMax);
+                   m_scratchFillCounts.data(), m_scratchStartIndices.data(), m_rigidContactMax,
+                   m_contactPointsInWorldSpace);
 
     std::memcpy(contactCountTensor->data, m_scratchFillCounts.data(), pairCount * sizeof(uint32_t));
     return true;
@@ -313,7 +314,7 @@ bool CpuRigidContactView::getRawContactData(const TensorDesc* contactForceTensor
                       static_cast<float*>(contactForceTensor->data), static_cast<float*>(contactPointTensor->data),
                       static_cast<float*>(contactNormalTensor->data), static_cast<float*>(contactSeparationTensor->data),
                       m_scratchFillCounts.data(), m_scratchStartIndices.data(),
-                      static_cast<uint64_t*>(otherActorIdsTensor->data), m_rigidContactMax);
+                      static_cast<uint64_t*>(otherActorIdsTensor->data), m_rigidContactMax, m_contactPointsInWorldSpace);
 
     std::memcpy(contactCountTensor->data, m_scratchFillCounts.data(), m_sensorCount * sizeof(uint32_t));
     return true;

@@ -22,6 +22,7 @@
 #include <isaacsim/core/experimental/prims/IPrimDataReader.h>
 #include <isaacsim/core/experimental/prims/IPrimDataReaderManager.h>
 #include <isaacsim/core/includes/BaseResetNode.h>
+#include <isaacsim/core/includes/PhysicsEngine.h>
 #include <isaacsim/core/nodes/ICoreNodes.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
 #include <omni/fabric/FabricUSD.h>
@@ -147,10 +148,11 @@ private:
 
         m_viewId = "odometry_" + std::to_string(s_viewCounter.fetch_add(1));
         const char* pathStr = primSdfPath.GetText();
+        const char* engine = isaacsim::core::includes::getActivePhysicsEngineName();
 
         if (usdPrim.HasAPI<pxr::UsdPhysicsArticulationRootAPI>())
         {
-            m_articulationView = m_reader->createArticulationView(m_viewId.c_str(), &pathStr, 1, "physx");
+            m_articulationView = m_reader->createArticulationView(m_viewId.c_str(), &pathStr, 1, engine);
             if (!m_articulationView)
             {
                 db.logError("Failed to create articulation view for '%s'", pathStr);
@@ -159,7 +161,7 @@ private:
         }
         else
         {
-            m_rigidBodyView = m_reader->createRigidBodyView(m_viewId.c_str(), &pathStr, 1, "physx");
+            m_rigidBodyView = m_reader->createRigidBodyView(m_viewId.c_str(), &pathStr, 1, engine);
             if (!m_rigidBodyView)
             {
                 db.logError("The prim at path '%s' is not a valid rigid body or articulation root", pathStr);

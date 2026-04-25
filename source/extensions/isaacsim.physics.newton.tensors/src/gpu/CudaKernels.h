@@ -71,18 +71,45 @@ bool launchGatherSpatialVector(
 bool launchGatherMat33(
     const wp::mat33* src, float* dst, const int* devIndices, int numIndices, cudaStream_t stream = nullptr);
 
-/// Gather center-of-mass vec3 entries and emit identity-rotation transforms.
+/// Gather center-of-mass vec3 entries and pair with cached orientation quaternions.
 ///
-/// Writes ``{px, py, pz, 0, 0, 0, 1}`` per selected entry.
+/// Writes ``{px, py, pz, qx, qy, qz, qw}`` per selected entry where the
+/// orientation is read from ``cachedOrientation`` (4 floats per slot).
 ///
 /// @param src Device pointer to source vec3 array.
 /// @param dst Device pointer to ``[numIndices, 7]`` floats.
 /// @param devIndices Device index array, length ``numIndices``.
 /// @param numIndices Number of gather slots.
+/// @param cachedOrientation Device pointer to ``[numIndices, 4]`` cached quaternion floats.
 /// @param stream CUDA stream.
 /// @return ``true`` if the launch succeeded.
-bool launchGatherCenterOfMass(
-    const wp::vec3* src, float* dst, const int* devIndices, int numIndices, cudaStream_t stream = nullptr);
+bool launchGatherCenterOfMass(const wp::vec3* src,
+                              float* dst,
+                              const int* devIndices,
+                              int numIndices,
+                              const float* cachedOrientation,
+                              cudaStream_t stream = nullptr);
+
+/// Extract orientation quaternions from a COM tensor and scatter to a flat cache.
+///
+/// For each element, reads 4 floats starting at offset 3 in the source stride
+/// and writes them contiguously to ``dst``.
+///
+/// @param src Device source buffer with stride ``srcStride`` per element.
+/// @param dst Device orientation cache, 4 floats per element.
+/// @param devArtiIndices Optional index array; ``nullptr`` for identity.
+/// @param count Number of selected articulations/bodies.
+/// @param elemPerSlot Elements per slot (1 for rigid body, maxLinks for articulation).
+/// @param srcStride Float stride of each source element (7 for COM).
+/// @param stream CUDA stream.
+/// @return ``true`` if the launch succeeded.
+bool launchScatterComOrientation(const float* src,
+                                 float* dst,
+                                 const int* devArtiIndices,
+                                 int count,
+                                 int elemPerSlot,
+                                 int srcStride,
+                                 cudaStream_t stream = nullptr);
 
 /// Interleaved gather from two parallel source arrays.
 ///
@@ -451,6 +478,7 @@ bool launchContactData(const int* contactCount,
                        uint32_t* outCounts,
                        const uint32_t* startIndices,
                        int rigidContactMax,
+                       bool pointsInWorldSpace = false,
                        cudaStream_t stream = nullptr);
 
 /// Count raw contacts per sensor (ignoring filters).
@@ -533,6 +561,7 @@ bool launchRawContactData(const int* contactCount,
                           const uint32_t* startIndices,
                           uint64_t* otherActorIds,
                           int rigidContactMax,
+                          bool pointsInWorldSpace = false,
                           cudaStream_t stream = nullptr);
 
 } // namespace tensors

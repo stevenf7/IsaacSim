@@ -25,6 +25,7 @@
 #include <isaacsim/core/experimental/prims/IPrimDataReader.h>
 #include <isaacsim/core/experimental/prims/IPrimDataReaderManager.h>
 #include <isaacsim/core/experimental/prims/SdfPathToken.h>
+#include <isaacsim/core/includes/PhysicsEngine.h>
 #include <isaacsim/core/includes/Pose.h>
 #include <isaacsim/core/includes/UsdUtilities.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
@@ -90,24 +91,6 @@ namespace
 
 using simulation_manager::ISimulationManager;
 using namespace omni::physics::tensors;
-
-static bool isPhysxActive()
-{
-    auto* physics = carb::getCachedInterface<omni::physics::IPhysics>();
-    if (!physics)
-        return false;
-
-    size_t numSims = physics->getNumSimulations();
-    std::vector<omni::physics::SimulationId> ids(numSims);
-    physics->getSimulationIds(ids.data(), numSims);
-    for (const auto& id : ids)
-    {
-        const char* name = physics->getSimulationName(id);
-        if (name && std::string(name) == "PhysX" && physics->isSimulationActive(id))
-            return true;
-    }
-    return false;
-}
 
 static void fillTensorDesc(TensorDesc& desc, void* dataPtr, int numElements, TensorDataType type, int device)
 {
@@ -786,9 +769,10 @@ public:
             m_simulationView = nullptr;
         }
 
-        if (m_tensorApi && stageId != 0 && isPhysxActive())
+        const char* activeEngine = isaacsim::core::includes::getActivePhysicsEngineName();
+        if (m_tensorApi && stageId != 0 && activeEngine)
         {
-            m_simulationView = m_tensorApi->createSimulationView(stageId, nullptr);
+            m_simulationView = m_tensorApi->createSimulationView(stageId, activeEngine);
             if (m_simulationView)
             {
                 m_deviceOrdinal = m_simulationView->getDeviceOrdinal();

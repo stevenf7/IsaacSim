@@ -35,6 +35,7 @@ GpuRigidBodyView::~GpuRigidBodyView()
     safeCudaFree(m_deviceFreeJointQStartIndices);
     safeCudaFree(m_deviceIndexScratch);
     safeCudaFree(m_stagingBuffer);
+    safeCudaFree(m_deviceComOrientation);
 }
 
 void GpuRigidBodyView::_uploadMappingsToGpu()
@@ -101,6 +102,17 @@ void GpuRigidBodyView::_allocateStagingBuffer()
         CARB_LOG_ERROR("_allocateStagingBuffer cudaMalloc for index scratch failed: %s", cudaGetErrorString(err));
         m_deviceIndexScratch = nullptr;
     }
+    size_t orientBytes = size_t(m_count) * 4 * sizeof(float);
+    err = cudaMalloc(&m_deviceComOrientation, orientBytes);
+    if (err != cudaSuccess)
+    {
+        (void)cudaGetLastError();
+        m_deviceComOrientation = nullptr;
+    }
+    else
+    {
+        cudaMemcpy(m_deviceComOrientation, m_cachedComOrientation.data(), orientBytes, cudaMemcpyHostToDevice);
+    }
 }
 
 // ---- Getters ----
@@ -165,8 +177,8 @@ bool GpuRigidBodyView::getCOMs(const TensorDesc* dstTensor) const
     return gpuGather(
         [this](float* dst, int n)
         {
-            return launchGatherCenterOfMass(
-                reinterpret_cast<const wp::vec3*>(m_cachedBodyCenterOfMass), dst, m_deviceBodyIndices, n);
+            return launchGatherCenterOfMass(reinterpret_cast<const wp::vec3*>(m_cachedBodyCenterOfMass), dst,
+                                            m_deviceBodyIndices, n, m_deviceComOrientation);
         },
         dstTensor, static_cast<int>(m_bodyIndices.size()), 7, m_stagingBuffer);
 }
@@ -256,7 +268,13 @@ bool GpuRigidBodyView::setCOMs(const TensorDesc* srcTensor, const TensorDesc* in
     const float* src = ensureGpuSrc(srcTensor, m_stagingBuffer, m_stagingMaxFloats);
     if (!src)
         return false;
-    return launchFusedLinkScatter(src, m_cachedBodyCenterOfMass, idx.ptr, m_deviceBodyIndices, idx.count, 1, 7, 3, 0, 3);
+    bool ok =
+        launchFusedLinkScatter(src, m_cachedBodyCenterOfMass, idx.ptr, m_deviceBodyIndices, idx.count, 1, 7, 3, 0, 3);
+    if (ok && m_deviceComOrientation)
+    {
+        ok = launchScatterComOrientation(src, m_deviceComOrientation, idx.ptr, idx.count, 1, 7);
+    }
+    return ok;
 }
 
 bool GpuRigidBodyView::setInertias(const TensorDesc* srcTensor, const TensorDesc* indexTensor)

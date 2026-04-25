@@ -208,6 +208,55 @@ def get_qos_profile(depth: int = 1, history: str = "keep_last"):
     return QoSProfile(reliability=QoSReliabilityPolicy.BEST_EFFORT, history=history_policy, depth=depth)
 
 
+def swap_joint_bodies(joint_path):
+    """Swap body0 and body1 relationships and local transforms on a USD joint.
+
+    Args:
+        joint_path: USD path of the joint prim.
+    """
+    stage = omni.usd.get_context().get_stage()
+    prim = stage.GetPrimAtPath(joint_path)
+    joint = UsdPhysics.Joint(prim)
+
+    body0_targets = joint.GetBody0Rel().GetTargets()
+    body1_targets = joint.GetBody1Rel().GetTargets()
+    joint.GetBody0Rel().SetTargets(body1_targets)
+    joint.GetBody1Rel().SetTargets(body0_targets)
+
+    pos0_attr = prim.GetAttribute("physics:localPos0")
+    pos1_attr = prim.GetAttribute("physics:localPos1")
+    rot0_attr = prim.GetAttribute("physics:localRot0")
+    rot1_attr = prim.GetAttribute("physics:localRot1")
+
+    pos0 = pos0_attr.Get() if pos0_attr else None
+    pos1 = pos1_attr.Get() if pos1_attr else None
+    rot0 = rot0_attr.Get() if rot0_attr else None
+    rot1 = rot1_attr.Get() if rot1_attr else None
+
+    if pos0 is not None and pos1 is not None:
+        pos0_attr.Set(pos1)
+        pos1_attr.Set(pos0)
+    if rot0 is not None and rot1 is not None:
+        rot0_attr.Set(rot1)
+        rot1_attr.Set(rot0)
+
+
+SIMPLE_ARTICULATION_3J_REVERSED_JOINTS = [
+    "/Articulation/Arm/CenterRevoluteJoint",
+    "/Articulation/DistalPivot/DistalRevoluteJoint",
+]
+
+
+def fix_reversed_joints(joint_paths):
+    """Swap body0/body1 on a list of joints that have reversed parent/child ordering.
+
+    Args:
+        joint_paths: List of USD paths to joints that need body0/body1 swapped.
+    """
+    for path in joint_paths:
+        swap_joint_bodies(path)
+
+
 def set_joint_drive_parameters(joint_path, joint_type, drive_type, target_value, stiffness=None, damping=None):
     """Set drive parameters for a joint on the stage."""
     stage = omni.usd.get_context().get_stage()

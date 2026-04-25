@@ -53,6 +53,7 @@ private:
     int* m_deviceIndexScratch = nullptr; ///< Scratch buffer for H2D staging of CPU index tensors.
     float* m_stagingBuffer = nullptr; ///< Reusable device buffer for D2H/H2D staging.
     size_t m_stagingMaxFloats = 0;
+    float* m_deviceComOrientation = nullptr; ///< Device-side COM orientation cache [count * 4].
 
     void _uploadMappingsToGpu();
     void _allocateStagingBuffer();

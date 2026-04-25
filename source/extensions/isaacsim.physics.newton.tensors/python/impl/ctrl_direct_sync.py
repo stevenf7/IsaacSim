@@ -13,23 +13,149 @@ from __future__ import annotations
 
 from typing import Any
 
+import numpy as np
 import warp as wp
 
+vec10 = wp.types.vector(length=10, dtype=float)
+
 _dof_map_cache: wp.array | None = None
-_dof_map_initialized: bool = False
+_dof_map_model_id: int | None = None
 _biastype_set: bool = False
+
+
+# ---------------------------------------------------------------------------
+# Warp kernels (self-contained to avoid importing the heavy kernels module
+# from isaacsim.physics.newton.impl.tensors)
+# ---------------------------------------------------------------------------
+
+
+@wp.kernel(enable_backward=False)
+def _sync_ctrl_direct_targets(
+    dof_to_act: wp.array(dtype=wp.int32),
+    joint_target_pos: wp.array(dtype=wp.float32),
+    dofs_per_world: wp.int32,
+    ctrls_per_world: wp.int32,
+    # output
+    mujoco_ctrl: wp.array(dtype=wp.float32),
+) -> None:
+    """Sync joint_target_pos to control.mujoco.ctrl for CTRL_DIRECT joint actuators."""
+    world, dof = wp.tid()
+    act_idx = dof_to_act[dof]
+    if act_idx < 0:
+        return
+    src = world * dofs_per_world + dof
+    dst = world * ctrls_per_world + act_idx
+    mujoco_ctrl[dst] = joint_target_pos[src]
+
+
+@wp.kernel(enable_backward=False)
+def _sync_ctrl_direct_gains(
+    dof_to_act: wp.array(dtype=wp.int32),
+    joint_target_ke: wp.array(dtype=wp.float32),
+    joint_target_kd: wp.array(dtype=wp.float32),
+    # output
+    actuator_gainprm: wp.array(dtype=vec10),
+    actuator_biasprm: wp.array(dtype=vec10),
+) -> None:
+    """Sync joint_target_ke/kd to actuator gainprm/biasprm for CTRL_DIRECT joint actuators."""
+    dof = wp.tid()
+    act_idx = dof_to_act[dof]
+    if act_idx < 0:
+        return
+    kp = joint_target_ke[dof]
+    kd = joint_target_kd[dof]
+    if kp > 0.0 or kd > 0.0:
+        actuator_gainprm[act_idx][0] = kp
+        actuator_biasprm[act_idx][1] = -kp
+        actuator_biasprm[act_idx][2] = -kd
+
+
+def _build_ctrl_direct_dof_mapping(model: Any) -> wp.array | None:
+    """Build a DOF-to-CTRL_DIRECT-actuator mapping from model custom attributes.
+
+    For each template DOF that has a CTRL_DIRECT joint actuator, stores the
+    mujoco:actuator index. Returns None if no CTRL_DIRECT joint actuators exist.
+
+    Args:
+        model: Newton model with mujoco custom attributes.
+
+    Returns:
+        wp.array of shape (dofs_per_world,) with dtype int32, or None.
+    """
+    mujoco_attrs = getattr(model, "mujoco", None)
+    if mujoco_attrs is None:
+        return None
+
+    actuator_count = model.custom_frequency_counts.get("mujoco:actuator", 0)
+    if actuator_count == 0:
+        return None
+
+    has_trnid = hasattr(mujoco_attrs, "actuator_trnid")
+    has_ctrl_source = hasattr(mujoco_attrs, "ctrl_source")
+    has_trntype = hasattr(mujoco_attrs, "actuator_trntype")
+
+    if not has_trnid:
+        return None
+
+    trnid = mujoco_attrs.actuator_trnid.numpy()
+    ctrl_source = mujoco_attrs.ctrl_source.numpy() if has_ctrl_source else None
+    trntype = mujoco_attrs.actuator_trntype.numpy() if has_trntype else None
+
+    target_labels = getattr(mujoco_attrs, "actuator_target_label", None)
+    joint_dof_labels = getattr(mujoco_attrs, "joint_dof_label", None)
+    dof_label_to_idx: dict[str, int] = {}
+    if isinstance(joint_dof_labels, list):
+        for i, label in enumerate(joint_dof_labels):
+            if label:
+                dof_label_to_idx[label] = i
+
+    nworlds = model.world_count if hasattr(model, "world_count") else 1
+    dofs_per_world = model.joint_dof_count // nworlds if nworlds > 0 else model.joint_dof_count
+
+    if dofs_per_world == 0:
+        return None
+
+    dof_to_act = np.full(dofs_per_world, -1, dtype=np.int32)
+    found_any = False
+
+    for act_idx in range(actuator_count):
+        is_ctrl_direct = ctrl_source is None or int(ctrl_source[act_idx]) == 1
+        is_joint = trntype is None or int(trntype[act_idx]) == 0
+        if not (is_ctrl_direct and is_joint):
+            continue
+
+        dof_idx = int(trnid[act_idx, 0]) if trnid.ndim > 1 else int(trnid[act_idx])
+
+        if dof_idx < 0 and isinstance(target_labels, list) and act_idx < len(target_labels):
+            label = target_labels[act_idx]
+            if label in dof_label_to_idx:
+                dof_idx = dof_label_to_idx[label]
+
+        if 0 <= dof_idx < dofs_per_world:
+            dof_to_act[dof_idx] = act_idx
+            found_any = True
+
+    if not found_any:
+        return None
+
+    return wp.array(dof_to_act, dtype=wp.int32, device=model.device)
+
+
+# ---------------------------------------------------------------------------
+# Module-level cache and public API
+# ---------------------------------------------------------------------------
 
 
 def reset() -> None:
     """Reset cached state (call when simulation is destroyed)."""
-    global _dof_map_cache, _dof_map_initialized, _biastype_set
+    global _dof_map_cache, _dof_map_model_id, _biastype_set
     _dof_map_cache = None
-    _dof_map_initialized = False
+    _dof_map_model_id = None
     _biastype_set = False
 
 
 def _get_dof_map(model: Any) -> wp.array | None:
-    """Return the cached CTRL_DIRECT DOF mapping array, building it on first call.
+    """Return the cached CTRL_DIRECT DOF mapping array, rebuilding when the model changes.
 
     Args:
         model: The Newton model object.
@@ -37,13 +163,13 @@ def _get_dof_map(model: Any) -> wp.array | None:
     Returns:
         Warp array mapping DOF indices to actuator indices, or None if unavailable.
     """
-    global _dof_map_cache, _dof_map_initialized
-    if not _dof_map_initialized:
-        _dof_map_initialized = True
+    global _dof_map_cache, _dof_map_model_id, _biastype_set
+    model_id = id(model)
+    if _dof_map_model_id != model_id:
+        _dof_map_model_id = model_id
+        _biastype_set = False
         try:
-            from isaacsim.physics.newton.impl.tensors.kernels import build_ctrl_direct_dof_mapping
-
-            _dof_map_cache = build_ctrl_direct_dof_mapping(model)
+            _dof_map_cache = _build_ctrl_direct_dof_mapping(model)
         except Exception:
             _dof_map_cache = None
     return _dof_map_cache
@@ -69,10 +195,8 @@ def sync_actuator_gains(newton_stage: Any, model: Any) -> None:
     nworlds = model.world_count if hasattr(model, "world_count") else 1
     dofs_per_world = model.joint_dof_count // max(nworlds, 1)
 
-    from isaacsim.physics.newton.impl.tensors.kernels import sync_ctrl_direct_gains
-
     wp.launch(
-        sync_ctrl_direct_gains,
+        _sync_ctrl_direct_gains,
         dim=(dofs_per_world,),
         inputs=[dof_map, model.joint_target_ke, model.joint_target_kd],
         outputs=[gainprm, biasprm],
@@ -110,10 +234,8 @@ def sync_position_targets(newton_stage: Any, model: Any) -> None:
     dofs_per_world = model.joint_dof_count // max(nworlds, 1)
     ctrls_per_world = mujoco_ctrl.shape[0] // max(nworlds, 1)
 
-    from isaacsim.physics.newton.impl.tensors.kernels import sync_ctrl_direct_targets
-
     wp.launch(
-        sync_ctrl_direct_targets,
+        _sync_ctrl_direct_targets,
         dim=(nworlds, dofs_per_world),
         inputs=[dof_map, control.joint_target_pos, dofs_per_world, ctrls_per_world],
         outputs=[mujoco_ctrl],

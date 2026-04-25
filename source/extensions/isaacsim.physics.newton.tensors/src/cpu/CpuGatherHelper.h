@@ -52,6 +52,8 @@ inline void gatherTransform(const wp::transform* src, float* dst, const int* ind
 
 inline void gatherSpatialVector(const wp::spatial_vector* src, float* dst, const int* indices, size_t n)
 {
+    // Newton stores body_qd as [linear(3), angular(3)] in wp::spatial_vector memory,
+    // which already matches the PhysX tensor API convention. No reordering needed.
     for (size_t i = 0; i < n; ++i)
     {
         float* d = dst + i * 6;
@@ -109,7 +111,7 @@ inline void gatherPairedFloat(const float* srcA, const float* srcB, float* dst, 
     }
 }
 
-inline void gatherCenterOfMass(const wp::vec3* src, float* dst, const int* indices, size_t n)
+inline void gatherCenterOfMass(const wp::vec3* src, float* dst, const int* indices, size_t n, const float* cachedOrientation)
 {
     for (size_t i = 0; i < n; ++i)
     {
@@ -125,8 +127,11 @@ inline void gatherCenterOfMass(const wp::vec3* src, float* dst, const int* indic
         {
             out[0] = out[1] = out[2] = 0.0f;
         }
-        out[3] = out[4] = out[5] = 0.0f;
-        out[6] = 1.0f;
+        const float* q = cachedOrientation + i * 4;
+        out[3] = q[0];
+        out[4] = q[1];
+        out[5] = q[2];
+        out[6] = q[3];
     }
 }
 

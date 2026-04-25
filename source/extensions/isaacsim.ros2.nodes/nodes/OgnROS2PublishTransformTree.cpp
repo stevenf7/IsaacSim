@@ -17,6 +17,7 @@
 #include <pch/UsdPCH.h>
 // clang-format on
 
+#include <isaacsim/core/includes/PhysicsEngine.h>
 #include <isaacsim/core/includes/PoseTree.h>
 #include <isaacsim/ros2/core/Ros2Node.h>
 #include <omni/fabric/FabricUSD.h>
@@ -99,7 +100,8 @@ public:
                     "Connect OgnIsaacComputeTransformTree to inputs:parentFrames/childFrames/translations/orientations instead.");
                 state.m_useExternalData = false;
 
-                state.m_simView = state.m_tensorInterface->createSimulationView(state.m_stageId, nullptr);
+                state.m_simView = state.m_tensorInterface->createSimulationView(
+                    state.m_stageId, isaacsim::core::includes::getActivePhysicsEngineName());
 
                 //  Finding target prims
                 const auto& targetPrims = db.inputs.targetPrims();

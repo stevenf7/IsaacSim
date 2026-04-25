@@ -273,15 +273,14 @@ class NewtonPropertyQueryInterface:
         links = []
         # Get paths for the first articulation (homogeneous view, all have same structure)
         all_link_paths = articulation_view.link_paths
-        all_joint_paths = articulation_view.joint_paths
         all_dof_paths = articulation_view.dof_paths
 
         if not all_link_paths or len(all_link_paths) == 0:
             return links
 
         link_paths = all_link_paths[0]
-        joint_paths = all_joint_paths[0] if all_joint_paths else []
         dof_paths = all_dof_paths[0] if all_dof_paths else []
+        joint_paths = list(dict.fromkeys(p for p in dof_paths if p))
 
         # Create a mapping from joint paths to DOF count by counting DOFs
         # In Newton, each DOF path corresponds to exactly one joint
