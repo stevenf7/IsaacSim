@@ -18,8 +18,8 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
-import sys
 import weakref
 
 import carb
@@ -94,9 +94,15 @@ class UIBuilder:
             *args: Variable length argument list (unused).
             **kwargs: Additional keyword arguments (unused).
         """
-        command = ["code", "-n", self._app_folder]
+        code_executable = shutil.which("code")
+        if code_executable is None:
+            carb.log_warn(
+                "Unable to launch VS Code.\nMake sure VS Code is installed and accessible on the system via the command 'code'"
+            )
+            return
+        command = [code_executable, "-n", self._app_folder]
         carb.log_info(f"Launching VS Code: {command}")
-        result = subprocess.run(command, shell=(sys.platform == "win32"), close_fds=True)
+        result = subprocess.run(command, close_fds=True)
         # check process execution
         notification = f"Serving at {self._host}:{self._port}"
         if result.returncode:
