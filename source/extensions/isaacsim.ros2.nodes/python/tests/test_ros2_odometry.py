@@ -382,6 +382,8 @@ class TestRos2Odometry(ROS2TestCase):
 
     async def test_ROS2_linear_odometry(self):
         """Test odometry for Leatherback robot moving in a straight line, verifying linear velocity and position tracking."""
+        if SimulationManager.get_active_physics_engine() == "newton":
+            self.skipTest("Leatherback asset not yet supported by Newton backend")
         import rclpy
         from ackermann_msgs.msg import AckermannDriveStamped
         from nav_msgs.msg import Odometry
@@ -605,6 +607,8 @@ class TestRos2Odometry(ROS2TestCase):
 
     async def test_ROS2_angular_odometry(self):
         """Test odometry with Leatherback robot going in a circle, verifying angular velocity."""
+        if SimulationManager.get_active_physics_engine() == "newton":
+            self.skipTest("Leatherback asset not yet supported by Newton backend")
         import rclpy
         from ackermann_msgs.msg import AckermannDriveStamped
         from nav_msgs.msg import Odometry

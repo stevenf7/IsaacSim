@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.3] - 2026-04-24
+### Changed
+- Use `SimulationManager.get_active_physics_engine()` for Newton engine detection in `RigidPrim` and `Articulation` instead of checking for `_newton_stage` attribute on the view object.
+
 ## [1.8.2] - 2026-04-24
 ### Fixed
 - Removed the obsolete SimState remote-push gate so articulation DOF commands continue writing to SimStateStorage when SimState mode is enabled.

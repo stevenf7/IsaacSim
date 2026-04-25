@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.2.4] - 2026-04-23
+### Fixed
+- Added isaacsim.physics.newton.tensors as extension dep
+
 ## [5.2.3] - 2026-04-23
 ### Changed
 - Defer torch import to avoid loading it at startup

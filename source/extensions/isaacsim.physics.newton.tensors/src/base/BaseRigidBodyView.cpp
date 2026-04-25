@@ -43,8 +43,9 @@ BaseRigidBodyView::BaseRigidBodyView(py::object newtonStage, const std::vector<p
         auto jointQStarts = jointQStartArr.unchecked<int, 1>();
         int numJoints = static_cast<int>(jointTypeArr.shape(0));
 
-        for (const auto& path : bodyPaths)
+        for (size_t pi = 0; pi < bodyPaths.size(); ++pi)
         {
+            const auto& path = bodyPaths[pi];
             std::string pathStr = path.GetString();
             int bodyIdx = -1;
             for (size_t i = 0; i < static_cast<size_t>(py::len(bodyLabel)); ++i)
@@ -80,6 +81,10 @@ BaseRigidBodyView::BaseRigidBodyView(py::object newtonStage, const std::vector<p
         }
 
         m_count = static_cast<uint32_t>(m_bodyIndices.size());
+
+        m_cachedComOrientation.resize(m_count * 4, 0.0f);
+        for (uint32_t i = 0; i < m_count; ++i)
+            m_cachedComOrientation[i * 4 + 3] = 1.0f; // identity quat xyzw = (0,0,0,1)
 
         if (m_count > 0)
             _cacheWarpPointers();

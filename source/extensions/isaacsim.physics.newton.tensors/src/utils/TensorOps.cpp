@@ -310,7 +310,8 @@ void cpuContactData(const int* contactCount,
                     float* outSeparations,
                     uint32_t* outCounts,
                     const uint32_t* startIndices,
-                    int rigidContactMax)
+                    int rigidContactMax,
+                    bool pointsInWorldSpace)
 {
     int count = contactCount[0];
     int limit = (count < rigidContactMax) ? count : rigidContactMax;
@@ -331,9 +332,11 @@ void cpuContactData(const int* contactCount,
         float nArr[3] = { nx, ny, nz };
         float p0[3] = { point0[tid * 3], point0[tid * 3 + 1], point0[tid * 3 + 2] };
         float p1[3] = { point1[tid * 3], point1[tid * 3 + 1], point1[tid * 3 + 2] };
+        int bodyA = pointsInWorldSpace ? -1 : rawA;
+        int bodyB = pointsInWorldSpace ? -1 : rawB;
         float wax, way, waz, wbx, wby, wbz;
-        cpuTransformPoint(p0, bodyQ, rawA, thickness0[tid], nArr, -1.0f, wax, way, waz);
-        cpuTransformPoint(p1, bodyQ, rawB, thickness1[tid], nArr, 1.0f, wbx, wby, wbz);
+        cpuTransformPoint(p0, bodyQ, bodyA, thickness0[tid], nArr, -1.0f, wax, way, waz);
+        cpuTransformPoint(p1, bodyQ, bodyB, thickness1[tid], nArr, 1.0f, wbx, wby, wbz);
         float d = nx * (wax - wbx) + ny * (way - wby) + nz * (waz - wbz);
         float cpx = (wax + wbx) * 0.5f, cpy = (way + wby) * 0.5f, cpz = (waz + wbz) * 0.5f;
 
@@ -430,7 +433,8 @@ void cpuRawContactData(const int* contactCount,
                        uint32_t* outCounts,
                        const uint32_t* startIndices,
                        uint64_t* otherActorIds,
-                       int rigidContactMax)
+                       int rigidContactMax,
+                       bool pointsInWorldSpace)
 {
     int count = contactCount[0];
     int limit = (count < rigidContactMax) ? count : rigidContactMax;
@@ -451,9 +455,11 @@ void cpuRawContactData(const int* contactCount,
         float nArr[3] = { nx, ny, nz };
         float p0[3] = { point0[tid * 3], point0[tid * 3 + 1], point0[tid * 3 + 2] };
         float p1[3] = { point1[tid * 3], point1[tid * 3 + 1], point1[tid * 3 + 2] };
+        int bodyA = pointsInWorldSpace ? -1 : rawA;
+        int bodyB = pointsInWorldSpace ? -1 : rawB;
         float wax, way, waz, wbx, wby, wbz;
-        cpuTransformPoint(p0, bodyQ, rawA, thickness0[tid], nArr, -1.0f, wax, way, waz);
-        cpuTransformPoint(p1, bodyQ, rawB, thickness1[tid], nArr, 1.0f, wbx, wby, wbz);
+        cpuTransformPoint(p0, bodyQ, bodyA, thickness0[tid], nArr, -1.0f, wax, way, waz);
+        cpuTransformPoint(p1, bodyQ, bodyB, thickness1[tid], nArr, 1.0f, wbx, wby, wbz);
         float d = nx * (wax - wbx) + ny * (way - wby) + nz * (waz - wbz);
         float cpx = (wax + wbx) * 0.5f, cpy = (way + wby) * 0.5f, cpz = (waz + wbz) * 0.5f;
 

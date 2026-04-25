@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.1] - 2026-04-22
+### Changed
+- Query active physics engine at runtime via shared utility and pass it to `createSimulationView` instead of only supporting PhysX
+
 ## [0.3.0] - 2026-04-20
 ### Added
 - Implement enableContactReporting() to apply PhysxContactReportAPI to rigid body prims

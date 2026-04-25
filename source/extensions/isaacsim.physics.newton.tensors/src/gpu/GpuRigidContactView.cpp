@@ -304,8 +304,8 @@ bool GpuRigidContactView::getContactData(const TensorDesc* contactForceTensor,
                       m_cachedBodyQ, m_deviceBodySensorMap, m_bodyCount, m_deviceBodyFilterMap, m_bodyCount,
                       static_cast<int>(m_filterCount), m_worldBodyIndex, dtScale, maxCount,
                       static_cast<float*>(contactForceTensor->data), static_cast<float*>(contactPointTensor->data),
-                      static_cast<float*>(contactNormalTensor->data),
-                      static_cast<float*>(contactSeparationTensor->data), outCounts, outStartIdx, m_rigidContactMax);
+                      static_cast<float*>(contactNormalTensor->data), static_cast<float*>(contactSeparationTensor->data),
+                      outCounts, outStartIdx, m_rigidContactMax, m_contactPointsInWorldSpace);
     cudaDeviceSynchronize();
 
     return true;
@@ -405,13 +405,13 @@ bool GpuRigidContactView::getRawContactData(const TensorDesc* contactForceTensor
     cudaMemset(otherActorIdsTensor->data, 0, maxCount * sizeof(uint64_t));
     cudaMemset(outCounts, 0, sensorBytes);
 
-    launchRawContactData(m_cachedContactCount, m_cachedShape0, m_cachedShape1, _getContactPoint0(), _getContactPoint1(),
-                         m_cachedContactNormal, force, _getThickness0(), _getThickness1(), m_cachedShapeBody,
-                         m_cachedBodyQ, m_deviceBodySensorMap, m_bodyCount, m_worldBodyIndex, dtScale, maxCount,
-                         static_cast<float*>(contactForceTensor->data), static_cast<float*>(contactPointTensor->data),
-                         static_cast<float*>(contactNormalTensor->data),
-                         static_cast<float*>(contactSeparationTensor->data), outCounts, outStartIdx,
-                         static_cast<uint64_t*>(otherActorIdsTensor->data), m_rigidContactMax);
+    launchRawContactData(
+        m_cachedContactCount, m_cachedShape0, m_cachedShape1, _getContactPoint0(), _getContactPoint1(),
+        m_cachedContactNormal, force, _getThickness0(), _getThickness1(), m_cachedShapeBody, m_cachedBodyQ,
+        m_deviceBodySensorMap, m_bodyCount, m_worldBodyIndex, dtScale, maxCount,
+        static_cast<float*>(contactForceTensor->data), static_cast<float*>(contactPointTensor->data),
+        static_cast<float*>(contactNormalTensor->data), static_cast<float*>(contactSeparationTensor->data), outCounts,
+        outStartIdx, static_cast<uint64_t*>(otherActorIdsTensor->data), m_rigidContactMax, m_contactPointsInWorldSpace);
     cudaDeviceSynchronize();
 
     return true;

@@ -1958,14 +1958,13 @@ class RigidPrim(XformPrim):
         if rb_view is None:
             return
 
-        is_newton = hasattr(rb_view, "_newton_stage")
-        engine_type = "newton" if is_newton else "physx"
+        engine_type = SimulationManager.get_active_physics_engine()
         view_id = f"rigid_body_{id(self)}"
         self._cpp_data_view_id = view_id
 
         self._cpp_data_view = reader.create_rigid_body_view(view_id, self.paths, engine_type)
 
-        if is_newton:
+        if engine_type == "newton":
             self._setup_newton_rigid_body_callbacks(rb_view)
 
     def _setup_newton_rigid_body_callbacks(self, rb_view: object) -> None:

@@ -22,6 +22,7 @@
 #include <isaacsim/core/experimental/prims/IPrimDataReader.h>
 #include <isaacsim/core/experimental/prims/IPrimDataReaderManager.h>
 #include <isaacsim/core/includes/BaseResetNode.h>
+#include <isaacsim/core/includes/PhysicsEngine.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
 #include <isaacsim/robot/schema/sensor_tokens.h>
 #include <omni/fabric/FabricUSD.h>
@@ -350,7 +351,8 @@ private:
         {
             pathPtrs.push_back(p.c_str());
         }
-        m_xformView = m_reader->createXformView(m_viewId.c_str(), pathPtrs.data(), pathPtrs.size(), "physx");
+        const char* engine = isaacsim::core::includes::getActivePhysicsEngineName();
+        m_xformView = m_reader->createXformView(m_viewId.c_str(), pathPtrs.data(), pathPtrs.size(), engine);
         if (!m_xformView)
         {
             db.logError("Failed to create xform view");

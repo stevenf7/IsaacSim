@@ -4907,14 +4907,13 @@ class Articulation(XformPrim):
         if art_view is None:
             return
 
-        is_newton = hasattr(art_view, "_newton_stage")
-        engine_type = "newton" if is_newton else "physx"
+        engine_type = SimulationManager.get_active_physics_engine()
         view_id = f"articulation_{id(self)}"
         self._cpp_data_view_id = view_id
 
         self._cpp_data_view = reader.create_articulation_view(view_id, self.paths, engine_type)
 
-        if is_newton:
+        if engine_type == "newton":
             self._setup_newton_articulation_callbacks(art_view)
 
     def _setup_newton_articulation_callbacks(self, art_view: object) -> None:

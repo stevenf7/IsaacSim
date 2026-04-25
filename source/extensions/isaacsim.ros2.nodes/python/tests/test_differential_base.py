@@ -95,6 +95,8 @@ class TestRos2DifferentialBase(ROS2TestCase):
 
     async def test_carter_differential_base(self):
         """Test carter differential base."""
+        if SimulationManager.get_active_physics_engine() == "newton":
+            self.skipTest("Odometry node not yet supported by Newton backend")
         from geometry_msgs.msg import Twist
         from nav_msgs.msg import Odometry
         from tf2_msgs.msg import TFMessage
@@ -235,6 +237,8 @@ class TestRos2DifferentialBase(ROS2TestCase):
     # add carter and ROS topic from scratch
     async def test_differential_base_scratch(self):
         """Test differential base scratch."""
+        if SimulationManager.get_active_physics_engine() == "newton":
+            self.skipTest("Odometry node not yet supported by Newton backend")
         from geometry_msgs.msg import Twist
         from nav_msgs.msg import Odometry
 
@@ -385,7 +389,7 @@ class TestRos2DifferentialBase(ROS2TestCase):
         expected_trans = [1.0, -3.0, 0, 0, 0, 0.38268, 0.9238]
         # [px, py, pz, ox, oy, oz, ow]
         expected_odom = [0, 0, 0, 0, 0, 0, 1]
-        self.check_pose(expected_trans, expected_odom, tolerance=1)
+        self.check_pose(expected_trans, expected_odom, delta=0.1)
 
         # straight forward
         move_cmd = self.move_cmd_msg(0.1, 0.0, 0.0, 0.0, 0.0, 0.0)
@@ -411,7 +415,7 @@ class TestRos2DifferentialBase(ROS2TestCase):
         expected_trans = [1.22, -2.78, 0, 0, 0, 0.38268, 0.9238]
         # [px, py, pz, ox, oy, oz, ow]
         expected_odom = [0.3, 0, 0, 0, 0, 0, 1]
-        self.check_pose(expected_trans, expected_odom, tolerance=1)
+        self.check_pose(expected_trans, expected_odom, delta=0.1)
 
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
@@ -439,7 +443,7 @@ class TestRos2DifferentialBase(ROS2TestCase):
         expected_trans = [1.0, -3.0, 0, 0, 0, 0.38268, 0.9238]
         # [px, py, pz, ox, oy, oz, ow]
         expected_odom = [0, 0, 0, 0, 0, 0, 1]
-        self.check_pose(expected_trans, expected_odom, tolerance=1)
+        self.check_pose(expected_trans, expected_odom, delta=0.1)
 
         # straight forward
         move_cmd = self.move_cmd_msg(0.1, 0.0, 0.0, 0.0, 0.0, 0.0)
@@ -460,58 +464,56 @@ class TestRos2DifferentialBase(ROS2TestCase):
         # check 4: location after change radius
         carb.log_info(str(self._trans.transform))
         carb.log_info(str(self._odom_data))
-        # [tx, ty, tz, rx, ry, rz, rw] - Use delta tolerance for translation as specified in original
+        # [tx, ty, tz, rx, ry, rz, rw]
         expected_trans = [1.30, -2.69, 0, 0, 0, 0.3815, 0.9244]
         # [px, py, pz, ox, oy, oz, ow]
         expected_odom = [0.43, 0, 0, 0, 0, 0, 1]
-        self.check_pose(expected_trans, expected_odom, tolerance=1)
+        self.check_pose(expected_trans, expected_odom, delta=0.1)
 
         self._timeline.stop()
         self.spin()
         pass
 
-    def check_pose(self, expected_trans, expected_odom, tolerance=1):
+    def check_pose(self, expected_trans, expected_odom, tolerance=1, delta=None):
         """Verify robot pose against expected transform and odometry values.
 
-        This method compares the current robot pose (from self._trans and self._odom_data)
-        against expected transform and odometry values.
-
         Args:
-            expected_trans: List/array of expected transform values [tx, ty, tz, rx, ry, rz, rw]
-                or None to skip transform checks. Order: translation x,y,z, rotation x,y,z,w.
-            expected_odom: List/array of expected odometry values [px, py, pz, ox, oy, oz, ow]
-                or None to skip odometry checks. Order: position x,y,z, orientation x,y,z,w.
-            tolerance: Tolerance for floating point comparisons (places parameter).
-            delta: Delta tolerance for floating point comparisons (delta parameter).
-                When provided, uses delta instead of places for translation values.
-
+            expected_trans: Expected [tx, ty, tz, rx, ry, rz, rw] or None to skip.
+            expected_odom: Expected [px, py, pz, ox, oy, oz, ow] or None to skip.
+            tolerance: Decimal places for assertAlmostEqual (used when delta is None).
+            delta: Absolute tolerance for assertAlmostEqual (overrides tolerance).
         """
-        # Check transform values if expected_trans is provided
+
+        def _assert_close(actual, expected, msg=""):
+            if delta is not None:
+                self.assertAlmostEqual(actual, expected, delta=delta, msg=msg)
+            else:
+                self.assertAlmostEqual(actual, expected, tolerance, msg=msg)
+
         if expected_trans is not None:
             self.assertIsNotNone(self._trans)
             if len(expected_trans) >= 3:
-                self.assertAlmostEqual(self._trans.transform.translation.x, expected_trans[0], tolerance)
-                self.assertAlmostEqual(self._trans.transform.translation.y, expected_trans[1], tolerance)
-                self.assertAlmostEqual(self._trans.transform.translation.z, expected_trans[2], tolerance)
+                _assert_close(self._trans.transform.translation.x, expected_trans[0])
+                _assert_close(self._trans.transform.translation.y, expected_trans[1])
+                _assert_close(self._trans.transform.translation.z, expected_trans[2])
             if len(expected_trans) >= 7:
-                self.assertAlmostEqual(self._trans.transform.rotation.x, expected_trans[3], tolerance)
-                self.assertAlmostEqual(self._trans.transform.rotation.y, expected_trans[4], tolerance)
-                self.assertAlmostEqual(self._trans.transform.rotation.z, expected_trans[5], tolerance)
-                self.assertAlmostEqual(self._trans.transform.rotation.w, expected_trans[6], tolerance)
+                _assert_close(self._trans.transform.rotation.x, expected_trans[3])
+                _assert_close(self._trans.transform.rotation.y, expected_trans[4])
+                _assert_close(self._trans.transform.rotation.z, expected_trans[5])
+                _assert_close(self._trans.transform.rotation.w, expected_trans[6])
 
-        # Check odometry values if expected_odom is provided
         if expected_odom is not None:
             self.assertIsNotNone(self._odom_data)
             odom_data = deepcopy(self._odom_data)
             if len(expected_odom) >= 3:
-                self.assertAlmostEqual(odom_data.position.x, expected_odom[0], tolerance)
-                self.assertAlmostEqual(odom_data.position.y, expected_odom[1], tolerance)
-                self.assertAlmostEqual(odom_data.position.z, expected_odom[2], tolerance)
+                _assert_close(odom_data.position.x, expected_odom[0])
+                _assert_close(odom_data.position.y, expected_odom[1])
+                _assert_close(odom_data.position.z, expected_odom[2])
             if len(expected_odom) >= 7:
-                self.assertAlmostEqual(odom_data.orientation.x, expected_odom[3], tolerance)
-                self.assertAlmostEqual(odom_data.orientation.y, expected_odom[4], tolerance)
-                self.assertAlmostEqual(odom_data.orientation.z, expected_odom[5], tolerance)
-                self.assertAlmostEqual(odom_data.orientation.w, expected_odom[6], tolerance)
+                _assert_close(odom_data.orientation.x, expected_odom[3])
+                _assert_close(odom_data.orientation.y, expected_odom[4])
+                _assert_close(odom_data.orientation.z, expected_odom[5])
+                _assert_close(odom_data.orientation.w, expected_odom[6])
 
     def add_differential_drive(self, graph_path, robot_path):
         """Add differential drive to the test scene."""

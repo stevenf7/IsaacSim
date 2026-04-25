@@ -104,7 +104,7 @@ bool BaseSimulationView::check() const
 
 bool BaseSimulationView::setSubspaceRoots(const char* pattern)
 {
-    return false;
+    return true;
 }
 
 void BaseSimulationView::step(float dt)
@@ -321,14 +321,68 @@ void BaseSimulationView::_findMatchingPaths(const std::string& pattern, std::vec
 
     try
     {
-        py::module_ utils = py::module_::import("isaacsim.physics.newton.impl.tensors.utils");
-        py::object findFunc = utils.attr("find_matching_paths");
-        py::list matchedPaths = findFunc(m_usdStage, py::str(pattern)).cast<py::list>();
+        if (m_usdStage.is_none())
+            return;
 
-        for (auto path : matchedPaths)
+        bool hasWildcard = (pattern.find('*') != std::string::npos || pattern.find('[') != std::string::npos);
+        if (!hasWildcard && pxr::SdfPath::IsValidPathString(pattern))
         {
-            std::string pathStr = py::str(path);
-            pathsRet.push_back(pxr::SdfPath(pathStr));
+            py::object prim = m_usdStage.attr("GetPrimAtPath")(py::str(pattern));
+            if (!prim.is_none() && py::bool_(prim))
+                pathsRet.push_back(pxr::SdfPath(pattern));
+            return;
+        }
+
+        std::string clean = pxr::TfStringTrim(pattern, "/");
+        std::vector<std::string> segments = pxr::TfStringSplit(clean, "/");
+        if (segments.empty())
+            return;
+
+        std::vector<std::regex> regexSegments;
+        regexSegments.reserve(segments.size());
+        for (const auto& seg : segments)
+        {
+            std::string re = "^";
+            for (char c : seg)
+            {
+                if (c == '*')
+                    re += ".*";
+                else if (c == '.' || c == '+' || c == '?' || c == '(' || c == ')' || c == '{' || c == '}' ||
+                         c == '\\' || c == '^' || c == '$' || c == '|')
+                {
+                    re += '\\';
+                    re += c;
+                }
+                else
+                    re += c;
+            }
+            re += '$';
+            regexSegments.emplace_back(re);
+        }
+
+        py::list roots;
+        roots.append(m_usdStage.attr("GetPseudoRoot")());
+
+        for (size_t level = 0; level < regexSegments.size(); ++level)
+        {
+            py::list matches;
+            for (auto root : roots)
+            {
+                for (auto child : root.attr("GetAllChildren")())
+                {
+                    std::string name = py::str(child.attr("GetName")());
+                    if (std::regex_match(name, regexSegments[level]))
+                        matches.append(child);
+                }
+            }
+
+            if (level < regexSegments.size() - 1)
+                roots = matches;
+            else
+            {
+                for (auto match : matches)
+                    pathsRet.push_back(pxr::SdfPath(py::str(match.attr("GetPath")())));
+            }
         }
     }
     catch (py::error_already_set& e)
@@ -376,10 +430,7 @@ IArticulationView* BaseSimulationView::createArticulationView(const std::vector<
             _findMatchingPaths(pattern, matchedPaths);
 
         if (matchedPaths.empty())
-        {
-            CARB_LOG_WARN("No articulations matched patterns");
             return nullptr;
-        }
 
         return _makeArticulationView(m_newtonStage, matchedPaths);
     }
@@ -411,10 +462,7 @@ IRigidBodyView* BaseSimulationView::createRigidBodyView(const std::vector<std::s
             _findMatchingPaths(pattern, matchedPaths);
 
         if (matchedPaths.empty())
-        {
-            CARB_LOG_WARN("No rigid bodies matched patterns");
             return nullptr;
-        }
 
         return _makeRigidBodyView(m_newtonStage, matchedPaths);
     }
@@ -510,10 +558,7 @@ IRigidContactView* BaseSimulationView::createRigidContactView(const std::vector<
         }
 
         if (sensorPaths.empty())
-        {
-            CARB_LOG_WARN("No rigid bodies matched contact sensor patterns");
             return nullptr;
-        }
 
         return _makeRigidContactView(m_newtonStage, sensorPaths, resolvedFilters, maxContactDataCount);
     }

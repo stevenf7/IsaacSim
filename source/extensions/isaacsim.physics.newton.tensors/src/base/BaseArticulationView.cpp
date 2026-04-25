@@ -57,6 +57,7 @@ BaseArticulationView::BaseArticulationView(py::object newtonStage, const std::ve
         py::list jointLabel = m_model.attr("joint_label").cast<py::list>();
         py::list bodyLabel = m_model.attr("body_label").cast<py::list>();
         py::list articulationLabel = m_model.attr("articulation_label").cast<py::list>();
+        py::object bodyShapes = m_model.attr("body_shapes");
         int articulationCount = m_model.attr("articulation_count").cast<int>();
 
         auto artStarts = articulationStart.unchecked<int, 1>();
@@ -69,9 +70,9 @@ BaseArticulationView::BaseArticulationView(py::object newtonStage, const std::ve
         for (int artiIdx = 0; artiIdx < articulationCount; ++artiIdx)
         {
             std::string artiPath = py::str(articulationLabel[artiIdx]);
-            for (const auto& pattern : articulationPaths)
+            for (size_t pi = 0; pi < articulationPaths.size(); ++pi)
             {
-                if (pattern.GetString() == artiPath)
+                if (articulationPaths[pi].GetString() == artiPath)
                 {
                     matchedArticulationIndices.push_back(artiIdx);
                     m_articulationPrimPaths.push_back(artiPath);
@@ -104,7 +105,10 @@ BaseArticulationView::BaseArticulationView(py::object newtonStage, const std::ve
             info.rootBodyIdx = jointChildren(info.jointStart);
             m_rootBodyIndices.push_back(info.rootBodyIdx);
             m_rootJointIndices.push_back(info.jointStart);
-            m_rootJointQStartIndices.push_back(jointQStarts(info.jointStart));
+            int rootType = jointTypes(info.jointStart);
+            m_rootJointTypes.push_back(rootType);
+            m_rootJointQStartIndices.push_back(rootType == kJointFree ? jointQStarts(info.jointStart) : -1);
+            m_fixedRootJointMapping.push_back(rootType != kJointFree ? info.jointStart : -1);
             m_articulationIndices.push_back(artiIdx);
 
             info.totalDofs = 0;
@@ -130,6 +134,13 @@ BaseArticulationView::BaseArticulationView(py::object newtonStage, const std::ve
                 }
             }
 
+            uint32_t totalShapes = 0;
+            for (int bodyIdx : info.linkIndices)
+            {
+                py::object shapes = bodyShapes[py::int_(bodyIdx)];
+                totalShapes += static_cast<uint32_t>(py::len(shapes));
+            }
+            m_maxShapes = std::max(m_maxShapes, totalShapes);
             m_maxDofs = std::max(m_maxDofs, (uint32_t)info.totalDofs);
             m_maxLinks = std::max(m_maxLinks, (uint32_t)info.linkIndices.size());
         }
@@ -193,7 +204,26 @@ BaseArticulationView::BaseArticulationView(py::object newtonStage, const std::ve
             m_metatypes.push_back(new ArticulationMetatype(
                 m_model, info.jointIndices, info.linkIndices, info.linkPaths, info.jointPaths, info.jointStart));
             m_articulationPaths.push_back(info.linkPaths);
+
+            std::vector<std::string> dofPathsForArti(m_maxDofs, "");
+            {
+                uint32_t dofIdx = 0;
+                for (size_t ji = 0; ji < info.jointIndices.size() && dofIdx < m_maxDofs; ++ji)
+                {
+                    int gj = info.jointIndices[ji];
+                    int qdStart = jointQdStarts(gj);
+                    int qdEnd = jointQdStarts(gj + 1);
+                    std::string path = (ji < info.jointPaths.size()) ? info.jointPaths[ji] : "";
+                    for (int c = 0; c < qdEnd - qdStart && dofIdx < m_maxDofs; ++c, ++dofIdx)
+                        dofPathsForArti[dofIdx] = path;
+                }
+            }
+            m_dofPaths.push_back(std::move(dofPathsForArti));
         }
+
+        m_cachedComOrientation.resize(m_count * m_maxLinks * 4, 0.0f);
+        for (uint32_t i = 0; i < m_count * m_maxLinks; ++i)
+            m_cachedComOrientation[i * 4 + 3] = 1.0f;
 
         if (!m_metatypes.empty())
         {
@@ -240,6 +270,7 @@ void BaseArticulationView::_cacheWarpPointers()
     m_cachedBodyInertia = ptr(m_model.attr("body_inertia"));
     m_cachedBodyInverseInertia = ptr(m_model.attr("body_inv_inertia"));
     m_cachedBodyCenterOfMass = ptr(m_model.attr("body_com"));
+    m_cachedJointXp = ptr(m_model.attr("joint_X_p"));
 
     m_cachedCtrlTargetPos = ptr(control.attr("joint_target_pos"));
     m_cachedCtrlTargetVel = ptr(control.attr("joint_target_vel"));
@@ -316,6 +347,8 @@ const char* BaseArticulationView::getUsdPrimPath(uint32_t artiIdx) const
 }
 const char* BaseArticulationView::getUsdDofPath(uint32_t artiIdx, uint32_t dofIdx) const
 {
+    if (artiIdx < m_dofPaths.size() && dofIdx < m_dofPaths[artiIdx].size())
+        return m_dofPaths[artiIdx][dofIdx].c_str();
     return "";
 }
 
@@ -470,6 +503,7 @@ bool BaseArticulationView::getLinkAccelerations(const TensorDesc*) const
 }
 bool BaseArticulationView::getDofProjectedJointForces(const TensorDesc*) const
 {
+    CARB_LOG_WARN_ONCE("getDofProjectedJointForces is not implemented for the Newton backend");
     return false;
 }
 bool BaseArticulationView::getDofMotions(const TensorDesc*) const

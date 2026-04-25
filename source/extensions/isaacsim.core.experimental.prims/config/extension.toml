@@ -1,5 +1,5 @@
 [package]
-version = "1.8.2"
+version = "1.8.3"
 category = "Simulation"
 title = "Isaac Sim Core (Prims)"
 description = "The Core Prims extension provides a set of APIs to wrap one or more USD prims in the stage in order to manipulate (read/write) their attributes and perform other operations during the simulation."
@@ -112,6 +112,7 @@ dependencies = [
     "isaacsim.core.experimental.materials", # for visual/physics materials
     "isaacsim.core.experimental.objects", # for GroundPlane/Cube in tests
     "isaacsim.physics.newton",
+    "isaacsim.physics.newton.tensors",
     "isaacsim.storage.native",
     "isaacsim.test.utils" # Used to suppress NumPy coverage errors
 ]

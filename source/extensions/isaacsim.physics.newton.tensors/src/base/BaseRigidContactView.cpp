@@ -38,6 +38,22 @@ BaseRigidContactView::BaseRigidContactView(py::object newtonStage,
 
     m_model = m_newtonStage.attr("model");
 
+    m_physicsDt = m_newtonStage.attr("sim_dt").cast<float>();
+    try
+    {
+        py::dict sysModules = py::module_::import("sys").attr("modules").cast<py::dict>();
+        if (sysModules.contains("isaacsim.core.simulation_manager"))
+        {
+            py::object cls = sysModules["isaacsim.core.simulation_manager"].attr("SimulationManager");
+            std::string engine = cls.attr("get_active_physics_engine")().cast<std::string>();
+            if (engine == "newton")
+                m_physicsDt = cls.attr("get_physics_dt")().cast<float>();
+        }
+    }
+    catch (const py::error_already_set&)
+    {
+    }
+
     int bodyCount = m_model.attr("body_count").cast<int>();
     m_worldBodyIndex = bodyCount;
     m_bodyCount = bodyCount + 1;
@@ -231,6 +247,7 @@ void BaseRigidContactView::_refreshContactPointers() const
     m_cachedContactPoint1 = nullptr;
     m_cachedThickness0 = nullptr;
     m_cachedThickness1 = nullptr;
+    m_contactPointsInWorldSpace = false;
     if (py::hasattr(contacts, "rigid_contact_point0") && !contacts.attr("rigid_contact_point0").is_none())
         m_cachedContactPoint0 = ptr(contacts.attr("rigid_contact_point0"));
     if (py::hasattr(contacts, "rigid_contact_point1") && !contacts.attr("rigid_contact_point1").is_none())
@@ -239,10 +256,41 @@ void BaseRigidContactView::_refreshContactPointers() const
         m_cachedThickness0 = ptr(contacts.attr("rigid_contact_thickness0"));
     if (py::hasattr(contacts, "rigid_contact_thickness1") && !contacts.attr("rigid_contact_thickness1").is_none())
         m_cachedThickness1 = ptr(contacts.attr("rigid_contact_thickness1"));
+
+    // MuJoCo provides world-space contact positions rather than body-local contact points.
+    // Use mjw_data.contact.pos and flag the kernels to skip the body-local→world rotation.
+    try
+    {
+        py::object solver = m_newtonStage.attr("solver");
+        if (py::hasattr(solver, "mjw_data"))
+        {
+            py::object mjwData = solver.attr("mjw_data");
+            if (!mjwData.is_none())
+            {
+                py::object mjContact = mjwData.attr("contact");
+                if (!mjContact.is_none() && py::hasattr(mjContact, "pos"))
+                {
+                    py::object pos = mjContact.attr("pos");
+                    if (!pos.is_none())
+                    {
+                        float* worldPos = ptr(pos);
+                        m_cachedContactPoint0 = worldPos;
+                        m_cachedContactPoint1 = worldPos;
+                        m_contactPointsInWorldSpace = true;
+                    }
+                }
+            }
+        }
+    }
+    catch (const py::error_already_set&)
+    {
+    }
 }
 
-float BaseRigidContactView::_getPhysicsDtScale(float) const
+float BaseRigidContactView::_getPhysicsDtScale(float userDt) const
 {
+    if (m_physicsDt > 0.0f && userDt > 0.0f)
+        return m_physicsDt / userDt;
     return 1.0f;
 }
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.5] - 2026-04-23
+### Fixed
+- Try to load USD with flattened stage when composition cycles are present 
+
 ## [0.7.4] - 2026-04-22
 ### Fixed
 - Run the first simulation step without CUDA graph capture. Warp's link-time optimization compilation for `tile_matmul` / `tile_cholesky` can fail on the first attempt but succeeds on retry. When the first compilation happens inside `wp.capture_begin`, the failure is recorded into the CUDA graph, producing wrong simulation results on all subsequent steps. Skipping graph capture on the first step lets these transient failures resolve before any graph is recorded.

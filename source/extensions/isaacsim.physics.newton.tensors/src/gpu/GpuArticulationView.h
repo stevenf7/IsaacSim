@@ -84,11 +84,13 @@ private:
     int* m_deviceLinkFlatIndices = nullptr;
     int* m_deviceRootIndices = nullptr;
     int* m_deviceRootJointQStartIndices = nullptr;
+    int* m_deviceFixedRootJointMapping = nullptr; ///< [count] artiIdx → rootJointIdx for fixed roots, -1 for free.
     int* m_deviceIndexScratch = nullptr; ///< Scratch buffer for H2D staging of CPU index tensors.
     float* m_stagingBuffer = nullptr; ///< Reusable device buffer for D2H getter output and H2D setter input.
     size_t m_stagingMaxFloats = 0; ///< Capacity of m_stagingBuffer in float elements.
 
     uint8_t* m_deviceDofTypes = nullptr;
+    float* m_deviceComOrientation = nullptr; ///< Device-side COM orientation cache [count * maxLinks * 4].
 
     /// Allocates and uploads all host-side index arrays to device memory.
     void _uploadMappingsToGpu();

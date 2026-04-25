@@ -41,9 +41,11 @@ GpuArticulationView::~GpuArticulationView()
     safeCudaFree(m_deviceLinkFlatIndices);
     safeCudaFree(m_deviceRootIndices);
     safeCudaFree(m_deviceRootJointQStartIndices);
+    safeCudaFree(m_deviceFixedRootJointMapping);
     safeCudaFree(m_deviceIndexScratch);
     safeCudaFree(m_deviceDofTypes);
     safeCudaFree(m_stagingBuffer);
+    safeCudaFree(m_deviceComOrientation);
 }
 
 void GpuArticulationView::_uploadMappingsToGpu()
@@ -77,6 +79,7 @@ void GpuArticulationView::_uploadMappingsToGpu()
     upload(m_linkFlatIndices, m_deviceLinkFlatIndices);
     upload(m_rootBodyIndices, m_deviceRootIndices);
     upload(m_rootJointQStartIndices, m_deviceRootJointQStartIndices);
+    upload(m_fixedRootJointMapping, m_deviceFixedRootJointMapping);
 
     if (!m_hostDofTypes.empty())
     {
@@ -125,6 +128,20 @@ void GpuArticulationView::_allocateStagingBuffer()
         (void)cudaGetLastError();
         CARB_LOG_ERROR("_allocateStagingBuffer cudaMalloc for index scratch failed: %s", cudaGetErrorString(err));
         m_deviceIndexScratch = nullptr;
+    }
+    size_t orientBytes = m_cachedComOrientation.size() * sizeof(float);
+    if (orientBytes > 0)
+    {
+        err = cudaMalloc(&m_deviceComOrientation, orientBytes);
+        if (err != cudaSuccess)
+        {
+            (void)cudaGetLastError();
+            m_deviceComOrientation = nullptr;
+        }
+        else
+        {
+            cudaMemcpy(m_deviceComOrientation, m_cachedComOrientation.data(), orientBytes, cudaMemcpyHostToDevice);
+        }
     }
 }
 
@@ -464,7 +481,8 @@ bool GpuArticulationView::setDofVelocityTargets(const TensorDesc* srcTensor, con
     const float* src = ensureGpuSrc(srcTensor, m_stagingBuffer, m_stagingMaxFloats);
     if (!src)
         return false;
-    return launchFusedDofScatter(src, m_cachedCtrlTargetVel, idx.ptr, m_deviceDofAxisIndices, idx.count, m_maxDofs);
+    bool ok = launchFusedDofScatter(src, m_cachedCtrlTargetVel, idx.ptr, m_deviceDofAxisIndices, idx.count, m_maxDofs);
+    return ok;
 }
 
 // ---- Root Transforms / Velocities ----
@@ -508,6 +526,8 @@ bool GpuArticulationView::setRootTransforms(const TensorDesc* srcTensor, const T
     if (!src)
         return false;
     bool ok = launchFusedRootFlatScatter(src, m_cachedJointQ, idx.ptr, m_deviceRootJointQStartIndices, idx.count, 7);
+    if (ok && m_deviceFixedRootJointMapping)
+        ok = launchFusedRootScatter(src, m_cachedJointXp, idx.ptr, m_deviceFixedRootJointMapping, idx.count, 7);
     if (ok)
         _evalForwardKinematics();
     return ok;
@@ -609,8 +629,8 @@ bool GpuArticulationView::getCOMs(const TensorDesc* dstTensor) const
     return gpuGather(
         [this](float* dst, int n)
         {
-            return launchGatherCenterOfMass(
-                reinterpret_cast<const wp::vec3*>(m_cachedBodyCenterOfMass), dst, m_deviceLinkFlatIndices, n);
+            return launchGatherCenterOfMass(reinterpret_cast<const wp::vec3*>(m_cachedBodyCenterOfMass), dst,
+                                            m_deviceLinkFlatIndices, n, m_deviceComOrientation);
         },
         dstTensor, static_cast<int>(m_linkFlatIndices.size()), 7, m_stagingBuffer);
 }
@@ -624,8 +644,13 @@ bool GpuArticulationView::setCOMs(const TensorDesc* srcTensor, const TensorDesc*
     const float* src = ensureGpuSrc(srcTensor, m_stagingBuffer, m_stagingMaxFloats);
     if (!src)
         return false;
-    return launchFusedLinkScatter(
+    bool ok = launchFusedLinkScatter(
         src, m_cachedBodyCenterOfMass, idx.ptr, m_deviceLinkFlatIndices, idx.count, m_maxLinks, 7, 3, 0, 3);
+    if (ok && m_deviceComOrientation)
+    {
+        ok = launchScatterComOrientation(src, m_deviceComOrientation, idx.ptr, idx.count, m_maxLinks, 7);
+    }
+    return ok;
 }
 
 bool GpuArticulationView::getInertias(const TensorDesc* dstTensor) const

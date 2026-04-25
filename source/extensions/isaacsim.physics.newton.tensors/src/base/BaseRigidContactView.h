@@ -105,6 +105,8 @@ protected:
     std::vector<std::string> m_bodyLabels;
 
     mutable uint64_t m_lastRefreshedGeneration = UINT64_MAX; ///< Last-seen simulation_timestamp.
+    float m_physicsDt = 0.0f; ///< Physics dt from SimulationManager for force-to-impulse scaling.
+    mutable bool m_contactPointsInWorldSpace = false; ///< True when contact points are MuJoCo world-space positions.
 
     // Pre-allocated scratch buffers for contact counting (sized to sensorCount * max(filterCount, 1)).
     mutable std::vector<uint32_t> m_scratchCounts;

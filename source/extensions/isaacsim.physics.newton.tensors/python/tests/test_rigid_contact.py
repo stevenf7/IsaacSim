@@ -37,7 +37,7 @@ class TestRigidContactNetForces(NewtonTensorTestBase):
         self.assertIsNotNone(contacts)
         self.assertEqual(contacts.sensor_count, self.NUM_ENVS)
 
-        dt = 1.0 / 60.0
+        dt = self.get_sim_dt()
         self.step(n=120, dt=dt)
 
         net_forces = contacts.get_net_contact_forces(dt)
@@ -105,7 +105,7 @@ class TestRigidContactForceMatrix(NewtonTensorTestBase):
         )
         self.check_rigid_contact_view(box_contacts, self.NUM_ENVS, len(box_filter_patterns))
 
-        dt = 1.0 / 60.0
+        dt = self.get_sim_dt()
         self.step(n=120, dt=dt)
 
         force_matrix = box_contacts.get_contact_force_matrix(dt)
@@ -169,7 +169,7 @@ class TestRawContactData(NewtonTensorTestBase):
         self.assertEqual(top_contacts.sensor_count, self.NUM_ENVS)
         self.assertEqual(top_contacts.filter_count, 0)
 
-        dt = 1.0 / 60.0
+        dt = self.get_sim_dt()
         self.step(n=120, dt=dt)
 
         (forces, points, normals, separations, counts, start_indices, other_actor_ids) = (
@@ -260,7 +260,7 @@ class TestRigidContactMultiSensorMultiFilter(NewtonTensorTestBase):
         )
         self.check_rigid_contact_view(contacts, self.NUM_ENVS, len(filter_patterns))
 
-        dt = 1.0 / 60.0
+        dt = self.get_sim_dt()
         self.step(n=120, dt=dt)
 
         force_matrix = contacts.get_contact_force_matrix(dt)

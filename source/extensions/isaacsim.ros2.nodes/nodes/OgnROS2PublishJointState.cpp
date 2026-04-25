@@ -22,6 +22,7 @@
 #include <carb/Framework.h>
 #include <carb/logging/Log.h>
 
+#include <isaacsim/core/includes/PhysicsEngine.h>
 #include <isaacsim/ros2/core/Ros2Node.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/physics/tensors/IArticulationView.h>
@@ -65,7 +66,8 @@ public:
                 db.logError("Could not find USD stage %ld", stageId);
                 return false;
             }
-            state.m_simView = state.m_tensorInterface->createSimulationView(stageId, nullptr);
+            state.m_simView = state.m_tensorInterface->createSimulationView(
+                stageId, isaacsim::core::includes::getActivePhysicsEngineName());
             if (!state.initializeNodeHandle(
                     std::string(nodeObj.iNode->getPrimPath(nodeObj)),
                     collectNamespace(db.inputs.nodeNamespace(),

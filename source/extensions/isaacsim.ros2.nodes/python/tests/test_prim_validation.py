@@ -24,7 +24,7 @@ from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from pxr import UsdGeom
 
-from .common import add_cube, add_franka
+from .common import SIMPLE_ARTICULATION_3J_REVERSED_JOINTS, add_cube, add_franka, fix_reversed_joints
 
 
 class TestPrimValidation(ROS2TestCase):
@@ -49,6 +49,8 @@ class TestPrimValidation(ROS2TestCase):
         (result, error) = await stage_utils.open_stage_async(usd_path)
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(result)
+
+        fix_reversed_joints(SIMPLE_ARTICULATION_3J_REVERSED_JOINTS)
 
         # Create graph with valid target prim
         graph_path = "/TestGraph"
@@ -94,6 +96,8 @@ class TestPrimValidation(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(result)
 
+        fix_reversed_joints(SIMPLE_ARTICULATION_3J_REVERSED_JOINTS)
+
         # Create graph with invalid target prim
         graph_path = "/TestGraph"
         exception_caught = False
@@ -137,6 +141,8 @@ class TestPrimValidation(ROS2TestCase):
         (result, error) = await stage_utils.open_stage_async(usd_path)
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(result)
+
+        fix_reversed_joints(SIMPLE_ARTICULATION_3J_REVERSED_JOINTS)
 
         # Create graph with empty target prim
         graph_path = "/TestGraph"

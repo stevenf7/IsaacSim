@@ -223,6 +223,7 @@ protected:
     std::vector<int> m_rootBodyIndices; ///< [count] → model body index for each root body.
     std::vector<int> m_rootJointIndices; ///< [count] → model joint index for each root joint.
     std::vector<int> m_rootJointQStartIndices; ///< [count] → joint_q_start offset for root joint.
+    std::vector<int> m_fixedRootJointMapping; ///< [count] → rootJointIdx for fixed roots, -1 for free.
     std::vector<std::vector<int>> m_linkIndicesPerArticulation;
     std::vector<int> m_linkFlatIndices; ///< [count * maxLinks] → model body index, -1 = padding.
 
@@ -231,6 +232,10 @@ protected:
 
     std::vector<ArticulationMetatype*> m_metatypes;
     std::vector<uint8_t> m_hostDofTypes;
+    std::vector<int> m_rootJointTypes; ///< [count] → joint type for root joint of each articulation.
+    std::vector<float> m_cachedComOrientation; ///< [count * maxLinks * 4] cached COM quaternion (xyzw), write-through
+                                               ///< from setCOMs.
+    std::vector<std::vector<std::string>> m_dofPaths; ///< [count][maxDofs] → USD prim path for each DOF.
 
     mutable std::vector<uint32_t> m_scratchViewIndices;
 
@@ -259,6 +264,7 @@ protected:
     float* m_cachedBodyInertia = nullptr;
     float* m_cachedBodyInverseInertia = nullptr;
     float* m_cachedBodyCenterOfMass = nullptr;
+    float* m_cachedJointXp = nullptr; ///< model.joint_X_p — parent transform per joint (7 floats each).
 
     /// Extracts and caches raw float*/int* pointers from all relevant Warp arrays in the
     /// Newton model and state. Called lazily before the first getter/setter access.

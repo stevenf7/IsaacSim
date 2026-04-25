@@ -1,5 +1,5 @@
 [package]
-version = "2.8.0"
+version = "2.9.0"
 category = "Internal"
 title = "Isaac Sim Common Includes"
 description = "Extension containing common isaac sim headers"

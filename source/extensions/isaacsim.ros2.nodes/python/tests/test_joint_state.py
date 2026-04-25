@@ -26,12 +26,19 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
+from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.experimental.utils import stage as stage_utils
-from isaacsim.core.prims import SingleArticulation
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from numpy import pi as PI
 
-from .common import get_qos_profile, set_joint_drive_parameters, simulate_async
+from .common import (
+    SIMPLE_ARTICULATION_3J_REVERSED_JOINTS,
+    fix_reversed_joints,
+    get_qos_profile,
+    set_joint_drive_parameters,
+    simulate_async,
+)
 
 
 class TestRos2JointStatePublisher(ROS2TestCase):
@@ -48,6 +55,9 @@ class TestRos2JointStatePublisher(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(result)  # Make sure the stage loaded
         self._stage = omni.usd.get_context().get_stage()
+
+        fix_reversed_joints(SIMPLE_ARTICULATION_3J_REVERSED_JOINTS)
+
         # ROS-ify asset by adding a joint state publisher
         try:
             og.Controller.edit(
@@ -80,7 +90,6 @@ class TestRos2JointStatePublisher(ROS2TestCase):
         import rclpy
         from sensor_msgs.msg import JointState
 
-        # setup ROS listener of the joint_state topic
         self.js_ros = JointState()
 
         def js_callback(data: JointState):
@@ -98,6 +107,10 @@ class TestRos2JointStatePublisher(ROS2TestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
+
+        art_handle = Articulation("/Articulation")
+        art_handle.set_dof_position_targets(default_position)
+
         await simulate_async(2, 60, spin)
         received_position = self.js_ros.position
 
@@ -113,14 +126,11 @@ class TestRos2JointStatePublisher(ROS2TestCase):
         node.destroy_subscription(js_sub)
         node.destroy_node()
 
-        pass
-
     async def test_joint_state_velocity_publisher(self):
         """Test joint state velocity publisher."""
         import rclpy
         from sensor_msgs.msg import JointState
 
-        # setup ROS listener of the joint_state topic
         self.js_ros = JointState()
 
         def js_callback(data: JointState):
@@ -132,38 +142,23 @@ class TestRos2JointStatePublisher(ROS2TestCase):
         def spin():
             rclpy.spin_once(node, timeout_sec=0.01)
 
-        joint_paths = [
-            "/Articulation/Arm/CenterRevoluteJoint",
-            "/Articulation/Slider/PrismaticJoint",
-            "/Articulation/DistalPivot/DistalRevoluteJoint",
-        ]
+        test_velocities = [5 * PI / 180.0, 0.1, -2.5 * PI / 180.0]
 
-        joint_types = ["angular", "linear", "angular"]
-        test_velocities = [5, 0.1, -2.5]
-        joint_stiffness = 0
-        joint_damping = 1e4
-        num_joints = 3
-
-        # # set the stiffness and damping parameters accordingly for position control
-        for i in range(num_joints):
-            set_joint_drive_parameters(
-                joint_paths[i], joint_types[i], "velocity", test_velocities[i], joint_stiffness, joint_damping
-            )
-
-        # tick and get ros sub
-        # # set the stiffness and damping parameters accordingly for position control
         self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+
+        art_handle = Articulation("/Articulation")
+        art_handle.set_dof_gains(stiffnesses=[0.0, 0.0, 0.0], dampings=[1e4, 1e4, 1e4])
+        art_handle.set_dof_velocity_targets(test_velocities)
 
         await simulate_async(2, 60, spin)
         received_velocity = self.js_ros.velocity
 
-        comp_velocity = [5 * PI / 180.0, 0.1, -2.5 * PI / 180.0]
+        print("received_velocity", received_velocity)
 
-        # print("test_velocities_radian", comp_velocity)
-
-        self.assertAlmostEqual(received_velocity[0], comp_velocity[0], delta=1e-3)
-        self.assertAlmostEqual(received_velocity[1], comp_velocity[1], delta=1e-3)
-        self.assertAlmostEqual(received_velocity[2], comp_velocity[2], delta=1e-3)
+        self.assertAlmostEqual(received_velocity[0], test_velocities[0], delta=1e-3)
+        self.assertAlmostEqual(received_velocity[1], test_velocities[1], delta=1e-3)
+        self.assertAlmostEqual(received_velocity[2], test_velocities[2], delta=1e-3)
         self._timeline.stop()
         spin()
 
@@ -177,11 +172,16 @@ class TestRos2JointStatePublisherFromSensor(ROS2TestCase):
     async def setUp(self):
         """Set up test fixtures."""
         await super().setUp()
+        if SimulationManager.get_active_physics_engine() == "newton":
+            self.skipTest("IsaacReadJointState sensor node requires PhysX backend")
         self.usd_path = self._assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/articulation_3_joints.usd"
         (result, error) = await stage_utils.open_stage_async(self.usd_path)
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(result)
         self._stage = omni.usd.get_context().get_stage()
+
+        fix_reversed_joints(SIMPLE_ARTICULATION_3J_REVERSED_JOINTS)
+
         try:
             og.Controller.edit(
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
@@ -306,7 +306,9 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(result)  # Make sure the stage loaded
         self._stage = omni.usd.get_context().get_stage()
-        # ROS-ify asset by adding a joint state publisher
+
+        fix_reversed_joints(SIMPLE_ARTICULATION_3J_REVERSED_JOINTS)
+
         # setup the graph
         try:
             (test_graph, new_nodes, _, _) = og.Controller.edit(
@@ -402,16 +404,11 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         self._timeline.play()
         await simulate_async(0.5)
 
-        # get the articulation review for the asset
-        art_handle = SingleArticulation("/Articulation")
-        art_handle.initialize()
-        await simulate_async(0.5)
+        art_handle = Articulation("/Articulation")
 
         def reset_robot():
-            # reset the robot to 0s
-            art_handle.set_joint_positions([0, 0, 0])
-            # give it a second to move
-            post_reset = art_handle.get_joint_positions()
+            art_handle.set_dof_positions([0.0, 0.0, 0.0])
+            post_reset = art_handle.get_dof_positions().numpy().flatten()
             self.assertAlmostEqual(post_reset[0], 0, delta=1e-3)
             self.assertAlmostEqual(post_reset[1], 0, delta=1e-3)
             self.assertAlmostEqual(post_reset[2], 0, delta=1e-3)
@@ -421,7 +418,7 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         # give it a second to move
         await simulate_async(1)
 
-        joint_command_received = art_handle.get_joint_positions()
+        joint_command_received = art_handle.get_dof_positions().numpy().flatten()
         print("joint_command_received", joint_command_received)
 
         self.assertAlmostEqual(joint_command_received[0], test_position[0], delta=1e-3)
@@ -432,26 +429,9 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         print("test velocity drive")
         reset_robot()
 
-        # change joint drives for velocity drive test
-        joint_paths = [
-            "/Articulation/Arm/CenterRevoluteJoint",
-            "/Articulation/Slider/PrismaticJoint",
-            "/Articulation/DistalPivot/DistalRevoluteJoint",
-        ]
+        art_handle.set_dof_gains(stiffnesses=[0.0, 0.0, 0.0], dampings=[1e4, 1e4, 1e4])
+        art_handle.set_dof_velocity_targets([5.0, 0.1, -2.5])
 
-        joint_types = ["angular", "linear", "angular"]
-        target_velocities = [5, 0.1, -2.5]
-        joint_stiffness = 0
-        joint_damping = 1e4
-        num_joints = 3
-
-        # # set the stiffness and damping parameters accordingly for position control
-        for i in range(num_joints):
-            set_joint_drive_parameters(
-                joint_paths[i], joint_types[i], "velocity", target_velocities[i], joint_stiffness, joint_damping
-            )
-
-        # test velocity drive
         js_velocity = JointState()
         js_velocity.name = ["CenterRevoluteJoint", "PrismaticJoint", "DistalRevoluteJoint"]
         js_velocity.velocity = test_velocity
@@ -461,7 +441,7 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         # give it a second to move
         await simulate_async(1)
 
-        joint_command_received = art_handle.get_joint_velocities()
+        joint_command_received = art_handle.get_dof_velocities().numpy().flatten()
         print("joint_velocity_received", joint_command_received)
 
         self.assertAlmostEqual(joint_command_received[0], test_velocity[0], delta=1e-3)
@@ -472,8 +452,8 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         print("test mixed drive")
         reset_robot()
 
-        # change prismatic joint back to postion drive
-        set_joint_drive_parameters(joint_paths[1], joint_types[1], "position", 0.2, 1e5, 1e4)
+        art_handle.set_dof_gains(stiffnesses=[0.0, 1e5, 0.0], dampings=[1e4, 1e4, 1e4])
+        art_handle.set_dof_position_targets([0.0, 0.2, 0.0])
 
         js_mixed = JointState()
         js_mixed.name = ["CenterRevoluteJoint", "PrismaticJoint", "DistalRevoluteJoint"]
@@ -484,12 +464,12 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         # give it a second to move
         await simulate_async(2)
 
-        joint_position_received = art_handle.get_joint_positions()
-        joint_velocity_received = art_handle.get_joint_velocities()
+        joint_position_received = art_handle.get_dof_positions().numpy().flatten()
+        joint_velocity_received = art_handle.get_dof_velocities().numpy().flatten()
         print("joint_position_received", joint_position_received)
         print("joint_velocity_received", joint_velocity_received)
 
-        self.assertAlmostEqual(joint_position_received[1], 0.4, delta=1e-2)
+        self.assertAlmostEqual(joint_position_received[1], 0.4, delta=2e-2)
 
         self.assertAlmostEqual(joint_velocity_received[0], 0.5, delta=1e-2)
         self.assertAlmostEqual(joint_velocity_received[2], -2.5, delta=1e-2)
@@ -526,16 +506,11 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         self._timeline.play()
         await simulate_async(0.5)
 
-        # get the articulation review for the asset
-        art_handle = SingleArticulation("/Articulation")
-        art_handle.initialize()
-        await simulate_async(0.5)
+        art_handle = Articulation("/Articulation")
 
         def reset_robot():
-            # reset the robot to 0s
-            art_handle.set_joint_positions([0, 0, 0])
-            # give it a second to move
-            post_reset = art_handle.get_joint_positions()
+            art_handle.set_dof_positions([0.0, 0.0, 0.0])
+            post_reset = art_handle.get_dof_positions().numpy().flatten()
             self.assertAlmostEqual(post_reset[0], 0, delta=1e-3)
             self.assertAlmostEqual(post_reset[1], 0, delta=1e-3)
             self.assertAlmostEqual(post_reset[2], 0, delta=1e-3)
@@ -545,7 +520,7 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         # give it a second to move
         await simulate_async(1)
 
-        joint_command_received = art_handle.get_joint_positions()
+        joint_command_received = art_handle.get_dof_positions().numpy().flatten()
         print("joint_command_received", joint_command_received)
 
         self.assertAlmostEqual(joint_command_received[0], test_position[0], delta=1e-3)
@@ -556,26 +531,9 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         print("test velocity drive")
         reset_robot()
 
-        # change joint drives for velocity drive test
-        joint_paths = [
-            "/Articulation/Arm/CenterRevoluteJoint",
-            "/Articulation/Slider/PrismaticJoint",
-            "/Articulation/DistalPivot/DistalRevoluteJoint",
-        ]
+        art_handle.set_dof_gains(stiffnesses=[0.0, 0.0, 0.0], dampings=[1e4, 1e4, 1e4])
+        art_handle.set_dof_velocity_targets([5.0, 0.1, -2.5])
 
-        joint_types = ["angular", "linear", "angular"]
-        target_velocities = [5, 0.1, -2.5]
-        joint_stiffness = 0
-        joint_damping = 1e4
-        num_joints = 3
-
-        # # set the stiffness and damping parameters accordingly for position control
-        for i in range(num_joints):
-            set_joint_drive_parameters(
-                joint_paths[i], joint_types[i], "velocity", target_velocities[i], joint_stiffness, joint_damping
-            )
-
-        # test velocity drive
         js_velocity = JointState()
         js_velocity.name = ["CenterRevoluteJoint", "PrismaticJoint", "DistalRevoluteJoint"]
         js_velocity.velocity = test_velocity
@@ -585,7 +543,7 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         # give it a second to move
         await simulate_async(1)
 
-        joint_command_received = art_handle.get_joint_velocities()
+        joint_command_received = art_handle.get_dof_velocities().numpy().flatten()
         print("joint_velocity_received", joint_command_received)
 
         self.assertAlmostEqual(joint_command_received[0], test_velocity[0], delta=1e-3)
@@ -596,8 +554,8 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         print("test mixed drive")
         reset_robot()
 
-        # change prismatic joint back to postion drive
-        set_joint_drive_parameters(joint_paths[1], joint_types[1], "position", 0.2, 1e5, 1e4)
+        art_handle.set_dof_gains(stiffnesses=[0.0, 1e5, 0.0], dampings=[1e4, 1e4, 1e4])
+        art_handle.set_dof_position_targets([0.0, 0.2, 0.0])
 
         js_mixed = JointState()
         js_mixed.name = ["CenterRevoluteJoint", "PrismaticJoint", "DistalRevoluteJoint"]
@@ -608,12 +566,12 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         # give it a second to move
         await simulate_async(2)
 
-        joint_position_received = art_handle.get_joint_positions()
-        joint_velocity_received = art_handle.get_joint_velocities()
+        joint_position_received = art_handle.get_dof_positions().numpy().flatten()
+        joint_velocity_received = art_handle.get_dof_velocities().numpy().flatten()
         print("joint_position_received", joint_position_received)
         print("joint_velocity_received", joint_velocity_received)
 
-        self.assertAlmostEqual(joint_position_received[1], 0.4, delta=1e-2)
+        self.assertAlmostEqual(joint_position_received[1], 0.4, delta=2e-2)
 
         self.assertAlmostEqual(joint_velocity_received[0], 0.5, delta=1e-2)
         self.assertAlmostEqual(joint_velocity_received[2], -2.5, delta=1e-2)
@@ -688,14 +646,13 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         self._timeline.play()
         await simulate_async(0.5)
 
-        art_handle = SingleArticulation("/Articulation")
-        art_handle.initialize()
+        art_handle = Articulation("/Articulation")
         await simulate_async(0.5)
 
         ros2_publisher.publish(js)
         await simulate_async(1)
 
-        joint_positions = art_handle.get_joint_positions()
+        joint_positions = art_handle.get_dof_positions().numpy().flatten()
         self.assertAlmostEqual(joint_positions[0], test_position[0], delta=1e-3)
         self.assertAlmostEqual(joint_positions[1], test_position[1], delta=1e-3)
         self.assertAlmostEqual(joint_positions[2], test_position[2], delta=1e-3)

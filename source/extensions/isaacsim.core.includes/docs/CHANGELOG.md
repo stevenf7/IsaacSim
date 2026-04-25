@@ -1,4 +1,11 @@
 # Changelog
+## [2.9.0] - 2026-04-24
+### Added
+- Add `PhysicsEngine.h` header with `getActivePhysicsEngineName()` to query the active physics simulation backend
+
+### Changed
+- `Transforms.h` uses `getActivePhysicsEngineName()` for simulation view creation instead of defaulting to nullptr
+
 ## [2.8.0] - 2026-03-20
 ### Added
 - Added `BindingsPythonUtils.h` header for pybind11 bindings utilities

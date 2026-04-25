@@ -82,7 +82,9 @@ __global__ void gatherTransformKernel(const wp::transform* src, float* dst, cons
     }
 }
 
-// ---- SpatialVector (6 floats: wx,wy,wz, vx,vy,vz) ----
+// ---- SpatialVector (6 floats) ----
+// Newton stores body_qd as [linear(3), angular(3)] in wp::spatial_vector memory,
+// which already matches the PhysX tensor API convention. No reordering needed.
 
 __global__ void gatherSpatialVectorKernel(const wp::spatial_vector* src, float* dst, const int* indices, int numIndices) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -136,7 +138,8 @@ __global__ void gatherPairedFloatKernel(const float* srcA, const float* srcB, fl
 
 // ---- Center-of-mass gather: vec3 → 7-float (px,py,pz, 0,0,0,1) ----
 
-__global__ void gatherCenterOfMassKernel(const wp::vec3* src, float* dst, const int* indices, int numIndices) {
+__global__ void gatherCenterOfMassKernel(const wp::vec3* src, float* dst, const int* indices, int numIndices,
+                                         const float* cachedOrientation) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < numIndices) {
         int idx = indices[i];
@@ -147,9 +150,26 @@ __global__ void gatherCenterOfMassKernel(const wp::vec3* src, float* dst, const 
         } else {
             out[0] = out[1] = out[2] = 0.0f;
         }
-        out[3] = out[4] = out[5] = 0.0f;
-        out[6] = 1.0f;
+        const float* q = cachedOrientation + i * 4;
+        out[3] = q[0]; out[4] = q[1]; out[5] = q[2]; out[6] = q[3];
     }
+}
+
+// ---- COM orientation scatter: extract quat from 7-float COM tensor ----
+
+__global__ void scatterComOrientationKernel(const float* src, float* dst,
+                                            const int* artiIndices, int count,
+                                            int elemPerSlot, int srcStride) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int total = count * elemPerSlot;
+    if (i >= total) return;
+    int slot = i / elemPerSlot;
+    int elem = i % elemPerSlot;
+    int artiIdx = artiIndices ? artiIndices[slot] : slot;
+    int flatIdx = artiIdx * elemPerSlot + elem;
+    const float* in = src + flatIdx * srcStride + 3;
+    float* out = dst + flatIdx * 4;
+    out[0] = in[0]; out[1] = in[1]; out[2] = in[2]; out[3] = in[3];
 }
 
 // ---- Fused indexed scatter/add kernels ----
@@ -236,7 +256,7 @@ __global__ void fusedRootScatterKernel(const float* src, float* dst,
     int slot = i / elemSize;
     int elem = i % elemSize;
     int artiIdx = artiIndices ? artiIndices[slot] : slot;
-    if (artiIdx < 0 || artiIdx >= numArti) return;
+    if (artiIdx < 0) return;
     int bodyIdx = rootMapping[artiIdx];
     if (bodyIdx < 0) return;
     dst[bodyIdx * elemSize + elem] = src[artiIdx * elemSize + elem];
@@ -250,7 +270,7 @@ __global__ void fusedRootFlatScatterKernel(const float* src, float* dst,
     int slot = i / elemSize;
     int elem = i % elemSize;
     int artiIdx = artiIndices ? artiIndices[slot] : slot;
-    if (artiIdx < 0 || artiIdx >= numArti) return;
+    if (artiIdx < 0) return;
     int flatBase = rootFlatMapping[artiIdx];
     if (flatBase < 0) return;
     dst[flatBase + elem] = src[artiIdx * elemSize + elem];
@@ -283,8 +303,9 @@ bool launchGatherMat33(const wp::mat33* src, float* dst, const int* devIndices, 
     LAUNCH(gatherMat33Kernel, src, dst, devIndices, numIndices);
 }
 
-bool launchGatherCenterOfMass(const wp::vec3* src, float* dst, const int* devIndices, int numIndices, cudaStream_t stream) {
-    LAUNCH(gatherCenterOfMassKernel, src, dst, devIndices, numIndices);
+bool launchGatherCenterOfMass(const wp::vec3* src, float* dst, const int* devIndices, int numIndices,
+                              const float* cachedOrientation, cudaStream_t stream) {
+    LAUNCH(gatherCenterOfMassKernel, src, dst, devIndices, numIndices, cachedOrientation);
 }
 
 bool launchGatherPairedFloat(const float* srcA, const float* srcB, float* dst,
@@ -293,6 +314,18 @@ bool launchGatherPairedFloat(const float* srcA, const float* srcB, float* dst,
 }
 
 #undef LAUNCH
+
+bool launchScatterComOrientation(const float* src, float* dst, const int* devArtiIndices,
+                                 int count, int elemPerSlot, int srcStride, cudaStream_t stream) {
+    int total = count * elemPerSlot;
+    if (total <= 0) return true;
+    int numBlocks = (total + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    (void)cudaGetLastError();
+    scatterComOrientationKernel<<<numBlocks, BLOCK_SIZE, 0, stream>>>(
+        src, dst, devArtiIndices, count, elemPerSlot, srcStride);
+    CHECK_CUDA_LAUNCH();
+    return true;
+}
 
 bool launchUpdateInverseMass(const float* mass, float* inverseMass, int n, cudaStream_t stream) {
     int numBlocks = (n + BLOCK_SIZE - 1) / BLOCK_SIZE;
@@ -584,7 +617,7 @@ __global__ void contactDataKernel(const int* contactCount, const int* shape0, co
                                   int worldBodyIdx, float dtScale, int maxContactDataCount,
                                   float* outForces, float* outPoints, float* outNormals,
                                   float* outSeparations, uint32_t* outCounts, const uint32_t* startIndices,
-                                  int rigidContactMax) {
+                                  int rigidContactMax, bool pointsInWorldSpace) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
     if (tid >= rigidContactMax) return;
     int count = contactCount[0];
@@ -611,10 +644,12 @@ __global__ void contactDataKernel(const int* contactCount, const int* shape0, co
     float nArr[3] = {nx, ny, nz};
     float p0[3] = {point0[tid * 3], point0[tid * 3 + 1], point0[tid * 3 + 2]};
     float p1[3] = {point1[tid * 3], point1[tid * 3 + 1], point1[tid * 3 + 2]};
+    int bodyA = pointsInWorldSpace ? -1 : rawBodyA;
+    int bodyB = pointsInWorldSpace ? -1 : rawBodyB;
 
     float wax, way, waz, wbx, wby, wbz;
-    transformContactPoint(p0, bodyQ, rawBodyA, thk0, nArr, -1.0f, wax, way, waz);
-    transformContactPoint(p1, bodyQ, rawBodyB, thk1, nArr, 1.0f, wbx, wby, wbz);
+    transformContactPoint(p0, bodyQ, bodyA, thk0, nArr, -1.0f, wax, way, waz);
+    transformContactPoint(p1, bodyQ, bodyB, thk1, nArr, 1.0f, wbx, wby, wbz);
 
     float d = nx * (wax - wbx) + ny * (way - wby) + nz * (waz - wbz);
     float cpx = (wax + wbx) * 0.5f, cpy = (way + wby) * 0.5f, cpz = (waz + wbz) * 0.5f;
@@ -679,7 +714,7 @@ __global__ void rawContactDataKernel(const int* contactCount, const int* shape0,
                                      float* outForces, float* outPoints, float* outNormals,
                                      float* outSeparations, uint32_t* outCounts,
                                      const uint32_t* startIndices, uint64_t* otherActorIds,
-                                     int rigidContactMax) {
+                                     int rigidContactMax, bool pointsInWorldSpace) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
     if (tid >= rigidContactMax) return;
     int count = contactCount[0];
@@ -706,10 +741,12 @@ __global__ void rawContactDataKernel(const int* contactCount, const int* shape0,
     float nArr[3] = {nx, ny, nz};
     float p0[3] = {point0In[tid * 3], point0In[tid * 3 + 1], point0In[tid * 3 + 2]};
     float p1[3] = {point1In[tid * 3], point1In[tid * 3 + 1], point1In[tid * 3 + 2]};
+    int bodyA = pointsInWorldSpace ? -1 : rawBodyA;
+    int bodyB = pointsInWorldSpace ? -1 : rawBodyB;
 
     float wax, way, waz, wbx, wby, wbz;
-    transformContactPoint(p0, bodyQ, rawBodyA, thk0, nArr, -1.0f, wax, way, waz);
-    transformContactPoint(p1, bodyQ, rawBodyB, thk1, nArr, 1.0f, wbx, wby, wbz);
+    transformContactPoint(p0, bodyQ, bodyA, thk0, nArr, -1.0f, wax, way, waz);
+    transformContactPoint(p1, bodyQ, bodyB, thk1, nArr, 1.0f, wbx, wby, wbz);
 
     float d = nx * (wax - wbx) + ny * (way - wby) + nz * (waz - wbz);
     float cpx = (wax + wbx) * 0.5f, cpy = (way + wby) * 0.5f, cpz = (waz + wbz) * 0.5f;
@@ -809,7 +846,7 @@ bool launchContactData(const int* contactCount, const int* shape0, const int* sh
                        int worldBodyIdx, float dtScale, int maxContactDataCount,
                        float* outForces, float* outPoints, float* outNormals,
                        float* outSeparations, uint32_t* outCounts, const uint32_t* startIndices,
-                       int rigidContactMax, cudaStream_t stream) {
+                       int rigidContactMax, bool pointsInWorldSpace, cudaStream_t stream) {
     if (rigidContactMax <= 0) return true;
     int numBlocks = (rigidContactMax + BLOCK_SIZE - 1) / BLOCK_SIZE;
     (void)cudaGetLastError();
@@ -819,7 +856,7 @@ bool launchContactData(const int* contactCount, const int* shape0, const int* sh
         bodySensorMap, bodySensorMapSize, bodyFilterMap, numBodies, filterCount,
         worldBodyIdx, dtScale, maxContactDataCount,
         outForces, outPoints, outNormals, outSeparations, outCounts, startIndices,
-        rigidContactMax);
+        rigidContactMax, pointsInWorldSpace);
     CHECK_CUDA_LAUNCH();
     return true;
 }
@@ -850,7 +887,7 @@ bool launchRawContactData(const int* contactCount, const int* shape0, const int*
                           float* outForces, float* outPoints, float* outNormals,
                           float* outSeparations, uint32_t* outCounts,
                           const uint32_t* startIndices, uint64_t* otherActorIds,
-                          int rigidContactMax, cudaStream_t stream) {
+                          int rigidContactMax, bool pointsInWorldSpace, cudaStream_t stream) {
     if (rigidContactMax <= 0) return true;
     int numBlocks = (rigidContactMax + BLOCK_SIZE - 1) / BLOCK_SIZE;
     (void)cudaGetLastError();
@@ -860,7 +897,7 @@ bool launchRawContactData(const int* contactCount, const int* shape0, const int*
         bodySensorMap, bodySensorMapSize,
         worldBodyIdx, dtScale, maxContactDataCount,
         outForces, outPoints, outNormals, outSeparations, outCounts,
-        startIndices, otherActorIds, rigidContactMax);
+        startIndices, otherActorIds, rigidContactMax, pointsInWorldSpace);
     CHECK_CUDA_LAUNCH();
     return true;
 }

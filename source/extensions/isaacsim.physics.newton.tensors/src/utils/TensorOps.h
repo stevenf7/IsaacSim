@@ -95,7 +95,8 @@ void cpuContactData(const int* contactCount,
                     float* outSeparations,
                     uint32_t* outCounts,
                     const uint32_t* startIndices,
-                    int rigidContactMax);
+                    int rigidContactMax,
+                    bool pointsInWorldSpace = false);
 
 void cpuCountRawContactsPerSensor(const int* contactCount,
                                   const int* shape0,
@@ -130,7 +131,8 @@ void cpuRawContactData(const int* contactCount,
                        uint32_t* outCounts,
                        const uint32_t* startIndices,
                        uint64_t* otherActorIds,
-                       int rigidContactMax);
+                       int rigidContactMax,
+                       bool pointsInWorldSpace = false);
 
 } // namespace tensors
 } // namespace newton

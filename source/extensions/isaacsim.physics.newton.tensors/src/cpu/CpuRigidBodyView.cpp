@@ -70,8 +70,8 @@ bool CpuRigidBodyView::getCOMs(const TensorDesc* dstTensor) const
         return false;
     if (!validateFloat32Tensor(dstTensor, -1, size_t(m_count) * 7u, "com", __FUNCTION__))
         return false;
-    gatherCenterOfMass(reinterpret_cast<const wp::vec3*>(m_cachedBodyCenterOfMass),
-                       static_cast<float*>(dstTensor->data), m_bodyIndices.data(), m_bodyIndices.size());
+    gatherCenterOfMass(reinterpret_cast<const wp::vec3*>(m_cachedBodyCenterOfMass), static_cast<float*>(dstTensor->data),
+                       m_bodyIndices.data(), m_bodyIndices.size(), m_cachedComOrientation.data());
     return true;
 }
 
@@ -164,6 +164,7 @@ bool CpuRigidBodyView::setCOMs(const TensorDesc* srcTensor, const TensorDesc* in
     if (!validateFloat32Tensor(srcTensor, -1, size_t(m_count) * 7u, "com", __FUNCTION__) ||
         !validateOptionalIndexTensor(indexTensor, -1, __FUNCTION__))
         return false;
+    const float* srcData = static_cast<const float*>(srcTensor->data);
     const auto& viewIndices = _resolveIndices(indexTensor);
     m_scratchSourceOffset.clear();
     m_scratchDestinationIndex.clear();
@@ -177,11 +178,12 @@ bool CpuRigidBodyView::setCOMs(const TensorDesc* srcTensor, const TensorDesc* in
             m_scratchSourceOffset.push_back(static_cast<int>(idx * 7 + c));
             m_scratchDestinationIndex.push_back(bodyIdx * 3 + c);
         }
+        for (int c = 0; c < 4; ++c)
+            m_cachedComOrientation[idx * 4 + c] = srcData[idx * 7 + 3 + c];
     }
     if (!m_scratchSourceOffset.empty())
-        indirectScatterFloat(static_cast<const float*>(srcTensor->data), m_cachedBodyCenterOfMass,
-                             m_scratchSourceOffset.data(), m_scratchDestinationIndex.data(),
-                             m_scratchSourceOffset.size());
+        indirectScatterFloat(srcData, m_cachedBodyCenterOfMass, m_scratchSourceOffset.data(),
+                             m_scratchDestinationIndex.data(), m_scratchSourceOffset.size());
     return true;
 }
 

@@ -28,6 +28,7 @@ import isaacsim.core.experimental.utils.ops as ops_utils
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.physics.core
+import omni.physics.tensors
 import omni.timeline
 import omni.usd
 import warp as wp
@@ -666,24 +667,10 @@ class SimulationManager:
                     raise ModuleNotFoundError("torch not found")
             except ModuleNotFoundError:
                 create_simulation_view = False
-        # Create backend-specific simulation views
-        if cls._engine == "physx":
-            import omni.physics.tensors
-
-            cls._physics_sim_view__warp = omni.physics.tensors.create_simulation_view("warp", stage_id=stage_id)
-            cls._physics_sim_view__warp.set_subspace_roots("/")
-            # Create physx simulation views (deprecated)
-            if create_simulation_view:
-                cls._physics_sim_view = omni.physics.tensors.create_simulation_view(
-                    cls.get_backend(), stage_id=stage_id
-                )
-                cls._physics_sim_view.set_subspace_roots("/")
-
-        elif cls._engine == "newton":
-            # Use newton tensors extension
+        # Engine-specific pre-initialization
+        if cls._engine == "newton":
             try:
                 import isaacsim.physics.newton
-                import isaacsim.physics.newton.tensors
 
                 newton_stage = isaacsim.physics.newton.acquire_stage()
                 if newton_stage is None:
@@ -693,32 +680,28 @@ class SimulationManager:
                 requested_device = cls.get_physics_sim_device()
                 requested_device_str = requested_device if isinstance(requested_device, str) else str(requested_device)
 
-                # Check if newton needs to be reinitialized on a different device
                 if newton_stage.initialized and newton_stage.device_str != requested_device_str:
                     carb.log_warn(
                         f"newton device mismatch: initialized on {newton_stage.device_str}, requested {requested_device_str}. Reinitializing..."
                     )
                     newton_stage.initialize_newton(requested_device_str)
 
-                # Ensure device is synced
                 newton_stage.device_str = requested_device_str
                 newton_stage.device = wp.get_device(newton_stage.device_str)
-
-                # Create newton simulation views
-                if create_simulation_view:
-                    cls._physics_sim_view = isaacsim.physics.newton.tensors.create_simulation_view(
-                        cls.get_backend(), newton_stage, stage_id=stage_id
-                    )
-                    cls._physics_sim_view.set_subspace_roots("/")
-
-                cls._physics_sim_view__warp = isaacsim.physics.newton.tensors.create_simulation_view(
-                    "warp", newton_stage, stage_id=stage_id
-                )
-                cls._physics_sim_view__warp.set_subspace_roots("/")
-                carb.log_info(f"Created newton tensor simulation views (backend: {cls.get_backend()})")
             except Exception as e:
-                carb.log_error(f"Failed to create newton simulation view: {e}")
-                raise Exception(f"Failed to create newton simulation view backend: {e}")
+                carb.log_error(f"Failed to initialize Newton: {e}")
+
+        # Create simulation views (unified path for all backends)
+        cls._physics_sim_view__warp = omni.physics.tensors.create_simulation_view(
+            "warp", stage_id=stage_id, backend=cls._engine
+        )
+        cls._physics_sim_view__warp.set_subspace_roots("/")
+        if create_simulation_view:
+            cls._physics_sim_view = omni.physics.tensors.create_simulation_view(
+                cls.get_backend(), stage_id=stage_id, backend=cls._engine
+            )
+            cls._physics_sim_view.set_subspace_roots("/")
+        carb.log_info(f"Created simulation views (engine: {cls._engine}, backend: {cls.get_backend()})")
 
         cls._physics_sim_interface.simulate(cls.get_physics_dt(), 0.0)
         cls._physics_sim_interface.fetch_results()

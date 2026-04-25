@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import numpy as np
 import warp as wp
+from pxr import Gf
 
 from .test_helpers import NewtonTensorTestBase, run_on_device_configs, warp_utils
 
@@ -364,3 +365,181 @@ class TestRigidBodyApplyForces(NewtonTensorTestBase):
         vels = balls.get_velocities().numpy().reshape(balls.count, 6)
         v_expected = (force_z / self.BALL_MASS) * self.DT * n_steps
         np.testing.assert_allclose(vels[:, 2], v_expected, rtol=2e-2, atol=5e-3)
+
+
+# ---------------------------------------------------------------------------
+# TestRigidBodySpatialLayout
+#   Validates that get/set_velocities and apply_forces/torques use the
+#   [linear(3), angular(3)] layout expected by the PhysX tensor API.
+# ---------------------------------------------------------------------------
+
+
+@run_on_device_configs()
+class TestRigidBodySpatialLayout(NewtonTensorTestBase):
+    """Velocity and force tensors must use [linear(3), angular(3)] layout."""
+
+    BALL_MASS = 1.0
+    BALL_RADIUS = 0.15
+    DT = 1.0 / 60.0
+
+    async def setUp(self) -> None:
+        await super().setUp()
+
+    def _ball_sphere_inertia(self, mass: float, radius: float) -> float:
+        return (2.0 / 5.0) * mass * radius * radius
+
+    def _set_ball_masses(self, mass_value: float) -> None:
+        from pxr import UsdPhysics
+
+        for prim in self.stage.Traverse():
+            if prim.GetName() != "ball":
+                continue
+            if not prim.HasAPI(UsdPhysics.RigidBodyAPI):
+                continue
+            mass_api = UsdPhysics.MassAPI(prim)
+            if not mass_api:
+                mass_api = UsdPhysics.MassAPI.Apply(prim)
+            mass_api.CreateMassAttr().Set(float(mass_value))
+
+    async def test_freefall_velocity_is_linear_z(self):
+        """Free-falling body under gravity should only have velocity in z (slots 0-2)."""
+        self.setup_ball_grid(num_envs=4, radius=self.BALL_RADIUS, position=Gf.Vec3f(0, 0, 5.0))
+        self._set_ball_masses(self.BALL_MASS)
+        sim = await self.create_sim()
+        self.start_playing()
+
+        balls = sim.create_rigid_body_view("/envs/*/ball")
+        n_steps = 10
+        for _ in range(n_steps):
+            self.step(n=1, dt=self.DT)
+
+        vels = balls.get_velocities().numpy().reshape(balls.count, 6)
+        vz_expected = -9.81 * self.DT * n_steps
+        np.testing.assert_allclose(vels[:, 2], vz_expected, rtol=5e-2, atol=1e-2)
+        np.testing.assert_allclose(vels[:, 0:2], 0.0, atol=1e-3)
+        np.testing.assert_allclose(vels[:, 3:6], 0.0, atol=1e-3)
+
+    async def test_set_linear_velocity_produces_translation(self):
+        """Setting velocity [vx,0,0,0,0,0] should translate the body in +x."""
+        from pxr import UsdPhysics
+
+        scene = UsdPhysics.Scene(self.stage.GetPrimAtPath("/physicsScene"))
+        scene.CreateGravityMagnitudeAttr(0.0)
+
+        self.setup_ball_grid(num_envs=4, radius=self.BALL_RADIUS, position=Gf.Vec3f(0, 0, 2.0))
+        self._set_ball_masses(self.BALL_MASS)
+        sim = await self.create_sim()
+        self.start_playing()
+
+        balls = sim.create_rigid_body_view("/envs/*/ball")
+        all_indices = warp_utils.arange(balls.count, device=self.DEVICE)
+
+        pos_before = balls.get_transforms().numpy().reshape(balls.count, 7)[:, 0].copy()
+
+        vx = 2.0
+        vel = np.zeros((balls.count, 6), dtype=np.float32)
+        vel[:, 0] = vx
+        balls.set_velocities(self.to_warp(vel), all_indices)
+
+        n_steps = 30
+        for _ in range(n_steps):
+            self.step(n=1, dt=self.DT)
+
+        pos_after = balls.get_transforms().numpy().reshape(balls.count, 7)[:, 0]
+        delta_x = pos_after - pos_before
+        expected_dx = vx * self.DT * n_steps
+        np.testing.assert_allclose(delta_x, expected_dx, rtol=5e-2, atol=1e-2)
+
+    async def test_set_angular_velocity_produces_rotation(self):
+        """Setting velocity [0,0,0,0,0,wz] should rotate the body around z."""
+        from pxr import UsdPhysics
+
+        scene = UsdPhysics.Scene(self.stage.GetPrimAtPath("/physicsScene"))
+        scene.CreateGravityMagnitudeAttr(0.0)
+
+        self.setup_ball_grid(num_envs=4, radius=self.BALL_RADIUS, position=Gf.Vec3f(0, 0, 2.0))
+        self._set_ball_masses(self.BALL_MASS)
+        sim = await self.create_sim()
+        self.start_playing()
+
+        balls = sim.create_rigid_body_view("/envs/*/ball")
+        all_indices = warp_utils.arange(balls.count, device=self.DEVICE)
+
+        wz = 2.0
+        vel = np.zeros((balls.count, 6), dtype=np.float32)
+        vel[:, 5] = wz
+        balls.set_velocities(self.to_warp(vel), all_indices)
+
+        n_steps = 30
+        for _ in range(n_steps):
+            self.step(n=1, dt=self.DT)
+
+        transforms = balls.get_transforms().numpy().reshape(balls.count, 7)
+        theta = wz * self.DT * n_steps
+        expected_qz = np.sin(theta / 2.0)
+        np.testing.assert_allclose(np.abs(transforms[:, 5]), np.abs(expected_qz), rtol=5e-2, atol=1e-2)
+        np.testing.assert_allclose(transforms[:, 3:5], 0.0, atol=1e-3)
+
+    async def test_apply_force_layout_linear(self):
+        """Force applied via apply_forces affects linear velocity (slots 0-2) only."""
+        from pxr import UsdPhysics
+
+        scene = UsdPhysics.Scene(self.stage.GetPrimAtPath("/physicsScene"))
+        scene.CreateGravityMagnitudeAttr(0.0)
+
+        self.setup_ball_grid(num_envs=4, radius=self.BALL_RADIUS)
+        self._set_ball_masses(self.BALL_MASS)
+        sim = await self.create_sim()
+        self.start_playing()
+
+        balls = sim.create_rigid_body_view("/envs/*/ball")
+        all_indices = warp_utils.arange(balls.count, device=self.DEVICE)
+
+        fx = 10.0
+        forces = np.zeros((balls.count, 3), dtype=np.float32)
+        forces[:, 0] = fx
+
+        balls.apply_forces(self.to_warp(forces), all_indices, is_global=True)
+        self.step(n=1, dt=self.DT)
+
+        vels = balls.get_velocities().numpy().reshape(balls.count, 6)
+        vx_expected = (fx / self.BALL_MASS) * self.DT
+        np.testing.assert_allclose(vels[:, 0], vx_expected, rtol=1e-2, atol=5e-3)
+        np.testing.assert_allclose(vels[:, 1:3], 0.0, atol=5e-3)
+        np.testing.assert_allclose(vels[:, 3:6], 0.0, atol=5e-3)
+
+    async def test_apply_torque_layout_angular(self):
+        """Torque applied via apply_forces_and_torques_at_position affects angular velocity (slots 3-5) only."""
+        from pxr import UsdPhysics
+
+        scene = UsdPhysics.Scene(self.stage.GetPrimAtPath("/physicsScene"))
+        scene.CreateGravityMagnitudeAttr(0.0)
+
+        self.setup_ball_grid(num_envs=4, radius=self.BALL_RADIUS)
+        self._set_ball_masses(self.BALL_MASS)
+        sim = await self.create_sim()
+        self.start_playing()
+
+        balls = sim.create_rigid_body_view("/envs/*/ball")
+        all_indices = warp_utils.arange(balls.count, device=self.DEVICE)
+
+        tau_z = 0.05
+        forces = np.zeros((balls.count, 3), dtype=np.float32)
+        torques = np.zeros((balls.count, 3), dtype=np.float32)
+        torques[:, 2] = tau_z
+
+        balls.apply_forces_and_torques_at_position(
+            self.to_warp(forces),
+            self.to_warp(torques),
+            None,
+            all_indices,
+            is_global=True,
+        )
+        self.step(n=1, dt=self.DT)
+
+        vels = balls.get_velocities().numpy().reshape(balls.count, 6)
+        inertia = self._ball_sphere_inertia(self.BALL_MASS, self.BALL_RADIUS)
+        wz_expected = (tau_z / inertia) * self.DT
+        np.testing.assert_allclose(vels[:, 5], wz_expected, rtol=5e-2, atol=5e-3)
+        np.testing.assert_allclose(vels[:, 0:3], 0.0, atol=5e-3)
+        np.testing.assert_allclose(vels[:, 3:5], 0.0, atol=5e-3)

@@ -1,5 +1,5 @@
 [package]
-version = "1.14.6"
+version = "1.14.7"
 category = "Simulation"
 title = "Isaac Sim Core Simulation Manager"
 description = "The Core Simulation Manager extension provides a set of APIs to control and query the simulation's state and the different callbacks available."
@@ -175,6 +175,7 @@ enabled = true
 dependencies = [
     "isaacsim.core.utils",
     "isaacsim.physics.newton",
+    "isaacsim.physics.newton.tensors",
     "isaacsim.test.docstring",
     "isaacsim.test.utils", # Used to suppress NumPy coverage errors
     "omni.hydra.scene_delegate", # required for fabric time to update,
