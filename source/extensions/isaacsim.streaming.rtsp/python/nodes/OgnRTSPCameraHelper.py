@@ -21,8 +21,17 @@ import carb
 import omni.graph.core as og
 import omni.usd
 from isaacsim.core.nodes import BaseWriterNode
+from isaacsim.streaming.rtsp.impl.render_var_utils import ensure_render_var_on_product
 from isaacsim.streaming.rtsp.impl.rtsp_writer import RTSPStreamWriter
 from pxr import Usd
+
+# AOVs that `RTSPStreamWriter` requests via `AnnotatorRegistry.get_annotator`.
+#
+# For each entry, the helper materialises a matching `RenderVar` child prim
+# under the render product before attaching the writer, so that SRTX's
+# `AnnotatorSRTX.attach()` validation (which requires the rendervar to exist
+# as a child of the render product) succeeds.
+_WRITER_AOVS: tuple[str, ...] = ("LdrColor",)
 
 
 class OgnRTSPCameraHelperInternalState(BaseWriterNode):
@@ -89,6 +98,10 @@ class OgnRTSPCameraHelper:
             return False
 
         encoding = "raw" if db.inputs.useRawEncoding else "h264"
+        # SRTX server compression hint authored on the rendervar prim.
+        # Empty string is the canonical "raw / no compression" signal;
+        # "h264" routes through NVENC.
+        compression_type = "" if db.inputs.useRawEncoding else "h264"
 
         resolution = rp_prim.GetAttribute("resolution").Get()
         if not resolution:
@@ -98,6 +111,15 @@ class OgnRTSPCameraHelper:
 
         try:
             with Usd.EditContext(stage, stage.GetSessionLayer()):
+                for aov in _WRITER_AOVS:
+                    success, _ = ensure_render_var_on_product(stage, render_product_path, aov, compression_type)
+                    if not success:
+                        carb.log_error(
+                            f"RTSPCameraHelper: failed to materialise RenderVar '{aov}' "
+                            f"under '{render_product_path}'"
+                        )
+                        return False
+
                 writer = RTSPStreamWriter(
                     port=port, mountPath=mount_path, encoding=encoding, width=width, height=height
                 )
