@@ -30,13 +30,17 @@ import asyncio
 import atexit
 import csv
 import importlib.util
+import os
 import re
 import signal
 import sys
 import time
 import traceback
 import unittest
+import xml.etree.ElementTree as ET
 from collections import defaultdict
+from datetime import datetime
+from functools import partial
 from pathlib import Path
 
 # Note: SimulationApp is imported inside the experience loop to allow fresh imports
@@ -77,6 +81,14 @@ def parse_args():
         default=120,
         help="Per-snippet timeout in seconds. If a snippet takes longer than this, "
         "it is aborted and reported as a failure. Default: 120.",
+    )
+    parser.add_argument(
+        "--junit-xml",
+        type=str,
+        default=None,
+        help="Path to write a JUnit XML report with one testcase per snippet. "
+        "When set, the report is written after all tests complete so CI systems "
+        "like GitLab can display per-snippet pass/fail rows.",
     )
     return parser.parse_known_args()
 
@@ -262,8 +274,115 @@ def _task_belongs_to_snippets(task, snippets_root):
         return False
 
 
+class JUnitTestResult(unittest.TextTestResult):
+    """TextTestResult subclass that records per-test timing for JUnit XML output.
+
+    When *junit_xml_path* is set, the report is flushed to disk after every test
+    so that a partial report survives even if the process is killed mid-run.
+    """
+
+    def __init__(self, stream, descriptions, verbosity, junit_xml_path=None):
+        super().__init__(stream, descriptions, verbosity)
+        self.test_timings = []
+        self._test_start = 0.0
+        self._junit_xml_path = junit_xml_path
+
+    def _flush_report(self):
+        """Write the current (possibly partial) JUnit XML to disk."""
+        if self._junit_xml_path:
+            try:
+                self.write_junit_xml(self._junit_xml_path)
+            except Exception:
+                pass
+
+    def startTest(self, test):
+        super().startTest(test)
+        self._test_start = time.monotonic()
+
+    def addSuccess(self, test):
+        super().addSuccess(test)
+        self.test_timings.append((test, "pass", time.monotonic() - self._test_start, None))
+        self._flush_report()
+
+    def addFailure(self, test, err):
+        super().addFailure(test, err)
+        msg = self._exc_info_to_string(err, test)
+        self.test_timings.append((test, "fail", time.monotonic() - self._test_start, msg))
+        self._flush_report()
+
+    def addError(self, test, err):
+        super().addError(test, err)
+        msg = self._exc_info_to_string(err, test)
+        self.test_timings.append((test, "error", time.monotonic() - self._test_start, msg))
+        self._flush_report()
+
+    def write_junit_xml(self, output_path):
+        """Write a JUnit XML report with one <testcase> per snippet."""
+        failures = sum(1 for _, s, _, _ in self.test_timings if s == "fail")
+        errors_count = sum(1 for _, s, _, _ in self.test_timings if s == "error")
+        total_time = sum(e for _, _, e, _ in self.test_timings)
+
+        testsuites = ET.Element("testsuites")
+        testsuite = ET.SubElement(
+            testsuites,
+            "testsuite",
+            name="doc_snippets_async",
+            tests=str(len(self.test_timings)),
+            failures=str(failures),
+            errors=str(errors_count),
+            time=f"{total_time:.3f}",
+            timestamp=datetime.now().isoformat(),
+        )
+
+        for test, status, elapsed, msg in self.test_timings:
+            name = test.shortDescription() or str(test)
+            tc = ET.SubElement(
+                testsuite,
+                "testcase",
+                name=name,
+                classname=test.__class__.__name__,
+                time=f"{elapsed:.3f}",
+            )
+            if status == "fail":
+                failure = ET.SubElement(tc, "failure", message=f"{name} failed")
+                failure.text = _sanitize_xml(msg) if msg else f"{name} failed"
+            elif status == "error":
+                error_el = ET.SubElement(tc, "error", message=f"{name} error")
+                error_el.text = _sanitize_xml(msg) if msg else f"{name} error"
+
+        ET.indent(testsuites, space="  ", level=0)
+        tree = ET.ElementTree(testsuites)
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+        tree.write(output_path, encoding="utf-8", xml_declaration=True)
+        print(f"JUnit XML report written to {output_path}")
+
+
+def _sanitize_xml(text):
+    """Remove control characters that are invalid in XML 1.0."""
+    if not text:
+        return text
+    return "".join(ch if (ord(ch) >= 0x20 or ch in "\t\n\r") else "" for ch in text)
+
+
 class SnippetTimeoutError(Exception):
     """Raised when a snippet exceeds its per-snippet time limit."""
+
+
+# How long to wait after the initial SIGALRM before force-exiting.  This gives
+# the Python-level exception a chance to propagate when possible; if the process
+# is stuck inside native code that swallowed the exception, the escalation
+# handler terminates the process so CI isn't left waiting for the outer timeout.
+_ALARM_ESCALATION_SECONDS = 30
+
+
+def _force_exit_alarm_handler(signum, frame):
+    """Last-resort SIGALRM handler: force-exit when a snippet is stuck in native code."""
+    print(
+        f"\n[FATAL] Snippet still stuck {_ALARM_ESCALATION_SECONDS}s after timeout. "
+        "Partial JUnit report (if any) has been written to disk. Forcing exit.",
+        flush=True,
+    )
+    os._exit(1)
 
 
 def _wait_for_snippet_tasks(simulation_app, tasks, settle_frames=10, deadline=None):
@@ -314,6 +433,12 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app, snippet
     prev_alarm_remaining = 0
 
     def _alarm_handler(signum, frame):
+        # Install a second-chance handler: if this raise gets swallowed by
+        # native code (e.g. a C callback catches the Python exception at the
+        # boundary), the escalation alarm will force-exit the process so CI
+        # doesn't hang until the outer timeout.
+        signal.signal(signal.SIGALRM, _force_exit_alarm_handler)
+        signal.alarm(_ALARM_ESCALATION_SECONDS)
         raise SnippetTimeoutError(f"Snippet timed out after {snippet_timeout}s (SIGALRM): {file_path}")
 
     if hasattr(signal, "SIGALRM"):
@@ -630,7 +755,8 @@ print(f"\n{'=' * 40}")
 print(f"Running Tests (count: {_test_count}):")
 print("=" * 40)
 
-_runner = unittest.TextTestRunner(stream=sys.stdout, verbosity=2)
+_ResultClass = partial(JUnitTestResult, junit_xml_path=args.junit_xml) if args.junit_xml else JUnitTestResult
+_runner = unittest.TextTestRunner(stream=sys.stdout, verbosity=2, resultclass=_ResultClass)
 _result = _runner.run(_suite)
 
 # SimulationApp.close() may terminate the process (e.g. fastShutdown), so register
