@@ -23,8 +23,6 @@ from abc import abstractmethod
 import numpy as np
 from isaacsim.core.deprecation_manager import import_module
 
-torch = import_module("torch")
-
 # isaacsim.replicator.mobility_gen.examples
 # isaacsim.core.experimental.*
 from isaacsim.core.experimental.prims import Articulation
@@ -197,6 +195,7 @@ class PolicyMobilityGenRobot(MobilityGenRobot):
         if not self._controller_initialized:
             self.controller.initialize()
             self._controller_initialized = True
+        torch = import_module("torch")
         action = self.action.get_value()
         device = torch.device(str(self.controller.robot._device))
         command = torch.tensor([action[0], 0.0, action[1]], dtype=torch.float32, device=device)
@@ -733,6 +732,7 @@ class PolicyMultiSensorRobot(MobilityGenMultiSensorRobot):
         if not self._controller_initialized:
             self.controller.initialize()
             self._controller_initialized = True
+        torch = import_module("torch")
         action = self.action.get_value()
         device = torch.device(str(self.controller.robot._device))
         command = torch.tensor([action[0], 0.0, action[1]], dtype=torch.float32, device=device)

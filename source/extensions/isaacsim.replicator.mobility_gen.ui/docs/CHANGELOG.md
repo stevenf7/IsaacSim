@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.3] - 2026-04-23
+### Removed
+- Remove the `omni.isaac.ml_archive` test dependency
+
 ## [0.4.2] - 2026-04-22
 ### Fixed
 - Call `save_sensor_overrides` on recording start to persist camera calibration changes made in the UI

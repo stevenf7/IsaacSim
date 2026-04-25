@@ -1,5 +1,5 @@
 [package]
-version = "0.3.0"
+version = "0.3.1"
 category = "Simulation"
 title = "MobilityGen Examples"
 description = "Example robot and scenario implementations for MobilityGen"
@@ -29,9 +29,6 @@ name = "isaacsim.replicator.mobility_gen.examples.tests"
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
@@ -41,9 +38,6 @@ stdoutFailPatterns.exclude = [
 ]
 
 [[test]]
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--enable",
     "omni.kit.loop-isaac",

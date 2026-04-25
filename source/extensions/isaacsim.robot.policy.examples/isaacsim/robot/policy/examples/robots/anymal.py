@@ -23,10 +23,7 @@ import warp as wp
 from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.experimental.utils.transform import quaternion_to_rotation_matrix
 from isaacsim.robot.policy.examples.controllers import PolicyController
-from isaacsim.robot.policy.examples.utils import LstmSeaNetwork
 from isaacsim.storage.native import get_assets_root_path
-
-torch = import_module("torch")
 
 
 class AnymalFlatTerrainPolicy(PolicyController):
@@ -68,10 +65,12 @@ class AnymalFlatTerrainPolicy(PolicyController):
         if env_config_path is None:
             env_config_path = assets_root_path + "/Isaac/Samples/Policies/Anymal_Policies/anymal_env.yaml"
 
-        self.load_policy(policy_path, env_config_path)
-        self._action_scale = 0.5
+        torch = import_module("torch")
         self._previous_action = torch.zeros(12)
+        self._action_scale = 0.5
         self._policy_counter = 0
+
+        self.load_policy(policy_path, env_config_path)
 
     def _compute_observation(self, command: object) -> object:
         """Compute the observation vector for the policy.
@@ -92,6 +91,8 @@ class AnymalFlatTerrainPolicy(PolicyController):
             - [24:36]: Joint velocities
             - [36:48]: Previous action
         """
+        torch = import_module("torch")
+
         lin_vel_I, ang_vel_I = self.robot.get_velocities()
         pos_IB, q_IB = self.robot.get_world_poses()
 
@@ -154,6 +155,9 @@ class AnymalFlatTerrainPolicy(PolicyController):
         super().initialize(control_mode="effort")
 
         import warnings
+
+        # defer the `LstmSeaNetwork` import to avoid loading torch at startup
+        from isaacsim.robot.policy.examples.utils import LstmSeaNetwork
 
         # Suppress expected user warning from the actuation network, this is a limitation with the trained policy
         warnings.filterwarnings(

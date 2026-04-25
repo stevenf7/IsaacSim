@@ -27,8 +27,6 @@ from isaacsim.robot.policy.examples.robots import Go2FlatTerrainPolicy
 from isaacsim.storage.native import get_assets_root_path
 from pxr import UsdPhysics, UsdShade
 
-torch = import_module("torch")
-
 
 class Go2Example(BaseSample):
     """Go2 robot locomotion example with keyboard control.
@@ -48,7 +46,7 @@ class Go2Example(BaseSample):
         self._world_settings["device"] = "cuda"  # GPU dynamics
         self._world_settings["backend"] = "torch"  # PyTorch backend
 
-        self._base_command = torch.tensor([0.0, 0.0, 0.0], device="cuda")
+        self._base_command = None
         self._physics_ready = False
         self.go2 = None
         self._physics_callback_id = None
@@ -141,6 +139,8 @@ class Go2Example(BaseSample):
         self._keyboard = self._appwindow.get_keyboard()
         self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
 
+        torch = import_module("torch")
+        self._base_command = torch.tensor([0.0, 0.0, 0.0], device="cuda")
         self._physics_ready = False
 
         # Register physics callback using SimulationManager
@@ -204,6 +204,7 @@ class Go2Example(BaseSample):
         Returns:
             bool: True to indicate event was handled.
         """
+        torch = import_module("torch")
         if event.type == carb.input.KeyboardEventType.KEY_PRESS:
             if event.input.name in self._input_keyboard_mapping:
                 self._base_command += torch.tensor(

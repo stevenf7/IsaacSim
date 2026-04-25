@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.2.3] - 2026-04-23
+### Changed
+- Defer torch import to avoid loading it at startup
+
 ## [5.2.2] - 2026-04-08
 ### Fixed
 - Fix physics variant selection to match USD variant names case-insensitively, resolving H1 robot loading failure when variant set uses `Physx` instead of `physx`

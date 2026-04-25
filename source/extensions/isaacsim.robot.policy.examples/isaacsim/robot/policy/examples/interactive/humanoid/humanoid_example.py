@@ -28,8 +28,6 @@ from isaacsim.robot.policy.examples.robots import H1FlatTerrainPolicy
 from isaacsim.storage.native import get_assets_root_path
 from pxr import UsdPhysics, UsdShade
 
-torch = import_module("torch")
-
 
 class HumanoidExample(BaseSample):
     """A humanoid robot simulation example using H1 robot with GPU-accelerated physics.
@@ -62,7 +60,7 @@ class HumanoidExample(BaseSample):
         self._world_settings["device"] = "cuda"
         self._world_settings["backend"] = "torch"
 
-        self._base_command = torch.tensor([0.0, 0.0, 0.0], device="cuda")
+        self._base_command = None
         self._physics_ready = False
         self.h1 = None
         self._physics_callback_id = None
@@ -139,8 +137,9 @@ class HumanoidExample(BaseSample):
         self._keyboard = self._appwindow.get_keyboard()
         self._sub_keyboard = self._input.subscribe_to_keyboard_events(self._keyboard, self._sub_keyboard_event)
 
-        self._physics_ready = False
+        torch = import_module("torch")
         self._base_command = torch.tensor([0.0, 0.0, 0.0], device="cuda")
+        self._physics_ready = False
 
         # Register physics callback using SimulationManager
         if self._physics_callback_id is None:
@@ -207,6 +206,7 @@ class HumanoidExample(BaseSample):
         Returns:
             bool: True to indicate the event was handled.
         """
+        torch = import_module("torch")
         if event.type == carb.input.KeyboardEventType.KEY_PRESS:
             # On pressing, the command is incremented
             if event.input.name in self._input_keyboard_mapping:
