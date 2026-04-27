@@ -404,16 +404,17 @@ def update_physics_versions(kit_file, packman_xml_file, verbose=False, dry_run=F
     return True
 
 
-def compare_with_template(kit_file, verbose=False, dry_run=False, commit_hash=None):
+def compare_with_template(kit_file, kit_sdk_xml, verbose=False, dry_run=False, commit_hash=None):
     """
     Compare the kit file with the template file from GitLab.
     Specifically compares the # Exact Version dependencies: and # Version lock for all dependencies: sections.
 
     Args:
         kit_file (str): Path to the kit file
+        kit_sdk_xml (str): Path to the kit-sdk.packman.xml file (source of truth for kit version)
         verbose (bool): If True, print detailed debug information
         dry_run (bool): If True, don't modify the file, just report what would be done
-        commit_hash (str): Specific commit hash to use for the template URL. If None, uses the production branch.
+        commit_hash (str): Specific commit hash to use for the template URL. If None, derives branch from kit version.
 
     Returns:
         bool: True if successful, False otherwise
@@ -440,14 +441,27 @@ def compare_with_template(kit_file, verbose=False, dry_run=False, commit_hash=No
         template_url = f"{KAT_BASE_URL}/{commit_hash}/{KAT_TEMPLATE_PATH}"
         log(f"Using commit hash {commit_hash} for template URL")
     else:
-        # Derive the KAT branch from the Kit SDK version in the kit file
-        sdk_match = re.search(r"Kit SDK Version:\s*(\d+)\.(\d+)\.\d+", content)
-        if sdk_match:
-            kat_branch = f"feature/{sdk_match.group(1)}.{sdk_match.group(2)}"
-            log(f"Derived KAT branch '{kat_branch}' from Kit SDK Version {sdk_match.group(0)}")
-        else:
+        # Derive the KAT branch from the kit-kernel version in the packman XML (source of truth)
+        kat_branch = None
+        if os.path.isfile(kit_sdk_xml):
+            try:
+                with open(kit_sdk_xml, "r") as f:
+                    xml_content = f.read()
+                xml_match = re.search(r'name="kit-kernel"\s+version="(\d+)\.(\d+)\.\d+\+(\w+)\.', xml_content)
+                if xml_match:
+                    major_minor = f"{xml_match.group(1)}.{xml_match.group(2)}"
+                    branch_type = xml_match.group(3)
+                    if branch_type == "production":
+                        kat_branch = f"production/{major_minor}"
+                    else:
+                        kat_branch = f"feature/{major_minor}"
+                    log(f"Derived KAT branch '{kat_branch}' from kit-kernel version in {kit_sdk_xml}")
+            except Exception as e:
+                log(f"Could not read {kit_sdk_xml}: {e}")
+
+        if not kat_branch:
             kat_branch = "feature/110.1"
-            print(f"WARNING: Could not find Kit SDK Version in {kit_file}, falling back to '{kat_branch}'")
+            print(f"WARNING: Could not determine kit version from {kit_sdk_xml}, falling back to '{kat_branch}'")
         template_url = f"{KAT_BASE_URL}/{kat_branch}/{KAT_TEMPLATE_PATH}"
 
     print(f"Fetching template from: {template_url}")
@@ -898,6 +912,7 @@ def clean_extscache(
     deprecated_dir_path=None,
     apps_dir_path=None,
     packman_xml_path=None,
+    kit_sdk_xml_path=None,
     create_dir=False,
     verbose=False,
     dry_run=False,
@@ -918,6 +933,7 @@ def clean_extscache(
         deprecated_dir_path (str): Path to the deprecated directory (default: _build/linux-x86_64/release/extsDeprecated)
         apps_dir_path (str): Path to the apps directory (default: _build/linux-x86_64/release/apps)
         packman_xml_path (str): Path to the omni-physics.packman.xml file (default: deps/omni-physics.packman.xml)
+        kit_sdk_xml_path (str): Path to the kit-sdk.packman.xml file (default: deps/kit-sdk.packman.xml)
         create_dir (bool): If True, create the build directory if it doesn't exist
         verbose (bool): If True, print detailed debug information
         dry_run (bool): If True, don't modify the file, just report what would be done
@@ -942,6 +958,7 @@ def clean_extscache(
     default_deprecated_dir = "_build/linux-x86_64/release/extsDeprecated"
     default_apps_dir = "_build/linux-x86_64/release/apps"
     default_packman_xml = "deps/omni-physics.packman.xml"
+    default_kit_sdk_xml = "deps/kit-sdk.packman.xml"
 
     # Use provided paths or defaults
     kit_file = kit_file_path or default_kit_file
@@ -949,6 +966,7 @@ def clean_extscache(
     deprecated_dir = deprecated_dir_path or default_deprecated_dir
     apps_dir = apps_dir_path or default_apps_dir
     packman_xml = packman_xml_path or default_packman_xml
+    kit_sdk_xml = kit_sdk_xml_path or default_kit_sdk_xml
 
     log(f"Using kit file: {os.path.abspath(kit_file)}")
     log(f"Using build directory: {os.path.abspath(build_dir)}")
@@ -1141,7 +1159,7 @@ def clean_extscache(
     # Compare with template if requested (runs before update_physics so
     # physics versions from packman XML take precedence over template versions)
     if match_kat:
-        template_ok = compare_with_template(kit_file, verbose, dry_run, commit_hash)
+        template_ok = compare_with_template(kit_file, kit_sdk_xml, verbose, dry_run, commit_hash)
         if not template_ok and not dry_run:
             print("WARNING: Failed to compare with template file. See errors above for details.")
 
@@ -1195,6 +1213,9 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
     parser.add_argument(
         "--packman-xml", help="Path to the omni-physics.packman.xml file (default: deps/omni-physics.packman.xml)"
     )
+    parser.add_argument(
+        "--kit-sdk-xml", help="Path to the kit-sdk.packman.xml file (default: deps/kit-sdk.packman.xml)"
+    )
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output for debugging")
     parser.add_argument(
         "--dry-run", action="store_true", help="Show what would be done without actually modifying files"
@@ -1233,6 +1254,7 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
         deprecated_dir_path=args.deprecated_dir,
         apps_dir_path=args.apps_dir,
         packman_xml_path=args.packman_xml,
+        kit_sdk_xml_path=args.kit_sdk_xml,
         create_dir=args.create_dir,
         verbose=args.verbose,
         dry_run=args.dry_run,
