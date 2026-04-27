@@ -1,5 +1,5 @@
 [package]
-version = "1.6.1"
+version = "1.6.2"
 category = "Simulation"
 title = "ROS 2 UI Components"
 description = "This extension provides UI components for ROS 2 integration with Isaac Sim."
@@ -42,9 +42,6 @@ exclude = ["*/bin", "*/__pycache__/*", "*/.git/*"]
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
@@ -56,6 +53,7 @@ stdoutFailPatterns.exclude = [
 [[test]]
 timeout = 1200
 dependencies = [
+    "isaacsim.sensors.rtx",
     "isaacsim.test.utils",
     "omni.isaac.ml_archive",
 ]

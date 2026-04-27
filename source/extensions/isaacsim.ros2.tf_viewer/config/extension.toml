@@ -1,5 +1,5 @@
 [package]
-version = "2.3.0"
+version = "2.3.1"
 category = "Utility"
 title = "TF Viewer"
 description = "Show the tf transform tree in the viewport"
@@ -33,9 +33,6 @@ exts."isaacsim.ros2.tf_viewer".include_root_frame = true
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
@@ -45,9 +42,6 @@ stdoutFailPatterns.exclude = [
 ]
 
 [[test]]
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 stdoutFailPatterns.exclude = [
     '*[Error] [carb] [Plugin: omni.sensors.nv.lidar.ext.plugin] Dependency: [omni::sensors::lidar::IGenericModelOutputIOFactory v0.1] failed to be resolved.*', # feature not included in Windows
     '*The NumPy module was reloaded*',

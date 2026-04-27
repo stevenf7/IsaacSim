@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.17.5] - 2026-04-27
+### Changed
+- Move deprecated extension dependencies to test dependencies
+- Migrate test cases to core experimental API
+
 ## [1.17.4] - 2026-04-27
 ### Added
 - Support configured SRTX sensor sets for `OgnROS2CameraHelper` and `OgnROS2RtxLidarHelper` by resolving per-render-product sensor-set maps from carb settings and declaring shared render-product path lists before registering local outputs.

@@ -22,9 +22,9 @@ import omni.kit.commands
 import omni.kit.test
 import omni.kit.usd
 import usdrt.Sdf
+from isaacsim.core.experimental.prims import XformPrim
 from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.core.nodes.scripts.utils import set_target_prims
-from isaacsim.core.prims import XFormPrim
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from pxr import Sdf
 from usd.schema.isaac import robot_schema
@@ -258,8 +258,9 @@ class TestRos2PoseTree(ROS2TestCase):
         self.assertTrue(panda2.IsValid(), "Second robot not created successfully")
 
         # Set position of second robot
-        XFormPrim(
+        XformPrim(
             "/World/panda2",
+            reset_xform_op_properties=True,
             positions=np.array([[1.5, 0.0, 0.0]]),
         )
 

@@ -1,5 +1,5 @@
 [package]
-version = "1.6.0"
+version = "1.6.1"
 category = "Simulation"
 title = "ROS 2 Simulation Control"
 description = "Extension that uses the ROS 2 Simulation Interfaces to control Isaac Sim"
@@ -25,9 +25,6 @@ name = "isaacsim.ros2.sim_control.tests"
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
@@ -41,7 +38,6 @@ timeout = 900
 
 dependencies = [
     "isaacsim.robot.wheeled_robots.nodes",
-    "omni.isaac.ml_archive",
 ]
 
 stdoutFailPatterns.exclude = [

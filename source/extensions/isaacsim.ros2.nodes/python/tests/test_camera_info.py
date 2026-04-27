@@ -36,7 +36,6 @@ from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.prims import XformPrim
 from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.core.experimental.utils import transform as transform_utils
-from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from isaacsim.sensors.experimental.rtx import RtxCamera
 from isaacsim.test.utils import save_depth_image
@@ -278,12 +277,12 @@ class TestRos2CameraInfo(ROS2TestCase):
         sphereLight = UsdLux.SphereLight.Define(stage_utils.get_current_stage(), Sdf.Path(f"/World/SphereLight_{name}"))
         sphereLight.CreateRadiusAttr(6)
         sphereLight.CreateIntensityAttr(10000)
-        SingleXFormPrim(str(sphereLight.GetPath())).set_world_pose(position)
+        XformPrim(str(sphereLight.GetPath()), reset_xform_op_properties=True).set_world_poses(position)
 
     def _add_checkerboard(self, position: List[float]) -> None:
         checkerboard_path = self._assets_root_path + "/Isaac/Props/Camera/checkerboard_6x10.usd"
         stage_utils.add_reference_to_stage(usd_path=checkerboard_path, path="/calibration_target")
-        SingleXFormPrim("/calibration_target", name="calibration_target", position=position)
+        XformPrim("/calibration_target", reset_xform_op_properties=True, positions=position)
 
     def _get_rectified_image(self, image_msg_raw, camera_info_msg, side):
         # Convert ROS2 image message data buffer to CV2 image

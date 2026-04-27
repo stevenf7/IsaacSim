@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.2] - 2026-04-27
+### Removed
+- Remove the `omni.isaac.ml_archive` dependency
+
 ## [1.6.1] - 2026-04-21
 ### Removed
 - Remove dead root-level `__init__.py`, `extension.py`, and `og_shortcuts_menu.py` (not deployed to build output)
