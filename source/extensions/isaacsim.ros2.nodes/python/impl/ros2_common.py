@@ -17,6 +17,9 @@
 
 from __future__ import annotations
 
+import json
+from dataclasses import dataclass
+
 import carb
 import numpy as np
 import omni.replicator.core as rep
@@ -42,10 +45,32 @@ USE_SRTX_SETTING = "/exts/omni.replicator.srtx/enabled"
 # `framework/services/extensions/isaac.mega.bridge/source/MegaFrontendClient.cpp`
 # in the mega-dev repo for the producer side.
 SRTX_SENSOR_SET_NAME_SETTING = "/exts/omni.replicator.srtx/sensorSetName"
+SRTX_SENSOR_SET_NAME_BY_RENDER_PRODUCT_PATH_SETTING = "/exts/omni.replicator.srtx/sensorSetNameByRenderProductPath"
+SRTX_SENSOR_SET_RENDER_PRODUCT_PATHS_BY_NAME_SETTING = "/exts/omni.replicator.srtx/sensorSetRenderProductPathsByName"
 
 
-def get_srtx_sensor_set_name() -> str:
-    """Return the SRTX sensor-set name to use for ROS 2 OmniGraph publishers.
+@dataclass(frozen=True)
+class SrtxSensorSetConfig:
+    """Resolved SRTX sensor-set configuration for a render product."""
+
+    name: str
+    render_product_paths: list[str] | None = None
+
+
+def _get_srtx_string_setting(setting_name: str) -> str | None:
+    """Return a non-empty string value from an SRTX carb setting."""
+    settings = carb.settings.get_settings()
+    if settings is None:
+        return None
+    try:
+        value = settings.get(setting_name)
+    except Exception:
+        return None
+    return value if isinstance(value, str) and value else None
+
+
+def _get_default_srtx_sensor_set_name() -> str:
+    """Return the process-wide SRTX sensor-set name override or the default name.
 
     Reads the carb setting :data:`SRTX_SENSOR_SET_NAME_SETTING` if present and
     non-empty; falls back to ``"default-sensor-set"`` (preserves the historical
@@ -54,15 +79,111 @@ def get_srtx_sensor_set_name() -> str:
     digits, hyphens, length 4-63, first char letter, last char letter/digit).
     """
     default = "default-sensor-set"
-    settings = carb.settings.get_settings()
-    if settings is not None:
+    override = _get_srtx_string_setting(SRTX_SENSOR_SET_NAME_SETTING)
+    return override or default
+
+
+def _get_srtx_json_object_setting(setting_name: str) -> dict[str, object] | None:
+    """Parse an SRTX carb setting as a JSON object, logging malformed values."""
+    raw_value = _get_srtx_string_setting(setting_name)
+    if raw_value is None:
+        return None
+    try:
+        parsed = json.loads(raw_value)
+    except json.JSONDecodeError:
+        carb.log_warn(f"Invalid JSON in carb setting '{setting_name}'")
+        return None
+    if not isinstance(parsed, dict):
+        carb.log_warn(f"Expected JSON object in carb setting '{setting_name}'")
+        return None
+    return parsed
+
+
+def get_srtx_sensor_set_config(render_product_path: str | None = None) -> SrtxSensorSetConfig:
+    """Resolve the SRTX sensor-set configuration for *render_product_path*.
+
+    If *render_product_path* is not mapped to a configured shared set, returns
+    the historical per-bridge/default sensor-set name with no declaration paths.
+    """
+
+    default_name = _get_default_srtx_sensor_set_name()
+    if not render_product_path:
+        return SrtxSensorSetConfig(name=default_name)
+
+    sensor_set_name_by_render_product_path = _get_srtx_json_object_setting(
+        SRTX_SENSOR_SET_NAME_BY_RENDER_PRODUCT_PATH_SETTING
+    )
+    if sensor_set_name_by_render_product_path is None:
+        return SrtxSensorSetConfig(name=default_name)
+
+    configured_name = sensor_set_name_by_render_product_path.get(render_product_path)
+    if not isinstance(configured_name, str) or not configured_name:
+        return SrtxSensorSetConfig(name=default_name)
+
+    sensor_set_render_product_paths_by_name = _get_srtx_json_object_setting(
+        SRTX_SENSOR_SET_RENDER_PRODUCT_PATHS_BY_NAME_SETTING
+    )
+    if sensor_set_render_product_paths_by_name is None:
+        carb.log_error(
+            f"Configured SRTX sensor set '{configured_name}' for '{render_product_path}' is missing declaration paths"
+        )
+        return SrtxSensorSetConfig(name=default_name)
+
+    configured_paths = sensor_set_render_product_paths_by_name.get(configured_name)
+    if (
+        not isinstance(configured_paths, list)
+        or not configured_paths
+        or not all(isinstance(path, str) and path for path in configured_paths)
+    ):
+        carb.log_error(
+            f"Configured SRTX sensor set '{configured_name}' for '{render_product_path}' has invalid declaration paths"
+        )
+        return SrtxSensorSetConfig(name=default_name)
+
+    return SrtxSensorSetConfig(name=configured_name, render_product_paths=list(configured_paths))
+
+
+def get_srtx_sensor_set_name(render_product_path: str | None = None) -> str:
+    """Return the SRTX sensor-set name to use for ROS 2 OmniGraph publishers.
+
+    For configured shared sensor sets, this consults the per-render-product map
+    published by the host application. Otherwise it falls back to the
+    historical process-wide override in :data:`SRTX_SENSOR_SET_NAME_SETTING`,
+    then to ``"default-sensor-set"`` for standalone Isaac Sim use.
+    """
+    return get_srtx_sensor_set_config(render_product_path).name
+
+
+def prepare_srtx_sensor_set(srtx_instance: object, render_product_path: str) -> str | None:
+    """Resolve and, if configured, declare the SRTX sensor set for a render product."""
+
+    try:
+        from omni.replicator.srtx import prepare_configured_sensorset
+    except ImportError:
+        prepare_configured_sensorset = None
+
+    if prepare_configured_sensorset is not None:
+        sensor_set_name = prepare_configured_sensorset(srtx_instance, render_product_path)
+        if sensor_set_name is not None:
+            return sensor_set_name
+
+    sensor_set_config = get_srtx_sensor_set_config(render_product_path)
+    if sensor_set_config.render_product_paths is not None:
         try:
-            override = settings.get(SRTX_SENSOR_SET_NAME_SETTING)
-        except Exception:
-            override = None
-        if isinstance(override, str) and override:
-            return override
-    return default
+            declared = srtx_instance.declare_sensor_set(sensor_set_config.name, sensor_set_config.render_product_paths)
+        except Exception as exc:
+            carb.log_error(
+                f"Failed to declare configured SRTX sensor set '{sensor_set_config.name}' for "
+                f"'{render_product_path}': {exc}"
+            )
+            return None
+        if not declared:
+            carb.log_error(
+                f"Configured SRTX sensor set declaration was rejected for '{sensor_set_config.name}' "
+                f"(render product '{render_product_path}')"
+            )
+            return None
+    return sensor_set_config.name
 
 
 NON_IMAGE_COMPRESSION_FALLBACK = "blosc"

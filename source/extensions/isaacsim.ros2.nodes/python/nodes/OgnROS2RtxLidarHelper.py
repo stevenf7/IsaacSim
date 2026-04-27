@@ -34,7 +34,7 @@ from isaacsim.ros2.nodes.impl.ros2_common import (
     _start_or_extend_continuous_capture,
     cleanup_srtx_state,
     ensure_render_var_on_product,
-    get_srtx_sensor_set_name,
+    prepare_srtx_sensor_set,
 )
 from pxr import Usd, UsdGeom
 
@@ -155,7 +155,10 @@ class OgnROS2RtxLidarHelper:
             carb.log_error(f"No SRTX instance for stage '{usd_scene}'")
             return False
 
-        sensor_set_name = get_srtx_sensor_set_name()
+        sensor_set_name = prepare_srtx_sensor_set(srtx_instance, render_product_path)
+        if sensor_set_name is None:
+            carb.log_error(f"Failed to prepare SRTX sensor set for {render_product_path}")
+            return False
         sensor_name = render_product_path.rsplit("/", 1)[-1]
         srtx_instance.add_sensor(sensor_set_name, sensor_name, render_product_path)
 
