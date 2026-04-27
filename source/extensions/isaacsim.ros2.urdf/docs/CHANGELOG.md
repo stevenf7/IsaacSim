@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.4] - 2026-04-27
+### Removed
+- Remove the `omni.isaac.ml_archive` dependency
+
 ## [2.3.3] - 2026-04-23
 ### Fixed
 - Handled RCLError when ROS 2 context is shut down during background service call in RobotDefinitionReader

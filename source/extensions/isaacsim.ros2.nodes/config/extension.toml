@@ -1,5 +1,5 @@
 [package]
-version = "1.17.4"
+version = "1.17.5"
 category = "Simulation"
 title = "ROS 2 Nodes"
 description = "The ROS 2 Nodes extension provides OmniGraph nodes for ROS 2 communication. It contains publisher, subscriber, and service nodes that can be used in Action graphs to interface with ROS 2 systems. This extension depends on the isaacsim.ros2.core extension for underlying ROS 2 functionality."
@@ -22,10 +22,8 @@ writeTarget.platform = true
 "isaacsim.core.simulation_manager" = {}
 "isaacsim.robot.schema" = {}
 "isaacsim.ros2.core" = {}
-"isaacsim.sensors.camera" = {}
 "isaacsim.sensors.experimental.physics" = {}
 "isaacsim.sensors.physics.nodes" = {}
-"isaacsim.sensors.rtx" = {}
 "isaacsim.sensors.rtx.nodes" = {}
 "isaacsim.storage.native" = {}
 "omni.graph" = {}
@@ -59,9 +57,6 @@ exclude = ["*/rclpy/*", "*/bin", "*/__pycache__/*", "*/.git/*"]
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
@@ -72,8 +67,10 @@ stdoutFailPatterns.exclude = [
 
 [[test]]
 timeout = 1200
+enabled = true
 dependencies = [
     "isaacsim.robot.wheeled_robots.nodes",
+    "isaacsim.sensors.rtx",
     "isaacsim.test.utils",
     "omni.isaac.ml_archive"
 ]
@@ -161,6 +158,7 @@ args = [
 
 [[test]]
 name = "enable_async_rendering"
+enabled = true
 pythonTests.include = [
     "isaacsim.ros2.nodes.tests.test_camera*test_rgb_golden_image_comparison*"
 ]
@@ -170,6 +168,7 @@ pythonTests.exclude = [
 timeout = 1200
 dependencies = [
     "isaacsim.robot.wheeled_robots.nodes",
+    "isaacsim.sensors.rtx",
     "isaacsim.test.utils",
     "omni.isaac.ml_archive"
 ]
@@ -237,12 +236,14 @@ args = [
 
 [[test]]
 name = "enable_multitick_rendering"
+enabled = true
 pythonTests.exclude = [
     "isaacsim.ros2.nodes.tests.test_rtx_sensor.*",
 ]
 timeout = 1200
 dependencies = [
     "isaacsim.robot.wheeled_robots.nodes",
+    "isaacsim.sensors.rtx",
     "isaacsim.test.utils",
     "omni.isaac.ml_archive"
 ]
@@ -358,6 +359,7 @@ dependencies = [
     "isaacsim.physics.newton",
     "isaacsim.physics.newton.tensors",
     "isaacsim.robot.wheeled_robots.nodes",
+    "isaacsim.sensors.rtx",
     "isaacsim.test.utils",
     "omni.isaac.ml_archive",
 ]

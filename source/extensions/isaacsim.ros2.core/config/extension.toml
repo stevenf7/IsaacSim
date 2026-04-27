@@ -1,5 +1,5 @@
 [package]
-version = "1.8.2"
+version = "1.8.3"
 category = "Simulation"
 title = "ROS 2 Core"
 description = "The ROS 2 core extension containing backend libraries required to run the ROS 2 bridge."
@@ -57,9 +57,6 @@ exclude = ["*/rclpy/*", "*/bin", "*/__pycache__/*", "*/.git/*"]
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
@@ -70,7 +67,6 @@ enabled = true
 timeout = 900
 dependencies = [
     "isaacsim.test.utils",
-    "omni.isaac.ml_archive"
 ]
 # apps = [""]
 args = ["--/app/settings/fabricDefaultStageFrameHistoryCount=3",]
@@ -88,10 +84,8 @@ stdoutFailPatterns.exclude = [
 
 timeout = 900
 dependencies = [
-    "isaacsim.robot.wheeled_robots",
     "isaacsim.test.utils",
     "omni.graph.ui",
-    "omni.isaac.ml_archive",
 ]
 
 stdoutFailPatterns.exclude = [

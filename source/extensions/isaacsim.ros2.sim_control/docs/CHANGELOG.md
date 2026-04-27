@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.1] - 2026-04-27
+### Removed
+- Remove the `omni.isaac.ml_archive` dependency
+
 ## [1.6.0] - 2026-04-14
 ### Added
 - `GetEntityBounds` service for retrieving axis-aligned bounding boxes of scene entities (feature request by [@Z3ZEL](https://github.com/Z3ZEL))

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.1] - 2026-04-27
+### Removed
+- Remove the `omni.isaac.ml_archive` dependency
+
 ## [2.3.0] - 2026-04-01
 ### Changed
 - Added `isaacsim.core.experimental.utils` dependency

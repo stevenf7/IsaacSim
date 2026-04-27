@@ -1,5 +1,5 @@
 [package]
-version = "1.2.0"
+version = "1.2.1"
 category = "Simulation"
 title = "ROS 2 Examples"
 description = "This extension provides ROS 2 example scenes and demonstrations for Isaac Sim, including MoveIt integration, navigation samples, and waypoint following."
@@ -45,9 +45,6 @@ exclude = ["*/bin", "*/__pycache__/*", "*/.git/*"]
 
 [[test]]
 name = "startup"
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
@@ -57,9 +54,6 @@ stdoutFailPatterns.exclude = [
 ]
 
 [[test]]
-dependencies = [
-    "omni.isaac.ml_archive",
-]
 args = [
     "--enable",
     "omni.kit.loop-isaac",

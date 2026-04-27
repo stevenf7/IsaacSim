@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1] - 2026-04-27
+### Removed
+- Remove the `omni.isaac.ml_archive` dependency
+
 ## [1.2.0] - 2026-04-01
 ### Changed
 - Removed deprecated `isaacsim.core.api` and `isaacsim.core.utils` dependencies

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.3] - 2026-04-27
+### Removed
+- Remove the `omni.isaac.ml_archive` and `isaacsim.robot.wheeled_robots` dependencies
+
 ## [1.8.2] - 2026-04-24
 ### Fixed
 - Fix joint state publisher writing no position/velocity data when effort retrieval fails
