@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.17] - 2026-04-24
+### Changed
+- Add missing `isaacsim.robot.manipulators` as a dependency
+
 ## [1.0.16] - 2026-04-17
 ### Fixed
 - Fix `MotionCommand.__init__` type annotation: `approach_params` changed from `Optional[np.ndarray]` to `Optional[ApproachParams]`

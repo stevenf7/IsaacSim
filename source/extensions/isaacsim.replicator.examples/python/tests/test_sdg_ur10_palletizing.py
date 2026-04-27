@@ -51,11 +51,10 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
         import omni.replicator.core as rep
         import omni.timeline
         import omni.usd
-        from isaacsim.core.utils.bounds import create_bbox_cache
         from isaacsim.storage.native import get_assets_root_path
         from omni.physx import get_physx_scene_query_interface
         from omni.replicator.core.functional import write_image
-        from pxr import UsdShade
+        from pxr import Usd, UsdGeom, UsdShade
 
         DEFAULT_NUM_CAPTURES = 4  # Number bins to capture
         DEFAULT_BIN_FLIP_FRAMES = 2  # Number of frames to capture for the bin flip scenario
@@ -113,7 +112,7 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
                     print("[PalletizingSDGDemo] Could not find bin, make sure the palletizing demo is loaded..")
                     return False
 
-                bb_cache = create_bbox_cache()
+                bb_cache = UsdGeom.BBoxCache(time=Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
                 half_ext = bb_cache.ComputeLocalBound(self._active_bin).GetRange().GetSize() * 0.5
                 self._overlap_extent = carb.Float3(half_ext[0], half_ext[1], half_ext[2] * 1.1)
 

@@ -19,7 +19,7 @@ import os
 import numpy as np
 import omni.replicator.core as rep
 import omni.usd
-from isaacsim.core.utils.semantics import add_labels, get_labels
+from isaacsim.core.experimental.utils.semantics import add_labels, get_labels
 from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Gf, Sdf, UsdGeom, UsdShade
 
@@ -30,7 +30,7 @@ dome_light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(100
 
 sphere = stage.DefinePrim("/World/Sphere", "Sphere")
 UsdGeom.Xformable(sphere).AddTranslateOp().Set((0.0, 0.0, 1.0))
-add_labels(sphere, labels=["sphere"], instance_name="class")
+add_labels(sphere, labels=["sphere"], taxonomy="class")
 
 num_cubes = 10
 for _ in range(num_cubes):
@@ -40,7 +40,7 @@ for _ in range(num_cubes):
     UsdGeom.Xformable(cube).AddTranslateOp().Set((np.random.uniform(-3.5, 3.5), np.random.uniform(-3.5, 3.5), 1))
     scale_rand = np.random.uniform(0.25, 0.5)
     UsdGeom.Xformable(cube).AddScaleOp().Set((scale_rand, scale_rand, scale_rand))
-    add_labels(cube, labels=["cube"], instance_name="class")
+    add_labels(cube, labels=["cube"], taxonomy="class")
 
 plane_path = "/World/Plane"
 omni.kit.commands.execute("CreateMeshPrimWithDefaultXform", prim_path=plane_path, prim_type="Plane")

@@ -32,8 +32,9 @@ import omni.ui as ui
 import omni.usd
 from isaacsim.core.api import World
 from isaacsim.core.simulation_manager import SimulationEvent, SimulationManager
-from isaacsim.examples.interactive.base_sample import BaseSample
 from isaacsim.gui.components.ui_utils import btn_builder, get_style, setup_ui_headers
+
+from .base_sample import BaseSample
 
 
 class BaseSampleUITemplate:

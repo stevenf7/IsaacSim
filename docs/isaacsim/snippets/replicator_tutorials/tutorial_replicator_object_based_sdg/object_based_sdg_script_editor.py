@@ -25,7 +25,7 @@ import omni.kit.app
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
-from isaacsim.core.utils.semantics import add_labels, remove_labels, upgrade_prim_semantics_to_labels
+from isaacsim.core.experimental.utils.semantics import add_labels, remove_all_labels, upgrade_prim_semantics_to_labels
 from isaacsim.storage.native import get_assets_root_path
 from omni.kit.viewport.utility import get_active_viewport
 from omni.physx import get_physx_interface, get_physx_scene_query_interface
@@ -168,7 +168,7 @@ async def run_example_async(config: dict) -> None:
         stage = omni.usd.get_context().get_stage()
         for prim in stage.Traverse():
             upgrade_prim_semantics_to_labels(prim, include_descendants=True)
-            remove_labels(prim, include_descendants=True)
+            remove_all_labels(prim, include_descendants=True)
     else:
         omni.usd.get_context().new_stage()
         stage = omni.usd.get_context().get_stage()
@@ -213,7 +213,7 @@ async def run_example_async(config: dict) -> None:
             )
             add_colliders(prim)
             rep.functional.physics.apply_rigid_body(prim, disableGravity=floating)
-            add_labels(prim, labels=[label], instance_name="class")
+            add_labels(prim, labels=[label], taxonomy="class")
             if floating:
                 floating_labeled_prims.append(prim)
             else:
@@ -274,7 +274,7 @@ async def run_example_async(config: dict) -> None:
             falling_mesh_distractors.append(prim)
         mesh_distractors.append(prim)
         upgrade_prim_semantics_to_labels(prim, include_descendants=True)
-        remove_labels(prim, include_descendants=True)
+        remove_all_labels(prim, include_descendants=True)
 
     # REPLICATOR
     rep.set_global_seed(42)

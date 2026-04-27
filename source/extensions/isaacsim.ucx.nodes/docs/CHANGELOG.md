@@ -1,10 +1,8 @@
 # Changelog
 
-## [Unreleased]
-
+## [1.5.0] - 2026-04-17
 ### Added
 - FlatBuffers schemas and package dependency for UCX bridge message types
-
 ### Changed
 - UCX publish and subscribe nodes now use the Isaac OS FlatBuffers wire format
 

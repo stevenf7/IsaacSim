@@ -1,5 +1,5 @@
 [package]
-version = "1.10.0"
+version = "1.11.0"
 category = "SyntheticData"
 title = "Isaac Sim Replicator Examples"
 description="The extension provides various replicator snippets and examples for Synthetic Data Generation (SDG) workflows."
@@ -32,7 +32,6 @@ exclude = ["Ogn*Database.py"]
 [[test]]
 name = "startup"
 dependencies = [
-    "omni.isaac.ml_archive",
 ]
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
@@ -47,7 +46,6 @@ timeout = 900
 dependencies = [
     "isaacsim.examples.interactive",
     "isaacsim.test.utils",
-    "omni.isaac.ml_archive",
 ]
 args = [
     "--enable",
@@ -104,7 +102,6 @@ timeout = 900
 dependencies = [
     "isaacsim.examples.interactive",
     "isaacsim.test.utils",
-    "omni.isaac.ml_archive",
 ]
 args = [
     "--enable",
@@ -169,7 +166,6 @@ dependencies = [
     "isaacsim.examples.interactive",
     "isaacsim.test.utils",
     "isaacsim.util.debug_draw",
-    "omni.isaac.ml_archive",
 ]
 args = [
     "--enable",
@@ -227,7 +223,6 @@ timeout = 900
 dependencies = [
     "isaacsim.examples.interactive",
     "isaacsim.test.utils",
-    "omni.isaac.ml_archive",
 ]
 args = [
     "--enable",
@@ -288,7 +283,6 @@ timeout = 900
 dependencies = [
     "isaacsim.examples.interactive",
     "isaacsim.test.utils",
-    "omni.isaac.ml_archive",
 ]
 args = [
     "--enable",

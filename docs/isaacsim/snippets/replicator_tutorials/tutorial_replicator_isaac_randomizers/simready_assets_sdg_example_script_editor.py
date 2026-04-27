@@ -23,7 +23,7 @@ import omni.kit.app
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
-from isaacsim.core.utils.semantics import upgrade_prim_semantics_to_labels
+from isaacsim.core.experimental.utils.semantics import upgrade_prim_semantics_to_labels
 from pxr import Sdf, Usd, UsdGeom, UsdPhysics
 
 # Make sure the simready explorer extension is enabled

@@ -18,7 +18,7 @@
 
 import omni.kit
 import omni.usd
-from isaacsim.core.utils.stage import create_new_stage_async
+from isaacsim.core.experimental.utils.stage import create_new_stage_async
 
 
 class TestOgnCustomReplicatorRandomizer(omni.kit.test.AsyncTestCase):

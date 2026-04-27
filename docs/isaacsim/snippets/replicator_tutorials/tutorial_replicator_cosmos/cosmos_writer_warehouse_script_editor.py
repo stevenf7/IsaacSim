@@ -20,7 +20,7 @@ import carb
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
-from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.core.experimental.utils.stage import add_reference_to_stage
 from isaacsim.storage.native import get_assets_root_path_async
 from pxr import UsdGeom
 
