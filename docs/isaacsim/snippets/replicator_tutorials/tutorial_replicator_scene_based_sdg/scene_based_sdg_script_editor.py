@@ -37,18 +37,6 @@ from isaacsim.storage.native import get_assets_root_path_async
 from pxr import Gf, Usd, UsdGeom
 
 
-def _create_prim(prim_path, position=None, orientation=None, usd_path=None, semantic_label=None):
-    if usd_path is not None:
-        prim = add_reference_to_stage(usd_path, prim_path)
-    else:
-        prim = define_prim(prim_path, "Xform")
-    if semantic_label is not None:
-        add_labels(prim, labels=[semantic_label], taxonomy="class")
-    if position is not None or orientation is not None:
-        XformPrim(prim_path, positions=position, orientations=orientation, reset_xform_op_properties=True)
-    return prim
-
-
 def setup_writer(config: dict) -> rep.Writer | None:
     """Setup and initialize writer with optional backend support."""
 
@@ -119,12 +107,15 @@ async def simulate_falling_objects_async(
     sim_pallet_position = (sim_pallet_offset * forklift_transform).ExtractTranslation()
     sim_pallet_rotation = euler_angles_to_quaternion([0, 0, rng.uniform(0, math.pi)]).numpy()
 
-    sim_pallet = _create_prim(
-        prim_path="/World/SimulatedPallet",
-        position=sim_pallet_position,
-        orientation=sim_pallet_rotation,
-        usd_path=assets_root_path + config["pallet"]["url"],
-        semantic_label=config["pallet"]["class"],
+    sim_pallet_path = "/World/SimulatedPallet"
+    sim_pallet = define_prim(sim_pallet_path)
+    add_reference_to_stage(assets_root_path + config["pallet"]["url"], sim_pallet_path)
+    add_labels(sim_pallet, labels=[config["pallet"]["class"]], taxonomy="class")
+    XformPrim(
+        sim_pallet_path,
+        positions=tuple(sim_pallet_position),
+        orientations=sim_pallet_rotation,
+        reset_xform_op_properties=True,
     )
     sim_pallet_geom = GeomPrim(f"{str(sim_pallet.GetPrimPath())}/.*", apply_collision_apis=True)
     sim_pallet_geom.set_collision_approximations("boundingCube")
@@ -135,12 +126,15 @@ async def simulate_falling_objects_async(
     sim_box_rigid_prims = []
     for box_index in range(num_boxes):
         box_xy_offset = Gf.Vec3d(rng.uniform(-0.2, 0.2), rng.uniform(-0.2, 0.2), current_height)
-        sim_box = _create_prim(
-            prim_path=f"/World/SimulatedCardbox_{box_index}",
-            position=sim_pallet_position + box_xy_offset,
-            orientation=sim_pallet_rotation,
-            usd_path=assets_root_path + config["cardbox"]["url"],
-            semantic_label=config["cardbox"]["class"],
+        sim_box_path = f"/World/SimulatedCardbox_{box_index}"
+        sim_box = define_prim(sim_box_path)
+        add_reference_to_stage(assets_root_path + config["cardbox"]["url"], sim_box_path)
+        add_labels(sim_box, labels=[config["cardbox"]["class"]], taxonomy="class")
+        XformPrim(
+            sim_box_path,
+            positions=tuple(sim_pallet_position + box_xy_offset),
+            orientations=sim_pallet_rotation,
+            reset_xform_op_properties=True,
         )
         current_height += bbox_cache.ComputeLocalBound(sim_box).GetRange().GetSize()[2] * 1.1
 
@@ -251,9 +245,7 @@ def setup_cone_placement_corners(
 def register_lights_graph_randomizer(forklift_prim: Usd.Prim, pallet_prim: Usd.Prim, event_name: str) -> None:
     """Register graph randomizer for sphere lights."""
     bb_cache = create_bbox_cache()
-    combined_bounds = compute_combined_aabb(
-        [forklift_prim.GetPrimPath(), pallet_prim.GetPrimPath()], bbox_cache=bb_cache
-    )
+    combined_bounds = compute_combined_aabb([forklift_prim, pallet_prim], bbox_cache=bb_cache)
     light_pos_min = (combined_bounds[0], combined_bounds[1], 6)
     light_pos_max = (combined_bounds[3], combined_bounds[4], 7)
 
@@ -314,48 +306,52 @@ async def run_example_async(config):
             remove_all_labels(prim, include_descendants=True)
 
     # Create SDG scope for organizing all generated objects
-    sdg_scope = stage.DefinePrim("/SDG", "Scope")
+    define_prim("/SDG", "Scope")
 
     # Spawn forklift at random pose
-    forklift_prim = _create_prim(
-        prim_path="/SDG/Forklift",
-        position=(rng.uniform(-20, -2), rng.uniform(-1, 3), 0),
-        orientation=euler_angles_to_quaternion([0, 0, rng.uniform(0, math.pi)]).numpy(),
-        usd_path=assets_root_path + config["forklift"]["url"],
-        semantic_label=config["forklift"]["class"],
+    forklift_path = "/SDG/Forklift"
+    forklift_prim = define_prim(forklift_path)
+    add_reference_to_stage(assets_root_path + config["forklift"]["url"], forklift_path)
+    add_labels(forklift_prim, labels=[config["forklift"]["class"]], taxonomy="class")
+    XformPrim(
+        forklift_path,
+        positions=(rng.uniform(-20, -2), rng.uniform(-1, 3), 0),
+        orientations=euler_angles_to_quaternion([0, 0, rng.uniform(0, math.pi)]).numpy(),
+        reset_xform_op_properties=True,
     )
 
     # Spawn pallet in front of forklift with random offset
     forklift_tf = omni.usd.get_world_transform_matrix(forklift_prim)
     pallet_offset_tf = Gf.Matrix4d().SetTranslate(Gf.Vec3d(0, rng.uniform(-1.8, -1.2), 0))
-    pallet_pos = (pallet_offset_tf * forklift_tf).ExtractTranslation()
+    pallet_pos = tuple((pallet_offset_tf * forklift_tf).ExtractTranslation())
     forklift_quat = forklift_tf.ExtractRotationQuat()
     forklift_quat_xyzw = (forklift_quat.GetReal(), *forklift_quat.GetImaginary())
 
-    pallet_prim = _create_prim(
-        prim_path="/SDG/Pallet",
-        position=pallet_pos,
-        orientation=forklift_quat_xyzw,
-        usd_path=assets_root_path + config["pallet"]["url"],
-        semantic_label=config["pallet"]["class"],
+    pallet_path = "/SDG/Pallet"
+    pallet_prim = define_prim(pallet_path)
+    add_reference_to_stage(assets_root_path + config["pallet"]["url"], pallet_path)
+    add_labels(pallet_prim, labels=[config["pallet"]["class"]], taxonomy="class")
+    XformPrim(
+        pallet_path,
+        positions=pallet_pos,
+        orientations=forklift_quat_xyzw,
+        reset_xform_op_properties=True,
     )
 
     # Create cardboxes for pallet scattering
     cardboxes = []
     for i in range(5):
-        cardbox = _create_prim(
-            prim_path=f"/SDG/CardBox_{i}",
-            usd_path=assets_root_path + config["cardbox"]["url"],
-            semantic_label=config["cardbox"]["class"],
-        )
+        cardbox_path = f"/SDG/CardBox_{i}"
+        cardbox = define_prim(cardbox_path)
+        add_reference_to_stage(assets_root_path + config["cardbox"]["url"], cardbox_path)
+        add_labels(cardbox, labels=[config["cardbox"]["class"]], taxonomy="class")
         cardboxes.append(cardbox)
 
     # Create traffic cone for corner placement
-    cone = _create_prim(
-        prim_path="/SDG/Cone",
-        usd_path=assets_root_path + config["cone"]["url"],
-        semantic_label=config["cone"]["class"],
-    )
+    cone_path = "/SDG/Cone"
+    cone = define_prim(cone_path)
+    add_reference_to_stage(assets_root_path + config["cone"]["url"], cone_path)
+    add_labels(cone, labels=[config["cone"]["class"]], taxonomy="class")
 
     # Create cameras
     rep.functional.create.scope(name="Cameras", parent="/SDG")
