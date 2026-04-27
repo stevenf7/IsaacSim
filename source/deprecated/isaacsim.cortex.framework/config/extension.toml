@@ -1,5 +1,5 @@
 [package]
-version = "1.0.16"
+version = "1.0.17"
 category = "Robotics"
 title = "Omni Isaac Cortex"
 description = "Isaac Cortex is a framework within NVIDIA's Isaac Sim that integrates various robotics tools into a unified system, facilitating the development of collaborative robotic applications. It emphasizes reactivity and adaptability, enabling robots to operate safely alongside humans without the need for physical barriers."
@@ -20,6 +20,7 @@ warning = "Extension deprecated since Isaac Sim 6.0.0. Will be replaced in 7.0 w
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.robot_motion.motion_generation" = {}
 "isaacsim.storage.native" = {}
+"isaacsim.robot.manipulators" = {}
 
 [[python.module]]
 name = "isaacsim.cortex.framework"

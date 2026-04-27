@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.17.0] - 2026-04-24
+### Added
+- Add `upgrade_prim_semantics_to_labels` to semantics utils for migrating deprecated `Semantics.SemanticsAPI` to `UsdSemantics.LabelsAPI`
+
 ## [0.16.2] - 2026-04-17
 ### Fixed
 - Fix docstring example in `get_simstate_mode()`

@@ -20,7 +20,7 @@ import numpy as np
 import omni.kit.commands
 import omni.replicator.core as rep
 import omni.usd
-from isaacsim.core.utils.semantics import add_labels
+from isaacsim.core.experimental.utils.semantics import add_labels
 from pxr import Gf, Sdf, UsdGeom
 
 omni.usd.get_context().new_stage()
@@ -28,11 +28,11 @@ stage = omni.usd.get_context().get_stage()
 
 sphere = stage.DefinePrim("/World/Sphere", "Sphere")
 UsdGeom.Xformable(sphere).AddTranslateOp().Set((0.0, 1.0, 1.0))
-add_labels(sphere, labels=["sphere"], instance_name="class")
+add_labels(sphere, labels=["sphere"], taxonomy="class")
 
 cube = stage.DefinePrim("/World/Cube", "Cube")
 UsdGeom.Xformable(cube).AddTranslateOp().Set((0.0, -2.0, 2.0))
-add_labels(cube, labels=["cube"], instance_name="class")
+add_labels(cube, labels=["cube"], taxonomy="class")
 
 plane_path = "/World/Plane"
 omni.kit.commands.execute("CreateMeshPrimWithDefaultXform", prim_path=plane_path, prim_type="Plane")

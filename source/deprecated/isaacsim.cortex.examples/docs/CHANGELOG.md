@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.1] - 2026-04-24
+### Changed
+- Fixed import path for `base_sample` module
+
 ## [0.2.0] - 2026-04-23
 ### Added
 - Move the `isaacsim.examples.interactive.base_sample` module to this extension

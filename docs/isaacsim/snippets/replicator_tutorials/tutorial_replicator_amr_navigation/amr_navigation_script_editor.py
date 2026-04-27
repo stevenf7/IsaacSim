@@ -26,7 +26,7 @@ import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
 import omni.usd.commands
-from isaacsim.core.utils.stage import create_new_stage
+from isaacsim.core.experimental.utils.stage import create_new_stage
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf, UsdGeom
 

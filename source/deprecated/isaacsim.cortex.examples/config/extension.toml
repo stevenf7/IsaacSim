@@ -1,5 +1,5 @@
 [package]
-version = "0.2.0"
+version = "0.2.1"
 category = "Simulation"
 title = "Isaac Cortex Examples"
 description = "Example environments and behavior scripts for the Isaac Cortex decision framework, including Franka block stacking and UR10 bin stacking scenarios."

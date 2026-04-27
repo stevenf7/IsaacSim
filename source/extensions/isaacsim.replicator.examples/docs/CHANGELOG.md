@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.11.0] - 2026-04-24
+### Changed
+- Migrated imports from `isaacsim.core.utils` to `isaacsim.core.experimental.utils`
+- Removed `omni.isaac.ml_archive` and `isaacsim.core.experimental.utils` from test dependencies (now transitive via `isaacsim.replicator.writers`)
+- Removed AMR navigation, object-based SDG, cosmos writer, randomizer snippets, and SimReady snippets tests (moved to snippet-level validation)
+
 ## [1.10.0] - 2026-04-20
 ### Changed
 - Added SDG GeomSubset semantic segmentation test for `perSubsetSegmentation` true/false

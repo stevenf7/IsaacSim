@@ -21,7 +21,7 @@ import carb.settings
 import numpy as np
 import omni.replicator.core as rep
 import warp as wp
-from isaacsim.core.utils.stage import open_stage
+from isaacsim.core.experimental.utils.stage import open_stage
 from isaacsim.storage.native import get_assets_root_path_async
 
 NUM_FRAMES = 5
