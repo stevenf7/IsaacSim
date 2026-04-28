@@ -35,6 +35,7 @@ from isaacsim.ros2.nodes.impl.ros2_common import (
     cleanup_srtx_state,
     ensure_render_var_on_product,
     prepare_srtx_sensor_set,
+    validate_srtx_platform,
 )
 from pxr import Usd, UsdGeom
 
@@ -260,6 +261,8 @@ class OgnROS2RtxLidarHelper:
 
         use_srtx = carb.settings.get_settings().get_as_bool(USE_SRTX_SETTING)
         if use_srtx:
+            if not validate_srtx_platform():
+                return False
             if not OgnROS2RtxLidarHelper._setup_srtx(init_params, render_product_path, state, sensor_type, None):
                 db.log_error("Failed to setup SRTX for lidar helper")
                 return False

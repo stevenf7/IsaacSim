@@ -30,6 +30,7 @@ from isaacsim.ros2.core import collect_namespace, compute_relative_pose, read_ca
 from isaacsim.ros2.nodes.impl.ros2_common import (
     USE_SRTX_SETTING,
     get_srtx_sensor_set_name,
+    validate_srtx_platform,
 )
 from pxr import Usd
 
@@ -244,6 +245,8 @@ class OgnROS2CameraInfoHelper:
 
         stage = omni.usd.get_context().get_stage()
         use_srtx = carb.settings.get_settings().get_as_bool(USE_SRTX_SETTING)
+        if use_srtx and not validate_srtx_platform():
+            return False
         ctx = contextlib.nullcontext() if use_srtx else Usd.EditContext(stage, stage.GetSessionLayer())
         with ctx:
             is_stereo = False
