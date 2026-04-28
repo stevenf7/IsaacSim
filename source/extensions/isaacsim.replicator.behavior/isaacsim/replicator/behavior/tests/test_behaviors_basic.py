@@ -27,9 +27,10 @@ import omni.kit.commands
 import omni.kit.test
 import omni.timeline
 import omni.usd
+from isaacsim.replicator.behavior.behaviors import LightRandomizer
 from isaacsim.replicator.behavior.global_variables import EXPOSED_ATTR_NS
 from omni.behavior.scripting.core import BehaviorScript
-from pxr import Sdf
+from pxr import Gf, Sdf
 
 SCRIPTS_ATTR = "omni:scripting:scripts"
 
@@ -176,3 +177,46 @@ class TestBehaviorsBasic(omni.kit.test.AsyncTestCase):
         for behavior_class in BEHAVIOR_CLASSES:
             print(f"Testing behavior: {behavior_class.__name__}")
             await self.check_exposed_variables(behavior_class)
+
+    async def test_light_randomizer_reset_skips_cached_none_values(self) -> None:
+        """Test that light reset skips unset cached attributes and restores remaining prims."""
+        stage = omni.usd.get_context().get_stage()
+
+        unset_prim = stage.DefinePrim("/World/UnsetLightInputs", "Xform")
+        unset_prim.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float)
+        unset_prim.CreateAttribute("inputs:color", Sdf.ValueTypeNames.Color3f)
+
+        authored_prim = stage.DefinePrim("/World/AuthoredLightInputs", "Xform")
+        authored_prim.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float)
+        authored_prim.CreateAttribute("inputs:color", Sdf.ValueTypeNames.Color3f)
+        initial_intensity = 500.0
+        initial_color = Gf.Vec3f(0.1, 0.2, 0.3)
+        authored_prim.GetAttribute("inputs:intensity").Set(initial_intensity)
+        authored_prim.GetAttribute("inputs:color").Set(initial_color)
+
+        randomizer = LightRandomizer.__new__(LightRandomizer)
+        randomizer._initial_attributes = {}
+        randomizer._cache_initial_attributes(unset_prim)
+        randomizer._cache_initial_attributes(authored_prim)
+        self.assertIsNone(randomizer._initial_attributes[unset_prim]["inputs:intensity"])
+        self.assertIsNone(randomizer._initial_attributes[unset_prim]["inputs:color"])
+
+        unset_prim.GetAttribute("inputs:intensity").Set(1000.0)
+        unset_prim.GetAttribute("inputs:color").Set(Gf.Vec3f(0.5, 0.5, 0.5))
+        authored_prim.GetAttribute("inputs:intensity").Set(1000.0)
+        authored_prim.GetAttribute("inputs:color").Set(Gf.Vec3f(0.5, 0.5, 0.5))
+
+        randomizer._valid_prims = [unset_prim, authored_prim]
+        randomizer._update_counter = 1
+        randomizer._rng = object()
+
+        randomizer._reset()
+
+        self.assertEqual(authored_prim.GetAttribute("inputs:intensity").Get(), initial_intensity)
+        self.assertEqual(authored_prim.GetAttribute("inputs:color").Get(), initial_color)
+        self.assertEqual(unset_prim.GetAttribute("inputs:intensity").Get(), 1000.0)
+        self.assertEqual(unset_prim.GetAttribute("inputs:color").Get(), Gf.Vec3f(0.5, 0.5, 0.5))
+        self.assertEqual(randomizer._valid_prims, [])
+        self.assertEqual(randomizer._initial_attributes, {})
+        self.assertEqual(randomizer._update_counter, 0)
+        self.assertIsNone(randomizer._rng)

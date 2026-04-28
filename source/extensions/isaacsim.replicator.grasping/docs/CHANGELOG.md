@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.3] - 2026-04-28
+### Fixed
+- `simulate_physics_async` and `simulate_physics_with_forces_async` now restore the PhysX scene's original `updateType` (or clear it if it was unauthored) via try/finally, instead of permanently leaving the scene set to `Disabled` after manual stepping.
+
 ## [1.1.2] - 2026-04-18
 ### Changed
 - Added return type annotations, `from __future__ import annotations`, and imperative-mood docstrings

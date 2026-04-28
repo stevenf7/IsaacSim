@@ -372,6 +372,28 @@ def get_joint_state(joint_prim: Usd.Prim) -> tuple[float, float]:
     return position, velocity
 
 
+def _disable_scene_auto_updates(physics_scene: UsdPhysics.Scene) -> tuple[Usd.Attribute, str | None, bool]:
+    """Disable automatic updates for a PhysX scene and return its previous update state."""
+    physx_scene_api = PhysxSchema.PhysxSceneAPI.Apply(physics_scene.GetPrim())
+    update_type_attr = physx_scene_api.GetUpdateTypeAttr()
+    original_update_type = update_type_attr.Get() if update_type_attr else None
+    original_update_type_authored = update_type_attr.HasAuthoredValueOpinion() if update_type_attr else False
+
+    update_type_attr = physx_scene_api.CreateUpdateTypeAttr()
+    update_type_attr.Set(PhysxSchema.Tokens.Disabled)
+    return update_type_attr, original_update_type, original_update_type_authored
+
+
+def _restore_scene_auto_updates(
+    update_type_attr: Usd.Attribute, original_update_type: str | None, original_update_type_authored: bool
+) -> None:
+    """Restore a PhysX scene update type captured by `_disable_scene_auto_updates()`."""
+    if original_update_type_authored and original_update_type is not None:
+        update_type_attr.Set(original_update_type)
+    else:
+        update_type_attr.Clear()
+
+
 async def simulate_physics_async(
     num_frames: int, step_dt: float, physics_scene: UsdPhysics.Scene | None = None, render: bool = False
 ) -> None:
@@ -395,18 +417,21 @@ async def simulate_physics_async(
     physx_sim_interface = omni.physx.get_physx_simulation_interface()
 
     if physics_scene:
-        physx_scene_api = PhysxSchema.PhysxSceneAPI.Apply(physics_scene.GetPrim())
-        physx_scene_api.CreateUpdateTypeAttr().Set(PhysxSchema.Tokens.Disabled)
-
-        physics_scene_path = physics_scene.GetPath()
-        scene_int = PhysicsSchemaTools.sdfPathToInt(physics_scene_path)
-        for _ in range(num_frames):
-            physx_sim_interface.simulate_scene(scene_int, step_dt, 0)
+        update_type_attr, original_update_type, original_update_type_authored = _disable_scene_auto_updates(
+            physics_scene
+        )
+        try:
+            physics_scene_path = physics_scene.GetPath()
+            scene_int = PhysicsSchemaTools.sdfPathToInt(physics_scene_path)
+            for _ in range(num_frames):
+                physx_sim_interface.simulate_scene(scene_int, step_dt, 0)
+                physx_sim_interface.fetch_results_scene(scene_int)
+                if render:
+                    await omni.kit.app.get_app().next_update_async()
             physx_sim_interface.fetch_results_scene(scene_int)
-            if render:
-                await omni.kit.app.get_app().next_update_async()
-        physx_sim_interface.fetch_results_scene(scene_int)
-        await omni.kit.app.get_app().next_update_async()
+            await omni.kit.app.get_app().next_update_async()
+        finally:
+            _restore_scene_auto_updates(update_type_attr, original_update_type, original_update_type_authored)
     else:
         for _ in range(num_frames):
             physx_sim_interface.simulate(step_dt, 0)
@@ -466,19 +491,22 @@ async def simulate_physics_with_forces_async(
             f"Simulating physics with forces using scene: '{physics_scene.GetPath()}', steps {sim_steps}, dt {physx_dt}"
         )
         # Ensure the scene isn't updating automatically if we drive it manually
-        physx_scene_api = PhysxSchema.PhysxSceneAPI.Apply(physics_scene.GetPrim())
-        physx_scene_api.CreateUpdateTypeAttr().Set(PhysxSchema.Tokens.Disabled)
-
-        physics_scene_path = physics_scene.GetPath()
-        scene_int = PhysicsSchemaTools.sdfPathToInt(physics_scene_path)
-        for _ in range(sim_steps):
-            physx_interface.simulate_scene(scene_int, physx_dt, 0)
+        update_type_attr, original_update_type, original_update_type_authored = _disable_scene_auto_updates(
+            physics_scene
+        )
+        try:
+            physics_scene_path = physics_scene.GetPath()
+            scene_int = PhysicsSchemaTools.sdfPathToInt(physics_scene_path)
+            for _ in range(sim_steps):
+                physx_interface.simulate_scene(scene_int, physx_dt, 0)
+                physx_interface.fetch_results_scene(scene_int)
+                if render:
+                    await omni.kit.app.get_app().next_update_async()
+            # Fetch results one last time after the loop
             physx_interface.fetch_results_scene(scene_int)
-            if render:
-                await omni.kit.app.get_app().next_update_async()
-        # Fetch results one last time after the loop
-        physx_interface.fetch_results_scene(scene_int)
-        await omni.kit.app.get_app().next_update_async()
+            await omni.kit.app.get_app().next_update_async()
+        finally:
+            _restore_scene_auto_updates(update_type_attr, original_update_type, original_update_type_authored)
     else:
         print(f"Simulating physics with forces using default scene, steps {sim_steps}, dt {physx_dt}")
         for _ in range(sim_steps):

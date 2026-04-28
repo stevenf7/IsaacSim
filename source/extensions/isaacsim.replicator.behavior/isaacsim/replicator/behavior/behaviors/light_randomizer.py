@@ -159,6 +159,8 @@ class LightRandomizer(BehaviorScript):
         # Restore original attributes
         for prim, attrs in self._initial_attributes.items():
             for attr_name, attr_value in attrs.items():
+                if attr_value is None:
+                    continue
                 prim.GetAttribute(attr_name).Set(attr_value)
 
         # Clear cached values
@@ -184,9 +186,19 @@ class LightRandomizer(BehaviorScript):
             prim.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float)
         if not prim.HasAttribute("inputs:color"):
             prim.CreateAttribute("inputs:color", Sdf.ValueTypeNames.Color3f)
+        intensity = prim.GetAttribute("inputs:intensity").Get()
+        color = prim.GetAttribute("inputs:color").Get()
+        if intensity is None:
+            carb.log_warn(
+                f"[LightRandomizer] {prim.GetPath()}.inputs:intensity has no authored value and will be skipped on reset."
+            )
+        if color is None:
+            carb.log_warn(
+                f"[LightRandomizer] {prim.GetPath()}.inputs:color has no authored value and will be skipped on reset."
+            )
         self._initial_attributes[prim] = {
-            "inputs:intensity": prim.GetAttribute("inputs:intensity").Get(),
-            "inputs:color": prim.GetAttribute("inputs:color").Get(),
+            "inputs:intensity": intensity,
+            "inputs:color": color,
         }
 
     def _get_exposed_variable(self, attr_name: str) -> Any:

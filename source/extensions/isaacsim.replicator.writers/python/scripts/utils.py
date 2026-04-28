@@ -16,6 +16,7 @@
 """Utility functions for 3D-to-2D point projection and camera coordinate transformations in replicator writers."""
 
 
+import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.core.experimental.utils.xform as xform_utils
 import numpy as np
@@ -62,12 +63,15 @@ def project_pinhole(camera_point, camera_params):
             - "renderProductResolution": [width, height]
 
     Returns:
-        Tuple (x, y) of rounded pixel coordinates.
+        Tuple (x, y) of rounded pixel coordinates. Points on the projection plane return the screen center.
     """
     projection_matrix = camera_params["cameraProjection"].reshape((4, 4))
     screen_size = camera_params["renderProductResolution"]
 
     point_screen = camera_point @ projection_matrix
+    if abs(point_screen[3]) < 1e-10:
+        return round(screen_size[0] / 2), round(screen_size[1] / 2)
+
     point_screen_normalized = point_screen / point_screen[3]
 
     x = (point_screen_normalized[0] + 1) * screen_size[0] / 2
@@ -180,7 +184,8 @@ def invert_fisheye_polynomial(theta, poly_coeffs, max_iterations=10, tolerance=1
         tolerance: Convergence tolerance.
 
     Returns:
-        The radial distance r in pixels.
+        The radial distance r in pixels. If Newton-Raphson does not converge, logs a warning before returning the
+        final iterate.
     """
     a, b, c, d, e, f = poly_coeffs
 
@@ -192,7 +197,8 @@ def invert_fisheye_polynomial(theta, poly_coeffs, max_iterations=10, tolerance=1
     else:
         r = theta
 
-    for _ in range(max_iterations):
+    iterations_run = 0
+    for iterations_run in range(1, max_iterations + 1):
         r2, r3, r4, r5 = r**2, r**3, r**4, r**5
         f_r = a + b * r + c * r2 + d * r3 + e * r4 + f * r5 - theta
         f_prime = b + 2 * c * r + 3 * d * r2 + 4 * e * r3 + 5 * f * r4
@@ -207,6 +213,13 @@ def invert_fisheye_polynomial(theta, poly_coeffs, max_iterations=10, tolerance=1
 
         r = r_new
 
+    final_residual = a + b * r + c * r**2 + d * r**3 + e * r**4 + f * r**5 - theta
+
+    carb.log_warn(
+        "invert_fisheye_polynomial: Newton-Raphson did not converge within "
+        f"{max_iterations} iterations (completed={iterations_run}, final residual={abs(final_residual):.2e}). "
+        "Result may be inaccurate. Increase max_iterations or verify poly_coeffs conditioning."
+    )
     return r
 
 

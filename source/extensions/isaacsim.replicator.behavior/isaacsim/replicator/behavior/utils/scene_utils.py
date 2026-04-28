@@ -58,7 +58,9 @@ def get_world_rotation(prim: Usd.Prim, xform_cache: UsdGeom.XformCache | None = 
     return Gf.Transform(xform_cache.GetLocalToWorldTransform(prim)).GetRotation()
 
 
-def get_rotation_op_and_value(prim: Usd.Prim) -> tuple[str, Gf.Quatf | Gf.Quatd | Gf.Rotation | Gf.Vec3d | Gf.Vec3f]:
+def get_rotation_op_and_value(
+    prim: Usd.Prim,
+) -> tuple[str, float | Gf.Quatf | Gf.Quatd | Gf.Rotation | Gf.Vec3d | Gf.Vec3f]:
     """Get the rotation of the prim, creating an xformOp:orient if it doesn't exist.
 
     Args:
@@ -88,7 +90,9 @@ def get_rotation_op_and_value(prim: Usd.Prim) -> tuple[str, Gf.Quatf | Gf.Quatd 
 
 
 def set_rotation_op_and_value(
-    prim: Usd.Prim, rotation_op: str, rotation_val: Gf.Rotation | Gf.Quatf | Gf.Quatd | Gf.Vec3d | Gf.Vec3f
+    prim: Usd.Prim,
+    rotation_op: str,
+    rotation_val: float | Gf.Rotation | Gf.Quatf | Gf.Quatd | Gf.Vec3d | Gf.Vec3f,
 ) -> None:
     """Set the rotation of the prim, the ops should already exist.
 
@@ -136,7 +140,11 @@ def set_rotation_with_ops(prim: Usd.Prim, rotation: Gf.Rotation) -> None:
 
         elif op_name.startswith("xformOp:rotate"):
             rotation_order = op_name[len("xformOp:rotate") :]
-            rotation_decomp = decompose_rotation(rotation, rotation_order)
+            try:
+                rotation_decomp = decompose_rotation(rotation, rotation_order)
+            except ValueError as error:
+                carb.log_warn(f"[{prim.GetPath()}] {error}")
+                return
             op.Set(rotation_decomp)
             return
 
@@ -151,19 +159,29 @@ def set_rotation_with_ops(prim: Usd.Prim, rotation: Gf.Rotation) -> None:
     orient_op.Set(Gf.Quatd(rotation.GetQuat()))
 
 
-def decompose_rotation(rotation: Gf.Rotation, rotation_order: str) -> Gf.Vec3f:
+def decompose_rotation(rotation: Gf.Rotation, rotation_order: str) -> float | Gf.Vec3f:
     """Helper function to decompose Gf.Rotation based on rotation order.
 
     Args:
         rotation: The rotation to decompose.
-        rotation_order: The rotation order string (e.g. "XYZ", "ZYX").
+        rotation_order: The rotation order string, such as "XYZ", "ZYX", "X", "Y", or "Z".
 
     Returns:
-        The decomposed rotation as euler angles.
+        The decomposed rotation as euler angles or a single-axis angle.
+
+    Raises:
+        ValueError: If the rotation order is not supported.
     """
-    if rotation_order == "XYZ":
+    if rotation_order in ("XYZ", "X", "Y", "Z"):
         rotation_decomp = rotation.Decompose(Gf.Vec3d.ZAxis(), Gf.Vec3d.YAxis(), Gf.Vec3d.XAxis())
-        return Gf.Vec3f(rotation_decomp[2], rotation_decomp[1], rotation_decomp[0])
+        rotation_vec = Gf.Vec3f(rotation_decomp[2], rotation_decomp[1], rotation_decomp[0])
+        if rotation_order == "X":
+            return rotation_vec[0]
+        if rotation_order == "Y":
+            return rotation_vec[1]
+        if rotation_order == "Z":
+            return rotation_vec[2]
+        return rotation_vec
     elif rotation_order == "XZY":
         rotation_decomp = rotation.Decompose(Gf.Vec3d.YAxis(), Gf.Vec3d.ZAxis(), Gf.Vec3d.XAxis())
         return Gf.Vec3f(rotation_decomp[2], rotation_decomp[0], rotation_decomp[1])
@@ -179,6 +197,7 @@ def decompose_rotation(rotation: Gf.Rotation, rotation_order: str) -> Gf.Vec3f:
     elif rotation_order == "ZYX":
         rotation_decomp = rotation.Decompose(Gf.Vec3d.XAxis(), Gf.Vec3d.YAxis(), Gf.Vec3d.ZAxis())
         return Gf.Vec3f(rotation_decomp[0], rotation_decomp[1], rotation_decomp[2])
+    raise ValueError(f"Unsupported rotation_order: {rotation_order!r}")
 
 
 def calculate_look_at_rotation(
