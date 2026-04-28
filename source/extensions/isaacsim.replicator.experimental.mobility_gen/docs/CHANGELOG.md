@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.1] - 2026-04-27
+### Fixed
+- Kit test runner failures: converted test classes from `unittest.TestCase` to `omni.kit.test.AsyncTestCase` so tests are awaitable
+- `test_migrate_recording.py`: fixed `FileNotFoundError` by walking upward to locate `standalone_examples/` rather than using a hardcoded `parents[4]` offset that diverges between source and build layouts
+- Suppressed expected `parse_sensor_entries` log errors in `stdoutFailPatterns.exclude` so intentional invalid-input tests don't trip the runner
+
 ## [0.2.0] - 2026-04-22
 ### Added
 - `MobilityGenMultiSensorRobot` and `MobilityGenSensorRig` for YAML-driven multi-sensor robots; camera rendering is supported, other sensor types (lidar, IMU, radar) are discovered but not yet rendered

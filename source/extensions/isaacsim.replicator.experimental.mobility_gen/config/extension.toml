@@ -1,5 +1,5 @@
 [package]
-version = "0.2.0"
+version = "0.2.1"
 category = "Simulation"
 title = "MobilityGen"
 description = "A toolset for generating mobility data for robots."
@@ -90,4 +90,5 @@ args = [
 
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
+    '*parse_sensor_entries: skipping camera*',
 ]

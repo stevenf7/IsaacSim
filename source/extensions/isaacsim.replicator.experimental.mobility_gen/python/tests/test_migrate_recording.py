@@ -13,23 +13,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for the _migrate_recording function in migrate_recordings.py.
-
-Runs standalone — no Isaac Sim runtime required.
-"""
+"""Unit tests for the _migrate_recording function in migrate_recordings.py."""
 
 import os
 import tempfile
-import unittest
 from pathlib import Path
 
 import numpy as np
+import omni.kit.test
+
 
 # ---------------------------------------------------------------------------
 # Load _migrate_recording from the standalone script via exec so we don't
 # need to add it to any package path.
 # ---------------------------------------------------------------------------
-_SCRIPT = Path(__file__).parents[4] / "standalone_examples" / "replicator" / "mobility_gen" / "migrate_recordings.py"
+def _find_standalone_examples_root() -> Path:
+    # Walk upward to find the directory that contains standalone_examples/.
+    # In the source tree that's source/; in the build tree it's _build/.../release/.
+    candidate = Path(__file__).resolve()
+    while True:
+        candidate = candidate.parent
+        if (candidate / "standalone_examples").is_dir():
+            return candidate
+        if candidate.parent == candidate:
+            raise FileNotFoundError("Cannot locate standalone_examples directory from " + str(Path(__file__)))
+
+
+_SCRIPT = (
+    _find_standalone_examples_root() / "standalone_examples" / "replicator" / "mobility_gen" / "migrate_recordings.py"
+)
 _globs: dict = {}
 exec(compile(_SCRIPT.read_text(), str(_SCRIPT), "exec"), _globs)
 _migrate_recording = _globs["_migrate_recording"]
@@ -44,23 +56,23 @@ def _make_legacy_recording(root: str, step_data: list[dict]) -> str:
     return root
 
 
-class TestMigrateRecordingNoFiles(unittest.TestCase):
+class TestMigrateRecordingNoFiles(omni.kit.test.AsyncTestCase):
     """_migrate_recording must return 0 when no .npy files are present."""
 
-    def test_empty_directory(self):
+    async def test_empty_directory(self):
         with tempfile.TemporaryDirectory() as tmp:
             self.assertEqual(_migrate_recording(tmp), 0)
 
-    def test_directory_without_common_subdir(self):
+    async def test_directory_without_common_subdir(self):
         with tempfile.TemporaryDirectory() as tmp:
             os.makedirs(os.path.join(tmp, "state"))
             self.assertEqual(_migrate_recording(tmp), 0)
 
 
-class TestMigrateRecordingSingleFile(unittest.TestCase):
+class TestMigrateRecordingSingleFile(omni.kit.test.AsyncTestCase):
     """_migrate_recording must convert one .npy to .npz and delete the original."""
 
-    def test_npy_converted_to_npz(self):
+    async def test_npy_converted_to_npz(self):
         with tempfile.TemporaryDirectory() as tmp:
             data = {"pose_x": np.float32(1.0), "pose_y": np.float32(2.0)}
             _make_legacy_recording(tmp, [data])
@@ -78,7 +90,7 @@ class TestMigrateRecordingSingleFile(unittest.TestCase):
                 ".npz should be created",
             )
 
-    def test_npz_contains_correct_keys(self):
+    async def test_npz_contains_correct_keys(self):
         with tempfile.TemporaryDirectory() as tmp:
             data = {"pose_x": np.float32(3.0), "joint_vel": np.array([0.1, 0.2])}
             _make_legacy_recording(tmp, [data])
@@ -90,7 +102,7 @@ class TestMigrateRecordingSingleFile(unittest.TestCase):
             np.testing.assert_allclose(npz["pose_x"], np.float32(3.0))
             np.testing.assert_allclose(npz["joint_vel"], [0.1, 0.2])
 
-    def test_none_values_excluded_from_npz(self):
+    async def test_none_values_excluded_from_npz(self):
         """None values in the legacy dict must be dropped (np.savez can't store None)."""
         with tempfile.TemporaryDirectory() as tmp:
             data = {"pose_x": np.float32(1.0), "optional": None}
@@ -102,10 +114,10 @@ class TestMigrateRecordingSingleFile(unittest.TestCase):
             self.assertNotIn("optional", npz)
 
 
-class TestMigrateRecordingMultipleFiles(unittest.TestCase):
+class TestMigrateRecordingMultipleFiles(omni.kit.test.AsyncTestCase):
     """_migrate_recording must convert all .npy files in the directory."""
 
-    def test_count_matches_file_count(self):
+    async def test_count_matches_file_count(self):
         with tempfile.TemporaryDirectory() as tmp:
             steps = [{"x": np.float32(i)} for i in range(5)]
             _make_legacy_recording(tmp, steps)
@@ -114,7 +126,7 @@ class TestMigrateRecordingMultipleFiles(unittest.TestCase):
 
             self.assertEqual(count, 5)
 
-    def test_all_npy_removed_all_npz_created(self):
+    async def test_all_npy_removed_all_npz_created(self):
         with tempfile.TemporaryDirectory() as tmp:
             steps = [{"x": np.float32(i)} for i in range(3)]
             _make_legacy_recording(tmp, steps)
@@ -126,7 +138,7 @@ class TestMigrateRecordingMultipleFiles(unittest.TestCase):
             self.assertEqual(len(npy_files), 0, "All .npy files should be removed")
             self.assertEqual(len(npz_files), 3, "One .npz per original .npy")
 
-    def test_idempotent_on_already_migrated(self):
+    async def test_idempotent_on_already_migrated(self):
         """A directory with no .npy files returns 0 (already migrated)."""
         with tempfile.TemporaryDirectory() as tmp:
             steps = [{"x": np.float32(i)} for i in range(2)]
@@ -135,7 +147,3 @@ class TestMigrateRecordingMultipleFiles(unittest.TestCase):
             # Run again — should find nothing to migrate
             count = _migrate_recording(tmp)
             self.assertEqual(count, 0)
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

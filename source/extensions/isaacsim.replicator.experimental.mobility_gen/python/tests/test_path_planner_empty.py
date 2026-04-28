@@ -20,11 +20,11 @@ without the C++ _path_planner binding.  Runs standalone.
 """
 
 import random
-import unittest
 from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+import omni.kit.test
 
 # ---------------------------------------------------------------------------
 # Load GeneratePathsOutput from source — strip the C++ binding import since
@@ -52,7 +52,7 @@ def _make_output(visited: np.ndarray) -> "GeneratePathsOutput":
     )
 
 
-class TestSampleRandomEndPointEmptyBFS(unittest.TestCase):
+class TestSampleRandomEndPointEmptyBFS(omni.kit.test.AsyncTestCase):
     """sample_random_end_point must not crash when BFS finds no reachable cells.
 
     Bug: random.randint(0, len(i) - 1) with len(i)==0 gives randint(0, -1)
@@ -60,13 +60,13 @@ class TestSampleRandomEndPointEmptyBFS(unittest.TestCase):
     before calling randint.
     """
 
-    def test_empty_visited_raises_value_error(self):
+    async def test_empty_visited_raises_value_error(self):
         """With no visited cells, sample_random_end_point currently raises ValueError."""
         output = _make_output(np.zeros((5, 5), dtype=np.int64))
         with self.assertRaises((ValueError, Exception)):
             output.sample_random_end_point()
 
-    def test_nonempty_visited_succeeds(self):
+    async def test_nonempty_visited_succeeds(self):
         """With visited cells present, sample_random_end_point must return a valid index."""
         visited = np.zeros((5, 5), dtype=np.int64)
         visited[2, 3] = 1
@@ -75,12 +75,8 @@ class TestSampleRandomEndPointEmptyBFS(unittest.TestCase):
         row, col = output.sample_random_end_point()
         self.assertIn((row, col), [(2, 3), (1, 1)])
 
-    def test_empty_visited_returns_friendly_error(self):
+    async def test_empty_visited_returns_friendly_error(self):
         """After the fix, empty BFS should raise a clear RuntimeError, not ValueError."""
         output = _make_output(np.zeros((5, 5), dtype=np.int64))
         with self.assertRaises(RuntimeError):
             output.sample_random_end_point()
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

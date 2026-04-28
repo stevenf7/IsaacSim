@@ -21,12 +21,12 @@ pose_samplers.py with the relative imports stripped and minimal stubs injected.
 
 import math
 import random
-import unittest
 from dataclasses import dataclass
 from pathlib import Path
 from unittest.mock import patch
 
 import numpy as np
+import omni.kit.test
 
 # ---------------------------------------------------------------------------
 # Load GridPoseSampler from source without the isaacsim package installed.
@@ -79,7 +79,7 @@ class _MockOccupancyMap:
         return np.ones((100, 100), dtype=bool)
 
 
-class TestGridPoseSamplerBlockContainment(unittest.TestCase):
+class TestGridPoseSamplerBlockContainment(omni.kit.test.AsyncTestCase):
     """GridPoseSampler must only return poses inside the selected grid block.
 
     Bug (lines 130-131): two separate row-strip assignments instead of a single
@@ -106,7 +106,7 @@ class TestGridPoseSamplerBlockContainment(unittest.TestCase):
                 poses.append(sampler.sample_px(omap))
         return poses
 
-    def test_samples_within_block_column(self):
+    async def test_samples_within_block_column(self):
         """All sampled x coords must fall within the selected block column."""
         block_x, block_y = 1, 3
         x_min, x_max = block_x * self.BLOCK_SIZE_PX, (block_x + 1) * self.BLOCK_SIZE_PX
@@ -117,7 +117,7 @@ class TestGridPoseSamplerBlockContainment(unittest.TestCase):
             f"{len(out)}/300 samples outside x∈[{x_min},{x_max}): first offender x={out[0].x if out else '-'}",
         )
 
-    def test_samples_within_block_row(self):
+    async def test_samples_within_block_row(self):
         """All sampled y coords must fall within the selected block row."""
         block_x, block_y = 1, 3
         y_min, y_max = block_y * self.BLOCK_SIZE_PX, (block_y + 1) * self.BLOCK_SIZE_PX
@@ -128,7 +128,7 @@ class TestGridPoseSamplerBlockContainment(unittest.TestCase):
             f"{len(out)}/300 samples outside y∈[{y_min},{y_max}): first offender y={out[0].y if out else '-'}",
         )
 
-    def test_block_mask_area(self):
+    async def test_block_mask_area(self):
         """Fixed mask must cover exactly block_size² pixels (not two full-width strips)."""
         bsz = self.BLOCK_SIZE_PX
         block_x, block_y = 1, 3
@@ -137,12 +137,9 @@ class TestGridPoseSamplerBlockContainment(unittest.TestCase):
         buggy = np.zeros((100, 100), dtype=bool)
         buggy[x_min : x_min + bsz] = True
         buggy[y_min : y_min + bsz] = True
-        self.assertNotEqual(int(buggy.sum()), bsz * bsz, "Buggy mask unexpectedly equals the correct area.")
+        self.assertNotEqual(np.count_nonzero(buggy), bsz * bsz, "Buggy mask unexpectedly equals the correct area.")
 
         fixed = np.zeros((100, 100), dtype=bool)
         fixed[y_min : y_min + bsz, x_min : x_min + bsz] = True
-        self.assertEqual(int(fixed.sum()), bsz * bsz, f"Fixed mask should cover {bsz*bsz} px, got {int(fixed.sum())}.")
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
+        n = np.count_nonzero(fixed)
+        self.assertEqual(n, bsz * bsz, f"Fixed mask should cover {bsz*bsz} px, got {n}.")

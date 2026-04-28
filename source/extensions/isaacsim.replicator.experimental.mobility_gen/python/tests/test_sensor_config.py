@@ -19,9 +19,10 @@ Runs standalone — no Isaac Sim runtime required.  Both modules are loaded via
 exec with minimal stubs so the isaacsim and carb packages are not needed.
 """
 
-import unittest
 from pathlib import Path
 from unittest.mock import MagicMock
+
+import omni.kit.test
 
 # ---------------------------------------------------------------------------
 # Load types.py (no isaacsim deps — only dataclasses + numpy)
@@ -66,7 +67,7 @@ parse_sensor_entries = _sensor_rig_globs["parse_sensor_entries"]
 # ---------------------------------------------------------------------------
 
 
-class TestCameraConfigConstruction(unittest.TestCase):
+class TestCameraConfigConstruction(omni.kit.test.AsyncTestCase):
     """CameraConfig must validate required fields on construction."""
 
     def _valid(self, **kwargs) -> object:
@@ -74,7 +75,7 @@ class TestCameraConfigConstruction(unittest.TestCase):
         defaults.update(kwargs)
         return CameraConfig(**defaults)
 
-    def test_valid_construction(self):
+    async def test_valid_construction(self):
         cfg = self._valid()
         self.assertEqual(cfg.name, "front")
         self.assertEqual(cfg.sensor_prim_path, "/cam")
@@ -82,31 +83,31 @@ class TestCameraConfigConstruction(unittest.TestCase):
         self.assertEqual(cfg.height_px, 480)
         self.assertEqual(cfg.frame_id, "")
 
-    def test_frame_id_default_empty(self):
+    async def test_frame_id_default_empty(self):
         cfg = self._valid()
         self.assertEqual(cfg.frame_id, "")
 
-    def test_frame_id_set(self):
+    async def test_frame_id_set(self):
         cfg = self._valid(frame_id="base_link")
         self.assertEqual(cfg.frame_id, "base_link")
 
-    def test_missing_sensor_prim_path_raises(self):
+    async def test_missing_sensor_prim_path_raises(self):
         with self.assertRaises(ValueError):
             self._valid(sensor_prim_path="")
 
-    def test_zero_width_raises(self):
+    async def test_zero_width_raises(self):
         with self.assertRaises(ValueError):
             self._valid(width_px=0)
 
-    def test_negative_width_raises(self):
+    async def test_negative_width_raises(self):
         with self.assertRaises(ValueError):
             self._valid(width_px=-1)
 
-    def test_zero_height_raises(self):
+    async def test_zero_height_raises(self):
         with self.assertRaises(ValueError):
             self._valid(height_px=0)
 
-    def test_error_message_lists_all_missing_fields(self):
+    async def test_error_message_lists_all_missing_fields(self):
         with self.assertRaises(ValueError) as ctx:
             CameraConfig(name="cam", sensor_prim_path="", width_px=0, height_px=0)
         msg = str(ctx.exception)
@@ -115,7 +116,7 @@ class TestCameraConfigConstruction(unittest.TestCase):
         self.assertIn("height_px", msg)
 
 
-class TestCameraConfigFromDict(unittest.TestCase):
+class TestCameraConfigFromDict(omni.kit.test.AsyncTestCase):
     """CameraConfig.from_dict must round-trip a YAML sensor entry dict."""
 
     def _full_dict(self, **overrides) -> dict:
@@ -129,7 +130,7 @@ class TestCameraConfigFromDict(unittest.TestCase):
         d.update(overrides)
         return d
 
-    def test_from_dict_all_fields(self):
+    async def test_from_dict_all_fields(self):
         cfg = CameraConfig.from_dict(self._full_dict())
         self.assertEqual(cfg.name, "rear")
         self.assertEqual(cfg.sensor_prim_path, "/robot/rear_cam")
@@ -137,11 +138,11 @@ class TestCameraConfigFromDict(unittest.TestCase):
         self.assertEqual(cfg.height_px, 1080)
         self.assertEqual(cfg.frame_id, "rear_frame")
 
-    def test_from_dict_minimal_fields(self):
+    async def test_from_dict_minimal_fields(self):
         cfg = CameraConfig.from_dict({"name": "front", "sensor_prim_path": "/cam", "width_px": 640, "height_px": 480})
         self.assertEqual(cfg.frame_id, "")
 
-    def test_from_dict_missing_required_raises(self):
+    async def test_from_dict_missing_required_raises(self):
         with self.assertRaises((ValueError, KeyError)):
             CameraConfig.from_dict({"name": "front", "sensor_prim_path": ""})
 
@@ -151,7 +152,7 @@ class TestCameraConfigFromDict(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
-class TestParseSensorEntries(unittest.TestCase):
+class TestParseSensorEntries(omni.kit.test.AsyncTestCase):
     """parse_sensor_entries must convert YAML dicts into typed config objects."""
 
     def _camera_entry(self, **overrides) -> dict:
@@ -159,16 +160,16 @@ class TestParseSensorEntries(unittest.TestCase):
         d.update(overrides)
         return d
 
-    def test_empty_list_returns_empty(self):
+    async def test_empty_list_returns_empty(self):
         self.assertEqual(parse_sensor_entries([]), [])
 
-    def test_single_valid_camera(self):
+    async def test_single_valid_camera(self):
         result = parse_sensor_entries([self._camera_entry()])
         self.assertEqual(len(result), 1)
         self.assertIsInstance(result[0], CameraConfig)
         self.assertEqual(result[0].name, "front")
 
-    def test_multiple_cameras(self):
+    async def test_multiple_cameras(self):
         entries = [
             self._camera_entry(name="front"),
             self._camera_entry(name="rear", sensor_prim_path="/rear_cam"),
@@ -178,13 +179,13 @@ class TestParseSensorEntries(unittest.TestCase):
         self.assertEqual(result[0].name, "front")
         self.assertEqual(result[1].name, "rear")
 
-    def test_invalid_camera_skipped(self):
+    async def test_invalid_camera_skipped(self):
         """A camera entry with missing required fields is skipped (logged as error)."""
         bad = {"type": "camera", "name": "bad", "sensor_prim_path": "", "width_px": 0, "height_px": 0}
         result = parse_sensor_entries([bad])
         self.assertEqual(result, [])
 
-    def test_unsupported_types_skipped(self):
+    async def test_unsupported_types_skipped(self):
         """lidar, imu, radar entries are skipped without raising."""
         entries = [
             {"type": "lidar", "name": "top_lidar"},
@@ -194,11 +195,11 @@ class TestParseSensorEntries(unittest.TestCase):
         result = parse_sensor_entries(entries)
         self.assertEqual(result, [])
 
-    def test_unknown_type_skipped(self):
+    async def test_unknown_type_skipped(self):
         result = parse_sensor_entries([{"type": "sonar", "name": "s0"}])
         self.assertEqual(result, [])
 
-    def test_valid_and_invalid_mixed(self):
+    async def test_valid_and_invalid_mixed(self):
         """Only valid camera entries appear in the result."""
         entries = [
             self._camera_entry(name="good"),
@@ -208,7 +209,3 @@ class TestParseSensorEntries(unittest.TestCase):
         result = parse_sensor_entries(entries)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].name, "good")
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
