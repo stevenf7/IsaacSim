@@ -2396,7 +2396,6 @@ test-linux-x86_64-isaac-lab-integration:
     - .test-common
     - .test-linux-x86_64-isaac-lab-integration-base
     - .isaac-test-rules
-  allow_failure: true
   variables:
     ISAACSIM_CI_SHORT: "true"
 
