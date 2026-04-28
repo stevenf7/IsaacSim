@@ -17,9 +17,7 @@ Getting Started
 
 This tutorial provides a URDF file and USD file describing the **Cobotta Pro 900** robot.  The USD file was generated from the URDF using the process discussed in :doc:`../robot_setup_tutorials/tutorial_import_assemble_manipulator`.
 
-You can download the following zip file to follow along with the tutorial:
-
-:download:`Cobotta_Pro_900_Tutorial_Assets <../../content/packages/Cobotta_Pro_900_Assets.zip>`
+Open the tutorial assets from the Content Browser at this path: ``Isaac Sim/Samples/Rigging/Cobotta_Pro_900_Assets``
 
 Using the Lula Test Widget
 =============================
@@ -46,7 +44,7 @@ There are three files to describe the robot and parameterize the
 This tutorial assumes that you is starting with a URDF file describing their robot and has created a `Robot Description File` using the 
 :ref:`isaac_sim_app_tutorial_motion_generation_robot_description_editor`.
 In this tutorial, a template files is provided for the remaining `RMPflow` configuration, which is
-modified to match the **Cobotta Pro 900** robot.  The provided tutorial zip file contains a completed `robot_description.yaml` for the **Cobotta Pro 900**.
+modified to match the **Cobotta Pro 900** robot.  The tutorial assets contain a completed `robot_description.yaml` for the **Cobotta Pro 900**.
 
 .. _isaac_sim_tutorial_configure_rmpflow_config_yaml:
 
@@ -56,7 +54,7 @@ Template RmpFlow Config YAML File
 The `RMPflow` algorithm has over 50 settable parameters, but these parameters tend to generalize between robots with similar kinematic structures
 and length scales. The values in the template have been tuned specifically for the Franka Emika Panda,
 but serve as a good starting point for many 6- and 7-dof robot arms.  The template file can be found in
-the provided tutorial zip at `./rmpflow_configs/template_rmpflow_config.yaml`.
+the tutorial assets as `rmpflow_configs/template_rmpflow_config.yaml`.
 
 .. code-block:: yaml
     :linenos:
@@ -181,7 +179,7 @@ Doing the Bare Minimum
 
 The minimum changes required to get the  **Cobotta** to be able to use RMPflow to follow a target.
 
-The ``rmpflow_config`` file requires little work to get started (`./rmpflow_configs/rmpflow_config_basic.yaml` in the provided tutorial zip):
+The ``rmpflow_config`` file requires little work to get started (`rmpflow_configs/rmpflow_config_basic.yaml` in the tutorial assets):
 
 .. code-block:: yaml
     :linenos:
