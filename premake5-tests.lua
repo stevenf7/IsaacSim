@@ -797,6 +797,12 @@ local function get_doc_snippets_tests()
             "../../../docs/isaacsim/snippets/action_and_event_data_generation/tutorial_replicator_agent.py",
             "--test",
         },
+        -- robot_setup/merge_mesh
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.robot_setup.merge_mesh",
+            "../../../docs/isaacsim/snippets/robot_setup/merge_mesh.py",
+            "--test",
+        },
         -- robot_setup_tutorials/tutorial_pickplace_example (with PYTHONPATH)
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.robot_setup_tutorials.tutorial_pickplace_example.define_the_manipulator",
