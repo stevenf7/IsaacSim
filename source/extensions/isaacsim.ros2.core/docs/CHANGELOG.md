@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.4] - 2026-04-28
+### Fixed
+- Raise error if `/exts/omni.replicator.srtx/enabled=true` on non-Linux platforms.
+
 ## [1.8.3] - 2026-04-27
 ### Removed
 - Remove the `omni.isaac.ml_archive` and `isaacsim.robot.wheeled_robots` dependencies

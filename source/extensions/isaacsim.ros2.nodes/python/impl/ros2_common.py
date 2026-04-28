@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from dataclasses import dataclass
 
 import carb
@@ -47,6 +48,27 @@ USE_SRTX_SETTING = "/exts/omni.replicator.srtx/enabled"
 SRTX_SENSOR_SET_NAME_SETTING = "/exts/omni.replicator.srtx/sensorSetName"
 SRTX_SENSOR_SET_NAME_BY_RENDER_PRODUCT_PATH_SETTING = "/exts/omni.replicator.srtx/sensorSetNameByRenderProductPath"
 SRTX_SENSOR_SET_RENDER_PRODUCT_PATHS_BY_NAME_SETTING = "/exts/omni.replicator.srtx/sensorSetRenderProductPathsByName"
+
+
+def is_srtx_supported_platform() -> bool:
+    """Return True when omni.replicator.srtx is expected to be available."""
+    return sys.platform.startswith("linux")
+
+
+def validate_srtx_platform() -> bool:
+    """Validate that SRTX is enabled on a supported platform.
+
+    Returns:
+        True when the current platform supports SRTX, otherwise False.
+
+    """
+    if is_srtx_supported_platform():
+        return True
+    carb.log_error(
+        "SRTX is enabled, but omni.replicator.srtx is only available on Linux. "
+        "Disable /exts/omni.replicator.srtx/enabled on this platform."
+    )
+    return False
 
 
 @dataclass(frozen=True)
