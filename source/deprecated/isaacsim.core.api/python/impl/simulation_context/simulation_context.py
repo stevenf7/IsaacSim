@@ -426,6 +426,10 @@ class SimulationContext:
         """
         if self.stage is None:
             raise Exception("There is no stage currently opened")
+        if self._physics_context is None:
+            raise RuntimeError(
+                "Physics context is not initialized. Call world.reset_async() or initialize_physics() first."
+            )
         return self._physics_context
 
     """

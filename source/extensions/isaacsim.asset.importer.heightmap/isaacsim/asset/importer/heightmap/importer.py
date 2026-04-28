@@ -144,7 +144,11 @@ class HeightmapImporter:
         """Configure basic stage properties like units and up-axis."""
         UsdGeom.SetStageMetersPerUnit(self._stage, 1.0)
         stage_utils.set_stage_up_axis("Z")
-        self._stage.SetDefaultPrim(self._stage.GetPrimAtPath(WORLD_PATH))
+        world_prim = self._stage.GetPrimAtPath(WORLD_PATH)
+        if not world_prim.IsValid():
+            UsdGeom.Xform.Define(self._stage, WORLD_PATH)
+            world_prim = self._stage.GetPrimAtPath(WORLD_PATH)
+        self._stage.SetDefaultPrim(world_prim)
 
     def _create_ground_plane(self, image_width: int, image_height: int, cell_scale: float) -> None:
         """Create a ground plane for the heightmap.
@@ -272,15 +276,19 @@ class HeightmapImporter:
             # Convert PIL Image to numpy array for fast processing
             img_array = np.array(image)
 
-            # Validate array shape
-            if img_array.ndim < 3 or img_array.shape[2] < 1:
+            # Handle 2D grayscale (mode 'L', 'I', 'F') and 3D+ (RGB/RGBA) arrays
+            if img_array.ndim == 2:
+                channel = img_array
+            elif img_array.ndim >= 3 and img_array.shape[2] >= 1:
+                channel = img_array[:, :, 0]
+            else:
                 carb.log_error(
-                    f"Image has invalid shape: {img_array.shape}. Expected at least 3 dimensions with channels."
+                    f"Image has invalid shape: {img_array.shape}. Expected 2D grayscale or 3D+ with channels."
                 )
                 return []
 
-            # Get first channel (R) and find occupied pixels (below threshold)
-            occupied_mask = img_array[:, :, 0] < OCCUPIED_PIXEL_THRESHOLD
+            # Find occupied pixels (below threshold)
+            occupied_mask = channel < OCCUPIED_PIXEL_THRESHOLD
 
             # Get coordinates of occupied pixels (y, x order from numpy)
             y_coords, x_coords = np.where(occupied_mask)

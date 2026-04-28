@@ -17,6 +17,8 @@
 
 
 import omni.ext
+import omni.usd
+from isaacsim.replicator.experimental.domain_randomization.scripts import physics_view
 
 
 class Extension(omni.ext.IExt):
@@ -24,6 +26,17 @@ class Extension(omni.ext.IExt):
 
     def on_startup(self) -> None:
         """Set up initial conditions for the Python part of the extension."""
+        usd_context = omni.usd.get_context()
+        self._stage_event_sub = usd_context.get_stage_event_stream().create_subscription_to_pop(
+            self._on_stage_event,
+            name="isaacsim.replicator.experimental.domain_randomization",
+        )
 
     def on_shutdown(self) -> None:
         """Shutting down this part of the extension prepares it for hot reload."""
+        self._stage_event_sub = None
+        physics_view.cleanup()
+
+    def _on_stage_event(self, event) -> None:
+        if event.type == int(omni.usd.StageEventType.CLOSING):
+            physics_view.cleanup()

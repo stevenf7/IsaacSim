@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.2.5] - 2026-04-22
+### Fixed
+- Fix `SimulationContext.get_physics_context()` returning `None` before `reset_async()` — raise `RuntimeError` with actionable message instead
+
 ## [5.2.4] - 2026-04-19
 ### Fixed
 - Fix `DataLogger.load` silently clearing the registered data logging function (inconsistent with `reset`)

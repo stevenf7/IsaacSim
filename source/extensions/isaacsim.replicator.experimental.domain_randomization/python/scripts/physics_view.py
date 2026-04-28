@@ -49,6 +49,25 @@ _rigid_prim_views_reset_values = dict()
 _articulation_views_reset_values = dict()
 
 
+def cleanup():
+    """Reset all module-level state.
+
+    Called on stage close/reload to prevent stale views from accumulating across sessions.
+    """
+    global _simulation_context, _physics_sim_view
+    _simulation_context = None
+    _physics_sim_view = None
+    _rigid_prim_views.clear()
+    _articulation_views.clear()
+    _simulation_context_initial_values.clear()
+    _rigid_prim_views_initial_values.clear()
+    _articulation_views_initial_values.clear()
+    _current_tendon_properties.clear()
+    _simulation_context_reset_values.clear()
+    _rigid_prim_views_reset_values.clear()
+    _articulation_views_reset_values.clear()
+
+
 def _ensure_numpy(val):
     """Convert a tensor (numpy, torch, or warp) to a numpy array."""
     if isinstance(val, np.ndarray):

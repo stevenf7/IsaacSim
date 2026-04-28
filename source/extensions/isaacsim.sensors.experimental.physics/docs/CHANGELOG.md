@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.7.1] - 2026-04-22
+### Fixed
+- Fix `ContactSensor.__init__` accessing `self._prim` before assignment when applying threshold/radius overrides
+
 ## [2.7.0] - 2026-04-22
 ### Changed
 - Replaced command classes with `create()` static methods on sensor wrapper classes (`ContactSensor.create()`, `IMUSensor.create()`, `RaycastSensor.create()`) matching the `isaacsim.sensors.experimental.rtx` pattern

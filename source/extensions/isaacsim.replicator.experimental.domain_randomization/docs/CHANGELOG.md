@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.4] - 2026-04-22
+### Fixed
+- Fix module-level physics view state not cleaned up on stage close/reload, causing stale views to accumulate across sessions
+
 ## [1.2.3] - 2026-04-20
 ### Fixed
 - Fix `OgnWritePhysicsArticulationView` `KeyError` when randomizing tendon attributes on robots with no fixed tendons

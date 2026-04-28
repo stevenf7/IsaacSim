@@ -351,6 +351,8 @@ class ParticleSystem:
                     carb.log_error(
                         f"particleContactOffset property needs to be set for {self.name} before setting its value"
                     )
+                    idx_count += 1
+                    continue
                 self._prims[i.tolist()].GetAttribute("particleContactOffset").Set(values[idx_count].tolist())
                 idx_count += 1
 
@@ -378,6 +380,8 @@ class ParticleSystem:
             for i in indices:
                 if "solidRestOffset" not in self._prims[i.tolist()].GetPropertyNames():
                     carb.log_error(f"solidRestOffset property needs to be set for {self.name} before setting its value")
+                    idx_count += 1
+                    continue
                 self._prims[i.tolist()].GetAttribute("solidRestOffset").Set(values[idx_count].tolist())
                 idx_count += 1
 
@@ -405,6 +409,8 @@ class ParticleSystem:
             for i in indices:
                 if "fluidRestOffset" not in self._prims[i.tolist()].GetPropertyNames():
                     carb.log_error(f"fluidRestOffset property needs to be set for {self.name} before setting its value")
+                    idx_count += 1
+                    continue
                 self._prims[i.tolist()].GetAttribute("fluidRestOffset").Set(values[idx_count].tolist())
                 idx_count += 1
 
@@ -428,6 +434,8 @@ class ParticleSystem:
             for i in indices:
                 if "wind" not in self._prims[i.tolist()].GetPropertyNames():
                     carb.log_error(f"wind property needs to be set for {self.name} before setting its value")
+                    idx_count += 1
+                    continue
                 self._prims[i.tolist()].GetAttribute("wind").Set(tuple(values[idx_count].tolist()))
                 idx_count += 1
 
@@ -446,6 +454,8 @@ class ParticleSystem:
         for i in indices:
             if "maxVelocity" not in self._prims[i.tolist()].GetPropertyNames():
                 carb.log_error(f"maxVelocity property needs to be set for {self.name} before setting its value")
+                idx_count += 1
+                continue
             self._prims[i.tolist()].GetAttribute("maxVelocity").Set(values[idx_count].tolist())
             idx_count += 1
 
@@ -466,6 +476,8 @@ class ParticleSystem:
                 carb.log_error(
                     f"maxDepenetrationVelocity property needs to be set for {self.name} before setting its value"
                 )
+                idx_count += 1
+                continue
             self._prims[i.tolist()].GetAttribute("maxDepenetrationVelocity").Set(values[idx_count].tolist())
             idx_count += 1
 
@@ -484,6 +496,8 @@ class ParticleSystem:
         for i in indices:
             if "restOffset" not in self._prims[i.tolist()].GetPropertyNames():
                 carb.log_error(f"restOffset property needs to be set for {self.name} before setting its value")
+                idx_count += 1
+                continue
             self._prims[i.tolist()].GetAttribute("restOffset").Set(values[idx_count].tolist())
             idx_count += 1
 
@@ -502,6 +516,8 @@ class ParticleSystem:
         for i in indices:
             if "contactOffset" not in self._prims[i.tolist()].GetPropertyNames():
                 carb.log_error(f"contactOffset property needs to be set for {self.name} before setting its value")
+                idx_count += 1
+                continue
             self._prims[i.tolist()].GetAttribute("contactOffset").Set(values[idx_count].tolist())
             idx_count += 1
 
@@ -522,6 +538,8 @@ class ParticleSystem:
                 carb.log_error(
                     f"solverPositionIteration property needs to be set for {self.name} before setting its value"
                 )
+                idx_count += 1
+                continue
             self._prims[i.tolist()].GetAttribute("solverPositionIterationCount").Set(values[idx_count].tolist())
             idx_count += 1
 
@@ -542,6 +560,8 @@ class ParticleSystem:
         for i in indices:
             if "maxNeighborhood" not in self._prims[i.tolist()].GetPropertyNames():
                 carb.log_error(f"maxNeighborhood property needs to be set for {self.name} before setting its value")
+                idx_count += 1
+                continue
             self._prims[i.tolist()].GetAttribute("maxNeighborhood").Set(values[idx_count].tolist())
             idx_count += 1
 
