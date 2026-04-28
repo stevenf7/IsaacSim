@@ -97,12 +97,8 @@ The ``tick_rate`` parameter (Hz) controls how frequently the sensor renders. A v
 nonzero value causes the sensor to render at the specified frequency independently of the simulation
 step rate. This maps to the ``omni:sensor:tickRate`` prim attribute.
 
-.. code-block:: python
-
-    from isaacsim.sensors.experimental.rtx import Radar
-
-    # Render at 10 Hz regardless of simulation frame rate
-    radar = Radar.create("/World/Radar", tick_rate=10.0)
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_radar/set_radar_tick_rate.py
+    :language: python
 
 .. note::
 
@@ -118,11 +114,8 @@ controls what auxiliary data appears in ``GenericModelOutput`` frames.
 
 Valid values for Radar: ``"NONE"`` (default), ``"BASIC"``.
 
-.. code-block:: python
-
-    from isaacsim.sensors.experimental.rtx import Radar
-
-    radar = Radar.create("/World/Radar", aux_output_level="BASIC")
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_radar/set_radar_aux_output_level.py
+    :language: python
 
 .. note::
 
@@ -136,12 +129,8 @@ How to Collect Data from an RTX Radar
 The recommended method for collecting data from an RTX Radar is to use the ``RadarSensor`` runtime class,
 which wraps a ``Radar`` authoring object and manages Replicator Annotators, similar to ``LidarSensor``.
 
-.. code-block:: python
-
-    from isaacsim.sensors.experimental.rtx import RadarSensor, parse_generic_model_output_data
-
-    sensor = RadarSensor(radar, annotators=["generic-model-output"])
-    data, info = sensor.get_data("generic-model-output")
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_radar/collect_data_with_radar_sensor.py
+    :language: python
     gmo = parse_generic_model_output_data(data)
 
 Refer to :ref:`rtx_sensor_annotator_descriptions` for the full list of available lower-level annotators.

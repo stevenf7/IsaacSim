@@ -111,6 +111,12 @@
                 "default": false,
                 "uiName": "Output The TickId"
             },
+            "outputNormal": {
+                "type": "bool",
+                "description": "[DEPRECATED] - replaced by outputHitNormal. Create an output array for the Normals.",
+                "default": false,
+                "uiName": "Output The Normals"
+            },
             "outputHitNormal": {
                 "type": "bool",
                 "description": "Create an output array for the Normals.",

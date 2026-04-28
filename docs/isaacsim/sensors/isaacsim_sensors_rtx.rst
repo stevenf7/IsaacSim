@@ -144,7 +144,7 @@ Common Issues
 
 **Annotators return empty data**
     Ensure the simulation timeline is playing. RTX Sensor Annotators rely on the timeline to collect data.
-    Also verify that ``--/app/sensors/nv/lidar/outputBufferOnGPU`` or ``--/app/sensors/nv/radar/outputBufferOnGPU`` is set to ``true``.
+    Also verify that ``--/app/sensors/nv/lidar/outputBufferOnGPU`` or ``--/app/sensors/nv/radar/outputBufferOnGPU`` is left at its default value of ``false`` — annotators read return data from host buffers, so forcing the GPU-resident path will leave the annotator outputs empty.
 
 **Point cloud appears to "drag" behind moving objects**
     If the Lidar rotation rate is slower than the frame rate, accumulated scan data may contain returns from multiple frames.

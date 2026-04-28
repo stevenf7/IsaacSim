@@ -88,6 +88,23 @@ def parse_stable_id_map_data(data: wp.array) -> dict:
     Returns:
         Dictionary mapping stable IDs to their prim paths.
 
+    .. warning::
+
+        Some object IDs returned by the LiDAR may not have an entry in
+        this map. The renderer emits each 128-bit stable ID as a
+        per-instance base ID combined with an "upper index" in the high
+        32 bits — the submesh index for mesh geometry and the per-triangle
+        primitive index for procedural geometry. The map registers per-
+        instance entries and (when ``subsetCount > 1``) per-``GeomSubset``
+        entries, but it does **not** register per-primitive entries, so
+        hits on procedural geometry, on submeshes that weren't expanded,
+        or on renderer-internal instances without a USD prim path will
+        produce IDs with no map entry, and a direct ``map[id]`` lookup
+        will raise ``KeyError``. Use ``map.get(id, "<unknown>")`` to
+        handle missing IDs gracefully — see the bundled
+        ``resolve_lidar_object_ids.py`` example for the recommended
+        pattern.
+
     Example:
 
     .. code-block:: python

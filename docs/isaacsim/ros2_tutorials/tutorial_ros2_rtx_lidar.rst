@@ -296,6 +296,25 @@ In addition, specify ``--/rtx-transient/stableIds/enabled=true`` when invoking `
 
 When the timeline is played, the PointCloud2 message will be published to the ``/point_cloud`` topic with the desired metadata.
 
+Interpreting Timestamp Metadata
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If ``Timestamp`` is included in the metadata, the PointCloud2 message will contain
+two ``uint32`` fields named ``timestamp_0`` and ``timestamp_1``. These hold the low
+and high 32 bits, respectively, of a single ``uint64`` value representing the per-point
+timestamp in nanoseconds since the start of the simulation. Reconstruct the
+``uint64`` value as:
+
+.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/interpreting_timestamp_metadata.py
+    :language: python
+
+.. note::
+
+    This encoding was introduced in |isaac-sim_short| 6.0. In earlier versions,
+    ``timestamp`` was emitted as a single ``float32`` field (``datatype=7, count=1``).
+    Subscribers written against the previous encoding must be updated to read the
+    two ``uint32`` fields and recombine them.
+
 Interpreting Object ID Metadata
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

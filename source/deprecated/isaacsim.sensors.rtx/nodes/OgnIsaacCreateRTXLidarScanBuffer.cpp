@@ -633,8 +633,10 @@ public:
             bool modalityValid = modality == requiredModality;
             if (!auxTypeValid)
             {
-                CARB_LOG_WARN(
-                    "IsaacCreateRTXLidarScanBuffer: %s requested for sensor '%s' but auxType (%d) is insufficient (requires %d)",
+                CARB_LOG_ERROR(
+                    "IsaacCreateRTXLidarScanBuffer: %s requested for sensor '%s' but auxType (%d) is insufficient (requires %d). "
+                    "Set the 'omni:sensor:Core:auxOutputType' attribute on the OmniLidar prim to 'BASIC' (for emitter/channel/echo/tick* IDs), "
+                    "'EXTRA' (also for materialId/objectId) or 'FULL' (also for hit normals/velocity). The corresponding output buffer will be empty.",
                     outputName, sensorPrimPath.c_str(), static_cast<int>(auxType), static_cast<int>(requiredAuxType));
                 return false;
             }

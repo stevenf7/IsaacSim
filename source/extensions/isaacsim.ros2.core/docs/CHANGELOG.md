@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.5] - 2026-04-28
+### Fixed
+- `read_camera_info()` ignored render product resolution for `opencvPinhole`/`opencvFisheye` lens models, publishing stale `CameraInfo` when the render product was retargeted to a different resolution than the authored `opencv*:imageSize`. Apply the render-product resolution and scale `fx`, `fy`, `cx`, `cy` accordingly.
+
 ## [1.8.4] - 2026-04-28
 ### Fixed
 - Raise error if `/exts/omni.replicator.srtx/enabled=true` on non-Linux platforms.

@@ -218,10 +218,10 @@ class Extension(omni.ext.IExt):
                 self.sliders[3].model.set_value(float(reading.angular_velocity_x))  # readings
                 self.sliders[4].model.set_value(float(reading.angular_velocity_y))  # readings
                 self.sliders[5].model.set_value(float(reading.angular_velocity_z))  # readings
-                self.sliders[6].model.set_value(float(reading.orientation[0]))  # readings
-                self.sliders[7].model.set_value(float(reading.orientation[1]))  # readings
-                self.sliders[8].model.set_value(float(reading.orientation[2]))  # readings
-                self.sliders[9].model.set_value(float(reading.orientation[3]))  # readings
+                self.sliders[6].model.set_value(float(reading.orientation_x))  # readings
+                self.sliders[7].model.set_value(float(reading.orientation_y))  # readings
+                self.sliders[8].model.set_value(float(reading.orientation_z))  # readings
+                self.sliders[9].model.set_value(float(reading.orientation_w))  # readings
         else:
             self.sliders[0].model.set_value(0)
             self.sliders[1].model.set_value(0)

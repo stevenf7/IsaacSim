@@ -41,7 +41,7 @@ Getting Started
 
 .. warning::
 
-    RTX Radar requires **Motion BVH** to be enabled. In |isaac-sim_short|, go to **Rendering > Settings > Common** and enable **Motion BVH**, or set the carb setting ``/renderer/raytracingMotion/enabled`` to ``true``. Without this, the radar sensor will fail to initialize.
+    RTX Radar requires **Motion BVH** to be enabled. Launch |isaac-sim_short| from the command line with ``--/renderer/raytracingMotion/enabled=true`` (and the related flags). See :ref:`isaac_sim_sensors_rtx_how_to_enable_motion_bvh` for the full set of flags and the standalone-Python equivalent. Without this, the radar sensor will fail to initialize.
 
 
 .. _isaac_sim_app_tutorial_ros2_rtx_radar_basic:
@@ -50,7 +50,7 @@ Adding a RTX Radar ROS 2 Bridge
 ===================================================
 
 #. Start with the turtlebot scene from the :ref:`isaac_sim_app_tutorial_ros2_turtlebot` tutorial.
-#. Add a Radar sensor by going to **Create > Sensors > RTX Radar > Generic**.
+#. Add a Radar sensor by going to **Create > Sensors > RTX Radar**.
 #. To place the radar sensor on the robot, drag the Radar prim under ``/World/turtlebot3_burger/base_scan``. Zero out any displacement in the **Transform** fields inside the **Property** tab.
 #. Connect the ROS 2 bridge with the sensor output using OmniGraph nodes. Open the visual scripting editor by going to **Window > Graph Editors > Action Graph**. Add the following nodes to the graph:
 
@@ -88,42 +88,28 @@ For RViz2 visualization:
 #. Add a **PointCloud2** visualization and set the topic to ``/radar_point_cloud``.
 #. If radial velocity is enabled, you can color the point cloud by the ``radial_velocity_ms`` field to visualize Doppler data.
 
+..
+    TODO: Replace the placeholder below with a screenshot of the expected RViz2
+    visualization (radar PointCloud2 on the turtlebot scene), styled to match the
+    figure in the RTX Lidar tutorial. See NVBug 6116050.
 
-Standalone Python
-^^^^^^^^^^^^^^^^^
+.. .. figure:: /images/TODO_rtx_radar_rviz2_expected.png
+..    :align: center
+..    :width: 800
+..    :alt: Expected RViz2 visualization of the RTX Radar PointCloud2 output on the turtlebot scene.
 
-You can also set up the radar ROS 2 bridge programmatically. The following example creates an RTX Radar sensor with radial velocity metadata and publishes it to ROS 2:
 
-.. code-block:: python
+Programmatic Setup (Script Editor)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    import omni.graph.core as og
-    from isaacsim.sensors.experimental.rtx import Radar
+You can also set up the radar ROS 2 bridge programmatically. The following example creates an RTX Radar sensor with radial velocity metadata and publishes it to ROS 2.
 
-    # Create radar with auxiliary output for radial velocity
-    radar = Radar("/World/Radar", aux_output_level="BASIC")
+.. note::
 
-    # Create the OmniGraph
-    og.Controller.edit(
-        {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
-        {
-            og.Controller.Keys.CREATE_NODES: [
-                ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                ("CreateRenderProduct", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
-                ("RadarHelper", "isaacsim.ros2.bridge.ROS2RtxRadarHelper"),
-            ],
-            og.Controller.Keys.SET_VALUES: [
-                ("CreateRenderProduct.inputs:cameraPrim", radar.paths[0]),
-                ("RadarHelper.inputs:topicName", "radar_point_cloud"),
-                ("RadarHelper.inputs:frameId", "radar"),
-                ("RadarHelper.inputs:outputRadialVelocityMS", True),
-            ],
-            og.Controller.Keys.CONNECT: [
-                ("OnPlaybackTick.outputs:tick", "CreateRenderProduct.inputs:execIn"),
-                ("CreateRenderProduct.outputs:execOut", "RadarHelper.inputs:execIn"),
-                ("CreateRenderProduct.outputs:renderProductPath", "RadarHelper.inputs:renderProductPath"),
-            ],
-        },
-    )
+    Run this snippet from **Window > Script Editor** inside an already-running |isaac-sim_short| session — it relies on an active ``omni.kit.app`` instance and stage and is **not** a self-contained standalone script. To run it via ``./python.sh`` instead, wrap it in a ``SimulationApp`` boilerplate (see :ref:`isaac_sim_app_tutorial_ros2_rtx_lidar_script_sample` for an example).
+
+.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_rtx_radar/programmatic_setup.py
+    :language: python
 
 
 Summary

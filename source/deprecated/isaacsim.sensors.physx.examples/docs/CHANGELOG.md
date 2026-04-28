@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.3] - 2026-04-28
+### Fixed
+- `lidar_info.py` example crashed with `AttributeError` when calling `AddTranslateOp` on the lidar prim; wrap the prim in `UsdGeom.Xformable` before adding the op.
+
 ## [2.4.2] - 2026-04-20
 ### Deprecated
 - Extension deprecated in favor of the Experimental extension `isaacsim.sensors.physics.examples`

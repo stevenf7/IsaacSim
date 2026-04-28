@@ -79,12 +79,8 @@ The ``tick_rate`` parameter (Hz) controls how frequently the sensor renders. A v
 nonzero value causes the sensor to render at the specified frequency independently of the simulation
 step rate. This maps to the ``omni:sensor:tickRate`` prim attribute.
 
-.. code-block:: python
-
-    from isaacsim.sensors.experimental.rtx import Lidar
-
-    # Render at 10 Hz regardless of simulation frame rate
-    lidar = Lidar.create("/World/Lidar", config="Example_Rotary", tick_rate=10.0)
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_lidar/set_lidar_tick_rate.py
+    :language: python
 
 .. note::
 
@@ -100,11 +96,8 @@ controls what auxiliary data appears in ``GenericModelOutput`` frames.
 
 Valid values for Lidar: ``"NONE"`` (default), ``"BASIC"``, ``"EXTRA"``, ``"FULL"``.
 
-.. code-block:: python
-
-    from isaacsim.sensors.experimental.rtx import Lidar
-
-    lidar = Lidar.create("/World/Lidar", config="Example_Rotary", aux_output_level="BASIC")
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_lidar/set_lidar_aux_output_level.py
+    :language: python
 
 See :ref:`rtx_sensor_annotator_descriptions` for details on what fields are available at each level.
 
@@ -119,12 +112,8 @@ The ``accumulate_outputs`` parameter (default ``True``) controls the
 over multiple frames until a full scan is complete. For rotary lidars, a full scan corresponds to a
 360-degree rotation; for solid-state lidars, a full scan covers the full azimuth sweep.
 
-.. code-block:: python
-
-    from isaacsim.sensors.experimental.rtx import Lidar
-
-    # Disable accumulation to get per-frame partial scans
-    lidar = Lidar.create("/World/Lidar", config="Example_Rotary", accumulate_outputs=False)
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_lidar/disable_lidar_scan_accumulation.py
+    :language: python
 
 How to Collect Data from an RTX Lidar
 -------------------------------------
@@ -132,13 +121,8 @@ How to Collect Data from an RTX Lidar
 The recommended method for collecting data from an RTX Lidar is to use the ``LidarSensor`` runtime class,
 which wraps a ``Lidar`` authoring object and manages Replicator Annotators.
 
-.. code-block:: python
-
-    from isaacsim.sensors.experimental.rtx import LidarSensor, parse_generic_model_output_data
-
-    sensor = LidarSensor(lidar, annotators=["generic-model-output"])
-    data, info = sensor.get_data("generic-model-output")
-    gmo = parse_generic_model_output_data(data)
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_lidar/collect_data_with_lidar_sensor_basic.py
+    :language: python
 
 |isaac-sim_short| also offers lower-level :ref:`rtx_sensor_annotator_descriptions` that can be attached
 directly to render products. Refer to :ref:`rtx_sensor_reading_gmo_buffer` for

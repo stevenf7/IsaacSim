@@ -206,7 +206,7 @@ class Extension(omni.ext.IExt):
             # if they are defined in the schema.
             self.lidar.GetRotationRateAttr().Set(0.5)
             self.lidar.GetDrawLinesAttr().Set(True)
-            self.lidar.AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 0.250))
+            UsdGeom.Xformable(self.lidar.GetPrim()).AddTranslateOp().Set(Gf.Vec3f(0.0, 0.0, 0.250))
 
             # we want to make sure we can see the lidar we made, so we set the camera position and look target
             set_camera_view(eye=[5.00, 5.00, 5.00], target=[0.0, 0.0, 0.0], camera_prim_path="/OmniverseKit_Persp")
