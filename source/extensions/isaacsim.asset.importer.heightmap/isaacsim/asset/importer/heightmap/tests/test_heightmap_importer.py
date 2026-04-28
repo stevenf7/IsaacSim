@@ -278,20 +278,20 @@ class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
             self.assertEqual(pos[2], 0.0)
 
     @patch("isaacsim.asset.importer.heightmap.importer.carb")
-    def test_generate_occupied_positions_with_invalid_image(self, mock_carb: object) -> None:
-        """Test position generation with invalid image data.
+    def test_generate_occupied_positions_with_grayscale_image(self, mock_carb: object) -> None:
+        """Test position generation with 2D grayscale image data.
 
         Args:
             mock_carb: Mock for the carb module.
         """
-        # Create a grayscale image (2D array instead of 3D)
+        # Create a grayscale image (2D array) — should be handled as valid input
         test_image = Image.new("L", (5, 5), color=0)
 
         positions = self.importer._generate_occupied_positions(test_image, 1.0, 0.5)
 
-        # Should return empty list and log error
-        self.assertEqual(len(positions), 0)
-        mock_carb.log_error.assert_called()
+        # All pixels are 0 (below threshold 127), so all 25 cells are occupied
+        self.assertEqual(len(positions), 25)
+        mock_carb.log_error.assert_not_called()
 
 
 class TestHeightmapImporterIntegration(omni.kit.test.AsyncTestCase):

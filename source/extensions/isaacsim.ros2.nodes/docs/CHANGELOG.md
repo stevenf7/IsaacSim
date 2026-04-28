@@ -1,4 +1,7 @@
 # Changelog
+## [1.17.6] - 2026-04-27
+### Fixed
+- Fix `OgnROS2CameraHelper` using `is None` instead of `.IsValid()` to check render product prim existence
 
 ## [1.17.5] - 2026-04-27
 ### Changed

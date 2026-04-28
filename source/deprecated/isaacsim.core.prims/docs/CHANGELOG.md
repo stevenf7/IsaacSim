@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.11.4] - 2026-04-22
+### Fixed
+- Fix `ParticleSystem` setter methods crashing when a prim is missing the required property; now logs an error and skips the prim
+
 ## [0.11.3] - 2026-04-19
 ### Fixed
 - Fix `SingleArticulation.initialize` initializing `ArticulationController` before `ArticulationView` (controller receives uninitialized view)

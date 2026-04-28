@@ -198,7 +198,7 @@ class ContactSensor(XformPrim):
                 translations=translation,
                 reset_xform_op_properties=True,
             )
-            # Apply optional parameter overrides
+            self._prim = self.prims[0]
             if min_threshold is not None:
                 self.set_min_threshold(min_threshold)
             if max_threshold is not None:
@@ -230,8 +230,8 @@ class ContactSensor(XformPrim):
                 translations=translation,
                 reset_xform_op_properties=True,
             )
+            self._prim = self.prims[0]
 
-        self._prim = self.prims[0]
         self._backend: ContactSensorBackend = ContactSensorBackend(prim_path)
 
         self._current_time = 0.0

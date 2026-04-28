@@ -242,7 +242,7 @@ class OgnROS2CameraHelper:
         if not render_product_path:
             carb.log_warn(f"Render product '{render_product_path}' not valid")
             return False
-        if stage.GetPrimAtPath(render_product_path) is None:
+        if not stage.GetPrimAtPath(render_product_path).IsValid():
             carb.log_warn(f"Render product '{render_product_path}' not created yet, retrying on next call")
             return False
 

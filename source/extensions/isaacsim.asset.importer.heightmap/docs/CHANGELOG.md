@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.1] - 2026-04-22
+### Fixed
+- Fix heightmap importer crashing on grayscale images (PIL modes `L`, `I`, `F`) that produce 2D numpy arrays
+- Fix `SetDefaultPrim` failing when `/World` prim does not exist; now creates it automatically
+
 ## [2.3.0] - 2026-04-08
 ### Changed
 - Improve Python API documentation (`config/python_api.md` and/or module docstrings).
