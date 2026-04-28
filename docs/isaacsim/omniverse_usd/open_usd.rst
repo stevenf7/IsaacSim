@@ -217,6 +217,7 @@ Traversing Stage or Prim
 
 .. literalinclude:: ../snippets/omniverse_usd/open_usd/traversing_stage_or_prim.py
     :language: python
+    :start-after: # -- End test setup --
 
 Working with Multiple Layers
 -----------------------------
@@ -224,6 +225,7 @@ Working with Multiple Layers
 
 .. literalinclude:: ../snippets/omniverse_usd/open_usd/working_with_multiple_layers.py
     :language: python
+    :start-after: # -- End test setup --
 
 Converting Transform Pose in Position, Orient, Scale
 ----------------------------------------------------------------

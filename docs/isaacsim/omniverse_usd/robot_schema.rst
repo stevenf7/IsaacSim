@@ -270,6 +270,7 @@ The following snippet applies the Robot Schema programmatically. Following the :
 
 .. literalinclude:: ../snippets/omniverse_usd/robot_schema/applying_the_robot_schema_through_code.py
     :language: python
+    :start-after: # -- End test setup --
 
 
 .. _isaac_sim_robot_schema_property_widget:

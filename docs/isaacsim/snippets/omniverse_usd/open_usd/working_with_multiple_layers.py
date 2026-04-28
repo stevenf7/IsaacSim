@@ -1,3 +1,17 @@
+# -- Test setup --
+import omni.usd
+from pxr import Sdf, Usd
+
+stage = omni.usd.get_context().get_stage()
+
+
+def do_something():
+    pass
+
+
+# Create the layer file the snippet expects
+Sdf.Layer.CreateNew("my_layer.usd")
+# -- End test setup --
 from pxr import Sdf
 
 # Get References to all layers

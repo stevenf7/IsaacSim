@@ -125,6 +125,7 @@ To set the extrinsic parameters for the individual camera sensor, use the follow
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_camera/extrinsic_calibration.py
     :language: python
+    :start-after: # -- End test setup --
 
 As an alternative, the camera sensor can be attached to a prim. In that case, the camera sensor will inherit the position and orientation from the prim.
 

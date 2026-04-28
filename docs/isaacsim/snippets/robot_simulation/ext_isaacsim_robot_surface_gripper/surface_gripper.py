@@ -1,31 +1,26 @@
-# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: Apache-2.0
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# -- Test setup --
+import omni.usd
+from pxr import UsdGeom, UsdPhysics
 
-# Relevant Imports
+stage = omni.usd.get_context().get_stage()
+UsdGeom.Xform.Define(stage, "/World")
+UsdGeom.Xform.Define(stage, "/World/Surface_Gripper_Joints")
+
+for i in range(2):
+    joint = UsdPhysics.Joint.Define(stage, f"/World/Surface_Gripper_Joints/joint_{i}")
+# -- End test setup --
+
+# [define-properties]
 import usd.schema.isaac.robot_schema as robot_schema
 from isaacsim.robot.surface_gripper import _surface_gripper as surface_gripper
 
-# [...]
-
-self.gripper_prim_path = "/World/SurfaceGripper"
-self.gripper_interface = surface_gripper.acquire_surface_gripper_interface()
+gripper_prim_path = "/World/SurfaceGripper"
+gripper_interface = surface_gripper.acquire_surface_gripper_interface()
 
 # Create the Surface Gripper Prim
 # Once it is created it can be saved and this doesn't need to be redone
-robot_schema.CreateSurfaceGripper(self._stage, self.gripper_prim_path)
-gripper_prim = self._stage.GetPrimAtPath(self.gripper_prim_path)
+robot_schema.CreateSurfaceGripper(stage, gripper_prim_path)
+gripper_prim = stage.GetPrimAtPath(gripper_prim_path)
 attachment_points_rel = gripper_prim.GetRelationship(robot_schema.Relations.ATTACHMENT_POINTS.name)
 
 # Select the joints to the gripper
@@ -39,7 +34,7 @@ attachment_points_rel = gripper_prim.GetRelationship(robot_schema.Relations.ATTA
 # Joint drives can be used to derive the desired joint bounce/stretch behavior
 # Enable/Disable the joint DoFs and limits as desired.
 
-gripper_joints = [p.GetPath() for p in self._stage.GetPrimAtPath("/World/Surface_Gripper_Joints").GetChildren()]
+gripper_joints = [p.GetPath() for p in stage.GetPrimAtPath("/World/Surface_Gripper_Joints").GetChildren()]
 attachment_points_rel.SetTargets(gripper_joints)
 
 # Define the distance the joint can grasp, and at what distance from the origin of the joints it will settle
@@ -50,5 +45,18 @@ gripper_prim.GetAttribute(robot_schema.Attributes.SHEAR_FORCE_LIMIT.name).Set(5)
 
 # How long the gripper will try to close if it is open
 gripper_prim.GetAttribute(robot_schema.Attributes.RETRY_INTERVAL.name).Set(1.0)
+# [/define-properties]
 
-# [...]
+# [get-state]
+status = gripper_interface.get_gripper_status(gripper_prim_path)
+print(status)  # Open, Closed, or Closing
+# [/get-state]
+
+# [control-gripper]
+gripper_interface.close_gripper(gripper_prim_path)
+
+gripper_interface.open_gripper(gripper_prim_path)
+
+gripper_interface.set_gripper_action(gripper_prim_path, 0.5)  # Closes the gripper
+gripper_interface.set_gripper_action(gripper_prim_path, -0.5)  # Opens the gripper
+# [/control-gripper]

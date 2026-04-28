@@ -39,6 +39,8 @@ See the :ref:`isaac_sim_conventions` documentation for a complete list of |isaac
 #. ``outputFrameOfReference`` parameter selects the coordinate frame for hit positions and normals. ``SENSOR`` returns results in the sensor's local coordinate frame; ``WORLD`` returns results in world coordinates.
 #. ``reportHitPrimPaths`` parameter enables resolving the USD prim path of each hit surface.
 
+For the full USD attribute definitions, see the :ref:`Raycast Sensor schema reference <isaac_sim_sensor_schema_raycast>`.
+
 .. note::
 
     All sensor properties are read once when the simulation starts. Changing attribute values while the simulation is playing has no effect; stop and restart the simulation to pick up changes.

@@ -26,7 +26,12 @@ These sensors output the exact measurements from the physics engine and the sens
 By default, the highest rate that the sensors can output data is the physics rate and you must provide additional interpolation options to generate data beyond this rate. Furthermore, ground truth readings from the simulator might
 already have some noise; additional noise can be augmented to the sensor readings in post process to make them more realistic.
 
-The physics-based sensors are organized in the `isaacsim.sensors.physics` extension.
+The physics-based sensors are organized in the ``isaacsim.sensors.experimental.physics`` extension.
+
+.. deprecated:: 6.0
+   The ``isaacsim.sensors.physics`` extension is deprecated. Use ``isaacsim.sensors.experimental.physics`` instead.
+   The new extension provides equivalent sensor classes (``ContactSensor``, ``IMUSensor``, ``EffortSensor``, etc.) with the same core functionality.
+   See the `API Documentation <../py/source/extensions/isaacsim.sensors.experimental.physics/docs/index.html>`_ for the replacement APIs.
 
 |isaac-sim_short| supports the following physics-based ground truth sensors:
 
@@ -37,6 +42,5 @@ The physics-based sensors are organized in the `isaacsim.sensors.physics` extens
     ./isaacsim_sensors_physics_contact
     ./isaacsim_sensors_physics_effort
     ./isaacsim_sensors_physics_imu
-    ./isaacsim_sensors_physics_proximity
     ./isaacsim_sensors_physics_raycast
 

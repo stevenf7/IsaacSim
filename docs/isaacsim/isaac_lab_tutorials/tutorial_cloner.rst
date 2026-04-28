@@ -45,15 +45,19 @@ Please make sure `isaacsim.core.cloner` is enabled from the Extensions window be
 
 Let's first start with a simple use case of the Cloner interface. In this example, we will create a scene with 4 cubes.
 
-.. literalinclude:: ../snippets/isaac_lab_tutorials/tutorial_cloner/introduction_to_cloner.py
+.. literalinclude:: ../snippets/isaac_lab_tutorials/tutorial_cloner/cloner_tutorial.py
     :language: python
+    :start-after: # [introduction]
+    :end-before: # [/introduction]
 
 We should now have 4 cubes in our stage: "/World/Cube_0", "/World/Cube_1", "/World/Cube_2", "/World/Cube_3". But you may have noticed that the cubes have all been created at the same position.
 
 We can add a transform to each cube, simply replace the last line of the previous code with the following:
 
-.. literalinclude:: ../snippets/isaac_lab_tutorials/tutorial_cloner/clone_the_cube_at_target_paths.py
+.. literalinclude:: ../snippets/isaac_lab_tutorials/tutorial_cloner/cloner_tutorial.py
     :language: python
+    :start-after: # [clone-at-positions]
+    :end-before: # [/clone-at-positions]
 
 It is also possible to specify the orientations of each clone by passing in an orientations argument, which should also be a `np.ndarray`.
 
@@ -64,28 +68,34 @@ Grid Cloner is a specialized Cloner class that automatically places clones in a 
 
 To use the Grid Cloner, we will need to specify the spacing we would like between each clone at initialization.
 
-.. literalinclude:: ../snippets/isaac_lab_tutorials/tutorial_cloner/grid_cloner.py
+.. literalinclude:: ../snippets/isaac_lab_tutorials/tutorial_cloner/cloner_tutorial.py
     :language: python
+    :start-after: # [grid-cloner]
+    :end-before: # [/grid-cloner]
 
 Now we have a scene with 4 cubes placed in a grid!
 
 Accessing Cloned Objects
 ========================
 
-Now that we have created our scene with the Cloner interface, we can access states for the cloned objects using APIs from `isaacsim.core.api`. These APIs allow us to collect and apply data as vectorized tensors to all or a subset of objects at once, avoiding iterating through objects in loops.
+Now that we have created our scene with the Cloner interface, we can access states for the cloned objects using APIs from `isaacsim.core.experimental.prims`. These APIs allow us to collect and apply data as vectorized tensors to all or a subset of objects at once, avoiding iterating through objects in loops.
 
 We will show a simple example of retrieving the global transforms of all of the boxes in the scene, as well as setting a new translation on the boxes.
 
-.. literalinclude:: ../snippets/isaac_lab_tutorials/tutorial_cloner/accessing_cloned_objects.py
+.. literalinclude:: ../snippets/isaac_lab_tutorials/tutorial_cloner/cloner_tutorial.py
     :language: python
+    :start-after: # [accessing-cloned-objects]
+    :end-before: # [/accessing-cloned-objects]
 
 Physics Replication
 ===================
 
 The cloning process can take advantage of faster physics parsing by replicating physics directly in PhysX, avoiding copying of USD physics properties. This feature can be enabled by passing in a new parameter `replicate_physics=True` when cloning objects in the scene. Note that to use this feature, the user must also specify some additional parameters: `base_env_paths` and `root_path`. `base_env_paths` points to the ancestry prim of all clones and `root_path` specifies the prefix of each target clone path before the index. This also imposes the limitation that all target clone paths must be appended by an incremental index. If both `define_base_env()` and `generate_paths()` APIs have already been called before cloning, the user can avoid specifying `base_env_paths` and `root_path` parameters as the information has already been provided to the Cloner class.
 
-.. literalinclude:: ../snippets/isaac_lab_tutorials/tutorial_cloner/physics_replication.py
+.. literalinclude:: ../snippets/isaac_lab_tutorials/tutorial_cloner/cloner_tutorial.py
     :language: python
+    :start-after: # [physics-replication]
+    :end-before: # [/physics-replication]
 
 A full example using physics replication can be found at standalone_examples/api/isaacsim.core.cloner/cloner_ants.py.
 
@@ -96,8 +106,10 @@ Additional Parameters
 
 In addition to physics replication, the Cloner also provides an option to copy from the source prim. This flag can be set with the `copy_from_source` argument.
 
-.. literalinclude:: ../snippets/isaac_lab_tutorials/tutorial_cloner/additional_parameters.py
+.. literalinclude:: ../snippets/isaac_lab_tutorials/tutorial_cloner/cloner_tutorial.py
     :language: python
+    :start-after: # [additional-parameters]
+    :end-before: # [/additional-parameters]
 
 By default, `copy_from_source` is set to `False`, in which case the cloned prims will be defined as `USD Inherits <https://openusd.org/release/api/class_usd_inherits.html>`_ of the source prim. The cloning process will be faster when USD Inherits are used for cloning. However, any changes that are made to the source prim *after* cloning will also reflect in the cloned prims. 
 

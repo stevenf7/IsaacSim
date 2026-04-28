@@ -23,6 +23,7 @@ USD
     intro_to_usd
     usd_tools
     robot_schema
+    sensor_schema
 
 
 Omniverse

@@ -88,8 +88,10 @@ Tutorial
 
         Start with a new Stage (File > New). To add a robot to the scene, copy-paste the following code snippet into the Script Editor and run it. 
 
-        .. literalinclude:: ../snippets/introduction/quickstart_isaacsim_robot/add_franka_to_stage.py
+        .. literalinclude:: ../snippets/introduction/quickstart_isaacsim_robot/franka_scripting.py
             :language: python
+            :start-after: # [add-franka-to-stage]
+            :end-before: # [/add-franka-to-stage]
 
         .. rubric:: Examine the robot
 
@@ -97,24 +99,28 @@ Tutorial
         
         Open a new tab in the Script Editor, copy-paste the following code snippet. This can only be run after the previous adding robot step, where ``arm_handle`` has already been established. Press **Play** before running the snippet. Physics must be running for these commands to work. 
 
-        .. literalinclude:: ../snippets/introduction/quickstart_isaacsim_robot/examine_robot_joints.py
+        .. literalinclude:: ../snippets/introduction/quickstart_isaacsim_robot/franka_scripting.py
             :language: python
-            :start-after: # -- End test setup --
-            :end-before: # -- Test cleanup --
+            :start-after: # [examine-robot-joints]
+            :end-before: # [/examine-robot-joints]
 
         Notice when you pressed "Run", it only prints the state once, even if the simulation is running. You would have to keep pressing "Run" if you want to see more recent states. If you want to see the information printed at every physics step, you would need to insert these commands into a physics callback that runs at each physics step. We will go more in depth on how time stepping works in the next section :ref:`isaac_sim_app_tutorial_intro_workflows`.
 
         To insert the commands into a physics callback, run the following snippet in a separate tab in the Script Editor.
 
-        .. literalinclude:: ../snippets/introduction/quickstart_isaacsim_robot/get_joint_positions_in_callback.py
+        .. literalinclude:: ../snippets/introduction/quickstart_isaacsim_robot/franka_scripting.py
             :language: python
+            :start-after: # [physics-callback]
+            :end-before: # [/physics-callback]
 
         Start the simulation by pressing **Play**, then run the snippet. You should see the information printed at every physics step in the terminal.
 
         If printing at every physics step is no longer necessary, you can remove the physics callback by running the following snippet. Use the ``callback_id`` that was returned when you registered the callback.
 
-        .. literalinclude:: ../snippets/introduction/quickstart_isaacsim_robot/remove_physics_callback.py
+        .. literalinclude:: ../snippets/introduction/quickstart_isaacsim_robot/franka_scripting.py
             :language: python
+            :start-after: # [remove-callback]
+            :end-before: # [/remove-callback]
 
         .. rubric:: Control the Robot
 
@@ -122,10 +128,10 @@ Tutorial
 
         Open a new tab in the Script Editor, copy-paste the following code snippet. This can only be run after the previous "Add a robot to Stage" step, where ``arm_handle`` has already been established. Press **Play** before running the snippet. Physics must be running for these commands to work. The snippet sets the Franka arm to a target pose. If you have added the print-state callback above, you should see the printed joint values change as the robot moves.
 
-        .. literalinclude:: ../snippets/introduction/quickstart_isaacsim_robot/set_joint_positions_control.py
+        .. literalinclude:: ../snippets/introduction/quickstart_isaacsim_robot/franka_scripting.py
             :language: python
-            :start-after: # -- End test setup --
-            :end-before: # -- Test cleanup --
+            :start-after: # [control-robot]
+            :end-before: # [/control-robot]
 
         Similar to the examine snippet above, ``set_dof_positions`` here is executed once when you press "Run". If you wish to send commands at every physics step, you would need to insert these commands into a physics callback that runs at each physics step.
 

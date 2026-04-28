@@ -5,39 +5,28 @@ simulation_app = SimulationApp({"headless": False})
 
 import carb
 import omni
-from isaacsim.core.api.objects import DynamicCuboid, GroundPlane
 from isaacsim.core.api.world import World
+from isaacsim.core.experimental.objects import Cube, GroundPlane
 from isaacsim.core.utils.extensions import enable_extension
-from isaacsim.core.utils.prims import get_prim_at_path
-from pxr import Sdf, UsdLux
+from pxr import Sdf, UsdLux, UsdPhysics
 
 # Set up scene
 world = World()
-ground_plane = GroundPlane("/World/GroundPlane")
+GroundPlane("/World/GroundPlane")
 
 # Add lighting
 stage = omni.usd.get_context().get_stage()
 distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
 distantLight.CreateIntensityAttr(500)
 
-# Add cubes
-cube_1 = DynamicCuboid(
-    prim_path="/cube_1",
-    name="cube_1",
-    position=np.array([0.4, 0, 5.0]),
-    scale=np.array([1, 1, 1]),
-    size=1.0,
-    color=np.array([255, 0, 0]),
-)
+# Add cubes with collision and rigid body for physics simulation
+cube_1 = Cube("/cube_1", sizes=1.0, positions=np.array([0.4, 0, 5.0]), colors=np.array([1.0, 0, 0]))
+UsdPhysics.CollisionAPI.Apply(cube_1.prims[0])
+UsdPhysics.RigidBodyAPI.Apply(cube_1.prims[0])
 
-cube_2 = DynamicCuboid(
-    prim_path="/cube_2",
-    name="cube_2",
-    position=np.array([-0.4, 0, 5.0]),
-    scale=np.array([1, 1, 1]),
-    size=1.0,
-    color=np.array([0, 0, 255]),
-)
+cube_2 = Cube("/cube_2", sizes=1.0, positions=np.array([-0.4, 0, 5.0]), colors=np.array([0, 0, 1.0]))
+UsdPhysics.CollisionAPI.Apply(cube_2.prims[0])
+UsdPhysics.RigidBodyAPI.Apply(cube_2.prims[0])
 
 # Enable isaacsim.sensors.physx extension
 enable_extension("isaacsim.sensors.physx")
@@ -46,7 +35,7 @@ simulation_app.update()
 # Attach sensor to cube 1
 from isaacsim.sensors.physx import ProximitySensor, clear_sensors, register_sensor
 
-s = ProximitySensor(cube_1.prim)
+s = ProximitySensor(cube_1.prims[0])
 register_sensor(s)
 
 

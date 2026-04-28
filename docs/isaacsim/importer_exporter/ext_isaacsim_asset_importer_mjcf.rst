@@ -117,6 +117,7 @@ For example, if you want to set the wheel's drive velocity and the actuators' st
 
 .. literalinclude:: ../snippets/importer_exporter/ext_isaacsim_asset_importer_mjcf/robot_properties.py
     :language: python
+    :start-after: # -- End test setup --
 
 Alternatively you can use the :ref:`isaac_sim_command_tool` to change a value in the UI and get the associated |omni| command that changes the property.
 

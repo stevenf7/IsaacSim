@@ -10,11 +10,15 @@
 
 
 
-.. _isaacsim_sensors_physics_proximity:
+.. _isaacsim_sensors_physx_proximity:
 
 ==================
 Proximity Sensor
 ==================
+
+.. deprecated:: 6.0
+   The Proximity Sensor (``isaacsim.sensors.physx.ProximitySensor``) is part of the deprecated ``isaacsim.sensors.physx`` extension.
+   For collision detection, consider using the :ref:`Contact Sensor <isaacsim_sensors_physics_contact>` or physics contact callbacks directly.
 
 The Proximity Sensor is a wrapper around a physics callback that can be attached to any prim in the scene. During simulation execution,
 the sensor will record collisions between the prim it's attached to and other prims in the scene each frame; that data can be accessed
@@ -23,11 +27,14 @@ using a callback function.
 Standalone Python
 =================
 
+.. note::
+   The code below uses the deprecated ``isaacsim.sensors.physx`` extension. See the deprecation notice above for the replacement API.
+
 Execute the following script using ``python.sh``. This will create a scene with two cubes, attaching a proximity sensor to one of the cubes.
 At the start of the simulation, the two cubes will overlap and then move apart; the callback function in the script will print the proximity
 sensor's output to the screen.
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_proximity/standalone_python.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physx_proximity/standalone_python.py
     :language: python
 
 Example proximity sensor output is shown below; there might be small numerical differences in your output run-to-run.

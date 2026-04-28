@@ -15,6 +15,11 @@
 Contact Sensor
 ===============
 
+.. deprecated:: 6.0
+   The ``isaacsim.sensors.physics`` Contact Sensor extension is deprecated.
+   Use ``isaacsim.sensors.experimental.physics.ContactSensor`` instead.
+   See the `API Documentation`_ section below for links.
+
 The Contact Sensor uses the PhysX Contact Report API to generate a sensor reading similar to what you would have with contact cells, or pressure based sensors placed on the surface of an object.
 The Contact Sensor API builds on the Contact Report API by providing contact data filtered by the object it was placed in, along with an optional filter only consider contacts in a specific region of the object. For example, imagine a quadruped robot with sensors in its feet. While in the simulation the entire leg is treated as a rigid body, the only place you can measure contact are on the foot pads, so you can add a region filter that will discard any contacts outside of that boundary.
 The Contact Sensor API also provides persistent contact data, even when the PhysX engine stops streaming contacts to preserve compute time. While the simulation provides full information about the contacts, such as contact pairs, normals and contact points, the Contact Sensor API was designed to match real-data obtained by single-cell contact pads. Ultimately, if full contact data is needed, the Contact Sensor API gets you the filtered contact information without any changes from what was acquired in PhysX.
@@ -23,11 +28,13 @@ See the :ref:`isaac_sim_conventions` documentation for a complete list of |isaac
 
 **Contact Sensor Properties**
 
-#. ``radius`` parameter specifies the distance of the contact force that it would ``sensor_period``.
-#. ``enabled`` parameter determines if the sensor is running or note.
+#. ``radius`` parameter specifies the distance of the contact force that it would detect. A value of ``-1`` uses the prim's collision geometry.
+#. ``enabled`` parameter determines if the sensor is running or not.
 #. ``min threshold`` parameter specifies the minimum amount of force to trigger a contact.
 #. ``max threshold`` parameter specifies the maximum amount of force the sensor will output.
-#. ``sensor period`` parameter specifies the time in between sensor measurement. A sensor period that's lower than the physics downtime will always output the latest physics data. The sensor frequency cannot go beyond the physics frequency.
+#. ``sensorPeriod`` parameter specifies the time in between sensor measurement. **Deprecated** since ``isaacsim.robot.schema`` 6.2.0 -- only used by the deprecated ``isaacsim.sensors.physx`` extension. The new ``isaacsim.sensors.experimental.physics`` extension reads every physics step.
+
+For the full USD attribute definitions, see the :ref:`Contact Sensor schema reference <isaac_sim_sensor_schema_contact>`.
 
 
 GUI
@@ -124,7 +131,7 @@ Standalone Python
 Creating and Modifying the Contact Sensor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For the example snippets below, prepare the scene using the following snippet by adding a ``PhysicsScene``, ``GroundPlane``, and ``DynamicCuboid`` prim.
+For the example snippets below, prepare the scene using the following snippet by adding a ``PhysicsScene``, ``GroundPlane``, and a ``Cube`` prim with collision and rigid body physics.
 The contact sensor will be attached to the latter.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/creating_and_modifying_the_contact_sensor.py
@@ -135,25 +142,30 @@ Using the Python API
 
 Contact sensors can be created with Python using ``ContactSensor.create()``, with available parameters to set, specified below, with default values. The path must include the parent prim path.
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/using_python_api.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/contact_sensor.py
     :language: python
+    :start-after: # [create-python-api]
+    :end-before: # [/create-python-api]
 
 Using Python Wrapper
 ####################
 
-The contact sensor can also be created using the ``isaacsim.sensors.physics.ContactSensor`` Python wrapper class. The benefit of using the wrapper class is that it comes with additional helper functions to set the contact sensor properties and retrieve sensor data.
+The contact sensor can also be created using the ``isaacsim.sensors.experimental.physics.ContactSensor`` Python wrapper class. The benefit of using the wrapper class is that it comes with additional helper functions to set the contact sensor properties and retrieve sensor data.
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/using_python_wrapper.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/contact_sensor.py
     :language: python
+    :start-after: # [create-python-wrapper]
+    :end-before: # [/create-python-wrapper]
 
 .. note::
     Translation and position cannot both be defined, frequency, and ``dt`` also cannot both be defined.
 
 Creating a contact sensor can only be done on a prim with a collider API, and it depends on a Contact Report API. Both ``ContactSensor.create()`` and the wrapper class constructor automatically add a Contact Report API to the parent prim. You can also manually add a Contact Report API to a prim through:
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/using_python_wrapper_1.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/contact_sensor.py
     :language: python
-    :start-after: # -- End test setup --
+    :start-after: # [contact-report-api]
+    :end-before: # [/contact-report-api]
 
 To modify sensor parameters, you can use built-in class API calls such as ``set_frequency``, ``set_dt``, or USD attribute API calls.
 
@@ -177,8 +189,10 @@ The function returns an ``CsSensorReading`` object, which contains ``is_valid``,
 
 Sample usage to get the reading from the current frame:
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/reading_sensor_output.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/contact_sensor.py
     :language: python
+    :start-after: # [reading-backend]
+    :end-before: # [/reading-backend]
 
 **get_current_frame()**
 
@@ -187,25 +201,38 @@ The ``get_current_frame()`` function uses the default parameters of ``get_sensor
 
 Sample usage:
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/reading_sensor_output_1.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/contact_sensor.py
     :language: python
+    :start-after: # [reading-wrapper]
+    :end-before: # [/reading-wrapper]
 
 **get_contact_sensor_raw_data()**
 
 The contact sensor raw data will output a list of raw contact API data ``CsRawData``, which contains ``time``, ``dt``, ``body0``, ``body1``, ``position``, ``normal``, and ``impulse``. The raw data disregards sensor thresholds. Contacts with the parent body below the force threshold appear here even though they are discarded in the processed sensor reading ``CsSensorReading``.
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/reading_sensor_output_2.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/contact_sensor.py
     :language: python
+    :start-after: # [reading-raw-data]
+    :end-before: # [/reading-raw-data]
 
 .. warning::
-    This function is deprecated and will be replaced in a future release.
+    ``get_contact_sensor_raw_data()`` is deprecated and will be replaced in a future release.
+    Check the `isaacsim.sensors.experimental.physics API Documentation <../py/source/extensions/isaacsim.sensors.experimental.physics/docs/index.html>`_
+    for the latest contact data retrieval methods.
 
 
 API Documentation
 ^^^^^^^^^^^^^^^^^
 
-See the |link_ext| for complete usage information.
+.. deprecated:: 6.0
+   The ``isaacsim.sensors.physics`` extension is deprecated. Use ``isaacsim.sensors.experimental.physics.ContactSensor`` instead.
+
+See the |link_ext| for the current API and |link_ext_deprecated| for the deprecated API.
 
 .. |link_ext| raw:: html
 
-    <a href="../py/source/extensions/isaacsim.sensors.physics/docs/index.html" target="_blank">API Documentation</a>
+    <a href="../py/source/extensions/isaacsim.sensors.experimental.physics/docs/index.html" target="_blank">isaacsim.sensors.experimental.physics API Documentation</a>
+
+.. |link_ext_deprecated| raw:: html
+
+    <a href="../py/source/extensions/isaacsim.sensors.physics/docs/index.html" target="_blank">isaacsim.sensors.physics API Documentation (deprecated)</a>

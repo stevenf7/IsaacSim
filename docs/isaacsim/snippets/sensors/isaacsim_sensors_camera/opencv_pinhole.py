@@ -1,6 +1,6 @@
 import numpy as np
 from isaacsim.core.experimental.objects import Cube
-from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.core.experimental.utils.stage import add_reference_to_stage
 from isaacsim.sensors.experimental.rtx import CameraSensor, RtxCamera
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf
@@ -17,7 +17,7 @@ pinhole_coeff_names = ["k1", "k2", "p1", "p2", "k3", "k4", "k5", "k6", "s1", "s2
 
 # Add a ground plane to the scene
 usd_path = get_assets_root_path() + "/Isaac/Environments/Grid/default_environment.usd"
-add_reference_to_stage(usd_path=usd_path, prim_path="/ground_plane")
+add_reference_to_stage(usd_path=usd_path, path="/ground_plane")
 
 # Add some cubes to the scene
 Cube("/World/cube_1", sizes=1.0, positions=np.array([0.0, 0.0, 0.5]), colors=[1, 0, 0])

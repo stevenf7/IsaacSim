@@ -1,3 +1,29 @@
+# -- Test setup --
+import os
+import tempfile
+
+import omni.usd
+import pxr
+from pxr import Sdf, Usd, UsdGeom
+
+# Create a temporary directory and stage file for the snippet to save to
+_tmpdir = tempfile.mkdtemp()
+_stage_path = os.path.join(_tmpdir, "robot.usda")
+_stage = Usd.Stage.CreateNew(_stage_path)
+UsdGeom.Xform.Define(_stage, "/World")
+_stage.SetDefaultPrim(_stage.GetPrimAtPath("/World"))
+UsdGeom.Xform.Define(_stage, "/World/Robot")
+_stage.GetRootLayer().Save()
+del _stage
+
+# Open the temp stage in the USD context
+omni.usd.get_context().open_stage(_stage_path)
+import omni.kit.app
+
+for _ in range(3):
+    omni.kit.app.get_app().update()
+
+# -- End test setup --
 import omni.usd
 import pxr
 import usd.schema.isaac.robot_schema as rs

@@ -14,6 +14,11 @@
 Effort Sensor
 ==================
 
+.. deprecated:: 6.0
+   The ``isaacsim.sensors.physics`` Effort Sensor extension is deprecated.
+   Use ``isaacsim.sensors.experimental.physics.EffortSensor`` instead.
+   See the `API Documentation`_ section below for links.
+
 The effort sensor in |isaac-sim_short| tracks the torque or force applied to individual joints. Torque is measured for revolute joints and magnitude of force is measured for linear joints.
 
 See the :ref:`isaac_sim_conventions` documentation for a complete list of |isaac-sim_short| conventions.
@@ -35,35 +40,29 @@ Creating and Modifying the Effort Sensor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following section describes how to create the effort sensor using the **Script Editor**, opened from **Window > Script Editor**.
-The effort sensor can be created using the ``isaacsim.sensors.physics.EffortSensor`` Python wrapper class. The benefit of using the wrapper class is that it comes with additional helper functions to set the effort sensor properties and retrieve sensor data.
+The effort sensor can be created using the ``isaacsim.sensors.experimental.physics.EffortSensor`` Python wrapper class. The benefit of using the wrapper class is that it comes with additional helper functions to set the effort sensor properties and retrieve sensor data.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_effort/creating_and_modifying_the_effort_sensor.py
     :language: python
+    :start-after: # [create-sensor]
+    :end-before: # [/create-sensor]
 
-To modify sensor parameters, you can change class member variables like ``sensor_period``, ``use_latest_data``, and ``enabled`` directly, and for changing the ``dof_name`` and ``buffer_size`` for the readings, use the corresponding member functions ``update_dof_name`` and ``change_buffer_size``.
+To modify sensor parameters, you can change class member variables like ``enabled`` directly, and for changing the ``dof_name`` and ``buffer_size`` for the readings, use the corresponding member functions ``update_dof_name`` and ``change_buffer_size``.
 
 
 Reading Sensor Output with Python
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**get_sensor_reading(self, interpolation_function = None, use_latest_data = False)**
+**get_sensor_reading(self)**
 
-The get sensor reading function takes in two parameters: 
-
-* an interpolation function (optional) to use in place of the default linear interpolation function
-* a use latest data flag (optional) for retrieving the data point from the current physics step, if the sensor is running at a slower rate than physics rate
-  
 The function will return an ``EsSensorReading`` object which contains ``is_valid``, ``time``, and ``value``.
 
 After you created the effort sensor, press **PLAY** to start the simulation and call the function below to get the sensor reading for the current frame:
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_effort/reading_sensor_output_with_python.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_effort/creating_and_modifying_the_effort_sensor.py
     :language: python
-
-Sample usage with custom interpolation function:
-
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_effort/get_sensor_reading.py
-    :language: python
+    :start-after: # [read-sensor]
+    :end-before: # [/read-sensor]
 
 OmniGraph Workflow
 ^^^^^^^^^^^^^^^^^^
@@ -92,8 +91,15 @@ Connect the above nodes as follows to print out the effort sensor reading:
 API Documentation
 =================
 
-See the |link_ext| for complete usage information.
+.. deprecated:: 6.0
+   The ``isaacsim.sensors.physics`` extension is deprecated. Use ``isaacsim.sensors.experimental.physics.EffortSensor`` instead.
+
+See the |link_ext| for the current API and |link_ext_deprecated| for the deprecated API.
 
 .. |link_ext| raw:: html
 
-    <a href="../py/source/extensions/isaacsim.sensors.physics/docs/index.html" target="_blank">API Documentation</a>
+    <a href="../py/source/extensions/isaacsim.sensors.experimental.physics/docs/index.html" target="_blank">isaacsim.sensors.experimental.physics API Documentation</a>
+
+.. |link_ext_deprecated| raw:: html
+
+    <a href="../py/source/extensions/isaacsim.sensors.physics/docs/index.html" target="_blank">isaacsim.sensors.physics API Documentation (deprecated)</a>
