@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.3] - 2026-04-28
+### Added
+- Added `isaacsim.examples.browser` as a dependency so `register_example` is available at startup
+
 ## [0.2.2] - 2026-04-27
 ### Added
 - Added interactive samples back to the Robotics Example UI by adding `python.module` in `extension.toml`
