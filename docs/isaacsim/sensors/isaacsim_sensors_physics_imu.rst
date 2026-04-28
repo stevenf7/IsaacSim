@@ -14,6 +14,11 @@
 IMU Sensor
 ==================
 
+.. deprecated:: 6.0
+   The ``isaacsim.sensors.physics`` IMU Sensor extension is deprecated.
+   Use ``isaacsim.sensors.experimental.physics.IMUSensor`` instead.
+   See the `API Documentation`_ section below for links.
+
 The IMU sensor in |isaac-sim_short| tracks the motion of the body and outputs simulated accelerometer and gyroscope readings.
 Like real IMU sensors, simulated IMUs gives acceleration and angular velocity measurements in local ``x, y, z`` axis with stage units.
 
@@ -21,13 +26,15 @@ See the :ref:`isaac_sim_conventions` documentation for a complete list of |isaac
 
 **IMU Sensor Properties**
 
-#. ``enabled`` parameter determines if the sensor is running or note.
-#. ``sensor period`` parameter specifies the time in between sensor measurement. A sensor period that's lower than the physics delta time will always output the latest physics data. The sensor frequency cannot go beyond the physics frequency.
-#. ``angularVelocityFilterWidth`` parameter species the size of the angular velocity rolling average. Increasing this parameter will result in smoother angular velocity output.
-#. ``linearAccelerationFilterWidth`` parameter species the size of the linear acceleration rolling average. Increasing this parameter will result in smoother linear acceleration output.
-#. ``orientationFilterWidth`` parameter species the size of the orientation rolling average. Increasing this parameter will result in smoother orientation output.
+#. ``enabled`` parameter determines if the sensor is running or not.
+#. ``sensorPeriod`` parameter specifies the time in between sensor measurement. **Deprecated** since ``isaacsim.robot.schema`` 6.2.0 -- only used by the deprecated ``isaacsim.sensors.physx`` extension. The new ``isaacsim.sensors.experimental.physics`` extension reads every physics step.
+#. ``angularVelocityFilterWidth`` parameter specifies the size of the angular velocity rolling average. Increasing this parameter will result in smoother angular velocity output.
+#. ``linearAccelerationFilterWidth`` parameter specifies the size of the linear acceleration rolling average. Increasing this parameter will result in smoother linear acceleration output.
+#. ``orientationFilterWidth`` parameter specifies the size of the orientation rolling average. Increasing this parameter will result in smoother orientation output.
 
 The size of the data buffer used in interpolation is two times the max of the filter width or 20, whichever is greater.
+
+For the full USD attribute definitions, see the :ref:`IMU Sensor schema reference <isaac_sim_sensor_schema_imu>`.
 
 GUI
 ===
@@ -134,7 +141,7 @@ There are two ways to create an IMU Sensor in Python:
 * using the ``IMUSensor.create()`` class method
 * using the ``IMUSensor`` wrapper class constructor directly
  
-This section provides snippets to be executed using standalone Python; these snippets are intended as a references, and must be modified to suit your purposes. The following snippet adds a ground plane, cube prim, and physics scene to an |isaac-sim_short| scene, which are required for the reference snippets further below to work correctly.
+This section provides snippets to be executed using standalone Python; these snippets are intended as a references, and must be modified to suit your purposes. The following snippet adds a ground plane, cube prim with collision and rigid body physics, and physics scene to an |isaac-sim_short| scene, which are required for the reference snippets further below to work correctly.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/creating_and_modifying_the_imu.py
     :language: python
@@ -144,16 +151,20 @@ Using the Python API
 
 You can add an IMU to the cube prim created above using ``IMUSensor.create()``, as demonstrated in the following snippet. The path must include the parent prim path; the remaining arguments are optional.
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/using_python_api.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/imu_sensor.py
     :language: python
+    :start-after: # [create-python-api]
+    :end-before: # [/create-python-api]
 
 Using Python Wrapper
 ####################
 
 You can also add an IMU to the cube prim, created above, using the ``IMUSensor`` constructor directly when wrapping an existing sensor prim, as demonstrated in the following snippet. The wrapper class provides additional helper functions to set the IMU sensor properties and retrieve sensor data.
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/using_python_wrapper.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/imu_sensor.py
     :language: python
+    :start-after: # [create-python-wrapper]
+    :end-before: # [/create-python-wrapper]
 
 .. note::
     ``translation`` and ``position`` cannot both be provided as input arguments. ``frequency`` and ``dt`` also cannot both be provided as input arguments.
@@ -186,32 +197,45 @@ The function will return an ``IsSensorReading`` object, which has ``is_valid``, 
 
 Sample usage to get the reading from the current physics step with gravitational effects:
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/reading_sensor_output.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/imu_sensor.py
     :language: python
+    :start-after: # [reading-backend-gravity]
+    :end-before: # [/reading-backend-gravity]
 
 Sample usage with custom interpolation function without gravitational effects:
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/reading_sensor_output_1.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/imu_sensor.py
     :language: python
+    :start-after: # [reading-backend-no-gravity]
+    :end-before: # [/reading-backend-no-gravity]
 
 .. note::
     When custom interpolation is used and the read gravity flag is enabled, the sensor will pass raw acceleration measurements to the custom interpolation function and apply gravitational transforms after.
 
 **get_current_frame(read_gravity = True)**
 
-The ``get_current_frame()`` function is a wrapper around ``get_sensor_reading(path_to_current_sensor)`` function and a member function of the IMU class. This function returns a dictionary with ``lin_acc``, ``ang_vel``, ``orientation``, ``time``, and ``physics_step`` as ``keys`` for the Contact measurement.
+The ``get_current_frame()`` function is a wrapper around ``get_sensor_reading(path_to_current_sensor)`` function and a member function of the IMU class. This function returns a dictionary with ``lin_acc``, ``ang_vel``, ``orientation``, ``time``, and ``physics_step`` as ``keys`` for the IMU measurement.
 The ``get_current_frame()`` function uses the default parameters of ``get_sensor_reading``, so it utilizes linear interpolation and last sensor reading at reading time.
 
 Sample usage:
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/do_interpolation.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_imu/imu_sensor.py
     :language: python
+    :start-after: # [reading-interpolation]
+    :end-before: # [/reading-interpolation]
 
 API Documentation
 ^^^^^^^^^^^^^^^^^
 
-See the |link_ext| for complete usage information.
+.. deprecated:: 6.0
+   The ``isaacsim.sensors.physics`` extension is deprecated. Use ``isaacsim.sensors.experimental.physics.IMUSensor`` instead.
+
+See the |link_ext| for the current API and |link_ext_deprecated| for the deprecated API.
 
 .. |link_ext| raw:: html
 
-    <a href="../py/source/extensions/isaacsim.sensors.physics/docs/index.html" target="_blank">API Documentation</a>
+    <a href="../py/source/extensions/isaacsim.sensors.experimental.physics/docs/index.html" target="_blank">isaacsim.sensors.experimental.physics API Documentation</a>
+
+.. |link_ext_deprecated| raw:: html
+
+    <a href="../py/source/extensions/isaacsim.sensors.physics/docs/index.html" target="_blank">isaacsim.sensors.physics API Documentation (deprecated)</a>

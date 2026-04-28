@@ -25,7 +25,13 @@ objects in the simulation.
 
 These sensors will output the exact measurements from |physx|. By default, the highest rate that the sensors can output data is the render rate.
 
-The |physx| sensors are organized in the `isaacsim.sensors.physx` extension.
+The |physx| sensors are organized in the ``isaacsim.sensors.physx`` extension.
+
+.. deprecated:: 6.0
+   The ``isaacsim.sensors.physx`` extension is deprecated. Use ``isaacsim.sensors.experimental.physics`` instead,
+   which provides the ``RaycastSensor`` as the replacement for PhysX-based range sensors.
+   See the `API Documentation <../py/source/extensions/isaacsim.sensors.experimental.physics/docs/index.html>`_ for the replacement APIs.
+   See individual sensor pages below for specific migration guidance.
 
 |isaac-sim_short| supports the following |physx| sensors:
 
@@ -35,3 +41,4 @@ The |physx| sensors are organized in the `isaacsim.sensors.physx` extension.
     ./isaacsim_sensors_physx_generic
     ./isaacsim_sensors_physx_lidar
     ./isaacsim_sensors_physx_lightbeam
+    ./isaacsim_sensors_physx_proximity

@@ -14,6 +14,12 @@
 |physx| Lidar
 =============
 
+.. deprecated:: 6.0
+   The |physx| Lidar sensor (``isaacsim.sensors.physx``) is deprecated. Use
+   ``isaacsim.sensors.experimental.physics.RaycastSensor`` as the replacement, which provides
+   configurable raycast-based sensing.
+   See the `isaacsim.sensors.experimental.physics API Documentation <../py/source/extensions/isaacsim.sensors.experimental.physics/docs/index.html>`_.
+
 The |physx| Lidar sensor in |isaac-sim_short| uses |physx| raycasts to simulate a Lidar.
 You can set horizontal and vertical beam resolution, rotation rate, and other Lidar parameters; the
 |physx| Lidar will then report depth information from each beam. The |physx| Lidar cannot interact with
@@ -142,18 +148,24 @@ Let's use the **Script Editor** and Python API to retrieve the data from the LID
 1. Go to the top menu bar and click **Window > Script Editor** to open the **Script Editor** window.
 2. Add the necessary imports:
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physx_lidar/script_editor.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physx_lidar/lidar_scripting.py
     :language: python
+    :start-after: # [imports]
+    :end-before: # [/imports]
 
 3. Grab the Stage, Simulation Timeline, and LIDAR interface:
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physx_lidar/script_editor_1.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physx_lidar/lidar_scripting.py
     :language: python
+    :start-after: # [setup]
+    :end-before: # [/setup]
 
 4. Create an obstacle for the LIDAR:
 
-.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physx_lidar/these_commands_are_the_python_equivalent_of_the_fi.py
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physx_lidar/lidar_scripting.py
     :language: python
+    :start-after: # [create-obstacle]
+    :end-before: # [/create-obstacle]
 
 5. Get the LIDAR data:
 
@@ -162,8 +174,10 @@ Let's use the **Script Editor** and Python API to retrieve the data from the LID
     Because the simulation is running asynchronously with our script, use ``asyncio`` and ``ensure_future`` to wait for our script to complete
     calling ``timeline.pause()`` is optional, data from the sensor can be gathered anytime while simulating.
 
-    .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physx_lidar/these_commands_are_the_python_equivalent_of_the_fi_1.py
+    .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physx_lidar/lidar_scripting.py
         :language: python
+        :start-after: # [get-lidar-data]
+        :end-before: # [/get-lidar-data]
 
 #. Run the full script:
 
@@ -201,3 +215,45 @@ The segmented point cloud from Lidar sensor should look like the image below:
     :align: center
     :alt: Segmented Lidar Point Cloud
     :width: 100%
+
+
+.. _isaacsim_sensors_physx_lidar_migration:
+
+Migrating to the Physics Raycast Sensor
+========================================
+
+The |physx| Lidar sensor is deprecated. Use the :ref:`Physics Raycast Sensor <isaacsim_sensors_physics_raycast>` (``isaacsim.sensors.experimental.physics.RaycastSensor``) as the replacement for rotating raycast-based lidar.
+
+Concept mapping
+---------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
+
+   * - |physx| Lidar
+     - Physics Raycast Sensor
+   * - ``rotationRate``
+     - ``rayTimeOffsets``. Distribute rays across azimuthal columns and assign each column a time offset within the sweep period (``1.0 / rotation_rate``). The sensor fires only the rays whose offsets fall within the current physics step.
+   * - Horizontal / vertical resolution
+     - ``rayDirections``. Compute Cartesian direction vectors for each beam at the desired azimuth and elevation angles.
+   * - ``minRange`` / ``maxRange``
+     - ``minRange`` / ``maxRange``. Same semantics.
+   * - ``drawLines``
+     - Use the **Debug Draw RayCast** OmniGraph node connected to the **Isaac Read Physics Raycast Sensor** node outputs.
+   * - ``_range_sensor`` Python interface (``get_linear_depth_data``, ``get_point_cloud_data``)
+     - ``RaycastSensorBackend.get_sensor_reading()`` returns depths, hit positions, hit normals, and optionally hit prim paths.
+   * - ``enable_semantics`` / ``get_prim_data``
+     - ``reportHitPrimPaths`` attribute. When enabled, the sensor reading includes the USD prim path of each hit surface.
+   * - Setting ``rotationRate`` to ``0.0`` (fire all rays every step)
+     - Omit ``rayTimeOffsets``. Without time offsets all rays fire every physics step.
+
+Interactive example
+-------------------
+
+The **Physics Raycast Sensor** example includes a rotating sensor configuration with time offsets that produces a 360-degree sweep:
+
+- **GUI**: Open **Robotics Examples > Sensors > Physics Raycast Sensor** and click **Load Scene**.
+- **Source code**: ``source/extensions/isaacsim.sensors.physics.examples/isaacsim/sensors/physics/examples/raycast_sensor.py``
+
+See :ref:`isaacsim_sensors_physics_raycast` for the full documentation, including Python API usage and OmniGraph workflows.

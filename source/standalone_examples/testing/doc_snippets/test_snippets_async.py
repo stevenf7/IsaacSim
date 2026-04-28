@@ -83,12 +83,28 @@ def parse_args():
         "it is aborted and reported as a failure. Default: 120.",
     )
     parser.add_argument(
+        "--excluded-snippets-csv",
+        type=str,
+        default=None,
+        help="Path to a CSV file listing snippets to skip entirely (e.g. snippets that "
+        "crash or hang the test process). First column is the snippet path (relative to "
+        "the snippets directory). Lines starting with '#' are comments.",
+    )
+    parser.add_argument(
         "--junit-xml",
         type=str,
         default=None,
         help="Path to write a JUnit XML report with one testcase per snippet. "
         "When set, the report is written after all tests complete so CI systems "
         "like GitLab can display per-snippet pass/fail rows.",
+    )
+    parser.add_argument(
+        "--asset-root",
+        type=str,
+        default=None,
+        help="Override the /persistent/isaac/asset_root/default carb setting "
+        "after SimulationApp starts. Useful when the default Nucleus server is "
+        "unreachable and you want to use S3 or a local path instead.",
     )
     return parser.parse_known_args()
 
@@ -176,6 +192,46 @@ def parse_expected_failures_csv(csv_path, base_dir, snippets_root=None):
             entries.append((abs_path, compiled))
 
     return entries
+
+
+def parse_excluded_snippets_csv(csv_path, base_dir, snippets_root=None):
+    """Parse excluded snippets CSV and return a set of absolute paths to skip.
+
+    These are snippets that should be completely excluded from test discovery
+    (e.g. snippets that crash, hang, or kill the test process via timeouts
+    that cannot be caught by expected-failure matching).
+
+    Args:
+        csv_path: Path to the CSV file (relative to base_dir or absolute).
+        base_dir: Base directory for resolving the CSV file path itself.
+        snippets_root: Base directory for resolving snippet paths within the CSV.
+            If None, defaults to base_dir.
+
+    Returns:
+        Set of absolute path strings to exclude.
+    """
+    if snippets_root is None:
+        snippets_root = base_dir
+    excluded = set()
+    csv_file = Path(csv_path)
+    if not csv_file.is_absolute():
+        csv_file = base_dir / csv_file
+    if not csv_file.exists():
+        print(f"Warning: Excluded snippets CSV file not found: {csv_file}")
+        return excluded
+
+    with open(csv_file, "r", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        for row in reader:
+            if not row or row[0].strip().startswith("#"):
+                continue
+            snippet_path = row[0].strip()
+            if not snippet_path:
+                continue
+            abs_path = str((snippets_root / snippet_path).resolve())
+            excluded.add(abs_path)
+
+    return excluded
 
 
 def is_expected_failure(file_path, exception, expected_failures):
@@ -618,6 +674,16 @@ if args.filter:
     files_to_test = [f for f in files_to_test if any(keyword in str(f) for keyword in args.filter)]
     print(f"After applying filter {args.filter}: {len(files_to_test)} files to test")
 
+# Exclude snippets that crash/hang the test process
+excluded_snippets = set()
+if args.excluded_snippets_csv:
+    excluded_snippets = parse_excluded_snippets_csv(args.excluded_snippets_csv, script_dir, snippets_dir)
+    if excluded_snippets:
+        before_count = len(files_to_test)
+        files_to_test = [f for f in files_to_test if str(f.resolve()) not in excluded_snippets]
+        skipped = before_count - len(files_to_test)
+        print(f"Excluded {skipped} snippet(s) via {args.excluded_snippets_csv} ({len(files_to_test)} remaining)")
+
 # Parse experience CSV and group files by experience
 experience_map = {}
 if args.experience_csv:
@@ -703,6 +769,13 @@ for _exp_idx, _experience in enumerate(experience_names):
 
                 launch_config = {"headless": True}
                 _simulation_app = SimulationApp(launch_config=launch_config)
+
+                # Override asset root if requested (e.g. when Nucleus is unreachable)
+                if args.asset_root:
+                    import carb
+
+                    carb.settings.get_settings().set("/persistent/isaac/asset_root/default", args.asset_root)
+                    print(f"Asset root overridden to: {args.asset_root}")
 
             cls._simulation_app = _simulation_app
 

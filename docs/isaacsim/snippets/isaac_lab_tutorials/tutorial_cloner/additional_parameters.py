@@ -1,9 +1,0 @@
-cloner.clone(
-    source_prim_path="/World/Ants/Ant_0",
-    prim_paths=target_paths,
-    position_offsets=position_offsets,
-    replicate_physics=True,
-    base_env_path="/World/Ants",
-    root_path="/World/Ants/Ant_",
-    copy_from_source=True,
-)

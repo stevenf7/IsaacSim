@@ -15,3 +15,23 @@ articulations = Articulation(
     positions=[[-1, -1, 0], [1, 1, 0]],
     reset_xform_op_properties=True,
 )
+# [snippet-control]
+# -- Test setup --
+import omni.kit.app
+import omni.timeline
+
+omni.timeline.get_timeline_interface().play()
+for _ in range(3):
+    omni.kit.app.get_app().update()
+# -- End test setup --
+
+# Set the joint positions for each articulation
+articulations.set_dof_position_targets(
+    [
+        [1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 0.0, 0.0],
+        [-1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, 0.04, 0.04],
+    ]
+)
+
+# -- Test cleanup --
+omni.timeline.get_timeline_interface().stop()

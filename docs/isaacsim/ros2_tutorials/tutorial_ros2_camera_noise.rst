@@ -59,15 +59,15 @@ Running the Example
 
 
 
-Code Explained
+Code explained
 ============================
 
-The first step is to set the camera on the render product we want to use for capturing data.
-There are APIs to set the camera on the viewport, but there are also lower level APIs that use the render product prim directly.
-Both achieve the same. Because we are already working with the render product path, we use ``set_camera_prim_path`` for illustrative purposes.
+First, set the camera on the render product used for capturing data. You can set the camera through the viewport API, but here we use ``set_camera_prim_path`` on the render product directly.
 
-.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_noise/code_explained.py
+.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_noise/camera_noise.py
     :language: python
+    :start-after: # [set-camera]
+    :end-before: # [/set-camera]
 
 There are several methods for defining an augmentation within a sensor pipeline:
 
@@ -76,33 +76,45 @@ There are several methods for defining an augmentation within a sensor pipeline:
 - :doc:`omni.warp kernel <extensions:ext_warp>`
 - numpy kernel
 
-The numpy and omni.warp kernel options are demonstrated below to define a basic noise function.
-For brevity there are no out of bounds checks for the color values.
+The numpy and warp kernel options are demonstrated below with a basic noise function. For brevity there are no out-of-bounds checks for color values.
 
-.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_noise/grab_our_render_product_and_directly_set_the_camer.py
+The GPU warp kernel takes RGBA input and produces RGB output, applying per-pixel Gaussian noise:
+
+.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_noise/camera_noise.py
     :language: python
+    :start-after: # [gpu-noise-kernel]
+    :end-before: # [/gpu-noise-kernel]
 
-.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_noise/gpu_noise_kernel_for_illustrative_purposes_input_i.py
+The equivalent CPU kernel uses numpy:
+
+.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_noise/camera_noise.py
     :language: python
+    :start-after: # [cpu-noise-kernel]
+    :end-before: # [/cpu-noise-kernel]
 
-Either of the two functions can be used with ``rep.Augmentation.from_function()`` to define an augmentation.
+Either function can be passed to ``rep.Augmentation.from_function()`` to define an augmentation. The following registers a new ``rgb_gaussian_noise`` annotator that composes the noise function on top of the ``rgb`` annotator:
 
-.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_noise/cpu_noise_kernel.py
+.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_noise/camera_noise.py
     :language: python
+    :start-after: # [register-annotator]
+    :end-before: # [/register-annotator]
 
 .. note::
-    ``seed`` is an optional predefined Replicator Augmentation argument that can be used with both Python and warp functions. If set to `None` or `< 0`, it will use Replicator's global seed together with the node identifier to produce a repeatable unique seed. When used with warp kernels, the seed is used to initialize a random number generator that produces a new integer seed value for each warp kernel call.
+    ``seed`` is an optional predefined Replicator Augmentation argument that works with both Python and warp functions. If set to ``None`` or ``< 0``, Replicator uses its global seed together with the node identifier to produce a repeatable unique seed. For warp kernels, the seed initializes a random number generator that produces a new integer seed value for each kernel call.
 
-Next, a new writer is created with the new `rgb_gaussian_noise` annotator and registered.
+Next, create a custom writer that uses the augmented ``rgb_gaussian_noise`` annotator and register it:
 
-.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_noise/the_image_gaussian_noise_warp_variable_can_be_repl.py
+.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_noise/camera_noise.py
     :language: python
+    :start-after: # [register-writer]
+    :end-before: # [/register-writer]
 
-The ``CustomROS2PublishImage`` writer, which uses our new augmented ``rgb_gaussian_noise`` annotator, is registered. We can attach the render product to our replicator writer after initializing. This will begin capturing and publishing data to ROS.
+Finally, instantiate the writer, configure the ROS topic, and attach the render product. This begins capturing and publishing the augmented image data to ROS:
 
-
-.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_noise/register_writer_for_replicator_telemetry_tracking.py
+.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_camera_noise/camera_noise.py
     :language: python
+    :start-after: # [attach-writer]
+    :end-before: # [/attach-writer]
 
 Summary
 =======================

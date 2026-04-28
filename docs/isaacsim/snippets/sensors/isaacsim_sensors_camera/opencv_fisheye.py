@@ -1,6 +1,6 @@
 import numpy as np
 from isaacsim.core.experimental.objects import Cube
-from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.core.experimental.utils.stage import add_reference_to_stage
 from isaacsim.sensors.experimental.rtx import CameraSensor, RtxCamera
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf
@@ -14,7 +14,7 @@ distortion_coefficients = [0.05, 0.01, -0.003, -0.0005]
 
 # Add a ground plane to the scene
 usd_path = get_assets_root_path() + "/Isaac/Environments/Grid/default_environment.usd"
-add_reference_to_stage(usd_path=usd_path, prim_path="/ground_plane")
+add_reference_to_stage(usd_path=usd_path, path="/ground_plane")
 
 # Add some cubes to the scene
 Cube("/World/cube_1", sizes=1.0, positions=np.array([0.0, 0.0, 0.5]), colors=[1, 0, 0])

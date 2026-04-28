@@ -323,6 +323,7 @@ doxygen_input = [
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Defines.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/LibraryLoader.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Math.h",
+  "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/PhysicsEngine.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/Pose.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/PoseTree.h",
   "source/extensions/isaacsim.core.includes/include/isaacsim/core/includes/PrimManager.h",

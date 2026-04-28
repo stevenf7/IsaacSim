@@ -1,5 +1,9 @@
 import omni.kit.actions.core
 
+extension_id = "my.extension"
+action_name = "my_action"
+action_function_callable = lambda: None
+
 action_registry = omni.kit.actions.core.get_action_registry()
 action_registry.register_action(
     extension_id,

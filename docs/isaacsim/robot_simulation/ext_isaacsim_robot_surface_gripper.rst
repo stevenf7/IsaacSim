@@ -116,25 +116,30 @@ This section describes how to implement a surface gripper completely from code. 
 Defining the Surface Gripper Properties
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../snippets/robot_simulation/ext_isaacsim_robot_surface_gripper/defining_the_surface_gripper_properties.py
+.. literalinclude:: ../snippets/robot_simulation/ext_isaacsim_robot_surface_gripper/surface_gripper.py
     :language: python
+    :start-after: # [define-properties]
+    :end-before: # [/define-properties]
 
 Get Gripper State
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The Surface Gripper is updated on every simulation step, and the state can be retrieved at any time through the interface:
 
-.. literalinclude:: ../snippets/robot_simulation/ext_isaacsim_robot_surface_gripper/get_gripper_state.py
+.. literalinclude:: ../snippets/robot_simulation/ext_isaacsim_robot_surface_gripper/surface_gripper.py
     :language: python
+    :start-after: # [get-state]
+    :end-before: # [/get-state]
 
 Controlling the Gripper
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The Gripper State is controlled through the ``open`` and ``close`` methods of the interface. Alternatively, there's also the ``set_gripper_action`` method, which receives a numeric value between -1 and 1, where ``< -0.3`` will open the gripper, ``> 0.3`` will close it, and anything in between will be ignored.
 
-.. literalinclude:: ../snippets/robot_simulation/ext_isaacsim_robot_surface_gripper/controlling_the_gripper.py
+.. literalinclude:: ../snippets/robot_simulation/ext_isaacsim_robot_surface_gripper/surface_gripper.py
     :language: python
-    :linenos:
+    :start-after: # [control-gripper]
+    :end-before: # [/control-gripper]
 
 Keeping USD Scene in Sync
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

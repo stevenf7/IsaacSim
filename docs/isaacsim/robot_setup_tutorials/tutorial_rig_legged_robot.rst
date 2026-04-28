@@ -198,36 +198,37 @@ To verify the joint configuration, you can play the simulation and run the follo
 
   .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_rig_legged_robot/run_the_snippet_by_clicking_on_the_run_button.py
       :language: python
+      :start-after: # -- End test setup --
 
 #. Verify that you see the console output like the following:
 
 .. code-block:: console
 
     ['left_hip_yaw', 'right_hip_yaw', 'torso', 'left_hip_roll', 'right_hip_roll', 'left_shoulder_pitch', 'right_shoulder_pitch', 'left_hip_pitch', 'right_hip_pitch', 'left_shoulder_roll', 'right_shoulder_roll', 'left_knee', 'right_knee', 'left_shoulder_yaw', 'right_shoulder_yaw', 'left_ankle', 'right_ankle', 'left_elbow', 'right_elbow']
-    [(0,  True, -0.42999998, 0.42999998, 1, 100.00003815, 300., 149.54197693,  5.00000191)
-    (0,  True, -0.42999998, 0.42999998, 1, 100.00003815, 300., 149.54197693,  5.00000191)
-    (0,  True, -2.34999967, 2.34999967, 1, 100.00003815, 300., 200.00009155,  4.98473263)
-    (0,  True, -0.42999998, 0.42999998, 1, 100.00003815, 300., 149.54197693,  5.00000191)
-    (0,  True, -0.42999998, 0.42999998, 1, 100.00003815, 300., 149.54197693,  5.00000191)
-    (0,  True, -2.86999965, 2.86999965, 1, 100.00003815, 300.,  40.00001526, 10.00000381)
-    (0,  True, -2.86999965, 2.86999965, 1, 100.00003815, 300.,  40.00001526, 10.00000381)
-    (0,  True, -3.13999987, 2.52999973, 1, 100.00003815, 300., 199.96228027,  4.99619198)
-    (0,  True, -3.13999987, 2.52999973, 1, 100.00003815, 300., 199.96228027,  4.99619198)
-    (0,  True, -0.33999997, 3.1099999 , 1, 100.00003815, 300.,  40.00001526, 10.00000381)
-    (0,  True, -3.1099999 , 0.33999997, 1, 100.00003815, 300.,  40.00001526, 10.00000381)
-    (0,  True, -0.25999996, 2.04999971, 1, 100.00003815, 300., 200.00009155,  4.98473263)
-    (0,  True, -0.25999996, 2.04999971, 1, 100.00003815, 300., 200.00009155,  4.98473263)
-    (0,  True, -1.29999983, 4.44999933, 1, 100.00003815, 300.,  40.00001526, 10.00000381)
-    (0,  True, -4.44999933, 1.29999983, 1, 100.00003815, 300.,  40.00001526, 10.00000381)
-    (0,  True, -0.86999995, 0.51999992, 1, 100.00003815, 100.,  19.99622726,  4.00000191)
-    (0,  True, -0.86999995, 0.51999992, 1, 100.00003815, 100.,  19.99622726,  4.00000191)
-    (0,  True, -1.24999988, 2.6099999 , 1, 100.00003815, 300.,  40.00001526, 10.00000381)
-    (0,  True, -1.24999988, 2.6099999 , 1, 100.00003815, 300.,  40.00001526, 10.00000381)]
+    left_hip_yaw: lower=-0.4300, upper=0.4300, maxVelocity=23.00, maxEffort=200, stiffness=5729.58, damping=572.96
+    right_hip_yaw: lower=-0.4300, upper=0.4300, maxVelocity=23.00, maxEffort=200, stiffness=5729.58, damping=572.96
+    torso: lower=-2.3500, upper=2.3500, maxVelocity=23.00, maxEffort=200, stiffness=5729.58, damping=572.96
+    left_hip_roll: lower=-0.4300, upper=0.4300, maxVelocity=23.00, maxEffort=200, stiffness=5729.58, damping=572.96
+    right_hip_roll: lower=-0.4300, upper=0.4300, maxVelocity=23.00, maxEffort=200, stiffness=5729.58, damping=572.96
+    left_shoulder_pitch: lower=-2.8700, upper=2.8700, maxVelocity=9.00, maxEffort=40, stiffness=5729.58, damping=572.96
+    right_shoulder_pitch: lower=-2.8700, upper=2.8700, maxVelocity=9.00, maxEffort=40, stiffness=5729.58, damping=572.96
+    left_hip_pitch: lower=-3.1400, upper=2.5300, maxVelocity=23.00, maxEffort=200, stiffness=5729.58, damping=572.96
+    right_hip_pitch: lower=-3.1400, upper=2.5300, maxVelocity=23.00, maxEffort=200, stiffness=5729.58, damping=572.96
+    left_shoulder_roll: lower=-0.3400, upper=3.1100, maxVelocity=9.00, maxEffort=40, stiffness=5729.58, damping=572.96
+    right_shoulder_roll: lower=-3.1100, upper=0.3400, maxVelocity=9.00, maxEffort=40, stiffness=5729.58, damping=572.96
+    left_knee: lower=-0.2600, upper=2.0500, maxVelocity=14.00, maxEffort=300, stiffness=5729.58, damping=572.96
+    right_knee: lower=-0.2600, upper=2.0500, maxVelocity=14.00, maxEffort=300, stiffness=5729.58, damping=572.96
+    left_shoulder_yaw: lower=-1.3000, upper=4.4500, maxVelocity=20.00, maxEffort=18, stiffness=5729.58, damping=572.96
+    right_shoulder_yaw: lower=-4.4500, upper=1.3000, maxVelocity=20.00, maxEffort=18, stiffness=5729.58, damping=572.96
+    left_ankle: lower=-0.8700, upper=0.5200, maxVelocity=9.00, maxEffort=40, stiffness=5729.58, damping=572.96
+    right_ankle: lower=-0.8700, upper=0.5200, maxVelocity=9.00, maxEffort=40, stiffness=5729.58, damping=572.96
+    left_elbow: lower=-1.2500, upper=2.6100, maxVelocity=20.00, maxEffort=18, stiffness=5729.58, damping=572.96
+    right_elbow: lower=-1.2500, upper=2.6100, maxVelocity=20.00, maxEffort=18, stiffness=5729.58, damping=572.96
 
-The values in the console output are already in radians. Each row is for a joint listed in the same order as the first list.
-Verify the last four values in each row, which are the ``maxVelocity``, ``maxEffort``, ``stiffness``, ``damping`` respectively. Verify that the values match the values specified in the environment definition file.
+The limit values in the console output are in radians. Each line shows the properties for a single DOF.
+Verify that the ``maxVelocity``, ``maxEffort``, ``stiffness``, and ``damping`` values match the values specified in the environment definition file.
 
-For example, for the ``left_hip_yaw``, the max velocity is ``100.0``, the max effort is ``300.0``, the stiffness is ``150.0``, and the damping is ``5.0``.
+For example, for ``left_hip_yaw``, the max velocity is ``100.0``, the max effort is ``300.0``, the stiffness is ``150.0``, and the damping is ``5.0``.
 
 .. Note:: The rigged H1 robot is available in the content browser at ``Isaac/Samples/Rigging/H1/h1_rigged.usd``.
 

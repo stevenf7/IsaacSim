@@ -1,3 +1,11 @@
+# -- Test setup --
+import omni.usd
+from pxr import UsdGeom
+
+stage = omni.usd.get_context().get_stage()
+UsdGeom.Xform.Define(stage, "/rig")
+_ = 0.0  # placeholder for pseudocode underscores
+# -- End test setup --
 # Pseudocode -- adapt axis remapping and quaternion reordering to your calibration toolkit.
 import numpy as np
 from isaacsim.sensors.experimental.rtx import RtxCamera

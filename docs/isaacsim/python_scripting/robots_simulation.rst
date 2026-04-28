@@ -33,13 +33,16 @@ Adds two Franka robots to the stage and wraps them via an |link_Articulation| ob
 .. literalinclude:: ../snippets/python_scripting/robots_simulation/wrapping_articulations.py
     :language: python
     :linenos:
+    :end-before: # [snippet-control]
 
 Play the simulation.
 Then, open a new tab in the Script Editor window (`Tab > Add Tab` menu) and execute the following code to set the DOF positions for each articulation.
 
-.. literalinclude:: ../snippets/python_scripting/robots_simulation/wrapping_articulations_2.py
+.. literalinclude:: ../snippets/python_scripting/robots_simulation/wrapping_articulations.py
     :language: python
     :linenos:
+    :start-after: # -- End test setup --
+    :end-before: # -- Test cleanup --
 
 DOF Control
 =====================
@@ -65,62 +68,62 @@ Then, open the Script Editor window (`Window > Script Editor` menu) and run the 
 Query Articulation
 ^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../snippets/python_scripting/robots_simulation/query_articulation.py
+.. literalinclude:: ../snippets/python_scripting/robots_simulation/articulation_control.py
     :language: python
     :linenos:
-    :start-after: # -- End test setup --
-    :end-before: # -- Test cleanup --
+    :start-after: # [query-articulation]
+    :end-before: # [/query-articulation]
 
 Read DOF States
 ^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../snippets/python_scripting/robots_simulation/read_dof_states.py
+.. literalinclude:: ../snippets/python_scripting/robots_simulation/articulation_control.py
     :language: python
     :linenos:
-    :start-after: # -- End test setup --
-    :end-before: # -- Test cleanup --
+    :start-after: # [read-dof-states]
+    :end-before: # [/read-dof-states]
 
 DOF Position Control
 ^^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../snippets/python_scripting/robots_simulation/dof_position_control.py
+.. literalinclude:: ../snippets/python_scripting/robots_simulation/articulation_control.py
     :language: python
     :linenos:
-    :start-after: # -- End test setup --
-    :end-before: # -- Test cleanup --
+    :start-after: # [dof-position-control]
+    :end-before: # [/dof-position-control]
 
 Single DOF Position Control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../snippets/python_scripting/robots_simulation/single_dof_position_control.py
+.. literalinclude:: ../snippets/python_scripting/robots_simulation/articulation_control.py
     :language: python
     :linenos:
-    :start-after: # -- End test setup --
-    :end-before: # -- Test cleanup --
+    :start-after: # [single-dof-position-control]
+    :end-before: # [/single-dof-position-control]
 
 DOF Velocity Control
 ^^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../snippets/python_scripting/robots_simulation/velocity_control.py
+.. literalinclude:: ../snippets/python_scripting/robots_simulation/articulation_control.py
     :language: python
     :linenos:
-    :start-after: # -- End test setup --
-    :end-before: # -- Test cleanup --
+    :start-after: # [velocity-control]
+    :end-before: # [/velocity-control]
 
 Single DOF Velocity Control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../snippets/python_scripting/robots_simulation/single_dof_velocity_control.py
+.. literalinclude:: ../snippets/python_scripting/robots_simulation/articulation_control.py
     :language: python
     :linenos:
-    :start-after: # -- End test setup --
-    :end-before: # -- Test cleanup --
+    :start-after: # [single-dof-velocity-control]
+    :end-before: # [/single-dof-velocity-control]
 
 DOF Effort Control
 ^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../snippets/python_scripting/robots_simulation/dof_effort_control.py
+.. literalinclude:: ../snippets/python_scripting/robots_simulation/articulation_control.py
     :language: python
     :linenos:
-    :start-after: # -- End test setup --
-    :end-before: # -- Test cleanup --
+    :start-after: # [effort-control]
+    :end-before: # [/effort-control]
