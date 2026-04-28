@@ -93,6 +93,8 @@ Use the :ref:`URDF Importer Extension <isaac_sim_urdf_importer>` to import the r
 
 #. Type ``robot_state_publisher`` in the **ROS 2 Node** text box and click **Find Node**. It should say "ROS package paths resolved" if it was successful.
 
+#. Click **Import** to import the robot description.
+
 #. Rename the default prim to ``dd100``. 
 
 #. Save the stage with ``SHIFT+CTRL+S`` as ``dd100.usd``.
@@ -115,7 +117,7 @@ By default, the imported URDF model has a few oddities to fix.
    #. Create two physics materials under ``/dd100/Materials``: ``CasterMaterial`` with **Dynamic Friction** and **Static Friction** set to ``0.0``, and ``WheelMaterial`` with both set to ``1.0``. You can create a new material by clicking **Create > Physics > Physics Material** and selecting **Rigid Body Material**.
    #. Assign ``CasterMaterial`` to ``rear_caster`` and ``WheelMaterial`` to ``front_left_wheel_link`` and ``front_right_wheel_link``. You can find these prims using the search bar, then apply the material via the **Materials on selected models** dropdown.
 
-#. Create an empty Xform at ``/dd100/Geometry/base_link/chassis_link`` and call it ``base_link``. This will be used in ROS to represent the robot's base transform.
+#. Create an empty Xform by clicking **Create > Xform**, move it to ``/dd100/Geometry/base_link/chassis_link``, and call it ``base_link``. This will be used in ROS to represent the robot's base transform.
 
 Ensure you save the stage.
 
@@ -127,7 +129,7 @@ To verify the import, construct a simple environment and add the robot to it.
 #. Create a new stage with ``CTRL+N``.
 #. Add an existing environment at **Create > Environments > Flat Grid**.
 #. In the Content browser, drag the USD file you created in the previous step onto the stage.
-#. Zero out the **Translate** components in the **Transform Property** to place the robot at the origin.
+#. Zero out the **Translate** components in **Transform** to place the robot at the origin. Click **Add Transforms** if no **Transform** is present. 
 
 .. figure:: /images/tutorial_ros2_putting_it_all_together_dd100_viewport.png
     :align: center
@@ -151,14 +153,14 @@ To allow the robot to perceive the environment, create a few sensors.
 #. Create a new stage with ``CTRL+N`` and open the robot USD you created earlier using **File > Open** or by double-clicking it in the Content browser.
 #. Save the stage as ``dd100_with_sensors.usd``.
 
-    #. Start by adding **Realsense** , a common off-the-shelf camera, `RealSense D455 <https://www.realsenseai.com/products/stereo-depth-camera-d455f/>`_.
+    #. Start by adding a common off-the-shelf camera, the `RealSense D455 <https://www.realsenseai.com/products/stereo-depth-camera-d455f/>`_.
 
-        - Create the sensor by clicking **Create > Sensors > Camera and Depth Sensors > RealSense > Realsense 455**.
+        - Create the sensor by clicking **Create > Sensors > Camera and Depth Sensors > RealSense > Realsense D455**.
         - Drag the sensor to ``/dd100/Geometry/base_link/chassis_link`` and rename it to ``sim_camera``.
         - Set **Translate** components to ``(0.3, 0, 0.05)`` to position it at the front of the chassis.
         - By default, the RealSense is a Rigid Body affected by gravity. To fix it to the robot, click ``/dd100/Geometry/base_link/chassis_link/sim_camera/RSD455`` and uncheck **Rigid Body Enabled** under **Physics** in the **Property** tab.
 
-    #. Next add a 2D **LiDAR** sensor. 
+    #. Next add a LiDAR. 
 
         - Create the sensor by clicking **Create > Sensors > RTX Lidar > SICK > microScan3**.
         - Drag the sensor to ``/dd100/Geometry/base_link/chassis_link`` and rename it to ``sim_lidar``.
@@ -252,9 +254,9 @@ Create separate ActionGraphs for each topic system:
         Use the **ROS2 RTX Lidar Helper** to publish ``LaserScan`` data.
 
         #. Create an **On Playback Tick** node and connect ``Tick`` to an **Isaac Run One Simulation Frame** node.
-        #. Connect the output of **Isaac Run One Simulation Frame** to an **Isaac Create Render Product** node. Set its ``cameraPrim`` property to the ``.../sim_lidar/microScan3/sensor`` prim from the sensor you created earlier.
+        #. Connect the output of **Isaac Run One Simulation Frame** to an **Isaac Create Render Product** node. Set its ``cameraPrim`` property to the ``.../sim_lidar/sensor`` prim from the sensor you created earlier.
         #. Create a **ROS2 RTX Lidar Helper** node. Set ``frameId`` to ``sim_lidar``, ``topicName`` to ``scan``, and ``type`` to ``laser_scan``.
-        #. Connect the output of **Isaac Create Render Product** to the input of **ROS2 RTX Lidar Helper**.
+        #. Connect the outputs of **Isaac Create Render Product** to the input of **ROS2 RTX Lidar Helper**.
         #. Create a **ROS2 Context** node and connect it to the **ROS2 RTX Lidar Helper** node.
 
         .. figure:: /images/tutorial_ros2_putting_it_all_together_omnigraph_scan.png
@@ -389,6 +391,7 @@ Create separate ActionGraphs for each topic system:
                             ("ComputeTransformTree.outputs:orientations", "PublishTF.inputs:orientations"),
                             ("ComputeTransformTree.outputs:parentFrames", "PublishTF.inputs:parentFrames"),
                             ("ComputeTransformTree.outputs:translations", "PublishTF.inputs:translations"),
+                            ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
                             ("Context.outputs:context", "PublishJointState.inputs:context"),
                             ("Context.outputs:context", "PublishOdom.inputs:context"),
                             ("Context.outputs:context", "PublishRawTF.inputs:context"),
@@ -464,6 +467,7 @@ Create separate ActionGraphs for each topic system:
                         ],
                         keys.CONNECT: [
                             ("OnPlaybackTick.outputs:tick", "SubscribeTwist.inputs:execIn"),
+                            ("OnPlaybackTick.outputs:deltaSeconds", "DiffController.inputs:dt"),
                             ("SubscribeTwist.outputs:execOut", "DiffController.inputs:execIn"),
                             ("SubscribeTwist.outputs:linearVelocity", "BreakLinVel.inputs:tuple"),
                             ("BreakLinVel.outputs:x", "DiffController.inputs:linearVelocity"),
@@ -495,13 +499,14 @@ With the ActionGraphs created, you can validate in a ROS 2 sourced terminal that
 
 To visualize the full TF tree:
 
-#. Launch the ``robot_state_publisher``. Because the tutorial publishes joint states instead of the transforms directly.
-#. Use ``view_frames`` from the ``tf2_tools`` package. 
+#. Launch the ``robot_state_publisher`` which will take the joint states published by Isaac Sim and publish the transforms to the ``/tf`` and ``/tf_static`` topics.
 
     .. code-block:: bash
 
         ros2 run robot_state_publisher robot_state_publisher --ros-args \
-            -p robot_description:="$(xacro $ROBOT_PARAMS/robot.urdf.xacro)"
+            -p robot_description:="$(xacro $(ros2 pkg prefix isaacsim_clearpath_nav2)/share/isaacsim_clearpath_nav2/params/dd100/robot.urdf.xacro)"
+
+#. Use ``view_frames`` from the ``tf2_tools`` package. 
 
     .. code-block:: bash
 
