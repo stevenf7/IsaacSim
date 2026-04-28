@@ -1,4 +1,9 @@
 # Changelog
+## [1.5.1] - 2026-04-28
+### Fixed
+- `LightRandomizer._reset` now skips cached `inputs:intensity`/`inputs:color` values that were unauthored at setup time and logs a warning instead of writing `None` back to the prim.
+- `decompose_rotation` now supports single-axis `xformOp:rotateX|Y|Z` ops by returning a scalar angle and raises `ValueError` for unsupported rotation orders; `set_rotation_with_ops` catches the error and logs a warning.
+
 ## [1.5.0] - 2026-04-22
 ### Changed
 - Dropped the `omni.kit.window.property` dependency. The property window refresh is now dispatched via

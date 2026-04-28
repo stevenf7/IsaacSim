@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.2] - 2026-04-28
+### Fixed
+- `project_pinhole` now returns the screen center for camera points whose homogeneous `w` is near zero, preventing a divide-by-zero crash when projecting points on the camera's projection plane.
+- `invert_fisheye_polynomial` now logs a warning with the residual and iteration count when Newton-Raphson fails to converge within `max_iterations`, instead of silently returning the last iterate.
+
 ## [1.5.1] - 2026-04-18
 ### Changed
 - Added imperative-mood docstrings and `__all__` definitions
