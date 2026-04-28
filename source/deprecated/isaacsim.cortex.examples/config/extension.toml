@@ -1,5 +1,5 @@
 [package]
-version = "0.2.1"
+version = "0.2.2"
 category = "Simulation"
 title = "Isaac Cortex Examples"
 description = "Example environments and behavior scripts for the Isaac Cortex decision framework, including Franka block stacking and UR10 bin stacking scenarios."
@@ -24,6 +24,12 @@ warning = "Extension deprecated since Isaac Sim 6.0.0. Will be replaced in 7.0 w
 
 [[python.module]]
 name = "isaacsim.cortex.examples"
+
+[[python.module]]
+name = "isaacsim.cortex.examples.franka_cortex"
+
+[[python.module]]
+name = "isaacsim.cortex.examples.ur10_palletizing"
 
 [[test]]
 name = "startup"

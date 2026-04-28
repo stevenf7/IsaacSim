@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.2] - 2026-04-27
+### Added
+- Added interactive samples back to the Robotics Example UI by adding `python.module` in `extension.toml`
+
 ## [0.2.1] - 2026-04-24
 ### Changed
 - Fixed import path for `base_sample` module
