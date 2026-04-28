@@ -1,5 +1,5 @@
 [package]
-version = "2.4.2"
+version = "2.4.3"
 category = "Simulation"
 title = "Isaac Sim PhysX Sensor Examples"
 description = "Provides example usage and snippets for Isaac Sim PhysX-raycast-based sensors."

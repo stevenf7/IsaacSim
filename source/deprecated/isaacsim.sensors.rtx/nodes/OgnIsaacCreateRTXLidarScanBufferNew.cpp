@@ -181,8 +181,10 @@ public:
             bool modalityValid = modality == requiredModality;
             if (!auxTypeValid)
             {
-                CARB_LOG_INFO(
-                    "IsaacCreateRTXLidarScanBuffer: %s requested for sensor '%s' but auxType (%d) is insufficient (requires %d)",
+                CARB_LOG_ERROR(
+                    "IsaacCreateRTXLidarScanBuffer: %s requested for sensor '%s' but auxType (%d) is insufficient (requires %d). "
+                    "Set the 'omni:sensor:Core:auxOutputType' attribute on the OmniLidar prim to 'BASIC' (for emitter/channel/echo/tick* IDs), "
+                    "'EXTRA' (also for materialId/objectId) or 'FULL' (also for hit normals/velocity). The corresponding output buffer will be empty.",
                     outputName, sensorPrimPath.c_str(), static_cast<int>(auxType), static_cast<int>(requiredAuxType));
                 return false;
             }
@@ -224,9 +226,14 @@ public:
         m_outputTickId =
             validateOutput(db.inputs.outputTickId(), omni::sensors::AuxType::BASIC, omni::sensors::Modality::LIDAR,
                            omni::sensors::LidarAuxHas::TICK_ID, "outputTickId");
-        m_outputHitNormal =
-            validateOutput(db.inputs.outputHitNormal(), omni::sensors::AuxType::FULL, omni::sensors::Modality::LIDAR,
-                           omni::sensors::LidarAuxHas::HIT_NORMALS, "outputHitNormal");
+        // Accept the deprecated `outputNormal` flag as an alias for `outputHitNormal` (NVBug 5985827).
+        const bool requestHitNormal = db.inputs.outputHitNormal() || db.inputs.outputNormal();
+        if (db.inputs.outputNormal())
+        {
+            CARB_LOG_WARN("IsaacCreateRTXLidarScanBuffer: `outputNormal` is deprecated; use `outputHitNormal` instead.");
+        }
+        m_outputHitNormal = validateOutput(requestHitNormal, omni::sensors::AuxType::FULL, omni::sensors::Modality::LIDAR,
+                                           omni::sensors::LidarAuxHas::HIT_NORMALS, "outputHitNormal");
         m_outputVelocity =
             validateOutput(db.inputs.outputVelocity(), omni::sensors::AuxType::FULL, omni::sensors::Modality::LIDAR,
                            omni::sensors::LidarAuxHas::VELOCITIES, "outputVelocity");

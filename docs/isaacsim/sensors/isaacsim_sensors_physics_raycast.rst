@@ -139,23 +139,8 @@ Using the RaycastSensor Wrapper
 
 The ``RaycastSensor`` class provides a higher-level interface that combines sensor creation and data access. It creates the sensor prim if it doesn't already exist and provides frame-based data output.
 
-.. code-block:: python
-
-    from isaacsim.sensors.experimental.physics import RaycastSensor
-
-    sensor = RaycastSensor(
-        "/World/Sensors/My_Sensor",
-        ray_origins=[[0, 0, 0], [0, 0, 0]],
-        ray_directions=[[1, 0, 0], [0, 1, 0]],
-        min_range=0.4,
-        max_range=100.0,
-        output_frame="WORLD",
-    )
-
-    # After simulation starts:
-    frame = sensor.get_current_frame()
-    print(f"Depths: {frame['depths']}")
-    print(f"Hit positions: {frame['hit_positions']}")
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_raycast/using_raycast_sensor_wrapper.py
+    :language: python
 
 Reading Sensor Output
 ^^^^^^^^^^^^^^^^^^^^^

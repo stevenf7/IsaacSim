@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1] - 2026-04-28
+### Fixed
+- `resolve_lidar_object_ids.py` standalone example was using only the lower 32 bits of each 128-bit object ID as the `StableIdMap` lookup key, which only matched in trivial scenes where the upper 96 bits happened to be zero. The example now uses `parse_object_ids()` to extract full 128-bit ints, so the lookup also resolves correctly for multi-subset meshes and procedural geometry.
+
+### Documentation
+- `parse_stable_id_map_data()` docstring now warns that some LiDAR object IDs may not have a map entry. The renderer combines the per-instance base stable ID with an upper index (submesh index for meshes, primitive index for procedural geometry); the map only registers per-instance and per-`GeomSubset` entries, so hits on procedural geometry or unmapped submesh indices produce IDs with no entry. Callers should use `map.get(id, ...)` rather than `map[id]`.
+
 ## [1.1.0] - 2026-04-23
 ### Added
 - `RtxCamera` authoring class for creating/wrapping USD Camera prims with OmniSensorAPI schema

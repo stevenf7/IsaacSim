@@ -1,5 +1,10 @@
 # Changelog
 
+## [15.16.2] - 2026-04-28
+### Fixed
+- Restored the deprecated `outputNormal` input on `IsaacCreateRTXLidarScanBufferNew` as an alias for `outputHitNormal`, emitting a deprecation warning when used. Previously the "New" node rejected `outputNormal=True` with a `SyntheticDataException` even though the non-`New` node still accepted it (NVBug 5985827).
+- `IsaacCreateRTXLidarScanBuffer`/`IsaacCreateRTXLidarScanBufferNew`: insufficient `auxType` on the `OmniLidar` prim caused requested ID outputs (`materialId`, `objectId`, `emitterId`, etc.) to be silently disabled at init time. The non-`New` node logged this at `WARN` (often missed); the `New` node logged at `INFO` (filtered by default). Both now log at `ERROR` with explicit remediation naming the `omni:sensor:Core:auxOutputType` USD attribute and the level required for each output (NVBug 5985774).
+
 ## [15.16.1] - 2026-04-13
 ### Fixed
 - Incorporate bug fixes from update to kit-kernel.

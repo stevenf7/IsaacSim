@@ -63,6 +63,7 @@ from isaacsim.sensors.experimental.rtx import (
     Lidar,
     LidarSensor,
     parse_generic_model_output_data,
+    parse_object_ids,
     parse_stable_id_map_data,
 )
 from omni.replicator.core import Writer
@@ -202,9 +203,15 @@ print(f"GMO contains {gmo.numElements} points")
 # =============================================================================
 # MAP OBJECT IDS TO PRIM PATHS
 # =============================================================================
-# The objId field is a flat array of uint32 values where every 4 values represent
-# a 128-bit stable ID. We extract the lower 32 bits (first element of each group)
-# as the lookup key into the stable_id_map.
+# objId from the GenericModelOutput is a buffer of 128-bit stable IDs. The
+# StableIdMap uses the full 128-bit value as its key, so the lookup key must
+# also be the full 128-bit integer — extracting only the lower 32 bits would
+# silently miss for any hit on multi-subset meshes (where the upper 32 bits
+# carry the submesh index) or procedural geometry (where the upper 32 bits
+# carry the per-triangle primitive index).
+#
+# parse_object_ids() converts the raw buffer into a list of full 128-bit ints
+# that match the StableIdMap keys directly.
 
 print(f"\n{'='*60}")
 print("Stable ID Map Contents")
@@ -215,25 +222,24 @@ for stable_id, prim_path in sorted(stable_id_map.items(), key=lambda x: x[1]):
 
 # Count points per object using objId from GMO
 if hasattr(gmo, "objId") and gmo.objId is not None and gmo.objId.size > 0:
-    obj_ids = gmo.objId
-
     print(f"\n{'='*60}")
     print("Object Hit Count from GMO")
     print(f"{'='*60}")
 
-    # Collect unique IDs from the lower 32-bit portion
-    # objId is stored as groups of 4 uint32 values (128-bit IDs)
-    if obj_ids.size >= 4:
-        # Reshape to (N, 4) where each row is a 128-bit ID
-        num_ids = obj_ids.size // 4
-        id_groups = obj_ids[: num_ids * 4].reshape(-1, 4)
-        lower_ids = id_groups[:, 0]  # Use lower 32 bits as the lookup key
+    # Convert raw objId buffer to full 128-bit ints that match stable_id_map keys.
+    obj_id_ints = parse_object_ids(gmo.objId)
 
-        unique_ids, counts = np.unique(lower_ids, return_counts=True)
-        for uid, count in zip(unique_ids, counts):
-            uid_int = int(uid)
-            prim_path = stable_id_map.get(uid_int, "<unknown>")
-            print(f"  Object ID {uid_int:>10d}: {count:>6d} points -> {prim_path}")
+    # Tally hits per unique 128-bit ID.
+    counts = {}
+    for oid in obj_id_ints:
+        counts[oid] = counts.get(oid, 0) + 1
+
+    for oid, count in sorted(counts.items(), key=lambda x: -x[1]):
+        # Use map.get() because some IDs (e.g. procedural-geometry per-primitive
+        # IDs) may legitimately have no map entry — see parse_stable_id_map_data
+        # docstring for the full list of cases.
+        prim_path = stable_id_map.get(oid, "<unknown>")
+        print(f"  Object ID {oid:>40d}: {count:>6d} points -> {prim_path}")
 else:
     carb.log_warn("No objId data available in GMO (ensure aux_output_level is EXTRA or FULL)")
 

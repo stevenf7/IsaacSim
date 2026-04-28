@@ -248,6 +248,87 @@ class TestCameraInfoUtils(ROS2TestCase):
         for i, (e, a) in enumerate(zip(expected, camera_info.d)):
             self.assertAlmostEqual(a, e, delta=1e-5, msg=f"Coefficient {i} mismatch")
 
+    async def test_read_camera_info_opencv_pinhole_scales_to_render_product(self):
+        """OpenCV pinhole intrinsics should scale when render product differs from authored imageSize (NVBug 6039737)."""
+        usd_width, usd_height = self._width, self._height
+        usd_cx, usd_cy = usd_width / 2, usd_height / 2
+        horizontal_aperture, vertical_aperture = self._rtx_camera.camera.get_apertures()
+        horizontal_aperture = horizontal_aperture.numpy().item()
+        vertical_aperture = vertical_aperture.numpy().item()
+        focal_length = self._rtx_camera.camera.get_focal_lengths().numpy().item()
+        usd_fx = usd_width * focal_length / horizontal_aperture
+        usd_fy = usd_height * focal_length / vertical_aperture
+
+        # Author OpenCV pinhole params at the current (USD) resolution.
+        _apply_opencv_distortion(
+            self._camera_prim,
+            "opencvPinhole",
+            [0.1, 0.05, 0.01, 0.02, 0.003, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            _PINHOLE_COEFF_NAMES,
+            (usd_width, usd_height),
+            cx=usd_cx,
+            cy=usd_cy,
+            fx=usd_fx,
+            fy=usd_fy,
+        )
+        await omni.kit.app.get_app().next_update_async()
+
+        # Create a render product at a different resolution; the USD imageSize attribute stays at the authored value.
+        rp_width, rp_height = 640, 480
+        scaled_rp = rep.create.render_product("/test_camera", resolution=(rp_width, rp_height))
+        await omni.kit.app.get_app().next_update_async()
+
+        camera_info, _ = read_camera_info(scaled_rp.path)
+
+        sx = rp_width / usd_width
+        sy = rp_height / usd_height
+        self.assertEqual(camera_info.width, rp_width)
+        self.assertEqual(camera_info.height, rp_height)
+        self.assertAlmostEqual(camera_info.k[0], usd_fx * sx, delta=1e-3)  # fx
+        self.assertAlmostEqual(camera_info.k[2], usd_cx * sx, delta=1e-3)  # cx
+        # read_camera_info forces fy to fx when square pixels are maintained, so compare against fx*sx.
+        self.assertAlmostEqual(camera_info.k[4], usd_fx * sx, delta=1e-3)  # fy (forced square)
+        self.assertAlmostEqual(camera_info.k[5], usd_cy * sy, delta=1e-3)  # cy
+
+    async def test_read_camera_info_opencv_fisheye_scales_to_render_product(self):
+        """OpenCV fisheye intrinsics should scale when render product differs from authored imageSize (NVBug 6039737)."""
+        usd_width, usd_height = self._width, self._height
+        usd_cx, usd_cy = usd_width / 2, usd_height / 2
+        horizontal_aperture, vertical_aperture = self._rtx_camera.camera.get_apertures()
+        horizontal_aperture = horizontal_aperture.numpy().item()
+        vertical_aperture = vertical_aperture.numpy().item()
+        focal_length = self._rtx_camera.camera.get_focal_lengths().numpy().item()
+        usd_fx = usd_width * focal_length / horizontal_aperture
+        usd_fy = usd_height * focal_length / vertical_aperture
+
+        _apply_opencv_distortion(
+            self._camera_prim,
+            "opencvFisheye",
+            [0.1, 0.05, 0.01, 0.002],
+            _FISHEYE_COEFF_NAMES,
+            (usd_width, usd_height),
+            cx=usd_cx,
+            cy=usd_cy,
+            fx=usd_fx,
+            fy=usd_fy,
+        )
+        await omni.kit.app.get_app().next_update_async()
+
+        rp_width, rp_height = 640, 480
+        scaled_rp = rep.create.render_product("/test_camera", resolution=(rp_width, rp_height))
+        await omni.kit.app.get_app().next_update_async()
+
+        camera_info, _ = read_camera_info(scaled_rp.path)
+
+        sx = rp_width / usd_width
+        sy = rp_height / usd_height
+        self.assertEqual(camera_info.width, rp_width)
+        self.assertEqual(camera_info.height, rp_height)
+        self.assertAlmostEqual(camera_info.k[0], usd_fx * sx, delta=1e-3)  # fx
+        self.assertAlmostEqual(camera_info.k[2], usd_cx * sx, delta=1e-3)  # cx
+        self.assertAlmostEqual(camera_info.k[4], usd_fx * sx, delta=1e-3)  # fy (forced square)
+        self.assertAlmostEqual(camera_info.k[5], usd_cy * sy, delta=1e-3)  # cy
+
     async def test_compute_relative_pose(self):
         """Test computing relative pose between two camera prims."""
         RtxCamera("/left_camera", positions=[[0, 0, 0]], orientations=[[1, 0, 0, 0]])

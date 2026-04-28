@@ -71,7 +71,11 @@ Sensors
 ^^^^^^^
 
 - **Cameras and Depth Sensors**: ``isaacsim.sensors.camera`` deprecated in favor of ``isaacsim.sensors.experimental.rtx``. Camera sensor now uses ``_fast`` annotator variants for improved performance. Fixed tiled sensor data slicing.
-- **RTX Non-Visual Sensors**: Added explicit RTX Radar support via new Annotator. RTX Sensor models now use Hydra time (``omni.timeline``) for accurate simulation time tracking. Scan accumulation and post-processing moved to host by default, reducing GPU resource contention. Fixed point cloud "flickering" and broken scans when using RTX Lidar. New and updated standalone examples.
+- **RTX Non-Visual Sensors**: Added explicit RTX Radar support via new Annotator. RTX Sensor models now use Hydra time (``omni.timeline``) for accurate simulation time tracking. Scan accumulation and post-processing moved to host by default, reducing GPU resource contention. Fixed point cloud "flickering" and broken scans when using RTX Lidar. New and updated standalone examples. Several RTX Lidar standalone examples were renamed without backward-compatible aliases; downstream references must be updated:
+
+  - ``standalone_examples/api/isaacsim.sensors.rtx/rotating_lidar_rtx.py`` → ``lidar_robot_integration.py``
+  - ``standalone_examples/api/isaacsim.sensors.rtx/inspect_lidar_metadata.py`` → ``inspect_lidar_gmo.py``
+  - ``standalone_examples/api/isaacsim.sensors.rtx/inspect_radar_metadata.py`` → ``inspect_radar_gmo.py``
 - **Physics Sensors**: ``isaacsim.sensors.physics`` deprecated in favor of ``isaacsim.sensors.experimental.physics``. Added dedicated GPU codepath for IMU sensor using a separate CUDA stream and pinned memory buffer for improved performance.
 
 ROS

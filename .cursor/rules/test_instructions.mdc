@@ -163,9 +163,9 @@ Test camera, lidar, and physics sensors:
 ./tests/tests-nativepython-isaacsim.sensors.camera.camera_opencv_pinhole.sh
 
 # RTX sensor tests
-./tests/tests-nativepython-isaacsim.sensors.rtx.rotating_lidar_rtx.sh
-./tests/tests-nativepython-isaacsim.sensors.rtx.inspect_lidar_metadata.sh
-./tests/tests-nativepython-isaacsim.sensors.rtx.inspect_radar_metadata.sh
+./tests/tests-nativepython-isaacsim.sensors.rtx.lidar_robot_integration.sh
+./tests/tests-nativepython-isaacsim.sensors.rtx.inspect_lidar_gmo.sh
+./tests/tests-nativepython-isaacsim.sensors.rtx.inspect_radar_gmo.sh
 
 # PhysX sensor tests
 ./tests/tests-nativepython-isaacsim.sensors.physx.rotating_lidar_physX.sh

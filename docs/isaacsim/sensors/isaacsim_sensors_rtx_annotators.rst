@@ -62,28 +62,15 @@ When ``isaacsim.sensors.rtx.nodes`` is enabled, a writer named ``"draw-point-clo
 becomes available on ``LidarSensor``, ``RadarSensor``, and ``AcousticSensor``.
 Pass ``writers=["draw-point-cloud"]`` to attach the debug draw writer:
 
-.. code-block:: python
-
-    from isaacsim.sensors.experimental.rtx import LidarSensor
-
-    sensor = LidarSensor("/World/lidar", annotators=[], writers=["draw-point-cloud"])
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_annotators/attach_debug_draw_writer.py
+    :language: python
 
 **Using with RTX Radar**
 
 The annotator works identically with ``OmniRadar`` prims. Remember that Motion BVH must be enabled for RTX Radar:
 
-.. code-block:: python
-
-    import numpy as np
-    import omni.replicator.core as rep
-    from isaacsim.sensors.experimental.rtx import Radar
-
-    radar = Radar("/World/radar", tick_rate=20, translations=np.array([0, 0, 1.0]))
-    render_product = rep.create.render_product(radar.paths[0], resolution=(1, 1))
-
-    writer = rep.writers.get("RtxSensorDebugDrawPointCloud")
-    writer.initialize(size=0.2, color=[1.0, 0.3, 0.1, 1.0])  # orange, larger points
-    writer.attach([render_product.path])
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_annotators/attach_debug_draw_writer_radar.py
+    :language: python
 
 **Auxiliary data**
 
@@ -144,6 +131,22 @@ as a Python ``dict`` mapping stable IDs to prim paths.
 ``parse_generic_model_output_data`` provides access to the ``objId`` field in the ``GenericModelOutput`` buffer, which contains 128-bit object IDs.
 
 Refer to ``standalone_examples/api/isaacsim.sensors.experimental.rtx/resolve_lidar_object_ids.py`` for an example of using these functions to resolve object IDs as prim paths.
+
+.. note:: **Not every returned object ID has a map entry.**
+
+    The renderer constructs each 128-bit object ID by combining a per-instance
+    base stable ID with an *upper index* placed in the high 32 bits — the
+    submesh index for mesh geometry, and the per-triangle primitive index for
+    procedural geometry. ``StableIdMap`` registers per-instance entries (only
+    for instances with a USD prim path) plus per-``GeomSubset`` entries when
+    an instance has more than one subset, but it does **not** register
+    per-primitive entries.
+
+    As a result, hits on procedural geometry, on submeshes that weren't
+    expanded into the map, or on renderer-internal instances without a prim
+    path will return object IDs with no map entry. Direct ``map[id]`` lookups
+    on those IDs raise ``KeyError``. Use ``map.get(id, "<unknown>")`` (as the
+    bundled example does) to handle missing IDs gracefully.
 
 .. _rtx_sensor_deprecated_annotators:
 

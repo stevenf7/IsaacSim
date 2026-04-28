@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.2] - 2026-04-28
+### Fixed
+- IMU example raised `AttributeError` when reading orientation; read scalar `orientation_w/x/y/z` fields individually instead of indexing.
+
 ## [1.2.1] - 2026-04-21
 ### Changed
 - Replaced `omni.kit.commands` sensor creation with `ContactSensor.create()`, `IMUSensor.create()`, and `RaycastSensor.create()` class methods

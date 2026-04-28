@@ -52,7 +52,7 @@ def read_camera_info(render_product_path: str) -> tuple:
 
     if lens_distortion_model == "opencvPinhole":
 
-        width, height = camera_prim.GetAttribute("omni:lensdistortion:opencvPinhole:imageSize").Get()
+        usd_width, usd_height = camera_prim.GetAttribute("omni:lensdistortion:opencvPinhole:imageSize").Get()
         cx = camera_prim.GetAttribute("omni:lensdistortion:opencvPinhole:cx").Get()
         cy = camera_prim.GetAttribute("omni:lensdistortion:opencvPinhole:cy").Get()
         fx = camera_prim.GetAttribute("omni:lensdistortion:opencvPinhole:fx").Get()
@@ -63,6 +63,15 @@ def read_camera_info(render_product_path: str) -> tuple:
                 f"omni:lensdistortion:opencvPinhole:{OPENCV_PINHOLE_ATTRIBUTE_MAP[i]}"
             ).Get()
 
+        # Scale intrinsics to the render-product resolution (distortion coefficients are scale-invariant).
+        width, height = ViewportManager.get_resolution(render_product_path)
+        if (width, height) != (usd_width, usd_height):
+            sx, sy = width / usd_width, height / usd_height
+            fx *= sx
+            cx *= sx
+            fy *= sy
+            cy *= sy
+
         if pinhole[5:8] == [0.0] * 3:
             # Zeros provided for k4, k5, k6 coefficients
             camera_info.distortion_model = "plumb_bob"
@@ -71,7 +80,7 @@ def read_camera_info(render_product_path: str) -> tuple:
             camera_info.distortion_model = "rational_polynomial"
             camera_info.d = pinhole
     elif lens_distortion_model == "opencvFisheye":
-        width, height = camera_prim.GetAttribute("omni:lensdistortion:opencvFisheye:imageSize").Get()
+        usd_width, usd_height = camera_prim.GetAttribute("omni:lensdistortion:opencvFisheye:imageSize").Get()
         cx = camera_prim.GetAttribute("omni:lensdistortion:opencvFisheye:cx").Get()
         cy = camera_prim.GetAttribute("omni:lensdistortion:opencvFisheye:cy").Get()
         fx = camera_prim.GetAttribute("omni:lensdistortion:opencvFisheye:fx").Get()
@@ -81,6 +90,16 @@ def read_camera_info(render_product_path: str) -> tuple:
             fisheye[i] = camera_prim.GetAttribute(
                 f"omni:lensdistortion:opencvFisheye:{OPENCV_FISHEYE_ATTRIBUTE_MAP[i]}"
             ).Get()
+
+        # Scale intrinsics to the render-product resolution (distortion coefficients are scale-invariant).
+        width, height = ViewportManager.get_resolution(render_product_path)
+        if (width, height) != (usd_width, usd_height):
+            sx, sy = width / usd_width, height / usd_height
+            fx *= sx
+            cx *= sx
+            fy *= sy
+            cy *= sy
+
         camera_info.distortion_model = "equidistant"
         camera_info.d = fisheye
     else:

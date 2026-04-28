@@ -85,12 +85,8 @@ The ``tick_rate`` parameter (Hz) controls how frequently the sensor renders. A v
 nonzero value causes the sensor to render at the specified frequency independently of the simulation
 step rate. This maps to the ``omni:sensor:tickRate`` prim attribute.
 
-.. code-block:: python
-
-    from isaacsim.sensors.experimental.rtx import Acoustic
-
-    # Render at 10 Hz regardless of simulation frame rate
-    acoustic = Acoustic.create("/World/Acoustic", tick_rate=10.0)
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_acoustic/set_acoustic_tick_rate.py
+    :language: python
 
 Auxiliary Output Level
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -101,11 +97,8 @@ controls what auxiliary data appears in ``GenericModelOutput`` frames.
 
 Valid values for Acoustic: ``"NONE"`` (default), ``"BASIC"``.
 
-.. code-block:: python
-
-    from isaacsim.sensors.experimental.rtx import Acoustic
-
-    acoustic = Acoustic.create("/World/Acoustic", aux_output_level="BASIC")
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_acoustic/set_acoustic_aux_output_level.py
+    :language: python
 
 See :ref:`rtx_sensor_annotator_descriptions` for details on what fields are available at each level.
 
@@ -114,18 +107,8 @@ How to Collect Data from an RTX Acoustic Sensor
 
 Use the ``AcousticSensor`` runtime class to attach annotators and retrieve data:
 
-.. code-block:: python
-
-    from isaacsim.sensors.experimental.rtx import AcousticSensor, parse_generic_model_output_data
-
-    sensor = AcousticSensor(acoustic, annotators=["generic-model-output"])
-    data, info = sensor.get_data("generic-model-output")
-    gmo = parse_generic_model_output_data(data)
-
-    # gmo.x  -> transmitter mount IDs
-    # gmo.y  -> receiver mount IDs
-    # gmo.z  -> channel IDs
-    # gmo.scalar -> amplitude values
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_acoustic/collect_data_with_acoustic_sensor.py
+    :language: python
 
 Refer to :ref:`rtx_sensor_reading_gmo_buffer` for more details on the ``GenericModelOutput`` buffer.
 
