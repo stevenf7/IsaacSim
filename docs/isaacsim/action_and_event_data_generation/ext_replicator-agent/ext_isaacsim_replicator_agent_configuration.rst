@@ -166,7 +166,7 @@ Behaviors are defined in the ``routines`` list. Common fields:
 Colliders
 ^^^^^^^^^^^
 
-Characters can define a list of colliders to spawn and attach under their root. These colliders are to be used together with `collision_trigger` (details in Trigger section below) to create scenarios where characters perform behaviors when they are entering or exiting other colliders.
+Characters can define a list of `colliders <https://docs.omniverse.nvidia.com/kit/docs/omni_physics/latest/dev_guide/rigid_bodies_articulations/collision.html#colliders>`_ to spawn and attach under their root. These colliders are to be used together with `collision_trigger` (details in Trigger section below) to create scenarios where characters perform behaviors when they are entering or exiting other colliders.
 
 When the following two types of colliders supported are spawned, the collider prim will be applied with `PhysicsRigidBodyAPI`, `PhysicsCollisionAPI` and `PhysxTriggerAPI`:
 
@@ -177,6 +177,23 @@ When the following two types of colliders supported are spawned, the collider pr
 -  **cylinder**: The collider from UsdGeom.Cylinder.
 
     - ``radius``: The cylinder radius. Value type is Float.
+
+.. list-table:: 
+   :widths: 50 50
+   :header-rows: 0
+
+   * - .. figure:: /images/isim_6.0_full_ext-isaacsim.replicator.agent-6.0.0_viewport_IRA_box_collider.png
+          :height: 360px
+          :align: center
+
+          Box collider with size 2x2x2
+
+     - .. figure:: /images/isim_6.0_full_ext-isaacsim.replicator.agent-6.0.0_viewport_IRA_cylinder_collider.png
+          :height: 360px
+          :align: center
+
+          Cylinder collider with radius 1.5 
+
 
 Each colldier also defines a name. This name will be translated into a custom USD String attribute ``metro:collider:name`` on the collider, to be used in ``self_collider`` or ``other_colliders`` from ``collision_trigger`` for collision filtering. 
 
