@@ -718,8 +718,6 @@ class TestRos2CameraInfo(ROS2TestCase):
         self.assertGreaterEqual(sim_timestamp, 0.0, "Simulation time should be >= 0")
         self.assertLessEqual(sim_timestamp, 10.0, "Simulation time should be <= 10s")
 
-        prev_sim_timestamp = sim_timestamp
-
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
 
@@ -736,9 +734,12 @@ class TestRos2CameraInfo(ROS2TestCase):
             self._camera_info_sim_time.header.stamp.sec + self._camera_info_sim_time.header.stamp.nanosec * 1e-9
         )
         self.assertGreaterEqual(sim_timestamp, 0.0, "Simulation time should be >= 0")
-        self.assertLessEqual(
-            sim_timestamp, prev_sim_timestamp * 1.2, "Simulation time should be close to previous sim time"
-        )
+        # After ``timeline.stop()`` sim time must reset; the next message
+        # arriving after ``play()`` should therefore carry a small (near-zero)
+        # stamp.  Use an absolute bound rather than a ratio of the previous
+        # value since both timestamps are discrete frame counts (a single
+        # scheduler-induced one-frame difference can exceed any tight ratio).
+        self.assertLessEqual(sim_timestamp, 1.0, "Simulation time should reset close to zero after stop")
 
     async def test_camera_info_sim_time_monotonic(self):
         """Test camera info sim time monotonic."""

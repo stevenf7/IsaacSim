@@ -32,6 +32,7 @@
 #include <isaacsim/ros2/core/Ros2Types.h>
 
 #include <chrono>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -60,11 +61,19 @@ class Ros2TestBase
 public:
     /**
      * @brief Constructor that loads the ROS2 factory for the specified distribution
-     * @param distro ROS2 distribution name (default: "humble")
+     * @param distro ROS2 distribution name (default: value of ROS_DISTRO environment variable,
+     *               falling back to "humble" when unset).  Using the sourced distro avoids
+     *               loading an ABI-incompatible backend on top of the ROS 2 runtime libraries
+     *               already loaded by the core plugin.
      */
-    explicit Ros2TestBase(const std::string& distro = "humble")
+    explicit Ros2TestBase(const std::string& distro = "")
         : m_distro(distro), m_factory(nullptr), m_context(nullptr), m_node(nullptr)
     {
+        if (m_distro.empty())
+        {
+            const char* envDistro = std::getenv("ROS_DISTRO");
+            m_distro = (envDistro && *envDistro) ? std::string(envDistro) : std::string("humble");
+        }
         m_factory = loadRos2Factory(m_distro);
     }
 
