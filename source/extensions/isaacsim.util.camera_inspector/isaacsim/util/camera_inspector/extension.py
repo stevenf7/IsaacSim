@@ -24,14 +24,16 @@ from collections.abc import Callable
 from typing import Any, Final
 
 import carb
+import isaacsim.core.experimental.utils.prim as prim_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.transform as transform_utils
+import numpy as np
 import omni
 import omni.kit.commands
-import omni.timeline
 import omni.ui as ui
 import omni.usd
-from isaacsim.core.utils.prims import is_prim_path_valid
-from isaacsim.core.utils.stage import get_current_stage
-from isaacsim.core.utils.viewports import create_viewport_for_camera
+from isaacsim.core.experimental.objects import Camera
+from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.gui.components.element_wrappers import TextBlock
 from isaacsim.gui.components.menu import make_menu_item_description
 from isaacsim.gui.components.style import COLOR_W, COLOR_X, COLOR_Y, COLOR_Z
@@ -42,13 +44,22 @@ from isaacsim.gui.components.ui_utils import (
     get_style,
     setup_ui_headers,
 )
-from isaacsim.sensors.camera import Camera, get_all_camera_objects
 from omni.kit.menu.utils import MenuItemDescription, add_menu_items, remove_menu_items
 from omni.kit.viewport.window import ViewportWindow, get_viewport_window_instances
 from omni.kit.window.property.templates import LABEL_WIDTH
 
 EXTENSION_NAME: Final[str] = "Camera Inspector"
 SUPPORTED_AXES: Final[list[str]] = ["world", "usd", "ros"]
+
+# 3x3 rotation sub-matrices derived from the USD camera convention homogeneous transforms.
+# USD camera convention: +Y up, -Z forward (OpenGL/computer-graphics).
+# World camera convention: +Z up, +X forward (robotics).
+# ROS camera convention:   +Y down, +Z forward (computer vision).
+#
+# Both transforms are applied on the right of the USD rotation matrix:
+#   R_target = R_usd @ _USD_TO_<target>
+_USD_TO_WORLD_ROT: np.ndarray = np.array([[0, -1, 0], [0, 0, 1], [-1, 0, 0]], dtype=np.float32)
+_USD_TO_ROS_ROT: np.ndarray = np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]], dtype=np.float32)
 
 
 class Extension(omni.ext.IExt):
@@ -179,7 +190,7 @@ class Extension(omni.ext.IExt):
         Args:
             width: Optional width parameter for refresh operation.
         """
-        self._all_cameras = get_all_camera_objects()
+        self._all_cameras = self._get_all_camera_objects()
         self._all_viewports = list(get_viewport_window_instances())
 
         self._update_camera_dropdown()
@@ -208,7 +219,7 @@ class Extension(omni.ext.IExt):
         if option < len(self._all_cameras):
             self._selected_camera = self._all_cameras[option]
         else:
-            err = f"Selected option {option} not available; available cameras: {[camera.name for camera in self._all_cameras]}"
+            err = f"Selected option {option} not available; available cameras: {[camera.paths[0] for camera in self._all_cameras]}"
             carb.log_warn(err)
 
         self._update_camera_stats_ui()
@@ -253,8 +264,8 @@ class Extension(omni.ext.IExt):
         Creates a new viewport window configured to display the view from the currently selected camera.
         """
         if self._selected_camera is not None:
-            create_viewport_for_camera(
-                viewport_name=self._selected_camera.prim_path, camera_prim_path=self._selected_camera.prim_path
+            ViewportManager.create_viewport_window(
+                title=self._selected_camera.paths[0], camera=self._selected_camera.paths[0]
             )
 
             self._on_refresh()
@@ -266,7 +277,7 @@ class Extension(omni.ext.IExt):
         if self._selected_camera is not None and self._selected_viewport is not None:
             omni.kit.commands.execute(
                 "SetViewportCamera",
-                camera_path=self._selected_camera.prim_path,
+                camera_path=self._selected_camera.paths[0],
                 viewport_api=self._selected_viewport.viewport_api,
             )
         else:
@@ -478,6 +489,7 @@ class Extension(omni.ext.IExt):
     ##################################
     # UI Updaters
     ##################################
+
     def _update_camera_dropdown(self):
         """Updates the camera dropdown with the current list of available cameras in the scene."""
         # Remove all old camera names
@@ -486,7 +498,7 @@ class Extension(omni.ext.IExt):
 
         # add all cameras to the dropdown
         for camera in self._all_cameras:
-            self._task_ui_elements["Combo Camera"].append_child_item(None, ui.SimpleStringModel(camera.name))
+            self._task_ui_elements["Combo Camera"].append_child_item(None, ui.SimpleStringModel(camera.paths[0]))
 
     def _update_viewport_dropdown(self):
         """Updates the viewport dropdown with the current list of available viewport windows."""
@@ -505,17 +517,17 @@ class Extension(omni.ext.IExt):
             e: Event object from the global update event dispatcher.
         """
         # if camera prim path has been updated, set self._selected_camera to None
-        if get_current_stage() is None:
+        if stage_utils.get_current_stage(backend="usd") is None:
             return
 
-        if self._selected_camera and not is_prim_path_valid(self._selected_camera.prim_path):
+        if self._selected_camera and not prim_utils.get_prim_at_path(self._selected_camera.paths[0]).IsValid():
             self._selected_camera = None
             self._on_refresh()
 
         # Update the camera translation and rotation
         if self._selected_camera is not None:
-            world_pos, world_quat = self._selected_camera.get_world_pose(camera_axes=self._selected_axis_world)
-            local_pos, local_quat = self._selected_camera.get_local_pose(camera_axes=self._selected_axis_local)
+            world_pos, world_quat = self._get_camera_pose(self._selected_camera, "world", self._selected_axis_world)
+            local_pos, local_quat = self._get_camera_pose(self._selected_camera, "local", self._selected_axis_local)
 
             for i in range(3):
                 self._task_ui_elements["World Camera Position"][i].set_value(float(world_pos[i]))
@@ -538,3 +550,47 @@ class Extension(omni.ext.IExt):
             self._task_ui_elements["CameraTextField"].set_text(
                 "# No camera selected. Please use dropdown to select a camera."
             )
+
+    def _get_all_camera_objects(self, root_prim: str = "/") -> list[Camera]:
+        """Retrieve Camera objects for each camera in the scene.
+
+        Args:
+            root_prim: Root prim where the world exists.
+
+        Returns:
+            A list of Camera objects
+        """
+
+        def predicate(prim, path):
+            if prim.GetPrimTypeInfo().GetTypeName() == "Camera":
+                # Filter LiDAR sensors
+                if not prim.HasAPI("IsaacRtxLidarSensorAPI"):
+                    return True
+            return False
+
+        camera_prims = prim_utils.get_all_matching_child_prims(root_prim, predicate=predicate)
+        return [Camera(prim_utils.get_prim_path(prim)) for prim in camera_prims]
+
+    def _get_camera_pose(
+        self, camera: Camera, frame: str = "world", camera_axes: str = "usd"
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Return the camera pose with orientation expressed in the requested axes convention.
+
+        Args:
+            camera: Camera object whose pose should be queried.
+            frame: Frame of the pose to query.
+            camera_axes: Target convention.
+
+        Returns:
+            Tuple (position, orientation) in the requested camera axes convention.
+        """
+        positions, orientations = camera.get_local_poses() if frame == "local" else camera.get_world_poses()
+        position = positions.numpy()[0].astype(np.float32)
+        orientation = orientations.numpy()[0].astype(np.float32)
+        if camera_axes == "world":
+            R = transform_utils.quaternion_to_rotation_matrix(orientation).numpy() @ _USD_TO_WORLD_ROT
+            orientation = transform_utils.rotation_matrix_to_quaternion(R).numpy()
+        elif camera_axes == "ros":
+            R = transform_utils.quaternion_to_rotation_matrix(orientation).numpy() @ _USD_TO_ROS_ROT
+            orientation = transform_utils.rotation_matrix_to_quaternion(R).numpy()
+        return position, orientation

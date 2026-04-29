@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.2.0] - 2026-04-28
+### Changed
+- Migrate extension implementation to core experimental API
+
 ## [1.1.2] - 2026-04-08
 ### Fixed
 - Fix mypy type errors: add type annotations, fix callback types, add None guards, rename variable shadowing builtin
