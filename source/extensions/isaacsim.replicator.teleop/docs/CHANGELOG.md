@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1] - 2026-04-28
+### Added
+- `pose_backend` arg on `build_teleop_recorder` (forwarded to `EpisodeRecorder`).
+
+### Fixed
+- Custom XR anchor actually moves the headset.
+- Disconnect returns the headset to its pre-Connect pose.
+
 ## [0.3.0] - 2026-04-22
 ### Added
 - Teleop-side `Recordable` plugins, a `build_teleop_recorder(...)` factory,

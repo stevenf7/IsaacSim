@@ -42,7 +42,7 @@ from typing import Any
 
 import carb
 import carb.eventdispatcher
-from isaacsim.replicator.episode_recorder import EPISODE_CMD_EVENT
+from isaacsim.replicator.episode_recorder import EPISODE_CMD_EVENT, dispatch_episode_binding
 
 
 class VRButton(str, Enum):
@@ -157,6 +157,7 @@ class VRRecordingButton:
         self._teleop_manager.add_controller_inputs_observer(self._on_controller_inputs)
         self._attached = True
         self._prev_pressed = False
+        self._dispatch_binding("attach")
 
     def detach(self) -> None:
         """Unsubscribe from the teleop manager. Safe to call multiple times."""
@@ -167,6 +168,22 @@ class VRRecordingButton:
             remove(self._on_controller_inputs)
         self._attached = False
         self._prev_pressed = False
+        self._dispatch_binding("detach")
+
+    def _dispatch_binding(self, action: str) -> None:
+        """Advertise this binding's lifecycle on the recorder binding event bus."""
+        try:
+            session_id = self._session_id_getter() if self._session_id_getter is not None else None
+            dispatch_episode_binding(
+                action,
+                binding_id=f"vr_{self._button.value}",
+                source="vr_button",
+                label=f"VR {self._button.value.replace('_', ' ').title()}",
+                command=self._command,
+                session_id=session_id,
+            )
+        except Exception as exc:  # noqa: BLE001
+            carb.log_warn(f"[VRRecordingButton] Failed to dispatch binding {action} event: {exc}")
 
     def destroy(self) -> None:
         """Alias for :meth:`detach`. Safe to call during shutdown."""

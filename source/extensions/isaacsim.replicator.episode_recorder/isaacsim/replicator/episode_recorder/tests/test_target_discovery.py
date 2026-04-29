@@ -20,16 +20,10 @@ import omni.kit.app
 import omni.kit.test
 import omni.timeline
 import omni.usd
+from isaacsim.core.experimental.objects import Cube
+from isaacsim.core.experimental.prims import GeomPrim, RigidPrim, XformPrim
 from isaacsim.replicator.episode_recorder import target_discovery
-from isaacsim.storage.native import get_assets_root_path
-from pxr import Gf, UsdGeom, UsdPhysics
-
-SIMPLE_ARTICULATION_USD = "Isaac/Robots/IsaacSim/SimpleArticulation/simple_articulation.usd"
-
-
-async def _tick(n: int = 1) -> None:
-    for _ in range(n):
-        await omni.kit.app.get_app().next_update_async()
+from pxr import UsdPhysics
 
 
 async def _build_scene_with_articulation_and_rigids() -> None:
@@ -37,17 +31,19 @@ async def _build_scene_with_articulation_and_rigids() -> None:
     stage_utils.define_prim("/World", "Xform")
     stage_utils.define_prim("/World/PhysicsScene", "PhysicsScene")
 
-    usd_path = f"{get_assets_root_path()}/{SIMPLE_ARTICULATION_USD}"
-    stage_utils.add_reference_to_stage(usd_path=usd_path, path="/World/Robot")
+    robot = stage_utils.define_prim("/World/Robot", "Xform")
+    UsdPhysics.ArticulationRootAPI.Apply(robot)
 
-    stage = omni.usd.get_context().get_stage()
+    Cube("/World/Robot/Link", sizes=0.25, positions=[0.0, 0.0, 0.25])
+    GeomPrim("/World/Robot/Link", apply_collision_apis=True)
+    RigidPrim("/World/Robot/Link", masses=[1.0])
 
-    cube = UsdGeom.Cube.Define(stage, "/World/Cube")
-    cube.AddTranslateOp().Set(Gf.Vec3d(1.0, 0.0, 0.5))
-    UsdPhysics.RigidBodyAPI.Apply(cube.GetPrim())
+    Cube("/World/Cube", sizes=0.25, positions=[1.0, 0.0, 0.5])
+    GeomPrim("/World/Cube", apply_collision_apis=True)
+    RigidPrim("/World/Cube", masses=[1.0])
 
-    marker = UsdGeom.Xform.Define(stage, "/World/Marker")
-    marker.AddTranslateOp().Set(Gf.Vec3d(-1.0, 0.0, 0.0))
+    stage_utils.define_prim("/World/Marker", "Xform")
+    XformPrim("/World/Marker", positions=[-1.0, 0.0, 0.0], reset_xform_op_properties=True)
 
 
 class TestTargetDiscovery(omni.kit.test.AsyncTestCase):
@@ -57,7 +53,6 @@ class TestTargetDiscovery(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
-        await _build_scene_with_articulation_and_rigids()
 
     async def tearDown(self):
         omni.timeline.get_timeline_interface().stop()
@@ -68,18 +63,24 @@ class TestTargetDiscovery(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
     async def test_discover_articulations_finds_robot(self):
+        await _build_scene_with_articulation_and_rigids()
+
         arts = target_discovery.discover_articulations_under("/World")
         self.assertEqual(set(arts.values()), {"/World/Robot"})
         for name in arts:
             self.assertTrue(name.replace("_", "").isalnum(), f"Name '{name}' is not HDF5-safe.")
 
     async def test_discover_rigid_bodies_excludes_articulation_descendants(self):
+        await _build_scene_with_articulation_and_rigids()
+
         rigids = target_discovery.discover_rigid_bodies_under("/World")
         self.assertIn("/World/Cube", rigids.values())
         for path in rigids.values():
             self.assertFalse(path.startswith("/World/Robot/"))
 
     async def test_discover_xforms_filters_articulations_by_default(self):
+        await _build_scene_with_articulation_and_rigids()
+
         xforms = target_discovery.discover_xforms_under("/World")
         values = set(xforms.values())
         self.assertIn("/World/Marker", values)
@@ -87,16 +88,22 @@ class TestTargetDiscovery(omni.kit.test.AsyncTestCase):
         self.assertNotIn("/World/Robot", values)
 
     async def test_discover_all_under_bundles_articulations_and_rigids(self):
+        await _build_scene_with_articulation_and_rigids()
+
         arts, prims = target_discovery.discover_all_under("/World")
         self.assertEqual(set(arts.values()), {"/World/Robot"})
         self.assertIn("/World/Cube", prims.values())
         self.assertFalse(set(arts.keys()) & set(prims.keys()))
 
     async def test_discover_all_under_includes_loose_xforms_when_requested(self):
+        await _build_scene_with_articulation_and_rigids()
+
         arts, prims = target_discovery.discover_all_under("/World", include_loose_xforms=True)
         self.assertIn("/World/Marker", prims.values())
 
     async def test_max_depth_restricts_walk(self):
+        await _build_scene_with_articulation_and_rigids()
+
         nested_xforms = target_discovery.discover_xforms_under("/World", max_depth=1)
         for path in nested_xforms.values():
             self.assertLessEqual(path.count("/"), 2, f"{path} is deeper than max_depth=1")

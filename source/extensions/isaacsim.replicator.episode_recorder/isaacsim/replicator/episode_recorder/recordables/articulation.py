@@ -42,7 +42,7 @@ import numpy as np
 
 from ..base import ChannelDescriptor, Recordable, ReplayPolicy
 from ..registry import register_recordable
-from ._utils import to_numpy_f32
+from ._utils import is_missing_xform_ops_error, to_numpy_f32
 
 _ZERO_QUAT = np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32)
 
@@ -254,7 +254,7 @@ class ArticulationRecordable(Recordable):
             _write()
             return
         except Exception as exc:
-            if self._xform_ops_reset or not self._is_missing_xform_ops_error(exc):
+            if self._xform_ops_reset or not is_missing_xform_ops_error(exc):
                 if policy.strictness == "strict":
                     raise
                 carb.log_warn(f"[ArticulationRecordable {self.prim_path}] apply failed: {exc}")
@@ -269,12 +269,6 @@ class ArticulationRecordable(Recordable):
                 carb.log_warn(
                     f"[ArticulationRecordable {self.prim_path}] apply failed after reset_xform_op_properties: {retry_exc}"
                 )
-
-    @staticmethod
-    def _is_missing_xform_ops_error(exc: BaseException) -> bool:
-        """Detect the experimental XformPrim error raised when xformOps are not yet authored."""
-        msg = str(exc)
-        return "xformOp:" in msg and "reset_xform_op_properties" in msg
 
     def to_manifest(self) -> dict[str, Any]:
         return {

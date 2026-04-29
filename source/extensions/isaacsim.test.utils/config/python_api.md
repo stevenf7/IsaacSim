@@ -69,3 +69,4 @@
 - def wait_for_stage_prims(min_prims: int = 20, timeout_frames: int = 1800, poll_steps: int = 30) -> bool
 - async def wait_for_stage_prims_async(min_prims: int = 20, timeout_frames: int = 1800, poll_steps: int = 30) -> bool
 - def project_world_to_screen(position: tuple[float, float, float], viewport: object | None = None) -> tuple[float, float]
+- async def compare_usd_files(paths: list[str]) -> bool

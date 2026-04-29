@@ -69,7 +69,7 @@ The returned recorder uses the same session lifecycle (`open_session` / `close_s
 
 **Recorded data vs. replayed data.** The `state/*` groups hold per-prim world poses — articulations as `(L, 3)` / `(L, 4)` link pose batches, rigid bodies and plain Xforms as `(3,)` / `(4,)` single poses — and are the *only* data that {class}`EpisodeReplayer <isaacsim.replicator.episode_recorder.EpisodeReplayer>` applies on replay. Reads and writes go exclusively through {class}`XformPrim <isaacsim.core.experimental.prims.XformPrim>`, so no physics-tensor backend is involved. The teleop input channels (`teleop/<side>/trigger`, aim poses, head pose, etc.) are recorded as extra HDF5 datasets for offline analysis and policy learning, but they are **ignored by the replayer** — replay never re-dispatches trigger commands and never runs the teleop controllers (IK, Grasp, Floating, Locomotion). The gripper opening / closing that replays correctly is purely the link's recorded world pose being re-authored onto the anonymous sublayer.
 
-**Visual replay.** {meth}`EpisodeReplayer.start_replay <isaacsim.replicator.episode_recorder.EpisodeReplayer.start_replay>` advances one recorded frame per `omni.kit.app` update and seeks — but never plays — the Kit timeline to the recorded `sim_time`, so stage-authored USD animations evaluate in lockstep without stepping physics or waking up the teleop controllers. All pose writes land in an anonymous USD sublayer so the root stage is never mutated. {meth}`stop_replay <isaacsim.replicator.episode_recorder.EpisodeReplayer.stop_replay>` pops that sublayer, visibly returning every prim to its pre-replay pose in one step, without closing the HDF5 session — the user can start another replay immediately.
+**Visual replay.** {meth}`EpisodeReplayer.start_replay <isaacsim.replicator.episode_recorder.EpisodeReplayer.start_replay>` advances recorded frames from `omni.kit.app` updates, applying one recorded frame on every app update. The replayer prefetches episode data before playback and batches pose writes across compatible prims so replay stays fast while the UI remains responsive during loading and progress reporting. When timeline seeking is enabled, replay seeks — but never plays — the Kit timeline to the recorded `sim_time`, so stage-authored USD animations evaluate in lockstep without stepping physics or waking up the teleop controllers. All pose writes land in an anonymous USD sublayer so the root stage is never mutated. {meth}`stop_replay <isaacsim.replicator.episode_recorder.EpisodeReplayer.stop_replay>` pops that sublayer, visibly returning every prim to its pre-replay pose in one step, without closing the HDF5 session — the user can start another replay immediately.
 
 ### {class}`VRRecordingButton <isaacsim.replicator.teleop.VRRecordingButton>` and {class}`VRButton <isaacsim.replicator.teleop.VRButton>`
 
@@ -87,7 +87,7 @@ The returned recorder uses the same session lifecycle (`open_session` / `close_s
 
 ### {class}`XrAnchorManager <isaacsim.replicator.teleop.XrAnchorManager>`
 
-**Headset camera anchor** at `/World/XRAnchor`. Supports a position offset, three rotation-tracking modes ({class}`AnchorRotationMode <isaacsim.replicator.teleop.AnchorRotationMode>`), and fixed-height lock.
+**Headset camera anchor** at `/World/XRAnchor`, bound to the active VR profile so the headset and controllers follow it live. Supports a position offset, three rotation-tracking modes ({class}`AnchorRotationMode <isaacsim.replicator.teleop.AnchorRotationMode>`), and fixed-height lock. The Session panel's **Custom Anchor** field re-targets the anchor to any scene Xform; **Clear** reverts to the built-in origin marker.
 
 ### Coordinate Utilities
 
@@ -95,9 +95,15 @@ The returned recorder uses the same session lifecycle (`open_session` / `close_s
 
 ## Integration
 
-The teleop session requires the Isaac Teleop CloudXR runtime to be running and the headset client
-to be connected before {func}`TeleopManager.connect <isaacsim.replicator.teleop.TeleopManager.connect>`
-is called. Start the runtime in another terminal with:
+The teleop session requires the Isaac Teleop CloudXR runtime to be installed from PyPI and running
+with the headset client connected before {func}`TeleopManager.connect <isaacsim.replicator.teleop.TeleopManager.connect>`
+is called. Install the runtime with:
+
+```bash
+python -m pip install "isaacteleop[cloudxr,retargeters]~=1.0.0"
+```
+
+Start the runtime in another terminal with:
 
 ```bash
 python -m isaacteleop.cloudxr
@@ -105,9 +111,8 @@ python -m isaacteleop.cloudxr
 
 Keep that process running while using teleop. Then open the hosted
 [Isaac Teleop Web Client](https://nvidia.github.io/IsaacTeleop/client/) from the headset browser and
-follow the current connection steps in the
-[Isaac Teleop Quick Start](https://nvidia.github.io/IsaacTeleop/main/getting_started/quick_start.html).
-Connect from Isaac Sim after the CloudXR runtime is running and the headset client is connected.
+follow the displayed connection steps. Connect from Isaac Sim after the CloudXR runtime is running
+and the headset client is connected.
 
 ## Functionality
 

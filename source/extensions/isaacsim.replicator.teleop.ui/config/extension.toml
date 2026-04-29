@@ -1,5 +1,5 @@
 [package]
-version = "0.3.0"
+version = "0.3.1"
 category = "Simulation"
 title = "Replicator Teleop UI"
 description = "UI for teleoperation utilities and marker management"
@@ -19,6 +19,7 @@ writeTarget.platform = true
 "isaacsim.replicator.teleop" = {}
 "omni.kit.menu.utils" = {}
 "omni.kit.window.filepicker" = {}
+"omni.kit.window.popup_dialog" = {}
 "omni.ui" = {}
 "omni.usd" = {}
 

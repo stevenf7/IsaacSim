@@ -103,8 +103,16 @@ def require_h5py() -> Any:
     return h5py
 
 
+from ._pose_backend import PoseBackend
 from .base import ChannelDescriptor, Recordable, ReplayPolicy, SamplingConfig
-from .commands import EPISODE_CMD_EVENT, VALID_COMMANDS, dispatch_episode_command
+from .commands import (
+    EPISODE_BINDING_EVENT,
+    EPISODE_CMD_EVENT,
+    VALID_BINDING_ACTIONS,
+    VALID_COMMANDS,
+    dispatch_episode_binding,
+    dispatch_episode_command,
+)
 from .manifest import SCHEMA_VERSION, SessionManifest, build_manifest, read_manifest, write_manifest
 from .recordables import (
     ArticulationRecordable,
@@ -135,9 +143,11 @@ __all__ = [
     "CameraRecordable",
     "ChannelDescriptor",
     "DEFAULT_BUFFER_FRAMES",
+    "EPISODE_BINDING_EVENT",
     "EPISODE_CMD_EVENT",
     "EpisodeRecorder",
     "EpisodeReplayer",
+    "PoseBackend",
     "Recordable",
     "ReplayPolicy",
     "RigidBodyRecordable",
@@ -151,11 +161,13 @@ __all__ = [
     "SessionStorage",
     "SimTimeRecordable",
     "TimelineDrivenEpisodeController",
+    "VALID_BINDING_ACTIONS",
     "VALID_COMMANDS",
     "XformRecordable",
     "apply_session_injectors",
     "build_manifest",
     "clear_session_injectors",
+    "dispatch_episode_binding",
     "dispatch_episode_command",
     "export_stage_snapshot",
     "get_registered",

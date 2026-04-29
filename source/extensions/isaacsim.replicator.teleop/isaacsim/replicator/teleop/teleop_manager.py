@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import contextlib
+import json
 from collections.abc import Callable
 from contextlib import AbstractContextManager, nullcontext
 from dataclasses import dataclass, field
@@ -90,6 +91,33 @@ def dispatch_command(command: TeleopCommand | str) -> None:
         event_name=TELEOP_CMD_EVENT,
         payload={"command": cmd_str},
     )
+
+
+def _extract_xr_teleop_command(payload: Any) -> str:
+    """Extract the ``command`` string from a ``teleop_command`` event payload.
+
+    Accepts both shapes CloudXR producers use - ``payload["message"]`` as a
+    JSON-encoded string (web client) or as a dict (some clients / fixtures)
+    - so command dispatch is not coupled to one wire format. Returns ``""``
+    when nothing parseable is found.
+    """
+    if payload is None:
+        return ""
+    try:
+        message = payload.get("message", "")
+    except (AttributeError, TypeError):
+        return ""
+    obj: Any = None
+    if isinstance(message, dict):
+        obj = message
+    elif isinstance(message, str):
+        try:
+            obj = json.loads(message)
+        except (ValueError, TypeError):
+            return ""
+    if not isinstance(obj, dict):
+        return ""
+    return str(obj.get("command", "") or "")
 
 
 @dataclass
@@ -222,7 +250,7 @@ class TeleopManager:
     def _handle_stage_closing(self, event: carb.eventdispatcher.Event) -> None:
         """Automatically disconnects session and tears down all controllers on stage close."""
         if self._is_connected:
-            print("[Teleop] Stage closing - disconnecting session.")
+            print("[Teleop][Session] Stage closing - disconnecting session.")
             self.disconnect()
 
         self.destroy_all_controllers()
@@ -280,7 +308,7 @@ class TeleopManager:
         self._right_floating_assigned = False
 
         if any_active:
-            print("[Teleop] All controllers destroyed.")
+            print("[Teleop][Session] All controllers destroyed.")
 
     # ------------------------------------------------------------------
     # Command bus
@@ -324,7 +352,7 @@ class TeleopManager:
             return False, f"Unknown command: {command}"
 
         success, message = handler()
-        print(f"[Teleop] Command {command.value}: {message}")
+        print(f"[Teleop][Session] Command {command.value}: {message}")
 
         if self._on_command_executed:
             self._on_command_executed(command, success, message)
@@ -342,7 +370,7 @@ class TeleopManager:
         try:
             command = TeleopCommand(cmd_str)
         except ValueError:
-            print(f"[Teleop] Unknown command received: '{cmd_str}'")
+            print(f"[Teleop][Session] Unknown command received: '{cmd_str}'")
             return
         self.execute_command(command)
 
@@ -352,13 +380,6 @@ class TeleopManager:
         Deferred to connect time because XR Core may not be initialized
         when the TeleopManager is constructed (causes a crash if
         ``XRCore.get_singleton()`` is called too early in the VR experience).
-
-        Note: the IsaacTeleop web client sends ``teleop_command`` events
-        via CloudXR's MessageChannel API.  This requires the CloudXR
-        runtime to forward data-channel messages to the Kit XR Core
-        message bus - a capability that depends on the runtime version
-        and configuration.  If messages do not arrive, the timeline can
-        still be controlled from the Isaac Sim UI or the Script Editor.
         """
         if self._xr_command_sub is not None:
             return
@@ -372,15 +393,15 @@ class TeleopManager:
                     carb.events.type_from_string("teleop_command"),
                     self._on_xr_teleop_command,
                 )
-                print("[Teleop] Subscribed to XR Core command bus.")
+                print("[Teleop][Session] Subscribed to XR Core command bus.")
             else:
                 print(
-                    "[Teleop] WARNING: XRCore singleton not available - headset "
+                    "[Teleop][Session] WARNING: XRCore singleton not available - headset "
                     "commands (Play/Reset) will not work. Launch with ./isaac-sim.xr.vr.sh."
                 )
         except (ImportError, AttributeError):
             print(
-                "[Teleop] WARNING: omni.kit.xr.core is not loaded - headset "
+                "[Teleop][Session] WARNING: omni.kit.xr.core is not loaded - headset "
                 "commands (Play/Reset) will not work. Launch with ./isaac-sim.xr.vr.sh."
             )
 
@@ -393,25 +414,22 @@ class TeleopManager:
             { "type": "teleop_command",
               "message": { "command": "start teleop" } }
 
-        The CloudXR runtime pushes these onto the XR Core message bus.
-        This handler extracts the command string and maps it to
-        :class:`TeleopCommand` values so the headset user can control
-        the simulation timeline with the web UI Play/Reset buttons.
+        The CloudXR runtime forwards these onto Kit's XR Core message bus
+        with ``payload["message"]`` set to the JSON-encoded inner object.
+        See :func:`_extract_xr_teleop_command` for the payload parser.
         """
-        try:
-            msg = event.payload.get("message", {}) if event.payload else {}
-            if isinstance(msg, dict):
-                msg = msg.get("command", "")
-        except (KeyError, TypeError, AttributeError):
-            msg = ""
-        if msg == "start teleop":
+        command = _extract_xr_teleop_command(getattr(event, "payload", None))
+        if command == "start teleop":
             self.execute_command(TeleopCommand.START)
-        elif msg == "stop teleop":
+        elif command == "stop teleop":
             self.execute_command(TeleopCommand.STOP)
-        elif msg == "reset teleop":
+        elif command == "reset teleop":
             self.execute_command(TeleopCommand.RESET)
         else:
-            print(f"[Teleop] Unknown XR teleop command: '{msg}'")
+            print(
+                f"[Teleop][Session] Unknown XR teleop command (parsed='{command}', raw payload="
+                f"{getattr(event, 'payload', None)!r})"
+            )
 
     def _cmd_connect(self) -> tuple[bool, str]:
         """Connect to OpenXR, creates markers, sets up XR anchor, starts live tracking."""
@@ -560,9 +578,9 @@ class TeleopManager:
                 if namespace is not None:
                     print(f"[Teleop][{namespace}] Timeline play - enabled: {entry}")
                 else:
-                    print(f"[Teleop] Timeline play - enabled: {entry}")
+                    print(f"[Teleop][Session] Timeline play - enabled: {entry}")
             else:
-                print(f"[Teleop] Timeline play - enabled: {', '.join(enabled)}")
+                print(f"[Teleop][Session] Timeline play - enabled: {', '.join(enabled)}")
 
     def _on_timeline_stop(self) -> None:
         """Disable all controllers and restores grippers when the timeline stops."""
@@ -600,9 +618,9 @@ class TeleopManager:
                 if namespace is not None:
                     print(f"[Teleop][{namespace}] Timeline stop - disabled: {entry}")
                 else:
-                    print(f"[Teleop] Timeline stop - disabled: {entry}")
+                    print(f"[Teleop][Session] Timeline stop - disabled: {entry}")
             else:
-                print(f"[Teleop] Timeline stop - disabled: {', '.join(disabled)}")
+                print(f"[Teleop][Session] Timeline stop - disabled: {', '.join(disabled)}")
 
     @property
     def is_connected(self) -> bool:
@@ -612,9 +630,11 @@ class TeleopManager:
     @staticmethod
     def _print_cloudxr_start_hint() -> None:
         """Print a stable hint for starting the Isaac Teleop CloudXR runtime."""
-        print("[Teleop] Info: Make sure Isaac Teleop CloudXR is running and the headset client is connected.")
-        print("[Teleop] Info: Start it in another terminal with `python -m isaacteleop.cloudxr`.")
-        print("[Teleop] Info: See `source/extensions/isaacsim.replicator.teleop/docs/Overview.md` for setup steps.")
+        print("[Teleop][Session] Info: Make sure Isaac Teleop CloudXR is running and the headset client is connected.")
+        print("[Teleop][Session] Info: Start it in another terminal with `python -m isaacteleop.cloudxr`.")
+        print(
+            "[Teleop][Session] Info: See `source/extensions/isaacsim.replicator.teleop/docs/Overview.md` for setup steps."
+        )
 
     def connect(self, on_status_changed: Callable[[str], None] | None = None) -> bool:
         """Connect to the teleop session via OpenXR.
@@ -632,14 +652,14 @@ class TeleopManager:
             self.set_debug_tracking(False)
 
         if self._is_connected:
-            print("[Teleop] Session already connected.")
+            print("[Teleop][Session] Already connected.")
             return True
 
         try:
             import isaacteleop.deviceio as deviceio
             import isaacteleop.oxr as oxr
         except ImportError as e:
-            print(f"[Teleop] Failed to import isaacteleop modules: {e}")
+            print(f"[Teleop][Session] Failed to import isaacteleop modules: {e}")
             if on_status_changed:
                 on_status_changed("Error: isaacteleop modules not available")
             return False
@@ -652,7 +672,7 @@ class TeleopManager:
         try:
             self._oxr_session = oxr.OpenXRSession("IsaacSimTeleop", required_extensions)
         except Exception as e:
-            print(f"[Teleop] Failed to create OpenXR session: {e}")
+            print(f"[Teleop][Session] Failed to create OpenXR session: {e}")
             self._print_cloudxr_start_hint()
             if on_status_changed:
                 on_status_changed("Error: Failed to create OpenXR session")
@@ -664,7 +684,7 @@ class TeleopManager:
             stack.enter_context(self._oxr_session)
             handles = self._oxr_session.get_handles()
         except Exception as e:
-            print(f"[Teleop] Failed to initialize OpenXR session: {e}")
+            print(f"[Teleop][Session] Failed to initialize OpenXR session: {e}")
             self._print_cloudxr_start_hint()
             if on_status_changed:
                 on_status_changed(f"Error: {e}")
@@ -677,7 +697,7 @@ class TeleopManager:
             self._deviceio_session = deviceio.DeviceIOSession.run(trackers, handles)
             stack.enter_context(self._deviceio_session)
         except Exception as e:
-            print(f"[Teleop] Failed to create DeviceIO session: {e}")
+            print(f"[Teleop][Session] Failed to create DeviceIO session: {e}")
             if on_status_changed:
                 on_status_changed(f"Error: {e}")
             stack.close()
@@ -703,7 +723,7 @@ class TeleopManager:
     def disconnect(self, on_status_changed: Callable[[str], None] | None = None) -> None:
         """Disconnect from the teleop session."""
         if not self._is_connected:
-            print("[Teleop] Session not connected.")
+            print("[Teleop][Session] Not connected.")
             return
 
         if not self._debug_tracking_enabled:
@@ -712,7 +732,7 @@ class TeleopManager:
             try:
                 self._session_stack.close()
             except Exception as e:
-                print(f"[Teleop] Error closing sessions: {e}")
+                print(f"[Teleop][Session] Error closing sessions: {e}")
             self._session_stack = None
         self._deviceio_session = None
         self._oxr_session = None
@@ -814,7 +834,7 @@ class TeleopManager:
         for ctrl in (self._floating_controller, self._ik_controller):
             if ctrl and hasattr(ctrl, "set_coordinate_system"):
                 ctrl.set_coordinate_system(CoordinateSystem.RAW)
-        print(f"[Teleop] Coordinate system set to: '{system.value}'")
+        print(f"[Teleop][Session] Coordinate system set to: '{system.value}'")
 
     # ------------------------------------------------------------------
     # Tracking space
@@ -848,7 +868,7 @@ class TeleopManager:
         if ok:
             self._tracking_space_enabled = True
             self._tracking_space_prim_path = ""
-            print(f"[Teleop] Tracking Space set to built-in Teleop marker '{builtin_path}'.")
+            print(f"[Teleop][Session] Tracking Space set to built-in Teleop marker '{builtin_path}'.")
         return ok, message
 
     def set_tracking_space_prim_path(self, path: str) -> tuple[bool, str]:
@@ -863,14 +883,14 @@ class TeleopManager:
                 f"Cannot use teleop marker '{requested_path}' as Tracking Space. "
                 "Choose a scene prim or leave the path empty to use the built-in tracking space."
             )
-            print(f"[Teleop] {msg}")
+            print(f"[Teleop][Session] {msg}")
             return False, msg
 
         ok, message = self._apply_tracking_space_path(requested_path)
         if ok:
             self._tracking_space_enabled = True
             self._tracking_space_prim_path = requested_path
-            print(f"[Teleop] Tracking Space set to '{requested_path}'.")
+            print(f"[Teleop][Session] Tracking Space set to '{requested_path}'.")
         return ok, message
 
     def _teleop_edit_ctx(self, stage: Usd.Stage, prim_path: str) -> AbstractContextManager[None]:
@@ -912,7 +932,7 @@ class TeleopManager:
         warning = ""
         if needs_reset:
             warning = " (xformOps reset)"
-            print(f"[Teleop] Tracking Space prim xformOps reset at '{resolved_path}'.")
+            print(f"[Teleop][Session] Tracking Space prim xformOps reset at '{resolved_path}'.")
 
         self._active_tracking_space_prim_path = resolved_path
         self._tracking_space_xform = tracking_space_xform
@@ -1234,7 +1254,7 @@ class TeleopManager:
             try:
                 observer(left_ctrl, right_ctrl)
             except Exception as exc:  # Keep the update loop alive even if a subscriber raises.
-                carb.log_warn(f"[Teleop] controller-inputs observer error: {exc}")
+                carb.log_warn(f"[Teleop][Session] controller-inputs observer error: {exc}")
 
     def add_head_observer(self, observer: Callable[[object | None], None]) -> None:
         """Register an observer invoked once per update with the current headset snapshot.
@@ -1266,7 +1286,7 @@ class TeleopManager:
             try:
                 observer(head)
             except Exception as exc:  # Keep the update loop alive even if a subscriber raises.
-                carb.log_warn(f"[Teleop] head observer error: {exc}")
+                carb.log_warn(f"[Teleop][Session] head observer error: {exc}")
 
     def _get_controller_snapshots(self) -> tuple[object | None, object | None]:
         """Return left/right controller snapshots from the current deviceio session."""
@@ -1422,7 +1442,7 @@ class TeleopManager:
                 self._reapply_tracking_space()
             except Exception as exc:
                 self._tracking_space_retry_failed = True
-                print(f"[Teleop] Tracking-space reapply failed, skipping further retries: {exc}")
+                print(f"[Teleop][Session] Tracking-space reapply failed, skipping further retries: {exc}")
             tracking_space = self._get_tracking_space_transform()
         left_pos, left_orient = self._apply_tracking_space_offset(left_pos, left_orient, tracking_space)
         right_pos, right_orient = self._apply_tracking_space_offset(right_pos, right_orient, tracking_space)

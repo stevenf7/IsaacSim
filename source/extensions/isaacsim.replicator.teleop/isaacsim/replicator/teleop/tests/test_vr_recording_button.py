@@ -27,6 +27,7 @@ import carb.eventdispatcher
 import omni.kit.app
 import omni.kit.test
 import omni.usd
+from isaacsim.replicator.episode_recorder import EPISODE_BINDING_EVENT
 from isaacsim.replicator.teleop import VRButton, VRRecordingButton
 from isaacsim.replicator.teleop.vr_recording_button import EPISODE_CMD_EVENT
 
@@ -235,5 +236,77 @@ class TestVRRecordingButton(omni.kit.test.AsyncTestCase):
             self.assertEqual(payload.get("metadata"), {"source": "right_a"})
 
             button.destroy()
+        finally:
+            event_sub = None
+
+    async def test_session_id_getter_none_suppresses_dispatch(self):
+        """A session-scoped button should stay quiet until a recorder session is available."""
+        received_events: list[dict] = []
+
+        def capture_event(event) -> None:
+            received_events.append(dict(event.payload) if event.payload is not None else {})
+
+        dispatcher = carb.eventdispatcher.get_eventdispatcher()
+        event_sub = dispatcher.observe_event(
+            event_name=EPISODE_CMD_EVENT,
+            on_event=capture_event,
+            observer_name="TestVRRecordingButton.no_session",
+        )
+        try:
+            await omni.kit.app.get_app().next_update_async()
+            teleop = _FakeTeleopManager()
+            button = VRRecordingButton(
+                teleop,
+                button=VRButton.LEFT_SECONDARY,
+                session_id_getter=lambda: None,
+            )
+            button.attach()
+
+            left = _FakeController(inputs=_FakeInputs(secondary_click=True))
+            right = _FakeController(inputs=_FakeInputs())
+            teleop.tick(left, right)
+            await omni.kit.app.get_app().next_update_async()
+
+            self.assertEqual(received_events, [])
+            button.destroy()
+        finally:
+            event_sub = None
+
+    async def test_attach_detach_dispatches_binding_lifecycle_events(self):
+        """Attach must broadcast an ``attach`` binding event; detach must broadcast ``detach``."""
+        received_events: list[dict] = []
+
+        def capture_event(event) -> None:
+            received_events.append(dict(event.payload) if event.payload is not None else {})
+
+        dispatcher = carb.eventdispatcher.get_eventdispatcher()
+        event_sub = dispatcher.observe_event(
+            event_name=EPISODE_BINDING_EVENT,
+            on_event=capture_event,
+            observer_name="TestVRRecordingButton.binding_lifecycle",
+        )
+        try:
+            await omni.kit.app.get_app().next_update_async()
+            teleop = _FakeTeleopManager()
+            button = VRRecordingButton(teleop, button=VRButton.LEFT_SECONDARY, command="toggle")
+
+            self.assertEqual(received_events, [], "No binding event should fire before attach()")
+
+            button.attach()
+            await omni.kit.app.get_app().next_update_async()
+            self.assertEqual(len(received_events), 1, "Attach must dispatch one binding event")
+            attach_payload = received_events[-1]
+            self.assertEqual(attach_payload.get("action"), "attach")
+            self.assertEqual(attach_payload.get("source"), "vr_button")
+            self.assertEqual(attach_payload.get("binding_id"), "vr_left_secondary")
+            self.assertEqual(attach_payload.get("command"), "toggle")
+            self.assertIn("Left Secondary", attach_payload.get("label") or "")
+
+            button.detach()
+            await omni.kit.app.get_app().next_update_async()
+            self.assertEqual(len(received_events), 2, "Detach must dispatch a follow-up binding event")
+            detach_payload = received_events[-1]
+            self.assertEqual(detach_payload.get("action"), "detach")
+            self.assertEqual(detach_payload.get("binding_id"), "vr_left_secondary")
         finally:
             event_sub = None

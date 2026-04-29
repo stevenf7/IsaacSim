@@ -46,9 +46,12 @@ from typing import Any
 import carb
 import carb.eventdispatcher
 import numpy as np
+from pxr import Sdf
 
+from ._pose_backend import PoseBackend, normalize_pose_backend, pose_backend_ctx
 from .base import Recordable, ReplayPolicy
 from .manifest import SessionManifest
+from .recordables._utils import is_missing_xform_ops_error
 from .registry import rehydrate
 from .storage import SessionReader
 
@@ -69,6 +72,13 @@ class EpisodeReplayer:
         replayer = EpisodeReplayer(path)
         replayer.replay_episode(0)   # applies every frame synchronously
         replayer.close()
+
+    Args:
+        hdf5_path: Path to the recorded HDF5 V2 session file.
+        policy: :class:`ReplayPolicy` controlling strict / best-effort error handling.
+        pose_backend: Backend for shared pose-batch writes. Defaults to ``"usd"``
+            for correctness with nested xforms; ``"usdrt"`` / ``"fabric"`` need
+            FSD and trade correctness for write throughput on flat scenes.
     """
 
     def __init__(
@@ -76,6 +86,7 @@ class EpisodeReplayer:
         hdf5_path: str,
         *,
         policy: ReplayPolicy | None = None,
+        pose_backend: PoseBackend = "usd",
     ) -> None:
         hdf5_path = os.path.abspath(os.path.expanduser(hdf5_path))
         if not os.path.exists(hdf5_path):
@@ -83,10 +94,24 @@ class EpisodeReplayer:
         self._hdf5_path = hdf5_path
         self._reader = SessionReader(hdf5_path)
         self._policy = policy if policy is not None else ReplayPolicy()
+        self._pose_backend: PoseBackend = normalize_pose_backend(pose_backend)
         self._prepared_episode: str | None = None
+        self._prepared_num_frames: int = 0
         self._prepared: list[Recordable] = []
         self._sim_time_cache: np.ndarray | None = None
         self._frames_cache: dict[str, dict[str, np.ndarray]] = {}
+        # Pose batch is split into ancestry-ordered tiers so parent writes flush
+        # before children compute local poses (otherwise children lag a frame on
+        # nested articulations).
+        self._replay_pose_batch_tiers: list[Any] = []
+        self._replay_pose_batch_tier_indices: list[np.ndarray] = []
+        # Per-tier ``positions[sel]`` selector: ``slice`` for contiguous full
+        # ranges (zero-copy view), ``np.ndarray`` otherwise (fancy indexing).
+        self._replay_pose_batch_tier_selectors: list[slice | np.ndarray] = []
+        self._replay_pose_batch_slot_by_id: dict[int, tuple[int, int]] = {}
+        self._replay_pose_positions: np.ndarray | None = None
+        self._replay_pose_orientations: np.ndarray | None = None
+        self._replay_pose_batch_reset_tiers: set[int] = set()
 
         self._replay_edit_layer: Any = None
         self._replay_prev_edit_target: Any = None
@@ -132,6 +157,29 @@ class EpisodeReplayer:
     @property
     def prepared_recordables(self) -> list[Recordable]:
         return list(self._prepared)
+
+    @property
+    def pose_batch_size(self) -> int:
+        """Number of prims in the shared replay pose batch; ``0`` when no batch is active."""
+        if self._replay_pose_positions is None:
+            return 0
+        return int(self._replay_pose_positions.shape[0])
+
+    @property
+    def pose_batch_tier_count(self) -> int:
+        """Number of ancestry-ordered tiers in the shared replay pose batch.
+
+        Diagnostic for the topological split: ``1`` for flat batches (one
+        ``set_world_poses`` per frame), ``2`` for the typical
+        articulation-nested-under-moving-xform case, higher for deeper
+        hierarchies. Frame cost scales with this count.
+        """
+        return len(self._replay_pose_batch_tiers)
+
+    @property
+    def pose_backend(self) -> PoseBackend:
+        """Active backend for the shared pose-batch writes (``"usd"`` / ``"usdrt"`` / ``"fabric"``)."""
+        return self._pose_backend
 
     def list_episodes(self) -> list[str]:
         return self._reader.list_episodes()
@@ -197,29 +245,60 @@ class EpisodeReplayer:
                 prepared.append(rec)
         except Exception:
             self._prepared = prepared
-            self._release_prepared()
-            self._pop_replay_edit_target()
+            try:
+                self._release_prepared()
+            finally:
+                self._pop_replay_edit_target()
             raise
 
         self._prepared = prepared
         self._prepared_episode = episode_name
+        self._prepared_num_frames = self._reader.num_frames(episode_name)
+        self._build_replay_pose_batch(prepared)
         self._sim_time_cache = self._load_sim_time(episode_name)
-        self._frames_cache = self._prefetch_frames(episode_name, prepared)
+        try:
+            self._frames_cache = self._prefetch_frames(episode_name, prepared)
+        except Exception:
+            # Pose batch was already built above; ``_release_prepared`` calls
+            # ``_teardown_replay_pose_batch`` so this single cleanup path covers it.
+            try:
+                self._release_prepared()
+            finally:
+                self._pop_replay_edit_target()
+            raise
 
     def _prefetch_frames(self, episode_name: str, recordables: list[Recordable]) -> dict[str, dict[str, np.ndarray]]:
-        """Load every prepared recordable's datasets fully into memory.
+        """Load every prepared recordable's datasets fully into memory."""
+        return self._prefetch_groups(self._reader, episode_name, [rec.group for rec in recordables])
+
+    def _prefetch_frames_from_new_reader(
+        self, episode_name: str, groups: tuple[str, ...]
+    ) -> dict[str, dict[str, np.ndarray]]:
+        """Load frames on a worker-owned HDF5 reader.
 
         Pure I/O — no USD / stage interaction — so this body is also safe to execute
-        from a worker thread via :meth:`prepare_episode_async`.
+        from a worker thread via :meth:`prepare_episode_async`. Opening a dedicated
+        read-only HDF5 handle inside that worker avoids sharing h5py objects across
+        threads and keeps the UI thread out of the prefetch path.
         """
+        reader = SessionReader(self._hdf5_path)
+        try:
+            return self._prefetch_groups(reader, episode_name, groups)
+        finally:
+            reader.close()
+
+    def _prefetch_groups(
+        self, reader: SessionReader, episode_name: str, groups: list[str] | tuple[str, ...]
+    ) -> dict[str, dict[str, np.ndarray]]:
+        """Load every requested group as full time-series arrays."""
         cache: dict[str, dict[str, np.ndarray]] = {}
-        for rec in recordables:
+        for group in groups:
             try:
-                cache[rec.group] = self._reader.read_group_all_frames(episode_name, rec.group)
+                cache[group] = reader.read_group_all_frames(episode_name, group)
             except Exception as exc:
                 if self._policy.strictness == "strict":
                     raise
-                carb.log_warn(f"[EpisodeReplayer] prefetch failed for {rec.group}: {exc}")
+                carb.log_warn(f"[EpisodeReplayer] prefetch failed for {group}: {exc}")
         return cache
 
     async def prepare_episode_async(self, episode: int | str) -> None:
@@ -268,21 +347,28 @@ class EpisodeReplayer:
                 prepared.append(rec)
         except Exception:
             self._prepared = prepared
-            self._release_prepared()
-            self._pop_replay_edit_target()
+            try:
+                self._release_prepared()
+            finally:
+                self._pop_replay_edit_target()
             raise
 
         loop = asyncio.get_running_loop()
         try:
-            cache = await loop.run_in_executor(None, self._prefetch_frames, episode_name, prepared)
-        except Exception:
+            groups = tuple(rec.group for rec in prepared)
+            cache = await loop.run_in_executor(None, self._prefetch_frames_from_new_reader, episode_name, groups)
+        except BaseException:
             self._prepared = prepared
-            self._release_prepared()
-            self._pop_replay_edit_target()
+            try:
+                self._release_prepared()
+            finally:
+                self._pop_replay_edit_target()
             raise
 
         self._prepared = prepared
         self._prepared_episode = episode_name
+        self._prepared_num_frames = self._reader.num_frames(episode_name)
+        self._build_replay_pose_batch(prepared)
         self._sim_time_cache = self._load_sim_time(episode_name)
         self._frames_cache = cache
 
@@ -298,8 +384,10 @@ class EpisodeReplayer:
                 pass
         self._prepared.clear()
         self._prepared_episode = None
+        self._prepared_num_frames = 0
         self._sim_time_cache = None
         self._frames_cache = {}
+        self._teardown_replay_pose_batch()
 
     def _load_sim_time(self, episode_name: str) -> np.ndarray | None:
         manifest = self._reader.manifest()
@@ -316,9 +404,12 @@ class EpisodeReplayer:
         """Read one frame from the prefetched cache and apply it via every recordable."""
         if self._prepared_episode is None:
             raise RuntimeError("EpisodeReplayer: call prepare_episode() before apply_frame().")
-        n = self._reader.num_frames(self._prepared_episode)
+        n = self._prepared_num_frames
         if frame_index < 0 or frame_index >= n:
             raise IndexError(f"frame_index {frame_index} out of range [0, {n}).")
+        batch_recs: list[Recordable] = []
+        batch_frames: dict[str, dict[str, np.ndarray]] = {}
+        batch_fill_error: Exception | None = None
         for rec in self._prepared:
             cached = self._frames_cache.get(rec.group)
             if cached is None:
@@ -330,12 +421,238 @@ class EpisodeReplayer:
                     raise
                 carb.log_warn(f"[EpisodeReplayer] frame slice failed for {rec.group}: {exc}")
                 continue
+            slot = self._replay_pose_batch_slot_by_id.get(id(rec))
+            if (
+                slot is not None
+                and self._replay_pose_positions is not None
+                and self._replay_pose_orientations is not None
+            ):
+                batch_recs.append(rec)
+                batch_frames[rec.group] = frame
+                if batch_fill_error is None:
+                    try:
+                        self._fill_replay_pose_batch_slice(rec, frame, slot)
+                    except Exception as exc:
+                        if self._policy.strictness == "strict":
+                            raise
+                        batch_fill_error = exc
+                continue
+            self._apply_recordable_frame(rec, frame)
+
+        if batch_recs:
+            if batch_fill_error is not None:
+                carb.log_warn(
+                    f"[EpisodeReplayer] pose batch frame fill failed; falling back per recordable: {batch_fill_error}"
+                )
+                self._apply_recordable_frames(batch_recs, batch_frames)
+            else:
+                try:
+                    self._apply_replay_pose_batch()
+                except Exception as exc:
+                    if self._policy.strictness == "strict":
+                        raise
+                    carb.log_warn(f"[EpisodeReplayer] pose batch apply failed; falling back per recordable: {exc}")
+                    self._apply_recordable_frames(batch_recs, batch_frames)
+
+    def _apply_recordable_frames(
+        self, recordables: list[Recordable], frames_by_group: dict[str, dict[str, np.ndarray]]
+    ) -> None:
+        """Apply a set of recordable frames through their individual ``apply`` methods."""
+        for rec in recordables:
+            frame = frames_by_group.get(rec.group)
+            if frame is not None:
+                self._apply_recordable_frame(rec, frame)
+
+    def _apply_recordable_frame(self, rec: Recordable, frame: dict[str, np.ndarray]) -> None:
+        """Apply one non-batched recordable frame with policy-aware error handling."""
+        try:
+            rec.apply(frame, policy=self._policy)
+        except Exception as exc:
+            if self._policy.strictness == "strict":
+                raise
+            carb.log_warn(f"[EpisodeReplayer] apply failed for {rec.group}: {exc}")
+
+    def _fill_replay_pose_batch_slice(
+        self, rec: Recordable, frame: dict[str, np.ndarray], slot: tuple[int, int]
+    ) -> None:
+        """Copy one pose recordable's frame into the shared replay pose buffers.
+
+        Frame payloads come in two shapes: scalar pose recordables (one prim) emit
+        ``position``/``orientation`` keys, batched ones (e.g. articulations) emit
+        ``positions``/``orientations``. A partial mix of singular and plural keys is
+        always a producer-side bug, so we surface it as a descriptive
+        :class:`ValueError` rather than letting a downstream ``KeyError`` mask the
+        true cause.
+        """
+        assert self._replay_pose_positions is not None
+        assert self._replay_pose_orientations is not None
+        start, end = slot
+        count = end - start
+
+        has_singular_pos = "position" in frame
+        has_singular_rot = "orientation" in frame
+        has_plural_pos = "positions" in frame
+        has_plural_rot = "orientations" in frame
+
+        if has_singular_pos and has_singular_rot:
+            positions = np.asarray(frame["position"], dtype=np.float32).reshape(1, 3)
+            orientations = np.asarray(frame["orientation"], dtype=np.float32).reshape(1, 4)
+        elif has_plural_pos and has_plural_rot:
+            positions = np.asarray(frame["positions"], dtype=np.float32).reshape(count, 3)
+            orientations = np.asarray(frame["orientations"], dtype=np.float32).reshape(count, 4)
+        else:
+            present = sorted(k for k in ("position", "orientation", "positions", "orientations") if k in frame)
+            raise ValueError(
+                f"{rec.group} replay frame must provide either 'position' + 'orientation' (scalar) "
+                f"or 'positions' + 'orientations' (batched); got {present!r}."
+            )
+
+        if positions.shape[0] != count or orientations.shape[0] != count:
+            raise ValueError(
+                f"{rec.group} provided {positions.shape[0]} position rows / "
+                f"{orientations.shape[0]} orientation rows for replay batch slot of length {count}."
+            )
+        self._replay_pose_positions[start:end] = positions
+        self._replay_pose_orientations[start:end] = orientations
+
+    def _apply_replay_pose_batch(self) -> None:
+        """Apply the shared world-pose batch tier-by-tier from ancestors to descendants.
+
+        Each tier is one ``XformPrim`` covering prims whose nearest in-batch ancestor
+        is in a strictly-earlier tier. Calling ``set_world_poses`` per tier ensures
+        parent writes are flushed to the stage before children's local-from-world
+        computations run, so an articulation nested under a moving xform tracks the
+        wrapper exactly instead of lagging it by one frame (the stutter symptom).
+
+        ``XformPrim.reset_xform_op_properties`` is retried once **per tier** —
+        each tier's first write may hit a freshly-defined prim that triggers
+        the missing-xformOps error, and the reset must scope to that tier so
+        siblings stay unaffected. The retry is gated by a per-tier set so a
+        later tier never inherits an earlier tier's already-reset state.
+        """
+        if not self._replay_pose_batch_tiers:
+            return
+        assert self._replay_pose_positions is not None
+        assert self._replay_pose_orientations is not None
+
+        positions = self._replay_pose_positions
+        orientations = self._replay_pose_orientations
+        with pose_backend_ctx(self._pose_backend):
+            for tier_idx, (tier_batch, tier_selector) in enumerate(
+                zip(self._replay_pose_batch_tiers, self._replay_pose_batch_tier_selectors, strict=True)
+            ):
+                tier_positions = positions[tier_selector]
+                tier_orientations = orientations[tier_selector]
+
+                def _write(
+                    batch: Any = tier_batch, pos: np.ndarray = tier_positions, quat: np.ndarray = tier_orientations
+                ) -> None:
+                    batch.set_world_poses(positions=pos, orientations=quat)
+
+                try:
+                    _write()
+                except Exception as exc:
+                    if tier_idx in self._replay_pose_batch_reset_tiers or not is_missing_xform_ops_error(exc):
+                        raise
+                    tier_batch.reset_xform_op_properties()
+                    self._replay_pose_batch_reset_tiers.add(tier_idx)
+                    _write()
+
+    def _build_replay_pose_batch(self, recordables: list[Recordable]) -> None:
+        """Build ancestry-ordered ``XformPrim`` tiers for replaying world-pose recordables.
+
+        Recordables with overlapping ancestry (e.g. an :class:`XformRecordable` for a
+        wrapper xform plus an :class:`ArticulationRecordable` for a robot nested under
+        it) are split across tiers so the wrapper's pose write flushes before the
+        articulation links' writes are computed.
+        """
+        self._teardown_replay_pose_batch()
+
+        all_paths: list[str] = []
+        recs_with_paths: list[tuple[Recordable, list[str]]] = []
+        for rec in recordables:
             try:
-                rec.apply(frame, policy=self._policy)
+                paths = rec.pose_paths()
             except Exception as exc:
-                if self._policy.strictness == "strict":
-                    raise
-                carb.log_warn(f"[EpisodeReplayer] apply failed for {rec.group}: {exc}")
+                carb.log_warn(f"[EpisodeReplayer] pose_paths() raised for {rec.group}: {exc}")
+                continue
+            if not paths:
+                continue
+            recs_with_paths.append((rec, list(paths)))
+            all_paths.extend(paths)
+
+        if not all_paths:
+            return
+
+        cursor = 0
+        for rec, paths in recs_with_paths:
+            start = cursor
+            cursor += len(paths)
+            self._replay_pose_batch_slot_by_id[id(rec)] = (start, cursor)
+        self._replay_pose_positions = np.empty((cursor, 3), dtype=np.float32)
+        self._replay_pose_orientations = np.empty((cursor, 4), dtype=np.float32)
+
+        try:
+            from isaacsim.core.experimental.prims import XformPrim
+        except Exception as exc:
+            carb.log_warn(
+                f"[EpisodeReplayer] failed to import XformPrim for replay pose batch ({exc}); "
+                "falling back to per-recordable apply."
+            )
+            self._teardown_replay_pose_batch()
+            return
+
+        tier_assignment = _assign_ancestry_tiers(all_paths)
+        if tier_assignment is None:
+            carb.log_warn(
+                f"[EpisodeReplayer] failed to compute ancestry tiers over {len(all_paths)} prims; "
+                "falling back to per-recordable apply."
+            )
+            self._teardown_replay_pose_batch()
+            return
+
+        try:
+            total = len(all_paths)
+            for tier_global_indices in tier_assignment:
+                tier_paths = [all_paths[i] for i in tier_global_indices]
+                self._replay_pose_batch_tiers.append(XformPrim(tier_paths))
+                tier_indices_arr = np.asarray(tier_global_indices, dtype=np.int64)
+                self._replay_pose_batch_tier_indices.append(tier_indices_arr)
+                # Single contiguous tier covering all prims is the common
+                # un-nested case; use a slice so ``positions[selector]`` is a
+                # view instead of fancy-indexing a fresh copy every frame.
+                if (
+                    len(tier_indices_arr) == total
+                    and tier_indices_arr[0] == 0
+                    and tier_indices_arr[-1] == total - 1
+                    and bool(np.array_equal(tier_indices_arr, np.arange(total, dtype=np.int64)))
+                ):
+                    self._replay_pose_batch_tier_selectors.append(slice(0, total))
+                else:
+                    self._replay_pose_batch_tier_selectors.append(tier_indices_arr)
+        except Exception as exc:
+            carb.log_warn(
+                f"[EpisodeReplayer] failed to build replay pose batch over {len(all_paths)} prims "
+                f"({exc}); falling back to per-recordable apply."
+            )
+            self._teardown_replay_pose_batch()
+            return
+
+        carb.log_info(
+            f"[EpisodeReplayer] Replay pose batch: {len(recs_with_paths)} recordables, "
+            f"{cursor} prim{'s' if cursor != 1 else ''}, "
+            f"{len(tier_assignment)} tier{'s' if len(tier_assignment) != 1 else ''}, "
+            f"backend={self._pose_backend!r}."
+        )
+
+    def _teardown_replay_pose_batch(self) -> None:
+        self._replay_pose_batch_tiers = []
+        self._replay_pose_batch_tier_indices = []
+        self._replay_pose_batch_tier_selectors = []
+        self._replay_pose_batch_slot_by_id = {}
+        self._replay_pose_positions = None
+        self._replay_pose_orientations = None
+        self._replay_pose_batch_reset_tiers = set()
 
     def replay_episode(
         self,
@@ -350,7 +667,7 @@ class EpisodeReplayer:
     ) -> None:
         """Offline loop: apply each frame, optionally drive ``kit.app.update`` and user hooks."""
         self.prepare_episode(episode)
-        total = self._reader.num_frames(self._prepared_episode)
+        total = self._prepared_num_frames
         if end_frame is None:
             end_frame = total
         if start_frame < 0 or end_frame > total or start_frame > end_frame:
@@ -457,8 +774,9 @@ class EpisodeReplayer:
         """
         import omni.kit.app
 
-        total = self._reader.num_frames(self._prepared_episode)
+        total = self._prepared_num_frames
         if total <= 0:
+            self._release_prepared()
             self._pop_replay_edit_target()
             raise RuntimeError("EpisodeReplayer: prepared episode is empty; cannot start replay.")
 
@@ -599,7 +917,7 @@ class EpisodeReplayer:
             return
         try:
             import omni.usd
-            from pxr import Sdf, Usd
+            from pxr import Usd
 
             stage = omni.usd.get_context().get_stage()
             if stage is None:
@@ -652,3 +970,85 @@ class EpisodeReplayer:
 
     def __exit__(self, *exc_info: Any) -> None:
         self.close()
+
+
+def _assign_ancestry_tiers(paths: list[str]) -> list[list[int]] | None:
+    """Group prim path indices into ancestry-ordered tiers.
+
+    Tier ``k`` contains indices whose nearest ancestor that is also in ``paths``
+    sits in some tier ``< k``. Tier ``0`` therefore contains indices whose
+    in-batch ancestors are empty (the batch's own roots).
+
+    Args:
+        paths: List of absolute USD prim paths. Order is preserved within tiers.
+
+    Returns:
+        List of tiers (lists of indices into ``paths``), or ``None`` if the input
+        contains malformed paths. Empty input returns an empty list.
+
+    Properties:
+        * Every input index appears in exactly one tier.
+        * For any pair of indices ``(parent, child)`` where ``parent`` is an
+          ancestor of ``child`` in ``paths``, the parent's tier index is strictly
+          less than the child's. Sibling and unrelated paths land in the same tier.
+        * Duplicate paths are tolerated: every index is tier-assigned, and
+          duplicates share the same tier (they map to the same ancestor chain),
+          so two writes to the same prim happen back-to-back inside one
+          ``XformPrim.set_world_poses`` call - the last write wins, matching
+          the per-recordable apply path's behavior.
+
+    Path parsing goes through :class:`pxr.Sdf.Path` so variant selections,
+    property paths, and trailing slashes - which a naive ``rfind('/')`` walk
+    mishandles - return ``None`` (caller falls back to per-recordable apply)
+    instead of computing wrong ancestors.
+    """
+    if not paths:
+        return []
+
+    sdf_paths: list[Any] = []
+    in_batch: dict[str, int] = {}
+    for idx, path in enumerate(paths):
+        if not isinstance(path, str) or not Sdf.Path.IsValidPathString(path):
+            return None
+        sdf_path = Sdf.Path(path)
+        if not sdf_path.IsAbsolutePath() or not sdf_path.IsPrimPath():
+            return None
+        sdf_paths.append(sdf_path)
+        in_batch.setdefault(path, idx)
+
+    abs_root = Sdf.Path.absoluteRootPath
+
+    nearest_ancestor_idx: list[int] = []
+    for path, sdf_path in zip(paths, sdf_paths, strict=True):
+        ancestor_idx = -1
+        canonical_self = in_batch[path]
+        cursor = sdf_path.GetParentPath()
+        while cursor and cursor != abs_root:
+            cursor_str = cursor.pathString
+            if cursor_str in in_batch and in_batch[cursor_str] != canonical_self:
+                ancestor_idx = in_batch[cursor_str]
+                break
+            cursor = cursor.GetParentPath()
+        nearest_ancestor_idx.append(ancestor_idx)
+
+    # Iterative tier assignment via memoized depth-walk. Each index walks up to its
+    # in-batch ancestor chain at most once, so total work is O(N * max_depth) which
+    # in practice is O(N) since ancestor chains are short.
+    tier_by_idx: list[int] = [-1] * len(paths)
+    for start in range(len(paths)):
+        if tier_by_idx[start] != -1:
+            continue
+        chain: list[int] = []
+        cursor_idx = start
+        while cursor_idx != -1 and tier_by_idx[cursor_idx] == -1:
+            chain.append(cursor_idx)
+            cursor_idx = nearest_ancestor_idx[cursor_idx]
+        base_tier = 0 if cursor_idx == -1 else tier_by_idx[cursor_idx] + 1
+        for offset, idx in enumerate(reversed(chain)):
+            tier_by_idx[idx] = base_tier + offset
+
+    max_tier = max(tier_by_idx)
+    tiers: list[list[int]] = [[] for _ in range(max_tier + 1)]
+    for i, tier in enumerate(tier_by_idx):
+        tiers[tier].append(i)
+    return tiers

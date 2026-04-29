@@ -18,7 +18,7 @@ standard articulation / xform / rigid-body recordables the UI exposes today."""
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from isaacsim.replicator.episode_recorder import (
     ArticulationRecordable,
@@ -29,6 +29,8 @@ from isaacsim.replicator.episode_recorder import (
 )
 
 from .recordables import TeleopControllerRecordable, TeleopHeadRecordable
+
+PoseBackend = Literal["usd", "usdrt", "fabric"]
 
 
 def build_teleop_recorder(
@@ -44,6 +46,7 @@ def build_teleop_recorder(
     session_metadata: dict[str, Any] | None = None,
     session_id: str | None = None,
     file_prefix: str = "episode",
+    pose_backend: PoseBackend = "usd",
 ) -> EpisodeRecorder:
     """Build an :class:`EpisodeRecorder` preconfigured with teleop + scene recordables.
 
@@ -66,6 +69,13 @@ def build_teleop_recorder(
         session_metadata: Extra session attrs written to the manifest.
         session_id: Opaque id for command bus filtering. Auto-generated when omitted.
         file_prefix: Filename prefix for the session HDF5.
+        pose_backend: Backend used by the recorder's shared pose-batch
+            ``XformPrim.get_world_poses`` read each tick. Defaults to ``"usd"``.
+            Reads cannot trigger the nested-articulation parent-lag bug because
+            no writes happen during sampling, so ``"fabric"`` / ``"usdrt"`` are
+            safe speedups when Fabric Scene Delegate is enabled. The replayer's
+            backend is independent and is configured at
+            :class:`EpisodeReplayer` construction time.
     """
     recorder = EpisodeRecorder(
         output_dir,
@@ -73,6 +83,7 @@ def build_teleop_recorder(
         sampling=sampling or SamplingConfig(),
         session_metadata=session_metadata,
         session_id=session_id,
+        pose_backend=pose_backend,
     )
 
     for name, path in (articulations or {}).items():

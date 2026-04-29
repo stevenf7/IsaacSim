@@ -60,8 +60,10 @@ Prerequisites
 -------------
 
 *   |isaac-sim_short| built and launchable.
-*   `Isaac Teleop <https://github.com/NVIDIA/IsaacTeleop>`_ installed --- follow the `install instructions <https://nvidia.github.io/IsaacTeleop/main/getting_started/quick_start.html#install-the-isaacteleop-pip-package>`_.
-*   CloudXR server started and headset connected --- follow the `CloudXR server guide <https://nvidia.github.io/IsaacTeleop/main/getting_started/quick_start.html#run-cloudxr-server>`_.
+*   `Isaac Teleop <https://github.com/NVIDIA/IsaacTeleop>`_ installed from PyPI with
+    ``python -m pip install "isaacteleop[cloudxr,retargeters]~=1.0.0"``.
+*   CloudXR server started and headset connected. Follow the connection steps shown in the
+    `Isaac Teleop Web Client <https://nvidia.github.io/IsaacTeleop/client/>`_.
 *   A stage with a robot (e.g. ``omniverse://isaac-dev.ov.nvidia.com/Isaac/Samples/Replicator/Teleop/teleop_scenario_floating_xarm_dex3.usd``).
 
 Start Isaac Teleop CloudXR in another terminal before connecting from the Teleop window:
@@ -72,9 +74,8 @@ Start Isaac Teleop CloudXR in another terminal before connecting from the Teleop
 
 Keep that process running while using teleop. Then open the hosted
 `Isaac Teleop Web Client <https://nvidia.github.io/IsaacTeleop/client/>`_ from the headset browser
-and follow the current connection steps in the
-`Isaac Teleop Quick Start <https://nvidia.github.io/IsaacTeleop/main/getting_started/quick_start.html>`_.
-Connect from Isaac Sim after the CloudXR runtime is running and the headset client is connected.
+and follow the displayed connection steps. Connect from Isaac Sim after the CloudXR runtime is
+running and the headset client is connected.
 
 .. note::
 
@@ -82,6 +83,13 @@ Connect from Isaac Sim after the CloudXR runtime is running and the headset clie
    modes). Debug mode testing requires only |isaac-sim_short| --- no headset,
    CloudXR, or Isaac Teleop installation is needed. See
    :ref:`Testing the extension (debug mode) <isaac_sim_app_tutorial_replicator_teleop_sdg_debug>`.
+
+.. note::
+
+   Teleop has only been tested with the Meta Quest 3, and the controller button
+   mappings documented in this tutorial (for example, the left-Y recording
+   button) target that device. Other CloudXR-compatible headsets may work, but
+   their controller button mappings can differ and are not guaranteed.
 
 
 Overview
@@ -163,9 +171,9 @@ panel as a single YAML file.
 2. Session
 ^^^^^^^^^^
 
-The **Session** panel manages VR connection, frame markers, coordinate
-conversion, tracking-space origin, the XR headset anchor, and the debug
-controls.
+The **Session** panel manages VR connection, frame markers, the
+**XR Anchor** (custom-anchor prim plus headset offset / rotation), and
+the debug controls.
 
 Connection
 ###########
@@ -185,8 +193,16 @@ Frame Markers
 *   **Remove** --- deletes all markers and stops tracking.
 *   **Scale** --- adjusts the visual axis length of every marker.
 
-Tracking Space / Custom Origin
-###############################
+XR Anchor
+##########
+
+The **XR Anchor** collapsable groups every control that determines where
+the VR headset and controllers appear in the scene: the prim the anchor
+follows (**Custom Anchor**), the per-pose **Coordinate Frame** conversion,
+and the headset offset / rotation / fixed-height controls applied on top
+of that anchor. The naming mirrors Kit's VR Profile menu, where this same
+concept is exposed under **Navigation Settings > Physical World USD
+Anchor > Custom USD Anchor**.
 
 *   **Coordinate Frame** --- selects how incoming VR poses are converted:
 
@@ -194,24 +210,23 @@ Tracking Space / Custom Origin
         match the |isaac-sim_short| stage convention. This is the default.
     *   **Raw (no conversion)** --- passes poses through unchanged.
 
-*   **Custom Origin** --- optional prim path to use as the tracking-space
-    origin. Leave empty to use the built-in origin marker under
-    ``/Teleop/Markers/``. Paths under the reserved ``/Teleop/Markers/``
-    namespace are rejected. Click the **Apply** button next to the field to
-    validate.
-*   **Enable** / **Disable** --- activates or deactivates tracking-space
-    following after the path has been applied.
+*   **Custom Anchor** --- scene prim that the VR headset and controllers
+    are anchored to. The row's toggle button flips between **Set** and
+    **Clear** depending on whether the field's path matches the currently
+    active anchor. **Set** validates the path and activates anchoring
+    immediately (live, every-frame following of the prim from its world
+    transform). **Clear** reverts the active anchor to the built-in
+    origin marker under ``/Teleop/Markers/`` and resets the marker to
+    world (0, 0, 0); the typed path is preserved in the field so the user
+    can re-Set it. Use the bin glyph in the row to clear the field text.
+    Paths under the reserved ``/Teleop/Markers/`` namespace fall back to
+    the built-in origin on Set.
 
-XR Anchor (Headset)
-####################
-
-These controls position and orient the VR headset camera relative to the
-tracking-space prim. They are relevant when using stereo VR rendering.
-
-*   **Offset X / Y / Z** --- position offset in metres. Without a Tracking
-    Space prim this is an absolute world position; with one it is relative to
-    that prim.
-*   **Rotation** --- how the headset camera yaw tracks the Tracking Space prim:
+*   **Offset X / Y / Z** --- position offset in metres for the VR headset
+    camera. Without a Custom Anchor this is an absolute world position;
+    with one it is relative to that prim.
+*   **Rotation** --- how the headset camera yaw tracks the Custom Anchor
+    prim:
 
     *   **Fixed** --- ignore prim rotation entirely.
     *   **Follow Prim** --- yaw tracks the prim (roll and pitch are stripped).
@@ -220,7 +235,21 @@ tracking-space prim. They are relevant when using stereo VR rendering.
 *   **Smooth** --- slerp time constant in seconds (only used in **Smoothed**
     mode). Lower values give snappier tracking; higher values are smoother.
 *   **Fixed Height** --- locks the headset camera Z to its initial value,
-    preventing vertical bobbing when the Tracking Space prim moves up or down.
+    preventing vertical bobbing when the Custom Anchor prim moves up or down.
+
+.. note::
+
+    The teleop extension owns Kit's XR profile anchor (set under
+    **VR Profile > Navigation Settings > Physical World USD Anchor**) for
+    the duration of a session. On Connect it switches Kit to
+    ``custom anchor`` mode pointing at ``/World/XRAnchor`` and drives that
+    prim every frame from the **Custom Anchor** prim plus the offset,
+    rotation, smoothing, and coordinate-frame controls above. Re-clicking
+    **Set** after editing the prim path retargets the headset and
+    controllers immediately. Kit's profile-level **Adjust for User
+    Height** setting (under **Navigation Settings**) is unrelated --- it
+    shifts the camera at scene-entry time, while **Fixed Height** here
+    locks Z to its first-frame value during the teleop session.
 
 Debug
 ######
@@ -665,6 +694,13 @@ binding alive for its lifetime. One press starts a new episode; a second
 press ends it. The binding is rising-edge triggered, so holding the button
 does not retrigger. When no session is open the dispatch is a no-op.
 
+.. note::
+
+   Button mappings (and the recording-button binding above) have only been
+   tested with the Meta Quest 3 - other headsets may surface different button
+   semantics through the same OpenXR action. See the headset-support note at
+   the start of this tutorial.
+
 Replay
 ^^^^^^
 
@@ -677,7 +713,8 @@ locked, and while replay is attached the recording controls are locked.
     the newest ``{prefix}_*.hdf5`` in the current **Output Dir**.
 *   **Load** --- opens the HDF5 and populates the **Episode** dropdown with
     every episode name and its frame count. The info label next to the
-    dropdown also shows ``success=True/False`` if it was recorded.
+    dropdown also shows ``success=True/False`` for the selected episode, so
+    abandoned takes are visible at a glance.
 *   **Start Replay** / **Stop Replay** --- single toggle button that drives
     :meth:`EpisodeReplayer.start_replay
     <isaacsim.replicator.episode_recorder.EpisodeReplayer.start_replay>`.
@@ -689,6 +726,20 @@ locked, and while replay is attached the recording controls are locked.
     non-loop mode) pops that sublayer, returning every prim to its
     pre-replay pose; the HDF5 session stays loaded so a fresh replay can
     be started immediately.
+*   **Pause Replay** / **Resume Replay** --- toggle button next to **Start
+    Replay**. Pauses the replay on the current frame; the last applied
+    frame stays on the stage. Pressing it again resumes from where it left
+    off. **Stop Replay** still pops the anonymous sublayer.
+*   **Step Backward** / **Step Forward** --- single-frame buttons that apply
+    the previous or next recorded frame and auto-pause the replay. Use them
+    to inspect the recording one frame at a time or to seek to a specific
+    moment before resuming.
+*   **Seek timeline** checkbox --- when checked (default), each applied
+    frame also seeks the Kit timeline to that frame's recorded ``sim_time``
+    so stage-authored USD animations stay in sync with the recording.
+    Uncheck it to replay only the recorded prim poses and leave the
+    timeline untouched (useful when the stage has no authored animation
+    or when you want to scrub the timeline manually).
 
 .. rubric:: Pure-USD visual replay
 
@@ -924,14 +975,13 @@ detailed descriptions of each control.
 3. Session --- tracking space and XR anchor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-#. In **Tracking Space / Custom Origin**, change the **Coordinate Frame**
-   dropdown to **Raw (no conversion)** and back to **Isaac Sim (Z-up)**.
-   Verify the marker orientations update.
-#. Enter a scene prim path in the **Custom Origin** field (e.g. the robot base)
-   and click **Apply**. Click **Enable**. Verify VR poses are now relative to
-   that prim.
-#. In **XR Anchor (Headset)**, adjust the **Offset X / Y / Z** fields. Verify
-   the headset camera position shifts accordingly.
+#. Expand the **XR Anchor** sub-panel.
+#. Change the **Coordinate Frame** dropdown to **Raw (no conversion)** and
+   back to **Isaac Sim (Z-up)**. Verify the marker orientations update.
+#. Enter a scene prim path in the **Custom Anchor** field (e.g. the robot
+   base) and click **Set**. Verify VR poses are now relative to that prim.
+#. Adjust the **Offset X / Y / Z** fields. Verify the headset camera
+   position shifts accordingly.
 #. Change the **Rotation** dropdown to **Follow Prim**. Rotate the Tracking
    Space prim in the viewport; verify the headset camera yaw follows.
 #. Change **Rotation** to **Follow (Smoothed)** and adjust the **Smooth**
@@ -951,6 +1001,10 @@ detailed descriptions of each control.
 #. Change the **Target Rot X / Y / Z** dropdowns. Verify the rigid body
    orientation shifts. These correct for differing local-frame conventions
    between the VR controller and the target body.
+#. Test single-side configuration. Click **Clear** on the side you do not
+   want, leaving only **Left** or only **Right** configured and enabled.
+   Press **Play** and move both VR controllers. Verify only the configured
+   rigid body tracks while the other side is ignored.
 #. Click **Clear** (while stopped). Verify the controller is torn down and the
    prim path is preserved.
 
@@ -981,6 +1035,13 @@ detailed descriptions of each control.
    filtering and joint-step clamping take effect.
 #. Switch the **Solver** dropdown during Play. Verify the arm continues
    tracking with the new backend without stopping the timeline.
+#. With **PINK** selected during Play, cycle through every entry in the
+   **QP** dropdown (``daqp``, ``osqp``). Verify the arm keeps tracking
+   with each backend and any unavailable solver is greyed out with an
+   explanatory tooltip rather than throwing.
+#. Test single-side configuration. **Clear** one side so only **Left** or
+   only **Right** is enabled. Move both VR controllers and verify only the
+   configured arm tracks.
 #. Click **Clear** (while stopped). Verify solver resources are destroyed and
    the prim path is preserved.
 
@@ -996,6 +1057,9 @@ detailed descriptions of each control.
 #. Squeeze the VR trigger. Verify gripper joints close proportionally
    (0 = open, 1 = fully closed).
 #. Release the trigger. Verify the gripper opens.
+#. Test single-side configuration. **Clear** one side so only **Left** or
+   only **Right** is enabled. Squeeze both VR triggers and verify only the
+   configured gripper responds.
 #. Click **Clear** (while stopped). Verify grasp resources are torn down and
    paths are preserved.
 
@@ -1032,8 +1096,53 @@ detailed descriptions of each control.
 #. Press **X** (left primary). Verify the console reports carry is implicit and
    the toggle has no additional effect.
 
-9. Record and replay
-#####################
+9. Profiles --- save, load, validate, delete
+#############################################
+
+The **Profiles** panel persists the complete state of every other panel
+to a YAML file. Test it after configuring at least one controller in the
+sections above.
+
+#. Expand **Profiles** at the top of the Teleop window.
+#. Click the folder icon next to **Dir** and pick a writable directory
+   (or paste an absolute path). Verify the **Profile** dropdown rescans
+   and lists any ``.yaml`` files in that directory.
+#. Click **Save**. Type a profile name (without ``.yaml``) into the inline
+   **Name** field and click **Confirm**. Verify:
+
+   *   A ``<name>.yaml`` file appears in the chosen directory.
+   *   The dropdown refreshes to include the new profile.
+   *   The status line reports ``Saved '<name>'``.
+
+#. Click **Save** again, type the same name, and click **Confirm** twice.
+   Verify the first **Confirm** warns that the file exists and the second
+   **Confirm** overwrites it.
+#. Open the saved YAML in a text editor and confirm it contains the
+   ``session``, ``floating``, ``ik``, ``grasp``, and ``locomotion``
+   sections matching the panels you configured.
+#. Change a few panel values (gains, prim paths, speeds), then select your
+   saved profile in the dropdown and click **Load**. Verify the panels
+   revert to the saved values and the status line reports any unresolved
+   prim paths.
+#. Click **Validate**. Verify the status line reports ``0 error(s),
+   0 warning(s)`` for a fully resolved profile, and that the console lists
+   detailed issues when something is missing.
+#. Open a stage that does not contain the prims referenced by the profile
+   (e.g. switch from the dual-arm scene to the floating-gripper scene) and
+   click **Load** again. Verify:
+
+   *   The UI fields are still populated.
+   *   The status line reports a non-zero error / warning count.
+   *   The console lists the unresolved paths.
+
+#. Reopen the original matching stage. Select the profile and click the
+   **Delete** (trash) button. Verify the YAML file is removed from disk and
+   the dropdown refreshes.
+#. Switch **Dir** back to the default (built-in profiles) and verify the
+   built-in profiles reappear in the dropdown.
+
+10. Record and replay
+######################
 
 #. Open the Episode Recorder window from **Tools** > **Replicator** >
    **Episode Recorder**. Keep the Teleop window open in the background so
@@ -1075,6 +1184,8 @@ detailed descriptions of each control.
 
    *   Status: ``Loaded episode_<timestamp>.hdf5 (K episode(s))``.
    *   The **Episode** dropdown lists every episode with its frame count.
+   *   The info label next to the dropdown shows ``success=True/False``
+       for the selected episode.
 
 #. Select an episode and click **Start Replay**. Verify:
 
@@ -1091,16 +1202,25 @@ detailed descriptions of each control.
    *   No articulation drifts despite the timeline (and therefore PhysX)
        still running --- freezes are applied every tick.
 
-#. Press **Pause** on the timeline. Verify the stage freezes on the current
-   frame. Scrub the timeline left / right and verify the stage jumps to the
-   nearest recorded frame.
+#. Click the **Pause Replay** button (next to **Start Replay**). Verify the
+   stage freezes on the current frame while the timeline keeps running.
+   Click **Resume Replay** and verify replay continues from the same frame.
+#. Click **Step Backward** and **Step Forward**. Verify the stage jumps to
+   the previous / next recorded frame and the replay stays paused.
+#. Uncheck **Seek timeline**, click **Resume Replay**, and verify the prim
+   poses still update but the timeline is no longer seeked to the recorded
+   ``sim_time`` (any stage-authored USD animations are now frozen). Re-check
+   the box and verify the timeline catches back up.
+#. Press **Pause** on the Kit timeline. Verify the stage freezes on the
+   current frame. Scrub the timeline left / right and verify the stage
+   jumps to the nearest recorded frame.
 #. Click **Stop Replay**. Verify the timeline stops, the status returns to
    ``Replay stopped.``, and the terminal prints::
 
        [EpisodeRecorder][UI] Replay: stopped
        [EpisodeRecorder][UI] Replay: dynamics restored
 
-10. Stage close and reopen
+11. Stage close and reopen
 ###########################
 
 #. While controllers are active and the timeline is playing, close the current
@@ -1108,7 +1228,7 @@ detailed descriptions of each control.
 #. Verify all panels reset to idle state without errors in the console.
 #. Open a new stage and reconfigure a controller. Verify it activates cleanly.
 
-11. Disconnect
+12. Disconnect
 ###############
 
 #. Click **Disconnect** in the **Session** panel.
@@ -1219,6 +1339,13 @@ The markers form a parent--child hierarchy under
    effectors have different local-frame conventions, and these offsets align the
    controlled body so that its forward axis matches the marker pointing
    direction. Verify the rigid body orientation shifts accordingly.
+#. Test single-side configuration. **Clear** one side so only **Left** or
+   only **Right** is enabled. Drag both markers and verify only the
+   configured rigid body tracks.
+#. Switch the **Write Backend** dropdown in the **Debug** sub-section between
+   **USD**, **USD-RT**, and **Fabric** during Play. Verify the rigid body
+   keeps tracking with no errors. **Fabric** requires Fabric Scene Delegate
+   (``/app/useFabricSceneDelegate=true``); skip it on apps without FSD.
 #. All gain and rotation-offset values can be saved to a teleop profile via the
    **Profiles** panel and restored later.
 
@@ -1253,6 +1380,13 @@ The markers form a parent--child hierarchy under
    filtering and joint-step clamping take effect.
 #. Switch the **Solver** or **Method** dropdown during Play. Verify the arm
    continues tracking with the new backend without stopping the timeline.
+#. With **PINK** selected during Play, cycle through every entry in the
+   **QP** dropdown (``daqp``, ``osqp``). Verify the arm keeps tracking
+   with each backend and any unavailable solver is greyed out rather than
+   throwing.
+#. Test single-side configuration. **Clear** one side so only **Left** or
+   only **Right** is enabled. Drag both markers and verify only the
+   configured arm tracks.
 
 
 4. Grasp controller (debug)
@@ -1268,6 +1402,9 @@ The markers form a parent--child hierarchy under
 #. In the **Session > Debug** sub-section, slide the **L Grasp** or **R Grasp**
    slider from 0 to 1. Verify the gripper joints close proportionally.
 #. Slide back to 0. Verify the gripper opens fully.
+#. Test single-side configuration. **Clear** one side so only **Left** or
+   only **Right** is enabled. Move both **L Grasp** and **R Grasp** sliders
+   and verify only the configured gripper responds.
 
 
 5. Locomotion --- robot base (debug)
@@ -1305,19 +1442,20 @@ The markers form a parent--child hierarchy under
 7. Custom origin (debug)
 ##########################
 
-#. In the **Tracking Space / Custom Origin** sub-section, enter a valid scene
-   prim path (e.g. the robot base link) and click **Apply**. Click **Enable**.
-   Verify the status reports the custom prim as the active tracking space.
+#. Expand the **XR Anchor** sub-panel, enter a valid scene prim path
+   (e.g. the robot base link) in the **Custom Anchor** field, and click
+   **Set**. Verify the status reports the custom prim as the active anchor.
 #. Enable a controller (e.g. Floating or Locomotion), press **Play**, and drag
    markers. Verify controller behavior uses the custom prim as origin.
 #. Enter a path under the reserved ``/Teleop/Markers/`` namespace (e.g.
-   ``/Teleop/Markers/TrackingOrigin``) and click **Apply**. Verify:
-
-   *   The path is rejected.
-   *   A warning appears in the console.
-
-#. Clear the **Custom Origin** field and click **Apply**. Verify the tracking
-   space reverts to the built-in origin marker.
+   ``/Teleop/Markers/TrackingOrigin``) and click **Set**. Verify the path
+   falls back to the built-in origin marker (status notes the substitution).
+#. Click **Clear** (the same button now reads **Clear** because the
+   field's path matches the active tracking space). Verify the tracking
+   space reverts to the built-in origin marker at world (0, 0, 0), with
+   the headset and controllers staying anchored. The typed path stays in
+   the field so it can be re-applied with **Set**; click the bin glyph
+   in the row if you want to clear the text as well.
 
 
 8. Cleanup and re-activation

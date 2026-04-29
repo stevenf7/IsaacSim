@@ -17,11 +17,15 @@ stored inside the HDF5 file.
 - {class}`EpisodeRecorder
   <isaacsim.replicator.episode_recorder.EpisodeRecorder>` — orchestrator that
   owns the HDF5 session, the session / episode lifecycle, and the sampling
-  tick subscription.
+  tick subscription. World-pose I/O routes through a selectable
+  ``pose_backend`` (``"usd"`` / ``"usdrt"`` / ``"fabric"``); the non-USD
+  backends require Fabric Scene Delegate.
 - {class}`EpisodeReplayer
   <isaacsim.replicator.episode_recorder.EpisodeReplayer>` — reads an HDF5
   session, rehydrates each `Recordable` from the manifest, and applies
-  per-frame state to the live stage.
+  per-frame state to the live stage. Pose batches write in parents-first
+  ancestry tiers so nested xforms / articulations don't lag a frame behind
+  a moving parent.
 - {class}`SessionStorage
   <isaacsim.replicator.episode_recorder.SessionStorage>` /
   {class}`SessionReader

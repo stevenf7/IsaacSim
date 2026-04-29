@@ -17,6 +17,7 @@
 
 from __future__ import annotations
 
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni.kit.app
 import omni.kit.test
@@ -54,12 +55,12 @@ class ArticulationRecordableTests(omni.kit.test.AsyncTestCase):
 
     async def test_discovers_xformable_links_under_root(self) -> None:
         stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim("/World", "Xform")
-        robot = stage.DefinePrim("/World/Robot", "Xform")
+        stage_utils.define_prim("/World", "Xform")
+        robot = stage_utils.define_prim("/World/Robot", "Xform")
         UsdPhysics.ArticulationRootAPI.Apply(robot)
-        stage.DefinePrim("/World/Robot/base", "Xform")
-        stage.DefinePrim("/World/Robot/link_1", "Xform")
-        stage.DefinePrim("/World/Robot/link_2", "Xform")
+        stage_utils.define_prim("/World/Robot/base", "Xform")
+        stage_utils.define_prim("/World/Robot/link_1", "Xform")
+        stage_utils.define_prim("/World/Robot/link_2", "Xform")
 
         rec = ArticulationRecordable(group="state/robot", prim_path="/World/Robot")
         rec.on_session_open(stage)
@@ -83,10 +84,10 @@ class ArticulationRecordableTests(omni.kit.test.AsyncTestCase):
         """PhysX fixed-base convention: ArticulationRootAPI on a UsdPhysicsJoint whose
         parent is the link-Xform subtree. Discovery must walk up one level."""
         stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim("/World", "Xform")
-        body = stage.DefinePrim("/World/Robot", "Xform")
-        stage.DefinePrim("/World/Robot/link_a", "Xform")
-        stage.DefinePrim("/World/Robot/link_b", "Xform")
+        stage_utils.define_prim("/World", "Xform")
+        body = stage_utils.define_prim("/World/Robot", "Xform")
+        stage_utils.define_prim("/World/Robot/link_a", "Xform")
+        stage_utils.define_prim("/World/Robot/link_b", "Xform")
         joint = UsdPhysics.FixedJoint.Define(stage, "/World/Robot/root_joint")
         UsdPhysics.ArticulationRootAPI.Apply(joint.GetPrim())
 
@@ -103,7 +104,7 @@ class ArticulationRecordableTests(omni.kit.test.AsyncTestCase):
     async def test_no_xformable_under_root_is_noop(self) -> None:
         """An articulation with no Xformable descendants must not crash the session."""
         stage = omni.usd.get_context().get_stage()
-        stage.DefinePrim("/World", "Xform")
+        stage_utils.define_prim("/World", "Xform")
         joint = UsdPhysics.FixedJoint.Define(stage, "/World/orphan_joint")
         UsdPhysics.ArticulationRootAPI.Apply(joint.GetPrim())
 

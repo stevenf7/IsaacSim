@@ -40,6 +40,7 @@ import carb
 import carb.eventdispatcher
 import numpy as np
 
+from ._pose_backend import PoseBackend, normalize_pose_backend, pose_backend_ctx
 from .base import Recordable, SamplingConfig
 from .commands import EPISODE_CMD_EVENT, VALID_COMMANDS
 from .manifest import build_manifest
@@ -154,6 +155,10 @@ class EpisodeRecorder:
             auto-added at :meth:`open_session`.
         link_stage_snapshot: When ``True`` (default), if an
             ``<output_dir>/stage_snapshot.usd`` already exists, link it in the root attrs.
+        pose_backend: Backend used by the shared pose-batch read each tick. Defaults to
+            ``"usd"`` for correctness with nested xform hierarchies; ``"usdrt"`` /
+            ``"fabric"`` are accepted when Fabric Scene Delegate is enabled and trade
+            correctness for speed on flat scenes.
     """
 
     def __init__(
@@ -167,6 +172,7 @@ class EpisodeRecorder:
         buffer_frames: int = 1024,
         auto_attach_sim_time: bool = True,
         link_stage_snapshot: bool = True,
+        pose_backend: PoseBackend = "usd",
     ) -> None:
         self._output_dir = os.path.abspath(os.path.expanduser(output_dir))
         self._file_prefix = file_prefix
@@ -176,6 +182,7 @@ class EpisodeRecorder:
         self._buffer_frames = int(buffer_frames)
         self._auto_attach_sim_time = bool(auto_attach_sim_time)
         self._link_stage_snapshot = bool(link_stage_snapshot)
+        self._pose_backend: PoseBackend = normalize_pose_backend(pose_backend)
 
         self._state: _State = _State.IDLE
         self._lock = threading.RLock()
@@ -242,6 +249,11 @@ class EpisodeRecorder:
     def state(self) -> str:
         return self._state.value
 
+    @property
+    def pose_backend(self) -> PoseBackend:
+        """Active backend for the shared pose-batch read (``"usd"`` / ``"usdrt"`` / ``"fabric"``)."""
+        return self._pose_backend
+
     # ------------------------------------------------------------------ plugin mgmt
     def add(self, recordable: Recordable) -> None:
         """Register a :class:`Recordable`. Must be called before :meth:`open_session`."""
@@ -280,11 +292,14 @@ class EpisodeRecorder:
             if self._auto_attach_sim_time and not any(r.TYPE_ID == "sim_time" for r in self._recordables):
                 self._recordables.insert(0, SimTimeRecordable())
 
-            os.makedirs(self._output_dir, exist_ok=True)
             if output_path is None:
+                os.makedirs(self._output_dir, exist_ok=True)
                 ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
                 output_path = os.path.join(self._output_dir, f"{self._file_prefix}_{ts}.hdf5")
-            output_path = os.path.abspath(os.path.expanduser(output_path))
+                output_path = os.path.abspath(os.path.expanduser(output_path))
+            else:
+                output_path = os.path.abspath(os.path.expanduser(output_path))
+                os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
             import omni.usd
 
@@ -531,7 +546,8 @@ class EpisodeRecorder:
             quat_np: np.ndarray | None = None
             if self._pose_batch is not None:
                 try:
-                    pos_wp, quat_wp = self._pose_batch.get_world_poses()
+                    with pose_backend_ctx(self._pose_backend):
+                        pos_wp, quat_wp = self._pose_batch.get_world_poses()
                     pos_np = to_numpy_f32(pos_wp)
                     quat_np = to_numpy_f32(quat_wp)
                 except Exception as exc:
@@ -616,7 +632,7 @@ class EpisodeRecorder:
         self._pose_batch_rec_count = len(recs_with_paths)
         carb.log_info(
             f"[EpisodeRecorder] Pose batch: {self._pose_batch_rec_count} recordables, "
-            f"{cursor} prim{'s' if cursor != 1 else ''}."
+            f"{cursor} prim{'s' if cursor != 1 else ''}, backend={self._pose_backend!r}."
         )
 
     def _teardown_pose_batch(self) -> None:
