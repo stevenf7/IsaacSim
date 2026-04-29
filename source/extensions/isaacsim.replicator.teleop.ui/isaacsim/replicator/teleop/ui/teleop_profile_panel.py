@@ -21,6 +21,7 @@ import os
 from collections.abc import Callable
 
 import carb.settings
+import omni.kit.window.popup_dialog
 import omni.ui as ui
 from isaacsim.gui.components.ui_utils import get_style
 from isaacsim.replicator.teleop import (
@@ -81,7 +82,9 @@ class TeleopProfilePanel:
         self._save_row: ui.HStack | None = None
         self._save_name_field: ui.StringField | None = None
         self._folder_picker: FilePickerDialog | None = None
-        self._pending_overwrite: str = ""
+        self._confirm_dialog: omni.kit.window.popup_dialog.MessageDialog | None = None
+        self._pending_overwrite_path: str = ""
+        self._pending_delete_path: str = ""
 
         self._settings.set_default_string(f"{_SETTINGS_PREFIX}/directory", "")
         self._settings.set_default_string(f"{_SETTINGS_PREFIX}/last_profile", "")
@@ -262,20 +265,38 @@ class TeleopProfilePanel:
             return
 
         name, filepath = self._profiles[index]
+        self._pending_delete_path = filepath
+        self._show_confirm_dialog(
+            title="Delete profile",
+            message=f"Permanently delete '{name}'?\n\n{filepath}",
+            ok_label="Delete",
+            cancel_label="Cancel",
+            on_ok=lambda: self._perform_delete(filepath, name),
+            on_cancel=self._on_delete_cancel,
+        )
+
+    def _perform_delete(self, filepath: str, display_name: str) -> None:
+        """Perform the actual deletion. Public-test-friendly entry point."""
+        self._pending_delete_path = ""
         try:
             os.remove(filepath)
-            set_status(self._status_label, f"Deleted '{name}'", CLR_DIM, emit_terminal=True)
-            last = self._settings.get_as_string(f"{_SETTINGS_PREFIX}/last_profile") or ""
-            if last == filepath:
-                self._settings.set_string(f"{_SETTINGS_PREFIX}/last_profile", "")
-            self._rescan_profiles()
         except Exception as exc:
             set_status(self._status_label, f"Delete failed: {exc}", CLR_RED, emit_terminal=True)
+            return
+        set_status(self._status_label, f"Deleted '{display_name}'", CLR_DIM, emit_terminal=True)
+        last = self._settings.get_as_string(f"{_SETTINGS_PREFIX}/last_profile") or ""
+        if last == filepath:
+            self._settings.set_string(f"{_SETTINGS_PREFIX}/last_profile", "")
+        self._rescan_profiles()
+
+    def _on_delete_cancel(self) -> None:
+        self._pending_delete_path = ""
+        set_status(self._status_label, "Delete cancelled", CLR_DIM)
 
     def _on_save_clicked(self) -> None:
         if self._save_row:
             self._save_row.visible = not self._save_row.visible
-            self._pending_overwrite = ""
+            self._pending_overwrite_path = ""
 
     def _on_save_confirm(self) -> None:
         if self._save_name_field is None or self._dir_field is None:
@@ -295,21 +316,103 @@ class TeleopProfilePanel:
 
         filepath = os.path.join(directory, filename)
 
-        if os.path.exists(filepath) and self._pending_overwrite != filepath:
-            self._pending_overwrite = filepath
-            set_status(self._status_label, f"'{filename}' exists — click Confirm again to overwrite", CLR_YELLOW)
+        if os.path.exists(filepath):
+            self._pending_overwrite_path = filepath
+            self._show_confirm_dialog(
+                title="Overwrite profile",
+                message=f"'{filename}' already exists.\n\nReplace the existing profile on disk?",
+                ok_label="Overwrite",
+                cancel_label="Cancel",
+                on_ok=lambda: self._perform_save(filepath),
+                on_cancel=self._on_save_cancel,
+            )
             return
 
-        self._pending_overwrite = ""
+        self._perform_save(filepath)
+
+    def _perform_save(self, filepath: str) -> None:
+        """Perform the actual save (with or without overwrite). Public-test-friendly entry point."""
+        self._pending_overwrite_path = ""
         profile = self._collect_profile()
         ok, message = save_teleop_profile(filepath, profile)
         if ok:
             self._settings.set_string(f"{_SETTINGS_PREFIX}/last_profile", filepath)
             set_status(self._status_label, message, CLR_GREEN, emit_terminal=True)
-            self._save_row.visible = False
+            if self._save_row is not None:
+                self._save_row.visible = False
             self._rescan_profiles()
         else:
             set_status(self._status_label, message, CLR_RED, emit_terminal=True)
+
+    def _on_save_cancel(self) -> None:
+        self._pending_overwrite_path = ""
+        set_status(self._status_label, "Save cancelled", CLR_DIM)
+
+    def destroy(self) -> None:
+        """Tear down panel resources, including any open confirmation dialog.
+
+        Called from :meth:`TeleopWindow.destroy` so that closing the window with an
+        unanswered Save-overwrite or Delete dialog does not leave a modal pointing at
+        callbacks bound to a destroyed panel.
+        """
+        self._dismiss_confirm_dialog()
+        self._pending_overwrite_path = ""
+        self._pending_delete_path = ""
+
+    def _dismiss_confirm_dialog(self) -> None:
+        """Hide and forget any currently displayed confirmation dialog."""
+        dialog = self._confirm_dialog
+        if dialog is None:
+            return
+        self._confirm_dialog = None
+        try:
+            dialog.hide()
+        except Exception:
+            pass
+
+    def _show_confirm_dialog(
+        self,
+        *,
+        title: str,
+        message: str,
+        ok_label: str,
+        cancel_label: str,
+        on_ok: Callable[[], None],
+        on_cancel: Callable[[], None] | None = None,
+    ) -> None:
+        """Show a modal yes/cancel confirm dialog and route the answer to ``on_ok`` / ``on_cancel``."""
+        self._dismiss_confirm_dialog()
+
+        def _handle_ok(dialog) -> None:
+            try:
+                dialog.hide()
+            finally:
+                self._confirm_dialog = None
+            try:
+                on_ok()
+            except Exception as exc:  # noqa: BLE001
+                set_status(self._status_label, f"Action failed: {exc}", CLR_RED, emit_terminal=True)
+
+        def _handle_cancel(dialog) -> None:
+            try:
+                dialog.hide()
+            finally:
+                self._confirm_dialog = None
+            if on_cancel is not None:
+                try:
+                    on_cancel()
+                except Exception as exc:  # noqa: BLE001
+                    set_status(self._status_label, f"Cancel failed: {exc}", CLR_RED, emit_terminal=True)
+
+        self._confirm_dialog = omni.kit.window.popup_dialog.MessageDialog(
+            title=title,
+            message=message,
+            ok_label=ok_label,
+            cancel_label=cancel_label,
+            ok_handler=_handle_ok,
+            cancel_handler=_handle_cancel,
+        )
+        self._confirm_dialog.show()
 
     def _on_validate_clicked(self) -> None:
         profile = self._collect_profile()

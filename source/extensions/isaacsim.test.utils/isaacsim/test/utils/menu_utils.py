@@ -222,6 +222,33 @@ async def _wait_for_menu_item(parent_widget: Any, menu_name: str, max_frames: in
     return await _poll_async(lambda: parent_widget.find_menu(menu_name), max_frames, "menu_click_with_retry")
 
 
+async def _wait_for_menu_path(menu_path: str, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES) -> bool:
+    """Poll until every segment of ``menu_path`` resolves in the menubar.
+
+    Walks the menu tree top-down using :py:meth:`MenuRef.find_menu` without
+    opening any submenus.  Used to absorb ``omni.kit.menu.utils.refresh_menu_items``
+    callbacks queued by a prior test's window destruction so the next click
+    sees a fully rebuilt menu tree.
+
+    Args:
+        menu_path: Full menu path separated by ``/`` (e.g. ``"Tools/Replicator/Teleop"``).
+        max_frames: Maximum app-update frames to poll before giving up.
+
+    Returns:
+        True if every segment was resolved, False otherwise.
+    """
+
+    def _resolves() -> bool:
+        node = get_menubar()
+        for name in menu_path.split("/"):
+            node = node.find_menu(name)
+            if node is None:
+                return False
+        return True
+
+    return bool(await _poll_async(_resolves, max_frames, f"menu_click_with_retry/await_path/{menu_path}"))
+
+
 async def _wait_for_shown(menu_widget: Any, menu_name: str, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES) -> bool:
     """Poll until ``menu_widget.widget.shown`` becomes True.
 
@@ -346,6 +373,17 @@ async def menu_click_with_retry(
     carb.log_info(
         f"[menu_click_with_retry] starting: menu_path='{menu_path}', " f"window_name={window_name!r}, delays={delays}"
     )
+
+    # Wait for the menu tree to settle before clicking. ``omni.kit.menu.utils``
+    # rebuilds the menubar asynchronously when an extension's window is
+    # destroyed (``refresh_menu_items``); without this pre-flight, the very
+    # next ``ui_test.menu_click`` can race the rebuild and emit
+    # ``[Error] [omni.kit.ui_test.query] ui.Menu item failed to become show``.
+    if not await _wait_for_menu_path(menu_path):
+        carb.log_info(
+            f"[menu_click_with_retry] menu path '{menu_path}' did not resolve in the menubar before timeout; "
+            f"proceeding anyway"
+        )
 
     # --- Primary path: direct programmatic menu click (works headless) ---
     try:

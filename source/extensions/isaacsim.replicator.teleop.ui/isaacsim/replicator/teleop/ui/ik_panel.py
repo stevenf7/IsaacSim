@@ -109,7 +109,16 @@ class IKPanel:
             available, reason = self._ik.get_solver_availability(s)
             if available:
                 self._available_solvers.append(s)
-        self._pink_qp_solvers = list(self._ik.get_pink_qp_solver_names())
+
+        all_pink_qp_solvers = list(self._ik.get_pink_qp_solver_names())
+        self._pink_qp_solvers: list[str] = []
+        self._pink_qp_unavailable: dict[str, str] = {}
+        for solver_name in all_pink_qp_solvers:
+            available, reason = self._ik.get_pink_qp_solver_availability(solver_name)
+            if available:
+                self._pink_qp_solvers.append(solver_name)
+            else:
+                self._pink_qp_unavailable[solver_name] = reason
 
         for side in ("left", "right"):
             self._settings.set_default_string(f"{_SETTINGS_PREFIX}/{side}/path", "")
@@ -117,7 +126,8 @@ class IKPanel:
             self._settings.set_default_int(f"{_SETTINGS_PREFIX}/{side}/ee_rot_y_deg", DEFAULT_ROTATION_OFFSET_DEG)
             self._settings.set_default_int(f"{_SETTINGS_PREFIX}/{side}/ee_rot_z_deg", DEFAULT_ROTATION_OFFSET_DEG)
             self._settings.set_default_string(f"{_SETTINGS_PREFIX}/{side}/ik_method", IKMethod.SVD.value)
-            self._settings.set_default_string(f"{_SETTINGS_PREFIX}/{side}/pink_qp_solver", self._pink_qp_solvers[0])
+            if self._pink_qp_solvers:
+                self._settings.set_default_string(f"{_SETTINGS_PREFIX}/{side}/pink_qp_solver", self._pink_qp_solvers[0])
 
     # ------------------------------------------------------------------
     # Persistent settings helpers
@@ -357,11 +367,15 @@ class IKPanel:
                         ),
                     )
                     pink_qp_solver_labels = [solver.upper() for solver in self._pink_qp_solvers]
+                    qp_combo_tooltip = "Choose the PINK QP solver backend."
+                    if self._pink_qp_unavailable:
+                        unavailable_summary = ", ".join(sorted(self._pink_qp_unavailable))
+                        qp_combo_tooltip += f"\nHidden (not importable): {unavailable_summary}"
                     w["pink_qp_solver"] = ui.ComboBox(
                         0,
                         *pink_qp_solver_labels,
                         width=70,
-                        tooltip="Choose the PINK QP solver backend.",
+                        tooltip=qp_combo_tooltip,
                     )
                     w["pink_qp_solver"].model.add_item_changed_fn(
                         lambda m, _i, s=side: self._on_pink_qp_solver_changed(s, m.get_item_value_model().as_int)
@@ -619,6 +633,8 @@ class IKPanel:
 
     def _on_pink_qp_solver_changed(self, side: str, index: int) -> None:
         if self._updating_pink_qp_solver_combo.get(side, False):
+            return
+        if not self._pink_qp_solvers:
             return
         solver_name = (
             self._pink_qp_solvers[index] if 0 <= index < len(self._pink_qp_solvers) else self._pink_qp_solvers[0]

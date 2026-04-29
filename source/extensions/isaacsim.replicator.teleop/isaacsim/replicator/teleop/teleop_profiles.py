@@ -17,9 +17,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field, fields, is_dataclass
 from pathlib import Path
-from typing import Any, get_type_hints
+from typing import Any, get_origin, get_type_hints
 
 from .coordinate_utils import CoordinateSystem
 from .markers_manager import MarkersManager
@@ -121,6 +122,10 @@ def _from_dict(cls: type, data: Any) -> Any:
         resolved_type = hints.get(f.name)
         if resolved_type is not None and is_dataclass(resolved_type):
             kwargs[f.name] = _from_dict(resolved_type, value)
+        elif get_origin(resolved_type) is dict and isinstance(value, Mapping):
+            kwargs[f.name] = dict(value)
+        elif get_origin(resolved_type) is dict:
+            continue
         else:
             kwargs[f.name] = value
     return cls(**kwargs)
@@ -177,7 +182,7 @@ def save_teleop_profile(path: str, profile: TeleopProfile) -> tuple[bool, str]:
         target = Path(path)
         target.parent.mkdir(parents=True, exist_ok=True)
         with target.open("w", encoding="utf-8") as file_obj:
-            yaml.dump(profile.to_dict(), file_obj, default_flow_style=False, sort_keys=False)
+            yaml.safe_dump(profile.to_dict(), file_obj, default_flow_style=False, sort_keys=False)
         return True, f"Saved to {target.name}"
     except Exception as exc:
         return False, f"Save failed: {exc}"

@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.1] - 2026-04-28
+### Added
+- `TeleopWindow` activates a pre-session XR anchor on open and restores prior
+  XR settings on close, so the headset tracks real motion before Connect.
+- UI tests for the Profiles panel covering load / save round-trips.
+
+### Changed
+- Session-panel anchor controls merged into a single **XR Anchor** collapsable.
+- **Custom Anchor** uses **Set** / **Clear** (replaces Apply + Enable / Disable).
+- Profiles round-trip the Custom Anchor toggle exactly (no auto-activation
+  when loaded as disabled).
+
 ## [0.3.0] - 2026-04-22
 ### Changed
 - Removed the record panel: episode recording and replay now live in the

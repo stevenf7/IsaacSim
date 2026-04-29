@@ -112,6 +112,8 @@ class SessionStorage:
         self._num_episodes: int = 0
         # Per-(group, channel) resizable datasets.
         self._datasets: dict[tuple[str, str], Any] = {}
+        # Resizable datasets grouped in channel order for faster flushes.
+        self._datasets_by_group: dict[str, tuple[Any, ...]] = {}
         # Per-(group, channel) in-memory buffers.
         self._buffers: dict[tuple[str, str], np.ndarray] = {}
         # Ordered channel names per recordable group.
@@ -179,6 +181,7 @@ class SessionStorage:
         finally:
             self._h5 = None
             self._datasets.clear()
+            self._datasets_by_group.clear()
             self._buffers.clear()
             self._channels_by_group.clear()
             self._buffer_count.clear()
@@ -217,6 +220,7 @@ class SessionStorage:
         self._episode_started_at = grp.attrs["started_at"]
         self._episode_frames = 0
         self._datasets.clear()
+        self._datasets_by_group.clear()
         self._buffers.clear()
         self._channels_by_group.clear()
         self._buffer_count.clear()
@@ -229,6 +233,7 @@ class SessionStorage:
             chan_names = tuple(channels.keys())
             self._channels_by_group[rec_group] = chan_names
             target_grp = grp.require_group(rec_group)
+            plan_datasets: list[Any] = []
             plan_buffers: list[np.ndarray] = []
             plan_shapes: list[tuple[int, ...]] = []
             for chan_name, desc in channels.items():
@@ -253,11 +258,13 @@ class SessionStorage:
                 for k, v in (desc.attrs or {}).items():
                     ds.attrs[k] = _coerce_attr(v)
                 self._datasets[(rec_group, chan_name)] = ds
+                plan_datasets.append(ds)
                 buf_shape = (self._buffer_frames,) + tuple(desc.shape)
                 buf = np.zeros(buf_shape, dtype=desc.dtype)
                 self._buffers[(rec_group, chan_name)] = buf
                 plan_buffers.append(buf)
                 plan_shapes.append(tuple(desc.shape))
+            self._datasets_by_group[rec_group] = tuple(plan_datasets)
             self._group_plans[rec_group] = (chan_names, tuple(plan_buffers), tuple(plan_shapes))
 
         return self._episode_index
@@ -302,13 +309,26 @@ class SessionStorage:
         count = self._buffer_count.get(rec_group, 0)
         if count == 0:
             return
+        plan = self._group_plans[rec_group]
+        _channels, buffers, _shapes = plan
+        datasets = self._datasets_by_group.get(rec_group, ())
+        # Channel-order invariant: ``_datasets_by_group[rec_group]`` and the buffers tuple
+        # in ``_group_plans[rec_group]`` are populated together in :meth:`begin_episode`
+        # by iterating ``recordable.channels()`` once. The ``zip(datasets, buffers)``
+        # below relies on that pairing - a future change that mutates either tuple
+        # independently would silently misroute channel data, so this raises
+        # unconditionally rather than via ``assert`` (which strips under ``python -O``).
+        if len(datasets) != len(buffers):
+            raise RuntimeError(
+                f"SessionStorage channel-order invariant violated for group {rec_group!r}: "
+                f"{len(datasets)} datasets vs {len(buffers)} buffers. "
+                f"`_datasets_by_group` and `_group_plans` must be populated together."
+            )
         existing = self._frames_written[rec_group]
         new_total = existing + count
-        for (g, chan), ds in self._datasets.items():
-            if g != rec_group:
-                continue
+        for ds, buf in zip(datasets, buffers):
             ds.resize((new_total,) + ds.shape[1:])
-            ds[existing:new_total] = self._buffers[(g, chan)][:count]
+            ds[existing:new_total] = buf[:count]
         self._frames_written[rec_group] = new_total
         self._buffer_count[rec_group] = 0
 
@@ -354,6 +374,7 @@ class SessionStorage:
         self._episode_started_at = None
         self._episode_frames = 0
         self._datasets.clear()
+        self._datasets_by_group.clear()
         self._buffers.clear()
         self._channels_by_group.clear()
         self._buffer_count.clear()

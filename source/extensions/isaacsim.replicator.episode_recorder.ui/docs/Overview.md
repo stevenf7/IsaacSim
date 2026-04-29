@@ -27,12 +27,12 @@ for any stage whose prims expose an articulation, rigid body, or xform.
 - **Replay** — file picker + episode combo, *Latest* shortcut, and playback
   controls (*Start Replay*, *Pause Replay*, *Step Forward*, *Step Backward*,
   and *Stop Replay*). The replay drives {meth}`EpisodeReplayer.start_replay
-  <isaacsim.replicator.episode_recorder.EpisodeReplayer.start_replay>`. Each
-  app update applies one recorded frame. If *Seek timeline* is checked, it also
-  seeks (never plays) the Kit timeline to the recorded ``sim_time`` so
-  stage-authored USD animations play back in sync without stepping physics. A
-  per-frame progress label (``Frame <i> / <total>``) tracks playback in the
-  panel and each applied frame is echoed to the terminal via ``carb.log_info``.
+  <isaacsim.replicator.episode_recorder.EpisodeReplayer.start_replay>`, which
+  applies one recorded frame on every app update. If *Seek timeline* is checked,
+  replay also seeks (never plays) the Kit timeline to the recorded ``sim_time``
+  so stage-authored USD animations play back in sync without stepping physics.
+  The progress label and terminal log are throttled so long episodes do not
+  flood the UI thread.
   Pressing *Stop Replay* (or hitting the last frame in non-loop mode) pops the
   anonymous USD sublayer the replayer wrote into, visibly reverting the stage
   to its pre-replay state.

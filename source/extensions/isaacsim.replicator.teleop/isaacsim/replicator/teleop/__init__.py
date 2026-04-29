@@ -82,7 +82,12 @@ from .validation import (
     validate_marker_path,
 )
 from .vr_recording_button import VRButton, VRRecordingButton
-from .xr_anchor_manager import AnchorRotationMode, XrAnchorManager
+from .xr_anchor_manager import (
+    AnchorRotationMode,
+    XrAnchorManager,
+    activate_pre_session_anchor,
+    restore_pre_session_anchor,
+)
 
 __all__ = [
     "get_teleop_backend",
@@ -148,4 +153,6 @@ __all__ = [
     "VRRecordingButton",
     "AnchorRotationMode",
     "XrAnchorManager",
+    "activate_pre_session_anchor",
+    "restore_pre_session_anchor",
 ]

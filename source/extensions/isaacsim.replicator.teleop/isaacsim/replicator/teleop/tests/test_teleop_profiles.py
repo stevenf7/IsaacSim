@@ -36,6 +36,7 @@ from isaacsim.replicator.teleop import (
     load_teleop_profile,
     normalize_grasp_config_path,
     save_teleop_profile,
+    scan_teleop_profiles,
 )
 
 
@@ -157,6 +158,56 @@ class TestTeleopProfiles(omni.kit.test.AsyncTestCase):
             self.assertTrue(loaded.locomotion.enabled)
             self.assertFalse(loaded.floating.left.enabled)
             self.assertEqual(loaded.session.anchor_x, 0.0)
+
+    async def test_load_non_mapping_reports_error(self) -> None:
+        """A syntactically valid YAML file still has to contain a mapping."""
+        with TemporaryDirectory() as tmp_dir:
+            path = os.path.join(tmp_dir, "not_a_profile.yaml")
+            with open(path, "w") as f:
+                yaml.dump(["not", "a", "mapping"], f)
+
+            loaded, errors = load_teleop_profile(path)
+            self.assertIsNone(loaded)
+            self.assertEqual(len(errors), 1)
+            self.assertIn("Expected a YAML mapping", errors[0])
+
+    async def test_invalid_nested_settings_fall_back_to_defaults(self) -> None:
+        """Malformed nested settings should not poison loaded profile dataclasses."""
+        data = {
+            "floating": {"left": {"enabled": True, "settings": None}},
+            "ik": {"right": {"enabled": True, "settings": ["not", "a", "mapping"]}},
+            "locomotion": {"enabled": True, "settings": "bad"},
+        }
+        with TemporaryDirectory() as tmp_dir:
+            path = os.path.join(tmp_dir, "malformed_nested.yaml")
+            with open(path, "w") as f:
+                yaml.dump(data, f)
+
+            loaded, errors = load_teleop_profile(path)
+            self.assertEqual(errors, [])
+            self.assertIsNotNone(loaded)
+            assert loaded is not None
+            self.assertTrue(loaded.floating.left.enabled)
+            self.assertEqual(loaded.floating.left.settings, {})
+            self.assertTrue(loaded.ik.right.enabled)
+            self.assertEqual(loaded.ik.right.settings, {})
+            self.assertTrue(loaded.locomotion.enabled)
+            self.assertEqual(loaded.locomotion.settings, {})
+
+    async def test_scan_profiles_lists_yaml_and_yml_files(self) -> None:
+        """Profile discovery ignores unrelated files while accepting both YAML suffixes."""
+        with TemporaryDirectory() as tmp_dir:
+            yaml_path = os.path.join(tmp_dir, "alpha.yaml")
+            yml_path = os.path.join(tmp_dir, "beta.yml")
+            txt_path = os.path.join(tmp_dir, "ignored.txt")
+            for path in (yaml_path, yml_path, txt_path):
+                with open(path, "w") as f:
+                    f.write("session: {}\n")
+
+            found = scan_teleop_profiles(tmp_dir)
+
+            self.assertEqual({name for name, _path in found}, {"alpha", "beta"})
+            self.assertEqual({os.path.basename(path) for _name, path in found}, {"alpha.yaml", "beta.yml"})
 
     async def test_builtin_grasp_config_paths_are_portable(self) -> None:
         """Built-in grasp configs should round-trip through a stable symbolic URI."""

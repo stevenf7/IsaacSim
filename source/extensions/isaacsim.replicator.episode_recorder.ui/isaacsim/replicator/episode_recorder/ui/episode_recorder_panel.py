@@ -28,14 +28,17 @@ from __future__ import annotations
 import asyncio
 import glob
 import os
+import time
 
 import carb
+import carb.eventdispatcher
 import carb.settings
 import omni.kit.app
 import omni.timeline
 import omni.ui as ui
 from isaacsim.gui.components.ui_utils import get_style
 from isaacsim.replicator.episode_recorder import (
+    EPISODE_BINDING_EVENT,
     ArticulationRecordable,
     EpisodeRecorder,
     EpisodeReplayer,
@@ -72,9 +75,19 @@ _DEFAULT_FILE_PREFIX = "episode"
 _DEFAULT_OUTPUT_SUBDIR = "_episode_recorder"  # Created under cwd.
 _DEFAULT_AUTO_START_ON_PLAY = True
 _DEFAULT_REPLAY_SEEK_TIMELINE = True
+_REPLAY_UI_UPDATE_INTERVAL = 0.1
+_REPLAY_LOG_INTERVAL = 1.0
 
 _TARGETS_FRAME_KEY = "targets"
 _REPLAY_FRAME_KEY = "replay"
+
+# Pose-batch backend ComboBox options. Keep the order: index 0 == default ("usd").
+# ``"usdrt"`` / ``"fabric"`` require Fabric Scene Delegate; ``EpisodeRecorder`` /
+# ``EpisodeReplayer`` already coerce them back to ``"usd"`` with a carb warning
+# when FSD is disabled, so an "unsafe" selection here is never silently fatal.
+_POSE_BACKEND_OPTIONS: tuple[str, ...] = ("usd", "usdrt", "fabric")
+_DEFAULT_POSE_BACKEND_RECORD = "usd"
+_DEFAULT_POSE_BACKEND_REPLAY = "usd"
 
 
 class EpisodeRecorderPanel:
@@ -97,8 +110,13 @@ class EpisodeRecorderPanel:
         self._settings.set_default_string(f"{_SETTINGS_PREFIX}/file_prefix", _DEFAULT_FILE_PREFIX)
         self._settings.set_default_bool(f"{_SETTINGS_PREFIX}/auto_start_on_play", _DEFAULT_AUTO_START_ON_PLAY)
         self._settings.set_default_bool(f"{_SETTINGS_PREFIX}/replay_seek_timeline", _DEFAULT_REPLAY_SEEK_TIMELINE)
+        self._settings.set_default_string(f"{_SETTINGS_PREFIX}/pose_backend_record", _DEFAULT_POSE_BACKEND_RECORD)
+        self._settings.set_default_string(f"{_SETTINGS_PREFIX}/pose_backend_replay", _DEFAULT_POSE_BACKEND_REPLAY)
 
-        self._collapsed: dict[str, bool] = {_TARGETS_FRAME_KEY: True, _REPLAY_FRAME_KEY: True}
+        self._collapsed: dict[str, bool] = {
+            _TARGETS_FRAME_KEY: True,
+            _REPLAY_FRAME_KEY: False,
+        }
 
         self._root_path_field: ui.StringField | None = None
         self._output_dir_field: ui.StringField | None = None
@@ -106,6 +124,8 @@ class EpisodeRecorderPanel:
         self._auto_start_model: ui.SimpleBoolModel | None = None
         self._auto_start_check: ui.CheckBox | None = None
         self._export_snapshot_btn: ui.Button | None = None
+        self._pose_backend_record_combo: ui.ComboBox | None = None
+        self._pose_backend_replay_combo: ui.ComboBox | None = None
 
         self._targets_content: ui.Frame | None = None
         self._session_btn: ui.Button | None = None
@@ -140,12 +160,25 @@ class EpisodeRecorderPanel:
         self._replay_seek_timeline_check: ui.CheckBox | None = None
         self._replay_status_label: ui.Label | None = None
         self._replay_progress_label: ui.Label | None = None
+        self._replay_warning_label: ui.Label | None = None
+        self._replay_warning_row: ui.HStack | None = None
         self._replayer: EpisodeReplayer | None = None
         self._replay_episodes: list[str] = []
         self._replay_frame_counts: list[int] = []
         self._replay_attached: bool = False
         self._replay_start_task: asyncio.Task | None = None
         self._replay_active_episode: int | None = None
+        self._last_replay_ui_update_time: float = 0.0
+        self._last_replay_log_time: float = 0.0
+
+        self._bindings: dict[str, dict] = {}
+        self._binding_badge: ui.Label | None = None
+        self._binding_event_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=EPISODE_BINDING_EVENT,
+            on_event=self._on_binding_event,
+            observer_name="isaacsim.replicator.episode_recorder.ui._on_binding_event",
+            order=0,
+        )
 
     # ------------------------------------------------------------------
     # Build
@@ -155,6 +188,7 @@ class EpisodeRecorderPanel:
         with ui.VStack(spacing=SECTION_SPACING):
             self._build_targets_section()
             self._build_session_options_section()
+            self._build_record_pose_backend_row()
             self._build_session_control_section()
             with ui.HStack(spacing=ROW_SPACING, height=STATUS_HEIGHT):
                 ui.Spacer(width=INDENT)
@@ -253,6 +287,43 @@ class EpisodeRecorderPanel:
             )
             self._auto_start_model.add_value_changed_fn(self._on_auto_start_changed)
 
+    def _build_record_pose_backend_row(self) -> None:
+        """Render the record-side pose-batch backend selector above Open Session.
+
+        Backend used by the per-tick ``XformPrim.get_world_poses`` batch read
+        on :class:`EpisodeRecorder`. Reads cannot trigger the nested-articulation
+        parent-lag bug (no writes happen during sampling), so FSD-backed reads
+        are safe speedups when Fabric Scene Delegate is enabled. Persisted to
+        carb settings under
+        ``/persistent/exts/isaacsim.replicator.episode_recorder.ui/`` so the
+        choice survives Kit restarts; ``"usdrt"`` / ``"fabric"`` selections fall
+        back to ``"usd"`` with a carb warning when FSD is unavailable.
+
+        The replay-side selector lives next to the Episode dropdown in
+        :meth:`_build_replay_section` so each backend sits with the controls
+        it actually drives.
+        """
+        with ui.HStack(spacing=ROW_SPACING, height=ROW_HEIGHT):
+            ui.Spacer(width=INDENT)
+            ui.Label(
+                "Pose Backend:",
+                width=110,
+                tooltip=(
+                    "Backend used by the recorder's per-tick pose-batch READ.\n"
+                    "  - usd:    safe default; pure USD reads.\n"
+                    "  - usdrt:  Fabric Scene Delegate via IFabricHierarchy\n"
+                    "            (may be faster - benchmark per scene).\n"
+                    "  - fabric: Fabric Scene Delegate direct\n"
+                    "            (may be faster - benchmark per scene).\n"
+                    "Reads can never trigger the nested-articulation stutter,\n"
+                    "so FSD-backed options are usually safe during recording.\n"
+                    "Falls back to 'usd' with a warning if FSD is disabled."
+                ),
+            )
+            record_idx = self._pose_backend_index(self._load_str("pose_backend_record"))
+            self._pose_backend_record_combo = ui.ComboBox(record_idx, *_POSE_BACKEND_OPTIONS, width=ui.Fraction(1))
+            self._pose_backend_record_combo.model.add_item_changed_fn(self._on_pose_backend_record_changed)
+
     def _build_session_control_section(self) -> None:
         with ui.HStack(spacing=ROW_SPACING, height=ROW_HEIGHT):
             ui.Spacer(width=INDENT)
@@ -277,6 +348,13 @@ class EpisodeRecorderPanel:
                 ),
                 enabled=False,
             )
+            self._binding_badge = ui.Label(
+                "",
+                width=0,
+                style={"color": CLR_GREEN, "font_size": 12},
+                tooltip="External inputs (e.g. VR controller buttons) currently wired to this recorder.",
+            )
+        self._refresh_binding_badge()
 
     def _build_replay_section(self) -> None:
         replay_frame = ui.CollapsableFrame(
@@ -314,6 +392,29 @@ class EpisodeRecorderPanel:
                         style={"color": CLR_DIM},
                         width=150,
                     )
+
+                with ui.HStack(spacing=ROW_SPACING, height=ROW_HEIGHT):
+                    ui.Spacer(width=INDENT)
+                    ui.Label(
+                        "Pose Backend:",
+                        width=110,
+                        tooltip=(
+                            "Backend used by the replayer's per-tier pose-batch WRITE.\n"
+                            "  - usd:    recommended default; the ancestry-ordered tier\n"
+                            "            split + USD writes is what avoids the stutter\n"
+                            "            on articulations nested under moving xforms.\n"
+                            "  - usdrt / fabric: only for benchmarking flat scenes;\n"
+                            "            may exhibit one-frame parent-lag on nested\n"
+                            "            hierarchies even with the tier split.\n"
+                            "Falls back to 'usd' with a warning if FSD is disabled.\n"
+                            "Applied on Load."
+                        ),
+                    )
+                    replay_idx = self._pose_backend_index(self._load_str("pose_backend_replay"))
+                    self._pose_backend_replay_combo = ui.ComboBox(
+                        replay_idx, *_POSE_BACKEND_OPTIONS, width=ui.Fraction(1)
+                    )
+                    self._pose_backend_replay_combo.model.add_item_changed_fn(self._on_pose_backend_replay_changed)
 
                 with ui.HStack(spacing=ROW_SPACING, height=ROW_HEIGHT):
                     ui.Spacer(width=INDENT)
@@ -378,6 +479,15 @@ class EpisodeRecorderPanel:
                 with ui.HStack(spacing=ROW_SPACING, height=STATUS_HEIGHT):
                     ui.Spacer(width=INDENT)
                     self._replay_progress_label = ui.Label("", style={"color": CLR_DIM}, word_wrap=True)
+
+                with ui.HStack(spacing=ROW_SPACING, visible=False) as warning_row:
+                    ui.Spacer(width=INDENT)
+                    self._replay_warning_label = ui.Label(
+                        "",
+                        style={"color": CLR_RED, "font_size": 12},
+                        word_wrap=True,
+                    )
+                self._replay_warning_row = warning_row
 
     # ------------------------------------------------------------------
     # Discovery
@@ -509,6 +619,7 @@ class EpisodeRecorderPanel:
                 self._get_output_dir(),
                 file_prefix=self._get_file_prefix(),
                 sampling=SamplingConfig(),
+                pose_backend=self._get_pose_backend_record(),
             )
             for name, path in selected_arts.items():
                 recorder.add(ArticulationRecordable(group=f"state/{name}", prim_path=path))
@@ -611,6 +722,42 @@ class EpisodeRecorderPanel:
         """Persist the Seek-timeline replay option; applies to the next Start Replay."""
         self._save_bool("replay_seek_timeline", bool(model.get_value_as_bool()))
 
+    def _on_pose_backend_record_changed(self, model: ui.AbstractItemModel, _item: object) -> None:
+        """Persist the recorder pose-backend selection; applies to the next Open Session."""
+        self._save_str("pose_backend_record", self._pose_backend_from_combo_model(model))
+
+    def _on_pose_backend_replay_changed(self, model: ui.AbstractItemModel, _item: object) -> None:
+        """Persist the replayer pose-backend selection; applies to the next Load + Replay."""
+        self._save_str("pose_backend_replay", self._pose_backend_from_combo_model(model))
+
+    @staticmethod
+    def _pose_backend_index(value: str) -> int:
+        """Map a backend string to its ComboBox index, falling back to ``"usd"`` (index 0)."""
+        try:
+            return _POSE_BACKEND_OPTIONS.index(value)
+        except ValueError:
+            return 0
+
+    @staticmethod
+    def _pose_backend_from_combo_model(model: ui.AbstractItemModel) -> str:
+        """Read the active option from a backend ComboBox, defaulting to ``"usd"``."""
+        idx = model.get_item_value_model().get_value_as_int()
+        if 0 <= idx < len(_POSE_BACKEND_OPTIONS):
+            return _POSE_BACKEND_OPTIONS[idx]
+        return _DEFAULT_POSE_BACKEND_RECORD
+
+    def _get_pose_backend_record(self) -> str:
+        """Return the active record-side pose backend (combo if built, else carb setting)."""
+        if self._pose_backend_record_combo is not None:
+            return self._pose_backend_from_combo_model(self._pose_backend_record_combo.model)
+        return self._load_str("pose_backend_record") or _DEFAULT_POSE_BACKEND_RECORD
+
+    def _get_pose_backend_replay(self) -> str:
+        """Return the active replay-side pose backend (combo if built, else carb setting)."""
+        if self._pose_backend_replay_combo is not None:
+            return self._pose_backend_from_combo_model(self._pose_backend_replay_combo.model)
+        return self._load_str("pose_backend_replay") or _DEFAULT_POSE_BACKEND_REPLAY
+
     def _on_export_snapshot_clicked(self) -> None:
         """Export a scene-level USD + sidecar into the current output directory."""
         output_dir = self._get_output_dir()
@@ -670,7 +817,11 @@ class EpisodeRecorderPanel:
             return
 
         try:
-            replayer = EpisodeReplayer(path, policy=ReplayPolicy(strictness="best_effort"))
+            replayer = EpisodeReplayer(
+                path,
+                policy=ReplayPolicy(strictness="best_effort"),
+                pose_backend=self._get_pose_backend_replay(),
+            )
         except Exception as exc:
             set_status(
                 self._replay_status_label,
@@ -714,6 +865,7 @@ class EpisodeRecorderPanel:
             CLR_GREEN,
             emit_terminal=True,
         )
+        self._refresh_replay_stage_check()
 
     def _populate_replay_episode_combo(self) -> None:
         if self._replay_episode_combo is None:
@@ -852,6 +1004,8 @@ class EpisodeRecorderPanel:
             return
         self._replay_attached = True
         self._replay_active_episode = episode
+        self._last_replay_ui_update_time = 0.0
+        self._last_replay_log_time = 0.0
         name = self._replay_episodes[episode] if 0 <= episode < len(self._replay_episodes) else "?"
         frames = self._replay_frame_counts[episode] if 0 <= episode < len(self._replay_frame_counts) else 0
         carb.log_info(
@@ -877,8 +1031,14 @@ class EpisodeRecorderPanel:
             else 0
         )
         if self._replay_progress_label is not None:
-            self._replay_progress_label.text = f"Frame {frame_index + 1} / {total}"
-        carb.log_info(f"[EpisodeRecorder][UI] Replay: frame {frame_index + 1}/{total}")
+            now = time.perf_counter()
+            is_edge_frame = frame_index == 0 or (total > 0 and frame_index + 1 >= total)
+            if is_edge_frame or now - self._last_replay_ui_update_time >= _REPLAY_UI_UPDATE_INTERVAL:
+                self._replay_progress_label.text = f"Frame {frame_index + 1} / {total}"
+                self._last_replay_ui_update_time = now
+            if is_edge_frame or now - self._last_replay_log_time >= _REPLAY_LOG_INTERVAL:
+                carb.log_info(f"[EpisodeRecorder][UI] Replay: frame {frame_index + 1}/{total}")
+                self._last_replay_log_time = now
 
     def _on_replay_finished(self) -> None:
         """Called by the replayer when it reaches the last frame in non-loop mode."""
@@ -894,6 +1054,8 @@ class EpisodeRecorderPanel:
                 carb.log_warn(f"[EpisodeRecorder][UI] stop_replay raised: {exc}")
         self._replay_attached = False
         self._replay_active_episode = None
+        self._last_replay_ui_update_time = 0.0
+        self._last_replay_log_time = 0.0
         if was_attached:
             carb.log_info(f"[EpisodeRecorder][UI] Replay: stopped (reason={reason})")
             status_map = {
@@ -925,6 +1087,8 @@ class EpisodeRecorderPanel:
                 pass
         self._replay_attached = False
         self._replay_active_episode = None
+        self._last_replay_ui_update_time = 0.0
+        self._last_replay_log_time = 0.0
         if self._replayer is not None:
             try:
                 self._replayer.close()
@@ -941,6 +1105,83 @@ class EpisodeRecorderPanel:
             self._replay_info_label.text = ""
         if self._replay_progress_label is not None:
             self._replay_progress_label.text = ""
+        self._clear_replay_warning()
+
+    def _refresh_replay_stage_check(self) -> None:
+        """Compare prim paths in the loaded session manifest against the current stage.
+
+        Surfaces a red warning row when one or more required prims are missing so the
+        user is not surprised by silent fall-through at replay time.
+        """
+        if self._replay_warning_label is None:
+            return
+        if self._replayer is None:
+            self._clear_replay_warning()
+            return
+
+        try:
+            manifest = self._replayer.manifest()
+        except Exception as exc:  # noqa: BLE001
+            carb.log_warn(f"[EpisodeRecorder][UI] manifest read failed: {exc}")
+            self._clear_replay_warning()
+            return
+
+        required_paths: list[str] = []
+        seen_paths: set[str] = set()
+        for entry in manifest.tracks:
+            if not isinstance(entry, dict):
+                continue
+            prim_path = entry.get("prim_path")
+            if prim_path:
+                key = str(prim_path)
+                if key not in seen_paths:
+                    seen_paths.add(key)
+                    required_paths.append(key)
+            for link_path in entry.get("link_paths") or ():
+                key = str(link_path)
+                if key and key not in seen_paths:
+                    seen_paths.add(key)
+                    required_paths.append(key)
+        if not required_paths:
+            self._clear_replay_warning()
+            return
+
+        try:
+            import omni.usd
+
+            stage = omni.usd.get_context().get_stage()
+        except Exception:
+            stage = None
+        if stage is None:
+            self._set_replay_warning("No stage is currently open. Replay will fail until you load the matching scene.")
+            return
+
+        missing: list[str] = []
+        for path in required_paths:
+            if not stage.GetPrimAtPath(path).IsValid():
+                missing.append(path)
+        if not missing:
+            self._clear_replay_warning()
+            return
+        preview = ", ".join(missing[:3])
+        if len(missing) > 3:
+            preview += f", \u2026 ({len(missing) - 3} more)"
+        self._set_replay_warning(
+            f"{len(missing)} recorded prim/link path(s) not found in the current stage: {preview}. "
+            "Open the matching scene before pressing Play."
+        )
+
+    def _set_replay_warning(self, message: str) -> None:
+        if self._replay_warning_label is not None:
+            self._replay_warning_label.text = message
+        if self._replay_warning_row is not None:
+            self._replay_warning_row.visible = True
+
+    def _clear_replay_warning(self) -> None:
+        if self._replay_warning_label is not None:
+            self._replay_warning_label.text = ""
+        if self._replay_warning_row is not None:
+            self._replay_warning_row.visible = False
 
     # ------------------------------------------------------------------
     # Recorder SessionEvents observer
@@ -1000,6 +1241,10 @@ class EpisodeRecorderPanel:
 
     def on_stage_closed(self) -> None:
         """Close the active recorder / replayer when the stage goes away."""
+        was_recording = self._is_recording()
+        active_hdf5_path = self._recorder.hdf5_path if self._recorder is not None else None
+        was_replay_attached = self._replay_attached
+
         if self._replay_attached:
             self._stop_replay(reason="stage_closed")
         self._close_recorder_silently()
@@ -1009,10 +1254,110 @@ class EpisodeRecorderPanel:
         set_status(self._replay_status_label, "Replay released (stage closed)", CLR_YELLOW)
         self._sync_controls()
 
+        if was_recording and active_hdf5_path:
+            self._notify_stage_close_session(active_hdf5_path)
+        elif was_replay_attached:
+            self._notify_stage_close_replay()
+
+    def _notify_stage_close_session(self, hdf5_path: str) -> None:
+        """Surface a non-blocking notification when an active recording was force-stopped."""
+        message = f"Stage closed while recording was in progress.\nCaptured frames were flushed to:\n{hdf5_path}"
+        carb.log_warn(f"[EpisodeRecorder][UI] {message}")
+        try:
+            from omni.kit.notification_manager import NotificationStatus, post_notification
+
+            post_notification(message, status=NotificationStatus.WARNING, duration=8.0)
+        except Exception:
+            pass
+
+    def _notify_stage_close_replay(self) -> None:
+        """Surface a non-blocking notification when an active replay was force-stopped."""
+        message = "Stage closed while replay was active. Replay was stopped."
+        carb.log_warn(f"[EpisodeRecorder][UI] {message}")
+        try:
+            from omni.kit.notification_manager import NotificationStatus, post_notification
+
+            post_notification(message, status=NotificationStatus.WARNING, duration=5.0)
+        except Exception:
+            pass
+
     def destroy(self) -> None:
         """Close any active session / replayer. Safe to call from window teardown."""
         self._close_recorder_silently()
         self._close_replayer_silently()
+        self._binding_event_sub = None
+        self._bindings.clear()
+
+    def _on_binding_event(self, event) -> None:
+        """Track external bindings advertised on :data:`EPISODE_BINDING_EVENT`.
+
+        Bindings carrying a non-empty ``session_id`` are dropped when they target a
+        different recorder than the one this panel currently owns; this prevents
+        cross-talk between concurrent sessions sharing the same event bus. Events
+        without a ``session_id`` (or with a falsy one) are treated as global
+        advertisements and always counted.
+        """
+        try:
+            payload = dict(event.payload) if hasattr(event, "payload") else {}
+            action = payload.get("action")
+            binding_id = payload.get("binding_id")
+            if not binding_id:
+                return
+            event_session_id = payload.get("session_id")
+            if event_session_id and not self._matches_active_session(event_session_id):
+                return
+            if action == "attach":
+                self._bindings[binding_id] = payload
+            elif action == "detach":
+                self._bindings.pop(binding_id, None)
+            else:
+                return
+            self._refresh_binding_badge()
+        except Exception as exc:  # noqa: BLE001
+            carb.log_warn(f"[EpisodeRecorder][UI] _on_binding_event failed: {exc}")
+
+    def _matches_active_session(self, event_session_id: str) -> bool:
+        """Return True when a binding event's ``session_id`` targets this panel's recorder.
+
+        When no recorder is bound yet, scoped events cannot be addressed to this panel,
+        so they are dropped. Once a recorder exists, scoped events must match its
+        ``session_id`` exactly.
+        """
+        recorder = self._recorder
+        if recorder is None:
+            return False
+        try:
+            current_session_id = recorder.session_id
+        except Exception:
+            return False
+        if not current_session_id:
+            return False
+        return str(event_session_id) == str(current_session_id)
+
+    def _refresh_binding_badge(self) -> None:
+        """Update the binding badge label based on currently advertised bindings."""
+        if self._binding_badge is None:
+            return
+        if not self._bindings:
+            self._binding_badge.text = ""
+            self._binding_badge.tooltip = (
+                "External inputs (e.g. VR controller buttons) currently wired to this recorder."
+            )
+            return
+
+        labels: list[str] = []
+        details: list[str] = []
+        for payload in self._bindings.values():
+            label = payload.get("label") or payload.get("binding_id") or "binding"
+            command = payload.get("command") or "?"
+            labels.append(str(label))
+            details.append(f"{label} \u2192 {command}")
+
+        if len(labels) == 1:
+            self._binding_badge.text = f"\u25cf {labels[0]}"
+        else:
+            self._binding_badge.text = f"\u25cf {len(labels)} bindings"
+        self._binding_badge.tooltip = "External inputs currently wired to this recorder:\n  " + "\n  ".join(details)
 
     def _close_recorder_silently(self) -> list[str]:
         errors: list[str] = []

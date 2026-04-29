@@ -23,7 +23,7 @@ import numpy as np
 
 
 def to_numpy(value: Any) -> np.ndarray:
-    """Convert warp / torch arrays (returned by experimental prim APIs) to a NumPy array."""
+    """Convert warp / torch arrays (returned by the prim APIs) to a NumPy array."""
     if isinstance(value, np.ndarray):
         return value
     if hasattr(value, "numpy"):
@@ -51,3 +51,16 @@ def get_stage() -> Any:
     if stage is None:
         raise RuntimeError("No USD stage is currently loaded.")
     return stage
+
+
+def is_missing_xform_ops_error(exc: BaseException) -> bool:
+    """Detect the ``XformPrim`` error raised when xformOps are not yet authored.
+
+    ``XformPrim.set_world_poses`` / ``set_local_poses`` raise when a target prim
+    lacks the expected ``xformOp:*`` attributes. The fix is to call
+    ``reset_xform_op_properties()`` once and retry; we match the error text so both
+    the per-recordable :class:`_PoseBase` and the replayer's shared pose batch can
+    apply the same recovery path.
+    """
+    msg = str(exc)
+    return "xformOp:" in msg and "reset_xform_op_properties" in msg

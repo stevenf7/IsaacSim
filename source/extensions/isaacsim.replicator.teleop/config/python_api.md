@@ -407,6 +407,8 @@
 - def resolve_teleop_profile(profile: TeleopProfile) -> TeleopResolutionReport
 - def validate_floating_end_effector(prim_path: str) -> ValidationResult
 - def validate_marker_path(prim_path: str) -> ValidationResult
+- def activate_pre_session_anchor() -> bool
+- def restore_pre_session_anchor()
 
 ## Variables
 

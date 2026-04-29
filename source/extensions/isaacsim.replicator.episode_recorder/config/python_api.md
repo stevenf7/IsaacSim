@@ -60,6 +60,7 @@
   - [property] def current_episode_frames(self) -> int
   - [property] def events(self) -> SessionEvents
   - [property] def state(self) -> str
+  - [property] def pose_backend(self) -> PoseBackend
   - def add(self, recordable: Recordable)
   - def recordables(self) -> list[Recordable]
   - def open_session(self, output_path: str | None = None) -> str
@@ -80,6 +81,9 @@
   - [property] def current_frame(self) -> int
   - [property] def total_frames(self) -> int
   - [property] def prepared_recordables(self) -> list[Recordable]
+  - [property] def pose_batch_size(self) -> int
+  - [property] def pose_batch_tier_count(self) -> int
+  - [property] def pose_backend(self) -> PoseBackend
   - def list_episodes(self) -> list[str]
   - def num_frames(self, episode: int | str) -> int
   - def episode_attrs(self, episode: int | str) -> dict[str, Any]
@@ -198,6 +202,7 @@
 - def apply_session_injectors(recorder: EpisodeRecorder)
 - def build_manifest(recordable_entries: Iterable[dict[str, Any]]) -> SessionManifest
 - def clear_session_injectors()
+- def dispatch_episode_binding(action: str)
 - def dispatch_episode_command(command: str, **payload: Any)
 - def export_stage_snapshot(output_dir: str) -> str
 - def get_registered(type_id: str) -> type[Recordable] | None
@@ -215,8 +220,11 @@
 ## Variables
 
 - DEFAULT_BUFFER_FRAMES: int
+- EPISODE_BINDING_EVENT: str
 - EPISODE_CMD_EVENT: str
+- PoseBackend: Unknown
 - STAGE_SNAPSHOT_BASENAME: str
 - SCHEMA_VERSION: int
 - SessionInjector: Unknown
+- VALID_BINDING_ACTIONS: Unknown
 - VALID_COMMANDS: Unknown

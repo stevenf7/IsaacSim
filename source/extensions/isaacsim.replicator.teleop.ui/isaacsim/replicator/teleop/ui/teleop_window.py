@@ -28,7 +28,9 @@ from isaacsim.replicator.teleop import (
     TeleopCommand,
     TeleopManager,
     TeleopProfile,
+    activate_pre_session_anchor,
     get_last_teleop_profile_path,
+    restore_pre_session_anchor,
     save_teleop_profile,
 )
 from isaacsim.replicator.teleop.controllers import GraspController, LocomotionController, RobotIKController
@@ -61,6 +63,7 @@ class TeleopWindow(ui.Window):
         super().__init__(title, dockPreference=ui.DockPreference.MAIN)
         self.deferred_dock_in("Property", ui.DockPolicy.DO_NOTHING)
 
+        self._pre_session_anchor_active = False
         self._teleop_manager = TeleopManager()
         self._markers_manager = MarkersManager()
         self._floating_controller = FloatingRigidBodyController()
@@ -99,6 +102,13 @@ class TeleopWindow(ui.Window):
         self._teleop_manager.set_on_stage_closing(self._on_stage_closing)
         self._teleop_manager.set_on_command_executed(self._on_command_executed)
         self._build_window_ui()
+
+        # Override Kit XR's default ``active camera`` anchor with ``scene origin``
+        # for the lifetime of the window so the headset tracks real motion before
+        # Connect runs. Activated only after all member state is wired so a
+        # construction failure can never leave the global override stranded.
+        # The original setting is restored in :meth:`destroy`.
+        self._pre_session_anchor_active = activate_pre_session_anchor()
 
     def _on_stage_closing(self) -> None:
         """Called by TeleopManager when the USD stage is about to close.
@@ -183,6 +193,8 @@ class TeleopWindow(ui.Window):
         self._sub_shutdown = None
         if self._markers_manager:
             self._markers_manager.remove_all_markers()
+        if self._teleop_profile_panel:
+            self._teleop_profile_panel.destroy()
         if self._floating_panel:
             self._floating_panel.destroy()
         if self._ik_panel:
@@ -200,6 +212,9 @@ class TeleopWindow(ui.Window):
         self._ik_controller = None
         self._grasp_controller = None
         self._locomotion_controller = None
+        if self._pre_session_anchor_active:
+            self._pre_session_anchor_active = False
+            restore_pre_session_anchor()
         super().destroy()
 
     def _save_last_profile(self) -> None:

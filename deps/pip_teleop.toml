@@ -17,4 +17,3 @@ download_only = false
 install_dependencies = false
 append_to_install_folder = true
 gather_licenses_path = "../_build/PACKAGE-LICENSES/PIP-prebundled-LICENSES.txt"
-extra_args = ["--extra-index-url", "https://pypi.nvidia.com"]

@@ -35,16 +35,26 @@ from isaacsim.replicator.teleop import (
 class TestTeleopResolver(omni.kit.test.AsyncTestCase):
     """Verify teleop profile validation against current stage state."""
 
-    async def tearDown(self) -> None:
-        """Reset to a fresh stage after each test."""
-        await omni.usd.get_context().new_stage_async()
+    async def setUp(self) -> None:
         await omni.kit.app.get_app().next_update_async()
+        omni.usd.get_context().new_stage()
+        await omni.kit.app.get_app().next_update_async()
+
+    async def tearDown(self) -> None:
+        usd_context = omni.usd.get_context()
+        if usd_context.get_stage() is not None:
+            usd_context.close_stage()
+            await omni.kit.app.get_app().next_update_async()
+        while usd_context.get_stage_loading_status()[2] > 0:
+            await omni.kit.app.get_app().next_update_async()
 
     async def test_resolver_reports_no_stage(self) -> None:
         """Verify the resolver reports no-stage when no USD stage is open."""
         usd_context = omni.usd.get_context()
         usd_context.close_stage()
         await omni.kit.app.get_app().next_update_async()
+        while usd_context.get_stage_loading_status()[2] > 0:
+            await omni.kit.app.get_app().next_update_async()
 
         report = resolve_teleop_profile(TeleopProfile())
 
@@ -54,9 +64,6 @@ class TestTeleopResolver(omni.kit.test.AsyncTestCase):
 
     async def test_resolver_reports_missing_stage_references(self) -> None:
         """Verify the resolver surfaces errors for prims that do not exist on stage."""
-        await omni.usd.get_context().new_stage_async()
-        await omni.kit.app.get_app().next_update_async()
-
         profile = TeleopProfile(
             session=TeleopSettingsProfile(
                 tracking_space_enabled=True,

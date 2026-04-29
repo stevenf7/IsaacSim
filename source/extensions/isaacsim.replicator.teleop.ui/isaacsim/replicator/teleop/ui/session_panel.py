@@ -109,17 +109,21 @@ class SessionPanel:
         self._coord_system_combo: ui.ComboBox | None = None
         self._tracking_space_field: ui.StringField | None = None
         self._tracking_space_status: ui.Label | None = None
+        self._tracking_space_toggle_btn: ui.Button | None = None
         self._anchor_x_field: ui.FloatField | None = None
         self._anchor_y_field: ui.FloatField | None = None
         self._anchor_z_field: ui.FloatField | None = None
-        self._tracking_space_enable_btn: ui.Button | None = None
-        self._tracking_space_configured: bool = False
-        self._tracking_space_desired_enabled: bool = False
         self._anchor_rotation_combo: ui.ComboBox | None = None
         self._anchor_smoothing_slider: ui.FloatSlider | None = None
         self._anchor_fixed_height_cb: ui.CheckBox | None = None
         self._debug_tracking_cb: ui.CheckBox | None = None
         self._debug_backend_combo: ui.ComboBox | None = None
+
+        # User intent for the custom XR anchor. Decoupled from runtime so Clear
+        # records ``enabled=False`` even though the built-in marker is active,
+        # and so Show Markers / Connect skip auto-apply on a profile loaded as
+        # disabled with a non-empty path.
+        self._tracking_space_intended_active: bool = False
 
     def build(self) -> None:
         """Build the session panel UI."""
@@ -184,14 +188,14 @@ class SessionPanel:
                             ui.Spacer(width=INDENT)
                             self._marker_status = ui.Label("", style={"color": CLR_DIM}, word_wrap=True)
 
-                ref_key = f"{_PANEL_NAME}:Tracking Space"
+                anchor_key = f"{_PANEL_NAME}:XR Anchor"
                 with ui.CollapsableFrame(
-                    "Tracking Space / Custom Origin",
+                    "XR Anchor",
                     height=0,
-                    collapsed=self._collapsed.get(ref_key, True),
+                    collapsed=self._collapsed.get(anchor_key, True),
                     style=get_style(),
-                ) as ref_frame:
-                    ref_frame.set_collapsed_changed_fn(lambda c, k=ref_key: self._collapsed.__setitem__(k, c))
+                ) as anchor_frame:
+                    anchor_frame.set_collapsed_changed_fn(lambda c, k=anchor_key: self._collapsed.__setitem__(k, c))
                     with ui.VStack(spacing=SECTION_SPACING):
                         with ui.HStack(spacing=ROW_SPACING, height=ROW_HEIGHT):
                             ui.Spacer(width=INDENT)
@@ -206,44 +210,32 @@ class SessionPanel:
                                 lambda model, _item: self._on_coord_system_changed(model.get_item_value_model().as_int)
                             )
 
+                        path_btns: dict = {}
                         self._tracking_space_field = build_prim_path_row(
-                            "Custom Origin:",
+                            "Custom Anchor:",
                             tooltip=(
-                                "Optional scene prim to use as a custom tracking-space origin.\n"
-                                "Leave empty to use the built-in origin marker under /Teleop/Markers/.\n"
-                                "Paths under /Teleop/Markers/ are reserved and will be rejected.\n"
-                                "If the custom prim is invalid when enabled, Teleop falls back\n"
-                                "to the built-in origin."
+                                "Scene prim to anchor the VR headset and controllers to (Kit's 'Custom USD Anchor').\n"
+                                "Empty path resolves to the built-in origin marker under /Teleop/Markers/.\n"
+                                "Paths under /Teleop/Markers/ are reserved and will fall back to the built-in origin.\n"
+                                "Set applies a typed path live; Clear reverts the active anchor to the built-in origin."
                             ),
-                            on_apply_clicked=self._apply_tracking_space_from_field,
-                            apply_tooltip="Validate the tracking space path and fallback behavior",
+                            on_apply_clicked=self._on_tracking_space_toggle,
+                            apply_label="Set",
+                            apply_tooltip="Validate and activate the anchor prim; follows the prim live",
+                            buttons_out=path_btns,
+                        )
+                        self._tracking_space_toggle_btn = path_btns.get("apply")
+                        self._tracking_space_field.model.add_value_changed_fn(
+                            lambda _m: self._sync_tracking_space_controls()
                         )
                         self._tracking_space_field.model.add_end_edit_fn(
                             lambda _m: self._on_tracking_space_field_edited()
                         )
 
-                        with ui.HStack(spacing=ROW_SPACING, height=ROW_HEIGHT):
-                            ui.Spacer(width=INDENT)
-                            self._tracking_space_enable_btn = ui.Button(
-                                "Enable",
-                                width=55,
-                                clicked_fn=self._on_tracking_space_toggle,
-                                tooltip="Enable or disable tracking space following",
-                                enabled=False,
-                            )
                         with ui.HStack(spacing=ROW_SPACING, height=STATUS_HEIGHT):
                             ui.Spacer(width=INDENT)
                             self._tracking_space_status = ui.Label("", style={"color": CLR_DIM}, word_wrap=True)
 
-                anchor_key = f"{_PANEL_NAME}:XR Anchor"
-                with ui.CollapsableFrame(
-                    "XR Anchor (Headset)",
-                    height=0,
-                    collapsed=self._collapsed.get(anchor_key, True),
-                    style=get_style(),
-                ) as anchor_frame:
-                    anchor_frame.set_collapsed_changed_fn(lambda c, k=anchor_key: self._collapsed.__setitem__(k, c))
-                    with ui.VStack(spacing=SECTION_SPACING):
                         with ui.HStack(spacing=ROW_SPACING, height=ROW_HEIGHT):
                             ui.Spacer(width=INDENT)
                             ui.Label(
@@ -251,8 +243,8 @@ class SessionPanel:
                                 width=90,
                                 tooltip=(
                                     "Position offset (metres) for the VR headset camera.\n"
-                                    "No Tracking Space prim: this is an absolute world position.\n"
-                                    "With Tracking Space prim: offset relative to that prim."
+                                    "No Custom Anchor: this is an absolute world position.\n"
+                                    "With a Custom Anchor: offset relative to that prim."
                                 ),
                             )
                             ui.Label("X", width=10)
@@ -290,9 +282,9 @@ class SessionPanel:
                                 "Rotation:",
                                 width=90,
                                 tooltip=(
-                                    "How the headset camera rotation tracks the Tracking Space prim.\n"
-                                    "Only relevant when a Tracking Space prim is set above.\n"
-                                    "- Fixed: ignore Tracking Space rotation entirely.\n"
+                                    "How the headset camera rotation tracks the Custom Anchor prim.\n"
+                                    "Only relevant when a Custom Anchor prim is set above.\n"
+                                    "- Fixed: ignore anchor rotation entirely.\n"
                                     "- Follow Prim: track yaw only (roll/pitch stripped).\n"
                                     "- Smoothed: yaw follows with slerp damping."
                                 ),
@@ -303,7 +295,7 @@ class SessionPanel:
                                 width=140,
                                 tooltip=(
                                     "Fixed: headset orientation uses offset only.\n"
-                                    "Follow Prim: yaw tracks Tracking Space prim rotation.\n"
+                                    "Follow Prim: yaw tracks anchor prim rotation.\n"
                                     "Smoothed: yaw tracks with slerp damping."
                                 ),
                             )
@@ -334,7 +326,7 @@ class SessionPanel:
                                 tooltip=(
                                     "Lock the headset camera height (Z) to the value it had\n"
                                     "on the first frame. Prevents vertical bobbing when the\n"
-                                    "Tracking Space prim moves up/down (e.g. uneven terrain)."
+                                    "Custom Anchor prim moves up/down (e.g. uneven terrain)."
                                 ),
                             )
                             self._anchor_fixed_height_cb.model.set_value(True)
@@ -606,25 +598,14 @@ class SessionPanel:
         self._tm.set_live_tracking(True)
         self._sync_marker_buttons()
         set_status(self._marker_status, "Tracking", CLR_GREEN, emit_terminal=True)
-        if self._tracking_space_desired_enabled:
-            if not self._tracking_space_configured:
-                self._apply_tracking_space_from_field()
-            if self._tracking_space_configured:
-                ok, msg = self._activate_tracking_space()
-                if ok:
-                    path = (
-                        self._tracking_space_field.model.get_value_as_string().strip()
-                        if self._tracking_space_field
-                        else ""
-                    )
-                    if path:
-                        stage = omni.usd.get_context().get_stage()
-                        if stage is not None and Sdf.Path.IsValidPathString(path):
-                            prim = stage.GetPrimAtPath(path)
-                            if prim and prim.IsValid() and UsdGeom.Xformable(prim):
-                                self._mm.move_tracking_space_to(path)
-                else:
-                    set_status(self._tracking_space_status, f"Failed — {msg}", CLR_RED, emit_terminal=True)
+        if (
+            self._tracking_space_intended_active
+            and self._tracking_space_field
+            and self._tracking_space_field.model.get_value_as_string().strip()
+        ):
+            self._set_tracking_space()
+        else:
+            self._sync_tracking_space_controls()
 
     def _on_remove_markers(self) -> None:
         """Stop tracking, disables debug mode, and removes all markers from the stage."""
@@ -636,154 +617,162 @@ class SessionPanel:
         self._tm.disable_tracking_space()
         self._mm.remove_all_markers()
         set_status(self._marker_status, "", CLR_DIM)
-        if self._tracking_space_field and not self._tracking_space_field.model.get_value_as_string():
-            set_status(
-                self._tracking_space_status,
-                "Tracking Space: built-in Teleop tracking space will reactivate when markers are shown again.",
-                CLR_YELLOW,
-            )
+        set_status(
+            self._tracking_space_status,
+            "XR Anchor inactive - reactivates when markers are shown again.",
+            CLR_YELLOW,
+        )
         self._sync_marker_buttons()
+        self._sync_tracking_space_controls()
 
     def _on_tracking_space_field_edited(self) -> None:
-        """Save-only callback for Tracking Space field edits."""
+        """Persist a finalized field edit to settings and surface a hint.
+
+        Wired to ``add_end_edit_fn`` so settings are written and status is
+        emitted only on commit (Enter / focus loss). The cheaper
+        ``_sync_tracking_space_controls`` runs separately on every keystroke
+        to keep the Set / Clear label live without per-character settings
+        writes. Activation still requires a Set click.
+        """
         path = self._tracking_space_field.model.get_value_as_string() if self._tracking_space_field else ""
         self._settings.set_string(f"{_SETTINGS_PREFIX}/tracking_space_path", path)
-        if self._tracking_space_desired_enabled:
-            self._tracking_space_configured = False
-            set_status(self._tracking_space_status, "Tracking Space changed - click Apply", CLR_DIM)
-        else:
-            self._tracking_space_configured = False
-            set_status(self._tracking_space_status, "", CLR_DIM)
+        active = self._tm.tracking_space_prim_path
+        stripped = path.strip()
+        if stripped and active and stripped != active:
+            set_status(self._tracking_space_status, "Field changed - click Set to apply", CLR_DIM)
         self._sync_tracking_space_controls()
 
-    def _apply_tracking_space_from_field(self) -> None:
-        """Validate the tracking-space field without activating it."""
+    def _on_tracking_space_toggle(self) -> None:
+        """Apply the field as the tracking space, or clear back to the built-in origin."""
+        if self._is_tracking_space_clearable():
+            self._clear_tracking_space()
+        else:
+            self._set_tracking_space()
+
+    def _set_tracking_space(self) -> None:
+        """Validate the field and activate the tracking space, following the prim live.
+
+        Empty path or invalid input falls back to the built-in origin marker
+        when session markers are active; otherwise activation is deferred
+        until markers are shown.
+        """
         path = self._tracking_space_field.model.get_value_as_string().strip() if self._tracking_space_field else ""
         self._settings.set_string(f"{_SETTINGS_PREFIX}/tracking_space_path", path)
 
-        if not path:
-            self._tracking_space_configured = True
-            set_status(self._tracking_space_status, "Configured - built-in Teleop tracking space", CLR_YELLOW)
+        ok, deferred, msg = self._activate_tracking_space(path)
+        if not ok:
+            set_status(self._tracking_space_status, f"Failed — {msg}", CLR_RED, emit_terminal=True)
             self._sync_tracking_space_controls()
             return
 
-        if path.startswith(MarkersManager.MARKERS_SCOPE):
-            self._tracking_space_configured = True
-            set_status(
-                self._tracking_space_status,
-                "Configured - custom path targets Teleop markers, so built-in tracking space will be used",
-                CLR_YELLOW,
-            )
-            self._sync_tracking_space_controls()
-            return
+        self._tracking_space_intended_active = bool(path)
 
-        if not Sdf.Path.IsValidPathString(path):
-            self._tracking_space_configured = True
-            set_status(
-                self._tracking_space_status,
-                f"Configured - invalid custom path '{path}', built-in tracking space will be used",
-                CLR_YELLOW,
-            )
-            self._sync_tracking_space_controls()
-            return
+        if path and self._mm.has_active_markers and self._is_valid_xformable(path):
+            self._mm.move_tracking_space_to(path)
 
-        stage = omni.usd.get_context().get_stage()
-        if not stage:
-            self._tracking_space_configured = True
-            set_status(
-                self._tracking_space_status,
-                "Configured - no stage open, custom path will be checked when enabled",
-                CLR_YELLOW,
-            )
-            self._sync_tracking_space_controls()
-            return
-
-        prim = stage.GetPrimAtPath(path)
-        if not prim or not prim.IsValid():
-            self._tracking_space_configured = True
-            set_status(
-                self._tracking_space_status,
-                f"Configured - custom prim not found, built-in tracking space will be used",
-                CLR_YELLOW,
-            )
-            self._sync_tracking_space_controls()
-            return
-
-        if not UsdGeom.Xformable(prim):
-            self._tracking_space_configured = True
-            set_status(
-                self._tracking_space_status,
-                f"Configured - custom prim is not Xformable, built-in tracking space will be used",
-                CLR_YELLOW,
-            )
-            self._sync_tracking_space_controls()
-            return
-
-        self._tracking_space_configured = True
-        set_status(self._tracking_space_status, f"Configured - custom prim: {path}", CLR_YELLOW, emit_terminal=True)
+        set_status(
+            self._tracking_space_status,
+            msg if deferred else f"Set - {msg}",
+            CLR_YELLOW if deferred else CLR_GREEN,
+            emit_terminal=True,
+        )
         self._sync_tracking_space_controls()
 
-    def _activate_tracking_space(self) -> tuple[bool, str]:
-        """Activate tracking space using a valid custom path or built-in fallback."""
-        path = self._tracking_space_field.model.get_value_as_string().strip() if self._tracking_space_field else ""
-        if not path:
-            if not self._mm.has_active_markers:
-                return True, "Built-in tracking space will activate when session markers are active."
-            return self._tm.set_builtin_tracking_space()
+    def _clear_tracking_space(self) -> None:
+        """Revert the active tracking space to the built-in origin marker at world (0,0,0).
 
-        if path.startswith(MarkersManager.MARKERS_SCOPE):
-            if not self._mm.has_active_markers:
-                return True, "Built-in tracking space will activate when session markers are active."
-            return self._tm.set_builtin_tracking_space()
+        Keeps the typed path in the field (the bin glyph is the dedicated
+        clear) and resets the origin marker to identity so the headset
+        re-anchors at the world origin. When markers are not yet active the
+        built-in origin is rearmed implicitly on the next Show Markers.
+        Drops the intent flag so the next ``collect_profile`` saves
+        ``enabled=False`` and Connect / Show Markers skip auto-apply.
+        """
+        self._tracking_space_intended_active = False
+        if self._mm.has_active_markers:
+            self._mm.reset_marker_transform("origin")
+            ok, msg = self._tm.set_builtin_tracking_space()
+            color = CLR_GREEN if ok else CLR_RED
+            if ok:
+                text = f"Cleared - {msg}" if msg else "Cleared"
+            else:
+                text = f"Failed — {msg}" if msg else "Failed"
+            set_status(self._tracking_space_status, text, color, emit_terminal=True)
+        else:
+            self._tm.disable_tracking_space()
+            set_status(
+                self._tracking_space_status,
+                "Cleared - built-in anchor will activate when session markers are shown.",
+                CLR_YELLOW,
+                emit_terminal=True,
+            )
+        self._sync_tracking_space_controls()
 
-        stage = omni.usd.get_context().get_stage()
-        if stage is not None and Sdf.Path.IsValidPathString(path):
-            prim = stage.GetPrimAtPath(path)
-            if prim and prim.IsValid() and UsdGeom.Xformable(prim):
-                return self._tm.set_tracking_space_prim_path(path)
+    def _activate_tracking_space(self, path: str) -> tuple[bool, bool, str]:
+        """Activate the given path or fall back to the built-in anchor.
+
+        Returns:
+            Tuple of ``(ok, deferred, message)``:
+              * ``ok`` — operation succeeded (the message-bus / status row may
+                still surface it as an info / yellow status when ``deferred``).
+              * ``deferred`` — activation was queued, not applied immediately
+                (typically because session markers are not visible yet); the
+                UI shows this as a yellow informational status instead of a
+                green confirmation. Decoupled from the message string so a
+                future copy edit can't silently flip the status color.
+              * ``message`` — human-readable message to surface in the UI / log.
+        """
+        if not path or path.startswith(MarkersManager.MARKERS_SCOPE):
+            if not self._mm.has_active_markers:
+                return True, True, "Built-in anchor will activate when session markers are active."
+            ok, msg = self._tm.set_builtin_tracking_space()
+            return ok, False, msg
+
+        if self._is_valid_xformable(path):
+            ok, msg = self._tm.set_tracking_space_prim_path(path)
+            return ok, False, msg
 
         if not self._mm.has_active_markers:
-            return True, "Built-in tracking space will activate when session markers are active."
-        return self._tm.set_builtin_tracking_space()
+            return True, True, "Built-in anchor will activate when session markers are active."
+        ok, msg = self._tm.set_builtin_tracking_space()
+        return ok, False, msg
 
-    def _on_tracking_space_toggle(self) -> None:
-        """Enable or disable the validated tracking-space selection."""
-        if self._tracking_space_desired_enabled:
-            self._tracking_space_desired_enabled = False
-            self._tm.disable_tracking_space()
-            set_status(self._tracking_space_status, "Disabled", CLR_YELLOW, emit_terminal=True)
-        else:
-            if not self._tracking_space_configured:
-                set_status(self._tracking_space_status, "Apply the tracking space settings first", CLR_YELLOW)
-                return
-            self._tracking_space_desired_enabled = True
-            ok, msg = self._activate_tracking_space()
-            if ok:
-                path = (
-                    self._tracking_space_field.model.get_value_as_string().strip() if self._tracking_space_field else ""
-                )
-                stage = omni.usd.get_context().get_stage()
-                if path and self._mm.has_active_markers and stage is not None and Sdf.Path.IsValidPathString(path):
-                    prim = stage.GetPrimAtPath(path)
-                    if prim and prim.IsValid() and UsdGeom.Xformable(prim):
-                        self._mm.move_tracking_space_to(path)
-                status_text = msg if "will activate" in msg.lower() else "Enabled"
-                status_color = CLR_YELLOW if "will activate" in msg.lower() else CLR_GREEN
-                set_status(self._tracking_space_status, status_text, status_color, emit_terminal=True)
-            else:
-                self._tracking_space_desired_enabled = False
-                set_status(self._tracking_space_status, f"Failed — {msg}", CLR_RED, emit_terminal=True)
-        self._sync_tracking_space_controls()
+    def _is_valid_xformable(self, path: str) -> bool:
+        """Return True when ``path`` resolves to a valid Xformable prim on the active stage."""
+        stage = omni.usd.get_context().get_stage()
+        if stage is None or not Sdf.Path.IsValidPathString(path):
+            return False
+        prim = stage.GetPrimAtPath(path)
+        return bool(prim and prim.IsValid() and UsdGeom.Xformable(prim))
+
+    def _is_tracking_space_clearable(self) -> bool:
+        """True when the user has opted in to the typed path as the custom anchor.
+
+        Tracks the in-memory ``intended_active`` flag rather than runtime
+        state so Clear remains available while activation is deferred (no
+        markers / no stage), and so editing the field after a Set still
+        offers Clear as the obvious revert action.
+        """
+        if self._tracking_space_field is None:
+            return False
+        field_path = self._tracking_space_field.model.get_value_as_string().strip()
+        if not field_path:
+            return False
+        return self._tracking_space_intended_active
 
     def _sync_tracking_space_controls(self) -> None:
-        """Update Enable/Disable button state based on tracking space configuration."""
-        if self._tracking_space_enable_btn:
-            self._tracking_space_enable_btn.enabled = (
-                self._tracking_space_configured or self._tracking_space_desired_enabled
+        """Toggle the row button between Set and Clear based on field-vs-active state."""
+        if self._tracking_space_toggle_btn is None:
+            return
+        if self._is_tracking_space_clearable():
+            self._tracking_space_toggle_btn.text = "Clear"
+            self._tracking_space_toggle_btn.tooltip = (
+                "Revert the active custom origin to the built-in origin marker at world (0,0,0). "
+                "The field text is preserved — use the bin glyph to clear it."
             )
-            self._tracking_space_enable_btn.text = "Disable" if self._tracking_space_desired_enabled else "Enable"
-        if self._tracking_space_field:
-            self._tracking_space_field.enabled = not self._tracking_space_desired_enabled
+        else:
+            self._tracking_space_toggle_btn.text = "Set"
+            self._tracking_space_toggle_btn.tooltip = "Validate and activate the anchor prim; follows the prim live"
 
     # ------------------------------------------------------------------
     # Anchor callbacks
@@ -841,7 +830,7 @@ class SessionPanel:
 
         return TeleopSettingsProfile(
             coordinate_system=coordinate_system,
-            tracking_space_enabled=self._tracking_space_desired_enabled,
+            tracking_space_enabled=self._tracking_space_intended_active,
             tracking_space_path=tracking_space_path,
             marker_scale=self._mm.frame_scale,
             anchor_x=anchor_x,
@@ -902,22 +891,17 @@ class SessionPanel:
         self._settings.set_bool(f"{_SETTINGS_PREFIX}/anchor_fixed_height", bool(profile.anchor_fixed_height))
         self._tm.set_xr_anchor_fixed_height(bool(profile.anchor_fixed_height))
 
-        self._tracking_space_configured = False
-        self._tracking_space_desired_enabled = bool(profile.tracking_space_enabled)
-        if resolve_stage:
-            self._apply_tracking_space_from_field()
-            if self._tracking_space_desired_enabled and self._tracking_space_configured:
-                ok, msg = self._activate_tracking_space()
-                if ok:
-                    status_text = msg if "will activate" in msg.lower() else "Enabled"
-                    status_color = CLR_YELLOW if "will activate" in msg.lower() else CLR_GREEN
-                    set_status(self._tracking_space_status, status_text, status_color)
-                else:
-                    set_status(self._tracking_space_status, f"Failed — {msg}", CLR_RED)
-        elif self._tracking_space_desired_enabled or profile.tracking_space_path:
+        # Strict honor: a profile saved with the toggle off stays quiescent
+        # even if the path field is non-empty. The intent flag (set / clear /
+        # apply / collect all share it) is the single source of truth.
+        wants_active = bool(profile.tracking_space_enabled) and bool(profile.tracking_space_path)
+        self._tracking_space_intended_active = wants_active
+        if resolve_stage and wants_active:
+            self._set_tracking_space()
+        elif wants_active:
             set_status(
                 self._tracking_space_status,
-                "Tracking Space loaded; activation deferred until stage is ready.",
+                "XR Anchor loaded; activation deferred until stage is ready.",
                 CLR_YELLOW,
             )
         else:
@@ -941,24 +925,12 @@ class SessionPanel:
         if command == TeleopCommand.CONNECT:
             if success and self._tm.is_live_tracking:
                 set_status(self._marker_status, "Tracking", CLR_GREEN, emit_terminal=True)
-                if self._tracking_space_desired_enabled:
-                    if not self._tracking_space_configured:
-                        self._apply_tracking_space_from_field()
-                    if self._tracking_space_configured:
-                        ok, msg = self._activate_tracking_space()
-                        if ok:
-                            path = (
-                                self._tracking_space_field.model.get_value_as_string().strip()
-                                if self._tracking_space_field
-                                else ""
-                            )
-                            stage = omni.usd.get_context().get_stage()
-                            if path and stage is not None and Sdf.Path.IsValidPathString(path):
-                                prim = stage.GetPrimAtPath(path)
-                                if prim and prim.IsValid() and UsdGeom.Xformable(prim):
-                                    self._mm.move_tracking_space_to(path)
-                        else:
-                            set_status(self._tracking_space_status, f"Failed — {msg}", CLR_RED, emit_terminal=True)
+                if (
+                    self._tracking_space_intended_active
+                    and self._tracking_space_field
+                    and self._tracking_space_field.model.get_value_as_string().strip()
+                ):
+                    self._set_tracking_space()
                 self._set_status("Connected - markers active", emit_terminal=True)
 
     def _sync_marker_buttons(self) -> None:
@@ -1000,8 +972,6 @@ class SessionPanel:
         self._sync_ui()
         set_status(self._marker_status, "", CLR_DIM)
         self._tm.disable_tracking_space()
-        self._tracking_space_configured = False
-        self._tracking_space_desired_enabled = False
         set_status(self._tracking_space_status, "", CLR_DIM)
         self._sync_tracking_space_controls()
         self._sync_marker_buttons()
@@ -1011,13 +981,10 @@ class SessionPanel:
         self._set_status("Disconnected")
         self._sync_ui()
         set_status(self._marker_status, "", CLR_DIM)
-        self._tracking_space_configured = False
-        if self._tracking_space_desired_enabled or (
-            self._tracking_space_field and self._tracking_space_field.model.get_value_as_string().strip()
-        ):
+        if self._tracking_space_field and self._tracking_space_field.model.get_value_as_string().strip():
             set_status(
                 self._tracking_space_status,
-                "Tracking Space retained - apply after opening a stage.",
+                "XR Anchor retained - click Set after opening a stage.",
                 CLR_YELLOW,
             )
         else:

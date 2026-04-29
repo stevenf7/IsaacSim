@@ -74,14 +74,10 @@ class SessionStorageRoundtripTests(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         if _DummyRec.TYPE_ID not in registered_types():
             register_recordable(_DummyRec)
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix="session_storage_test_")
-        self._tmp = self._tmp_dir.name
-        self._path = os.path.join(self._tmp, "roundtrip.hdf5")
 
     async def tearDown(self) -> None:
         if _DummyRec.TYPE_ID in registered_types():
             unregister_recordable(_DummyRec.TYPE_ID)
-        self._tmp_dir.cleanup()
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
@@ -90,61 +86,101 @@ class SessionStorageRoundtripTests(omni.kit.test.AsyncTestCase):
     async def test_manifest_and_frame_roundtrip(self) -> None:
         rec = _DummyRec(group="dummy", dim=4)
 
-        storage = SessionStorage(self._path, buffer_frames=2)
-        storage.open()
-        storage.set_root_attr("session_id", "unit_test_session")
-        storage.write_manifest(
-            build_manifest(
-                [rec.to_manifest()],
-                sampling={"mode": SamplingConfig().mode, "decimation": 1},
-                session_metadata={"unit": "test"},
+        with tempfile.TemporaryDirectory(prefix="session_storage_test_") as tmp_dir:
+            hdf5_path = os.path.join(tmp_dir, "roundtrip.hdf5")
+            storage = SessionStorage(hdf5_path, buffer_frames=2)
+            storage.open()
+            storage.set_root_attr("session_id", "unit_test_session")
+            storage.write_manifest(
+                build_manifest(
+                    [rec.to_manifest()],
+                    sampling={"mode": SamplingConfig().mode, "decimation": 1},
+                    session_metadata={"unit": "test"},
+                )
             )
-        )
 
-        storage.begin_episode({rec.group: rec.describe_channels()})
-        for i in range(5):
-            storage.append_frame(rec.group, {"value": np.full(4, float(i), dtype=np.float32)})
-            storage.advance_episode_frame()
-        storage.end_episode(success=True)
-        storage.close()
+            storage.begin_episode({rec.group: rec.describe_channels()})
+            for i in range(5):
+                storage.append_frame(rec.group, {"value": np.full(4, float(i), dtype=np.float32)})
+                storage.advance_episode_frame()
+            storage.end_episode(success=True)
+            storage.close()
 
-        reader = SessionReader(self._path)
-        try:
-            self.assertEqual(reader.list_episodes(), ["episode_00000"])
-            self.assertEqual(reader.num_frames("episode_00000"), 5)
-            attrs = reader.episode_attrs("episode_00000")
-            self.assertTrue(bool(attrs.get("success", False)))
+            reader = SessionReader(hdf5_path)
+            try:
+                self.assertEqual(reader.list_episodes(), ["episode_00000"])
+                self.assertEqual(reader.num_frames("episode_00000"), 5)
+                attrs = reader.episode_attrs("episode_00000")
+                self.assertTrue(bool(attrs.get("success", False)))
 
-            manifest = reader.manifest()
-            self.assertEqual(len(manifest.tracks), 1)
-            rehydrated = rehydrate(manifest.tracks[0])
-            self.assertIsInstance(rehydrated, _DummyRec)
-            self.assertEqual(rehydrated.group, "dummy")
+                manifest = reader.manifest()
+                self.assertEqual(len(manifest.tracks), 1)
+                rehydrated = rehydrate(manifest.tracks[0])
+                self.assertIsInstance(rehydrated, _DummyRec)
+                self.assertEqual(rehydrated.group, "dummy")
 
-            mid = reader.read_frame("episode_00000", "dummy", 3)
-            np.testing.assert_allclose(mid["value"], np.full(4, 3.0, dtype=np.float32))
+                mid = reader.read_frame("episode_00000", "dummy", 3)
+                np.testing.assert_allclose(mid["value"], np.full(4, 3.0, dtype=np.float32))
 
-            full = reader.read_channel("episode_00000", "dummy", "value")
-            self.assertEqual(full.shape, (5, 4))
-            np.testing.assert_allclose(full[0], np.zeros(4, dtype=np.float32))
-            np.testing.assert_allclose(full[-1], np.full(4, 4.0, dtype=np.float32))
-        finally:
-            reader.close()
+                full = reader.read_channel("episode_00000", "dummy", "value")
+                self.assertEqual(full.shape, (5, 4))
+                np.testing.assert_allclose(full[0], np.zeros(4, dtype=np.float32))
+                np.testing.assert_allclose(full[-1], np.full(4, 4.0, dtype=np.float32))
+            finally:
+                reader.close()
 
     async def test_registry_rejects_unknown_type(self) -> None:
         with self.assertRaises(KeyError):
             rehydrate({"type": "__nonexistent__", "group": "x"})
 
     async def test_append_frame_rejects_missing_channels(self) -> None:
-        storage = SessionStorage(self._path, buffer_frames=2)
-        storage.open()
-        storage.begin_episode({"dummy": {"value": ChannelDescriptor(shape=(2,), dtype="f4")}})
-        try:
-            with self.assertRaises(KeyError):
-                storage.append_frame("dummy", {})
-            self.assertEqual(storage.current_episode_frames, 0)
-        finally:
+        with tempfile.TemporaryDirectory(prefix="session_storage_test_") as tmp_dir:
+            hdf5_path = os.path.join(tmp_dir, "roundtrip.hdf5")
+            storage = SessionStorage(hdf5_path, buffer_frames=2)
+            storage.open()
+            storage.begin_episode({"dummy": {"value": ChannelDescriptor(shape=(2,), dtype="f4")}})
+            try:
+                with self.assertRaises(KeyError):
+                    storage.append_frame("dummy", {})
+                self.assertEqual(storage.current_episode_frames, 0)
+            finally:
+                storage.close()
+
+    async def test_multi_group_buffer_flush_keeps_channels_separate(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="session_storage_test_") as tmp_dir:
+            hdf5_path = os.path.join(tmp_dir, "roundtrip.hdf5")
+            storage = SessionStorage(hdf5_path, buffer_frames=2)
+            storage.open()
+            storage.write_manifest(
+                build_manifest(
+                    [
+                        {"type": "_test", "group": "state/a"},
+                        {"type": "_test", "group": "state/b"},
+                    ]
+                )
+            )
+            storage.begin_episode(
+                {
+                    "state/a": {"scalar": ChannelDescriptor(shape=(), dtype="i8")},
+                    "state/b": {"vector": ChannelDescriptor(shape=(2,), dtype="f4")},
+                }
+            )
+            for i in range(5):
+                storage.append_frame("state/a", {"scalar": np.int64(i)})
+                storage.append_frame("state/b", {"vector": np.array([i, i + 10], dtype=np.float32)})
+                storage.advance_episode_frame()
+            storage.end_episode(success=True)
             storage.close()
+
+            reader = SessionReader(hdf5_path)
+            try:
+                np.testing.assert_array_equal(reader.read_channel(0, "state/a", "scalar"), np.arange(5, dtype=np.int64))
+                np.testing.assert_allclose(
+                    reader.read_channel(0, "state/b", "vector"),
+                    np.array([[i, i + 10] for i in range(5)], dtype=np.float32),
+                )
+            finally:
+                reader.close()
 
 
 if __name__ == "__main__":

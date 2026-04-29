@@ -30,7 +30,7 @@ import carb
 import numpy as np
 
 from ..base import ChannelDescriptor, Recordable, ReplayPolicy
-from ._utils import to_numpy_f32
+from ._utils import is_missing_xform_ops_error, to_numpy_f32
 
 
 class _PoseBase(Recordable):
@@ -119,7 +119,7 @@ class _PoseBase(Recordable):
         try:
             _write()
         except Exception as exc:
-            if self._xform_ops_reset or not self._is_missing_xform_ops_error(exc):
+            if self._xform_ops_reset or not is_missing_xform_ops_error(exc):
                 if policy.strictness == "strict":
                     raise
                 carb.log_warn(f"[{type(self).__name__} {self.prim_path}] apply failed: {exc}")
@@ -135,9 +135,3 @@ class _PoseBase(Recordable):
                     f"[{type(self).__name__} {self.prim_path}] "
                     f"apply failed after reset_xform_op_properties: {retry_exc}"
                 )
-
-    @staticmethod
-    def _is_missing_xform_ops_error(exc: BaseException) -> bool:
-        """Detect the experimental ``XformPrim`` error raised when xformOps are not yet authored."""
-        msg = str(exc)
-        return "xformOp:" in msg and "reset_xform_op_properties" in msg

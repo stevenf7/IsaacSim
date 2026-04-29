@@ -67,6 +67,19 @@ class _NoopRecordable(Recordable):
         return cls(group=str(entry["group"]))
 
 
+def _make_open_recorder(output_dir: str) -> EpisodeRecorder:
+    recorder = EpisodeRecorder(
+        output_dir,
+        file_prefix="timeline_ctrl",
+        sampling=SamplingConfig(mode="app_update"),
+        link_stage_snapshot=False,
+        auto_attach_sim_time=False,
+    )
+    recorder.add(_NoopRecordable())
+    recorder.open_session()
+    return recorder
+
+
 class TimelineControllerTests(omni.kit.test.AsyncTestCase):
     async def setUp(self) -> None:
         await omni.kit.app.get_app().next_update_async()
@@ -74,60 +87,68 @@ class TimelineControllerTests(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         if _NOOP_TYPE_ID not in registered_types():
             register_recordable(_NoopRecordable)
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix="timeline_ctrl_test_")
-        self._recorder = EpisodeRecorder(
-            self._tmp_dir.name,
-            file_prefix="timeline_ctrl",
-            sampling=SamplingConfig(mode="app_update"),
-            link_stage_snapshot=False,
-            auto_attach_sim_time=False,
-        )
-        self._recorder.add(_NoopRecordable())
-        self._recorder.open_session()
 
     async def tearDown(self) -> None:
-        self._recorder.close_session()
         if _NOOP_TYPE_ID in registered_types():
             unregister_recordable(_NOOP_TYPE_ID)
-        self._tmp_dir.cleanup()
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
     async def test_auto_start_on_play_true_triggers_start(self) -> None:
-        ctrl = TimelineDrivenEpisodeController(self._recorder, auto_start_on_play=True)
-        self.assertTrue(ctrl.auto_start_on_play)
-        self.assertFalse(self._recorder.is_recording)
-        ctrl._on_started(None)
-        self.assertTrue(self._recorder.is_recording)
-        ctrl._on_stopped(None)
-        self.assertFalse(self._recorder.is_recording)
+        with tempfile.TemporaryDirectory(prefix="timeline_ctrl_test_") as tmp_dir:
+            rec = _make_open_recorder(tmp_dir)
+            try:
+                ctrl = TimelineDrivenEpisodeController(rec, auto_start_on_play=True)
+                self.assertTrue(ctrl.auto_start_on_play)
+                self.assertFalse(rec.is_recording)
+                ctrl._on_started(None)
+                self.assertTrue(rec.is_recording)
+                ctrl._on_stopped(None)
+                self.assertFalse(rec.is_recording)
+            finally:
+                rec.close_session()
 
     async def test_auto_start_on_play_false_skips_start(self) -> None:
-        ctrl = TimelineDrivenEpisodeController(self._recorder, auto_start_on_play=False)
-        self.assertFalse(ctrl.auto_start_on_play)
-        ctrl._on_started(None)
-        self.assertFalse(self._recorder.is_recording)
+        with tempfile.TemporaryDirectory(prefix="timeline_ctrl_test_") as tmp_dir:
+            rec = _make_open_recorder(tmp_dir)
+            try:
+                ctrl = TimelineDrivenEpisodeController(rec, auto_start_on_play=False)
+                self.assertFalse(ctrl.auto_start_on_play)
+                ctrl._on_started(None)
+                self.assertFalse(rec.is_recording)
+            finally:
+                rec.close_session()
 
     async def test_set_auto_start_on_play_toggles_gating_live(self) -> None:
-        ctrl = TimelineDrivenEpisodeController(self._recorder, auto_start_on_play=False)
-        ctrl._on_started(None)
-        self.assertFalse(self._recorder.is_recording)
+        with tempfile.TemporaryDirectory(prefix="timeline_ctrl_test_") as tmp_dir:
+            rec = _make_open_recorder(tmp_dir)
+            try:
+                ctrl = TimelineDrivenEpisodeController(rec, auto_start_on_play=False)
+                ctrl._on_started(None)
+                self.assertFalse(rec.is_recording)
 
-        ctrl.set_auto_start_on_play(True)
-        ctrl._on_started(None)
-        self.assertTrue(self._recorder.is_recording)
+                ctrl.set_auto_start_on_play(True)
+                ctrl._on_started(None)
+                self.assertTrue(rec.is_recording)
 
-        ctrl.set_auto_start_on_play(False)
-        ctrl._on_stopped(None)
-        self.assertFalse(self._recorder.is_recording)
-        ctrl._on_started(None)
-        self.assertFalse(self._recorder.is_recording)
+                ctrl.set_auto_start_on_play(False)
+                ctrl._on_stopped(None)
+                self.assertFalse(rec.is_recording)
+                ctrl._on_started(None)
+                self.assertFalse(rec.is_recording)
+            finally:
+                rec.close_session()
 
     async def test_stop_always_ends_active_episode(self) -> None:
-        ctrl = TimelineDrivenEpisodeController(self._recorder, auto_start_on_play=False)
-        self._recorder.start_episode()
-        self.assertTrue(self._recorder.is_recording)
-        ctrl._on_stopped(None)
-        self.assertFalse(self._recorder.is_recording)
+        with tempfile.TemporaryDirectory(prefix="timeline_ctrl_test_") as tmp_dir:
+            rec = _make_open_recorder(tmp_dir)
+            try:
+                ctrl = TimelineDrivenEpisodeController(rec, auto_start_on_play=False)
+                rec.start_episode()
+                self.assertTrue(rec.is_recording)
+                ctrl._on_stopped(None)
+                self.assertFalse(rec.is_recording)
+            finally:
+                rec.close_session()

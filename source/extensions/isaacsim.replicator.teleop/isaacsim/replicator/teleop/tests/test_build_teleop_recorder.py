@@ -45,26 +45,24 @@ class TestBuildTeleopRecorder(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix="build_teleop_recorder_test_")
-        self._output_dir = self._tmp_dir.name
 
     async def tearDown(self):
-        self._tmp_dir.cleanup()
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
     async def test_composes_expected_recordables(self):
-        tm = _StubTeleopManager()
-        rec = build_teleop_recorder(
-            self._output_dir,
-            teleop_manager=tm,
-            articulations={"robot": "/World/Robot"},
-            xforms={"cube": "/World/Cube"},
-            rigid_bodies={"box": "/World/Box"},
-            record_head_pose=True,
-        )
+        with tempfile.TemporaryDirectory(prefix="build_teleop_recorder_test_") as output_dir:
+            tm = _StubTeleopManager()
+            rec = build_teleop_recorder(
+                output_dir,
+                teleop_manager=tm,
+                articulations={"robot": "/World/Robot"},
+                xforms={"cube": "/World/Cube"},
+                rigid_bodies={"box": "/World/Box"},
+                record_head_pose=True,
+            )
         by_group = {r.group: type(r).__name__ for r in rec.recordables()}
         # SimTimeRecordable is auto-attached by EpisodeRecorder.open_session(), not by the
         # factory, so it is not expected in the recordables list at this lifecycle stage.
@@ -77,21 +75,37 @@ class TestBuildTeleopRecorder(omni.kit.test.AsyncTestCase):
         self.assertEqual(by_group["teleop/head"], "TeleopHeadRecordable")
 
     async def test_head_recordable_skipped_without_observer_api(self):
-        tm = _StubTeleopManagerNoHead()
-        rec = build_teleop_recorder(
-            self._output_dir,
-            teleop_manager=tm,
-            record_head_pose=True,
-        )
+        with tempfile.TemporaryDirectory(prefix="build_teleop_recorder_test_") as output_dir:
+            tm = _StubTeleopManagerNoHead()
+            rec = build_teleop_recorder(
+                output_dir,
+                teleop_manager=tm,
+                record_head_pose=True,
+            )
         groups = {r.group for r in rec.recordables()}
         self.assertNotIn("teleop/head", groups)
 
     async def test_head_skipped_when_disabled(self):
-        tm = _StubTeleopManager()
-        rec = build_teleop_recorder(
-            self._output_dir,
-            teleop_manager=tm,
-            record_head_pose=False,
-        )
+        with tempfile.TemporaryDirectory(prefix="build_teleop_recorder_test_") as output_dir:
+            tm = _StubTeleopManager()
+            rec = build_teleop_recorder(
+                output_dir,
+                teleop_manager=tm,
+                record_head_pose=False,
+            )
         groups = {r.group for r in rec.recordables()}
         self.assertNotIn("teleop/head", groups)
+
+    async def test_pose_backend_defaults_to_usd(self):
+        with tempfile.TemporaryDirectory(prefix="build_teleop_recorder_test_") as output_dir:
+            tm = _StubTeleopManager()
+            rec = build_teleop_recorder(output_dir, teleop_manager=tm)
+        self.assertEqual(rec.pose_backend, "usd")
+
+    async def test_pose_backend_propagated_to_recorder(self):
+        with tempfile.TemporaryDirectory(prefix="build_teleop_recorder_test_") as output_dir:
+            tm = _StubTeleopManager()
+            # Unknown / FSD-disabled backends fall back to usd inside EpisodeRecorder
+            # so the assertion stays stable regardless of FSD availability.
+            rec = build_teleop_recorder(output_dir, teleop_manager=tm, pose_backend="usd")
+        self.assertEqual(rec.pose_backend, "usd")

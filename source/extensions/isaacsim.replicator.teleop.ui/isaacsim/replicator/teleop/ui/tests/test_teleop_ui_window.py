@@ -15,6 +15,9 @@
 
 """Tests for the Teleop UI window."""
 
+import os
+import tempfile
+
 import omni.kit.app
 import omni.kit.ui_test as ui_test
 import omni.ui as ui
@@ -31,25 +34,38 @@ class TestTeleopUIWindow(OmniUiTest):
     """Test the Teleop UI window lifecycle."""
 
     async def setUp(self) -> None:
-        """Set up test environment."""
+        await omni.kit.app.get_app().next_update_async()
+        omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self) -> None:
-        """Tear down test environment."""
+        omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            await omni.kit.app.get_app().next_update_async()
 
     async def test_window_open_close(self) -> None:
         """Window can be opened via the menu and closed without errors."""
-        await menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
-        for _ in range(5):
-            await omni.kit.app.get_app().next_update_async()
+        window = None
+        with tempfile.TemporaryDirectory(prefix="teleop_ui_window_") as tmp_dir:
+            try:
+                await menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
+                for _ in range(5):
+                    await omni.kit.app.get_app().next_update_async()
 
-        window = ui.Workspace.get_window(WINDOW_TITLE)
-        self.assertIsNotNone(window, "Teleop window should exist after opening via the menu")
+                window = ui.Workspace.get_window(WINDOW_TITLE)
+                self.assertIsNotNone(window, "Teleop window should exist after opening via the menu")
+                if hasattr(window, "_last_profile_path"):
+                    window._last_profile_path = os.path.join(tmp_dir, "last_profile.yaml")
 
-        widget = ui_test.find(WINDOW_TITLE)
-        self.assertIsNotNone(widget, "Teleop window widget should be findable after opening")
+                widget = ui_test.find(WINDOW_TITLE)
+                self.assertIsNotNone(widget, "Teleop window widget should be findable after opening")
 
-        await menu_click_with_retry(MENU_PATH)
-        for _ in range(5):
-            await omni.kit.app.get_app().next_update_async()
+                await menu_click_with_retry(MENU_PATH)
+                window = None
+                for _ in range(5):
+                    await omni.kit.app.get_app().next_update_async()
+            finally:
+                if window is not None and hasattr(window, "_last_profile_path"):
+                    window._last_profile_path = os.path.join(tmp_dir, "last_profile.yaml")
+                    window.destroy()

@@ -61,8 +61,8 @@ import time
 from enum import Enum
 from typing import Any
 
+import carb
 import carb.events
-import carb.settings
 import numpy as np
 import omni.usd
 from isaacsim.core.experimental.prims import XformPrim
@@ -72,8 +72,9 @@ from .coordinate_utils import OXR_TO_ISS_ROTATION
 
 XRCore = None
 XRCoreEventType = None
+XRSettings = None
 with contextlib.suppress(ModuleNotFoundError):
-    from omni.kit.xr.core import XRCore, XRCoreEventType
+    from omni.kit.xr.core import XRCore, XRCoreEventType, XRSettings
 
 
 class AnchorRotationMode(Enum):
@@ -84,6 +85,112 @@ class AnchorRotationMode(Enum):
     FOLLOW_PRIM_SMOOTHED = "follow_prim_smoothed"
 
 
+# Kit XR profile tokens. ``XRSettings`` translates these to the active VR
+# profile's raw carb path - the only path the renderer reads.
+_XR_TOKEN_ANCHOR_MODE: str = "profile/persistent/anchorMode"
+_XR_TOKEN_CUSTOM_ANCHOR: str = "profile/stage/customAnchor"
+_XR_TOKEN_NEAR_PLANE: str = "profile/persistent/render/nearPlane"
+
+# Tokens captured on activation and restored on the final release. ``nearPlane``
+# is included even though only :meth:`XrAnchorManager.setup` writes it - one
+# shared snapshot must cover every token any path may overwrite.
+_OVERRIDDEN_TOKENS: tuple[str, ...] = (
+    _XR_TOKEN_ANCHOR_MODE,
+    _XR_TOKEN_CUSTOM_ANCHOR,
+    _XR_TOKEN_NEAR_PLANE,
+)
+
+# Refcounted so the window-level pre-session anchor and the per-Connect
+# XrAnchorManager nest without stomping on each other's restore baseline.
+_settings_snapshot: dict[str, Any] | None = None
+_settings_snapshot_refs: int = 0
+
+
+def _xr_settings():
+    """Return the XRSettings singleton, or None if XR core is unavailable.
+
+    Silent ``None`` only on ``ModuleNotFoundError`` (XR extension not
+    loaded). Anything else (e.g. Kit version mismatch) is logged via
+    ``carb.log_warn`` so the headset misconfiguration surfaces in the log.
+    """
+    if XRSettings is None:
+        return None
+    try:
+        return XRSettings.get_singleton()
+    except (ModuleNotFoundError, AttributeError) as exc:
+        carb.log_warn(f"[Teleop][Anchor] XRSettings.get_singleton() unavailable: {exc!r}")
+        return None
+
+
+def _snapshot_settings() -> bool:
+    """Capture the overridden tokens once; reused by subsequent activations.
+
+    Returns ``True`` when a snapshot is in place so the caller can decide
+    whether to bump the activation refcount.
+    """
+    global _settings_snapshot
+    if _settings_snapshot is not None:
+        return True
+    xs = _xr_settings()
+    if xs is None:
+        return False
+    _settings_snapshot = {token: xs.get_setting(token) for token in _OVERRIDDEN_TOKENS}
+    return True
+
+
+def _restore_settings() -> None:
+    """Replay the snapshot taken on first activation."""
+    global _settings_snapshot
+    if _settings_snapshot is None:
+        return
+    xs = _xr_settings()
+    _settings_snapshot_local = _settings_snapshot
+    _settings_snapshot = None
+    if xs is None:
+        return
+    for token, original in _settings_snapshot_local.items():
+        if original is None:
+            continue
+        try:
+            xs.set_setting(token, original)
+        except (AttributeError, RuntimeError, TypeError) as exc:
+            carb.log_warn(f"[Teleop][Anchor] Failed to restore XR setting {token!r}: {exc!r}")
+
+
+def activate_pre_session_anchor() -> bool:
+    """Override ``anchorMode = "scene origin"`` for the teleop UI lifetime.
+
+    Replaces the VR experience's default ``"active camera"`` mode (which
+    raycasts from the perspective camera and pins the headset to a static
+    pose when no floor is present) so real motion moves the headset
+    before Connect. Refcounted - safe to nest with the per-Connect anchor.
+
+    Returns:
+        ``True`` when the override committed and the refcount was bumped
+        (the caller must pair it with :func:`restore_pre_session_anchor`);
+        ``False`` when XR is unavailable and no restore is required.
+    """
+    global _settings_snapshot_refs
+    if not _snapshot_settings():
+        return False
+    xs = _xr_settings()
+    if xs is None:
+        return False
+    xs.set_setting(_XR_TOKEN_ANCHOR_MODE, "scene origin")
+    _settings_snapshot_refs += 1
+    return True
+
+
+def restore_pre_session_anchor() -> None:
+    """Release one activation; restore the original settings on the final release."""
+    global _settings_snapshot_refs
+    if _settings_snapshot_refs <= 0:
+        return
+    _settings_snapshot_refs -= 1
+    if _settings_snapshot_refs == 0:
+        _restore_settings()
+
+
 class XrAnchorManager:
     """Manages the XR anchor prim that controls where the VR headset renders from.
 
@@ -91,12 +198,12 @@ class XrAnchorManager:
     Kit's XR Core where to place the headset camera.  This class:
 
     1. Creates the anchor prim at ``/World/XRAnchor``.
-    2. Configures ``carb.settings`` so XR Core uses our anchor for rendering.
+    2. Configures the active VR profile via :class:`XRSettings` to use it
+       as ``custom anchor``.
     3. Subscribes to ``pre_sync_update`` to re-position the anchor every
        frame when a dynamic Tracking Space prim is configured.
-    4. Exposes ``get_world_matrix()`` - a single 4x4 matrix that converts
-       raw OpenXR poses (Y-up) into Isaac Sim world space (Z-up) at the
-       current anchor location.
+    4. Exposes ``get_world_matrix()`` - a 4x4 that converts raw OpenXR
+       poses (Y-up) into Isaac Sim world space (Z-up) at the current anchor.
 
     The tracking-space prim is set externally by :class:`TeleopManager` - it
     forwards the Session panel's Tracking Space prim path here via
@@ -144,6 +251,7 @@ class XrAnchorManager:
         self._anchor_layer_id: str | None = None
         self._tracking_space_xform: XformPrim | None = None
         self._fabric_stage = None
+        self._settings_active: bool = False
 
         # Dynamic-sync state
         self._initial_ref_quat: Gf.Quatd | None = None
@@ -195,11 +303,18 @@ class XrAnchorManager:
         prim_stack = prim.GetPrimStack() if prim.IsValid() else None
         self._anchor_layer_id = prim_stack[0].layer.identifier if prim_stack else None
 
-        # Configure carb settings for XR Core rendering
-        settings = carb.settings.get_settings()
-        settings.set_float("/persistent/xr/render/nearPlane", self._near_plane)
-        settings.set_string("/persistent/xr/anchorMode", "custom anchor")
-        settings.set_string("/xrstage/customAnchor", self._anchor_prim_path)
+        # Refcounted snapshot of the user's XR settings; the bool tracks whether
+        # this call actually committed so cleanup() pairs with it correctly.
+        self._settings_active = activate_pre_session_anchor()
+
+        # Only write when the snapshot was taken - XR coming online late between
+        # the activate call and here would otherwise leave no restorable baseline.
+        if self._settings_active:
+            xs = _xr_settings()
+            if xs is not None:
+                xs.set_setting(_XR_TOKEN_NEAR_PLANE, float(self._near_plane))
+                xs.set_setting(_XR_TOKEN_ANCHOR_MODE, "custom anchor")
+                xs.set_setting(_XR_TOKEN_CUSTOM_ANCHOR, self._anchor_prim_path)
 
         print(
             f"[Teleop][Anchor] Created at '{self._anchor_prim_path}', "
@@ -214,9 +329,13 @@ class XrAnchorManager:
         return True
 
     def cleanup(self) -> None:
-        """Releases event subscriptions and resets state.
+        """Release event subscriptions and the per-Connect settings activation.
 
-        Does NOT remove the anchor prim - that is left to stage cleanup.
+        Leaves the anchor prim to stage cleanup. When the window-level
+        activation is still outstanding, re-applies the ``scene origin``
+        baseline (and clears the custom anchor token) so the headset
+        returns to its pre-Connect mode instead of staying pinned to
+        ``/World/XRAnchor``; the final release replays the snapshot.
         """
         self._pre_sync_sub = None
         self._reset_sync_state()
@@ -224,6 +343,14 @@ class XrAnchorManager:
         self._cached_quat_xyzw = None
         self._tracking_space_xform = None
         self._fabric_stage = None
+        if self._settings_active:
+            self._settings_active = False
+            xs = _xr_settings()
+            still_held = _settings_snapshot_refs > 1
+            if still_held and xs is not None:
+                xs.set_setting(_XR_TOKEN_ANCHOR_MODE, "scene origin")
+                xs.set_setting(_XR_TOKEN_CUSTOM_ANCHOR, "")
+            restore_pre_session_anchor()
         print("[Teleop][Anchor] Cleaned up.")
 
     def reset(self) -> None:
