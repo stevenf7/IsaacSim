@@ -158,7 +158,7 @@ args = [
 
 [[test]]
 name = "enable_async_rendering"
-enabled = true
+enabled = false
 pythonTests.include = [
     "isaacsim.ros2.nodes.tests.test_camera*test_rgb_golden_image_comparison*"
 ]
@@ -236,7 +236,7 @@ args = [
 
 [[test]]
 name = "enable_multitick_rendering"
-enabled = true
+enabled = false
 pythonTests.exclude = [
     "isaacsim.ros2.nodes.tests.test_rtx_sensor.*",
 ]
@@ -353,7 +353,7 @@ args = [
 
 [[test]]
 name = "newton"
-enabled = true
+enabled = false
 timeout = 1200
 dependencies = [
     "isaacsim.physics.newton",

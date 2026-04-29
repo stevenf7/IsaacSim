@@ -244,7 +244,11 @@ class ROS2TestCase(TimedAsyncTestCase):
                 per_frame_callback()
             if node.count_publishers(topic_name) >= count:
                 return
-        self.fail(f"Timed out ({timeout_sec}s) waiting for {count} publisher(s) on topic '{topic_name}'")
+        found = node.count_publishers(topic_name)
+        self.fail(
+            f"Timed out ({timeout_sec}s) waiting for {count} publisher(s) on topic "
+            f"'{topic_name}' (last seen {found})"
+        )
 
     async def wait_for_subscribers_on_topic(
         self, publisher, count: int = 1, timeout_sec: float = 10.0, per_frame_callback=None
@@ -291,7 +295,11 @@ class ROS2TestCase(TimedAsyncTestCase):
                     if per_frame_callback is not None:
                         per_frame_callback()
                 return
-        self.fail(f"Timed out ({timeout_sec}s) waiting for {count} subscriber(s) on topic '{publisher.topic_name}'")
+        found = publisher.get_subscription_count()
+        self.fail(
+            f"Timed out ({timeout_sec}s) waiting for {count} subscriber(s) on topic "
+            f"'{publisher.topic_name}' (last seen {found})"
+        )
 
     async def tearDown(self):
         """Tear down test fixtures."""

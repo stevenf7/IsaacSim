@@ -3,6 +3,15 @@
 ### Fixed
 - Fix `OgnROS2CameraHelper` using `is None` instead of `.IsValid()` to check render product prim existence
 
+## [1.17.6] - 2026-04-27
+### Fixed
+- Fixed flaky `test_*_subscriber_queue` tests on Windows by splitting each four-subscriber test into `_small` and `_large` variants. Removing the stop/play cycle inside a single test method avoids DDS discovery stale-match on re-play, which `wait_for_subscribers_on_topic` alone cannot work around.
+- Fixed race at iteration 0 of `test_transform_tree_subscriber` and `test_transform_tree_subscriber_nova_carter` by waiting for DDS discovery after `timeline.play()` before publishing the first TF.
+- Fixed `test_camera_info_sim_time` float-precision flake (`0.1 > 0.0999999996`) by replacing the 1.2x ratio tolerance with an absolute upper bound (≤ 1.0s) after stop/play reset, matching the intent of the assertion.
+
+### Changed
+- Refactored `test_subscribers.py` to share a single `_run_queue_test` helper across JointState, Clock, Twist, and AckermannDriveStamped queue tests; each test now does exactly one timeline cycle.
+
 ## [1.17.5] - 2026-04-27
 ### Changed
 - Move deprecated extension dependencies to test dependencies
