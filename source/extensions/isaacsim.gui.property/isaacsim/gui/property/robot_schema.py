@@ -25,7 +25,7 @@ import omni.ui as ui
 from omni.kit.property.usd.prim_selection_payload import PrimSelectionPayload
 from omni.kit.property.usd.usd_property_widget import UsdPropertiesWidget
 from omni.kit.property.usd.widgets import ICON_PATH
-from pxr import Sdf, Usd, UsdGeom, Vt
+from pxr import Sdf, Usd, UsdGeom, UsdPhysics, Vt
 from usd.schema.isaac import robot_schema
 
 from . import style
@@ -1519,6 +1519,59 @@ class JointAPIWidget(_RobotSchemaWidgetBase):
             "Joint API",
             robot_schema.ApplyJointAPI,
         )
+
+
+@_singleton
+class AttachmentPointAPIWidget(_RobotSchemaWidgetBase):
+    """Property widget for prims with the IsaacAttachmentPointAPI schema applied.
+
+    Displays ``Forward Axis`` and ``Clearance Offset`` attributes for the attachment point.
+    The ``+`` button menu entry appears only for physics joint prims that do not yet carry the API.
+
+    Args:
+        title: Display title for the widget.
+        collapsed: Whether the widget starts collapsed.
+    """
+
+    def __init__(self, title: str, collapsed: bool = False) -> None:
+        super().__init__(
+            title,
+            collapsed,
+            robot_schema.Classes.ATTACHMENT_POINT_API,
+            [
+                robot_schema.Attributes.FORWARD_AXIS,
+                robot_schema.Attributes.CLEARANCE_OFFSET,
+            ],
+            "Attachment Point API",
+            robot_schema.ApplyAttachmentPointAPI,
+            exclusive_classes=[robot_schema.Classes.ATTACHMENT_POINT_API],
+        )
+
+    def _button_show(self, objects: dict) -> bool:
+        """Show the menu entry only for physics joint prims that lack the API."""
+        stage = objects.get("stage")
+        prim_list = objects.get("prim_list")
+        if not stage or not prim_list:
+            return False
+        for item in prim_list:
+            prim = stage.GetPrimAtPath(item) if isinstance(item, Sdf.Path) else item
+            if prim and prim.IsA(UsdPhysics.Joint) and not prim.HasAPI(self._schema_class.value):
+                return True
+        return False
+
+    def _button_onclick(self, payload: PrimSelectionPayload) -> None:
+        """Apply ``IsaacAttachmentPointAPI`` to all selected physics joint prims."""
+        stage = self._payload.get_stage() if self._payload else omni.usd.get_context().get_stage()
+        if not stage:
+            return
+        for path in payload:
+            if not path:
+                continue
+            prim = stage.GetPrimAtPath(path)
+            if not prim or not prim.IsA(UsdPhysics.Joint) or prim.HasAPI(self._schema_class.value):
+                continue
+            self._apply_fn(prim)
+        self._request_refresh()
 
 
 @_singleton

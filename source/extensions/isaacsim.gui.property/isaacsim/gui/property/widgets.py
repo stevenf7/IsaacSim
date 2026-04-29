@@ -31,7 +31,7 @@ from .joint_inspector import JointInspectorWindowManager
 from .motion_planning_schema import MotionPlanningAPIWidget
 from .name_override import NameOverrideWidget
 from .namespace import NamespaceWidget
-from .robot_schema import JointAPIWidget, LinkAPIWidget, RobotAPIWidget, SiteAPIWidget
+from .robot_schema import AttachmentPointAPIWidget, JointAPIWidget, LinkAPIWidget, RobotAPIWidget, SiteAPIWidget
 
 _ISAAC_API_SCHEMA_NAMES = (
     "IsaacRobotAPI",
@@ -39,6 +39,7 @@ _ISAAC_API_SCHEMA_NAMES = (
     "IsaacJointAPI",
     "IsaacSiteAPI",
     "IsaacMotionPlanningAPI",
+    "IsaacAttachmentPointAPI",
 )
 
 _JOINT_INSPECTOR_ACTION_ID = f"open_joint_inspector:{JOINT_INSPECTOR_TITLE}"
@@ -71,6 +72,7 @@ class IsaacPropertyWidgets(omni.ext.IExt):
         self._link_api_widget = None
         self._joint_api_widget = None
         self._site_api_widget = None
+        self._attachment_point_api_widget = None
         self._motion_planning_api_widget = None
         self._isaac_array_widget: ArrayPropertiesWidget | None = None
         self._isaac_custom_data_widget: CustomDataWidget | None = None
@@ -132,6 +134,8 @@ class IsaacPropertyWidgets(omni.ext.IExt):
         w.register_widget("prim", "isaac_joint_api", self._joint_api_widget, True)
         self._site_api_widget = SiteAPIWidget(title="Robot Site", collapsed=False)
         w.register_widget("prim", "isaac_site_api", self._site_api_widget, True)
+        self._attachment_point_api_widget = AttachmentPointAPIWidget(title="Attachment Point", collapsed=False)
+        w.register_widget("prim", "isaac_attachment_point_api", self._attachment_point_api_widget, True)
         self._motion_planning_api_widget = MotionPlanningAPIWidget(title="Motion Planning", collapsed=False)
         w.register_widget("prim", "isaac_motion_planning_api", self._motion_planning_api_widget, False)
         self._registered = True
@@ -150,6 +154,7 @@ class IsaacPropertyWidgets(omni.ext.IExt):
             w.unregister_widget("prim", "isaac_link_api")
             w.unregister_widget("prim", "isaac_joint_api")
             w.unregister_widget("prim", "isaac_site_api")
+            w.unregister_widget("prim", "isaac_attachment_point_api")
             w.unregister_widget("prim", "isaac_motion_planning_api")
             # ArrayPropertiesWidget and CustomDataWidget are plain UsdPropertiesWidget
             # subclasses with no destroy() override; unregister_widget releases them.
@@ -169,6 +174,8 @@ class IsaacPropertyWidgets(omni.ext.IExt):
                 self._joint_api_widget.destroy()
             if self._site_api_widget:
                 self._site_api_widget.destroy()
+            if self._attachment_point_api_widget:
+                self._attachment_point_api_widget.destroy()
             if self._motion_planning_api_widget:
                 self._motion_planning_api_widget.destroy()
             self._registered = False
