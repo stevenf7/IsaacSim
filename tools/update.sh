@@ -197,6 +197,7 @@ update_extensions() {
     cmd="$cmd --build-dir _build/$PLATFORM/release/exts"
     cmd="$cmd --deprecated-dir _build/$PLATFORM/release/extsDeprecated"
     cmd="$cmd --apps-dir _build/$PLATFORM/release/apps"
+    cmd="$cmd --internal-dir _build/$PLATFORM/release/extsInternal"
     if [ -n "$commit_hash" ]; then
         cmd="$cmd --commit-hash $commit_hash"
         echo "Using commit hash: $commit_hash"
@@ -215,7 +216,8 @@ clean_extensions() {
     python3 tools/isaac/clean_extscache.py \
         --build-dir "_build/$PLATFORM/release/exts" \
         --deprecated-dir "_build/$PLATFORM/release/extsDeprecated" \
-        --apps-dir "_build/$PLATFORM/release/apps"
+        --apps-dir "_build/$PLATFORM/release/apps" \
+        --internal-dir "_build/$PLATFORM/release/extsInternal"
     popd
 }
 

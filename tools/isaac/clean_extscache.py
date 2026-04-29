@@ -22,15 +22,19 @@ import urllib.request
 import xml.etree.ElementTree as ET
 
 
-def check_dependencies(kit_file, build_dir, deprecated_dir, verbose=False):
+def check_dependencies(kit_file, build_dir, deprecated_dir, internal_dir=None, verbose=False):
     """
-    Check that all extensions in the build and deprecated directories are listed as dependencies
-    in the kit file's [dependencies] section.
+    Check that all extensions in the build, deprecated, and internal directories are listed as
+    dependencies in the kit file's [dependencies] section.
 
     Args:
         kit_file (str): Path to the kit file
         build_dir (str): Path to the build directory
         deprecated_dir (str): Path to the deprecated directory
+        internal_dir (str): Optional path to the extsInternal directory. Extensions here are
+            validated in [dependencies] but are NOT removed from enabled lists (they must
+            remain version-locked so ``repo_deploy_exts`` publishes them and they are
+            downloaded from the registry at runtime).
         verbose (bool): If True, print detailed debug information
 
     Returns:
@@ -63,6 +67,15 @@ def check_dependencies(kit_file, build_dir, deprecated_dir, verbose=False):
         except Exception as e:
             print(f"Error reading deprecated directory: {e}")
             log(f"Will continue without checking deprecated directory: {e}")
+
+    dir_internal_extensions = []
+    if internal_dir and os.path.isdir(internal_dir):
+        try:
+            dir_internal_extensions = os.listdir(internal_dir)
+            log(f"Found {len(dir_internal_extensions)} internal extensions in directory: {dir_internal_extensions}")
+        except Exception as e:
+            print(f"Error reading internal directory: {e}")
+            log(f"Will continue without checking internal directory: {e}")
 
     # Read the kit file
     try:
@@ -121,6 +134,14 @@ def check_dependencies(kit_file, build_dir, deprecated_dir, verbose=False):
         if ext_base not in dependency_bases:
             log(f"Extension {ext} is in deprecated directory but not listed as dependency")
             missing_dependencies.append((ext, "deprecated"))
+
+    # Check internal extensions. These must be declared in [dependencies] so that
+    # ``repo_deploy_exts`` picks them up; otherwise they will silently not be published.
+    for ext in dir_internal_extensions:
+        ext_base = ext.split("-")[0]
+        if ext_base not in dependency_bases:
+            log(f"Extension {ext} is in internal directory but not listed as dependency")
+            missing_dependencies.append((ext, "internal"))
 
     if missing_dependencies:
         print("Missing from [dependencies] section:")
@@ -911,6 +932,7 @@ def clean_extscache(
     build_dir_path=None,
     deprecated_dir_path=None,
     apps_dir_path=None,
+    internal_dir_path=None,
     packman_xml_path=None,
     kit_sdk_xml_path=None,
     create_dir=False,
@@ -932,6 +954,12 @@ def clean_extscache(
         build_dir_path (str): Path to the build directory (default: _build/linux-x86_64/release/exts)
         deprecated_dir_path (str): Path to the deprecated directory (default: _build/linux-x86_64/release/extsDeprecated)
         apps_dir_path (str): Path to the apps directory (default: _build/linux-x86_64/release/apps)
+        internal_dir_path (str): Path to the extsInternal directory
+            (default: _build/linux-x86_64/release/extsInternal). Extensions here are validated against
+            the kit file's [dependencies] section but are NOT stripped from enabled lists, since
+            extsInternal is not used as a source for the extscache app; the extensions must remain
+            version-locked so ``repo_deploy_exts`` publishes them and they are downloaded from the
+            registry at runtime (same pattern as isaacsim.util.debug_draw).
         packman_xml_path (str): Path to the omni-physics.packman.xml file (default: deps/omni-physics.packman.xml)
         kit_sdk_xml_path (str): Path to the kit-sdk.packman.xml file (default: deps/kit-sdk.packman.xml)
         create_dir (bool): If True, create the build directory if it doesn't exist
@@ -957,6 +985,7 @@ def clean_extscache(
     default_build_dir = "_build/linux-x86_64/release/exts"
     default_deprecated_dir = "_build/linux-x86_64/release/extsDeprecated"
     default_apps_dir = "_build/linux-x86_64/release/apps"
+    default_internal_dir = "_build/linux-x86_64/release/extsInternal"
     default_packman_xml = "deps/omni-physics.packman.xml"
     default_kit_sdk_xml = "deps/kit-sdk.packman.xml"
 
@@ -965,6 +994,7 @@ def clean_extscache(
     build_dir = build_dir_path or default_build_dir
     deprecated_dir = deprecated_dir_path or default_deprecated_dir
     apps_dir = apps_dir_path or default_apps_dir
+    internal_dir = internal_dir_path or default_internal_dir
     packman_xml = packman_xml_path or default_packman_xml
     kit_sdk_xml = kit_sdk_xml_path or default_kit_sdk_xml
 
@@ -972,6 +1002,7 @@ def clean_extscache(
     log(f"Using build directory: {os.path.abspath(build_dir)}")
     log(f"Using deprecated directory: {os.path.abspath(deprecated_dir)}")
     log(f"Using apps directory: {os.path.abspath(apps_dir)}")
+    log(f"Using internal directory: {os.path.abspath(internal_dir)}")
     log(f"Using packman XML: {os.path.abspath(packman_xml)}")
 
     if dry_run:
@@ -1144,10 +1175,10 @@ def clean_extscache(
 
     # Check dependencies if requested
     if check_deps:
-        dependencies_ok = check_dependencies(kit_file, build_dir, deprecated_dir, verbose)
+        dependencies_ok = check_dependencies(kit_file, build_dir, deprecated_dir, internal_dir, verbose)
         if not dependencies_ok and not dry_run:
             print(
-                f"WARNING: Some extensions in build/deprecated dirs are missing from the [dependencies] section in {kit_file}."
+                f"WARNING: Some extensions in build/deprecated/internal dirs are missing from the [dependencies] section in {kit_file}."
             )
 
     # Check version locks if requested
@@ -1187,8 +1218,10 @@ Clean the extension cache by removing extensions from the enabled section in the
 2. Exist in the deprecated directory (_build/linux-x86_64/release/extsDeprecated)
 3. Exist in the apps directory (_build/linux-x86_64/release/apps)
 
-This script also checks that all extensions in the build and deprecated directories
-are properly listed in the [dependencies] section.
+This script also checks that all extensions in the build, deprecated, and extsInternal
+directories are properly listed in the [dependencies] section. extsInternal extensions
+are NOT removed from the enabled list: they must stay version-locked so that
+repo_deploy_exts publishes them and they are downloaded from the registry at runtime.
 
 This script can also verify that extension version locks match the Kit SDK Version hash,
 and optionally update them to match the current SDK hash.
@@ -1210,6 +1243,14 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
         help="Path to the deprecated directory (default: _build/linux-x86_64/release/extsDeprecated)",
     )
     parser.add_argument("--apps-dir", help="Path to the apps directory (default: _build/linux-x86_64/release/apps)")
+    parser.add_argument(
+        "--internal-dir",
+        help=(
+            "Path to the extsInternal directory (default: _build/linux-x86_64/release/extsInternal). "
+            "Extensions here are validated against [dependencies] but are NOT removed from enabled "
+            "lists, so repo_deploy_exts will publish them."
+        ),
+    )
     parser.add_argument(
         "--packman-xml", help="Path to the omni-physics.packman.xml file (default: deps/omni-physics.packman.xml)"
     )
@@ -1253,6 +1294,7 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
         build_dir_path=args.build_dir,
         deprecated_dir_path=args.deprecated_dir,
         apps_dir_path=args.apps_dir,
+        internal_dir_path=args.internal_dir,
         packman_xml_path=args.packman_xml,
         kit_sdk_xml_path=args.kit_sdk_xml,
         create_dir=args.create_dir,
