@@ -1,4 +1,7 @@
 # Changelog
+## [1.1.2] - 2026-04-28
+### Changed
+- Added writeTarget.platform to extension.toml
 
 ## [1.1.1] - 2026-03-26
 ### Changed
