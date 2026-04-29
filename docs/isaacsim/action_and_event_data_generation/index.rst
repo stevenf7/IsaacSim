@@ -107,6 +107,17 @@ Extension Tutorials
    ./tutorial_sensors_rtx_placement
 
 
+Integration Examples
+--------------------
+
+End-to-end examples that wire multiple extensions together.
+
+.. toctree::
+   :maxdepth: 1
+
+   ./example_event_reactive_actors
+
+
 Other Tools and Utilities
 -------------------------
 
