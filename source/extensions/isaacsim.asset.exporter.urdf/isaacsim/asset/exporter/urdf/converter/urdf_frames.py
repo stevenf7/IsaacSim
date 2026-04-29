@@ -203,44 +203,25 @@ def compute_joint_origin_from_frames(
     return matrix4_to_origin(relative)
 
 
-def compute_geom_origin_from_frames(
-    urdf_frames: dict[str, Gf.Matrix4d],
-    link_path: str,
-    geom_prim: Usd.Prim,
-    robot_prim: Usd.Prim,
-) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
-    """Compute a geometry's origin relative to its link's URDF frame.
-
-    The geometry world pose is transformed into robot coordinates, then
-    expressed relative to the link's URDF frame.
-    """
-    link_urdf = urdf_frames.get(link_path)
-    if link_urdf is None:
-        return (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)
-
-    xfc = UsdGeom.XformCache()
-    robot_world = Gf.Matrix4d(xfc.GetLocalToWorldTransform(robot_prim))
-    geom_world = Gf.Matrix4d(xfc.GetLocalToWorldTransform(geom_prim))
-
-    geom_in_robot = geom_world * robot_world.GetInverse()
-    relative = geom_in_robot * link_urdf.GetInverse()
-    return matrix4_to_origin(relative)
-
-
-def compute_mesh_bake_transform(
+def compute_geom_to_link_transform(
     urdf_frames: dict[str, Gf.Matrix4d],
     link_path: str,
     geom_prim: Usd.Prim,
     robot_prim: Usd.Prim,
 ) -> Gf.Matrix4d:
-    """Compute the transform to bake into OBJ vertices.
+    """Compute the transform from a geometry's local space to its link's URDF frame.
 
-    This maps mesh-local-space vertices into the URDF link frame so that
-    the geometry origin can be identity. The transform is:
-      geom_world * robot_world^-1 * link_urdf^-1
+    The geometry's world pose is expressed in robot coordinates, then
+    rebased onto the link's URDF frame:
 
-    This is the same transform as compute_geom_origin_from_frames but
-    returned as a matrix instead of (xyz, rpy).
+        geom_world * robot_world^-1 * link_urdf^-1
+
+    The result includes any scale carried by ancestor xforms. Callers
+    that need only ``(xyz, rpy)`` (with scale removed) should pass the
+    matrix to :func:`matrix4_to_origin`; callers that need the scale
+    component as well should use :func:`matrix4_to_origin_and_scale`.
+
+    Returns the identity matrix when *link_path* has no URDF frame.
     """
     link_urdf = urdf_frames.get(link_path)
     if link_urdf is None:
@@ -252,3 +233,36 @@ def compute_mesh_bake_transform(
 
     geom_in_robot = geom_world * robot_world.GetInverse()
     return geom_in_robot * link_urdf.GetInverse()
+
+
+def compute_geom_origin_from_frames(
+    urdf_frames: dict[str, Gf.Matrix4d],
+    link_path: str,
+    geom_prim: Usd.Prim,
+    robot_prim: Usd.Prim,
+) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    """Compute a geometry's URDF origin (xyz, rpy) relative to its link's URDF frame.
+
+    Scale on the geometry chain is discarded by ``matrix4_to_origin``;
+    URDF callers handle scale separately via the ``<mesh scale=...>``
+    attribute.
+    """
+    if link_path not in urdf_frames:
+        return (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)
+    return matrix4_to_origin(compute_geom_to_link_transform(urdf_frames, link_path, geom_prim, robot_prim))
+
+
+def compute_mesh_bake_transform(
+    urdf_frames: dict[str, Gf.Matrix4d],
+    link_path: str,
+    geom_prim: Usd.Prim,
+    robot_prim: Usd.Prim,
+) -> Gf.Matrix4d:
+    """Compute the transform to bake into OBJ vertices for non-instanced meshes.
+
+    Maps mesh-local vertices into the URDF link frame so that the URDF
+    geometry origin can stay identity. Equivalent to
+    :func:`compute_geom_to_link_transform` and kept as a separate name
+    purely for readability at the call site.
+    """
+    return compute_geom_to_link_transform(urdf_frames, link_path, geom_prim, robot_prim)

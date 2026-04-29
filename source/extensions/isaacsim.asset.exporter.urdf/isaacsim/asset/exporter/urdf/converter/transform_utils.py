@@ -46,19 +46,50 @@ def quaternion_to_rpy(quat: Gf.Quatf | Gf.Quatd) -> tuple[float, float, float]:
 def matrix4_to_origin(mat: Gf.Matrix4d) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
     """Extract URDF origin (xyz, rpy) from a 4x4 transform matrix.
 
+    Uses ``Gf.Transform`` to decompose the matrix so that any scale
+    component is factored out before reading the rotation. ``ExtractRotation``
+    on a scaled matrix returns a corrupted rotation (the basis vectors are
+    not unit-length), which would yield wrong RPY values in URDF output.
+
     Args:
-        mat: 4x4 transform matrix.
+        mat: 4x4 transform matrix; may contain non-unit scale.
 
     Returns:
         (xyz, rpy) where xyz is (x, y, z) and rpy is (roll, pitch, yaw) in radians.
     """
-    translate = mat.ExtractTranslation()
+    xyz, rpy, _ = matrix4_to_origin_and_scale(mat)
+    return xyz, rpy
+
+
+def matrix4_to_origin_and_scale(
+    mat: Gf.Matrix4d,
+) -> tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]:
+    """Decompose a 4x4 transform matrix into URDF origin and scale.
+
+    Args:
+        mat: 4x4 transform matrix.
+
+    Returns:
+        Tuple of ``(xyz, rpy, scale)``. ``xyz`` is the translation,
+        ``rpy`` is roll-pitch-yaw in radians (with scale removed), and
+        ``scale`` is the per-axis scale factor.
+    """
+    transform = Gf.Transform(mat)
+    translate = transform.GetTranslation()
     xyz = (float(translate[0]), float(translate[1]), float(translate[2]))
 
-    quat = mat.ExtractRotation().GetQuat()
+    quat = transform.GetRotation().GetQuat()
     rpy = quaternion_to_rpy(Gf.Quatd(quat))
 
-    return xyz, rpy
+    scale = transform.GetScale()
+    scale_tuple = (float(scale[0]), float(scale[1]), float(scale[2]))
+
+    return xyz, rpy, scale_tuple
+
+
+def is_unit_scale(scale: tuple[float, float, float], tol: float = 1e-6) -> bool:
+    """Return True when *scale* is effectively (1, 1, 1) within *tol*."""
+    return all(abs(s - 1.0) < tol for s in scale)
 
 
 def compute_joint_origin(joint: UsdPhysics.Joint) -> tuple[tuple[float, float, float], tuple[float, float, float]]:

@@ -162,17 +162,24 @@ def _write_cone_obj(obj_path: str, radius: float, height: float, axis: str = "Z"
 
 
 def _resolve_prototype_path(prim: Usd.Prim) -> str | None:
-    """Return the prototype prim path for an instance proxy, or None."""
+    """Return the prototype prim path for an instance proxy, or None.
+
+    Walks up the prim tree via :meth:`Usd.Prim.GetParent` because
+    ``Usd.Prim`` does not expose ``GetAncestorsRange`` in the Python
+    bindings (only the C++ API does).
+    """
     if prim.IsInstanceProxy():
         proto = prim.GetPrimInPrototype()
         if proto and proto.IsValid():
             return str(proto.GetPath())
-    for ancestor in prim.GetAncestorsRange():
+    ancestor = prim.GetParent()
+    while ancestor and ancestor.IsValid() and not ancestor.IsPseudoRoot():
         if ancestor.IsInstanceProxy():
             proto = ancestor.GetPrimInPrototype()
             if proto and proto.IsValid():
                 rel = prim.GetPath().MakeRelativePath(ancestor.GetPath())
                 return str(proto.GetPath().AppendPath(rel))
+        ancestor = ancestor.GetParent()
     return None
 
 

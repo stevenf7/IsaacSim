@@ -32,8 +32,13 @@ from .link_reader import CollisionData, LinkData, VisualData, read_link
 from .material_reader import collect_materials, populate_material_colors
 from .mesh_exporter import MeshExporter
 from .robot_finder import find_robot
-from .transform_utils import get_prim_name
-from .urdf_frames import build_urdf_frames, compute_geom_origin_from_frames, compute_mesh_bake_transform
+from .transform_utils import get_prim_name, is_unit_scale, matrix4_to_origin_and_scale
+from .urdf_frames import (
+    build_urdf_frames,
+    compute_geom_origin_from_frames,
+    compute_geom_to_link_transform,
+    compute_mesh_bake_transform,
+)
 from .urdf_writer import write_urdf
 
 WORLD_LINK_NAME = "world"
@@ -423,13 +428,22 @@ def _export_mesh_geometry(
     source_prim = geom.source_prim
 
     if _is_instance_proxy(mesh_prim):
+        # Instanced meshes are exported untransformed so multiple links can
+        # share a single OBJ. The mesh-to-link placement is split into a
+        # URDF <origin> (rotation+translation) and a <mesh scale=...>
+        # attribute (scale on the geom path, e.g. an ancestor xform).
+        relative = compute_geom_to_link_transform(urdf_frames, link_path, source_prim, root_prim)
+        origin_xyz, origin_rpy, scale = matrix4_to_origin_and_scale(relative)
+
         filename = mesh_exporter.export_mesh(mesh_prim, bake_transform=None)
-        origin_xyz, origin_rpy = compute_geom_origin_from_frames(urdf_frames, link_path, source_prim, root_prim)
         geom.mesh_filename = filename
-        geom.mesh_scale = None
+        geom.mesh_scale = None if is_unit_scale(scale) else scale
         element.origin_xyz = origin_xyz
         element.origin_rpy = origin_rpy
     else:
+        # Non-instanced meshes bake the full transform (including any scale)
+        # into vertex coordinates so the URDF geometry origin is identity
+        # and no <mesh scale=...> is required.
         bake_xf = compute_mesh_bake_transform(urdf_frames, link_path, source_prim, root_prim)
         filename = mesh_exporter.export_mesh(mesh_prim, bake_transform=bake_xf)
         geom.mesh_filename = filename

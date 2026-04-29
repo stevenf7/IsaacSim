@@ -266,13 +266,17 @@ def _read_cone(prim: Usd.Prim) -> GeometryData:
 
 
 def _read_mesh(prim: Usd.Prim) -> GeometryData:
-    """Read mesh geometry reference from a UsdGeomMesh."""
-    scale = _get_scale(prim)
-    mesh_scale = None
-    if scale != (1.0, 1.0, 1.0):
-        mesh_scale = scale
+    """Read mesh geometry reference from a UsdGeomMesh.
 
-    return GeometryData(geom_type="mesh", source_prim=prim, mesh_prim=prim, mesh_scale=mesh_scale)
+    ``mesh_scale`` is left as ``None`` here. The exporter's orchestrator
+    fills it in (when needed) from the composed mesh-to-link transform,
+    which captures scale authored on the Mesh prim itself *or* on any
+    ancestor Xform between the link and the mesh. Reading scale only
+    from the Mesh prim's local xformOps misses the latter (common in
+    Isaac Sim assets where ``<link>/geometry/<Mesh>`` carries scale on
+    the intermediate ``geometry`` Xform).
+    """
+    return GeometryData(geom_type="mesh", source_prim=prim, mesh_prim=prim)
 
 
 def _get_scale(prim: Usd.Prim) -> tuple[float, float, float]:
