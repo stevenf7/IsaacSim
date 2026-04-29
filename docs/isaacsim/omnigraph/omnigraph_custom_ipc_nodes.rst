@@ -17,6 +17,10 @@ This guide explains how to build OmniGraph nodes for inter-process communication
 
 .. note::
 
+   This workflow requires a **source checkout** of the `Isaac Sim <https://github.com/isaac-sim/IsaacSim>`_ repository. It is not supported with the pip packages or the binary release. Clone the GitHub repository before you begin.
+
+.. note::
+
    All commands in this tutorial are run from the **Isaac Sim repository root** (the directory that contains ``build.sh`` and ``repo.sh``).
 
 Before You Start
