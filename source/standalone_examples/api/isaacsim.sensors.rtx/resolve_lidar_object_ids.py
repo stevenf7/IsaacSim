@@ -32,6 +32,7 @@ Requirements:
 """
 
 import argparse
+import os
 import sys
 
 from isaacsim import SimulationApp
@@ -53,6 +54,9 @@ simulation_app = SimulationApp(
         "extra_args": ["--/rtx-transient/stableIds/enabled=true"],
     }
 )
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.rtx", "resolve_lidar_object_ids")
+os.makedirs(output_dir, exist_ok=True)
 
 import carb
 import omni.timeline
@@ -108,6 +112,10 @@ carb.log_info("Attached StableIdMap and GenericModelOutput annotators")
 # =============================================================================
 # RUN SIMULATION TO COLLECT DATA
 # =============================================================================
+if args.test:
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
+
 timeline = omni.timeline.get_timeline_interface()
 timeline.play()
 

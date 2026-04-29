@@ -27,6 +27,7 @@ For vendor configs and variants, see ``create_lidar_with_config_and_variants.py`
 """
 
 import argparse
+import os
 import sys
 
 from isaacsim import SimulationApp
@@ -37,6 +38,9 @@ args, _ = parser.parse_known_args()
 
 # headless=False required for debug draw visualization
 simulation_app = SimulationApp({"headless": False})
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.experimental.rtx", "lidar_robot_integration")
+os.makedirs(output_dir, exist_ok=True)
 
 import carb
 import numpy as np
@@ -178,6 +182,10 @@ rep.WriterRegistry.register(GmoRobotInspectWriter)
 sensor.attach_writer("GmoRobotInspectWriter")
 
 print("Attached GmoRobotInspectWriter to sensor")
+
+if args.test:
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
 
 # =============================================================================
 # INITIALIZE WORLD AND CONTROLLER

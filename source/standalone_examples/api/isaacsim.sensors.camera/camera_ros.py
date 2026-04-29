@@ -19,7 +19,13 @@
 # creates a camera and a sample scene, renders an image and saves it to camera_ros.png file.
 # The asset is also saved to camera_ros.usd file. The camera model is based on Intel RealSense D435i.
 
+import argparse
+
 from isaacsim import SimulationApp
+
+parser = argparse.ArgumentParser(description="Camera ROS example.")
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode.")
+args, _ = parser.parse_known_args()
 
 simulation_app = SimulationApp({"headless": True})
 
@@ -28,6 +34,7 @@ import os
 
 import numpy as np
 import omni.timeline
+import omni.usd
 import yaml
 from isaacsim.core.experimental.objects import Cube, DomeLight, GroundPlane
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
@@ -35,6 +42,9 @@ from isaacsim.core.experimental.utils.stage import get_current_stage
 from isaacsim.core.experimental.utils.transform import euler_angles_to_quaternion
 from isaacsim.sensors.camera import Camera
 from PIL import Image, ImageDraw
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.camera", "camera_ros")
+os.makedirs(output_dir, exist_ok=True)
 
 # To create a model of a given ROS camera, print the camera_info topic with:
 #       rostopicecho /camera/color/camera_info
@@ -102,6 +112,11 @@ camera = Camera(
 )
 # Start the timeline and initialize the camera
 timeline = omni.timeline.get_timeline_interface()
+
+if args.test:
+    stage_for_export = omni.usd.get_context().get_stage()
+    stage_for_export.Export(os.path.join(output_dir, "stage.usda"))
+
 timeline.play()
 timeline.commit()
 camera.initialize()
@@ -159,11 +174,11 @@ def draw_points_opencv(points3d):
 # Draw the 3D points to the image plane
 draw_points_opencv(points3d=np.array([[0.5, 0.5, 4.0], [-0.5, 0.5, 4.0], [0.5, -0.5, 4.0], [-0.5, -0.5, 4.0]]))
 
-image_path = os.path.join(os.getcwd(), "camera_ros.png")
+image_path = os.path.join(output_dir, "camera_ros.png")
 print(f"Saving the rendered image to: {image_path}")
 img.save(image_path)
 
-usd_path = os.path.join(os.getcwd(), "camera_ros.usd")
+usd_path = os.path.join(output_dir, "camera_ros.usd")
 print(f"Saving the asset to: {usd_path}")
 stage = get_current_stage()
 stage.Export(usd_path)

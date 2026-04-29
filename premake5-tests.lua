@@ -221,19 +221,22 @@ local function get_sensor_tests()
         {
             "tests-nativepython-isaacsim.sensors.camera.camera_add_depth_sensor",
             "standalone_examples/api/isaacsim.sensors.camera/camera_add_depth_sensor.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.sensors.camera.camera_opencv_fisheye",
             "standalone_examples/api/isaacsim.sensors.camera/camera_opencv_fisheye.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.sensors.camera.camera_opencv_pinhole",
             "standalone_examples/api/isaacsim.sensors.camera/camera_opencv_pinhole.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.sensors.camera.camera_pre_isp_pipeline",
             "standalone_examples/api/isaacsim.sensors.camera/camera_pre_isp_pipeline.py",
-            "--draw-output",
+            "--draw-output --test",
         },
         {
             "tests-nativepython-isaacsim.sensors.camera.camera_ros",
@@ -259,6 +262,7 @@ local function get_sensor_tests()
         {
             "tests-nativepython-isaacsim.sensors.camera.camera_annotator_device",
             "standalone_examples/api/isaacsim.sensors.camera/camera_annotator_device.py",
+            "--test",
         },
         -- RTX Sensors
         {
@@ -305,7 +309,7 @@ local function get_sensor_tests()
         {
             "tests-nativepython-isaacsim.sensors.experimental.rtx.create_camera_basic",
             "standalone_examples/api/isaacsim.sensors.experimental.rtx/create_camera_basic.py",
-            "--test",
+            "--test --disable-output",
         },
         {
             "tests-nativepython-isaacsim.sensors.experimental.rtx.create_camera_depth_sensor",
@@ -345,6 +349,7 @@ local function get_sensor_tests()
         {
             "tests-nativepython-isaacsim.sensors.experimental.rtx.camera_isp_pipeline",
             "standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_isp_pipeline.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.sensors.experimental.rtx.create_lidar_basic",

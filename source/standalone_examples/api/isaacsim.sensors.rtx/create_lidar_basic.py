@@ -26,6 +26,7 @@ This is the recommended starting point for learning RTX Lidar in Isaac Sim.
 """
 
 import argparse
+import os
 import sys
 
 from isaacsim import SimulationApp
@@ -43,6 +44,9 @@ args, _ = parser.parse_known_args()
 
 # Note: headless=False is required for debug draw visualization
 simulation_app = SimulationApp({"headless": False})
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.rtx", "create_lidar_basic")
+os.makedirs(output_dir, exist_ok=True)
 
 import carb
 import omni
@@ -114,6 +118,10 @@ writer.initialize(
 writer.attach([render_product.path])
 
 carb.log_info("Attached debug draw writer with custom green points (size=0.05)")
+
+if args.test:
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
 
 # =============================================================================
 # RUN SIMULATION

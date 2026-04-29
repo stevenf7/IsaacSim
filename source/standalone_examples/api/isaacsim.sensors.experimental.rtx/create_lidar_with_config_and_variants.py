@@ -35,6 +35,7 @@ Common lidar attributes (omni:sensor:Core:*):
 """
 
 import argparse
+import os
 import sys
 
 from isaacsim import SimulationApp
@@ -44,6 +45,11 @@ parser.add_argument("--test", default=False, action="store_true", help="Run in t
 args, _ = parser.parse_known_args()
 
 simulation_app = SimulationApp({"headless": False})
+
+output_dir = os.path.join(
+    os.getcwd(), "_example_output_isaacsim.sensors.experimental.rtx", "create_lidar_with_config_and_variants"
+)
+os.makedirs(output_dir, exist_ok=True)
 
 import carb
 import numpy as np
@@ -186,6 +192,10 @@ print("\nCreated LidarSensors with debug draw writers:")
 print("  Lidar 1 (Example_Rotary): Cyan, large points")
 print("  Lidar 2 (Ouster OS1): Magenta, small points")
 print("  Lidar 3 (SICK picoScan150): Yellow, medium points")
+
+if args.test:
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
 
 # =============================================================================
 # RUN SIMULATION

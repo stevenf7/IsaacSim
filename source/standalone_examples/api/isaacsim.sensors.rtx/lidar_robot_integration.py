@@ -29,6 +29,7 @@ For basic lidar creation using commands, see create_lidar_basic.py.
 """
 
 import argparse
+import os
 import sys
 
 from isaacsim import SimulationApp
@@ -39,6 +40,9 @@ args, _ = parser.parse_known_args()
 
 # headless=False required for debug draw visualization
 simulation_app = SimulationApp({"headless": False})
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.rtx", "lidar_robot_integration")
+os.makedirs(output_dir, exist_ok=True)
 
 import carb
 import numpy as np
@@ -152,6 +156,10 @@ carb.log_info(f"Render product path: {render_product_path}")
 # SET UP ROBOT CONTROLLER
 # =============================================================================
 my_controller = DifferentialController(name="simple_control", wheel_radius=0.04295, wheel_base=0.4132)
+
+if args.test:
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
 
 # =============================================================================
 # RUN SIMULATION

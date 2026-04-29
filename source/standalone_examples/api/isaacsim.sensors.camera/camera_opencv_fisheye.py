@@ -15,7 +15,13 @@
 
 """Demonstrate camera setup with OpenCV fisheye lens model."""
 
+import argparse
+
 from isaacsim import SimulationApp
+
+parser = argparse.ArgumentParser(description="Camera OpenCV fisheye example.")
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode.")
+args, _ = parser.parse_known_args()
 
 simulation_app = SimulationApp({"headless": True})
 
@@ -24,6 +30,7 @@ import os
 import cv2
 import numpy as np
 import omni.timeline
+import omni.usd
 from isaacsim.core.experimental.materials import OmniPbrMaterial
 from isaacsim.core.experimental.objects import Cube, DomeLight, GroundPlane
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
@@ -31,6 +38,9 @@ from isaacsim.core.experimental.utils.stage import get_current_stage
 from isaacsim.core.experimental.utils.transform import euler_angles_to_quaternion
 from isaacsim.sensors.camera import Camera
 from scipy.spatial.transform import Rotation
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.camera", "camera_opencv_fisheye")
+os.makedirs(output_dir, exist_ok=True)
 
 # Given the OpenCV camera matrix and distortion coefficients (Fisheye, Kannala-Brandt model),
 # creates a camera and a sample scene, renders an image and saves it to
@@ -97,6 +107,11 @@ camera = Camera(
 
 # Start the timeline and initialize the camera
 timeline = omni.timeline.get_timeline_interface()
+
+if args.test:
+    stage_for_export = omni.usd.get_context().get_stage()
+    stage_for_export.Export(os.path.join(output_dir, "stage.usda"))
+
 timeline.play()
 timeline.commit()
 camera.initialize()
@@ -185,11 +200,11 @@ for i, pt in enumerate(image_points):
     cv2.circle(img, tuple(pt[0].astype(int)), 5, (0, 255, 255), -1)
     cv2.circle(img, tuple(pt[0].astype(int)), 3, color, -1)
 
-img_path = os.path.join(os.getcwd(), "camera_opencv_fisheye.png")
+img_path = os.path.join(output_dir, "camera_opencv_fisheye.png")
 print(f"Saving the rendered image to: {img_path}")
 cv2.imwrite(img_path, img)
 
-usd_path = os.path.join(os.getcwd(), "camera_opencv_fisheye.usd")
+usd_path = os.path.join(output_dir, "camera_opencv_fisheye.usd")
 print(f"Saving the asset to: {usd_path}")
 stage = get_current_stage()
 stage.Export(usd_path)

@@ -15,6 +15,12 @@
 
 """Demonstrate camera view for capturing multiple camera outputs."""
 
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode.")
+args, unknown = parser.parse_known_args()
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
@@ -27,6 +33,7 @@ import os
 import numpy as np
 import omni.replicator.core as rep
 import omni.timeline
+import omni.usd
 from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.experimental.materials import OmniPbrMaterial
 from isaacsim.core.experimental.objects import Cube, DomeLight, GroundPlane
@@ -68,7 +75,7 @@ dome_light.set_intensities(500)
 GroundPlane("/World/defaultGroundPlane", sizes=100.0)
 
 # Create output directory for the test data as images
-out_dir = os.path.join(os.getcwd(), "_out_camera_view")
+out_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.camera", "camera_view")
 print(f"out_dir: {out_dir}")
 os.makedirs(out_dir, exist_ok=True)
 os.makedirs(f"{out_dir}/tiled", exist_ok=True)
@@ -84,6 +91,10 @@ depth_np_tiled_out = np.zeros((*camera_view.tiled_resolution, 1), dtype=np.float
 depth_tiled_torch_out = torch.zeros(camera_view.tiled_resolution, device="cuda", dtype=torch.float32)
 depth_batched_shape = (len(camera_view.prims), *camera_view.camera_resolution, 1)
 depth_batched_out = torch.zeros(depth_batched_shape, device="cuda", dtype=torch.float32)
+
+if args.test:
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(out_dir, "stage.usda"))
 
 # Start the timeline and run some warmup frames
 timeline = omni.timeline.get_timeline_interface()

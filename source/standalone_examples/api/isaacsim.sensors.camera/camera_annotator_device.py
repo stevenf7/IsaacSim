@@ -15,9 +15,19 @@
 
 """Demonstrate camera annotator data retrieval and validation."""
 
+import argparse
+import os
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode.")
+args, unknown = parser.parse_known_args()
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.camera", "camera_annotator_device")
+os.makedirs(output_dir, exist_ok=True)
 
 import carb
 import numpy as np
@@ -827,6 +837,12 @@ camera_cuda = Camera(
 dome_light = DomeLight("/World/DomeLight")
 dome_light.set_intensities(500)
 GroundPlane("/World/defaultGroundPlane", sizes=100.0)
+
+if args.test:
+    import omni.usd
+
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
 
 # Start the timeline and initialize the cameras
 timeline = omni.timeline.get_timeline_interface()

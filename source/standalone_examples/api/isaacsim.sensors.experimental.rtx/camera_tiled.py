@@ -19,10 +19,14 @@ This example demonstrates how to:
 - Create multiple cameras at different positions
 - Use ``TiledCameraSensor`` for efficient batched rendering
 - Retrieve data as a single tiled frame or as a batch of individual frames
-- Access per-camera and tiled resolution properties
+- Save RGB and depth data in both tiled and batched formats
+
+Scene and parameters match the deprecated ``isaacsim.sensors.camera/camera_view.py``
+example for output comparison.
 """
 
 import argparse
+import os
 
 from isaacsim import SimulationApp
 
@@ -31,47 +35,55 @@ parser.add_argument("--num-cameras", type=int, default=4, help="Number of camera
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode.")
 args, _ = parser.parse_known_args()
 
-simulation_app = SimulationApp({"headless": True})
+simulation_app = SimulationApp({"headless": False})
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.experimental.rtx", "camera_tiled")
+os.makedirs(output_dir, exist_ok=True)
+os.makedirs(os.path.join(output_dir, "tiled"), exist_ok=True)
+os.makedirs(os.path.join(output_dir, "batched"), exist_ok=True)
 
 import numpy as np
 import omni
-from isaacsim.core.experimental.objects import Camera, Cube
-from isaacsim.sensors.experimental.rtx import TiledCameraSensor
+import omni.usd
+from isaacsim.core.experimental.materials import OmniPbrMaterial
+from isaacsim.core.experimental.objects import Cube, DomeLight, GroundPlane
+from isaacsim.sensors.experimental.rtx import RtxCamera, TiledCameraSensor
+from PIL import Image
+
+NUM_CAPTURES = 2
+RESOLUTION = (256, 256)
 
 # =============================================================================
-# CREATE SCENE
+# CREATE SCENE (matches deprecated camera_view.py)
 # =============================================================================
 
-for i, (x, y, color) in enumerate([(3, 0, [1, 0, 0]), (5, 2, [0, 1, 0]), (4, -2, [0, 0, 1])]):
-    Cube(f"/World/cube_{i}", sizes=1.0, positions=np.array([float(x), float(y), 0.5]), colors=color)
+cube_material = OmniPbrMaterial("/World/Materials/cube_blue")
+cube_material.set_input_values("diffuse_color_constant", [0.0, 0.0, 1.0])
+for i in range(2):
+    cube = Cube(f"/new_cube_{i}", sizes=1.0, positions=np.array([0, i * 0.5, 0.2]), scales=np.array([0.1, 0.1, 0.1]))
+    cube.apply_visual_materials(cube_material)
+
+dome_light = DomeLight("/World/DomeLight")
+dome_light.set_intensities(500)
+GroundPlane("/World/defaultGroundPlane", sizes=100.0)
 
 # =============================================================================
-# CREATE MULTIPLE CAMERAS
+# CREATE MULTIPLE CAMERAS (same positions as deprecated example)
 # =============================================================================
-# Place cameras at different positions around the scene.
 
-for i in range(args.num_cameras):
-    angle = 2 * np.pi * i / args.num_cameras
-    x = 3.0 * np.cos(angle)
-    y = 3.0 * np.sin(angle)
-    Camera(
-        f"/World/camera_{i}",
-        positions=np.array([x, y, 1.0]),
-    )
+cam_positions = [(0, 0, 2), (0, 1, 2), (1, 0, 2), (1, 1, 2)]
+for i, pos in enumerate(cam_positions):
+    RtxCamera(f"/World/camera_{i}", translations=np.array(pos, dtype=float))
 
-print(f"Created {args.num_cameras} cameras")
+print(f"Created {len(cam_positions)} cameras")
 
 # =============================================================================
 # CREATE TILED CAMERA SENSOR
 # =============================================================================
-# TiledCameraSensor uses ``rep.create.render_product_tiled`` to render all
-# cameras into a single tiled texture, then provides methods to retrieve
-# data as either a tiled frame or a batch of individual frames.
 
-resolution = (240, 320)  # (height, width) per camera
 sensor = TiledCameraSensor(
-    "/World/camera_.*",  # regex to match all camera prims
-    resolution=resolution,
+    "/World/camera_.*",
+    resolution=RESOLUTION,
     annotators=["rgb", "distance_to_image_plane"],
 )
 
@@ -81,33 +93,76 @@ print(f"  Per-camera resolution: {sensor.resolution}")
 print(f"  Tiled resolution: {sensor.tiled_resolution}")
 
 # =============================================================================
-# RUN SIMULATION AND RETRIEVE DATA
+# RUN SIMULATION AND CAPTURE DATA
 # =============================================================================
+
+if args.test:
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
 
 timeline = omni.timeline.get_timeline_interface()
 timeline.play()
 
-frame_count = 0
-printed = False
-
-while simulation_app.is_running():
+for _ in range(5):
     simulation_app.update()
-    frame_count += 1
 
-    # Get batched data: shape (num_cameras, height, width, channels)
-    rgb_batch, _ = sensor.get_data("rgb", tiled=False)
+for i in range(NUM_CAPTURES):
+    print(f" ** Step {i} ** ")
+    simulation_app.update()
 
-    # Get tiled data: shape (tiled_height, tiled_width, channels)
+    # --- RGB tiled ---
+    print(" ** Running RGB data tests:")
     rgb_tiled, _ = sensor.get_data("rgb", tiled=True)
+    if rgb_tiled is not None:
+        rgb_tiled_np = rgb_tiled.numpy()
+        print(f"rgb_tiled_np.shape: {rgb_tiled_np.shape}, type: {type(rgb_tiled_np)}, dtype: {rgb_tiled_np.dtype}")
+        Image.fromarray(rgb_tiled_np).save(os.path.join(output_dir, "tiled", f"{str(i).zfill(3)}_rgb_tiled_np.png"))
 
-    if rgb_batch is not None and not printed:
-        printed = True
-        print(f"\nFrame {frame_count}:")
-        print(f"  Batched RGB shape: {rgb_batch.shape}")
-        print(f"  Tiled RGB shape:   {rgb_tiled.shape}")
+    # --- RGB batched ---
+    print(" ** Batched:")
+    rgb_batch, _ = sensor.get_data("rgb", tiled=False)
+    if rgb_batch is not None:
+        rgb_batch_np = rgb_batch.numpy()
+        print(f"rgb_batched.shape: {rgb_batch_np.shape}, type: {type(rgb_batch_np)}, dtype: {rgb_batch_np.dtype}")
+        for camera_id in range(rgb_batch_np.shape[0]):
+            rgb_cam = rgb_batch_np[camera_id]
+            print(
+                f"camera_id={camera_id}: rgb_batched.shape: {rgb_cam.shape}, type: {type(rgb_cam)}, dtype: {rgb_cam.dtype}"
+            )
+            Image.fromarray(rgb_cam).save(
+                os.path.join(output_dir, "batched", f"{str(i).zfill(3)}_rgb_batched_{camera_id}.png")
+            )
 
-    if args.test and frame_count >= 20:
-        break
+    # --- Depth tiled ---
+    print(" ** Running depth data tests:")
+    depth_tiled, _ = sensor.get_data("distance_to_image_plane", tiled=True)
+    if depth_tiled is not None:
+        depth_np = depth_tiled.numpy()
+        print(f"depth_tiled_np.shape: {depth_np.shape}, type: {type(depth_np)}, dtype: {depth_np.dtype}")
+        depth_np[np.isinf(depth_np)] = 0.0
+        depth_np = np.clip(depth_np, 0.0, 1.0)
+        depth_uint8 = (depth_np * 255).squeeze().astype(np.uint8)
+        Image.fromarray(depth_uint8, mode="L").save(
+            os.path.join(output_dir, "tiled", f"{str(i).zfill(3)}_depth_tiled_np.png")
+        )
+
+    # --- Depth batched ---
+    print(" ** Batched:")
+    depth_batch, _ = sensor.get_data("distance_to_image_plane", tiled=False)
+    if depth_batch is not None:
+        depth_batch_np = depth_batch.numpy()
+        print(
+            f"depth_batched.shape: {depth_batch_np.shape}, type: {type(depth_batch_np)}, dtype: {depth_batch_np.dtype}"
+        )
+        depth_batch_np[np.isinf(depth_batch_np)] = 0.0
+        depth_batch_np = np.clip(depth_batch_np, 0.0, 1.0)
+        for camera_id in range(depth_batch_np.shape[0]):
+            depth_cam = (depth_batch_np[camera_id] * 255).squeeze().astype(np.uint8)
+            Image.fromarray(depth_cam, mode="L").save(
+                os.path.join(output_dir, "batched", f"{str(i).zfill(3)}_depth_batched_{camera_id}.png")
+            )
+
+    simulation_app.update()
 
 timeline.stop()
 simulation_app.close()

@@ -29,12 +29,20 @@ parser = argparse.ArgumentParser(description="Create camera depth sensor example
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode.")
 args, _ = parser.parse_known_args()
 
-simulation_app = SimulationApp({"headless": True})
+simulation_app = SimulationApp()
+
+import os
 
 import numpy as np
 import omni
+import omni.usd
 from isaacsim.core.experimental.objects import Cube
 from isaacsim.sensors.experimental.rtx import RtxCamera, SingleViewDepthCameraSensor
+
+output_dir = os.path.join(
+    os.getcwd(), "_example_output_isaacsim.sensors.experimental.rtx", "create_camera_depth_sensor"
+)
+os.makedirs(output_dir, exist_ok=True)
 
 # =============================================================================
 # CREATE SCENE
@@ -67,6 +75,11 @@ print(f"Created depth camera with annotators: {sensor.annotators}")
 # =============================================================================
 
 timeline = omni.timeline.get_timeline_interface()
+
+if args.test:
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
+
 timeline.play()
 
 frame_count = 0
