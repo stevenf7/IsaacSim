@@ -27,6 +27,9 @@ from typing import OrderedDict
 
 import carb
 import carb.eventdispatcher
+import isaacsim.core.experimental.utils.prim as prim_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
+import isaacsim.core.experimental.utils.transform as transform_utils
 import numpy as np
 import omni
 import omni.kit.commands
@@ -35,11 +38,7 @@ import omni.timeline
 import omni.ui as ui
 import omni.usd
 import yaml
-from isaacsim.core.prims import Articulation, SingleArticulation
-from isaacsim.core.utils.articulations import find_all_articulation_base_paths
-from isaacsim.core.utils.numpy.rotations import quats_to_rot_matrices
-from isaacsim.core.utils.prims import get_prim_at_path, get_prim_object_type
-from isaacsim.core.utils.rotations import gf_quat_to_np_array
+from isaacsim.core.experimental.prims import Articulation
 
 # New way of making UI being integrated in through feature updates
 from isaacsim.gui.components.element_wrappers import (
@@ -343,10 +342,7 @@ class Extension(omni.ext.IExt):
         if self.articulation_list and prim_path != "None" and not self._timeline.is_stopped():
             # Create and Initialize the Articulation
             self._articulation_base_path = prim_path
-            self.articulation = SingleArticulation(prim_path)
-
-            if not self.articulation.handles_initialized:
-                self.articulation.initialize()
+            self.articulation = Articulation(prim_path)
 
             # Get list of all links and populate link selection combobox
             self.get_all_sphere_gen_meshes()
@@ -386,7 +382,7 @@ class Extension(omni.ext.IExt):
 
     def _refresh_selection_combobox(self):
         """Update the articulation selection combobox with available articulations from the stage."""
-        self.articulation_list = find_all_articulation_base_paths()
+        self.articulation_list = self._find_all_articulation_base_paths()
         self.articulation_list.insert(0, "None")
         if self._prev_art_prim_path is not None and self._prev_art_prim_path not in self.articulation_list:
             self._reset_ui()
@@ -517,7 +513,7 @@ class Extension(omni.ext.IExt):
         if self.articulation is None:
             return
 
-        links = self.articulation._articulation_view.body_names
+        links = self.articulation.link_names
 
         if len(links) == 0:
             carb.log_error(
@@ -530,10 +526,7 @@ class Extension(omni.ext.IExt):
         art_path_len = len(self._articulation_base_path)
         for prim in Usd.PrimRange(stage.GetPrimAtPath(self._articulation_base_path), Usd.TraverseInstanceProxies()):
             path = str(prim.GetPath())
-
-            type = get_prim_object_type(path)
-
-            if type == "xform":
+            if prim_utils.get_prim_at_path(path).IsA(UsdGeom.Xformable):
                 geom_mesh = UsdGeom.Mesh(prim)
                 if geom_mesh.GetPointsAttr().HasValue():
                     is_instanced = prim.IsInstanceProxy()
@@ -580,7 +573,7 @@ class Extension(omni.ext.IExt):
                             + f"any link in the Articulation {self._articulation_base_path}"
                         )
 
-    def get_articulation_values(self, articulation: SingleArticulation):
+    def get_articulation_values(self, articulation: Articulation):
         """Get and store the latest dof_properties from the articulation.
 
            Update the Properties UI.
@@ -590,19 +583,20 @@ class Extension(omni.ext.IExt):
         """
         # Update static dof properties on new selection
         if self.new_selection:
-            self.num_dof = articulation.num_dof
+            self.num_dof = articulation.num_dofs
             self.dof_names = articulation.dof_names
             self.new_selection = False
 
-            self._joint_positions = articulation.get_joint_positions()
+            self._joint_positions = articulation.get_dof_positions().numpy()[0]
             self._active_joints = np.zeros(MAX_DOF_NUM, dtype=bool)
             self._acceleration_limits = np.full(MAX_DOF_NUM, DEFAULT_ACCELERATION_LIMIT)
             self._jerk_limits = np.full(MAX_DOF_NUM, DEFAULT_JERK_LIMIT)
 
-            self.lower_joint_limits = articulation.dof_properties["lower"]
-            self.upper_joint_limits = articulation.dof_properties["upper"]
+            lower, upper = articulation.get_dof_limits()
+            self.lower_joint_limits = lower.numpy()[0]
+            self.upper_joint_limits = upper.numpy()[0]
 
-    def _refresh_ui(self, articulation: SingleArticulation):
+    def _refresh_ui(self, articulation: Articulation):
         """Updates the GUI with a new Articulation's properties.
 
         Args:
@@ -720,8 +714,6 @@ class Extension(omni.ext.IExt):
             context: Physics context.
         """
         if self.articulation is not None:
-            if not self.articulation.handles_initialized:
-                self.articulation.initialize()
             # Get the latest values from the articulation
             self.get_articulation_values(self.articulation)
 
@@ -738,8 +730,8 @@ class Extension(omni.ext.IExt):
         """
         if self.articulation is not None:
             joint_velocities = np.zeros_like(self._joint_positions)
-            self.articulation.set_joint_positions(self._joint_positions)
-            self.articulation.set_joint_velocities(joint_velocities)
+            self.articulation.set_dof_positions(self._joint_positions)
+            self.articulation.set_dof_velocities(joint_velocities)
         self._set_joint_positions_on_step = False
         return
 
@@ -859,11 +851,12 @@ class Extension(omni.ext.IExt):
                 self._joint_frames[i].rebuild()
 
             def joint_frame_build_fn(i):
-                if i >= self.articulation.num_dof:
+                if i >= self.articulation.num_dofs:
                     return
 
-                lower_joint_limit = self.articulation.dof_properties["lower"][i]
-                upper_joint_limit = self.articulation.dof_properties["upper"][i]
+                lower, upper = self.articulation.get_dof_limits()
+                lower_joint_limit = lower.numpy()[0, i]
+                upper_joint_limit = upper.numpy()[0, i]
                 with ui.VStack(style=get_style(), spacing=5, height=0):
                     position_field = FloatField(
                         "Joint Position",
@@ -903,7 +896,7 @@ class Extension(omni.ext.IExt):
                     joint_status.set_on_selection_fn(partial(update_active_joints, i))
 
             with ui.VStack(style=get_style(), spacing=5, height=0):
-                for i in range(self.articulation.num_dof):
+                for i in range(self.articulation.num_dofs):
                     frame = CollapsableFrame(
                         self.articulation.dof_names[i], build_fn=partial(joint_frame_build_fn, i), collapsed=False
                     )
@@ -1521,7 +1514,7 @@ class Extension(omni.ext.IExt):
         self._models["frame_command_ui"].enabled = True
         self._models["frame_command_ui"].rebuild()
 
-        self.articulation.set_joint_positions(self._joint_positions)
+        self.articulation.set_dof_positions(self._joint_positions)
 
     def _trigger_preview_generate_spheres_for_link(self, model: object = None, val: object = None) -> None:
         """Triggers sphere generation preview for the selected link.
@@ -1563,7 +1556,7 @@ class Extension(omni.ext.IExt):
 
         link_path = self._articulation_base_path + link
         mesh_path = link_path + mesh
-        geom_prim = get_prim_at_path(mesh_path)
+        geom_prim = prim_utils.get_prim_at_path(mesh_path)
         geom_mesh = UsdGeom.Mesh(geom_prim)
 
         # along with raw points in the mesh file, we also need to retrieve
@@ -1578,16 +1571,16 @@ class Extension(omni.ext.IExt):
         vert_cts = np.array(geom_mesh.GetFaceVertexCountsAttr().Get())
 
         # Transform coordinates of points into Link frame
-        mesh_xform = Gf.Transform(get_world_transform_matrix(get_prim_at_path(mesh_path)))
-        link_xform = Gf.Transform(get_world_transform_matrix(get_prim_at_path(link_path)))
+        mesh_xform = Gf.Transform(get_world_transform_matrix(prim_utils.get_prim_at_path(mesh_path)))
+        link_xform = Gf.Transform(get_world_transform_matrix(prim_utils.get_prim_at_path(link_path)))
 
         mesh_trans = np.array(mesh_xform.GetTranslation())
         link_trans = np.array(link_xform.GetTranslation())
 
-        mesh_rot = gf_quat_to_np_array(mesh_xform.GetRotation().GetQuaternion())
-        link_rot = gf_quat_to_np_array(link_xform.GetRotation().GetQuaternion())
+        mesh_rot = self._gf_quat_to_np_array(mesh_xform.GetRotation().GetQuaternion())
+        link_rot = self._gf_quat_to_np_array(link_xform.GetRotation().GetQuaternion())
 
-        link_rot, mesh_rot = quats_to_rot_matrices(np.array([link_rot, mesh_rot]))
+        link_rot, mesh_rot = transform_utils.quaternion_to_rotation_matrix(np.array([link_rot, mesh_rot])).numpy()
 
         inv_rot = link_rot.T @ mesh_rot
         inv_trans = (link_rot.T @ (mesh_trans - link_trans)).reshape((3, 1))
@@ -1775,10 +1768,11 @@ class Extension(omni.ext.IExt):
                     + "selected Articulation."
                 )
 
-        lower_limit = self.articulation.dof_properties["lower"]
-        upper_limit = self.articulation.dof_properties["upper"]
-        self._joint_positions[: self.articulation.num_dof] = np.clip(
-            self._joint_positions[: self.articulation.num_dof], lower_limit, upper_limit
+        lower, upper = self.articulation.get_dof_limits()
+        lower_limit = lower.numpy()[0]
+        upper_limit = upper.numpy()[0]
+        self._joint_positions[: self.articulation.num_dofs] = np.clip(
+            self._joint_positions[: self.articulation.num_dofs], lower_limit, upper_limit
         )
 
         self._collision_sphere_editor.load_xrdf_spheres(self._articulation_base_path, parsed_file)
@@ -2002,7 +1996,7 @@ class Extension(omni.ext.IExt):
         ignore_dict = {}
 
         # Any links conencted by a joint should ignore each other
-        for p in Usd.PrimRange(get_prim_at_path(articulation_path)):
+        for p in Usd.PrimRange(prim_utils.get_prim_at_path(articulation_path)):
             if UsdPhysics.Joint(p):
                 b0 = p.GetProperty("physics:body0").GetTargets()
                 b1 = p.GetProperty("physics:body1").GetTargets()
@@ -2084,8 +2078,7 @@ class Extension(omni.ext.IExt):
             parsed_file = {}
 
         art_view = Articulation(self._articulation_base_path)
-        art_view.initialize()
-        ordered_links = art_view.body_names  # Links in order from root to end effector
+        ordered_links = art_view.link_names  # Links in order from root to end effector
 
         parsed_file["format"] = "xrdf"
         # Ensure format_version is written as a float (1.0 or 2.0)
@@ -2274,3 +2267,119 @@ class Extension(omni.ext.IExt):
             f.write("# not be able to avoid obstacles.\n\n")
 
             self._collision_sphere_editor.save_spheres(self._articulation_base_path, f)
+
+    def _gf_quat_to_np_array(self, orientation: Gf.Quatd | Gf.Quatf | Gf.Quaternion) -> np.ndarray:
+        """Converts a pxr Quaternion type to a numpy array following [w, x, y, z] convention.
+
+        Args:
+            orientation: Input quaternion object.
+
+        Returns:
+            A (4,) quaternion array in (w, x, y, z).
+        """
+        quat = np.zeros(4)
+        quat[1:] = orientation.GetImaginary()
+        quat[0] = orientation.GetReal()
+        return quat
+
+    def _find_all_articulation_base_paths(self) -> list:
+        """Find all base Articulation paths on the stage.
+
+        A base path is defined as the maximal path that contains every part of a robot. For example,
+        the articulation root in the UR10 robot may be at "/World/ur10/base_link", but the path returned
+        by this function would be "/World/ur10".
+
+        An Articulation base path:
+        - Contains exactly one Articulation Root in the subtree of prim paths that stem from a base path.
+        - Is a parent of every link in an Articulation.
+
+        On a stage with nested articulation roots, only the inner-most root will be listed.
+
+        Returns:
+            A list of every Articulation base path on the stage.
+        """
+        articulation_root_paths = []
+        articulation_candidates = set()
+
+        stage = stage_utils.get_current_stage()
+        if not stage:
+            return articulation_root_paths
+
+        # Find all articulation root paths
+        # Find all paths that are the maximal subpath of all prims connected by a fixed joint
+        # I.e. a fixed joint connecting /ur10/link1 to /ur10/link0 would result in the path
+        # /ur10.  The path /ur10 becomes a candidate Articulation.
+        for prim in Usd.PrimRange(stage.GetPrimAtPath("/")):
+            if (
+                prim.HasAPI(UsdPhysics.ArticulationRootAPI)
+                and prim.GetProperty("physxArticulation:articulationEnabled").IsValid()
+                and prim.GetProperty("physxArticulation:articulationEnabled").Get()
+            ):
+                articulation_root_paths.append(tuple(str(prim.GetPath()).split("/")[1:]))
+            elif UsdPhysics.Joint(prim):
+                bodies = prim.GetProperty("physics:body0").GetTargets()
+                bodies.extend(prim.GetProperty("physics:body1").GetTargets())
+                if len(bodies) == 1:
+                    continue
+                base_path_split = str(bodies[0]).split("/")[1:]
+                for body in bodies[1:]:
+                    body_path_split = str(body).split("/")[1:]
+                    common_len = min(len(base_path_split), len(body_path_split))
+                    for i in range(common_len):
+                        if base_path_split[i] != body_path_split[i]:
+                            base_path_split = base_path_split[:i]
+                            break
+                    else:
+                        base_path_split = base_path_split[:common_len]
+                articulation_candidates.add(tuple(base_path_split))
+
+        # Only keep candidates that have exactly one Articulation Root in their subtree.
+        tmp = set()
+        included_roots = set()
+        for c in articulation_candidates:
+            subtree_root_count = 0
+            matched_root = None
+            for root in articulation_root_paths:
+                if len(root) >= len(c) and root[: len(c)] == c:
+                    subtree_root_count += 1
+                    matched_root = root
+            if subtree_root_count == 1:
+                tmp.add(c)
+                included_roots.add(matched_root)
+        articulation_candidates = tmp
+
+        # Only keep candidates whose path is not a subset of another candidate's path
+        unique_candidates = []
+        for c1 in articulation_candidates:
+            is_unique = True
+            for c2 in articulation_candidates:
+                if c1 == c2:
+                    continue
+                elif c2[: len(c1)] == c1:
+                    is_unique = False
+                    break
+            if is_unique:
+                unique_candidates.append(c1)
+        articulation_candidates = copy.copy(unique_candidates)
+
+        # Add any Articulation Root on the stage that is not in the subtree of any valid candidate
+        # and does not contain any valid candidate in a subtree.
+        for root in articulation_root_paths:
+            if root in included_roots:
+                continue
+            add_to_candidates = True
+            for c in unique_candidates:
+                if len(root) <= len(c) and c[: len(root)] == root:
+                    add_to_candidates = False
+                    break
+            if add_to_candidates:
+                articulation_candidates.append(root)
+
+        articulation_base_paths = []
+        for c in articulation_candidates:
+            articulation_path = ""
+            for s in c:
+                articulation_path += "/" + s
+            articulation_base_paths.append(articulation_path)
+
+        return articulation_base_paths

@@ -20,12 +20,12 @@ from collections import OrderedDict
 from typing import Generator
 
 import carb
+import isaacsim.core.experimental.utils.prim as prim_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import lula
 import numpy as np
 import yaml
-from isaacsim.core.api.materials import PreviewSurface
-from isaacsim.core.api.objects.sphere import VisualSphere
-from isaacsim.core.utils.prims import delete_prim, is_prim_path_valid
+from isaacsim.core.experimental.objects import Sphere
 from pxr import Sdf
 
 
@@ -71,48 +71,19 @@ class CollisionSphereEditor:
 
         self._lula_path = "/World/LulaRobotDescriptionEditor"
 
-        self._filter_in_surface_prim_path = self._lula_path + "/selected_link_sphere_material"
-        self._filter_out_surface_prim_path = self._lula_path + "/base_sphere_material"
-        self._filter_in_surface = None
-        self._filter_out_surface = None
+    def _is_prim_path_valid(self, prim_path: str) -> bool:
+        """Check if a path has a valid USD Prim at it.
 
-        self._preview_sphere_surface_prim_path = self._lula_path + "/preview_sphere_material"
-        self._preview_sphere_surface = None
+        Args:
+            prim_path: path of the prim in the stage
 
-    def _ensure_preview_sphere_visual_material(self):
-        """Ensures the visual material for preview sphere visualization is created and valid."""
-        if not is_prim_path_valid(self._preview_sphere_surface_prim_path):
-            self._preview_sphere_surface = PreviewSurface(
-                self._preview_sphere_surface_prim_path, color=np.array([1.0, 0, 0])
-            )
-        elif self._preview_sphere_surface is None or not self._preview_sphere_surface.prim.IsValid():
-            delete_prim(self._preview_sphere_surface_prim_path)
-
-            self._preview_sphere_surface = PreviewSurface(
-                self._preview_sphere_surface_prim_path, color=np.array([1.0, 0, 0])
-            )
-
-    def _ensure_collision_sphere_visual_material(self):
-        """Make sure that the visual materials for sphere visualization have been created and are valid."""
-        if not is_prim_path_valid(self._filter_in_surface_prim_path):
-            self._filter_in_surface = PreviewSurface(
-                prim_path=self._filter_in_surface_prim_path, color=self.filter_in_sphere_color
-            )
-        elif self._filter_in_surface is None or not self._filter_in_surface.prim.IsValid():
-            delete_prim(self._filter_in_surface_prim_path)
-            self._filter_in_surface = PreviewSurface(
-                prim_path=self._filter_in_surface_prim_path, color=self.filter_in_sphere_color
-            )
-
-        if not is_prim_path_valid(self._filter_out_surface_prim_path):
-            self._filter_out_surface = PreviewSurface(
-                prim_path=self._filter_out_surface_prim_path, color=self.filter_out_sphere_color
-            )
-        elif self._filter_out_surface is None or not self._filter_out_surface.prim.IsValid():
-            delete_prim(self._filter_out_surface_prim_path)
-            self._filter_out_surface = PreviewSurface(
-                prim_path=self._filter_out_surface_prim_path, color=self.filter_out_sphere_color
-            )
+        Returns:
+            True if the path points to a valid prim
+        """
+        prim = prim_utils.get_prim_at_path(prim_path)
+        if prim:
+            return prim.IsValid()
+        return False
 
     @staticmethod
     def _path_generator(path: str) -> Generator[str, None, None]:
@@ -145,7 +116,7 @@ class CollisionSphereEditor:
 
         sphere_path_generator = self._sphere_path_generators[sphere_base_path]
         sphere_path = next(sphere_path_generator)
-        while is_prim_path_valid(sphere_path):
+        while self._is_prim_path_valid(sphere_path):
             sphere_path = next(sphere_path_generator)
         return sphere_path
 
@@ -186,7 +157,7 @@ class CollisionSphereEditor:
             self.copy_all_sphere_data()
         deleted_spheres = ["DEL"]
         for p in self.path_2_spheres.keys():
-            if is_prim_path_valid(p) and p[:path_len] == link_path:
+            if self._is_prim_path_valid(p) and p[:path_len] == link_path:
                 deleted_spheres.append(self.path_2_sphere_serial_copy[p])
                 to_delete.append(p)
 
@@ -201,8 +172,8 @@ class CollisionSphereEditor:
         Args:
             sphere_path: Path to the sphere to delete.
         """
-        if is_prim_path_valid(sphere_path):
-            delete_prim(sphere_path)
+        if self._is_prim_path_valid(sphere_path):
+            stage_utils.delete_prim(sphere_path)
 
         if sphere_path in self.path_2_spheres:
             del self.path_2_spheres[sphere_path]
@@ -215,15 +186,10 @@ class CollisionSphereEditor:
             color_in: Color for spheres that match the filter.
             color_out: Color for spheres that do not match the filter.
         """
-        self._ensure_collision_sphere_visual_material()
-
         if color_in is not None:
             self.filter_in_sphere_color = color_in
-            self._filter_in_surface.set_color(color_in)
-
         if color_out is not None:
             self.filter_out_sphere_color = color_out
-            self._filter_out_surface.set_color(color_out)
         self.filter = filter
 
         with Sdf.ChangeBlock():
@@ -237,29 +203,26 @@ class CollisionSphereEditor:
             sphere_path: Path to the sphere to color.
             ensure_visual_material: Whether to ensure visual materials are created before setting color.
         """
-        if ensure_visual_material:
-            self._ensure_collision_sphere_visual_material()
-        if not is_prim_path_valid(sphere_path):
+        if not self._is_prim_path_valid(sphere_path):
             return
         sphere = self.path_2_spheres[sphere_path]
         if sphere_path[: len(self.filter)] == self.filter:
-            sphere.apply_visual_material(self._filter_in_surface)
+            sphere.set_display_colors(self.filter_in_sphere_color)
         else:
-            sphere.apply_visual_material(self._filter_out_surface)
+            sphere.set_display_colors(self.filter_out_sphere_color)
 
     def copy_all_sphere_data(self):
         """Copies all current sphere data to the serial copy storage for undo operations."""
-        self._ensure_collision_sphere_visual_material()
         sphere_paths = list(self.path_2_spheres.keys())
         deleted_spheres = ["DEL"]
         for sphere_path in sphere_paths:
-            if is_prim_path_valid(sphere_path):
+            if self._is_prim_path_valid(sphere_path):
                 sphere = self.path_2_spheres[sphere_path]
-                color = sphere.get_applied_visual_material().get_color()
+                color = np.array(sphere.geoms[0].GetDisplayColorAttr().Get())
                 self.path_2_sphere_serial_copy[sphere_path] = {
                     "sphere_path": sphere_path,
-                    "center": sphere.get_local_pose()[0],
-                    "radius": sphere.get_radius(),
+                    "center": sphere.get_local_poses()[0].numpy()[0],
+                    "radius": sphere.get_radii().numpy()[0],
                     "color": color,
                 }
             else:
@@ -281,13 +244,13 @@ class CollisionSphereEditor:
         if op_type == "ADD":
             redo = ["ADD"]
             for sphere_path in op:
-                if is_prim_path_valid(sphere_path):
+                if self._is_prim_path_valid(sphere_path):
                     sphere = self.path_2_spheres[sphere_path]
                     redo.append(
                         {
                             "sphere_path": sphere_path,
-                            "center": sphere.get_local_pose()[0],
-                            "radius": sphere.get_radius(),
+                            "center": sphere.get_local_poses()[0].numpy()[0],
+                            "radius": sphere.get_radii().numpy()[0],
                         }
                     )
                 self.delete_sphere(sphere_path)
@@ -296,11 +259,11 @@ class CollisionSphereEditor:
         elif op_type == "DEL":
             redo = ["DEL"]
             for d in op:
-                sphere = VisualSphere(
+                sphere = Sphere(
                     d["sphere_path"],
-                    translation=d["center"],
-                    radius=d["radius"],
-                    visual_material=self._filter_in_surface,
+                    translations=d["center"],
+                    radii=d["radius"],
+                    colors=self.filter_in_sphere_color,
                 )
                 self.path_2_spheres[d["sphere_path"]] = sphere
                 self.set_sphere_color(d["sphere_path"])
@@ -313,9 +276,9 @@ class CollisionSphereEditor:
                 path = d["sphere_path"]
                 rad = d["radius"]
                 factor = d["factor"]
-                if path in self.path_2_spheres and is_prim_path_valid(path):
+                if path in self.path_2_spheres and self._is_prim_path_valid(path):
                     sphere = self.path_2_spheres[path]
-                    sphere.set_radius(rad)
+                    sphere.set_radii(rad)
                     redo.append({"sphere_path": path, "radius": factor * rad})
             self._redo.append(redo)
 
@@ -331,11 +294,11 @@ class CollisionSphereEditor:
         if op_type == "ADD":
             added_spheres = ["ADD"]
             for d in op:
-                sphere = VisualSphere(
+                sphere = Sphere(
                     d["sphere_path"],
-                    translation=d["center"],
-                    radius=d["radius"],
-                    visual_material=self._filter_in_surface,
+                    translations=d["center"],
+                    radii=d["radius"],
+                    colors=self.filter_in_sphere_color,
                 )
                 self.path_2_spheres[d["sphere_path"]] = sphere
                 self.set_sphere_color(d["sphere_path"])
@@ -353,9 +316,9 @@ class CollisionSphereEditor:
             for d in op:
                 path = d["sphere_path"]
                 rad = d["radius"]
-                if path in self.path_2_spheres and is_prim_path_valid(path):
+                if path in self.path_2_spheres and self._is_prim_path_valid(path):
                     sphere = self.path_2_spheres[path]
-                    sphere.set_radius(rad)
+                    sphere.set_radii(rad)
 
     def generate_spheres(self, link_path, points, face_inds, vert_cts, num_spheres, radius_offset, is_preview):
         """Generate collision spheres from mesh geometry for the specified link.
@@ -373,10 +336,13 @@ class CollisionSphereEditor:
             # If preview spheres exist, change them to permanent spheres
             added_sphere_paths = ["ADD"]
             for preview_sphere in self._preview_spheres:
-                if not preview_sphere.prim.IsValid():
+                if not preview_sphere.prims[0].IsValid():
                     continue
                 sphere_path = self.add_sphere(
-                    link_path, preview_sphere.get_local_pose()[0], preview_sphere.get_radius(), store_op=False
+                    link_path,
+                    preview_sphere.get_local_poses()[0].numpy()[0],
+                    preview_sphere.get_radii().numpy()[0],
+                    store_op=False,
                 )
                 added_sphere_paths.append(sphere_path)
             self._operations.append(added_sphere_paths)
@@ -397,17 +363,15 @@ class CollisionSphereEditor:
         result = generator.generate_spheres(num_spheres, radius_offset)
         if is_preview:
             self.clear_preview()
-            self._ensure_preview_sphere_visual_material()
             preview_sphere_path_generator = self._path_generator(self._get_collision_sphere_preview_path(link_path))
             for lula_sphere in result:
                 sphere_path = next(preview_sphere_path_generator)
                 self._preview_spheres.append(
-                    VisualSphere(
+                    Sphere(
                         sphere_path,
-                        color=self._preview_color,
-                        translation=lula_sphere.center,
-                        radius=lula_sphere.radius,
-                        visual_material=self._preview_sphere_surface,
+                        colors=self._preview_color,
+                        translations=lula_sphere.center,
+                        radii=lula_sphere.radius,
                     )
                 )
         else:
@@ -423,7 +387,7 @@ class CollisionSphereEditor:
         self._preview_path_generator = {}
 
         for sphere in self._preview_spheres:
-            self.delete_sphere(sphere.prim_path)
+            self.delete_sphere(sphere.paths[0])
         self._preview_spheres = []
 
     def add_sphere(self, link_path, center, radius, store_op=True):
@@ -438,7 +402,7 @@ class CollisionSphereEditor:
         Returns:
             Path to the created sphere prim.
         """
-        if not is_prim_path_valid(link_path):
+        if not self._is_prim_path_valid(link_path):
             carb.log_warn("Attempted to add sphere nested under non-existent path")
 
         if link_path[-1] == "/":
@@ -447,18 +411,17 @@ class CollisionSphereEditor:
         self._redo = []
         sphere_path = self._get_unused_collision_sphere_path(link_path)
 
-        self._ensure_collision_sphere_visual_material()
         if sphere_path[: len(self.filter)] == self.filter:
-            visual_material = self._filter_in_surface
+            color = self.filter_in_sphere_color
         else:
-            visual_material = self._filter_out_surface
+            color = self.filter_out_sphere_color
 
-        sphere = VisualSphere(sphere_path, translation=center, radius=radius, visual_material=visual_material)
+        sphere = Sphere(sphere_path, translations=center, radii=radius, colors=color)
 
-        self.path_2_spheres[sphere.prim_path] = sphere
+        self.path_2_spheres[sphere.paths[0]] = sphere
 
         if store_op:
-            self._operations.append(["ADD", sphere.prim_path])
+            self._operations.append(["ADD", sphere.paths[0]])
 
         return sphere_path
 
@@ -565,7 +528,7 @@ class CollisionSphereEditor:
         added_sphere_paths = ["ADD"]
         for key, val in sphere_dict.items():
             link_path = robot_prim_path + "/" + key
-            if is_prim_path_valid(link_path):
+            if self._is_prim_path_valid(link_path):
                 for sphere in val:
                     center = np.array(sphere["center"])
                     radius = sphere["radius"]
@@ -579,10 +542,10 @@ class CollisionSphereEditor:
         for k, v in buffer_distances.items():
             link_path = robot_prim_path + "/" + k
             for p in self.path_2_spheres.keys():
-                if is_prim_path_valid(p) and p[: len(link_path)] == link_path:
+                if self._is_prim_path_valid(p) and p[: len(link_path)] == link_path:
                     sphere = self.path_2_spheres[p]
-                    rad = sphere.get_radius()
-                    sphere.set_radius(rad + v)
+                    rad = sphere.get_radii().numpy()[0]
+                    sphere.set_radii(rad + v)
 
     def load_spheres(self, robot_prim_path, robot_description_file_path):
         """Load collision spheres from a robot description YAML file.
@@ -614,7 +577,7 @@ class CollisionSphereEditor:
         for sphere_dict in sphere_list:
             for key, val in sphere_dict.items():
                 link_path = robot_path + "/" + key
-                if is_prim_path_valid(link_path):
+                if self._is_prim_path_valid(link_path):
                     for sphere in val:
                         center = np.array(sphere["center"])
                         radius = sphere["radius"]
@@ -633,10 +596,10 @@ class CollisionSphereEditor:
             path2: Path to the second sphere.
             num_spheres: Number of interpolated spheres to create.
         """
-        if not is_prim_path_valid(path1):
+        if not self._is_prim_path_valid(path1):
             carb.log_warn("{} is not a valid Prim path to a sphere".format(path1))
             return
-        elif not is_prim_path_valid(path2):
+        elif not self._is_prim_path_valid(path2):
             carb.log_warn("{} is not a valid Prim path to a sphere".format(path2))
             return
 
@@ -653,11 +616,11 @@ class CollisionSphereEditor:
         sphere_1 = self.path_2_spheres[path1]
         sphere_2 = self.path_2_spheres[path2]
 
-        rad_1 = max(sphere_1.get_radius(), epsilon)
-        rad_2 = max(sphere_2.get_radius(), epsilon)
+        rad_1 = max(sphere_1.get_radii().numpy()[0], epsilon)
+        rad_2 = max(sphere_2.get_radii().numpy()[0], epsilon)
 
-        t1 = sphere_1.get_local_pose()[0]
-        t2 = sphere_2.get_local_pose()[0]
+        t1 = sphere_1.get_local_poses()[0].numpy()[0]
+        t2 = sphere_2.get_local_poses()[0].numpy()[0]
 
         d = t2 - t1
 
@@ -692,10 +655,10 @@ class CollisionSphereEditor:
         path_len = len(path)
 
         for p in self.path_2_spheres.keys():
-            if is_prim_path_valid(p) and p[:path_len] == path:
+            if self._is_prim_path_valid(p) and p[:path_len] == path:
                 sphere = self.path_2_spheres[p]
-                rad = sphere.get_radius()
-                sphere.set_radius(factor * rad)
+                rad = sphere.get_radii().numpy()[0]
+                sphere.set_radii(factor * rad)
                 scaled_spheres.append({"sphere_path": p, "radius": rad, "factor": factor})
         self._operations.append(scaled_spheres)
 
@@ -727,8 +690,8 @@ class CollisionSphereEditor:
             link_to_spheres: Dictionary to update with sphere data, keyed by link name.
         """
         for sphere in self.path_2_spheres.values():
-            prim_path = sphere.prim_path
-            if is_prim_path_valid(prim_path):
+            prim_path = sphere.paths[0]
+            if self._is_prim_path_valid(prim_path):
                 if prim_path[: len(robot_prim_path)] != robot_prim_path:
                     carb.log_warn(
                         "Not writing sphere at path {} to file because it is not nested under the robot Articulation".format(
@@ -738,8 +701,8 @@ class CollisionSphereEditor:
                     continue
                 link_name = prim_path[len(robot_prim_path) + 1 : prim_path.rfind("/")]
                 link_spheres = link_to_spheres.get(link_name, [])
-                sphere_pose = self._round_list_floats(sphere.get_local_pose()[0])
-                link_spheres.append({"center": sphere_pose, "radius": sphere.get_radius()})
+                sphere_pose = self._round_list_floats(sphere.get_local_poses()[0].numpy()[0])
+                link_spheres.append({"center": sphere_pose, "radius": sphere.get_radii().numpy()[0]})
                 link_to_spheres[link_name] = link_spheres
 
     # Used for Robot Description Files
@@ -754,8 +717,8 @@ class CollisionSphereEditor:
         """
         link_to_spheres = OrderedDict()
         for sphere in self.path_2_spheres.values():
-            prim_path = sphere.prim_path
-            if is_prim_path_valid(prim_path):
+            prim_path = sphere.paths[0]
+            if self._is_prim_path_valid(prim_path):
                 if prim_path[: len(robot_prim_path)] != robot_prim_path:
                     carb.log_warn(
                         "Not writing sphere at path {} to file because it is not nested under the robot Articulation".format(
@@ -767,8 +730,8 @@ class CollisionSphereEditor:
                 link_spheres = link_to_spheres.get(link_name, [])
                 # sometimes sphere_pose is a numpy array, which will not work if we try to import
                 # this file again later.
-                sphere_pose = [round(float(x), 5) for x in sphere.get_local_pose()[0]]
-                link_spheres.append({"center": sphere_pose, "radius": round(sphere.get_radius(), 5)})
+                sphere_pose = [round(float(x), 5) for x in sphere.get_local_poses()[0].numpy()[0]]
+                link_spheres.append({"center": sphere_pose, "radius": round(sphere.get_radii().numpy()[0], 5)})
                 link_to_spheres[link_name] = link_spheres
 
         f.write("collision_spheres:\n")
@@ -785,8 +748,8 @@ class CollisionSphereEditor:
         """
         self.clear_spheres(store_op=False)
         self.clear_preview()
-        if is_prim_path_valid(self._lula_path):
-            delete_prim(self._lula_path)
+        if self._is_prim_path_valid(self._lula_path):
+            stage_utils.delete_prim(self._lula_path)
 
     def _get_collision_sphere_base_path(self, link_path: str) -> str:
         """Base path for collision spheres belonging to a link.

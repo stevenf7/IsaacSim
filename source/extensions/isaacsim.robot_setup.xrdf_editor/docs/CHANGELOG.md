@@ -1,4 +1,9 @@
 # Changelog
+
+## [3.5.0] - 2026-04-28
+### Changed
+- Migrate extension implementation to core experimental API
+
 ## [3.4.2] - 2026-03-06
 ### Fixed
 - Clear physics subscription when window is hidden to stop per-physics-step callbacks while the panel is not visible
