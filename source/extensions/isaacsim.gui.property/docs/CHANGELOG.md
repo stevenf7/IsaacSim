@@ -1,4 +1,8 @@
 # Changelog
+## [1.6.1] - 2026-04-28
+### Added
+- Added `Attachment Point API` to Robot Schema UI menu
+
 ## [1.6.0] - 2026-04-20
 ### Added
 - New `Tools/Robotics/Joint Inspector` menu opens a dockable window with a searchable robot dropdown scanning `IsaacRobotAPI` prims.

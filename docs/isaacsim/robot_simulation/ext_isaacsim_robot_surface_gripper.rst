@@ -24,7 +24,7 @@ The :ref:`isaac_surface_grippers` is used to create a suction cup-style gripper 
 
 The physical properties of the gripper are defined within the D6 joint, such as joint limits across the different degrees of freedom, and the stiffness and damping of the joint. The Surface Gripper object then handles the activation of the constraints, and defines which objects are grasped based on the grip threshold.
 
-This extension is enabled by default. If it is ever disabled, it can be re-enabled from the :doc:`Extension Manager <extensions:ext_core/ext_extension-manager>` by searching for ``isaacsim.robot.surface_gripper``.
+This extension is enabled by default. If it is ever disabled, it can be re-enabled from the :doc:`Extension Manager <extensions:ext_core/ext_extension-manager>` by searching for ``isaacsim.robot.surface_gripper`` and ``isaacsim.robot.surface_gripper.ui``.
 
 To create a surface gripper through the GUI, go to the menu ``Create`` > ``Robots`` > ``Surface Gripper``. This will create a surface gripper prim in the stage.
 
@@ -82,11 +82,13 @@ These additional attributes can be found within the Raw USD Properties section o
 Adding Attachment Joint API
 -----------------------------
 
-To add an attachment joint API, select the joint in the stage, and in the right panel under the **Properties** tab, click the **+ Add** button, and select **Edit API Schema**. Search for ``AttachmentPointAPI`` and apply it to the joint.
+To add an attachment joint API, select the joint in the stage. In the right panel under the **Properties** tab, click the **+ Add** button and navigate to **Isaac** > **Robot Schema** > **Attachment Point API**.
 
-.. image:: ../images/isim_5.0_base_ref_gui_robot_schema_add.png
-   :width: 150px
+.. figure:: ../images/isim_tut_surface_gripper_attachment_point_add.png
+   :width: 400px
    :align: center
+
+   **+ Add** > **Isaac** > **Robot Schema** > **Attachment Point API** in the Property tab.
 
 .. NOTE:: The Attachment Point API is automatically applied to the joint when the Surface Gripper is created. It does not need to be added manually.
 
@@ -98,11 +100,19 @@ To add an attachment joint API, select the joint in the stage, and in the right 
 
 The Surface Gripper extension provides an implementation through |omnigraph|. To use it, add a surface gripper node to the desired graph, and select the surface gripper prim it will control.
 
+The following inputs are available:
+
+- **Close**: Closes the gripper. If the gripper is already closed, this will do nothing.
+- **Open**: Opens the gripper. If the gripper is already open, this will do nothing.
+- **Toggle**: Toggles the gripper between open and closed states.
+- **Enabled**: Enables or disables the gripper.
+- **Surface Gripper**: The surface gripper prim to control.
+
 .. figure:: ../images/isim_surface_gripper_omnigraph_node_inputs.png
    :width: 260px
    :align: center
 
-   Surface Gripper node in the graph editor (**Toggle**, **Enabled**, and **Surface Gripper** inputs).
+   Surface Gripper node in the graph editor.
 
 
 .. _isaac_surface_grippers_code_snippets:
@@ -238,7 +248,7 @@ You can add material properties to the cylinders to make them look more realisti
 Create the D6 Joint and AttachmentPointAPI
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Under ``ee_link`` create a new Xform named ``surface_gripper``. Then add to it a **D6** joint prim named ``suction_joint`` by clicking **Create** > **Physics** > **Joints > D6**. Configure the joint properties as shown below. Note that **Exclude from Articulation** should be checked.
+Under ``ee_link`` create a new Xform named ``surface_gripper``. Then add a **D6** joint prim to it named ``suction_joint`` by clicking **Create** > **Physics** > **Joints > D6**. Configure the joint properties as shown below. Note that **Exclude from Articulation** should be checked.
 
 .. grid:: 2
 
@@ -268,9 +278,9 @@ In this example, we add small limits of about -5 to 5 degrees for each rotation 
 
 .. note:: The **AttachmentPointAPI** is automatically applied to the joint when a Surface Gripper prim is created (see next section). Below is the explicit method. See :ref:`adding_attachment_joint_api` for additional details.
 
-#. Select ``suction_joint``. In the **Property** tab, click **+ Add** > **Edit API Schema**, search for ``IsaacAttachmentPointAPI``, and apply it.
-#. Confirm the new attributes under **Raw USD Properties** at the bottom of the **Property** tab.
-#. Set **Forward Axis** in the **Raw USD Properties** section to ``Z`` to align the suction direction with the gripper.
+#. Select ``suction_joint``. In the **Property** tab, click **+ Add** > **Isaac** > **Robot Schema** > **Attachment Point API** to apply it.
+#. Confirm the new attributes in the **Property** tab under **Attachment Point**.
+#. Set **Forward Axis** in the **Attachment Point** section to ``Z`` to align the suction direction with the gripper.
 
 Add the Surface Gripper Prim
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -320,7 +330,12 @@ The Surface Gripper prim is used to control the suction action of the gripper. Y
 Save the customized robot
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-#. We need to create a clean reference for use later, so you should drag ``/World/ur10`` such that it's at the root of the stage (i.e. ``/ur10``). Then right click ``/ur10`` and set ``Set as Default Prim``. Delete the ``/World`` and ``/Environment`` Xforms.
+The stacking demo references your USD at ``/World/robot``, so the robot must be the USD's **Default Prim**
+and must live at the root of the file — not nested under a ``/World`` scope.
+
+#. In the Stage tree, drag ``/World/ur10`` to the root so it becomes ``/ur10``.
+#. Right-click ``/ur10`` and choose **Set as Default Prim**.
+#. Delete the now-empty ``/World`` and ``/Environment`` Xforms.
 #. Save the stage as a USD file.
 
 Run the Demo
@@ -334,7 +349,7 @@ From the **Isaac Sim** install folder (where ``python.sh`` lives), run:
 
 .. code-block:: bash
 
-   ./python.sh source/standalone_examples/api/isaacsim.robot.experimental.manipulators/universal_robots/stacking.py
+   ./python.sh standalone_examples/api/isaacsim.robot.experimental.manipulators/universal_robots/stacking.py
 
 This uses the stock UR10 USD so you can confirm the script and pick-and-stack sequence before you substitute your file.
 
@@ -350,7 +365,7 @@ Pass the USD file you saved earlier to the ``--usd-path`` argument:
 
 .. code-block:: bash
 
-   ./python.sh source/standalone_examples/api/isaacsim.robot.experimental.manipulators/universal_robots/stacking.py --usd-path /path/to/your/ur10_custom.usd
+   ./python.sh standalone_examples/api/isaacsim.robot.experimental.manipulators/universal_robots/stacking.py --usd-path /path/to/your/ur10_custom.usd
 
 Use the real path to your USD. The sample expects the Surface Gripper and joint layout from this walkthrough; if your prim paths or articulation root differ from the defaults, update the script to match.
 
