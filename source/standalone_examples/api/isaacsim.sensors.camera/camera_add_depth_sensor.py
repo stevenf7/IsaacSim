@@ -15,12 +15,22 @@
 
 """Demonstrate adding a depth sensor to a camera in simulation."""
 
+import argparse
+import os
+
 from isaacsim import SimulationApp
+
+parser = argparse.ArgumentParser(description="Camera depth sensor example.")
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode.")
+args, _ = parser.parse_known_args()
 
 simulation_app = SimulationApp()
 
 from isaacsim.core.experimental.utils.stage import define_prim, get_current_stage
 from isaacsim.sensors.camera import Camera, SingleViewDepthSensorAsset
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.camera", "camera_add_depth_sensor")
+os.makedirs(output_dir, exist_ok=True)
 
 # Create a root XForm on the stage
 root = define_prim("/root", "Xform")
@@ -46,6 +56,9 @@ stage = get_current_stage()
 stage.SetDefaultPrim(root)
 
 # Export the stage
-stage.Export("example_camera_with_depth_sensor.usd")
+stage.Export(os.path.join(output_dir, "example_camera_with_depth_sensor.usd"))
+
+if args.test:
+    stage.Export(os.path.join(output_dir, "stage.usda"))
 
 simulation_app.close()

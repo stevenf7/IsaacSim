@@ -44,6 +44,7 @@ To visualize non-visual materials in the viewport:
 """
 
 import argparse
+import os
 
 from isaacsim import SimulationApp
 
@@ -53,6 +54,9 @@ args, _ = parser.parse_known_args()
 
 # headless=False to visualize the scene and debug view
 simulation_app = SimulationApp({"headless": False})
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.experimental.rtx", "apply_nonvisual_materials")
+os.makedirs(output_dir, exist_ok=True)
 
 import numpy as np
 import omni.replicator.core as rep
@@ -231,11 +235,17 @@ print(f"{'='*60}\n")
 # =============================================================================
 # RUN SIMULATION AND PRINT INTENSITY DATA
 # =============================================================================
+if args.test:
+    import omni.usd
+
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
+
 timeline = omni.timeline.get_timeline_interface()
 timeline.play()
 
 frame_count = 0
-while simulation_app.is_running() and (not args.test or frame_count < 20):
+while simulation_app.is_running() and (not args.test or frame_count < 10):
     simulation_app.update()
     frame_count += 1
 

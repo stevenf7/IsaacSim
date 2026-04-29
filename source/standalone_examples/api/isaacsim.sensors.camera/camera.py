@@ -31,11 +31,15 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import omni.timeline
+import omni.usd
 from isaacsim.core.experimental.materials import OmniPbrMaterial
 from isaacsim.core.experimental.objects import Cube, DomeLight, GroundPlane
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 from isaacsim.core.experimental.utils.transform import euler_angles_to_quaternion
 from isaacsim.sensors.camera import Camera
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.camera", "camera")
+os.makedirs(output_dir, exist_ok=True)
 
 cube_2 = Cube(
     "/new_cube_2",
@@ -77,6 +81,11 @@ GroundPlane("/World/defaultGroundPlane", sizes=100.0)
 
 # Start the timeline and initialize the camera
 timeline = omni.timeline.get_timeline_interface()
+
+if args.test:
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
+
 timeline.play()
 timeline.commit()
 camera.initialize()
@@ -104,7 +113,7 @@ while simulation_app.is_running() and (not args.test or i < 601):
         )
         points_3d = camera.get_world_points_from_image_coords(points_2d, np.array([24.94, 24.9]))
         imgplot = plt.imshow(camera.get_rgba()[:, :, :3])
-        output_path = os.path.join(os.getcwd(), f"camera.frame{i:03d}.png")
+        output_path = os.path.join(output_dir, f"camera.frame{i:03d}.png")
         print(f"Saving image to: {output_path}")
         plt.draw()
         plt.savefig(output_path)

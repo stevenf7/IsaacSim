@@ -38,8 +38,12 @@ from isaacsim import SimulationApp
 
 parser = argparse.ArgumentParser(description="Camera ISP pipeline via USD schema.")
 parser.add_argument(
-    "--output-dir", type=str, default="camera_isp_pipeline_outputs", help="Output directory for ISP pipeline images."
+    "--output-dir",
+    type=str,
+    default=os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.experimental.rtx", "camera_isp_pipeline"),
+    help="Output directory for ISP pipeline images.",
 )
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode.")
 args, _ = parser.parse_known_args()
 
 NUM_FRAMES = 20
@@ -299,6 +303,9 @@ sensor = CameraSensor(
     annotators=["rgb"],
     render_vars=["HdrColor", "OmniCameraSensorPreIsp", "OmniCameraSensorPostIsp"],
 )
+
+if args.test:
+    stage.Export(os.path.join(args.output_dir, "stage.usda"))
 
 timeline = omni.timeline.get_timeline_interface()
 timeline.play()

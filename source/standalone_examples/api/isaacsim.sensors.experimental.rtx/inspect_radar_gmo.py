@@ -33,6 +33,7 @@ Note: RTX Radar requires Motion BVH to be enabled.
 """
 
 import argparse
+import os
 import sys
 
 from isaacsim import SimulationApp
@@ -44,6 +45,9 @@ args, _ = parser.parse_known_args()
 # headless=True since we are just inspecting data, not visualizing
 # enable_motion_bvh=True is REQUIRED for radar
 simulation_app = SimulationApp({"headless": True, "enable_motion_bvh": True})
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.experimental.rtx", "inspect_radar_gmo")
+os.makedirs(output_dir, exist_ok=True)
 
 import numpy as np
 import omni
@@ -183,13 +187,17 @@ print("Attached GmoRadarInspectWriter to sensor")
 # =============================================================================
 # RUN SIMULATION AND INSPECT DATA
 # =============================================================================
+if args.test:
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
+
 timeline = omni.timeline.get_timeline_interface()
 timeline.play()
 
 print("Starting simulation - inspecting radar GMO data each frame")
 
 frame_count = 0
-while simulation_app.is_running() and (not args.test or frame_count < 20):
+while simulation_app.is_running() and (not args.test or frame_count < 5):
     simulation_app.update()
     frame_count += 1
 

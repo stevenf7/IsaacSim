@@ -16,6 +16,7 @@
 """Demonstrate stereoscopic depth camera setup."""
 
 import argparse
+import os
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()
@@ -25,6 +26,9 @@ args, unknown = parser.parse_known_args()
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": args.test})
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.camera", "camera_stereoscopic_depth")
+os.makedirs(output_dir, exist_ok=True)
 
 import numpy as np
 import omni
@@ -86,6 +90,10 @@ path_to = omni.kit.commands.execute(
     instanceable=False,
 )
 
+if args.test:
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
+
 # Start the timeline and initialize the camera
 timeline = omni.timeline.get_timeline_interface()
 timeline.play()
@@ -127,7 +135,7 @@ enable_extension("isaacsim.test.utils")
 from isaacsim.test.utils import save_depth_image
 
 latest_frame = camera.get_current_frame()
-save_depth_image(latest_frame["DepthSensorDistance"], "testing", "depth_sensor_distance.png", normalize=True)
-save_depth_image(latest_frame["distance_to_image_plane"], "testing", "distance_to_image_plane.png", normalize=True)
+save_depth_image(latest_frame["DepthSensorDistance"], output_dir, "depth_sensor_distance.png", normalize=True)
+save_depth_image(latest_frame["distance_to_image_plane"], output_dir, "distance_to_image_plane.png", normalize=True)
 
 simulation_app.close()

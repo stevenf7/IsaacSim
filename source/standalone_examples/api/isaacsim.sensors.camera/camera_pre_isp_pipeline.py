@@ -21,8 +21,12 @@ import os
 parser = argparse.ArgumentParser(description="Expose Omniverse pre-ISP camera image processing pipeline.")
 parser.add_argument("--draw-output", action="store_true", help="Convert binary pipeline outputs to images and save.")
 parser.add_argument(
-    "--output-dir", type=str, default="pre_isp_camera_pipeline_outputs", help="Output directory for pipeline outputs."
+    "--output-dir",
+    type=str,
+    default=os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.camera", "camera_pre_isp_pipeline"),
+    help="Output directory for pipeline outputs.",
 )
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode.")
 args, unknown = parser.parse_known_args()
 
 from isaacsim import SimulationApp
@@ -248,6 +252,12 @@ keys = og.Controller.Keys
         ],
     },
 )
+
+if args.test:
+    import omni.usd
+
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
 
 for _ in range(2):
     simulation_app.update()

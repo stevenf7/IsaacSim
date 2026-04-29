@@ -31,51 +31,79 @@ args, _ = parser.parse_known_args()
 
 simulation_app = SimulationApp({"headless": True})
 
+import os
+
+import cv2
 import numpy as np
 import omni
-from isaacsim.core.experimental.objects import Cube
+import omni.usd
+from isaacsim.core.experimental.materials import OmniPbrMaterial
+from isaacsim.core.experimental.objects import Cube, DomeLight, GroundPlane
+from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
+from isaacsim.core.experimental.utils.transform import euler_angles_to_quaternion
 from isaacsim.sensors.experimental.rtx import CameraSensor, RtxCamera
 from pxr import Gf
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.experimental.rtx", "camera_opencv_pinhole")
+os.makedirs(output_dir, exist_ok=True)
+
+# Same parameters as the deprecated isaacsim.sensors.camera example for consistency.
+WIDTH, HEIGHT = 1920, 1200
+camera_matrix = [[958.8, 0.0, 957.8], [0.0, 956.7, 589.5], [0.0, 0.0, 1.0]]
+distortion_coefficients = [0.14, -0.03, -0.0002, -0.00003, 0.009, 0.5, -0.07, 0.017]
+
+((fx, _, cx), (_, fy, cy), (_, _, _)) = camera_matrix
 
 # =============================================================================
 # CREATE SCENE
 # =============================================================================
 
-for i, (x, y, color) in enumerate([(3, 0, [1, 0, 0]), (5, 2, [0, 1, 0]), (4, -2, [0, 0, 1])]):
-    Cube(f"/World/cube_{i}", sizes=1.0, positions=np.array([float(x), float(y), 0.5]), colors=color)
+dome_light = DomeLight("/World/DomeLight")
+dome_light.set_intensities(500)
+GroundPlane("/World/defaultGroundPlane", sizes=100.0)
+
+cube_positions = [np.array([0, 0, 0.5]), np.array([2, 0, 0.5]), np.array([0, 4, 1])]
+cube_scale = [1.0, 1.0, 2.0]
+cube_colors = [np.array([255, 0, 0]), np.array([0, 255, 0]), np.array([0, 0, 255])]
+
+for i, (position, scale, color) in enumerate(zip(cube_positions, cube_scale, cube_colors)):
+    cube_path = f"/new_cube_{i}"
+    cube = Cube(cube_path, sizes=1.0, positions=position, scales=np.array([scale, scale, scale]))
+    GeomPrim(cube_path, apply_collision_apis=True)
+    RigidPrim(cube_path)
+    cube_material = OmniPbrMaterial(f"/World/Materials/cube_{i}")
+    cube_material.set_input_values("diffuse_color_constant", (color / 255.0).tolist())
+    cube.apply_visual_materials(cube_material)
 
 # =============================================================================
 # CREATE CAMERA WITH PINHOLE DISTORTION
 # =============================================================================
 # The OmniLensDistortionOpenCvPinholeAPI schema adds rational polynomial
-# distortion attributes to the camera prim. Supports up to 12 distortion
-# coefficients: k1-k6 (radial), p1-p2 (tangential), s1-s4 (thin prism).
-
-WIDTH, HEIGHT = 1280, 720
+# distortion attributes to the camera prim. Uses the same intrinsics and
+# distortion coefficients as the deprecated example.
 
 cam = RtxCamera(
     "/World/camera",
     schemas=["OmniLensDistortionOpenCvPinholeAPI"],
     attributes={
-        # Intrinsic parameters (pixels)
-        "omni:lensdistortion:opencvPinhole:cx": WIDTH / 2.0,
-        "omni:lensdistortion:opencvPinhole:cy": HEIGHT / 2.0,
-        "omni:lensdistortion:opencvPinhole:fx": 600.0,
-        "omni:lensdistortion:opencvPinhole:fy": 600.0,
-        # Radial distortion coefficients
-        "omni:lensdistortion:opencvPinhole:k1": 0.1,
-        "omni:lensdistortion:opencvPinhole:k2": -0.05,
-        "omni:lensdistortion:opencvPinhole:k3": 0.0,
-        # Tangential distortion coefficients
-        "omni:lensdistortion:opencvPinhole:p1": 0.001,
-        "omni:lensdistortion:opencvPinhole:p2": -0.001,
-        # Image size (must be Gf.Vec2i for the int2 attribute)
+        "omni:lensdistortion:opencvPinhole:cx": cx,
+        "omni:lensdistortion:opencvPinhole:cy": cy,
+        "omni:lensdistortion:opencvPinhole:fx": fx,
+        "omni:lensdistortion:opencvPinhole:fy": fy,
+        "omni:lensdistortion:opencvPinhole:k1": distortion_coefficients[0],
+        "omni:lensdistortion:opencvPinhole:k2": distortion_coefficients[1],
+        "omni:lensdistortion:opencvPinhole:p1": distortion_coefficients[2],
+        "omni:lensdistortion:opencvPinhole:p2": distortion_coefficients[3],
+        "omni:lensdistortion:opencvPinhole:k3": distortion_coefficients[4],
+        "omni:lensdistortion:opencvPinhole:k4": distortion_coefficients[5],
+        "omni:lensdistortion:opencvPinhole:k5": distortion_coefficients[6],
+        "omni:lensdistortion:opencvPinhole:k6": distortion_coefficients[7],
         "omni:lensdistortion:opencvPinhole:imageSize": Gf.Vec2i(WIDTH, HEIGHT),
     },
-    translations=np.array([0.0, 0.0, 0.5]),
+    translations=np.array([0.0, 0.0, 4.5]),
+    orientations=euler_angles_to_quaternion(np.array([0, 0, -90]), degrees=True, extrinsic=False).numpy(),
 )
 
-# Set the distortion model selector
 cam.prims[0].GetAttribute("omni:lensdistortion:model").Set("opencvPinhole")
 
 print(f"Created camera with OpenCV pinhole distortion at {cam.paths[0]}")
@@ -87,20 +115,25 @@ print(f"Created camera with OpenCV pinhole distortion at {cam.paths[0]}")
 sensor = CameraSensor(cam, resolution=(HEIGHT, WIDTH), annotators=["rgb"])
 
 timeline = omni.timeline.get_timeline_interface()
+
+if args.test:
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
+
 timeline.play()
 
-frame_count = 0
-while simulation_app.is_running():
+for i in range(10):
     simulation_app.update()
-    frame_count += 1
 
-    data, info = sensor.get_data("rgb")
-    if data is not None and frame_count == 10:
-        print(f"  RGB shape: {data.shape}, dtype: {data.dtype}")
-        print(f"  Pinhole distortion is applied in the rendered image")
-
-    if args.test and frame_count >= 20:
-        break
+data, _ = sensor.get_data("rgb")
+if data is not None:
+    rgb_np = data.numpy()
+    print(f"  RGB shape: {rgb_np.shape}, dtype: {rgb_np.dtype}")
+    print(f"  Pinhole distortion is applied in the rendered image")
+    img = cv2.cvtColor(rgb_np, cv2.COLOR_RGB2BGR)
+    image_path = os.path.join(output_dir, "camera_opencv_pinhole.png")
+    print(f"Saving the rendered image to: {image_path}")
+    cv2.imwrite(image_path, img)
 
 timeline.stop()
 simulation_app.close()

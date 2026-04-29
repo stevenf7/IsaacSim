@@ -32,6 +32,7 @@ pair on each channel. The GenericModelOutput fields have different meanings:
 """
 
 import argparse
+import os
 import sys
 
 from isaacsim import SimulationApp
@@ -41,6 +42,9 @@ parser.add_argument("--test", default=False, action="store_true", help="Run in t
 args, _ = parser.parse_known_args()
 
 simulation_app = SimulationApp({"headless": True})
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.experimental.rtx", "create_acoustic_basic")
+os.makedirs(output_dir, exist_ok=True)
 
 import numpy as np
 import omni
@@ -153,6 +157,10 @@ print("Attached GmoAcousticBasicWriter to sensor")
 # =============================================================================
 # RUN SIMULATION AND COLLECT DATA
 # =============================================================================
+if args.test:
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
+
 timeline = omni.timeline.get_timeline_interface()
 timeline.play()
 

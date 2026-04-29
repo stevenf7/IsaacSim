@@ -29,17 +29,25 @@ from isaacsim import SimulationApp
 
 parser = argparse.ArgumentParser(description="Basic RTX Camera example.")
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode.")
+parser.add_argument("--disable-output", action="store_true", help="Disable debug output.")
 args, _ = parser.parse_known_args()
 
-simulation_app = SimulationApp({"headless": True})
+simulation_app = SimulationApp({"headless": False})
+
+import os
 
 import carb
+import matplotlib.pyplot as plt
 import numpy as np
 import omni
+import omni.usd
 from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.utils.stage import is_stage_loading, open_stage
 from isaacsim.sensors.experimental.rtx import CameraSensor, RtxCamera
 from isaacsim.storage.native import get_assets_root_path
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.experimental.rtx", "create_camera_basic")
+os.makedirs(output_dir, exist_ok=True)
 
 # =============================================================================
 # LOAD ENVIRONMENT
@@ -97,22 +105,24 @@ print(f"  Annotators: {sensor.annotators}")
 # =============================================================================
 
 timeline = omni.timeline.get_timeline_interface()
+
+if args.test:
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
+
 timeline.play()
 
 print("Starting simulation")
 
 frame_count = 0
-printed_data = False
 
-while simulation_app.is_running():
+while simulation_app.is_running() and (not args.test or frame_count < 601):
     simulation_app.update()
-    frame_count += 1
 
     rgb_data, rgb_info = sensor.get_data("rgb")
     depth_data, depth_info = sensor.get_data("distance_to_image_plane")
 
-    if rgb_data is not None and not printed_data:
-        printed_data = True
+    if not args.disable_output and rgb_data is not None:
         print(f"\nFrame {frame_count}:")
         print(f"  RGB shape: {rgb_data.shape}, dtype: {rgb_data.dtype}")
         if depth_data is not None:
@@ -120,8 +130,15 @@ while simulation_app.is_running():
             depth_np = depth_data.numpy()
             print(f"  Depth range: [{depth_np.min():.2f}, {depth_np.max():.2f}] meters")
 
-    if args.test and frame_count >= 20:
-        break
+    if (frame_count + 1) % 100 == 0 and rgb_data is not None:
+        rgb_np = rgb_data.numpy()
+        imgplot = plt.imshow(rgb_np)
+        output_path = os.path.join(output_dir, f"camera.frame{frame_count:03d}.png")
+        print(f"Saving image to: {output_path}")
+        plt.draw()
+        plt.savefig(output_path)
+
+    frame_count += 1
 
 timeline.stop()
 simulation_app.close()

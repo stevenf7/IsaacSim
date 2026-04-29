@@ -32,39 +32,50 @@ args, _ = parser.parse_known_args()
 
 simulation_app = SimulationApp({"headless": True})
 
+import os
+
 import numpy as np
 import omni
-from isaacsim.core.experimental.objects import Cube
+import omni.usd
+from isaacsim.core.experimental.objects import Cube, DomeLight, GroundPlane
+from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
+from isaacsim.core.experimental.utils.transform import euler_angles_to_quaternion
 from isaacsim.sensors.experimental.rtx import CameraSensor, RtxCamera
+from PIL import Image
 from pxr import Gf
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.experimental.rtx", "camera_ros")
+os.makedirs(output_dir, exist_ok=True)
 
 # =============================================================================
 # ROS CAMERA_INFO PARAMETERS
 # =============================================================================
-# These would typically come from a ROS camera_info topic or YAML file.
-# Example: a 1280x720 camera with slight barrel distortion.
+# Same parameters as the deprecated isaacsim.sensors.camera example for consistency.
+# Based on Intel RealSense D435i camera_info topic.
 
-IMAGE_WIDTH = 1280
-IMAGE_HEIGHT = 720
+IMAGE_WIDTH = 640
+IMAGE_HEIGHT = 480
 
 # Intrinsic matrix K (3x3, row-major)
-# [fx  0  cx]
-# [ 0 fy  cy]
-# [ 0  0   1]
-K = [615.0, 0.0, 640.0, 0.0, 615.0, 360.0, 0.0, 0.0, 1.0]
+K = [612.4178466796875, 0.0, 309.72296142578125, 0.0, 612.362060546875, 245.35870361328125, 0.0, 0.0, 1.0]
 fx, fy = K[0], K[4]
 cx, cy = K[2], K[5]
 
-# Distortion model and coefficients
-DISTORTION_MODEL = "plumb_bob"  # OpenCV pinhole (k1,k2,p1,p2,k3)
-D = [-0.1, 0.05, 0.001, -0.001, 0.0]
+# Distortion model and coefficients (rational_polynomial with zero distortion)
+DISTORTION_MODEL = "rational_polynomial"
+D = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 # =============================================================================
 # CREATE SCENE
 # =============================================================================
 
-for i, (x, y) in enumerate([(3, 0), (5, 2), (4, -2)]):
-    Cube(f"/World/cube_{i}", sizes=1.0, positions=np.array([float(x), float(y), 0.5]))
+dome_light = DomeLight("/World/DomeLight")
+dome_light.set_intensities(500)
+GroundPlane("/World/defaultGroundPlane", sizes=100.0)
+
+cube_1 = Cube("/new_cube_1", sizes=1.0, positions=np.array([0, 0, 0.5]), scales=np.array([1.0, 1.0, 1.0]))
+GeomPrim("/new_cube_1", apply_collision_apis=True)
+RigidPrim("/new_cube_1")
 
 # =============================================================================
 # CREATE CAMERA FROM ROS PARAMETERS
@@ -100,10 +111,11 @@ attributes = {
 }
 
 cam = RtxCamera(
-    "/World/ros_camera",
+    "/World/camera",
     schemas=[schema],
     attributes=attributes,
-    translations=np.array([0.0, 0.0, 0.5]),
+    translations=np.array([0.0, 0.0, 3.0]),
+    orientations=euler_angles_to_quaternion(np.array([0, 0, -90]), degrees=True, extrinsic=False).numpy(),
 )
 
 # Set the distortion model selector
@@ -122,19 +134,24 @@ print(f"  D: {D}")
 sensor = CameraSensor(cam, resolution=(IMAGE_HEIGHT, IMAGE_WIDTH), annotators=["rgb"])
 
 timeline = omni.timeline.get_timeline_interface()
+
+if args.test:
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
+
 timeline.play()
 
-frame_count = 0
-while simulation_app.is_running():
+for i in range(100):
     simulation_app.update()
-    frame_count += 1
 
-    data, _ = sensor.get_data("rgb")
-    if data is not None and frame_count == 10:
-        print(f"\n  RGB shape: {data.shape}")
-
-    if args.test and frame_count >= 20:
-        break
+data, _ = sensor.get_data("rgb")
+if data is not None:
+    rgb_np = data.numpy()
+    print(f"\n  RGB shape: {rgb_np.shape}")
+    img = Image.fromarray(rgb_np)
+    image_path = os.path.join(output_dir, "camera_ros.png")
+    print(f"Saving the rendered image to: {image_path}")
+    img.save(image_path)
 
 timeline.stop()
 simulation_app.close()

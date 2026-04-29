@@ -26,6 +26,7 @@ in ``isaacsim.sensors.experimental.rtx``.
 """
 
 import argparse
+import os
 import sys
 
 from isaacsim import SimulationApp
@@ -43,6 +44,9 @@ args, _ = parser.parse_known_args()
 
 # Note: headless=False is required for debug draw visualization
 simulation_app = SimulationApp({"headless": False})
+
+output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.experimental.rtx", "create_lidar_basic")
+os.makedirs(output_dir, exist_ok=True)
 
 import carb
 import numpy as np
@@ -104,6 +108,10 @@ print("Created LidarSensor with debug draw visualization")
 # =============================================================================
 # RUN SIMULATION
 # =============================================================================
+if args.test:
+    stage = omni.usd.get_context().get_stage()
+    stage.Export(os.path.join(output_dir, "stage.usda"))
+
 timeline = omni.timeline.get_timeline_interface()
 timeline.play()
 
@@ -115,7 +123,7 @@ while simulation_app.is_running():
     frame_count += 1
 
     # In test mode, exit after a few frames
-    if args.test and frame_count >= 20:
+    if args.test and frame_count >= 10:
         break
 
 # Cleanup
