@@ -33,9 +33,10 @@ Unitree H1 Humanoid Example
 
 1. The Unitree H1 humanoid example can be accessed by creating a empty stage.
 2. Open the example menu using **Robotics Examples** > **POLICY** > **Humanoid**.
-3. Press **LOAD** to open the scene.
+3. (Optional) Use the **Physics Engine** menu in the viewport to switch between PhysX and Newton before loading. The example automatically selects the matching policy for the active engine.
+4. Press **LOAD** to open the scene.
 
-This example uses the H1 Flat Terrain Policy trained in Isaac Lab to control the humanoid's locomotion.
+This example uses an H1 Flat Terrain Policy trained in Isaac Lab to control the humanoid's locomotion. Both PhysX and Newton policies are provided so you can compare locomotion behavior across physics engines.
 
 .. image:: /images/tutorial_lab_h1_walk_demo.gif
     :align: center
@@ -52,13 +53,34 @@ Boston Dynamics Spot Quadruped Example
 
 1. The Boston Dynamics Spot quadruped example can be accessed by creating a empty stage.
 2. Open the example menu using **Robotics Examples** > **POLICY** > **Quadruped**.
-3. Press **LOAD** to open the scene.
+3. (Optional) Use the **Physics Engine** menu in the viewport to switch between PhysX and Newton before loading. The example automatically selects the matching policy for the active engine.
+4. Press **LOAD** to open the scene.
 
-This example uses the Spot Flat Terrain Policy trained in Isaac Lab to control the quadruped's locomotion.
+This example uses a Spot Flat Terrain Policy trained in Isaac Lab to control the quadruped's locomotion. Both PhysX and Newton policies are provided so you can compare locomotion behavior across physics engines.
 
 .. image:: /images/tutorial_lab_spot_walk_demo.gif
     :align: center
     :width: 100%
+
+Controls:
+
+- Forward: UP ARROW / NUM 8
+- Backward: BACK ARROW / NUM 2
+- Move Left: LEFT ARROW / NUM 4
+- Move Right: RIGHT ARROW / NUM 6
+
+- Turn Left: N / NUM 7
+- Turn Right: M / NUM 9
+
+Unitree Go2 Quadruped Example
+----------------------------------------------
+
+1. The Unitree Go2 quadruped example can be accessed by creating a empty stage.
+2. Open the example menu using **Robotics Examples** > **POLICY** > **Go2**.
+3. (Optional) Use the **Physics Engine** menu in the viewport to switch between PhysX and Newton before loading. The example automatically selects the matching policy for the active engine.
+4. Press **LOAD** to open the scene.
+
+This example uses a Go2 Flat Terrain Policy trained in Isaac Lab to control the quadruped's locomotion. Both PhysX and Newton policies are provided so you can compare locomotion behavior across physics engines.
 
 Controls:
 
@@ -97,22 +119,28 @@ The policies used in the examples are trained in Isaac Lab and are available her
       - Policy
       - Parameters
 
-    * - H1 Flat Terrain Policy
-      - `H1 Flat Terrain Policy <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/H1_Policies/h1_policy.pt>`_
-      - `H1 Flat Terrain Policy Environment Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/H1_Policies/h1_env.yaml>`_
+    * - H1 Flat Terrain Policy (PhysX)
+      - `H1 Flat Terrain Policy (PhysX) <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/h1/physx_policy.pt>`_
+      - `H1 Flat Terrain Policy (PhysX) Environment Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/h1/physx_env.yaml>`_
 
-        `H1 Flat Terrain Policy Network Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/H1_Policies/agent.yaml>`_
+    * - H1 Flat Terrain Policy (Newton)
+      - `H1 Flat Terrain Policy (Newton) <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/h1/newton_policy.pt>`_
+      - `H1 Flat Terrain Policy (Newton) Environment Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/h1/newton_env.yaml>`_
 
-    * - Spot Flat Terrain Policy
-      - `Spot Flat Terrain Policy <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Spot_Policies/spot_policy.pt>`_
-      - `Spot Flat Terrain Policy Environment Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Spot_Policies/spot_env.yaml>`_
+    * - Spot Flat Terrain Policy (PhysX)
+      - `Spot Flat Terrain Policy (PhysX) <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Spot_Policies/spot_policy.pt>`_
+      - `Spot Flat Terrain Policy (PhysX) Environment Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Spot_Policies/spot_env.yaml>`_
 
         `Spot Flat Terrain Policy Network Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Spot_Policies/agent.yaml>`_
+
+    * - Spot Flat Terrain Policy (Newton)
+      - `Spot Flat Terrain Policy (Newton) <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Spot_Policies/newton_policy.pt>`_
+      - `Spot Flat Terrain Policy (Newton) Environment Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Spot_Policies/newton_env.yaml>`_
 
     * - ANYmal C Flat Terrain Policy
       - `ANYmal C Flat Terrain Policy <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Anymal_Policies/anymal_policy.pt>`_
 
-        `Anymal C Motor Policy <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Anymal_Policies/sea_net_jit2.pt>`_
+        `ANYmal C Actuator Network <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/IsaacLab/ActuatorNets/ANYbotics/anydrive_3_lstm_jit.pt>`_
       - `ANYmal C Flat Terrain Policy Environment Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Anymal_Policies/anymal_env.yaml>`_
 
         `ANYmal C Flat Terrain Policy Network Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Anymal_Policies/agent.yaml>`_
@@ -120,6 +148,14 @@ The policies used in the examples are trained in Isaac Lab and are available her
     * - Franka Panda Open Drawer Policy
       - `Franka Panda Open Drawer Policy <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Franka_Policies/Open_Drawer_Policy/policy.pt>`_
       - `Franka Panda Open Drawer Policy Environment Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/Franka_Policies/Open_Drawer_Policy/env.yaml>`_
+
+    * - Go2 Flat Terrain Policy (PhysX)
+      - `Go2 Flat Terrain Policy (PhysX) <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/go2/physx_policy.pt>`_
+      - `Go2 Flat Terrain Policy (PhysX) Environment Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/go2/physx_env.yaml>`_
+
+    * - Go2 Flat Terrain Policy (Newton)
+      - `Go2 Flat Terrain Policy (Newton) <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/go2/newton_policy.pt>`_
+      - `Go2 Flat Terrain Policy (Newton) Environment Parameters <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/go2/newton_env.yaml>`_
 
 .. Note:: The policies can also be downloaded directly from the Content Browser by right clicking the policy and selecting ``Download``.
 
