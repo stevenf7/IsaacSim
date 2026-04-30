@@ -122,6 +122,18 @@ command = "validate_python_packages"
 entry_point = "${config_root}/tools/isaac/pre_merge/validate_python_packages.py:setup_repo_tool"
 
 ########################################################################################################################
+# OSS baseline tracking
+########################################################################################################################
+
+[generate_oss_baseline]
+command = "generate_oss_baseline"
+entry_point = "${config_root}/tools/isaac/oss_baseline/generate_oss_baseline.py:setup_repo_tool_generate"
+
+[check_oss_baseline]
+command = "check_oss_baseline"
+entry_point = "${config_root}/tools/isaac/oss_baseline/generate_oss_baseline.py:setup_repo_tool_check"
+
+########################################################################################################################
 # Unzip (.7z|.zip|.tar) files
 ########################################################################################################################
 
