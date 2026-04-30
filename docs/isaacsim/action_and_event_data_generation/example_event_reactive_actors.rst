@@ -9,9 +9,9 @@
 
 .. _isaac_sim_app_example_event_reactive_actors:
 
-==================================================
-Example: Reacting to Events with Actor Triggers
-==================================================
+======================================
+Reacting to Events with Actor Triggers
+======================================
 
 This example shows how Event Generation (``isaacsim.replicator.incident``) and Actor Synthetic Data Generation (SDG) (``isaacsim.replicator.agent``) can be wired together end-to-end **without writing a single line of Python**. You edit two YAML config files and drive the two extensions from their Omniverse windows.
 
