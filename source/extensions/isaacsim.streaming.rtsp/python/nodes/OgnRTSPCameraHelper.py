@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import traceback
+from typing import Optional
 
 import carb
 import omni.graph.core as og
@@ -32,6 +33,15 @@ from pxr import Usd
 # `AnnotatorSRTX.attach()` validation (which requires the rendervar to exist
 # as a child of the render product) succeeds.
 _WRITER_AOVS: tuple[str, ...] = ("LdrColor",)
+
+
+def _resolve_srtx_sensor_set_name(render_product_path: str) -> Optional[str]:
+    """Resolve the SRTX sensor-set name for a render product, or ``None``."""
+    try:
+        from omni.replicator.srtx import resolve_sensor_set_name_for_render_product
+    except ImportError:
+        return None
+    return resolve_sensor_set_name_for_render_product(render_product_path)
 
 
 class OgnRTSPCameraHelperInternalState(BaseWriterNode):
@@ -121,7 +131,12 @@ class OgnRTSPCameraHelper:
                         return False
 
                 writer = RTSPStreamWriter(
-                    port=port, mountPath=mount_path, encoding=encoding, width=width, height=height
+                    port=port,
+                    mountPath=mount_path,
+                    encoding=encoding,
+                    width=width,
+                    height=height,
+                    sensorSetName=_resolve_srtx_sensor_set_name(render_product_path),
                 )
                 state.append_writer(writer)
                 state.attach_writers(render_product_path)

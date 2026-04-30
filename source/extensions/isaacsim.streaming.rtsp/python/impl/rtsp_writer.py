@@ -20,7 +20,7 @@ from __future__ import annotations
 import json
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Literal
+from typing import Literal, Optional
 
 import carb
 import numpy as np
@@ -65,6 +65,8 @@ class RTSPStreamWriter(Writer):
             carry resolution).  Ignored when encoding is ``"raw"`` since
             the resolution is read from the CUDA buffer shape.
         height: Frame height in pixels.  See ``width``.
+        sensorSetName: Optional SRTX sensor-set name passed to the LdrColor
+            annotator through ``init_params``.
 
     Raises:
         ValueError: If ``port``, ``mountPath``, or ``encoding`` is invalid.
@@ -77,6 +79,8 @@ class RTSPStreamWriter(Writer):
         encoding: _RTSPWriterEncoding = "h264",
         width: int = 1920,
         height: int = 1080,
+        *,
+        sensorSetName: Optional[str] = None,
     ) -> None:
         # node_type_id, _kwargs, and _annotators are required by
         # WriterRequest.__repr__ in BaseWriterNode, which logs writer
@@ -93,17 +97,26 @@ class RTSPStreamWriter(Writer):
         self.version = "0.1.0"
         self.node_type_id = WRITER_NAME
         self._kwargs = {"port": port, "mountPath": mountPath, "encoding": encoding, "width": width, "height": height}
+        if sensorSetName:
+            self._kwargs["sensorSetName"] = sensorSetName
         self._configured_width = width
         self._configured_height = height
         self._encoding: _RTSPWriterEncoding = encoding
 
+        ldr_init_params = {}
+        if encoding == "h264":
+            ldr_init_params["compression"] = "h264"
+        if sensorSetName:
+            ldr_init_params["sensorSetName"] = sensorSetName
+
         if encoding == "raw":
-            self.annotators = [
-                AnnotatorRegistry.get_annotator("LdrColor", device="cuda", do_array_copy=False),
-            ]
+            annotator_kwargs = {"device": "cuda", "do_array_copy": False}
+            if ldr_init_params:
+                annotator_kwargs["init_params"] = ldr_init_params
+            self.annotators = [AnnotatorRegistry.get_annotator("LdrColor", **annotator_kwargs)]
         elif encoding == "h264":
             self.annotators = [
-                AnnotatorRegistry.get_annotator("LdrColor", init_params={"compression": "h264"}),
+                AnnotatorRegistry.get_annotator("LdrColor", init_params=ldr_init_params),
                 AnnotatorRegistry.get_annotator("IsaacReadSimulationTime", init_params={"resetOnStop": True}),
             ]
         else:
@@ -137,6 +150,7 @@ class RTSPStreamWriter(Writer):
             encoding=self._encoding,
             width=self._configured_width,
             height=self._configured_height,
+            sensorSetName=self._kwargs.get("sensorSetName"),
         )
 
     def write(self, data: dict) -> None:

@@ -15,9 +15,14 @@
 
 from __future__ import annotations
 
+import json
+import sys
+import unittest
 from unittest.mock import patch
 
+import carb
 import omni.graph.core as og
+import omni.kit.app
 import omni.kit.test
 import omni.replicator.core as rep
 import omni.timeline
@@ -56,12 +61,41 @@ class TestRTSPExtensionRegistration(omni.kit.test.AsyncTestCase):
 class TestRTSPCameraHelperEncoding(omni.kit.test.AsyncTestCase):
     """Verify the OGN node passes the correct encoding based on useRawEncoding."""
 
+    SRTX_ENABLED_SETTING = "/exts/omni.replicator.srtx/enabled"
+    SENSOR_SET_NAME_SETTING = "/exts/omni.replicator.srtx/sensorSetName"
+    SENSOR_SET_NAME_BY_RENDER_PRODUCT_PATH_SETTING = "/exts/omni.replicator.srtx/sensorSetNameByRenderProductPath"
+    SENSOR_SET_RENDER_PRODUCT_PATHS_BY_NAME_SETTING = "/exts/omni.replicator.srtx/sensorSetRenderProductPathsByName"
+
     async def setUp(self):
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
+        self._settings = carb.settings.get_settings()
+        self._saved_settings = {
+            self.SRTX_ENABLED_SETTING: self._settings.get(self.SRTX_ENABLED_SETTING),
+            self.SENSOR_SET_NAME_SETTING: self._settings.get(self.SENSOR_SET_NAME_SETTING),
+            self.SENSOR_SET_NAME_BY_RENDER_PRODUCT_PATH_SETTING: self._settings.get(
+                self.SENSOR_SET_NAME_BY_RENDER_PRODUCT_PATH_SETTING
+            ),
+            self.SENSOR_SET_RENDER_PRODUCT_PATHS_BY_NAME_SETTING: self._settings.get(
+                self.SENSOR_SET_RENDER_PRODUCT_PATHS_BY_NAME_SETTING
+            ),
+        }
+        self._clear_srtx_settings()
 
     async def tearDown(self):
+        for setting_name, value in self._saved_settings.items():
+            if setting_name == self.SRTX_ENABLED_SETTING:
+                self._settings.set_bool(setting_name, bool(value) if value is not None else False)
+            else:
+                self._settings.set(setting_name, value if value is not None else "")
         await omni.kit.app.get_app().next_update_async()
+
+    def _clear_srtx_settings(self):
+        """Clear SRTX settings that affect RTSPCameraHelper writer construction."""
+        self._settings.set_bool(self.SRTX_ENABLED_SETTING, False)
+        self._settings.set(self.SENSOR_SET_NAME_SETTING, "")
+        self._settings.set(self.SENSOR_SET_NAME_BY_RENDER_PRODUCT_PATH_SETTING, "")
+        self._settings.set(self.SENSOR_SET_RENDER_PRODUCT_PATHS_BY_NAME_SETTING, "")
 
     def _create_rtsp_graph(self, use_raw_encoding):
         """Build an action graph with an RTSPCameraHelper node."""
@@ -134,6 +168,47 @@ class TestRTSPCameraHelperEncoding(omni.kit.test.AsyncTestCase):
         self.assertEqual(init_calls[0]["port"], 8554)
         self.assertEqual(init_calls[0]["mountPath"], "/stream")
         self.assertEqual(init_calls[0]["encoding"], "h264")
+
+    @unittest.skipIf(
+        not sys.platform.startswith("linux"),
+        "omni.replicator.srtx is only available on Linux for RTSP sensor-set resolution",
+    )
+    async def test_configured_sensor_set_passed_to_writer(self):
+        """Configured per-render-product sensor set should be passed to RTSPStreamWriter."""
+        self._settings.set_bool(self.SRTX_ENABLED_SETTING, True)
+        self._settings.set(
+            self.SENSOR_SET_NAME_BY_RENDER_PRODUCT_PATH_SETTING,
+            json.dumps({"/TestRenderProduct": "ss-configured"}),
+        )
+        self._settings.set(
+            self.SENSOR_SET_RENDER_PRODUCT_PATHS_BY_NAME_SETTING,
+            json.dumps({"ss-configured": ["/TestRenderProduct", "/OtherRenderProduct"]}),
+        )
+        self._create_rtsp_graph(use_raw_encoding=False)
+        init_calls, spy_ctx = self._capture_writer_init()
+
+        with spy_ctx, patch.object(BaseWriterNode, "append_writer"), patch.object(BaseWriterNode, "attach_writers"):
+            await self._evaluate_graph()
+
+        self.assertGreaterEqual(len(init_calls), 1)
+        self.assertEqual(init_calls[0]["sensorSetName"], "ss-configured")
+
+    @unittest.skipIf(
+        not sys.platform.startswith("linux"),
+        "omni.replicator.srtx is only available on Linux for RTSP sensor-set resolution",
+    )
+    async def test_process_sensor_set_fallback_passed_to_writer(self):
+        """Process-wide sensor set should be passed when no complete per-RP mapping exists."""
+        self._settings.set_bool(self.SRTX_ENABLED_SETTING, True)
+        self._settings.set(self.SENSOR_SET_NAME_SETTING, "bridge-sensor-set")
+        self._create_rtsp_graph(use_raw_encoding=False)
+        init_calls, spy_ctx = self._capture_writer_init()
+
+        with spy_ctx, patch.object(BaseWriterNode, "append_writer"), patch.object(BaseWriterNode, "attach_writers"):
+            await self._evaluate_graph()
+
+        self.assertGreaterEqual(len(init_calls), 1)
+        self.assertEqual(init_calls[0]["sensorSetName"], "bridge-sensor-set")
 
     async def test_empty_render_product_path_skips_setup(self):
         keys = og.Controller.Keys
