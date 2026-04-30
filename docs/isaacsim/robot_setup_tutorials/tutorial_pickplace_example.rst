@@ -6,266 +6,239 @@ Tutorial 9: Pick and Place Example
 Learning Objectives
 =======================
 
-This is the final manipulator tutorial in a series of four tutorials. This tutorial tie everything together by showing how to use the UR10e robot and the 2F-140 gripper to follow a target and pick up a block.
-We will be using the robot imported in :doc:`tutorial_import_assemble_manipulator`, tuned in :doc:`tutorial_configure_manipulator`, and the robot configuration file generated in :doc:`tutorial_generate_robot_config`.
+This is the final manipulator tutorial in a series of four tutorials. It ties everything together by showing how to use the UR10e robot and the 2F-140 gripper to control the gripper, follow a Cartesian target, and perform a pick-and-place sequence.
+We will be using the robot imported in :doc:`tutorial_import_assemble_manipulator` and the URDF and XRDF robot configuration files described in :ref:`isaac_sim_cumotion_tutorial_robot_configuration`.
 
-In this tutorial, we will be using the Lula kinematics solver to follow a target and the RMPFlow to pick up a block.
+This tutorial builds on top of the :ref:`isaac_sim_robot_motion_experimental` extension and demonstrates two motion controllers:
 
-.. Note:: 
-    All the files created in this tutorial are available at ``standalone_examples/deprecated/api/isaacsim.robot.manipulators/ur10e`` for verification.
-
+- **cuMotion RMPflow** — a GPU-accelerated reactive motion planner with collision avoidance.
+- **PINK differential IK** — a CPU-based inverse kinematics solver using the `PINK <https://github.com/stephane-caron/pink>`_ library.
 
 *30 Minutes Tutorial*
 
 Prerequisites
 ==============
 
-- Review :doc:`tutorial_generate_robot_config` tutorial prior to beginning this tutorial, continue the following steps from the asset built in the previous tutorial.
+- Review :doc:`tutorial_import_assemble_manipulator` and :doc:`tutorial_configure_manipulator` prior to beginning this tutorial to generate robot and the URDF and XRDF files required by the pick-and-place examples.
 
 .. note::
-    If you have not completed the previous tutorial, you can find the prebuilt asset in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/configure_manipulator/ur10e/ur/ur_gripper.usd``. 
+    If you have not completed the previous tutorial(s), you can find the prebuilt asset in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/configure_manipulator/ur10e/ur/ur_gripper.usd``.
 
-Gripper Control Example
+    Additionally, pre-generated URDF, XRDF, and ``rmp_flow.yaml`` files can be found at ``source/extensions/isaacsim.robot_motion.cumotion/robot_configurations/ur10/``. 
+
+
+Overview
+=========
+
+This tutorial is divided into four parts, each corresponding to a standalone example script:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 10 40 50
+
+   * - Part
+     - Script
+     - Description
+   * - 1
+     - ``tutorial_9_gripper_control.py``
+     - Gripper control using the Articulation API
+   * - 2
+     - ``tutorial_9_arm_trajectory.py``
+     - Joint-space trajectory planning and execution
+   * - 3
+     - ``tutorial_9_follow_target.py``
+     - Real-time Cartesian target following with cuMotion RMPflow
+   * - 4
+     - ``tutorial_9_pick_place_cumotion.py`` / ``tutorial_9_pick_place_pink.py``
+     - Full pick-and-place sequence with cuMotion RMPflow or PINK differential IK
+
+All scripts are located at ``standalone_examples/tutorials/manipulation/``.
+
+Part 1: Gripper Control
 ========================
 
-The script below uses the ``Parallel Gripper`` class to control the gripper joints and the ``Manipulator`` class to control the robot joints. 
-Steps 0 to 400 close the gripper slowly. Steps 400 to 800, open the gripper slowly, and then reset the gripper position to 0.
+This example introduces the Articulation API by controlling the 2F-140 gripper joints directly with ``set_dof_position_targets``. The gripper closes fully and then opens again. 
 
-.. note::
-    The provided script can be run using:
-    
-    .. code-block:: bash
+.. code-block:: bash
 
-        ./python.sh standalone_examples/deprecated/api/isaacsim.robot.manipulators/ur10e/gripper_control.py
+    ./python.sh standalone_examples/tutorials/manipulation/tutorial_9_gripper_control.py
 
-.. dropdown:: gripper_control.py
-
-    .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_pickplace_example/gripper_control_example.py
-        :language: python
-
-.. image:: /images/isim_5.0_full_tut_gui_ur10e_gripper_control.webp
+.. image:: /images/isim_6.0_full_tut_gui_ur10e_gripper_control.webp
     :align: center
     :width: 80%
 
+**Key concepts:**
+
+- ``Articulation.dof_names`` returns the list of all degrees of freedom in order. The gripper joint is named ``finger_joint``.
+- ``set_dof_position_targets`` sends a position target to one or more DOFs by index. Passing ``dof_indices`` restricts the command to only those joints.
+
+.. dropdown:: tutorial_9_gripper_control.py — gripper control loop
+
+    .. literalinclude:: ../../../source/standalone_examples/tutorials/manipulation/tutorial_9_gripper_control.py
+        :language: python
+        :start-after: # <start-gripper-control-snippet>
+        :end-before: # <end-gripper-control-snippet>
 
 
-Follow Target Example using Lula Kinematics Solver
-====================================================
+Part 2: Arm Trajectory Following
+==================================
 
-Create a follow target task using the Lula kinematics solver, where you can specify the target position using a cube and the robot will move its end effector to the target position.
-The inverse kinematics solver will use the Lula robot descriptor created in the :doc:`tutorial_generate_robot_config` tutorial. 
+This example plans and executes a joint-space trajectory using ``mg.Path`` and ``mg.TrajectoryFollower`` from the motion generation API. The robot follows a sequence of waypoints in minimal time subject to velocity and acceleration limits.
 
-The generated robot descriptor file is available at ``source/standalone_examples/deprecated/api/isaacsim.robot.manipulators/ur10e/rmpflow/robot_descriptor.yaml``.
+.. code-block:: bash
 
-.. note::
-    The provided script can be run using:
-    
-    .. code-block:: bash
+    ./python.sh standalone_examples/tutorials/manipulation/tutorial_9_arm_trajectory.py
 
-        ./python.sh standalone_examples/deprecated/api/isaacsim.robot.manipulators/ur10e/follow_target_example.py
-
-    Move the cube to the target location and run the script to see the robot move its end effector to the target location.
-
-
-
-.. image:: /images/isim_5.0_full_tut_gui_ur10e_follow_target.webp
+.. image:: /images/isim_6.0_full_tut_gui_ur10e_arm_trajectory.webp
     :align: center
     :width: 80%
 
-The ``ik_solver.py`` script initializes the ``KinematicsSolver`` class and the ``LulaKinematicsSolver`` class.
+**Key concepts:**
 
-.. dropdown:: controllers/ik_solver.py
+- ``mg.Path(waypoints)`` wraps a sequence of joint-space configurations.
+- ``.to_minimal_time_joint_trajectory(max_velocities, max_accelerations, ...)`` computes a time-optimal trajectory that respects joint limits.
+- ``mg.TrajectoryFollower`` tracks the planned trajectory, calling ``.forward(estimated_state, setpoint, t)`` each physics step to obtain the desired joint state.
+- ``get_estimated_state`` packages the current joint positions, velocities, and efforts into an ``mg.RobotState``.
+- ``apply_desired_state`` applies the position, velocity, and effort targets from the desired state back to the articulation.
 
-    .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_pickplace_example/follow_target_example_using_lula_kinematics_solver.py
+.. dropdown:: tutorial_9_arm_trajectory.py — trajectory setup
+
+    .. literalinclude:: ../../../source/standalone_examples/tutorials/manipulation/tutorial_9_arm_trajectory.py
         :language: python
+        :start-after: # <start-arm-trajectory-setup-snippet>
+        :end-before: # <end-arm-trajectory-setup-snippet>
 
-The ``follow_target.py`` script initializes the ``FollowTarget`` class and sets up the ``manipulator`` and ``parallel_gripper`` objects.
+.. dropdown:: tutorial_9_arm_trajectory.py — trajectory execution loop
 
-.. dropdown:: tasks/follow_target.py
-
-    .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_pickplace_example/todo_change_the_config_path.py
+    .. literalinclude:: ../../../source/standalone_examples/tutorials/manipulation/tutorial_9_arm_trajectory.py
         :language: python
-
-The ``follow_target_example.py`` script initializes the ``FollowTarget`` task  and the ``KinematicsSolver`` created in the previous step with a target location for the cube to be followed by the end effector.
-
-.. dropdown:: follow_target_example.py
-
-    .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_pickplace_example/define_the_manipulator.py
-        :language: python
-
-RMP Flow Configuration
-======================
-
-Use RMPFlow to control the end effector. See :ref:`isaac_sim_motion_generation_rmpflow` for more details about RMPFlow.
-
-The ``ur10e_rmpflow_common.yaml`` file is available at ``source/standalone_examples/deprecated/api/isaacsim.robot.manipulators/ur10e/rmpflow/ur10e_rmpflow_common.yaml``, 
-it specifies various parameters for the RMPFlow controller.
-
-.. dropdown:: rmpflow/ur10e_rmpflow_common.yaml
-
-    .. code-block:: yaml
-        :linenos:
-
-        joint_limit_buffers: [.01, .01, .01, .01, .01, .01]
-        rmp_params:
-            cspace_target_rmp:
-                metric_scalar: 50.
-                position_gain: 100.
-                damping_gain: 50.
-                robust_position_term_thresh: .5
-                inertia: 1.
-            cspace_trajectory_rmp:
-                p_gain: 100.
-                d_gain: 10.
-                ff_gain: .25
-                weight: 50.
-            cspace_affine_rmp:
-                final_handover_time_std_dev: .25
-                weight: 2000.
-            joint_limit_rmp:
-                metric_scalar: 1000.
-                metric_length_scale: .01
-                metric_exploder_eps: 1e-3
-                metric_velocity_gate_length_scale: .01
-                accel_damper_gain: 200.
-                accel_potential_gain: 1.
-                accel_potential_exploder_length_scale: .1
-                accel_potential_exploder_eps: 1e-2
-            joint_velocity_cap_rmp:
-                max_velocity: 1.
-                velocity_damping_region: .3
-                damping_gain: 1000.0
-                metric_weight: 100.
-            target_rmp:
-                accel_p_gain: 30.
-                accel_d_gain: 85.
-                accel_norm_eps: .075
-                metric_alpha_length_scale: .05
-                min_metric_alpha: .01
-                max_metric_scalar: 10000
-                min_metric_scalar: 2500
-                proximity_metric_boost_scalar: 20.
-                proximity_metric_boost_length_scale: .02
-                xi_estimator_gate_std_dev: 20000.
-                accept_user_weights: false
-            axis_target_rmp:
-                accel_p_gain: 210.
-                accel_d_gain: 60.
-                metric_scalar: 10
-                proximity_metric_boost_scalar: 3000.
-                proximity_metric_boost_length_scale: .08
-                xi_estimator_gate_std_dev: 20000.
-                accept_user_weights: false
-            collision_rmp:
-                damping_gain: 50.
-                damping_std_dev: .04
-                damping_robustness_eps: 1e-2
-                damping_velocity_gate_length_scale: .01
-                repulsion_gain: 800.
-                repulsion_std_dev: .01
-                metric_modulation_radius: .5
-                metric_scalar: 10000.
-                metric_exploder_std_dev: .02
-                metric_exploder_eps: .001
-            damping_rmp:
-                accel_d_gain: 30.
-                metric_scalar: 50.
-                inertia: 100.
-        canonical_resolve:
-            max_acceleration_norm: 50.
-            projection_tolerance: .01
-            verbose: false
-        body_cylinders:
-            - name: base
-            pt1: [0,0,.10]
-            pt2: [0,0,0.]
-            radius: .2
-        body_collision_controllers:
-            - name: ee_link_robotiq_arg2f_base_link
-            radius: .05
+        :start-after: # <start-arm-trajectory-loop-snippet>
+        :end-before: # <end-arm-trajectory-loop-snippet>
 
 
-Follow Target Example using RMP Flow
-====================================
+Part 3: Follow Target using cuMotion RMPflow
+=============================================
 
-Create an RMP flow controller to move the robot end effector to the target location.
+This example shows how to use the cuMotion ``RmpFlowController`` to make the robot track a draggable target cube in real time, with optional obstacle avoidance.
 
-.. note::
-    The provided script can be run using:
-    
-    .. code-block:: bash
+.. code-block:: bash
 
-        ./python.sh standalone_examples/deprecated/api/isaacsim.robot.manipulators/ur10e/follow_target_example_rmpflow.py
+    ./python.sh standalone_examples/tutorials/manipulation/tutorial_9_follow_target.py
 
-.. image:: /images/isim_5.0_full_tut_gui_ur10e_follow_target_rmp.webp
+.. image:: /images/isim_6.0_full_tut_gui_ur10e_follow_target.webp
     :align: center
     :width: 80%
 
-The ``rmpflow.py`` initializes Lula motion generation policy using the ``ur10e_rmpflow_common.yaml`` file above, the ``ur10e.urdf`` and the robot descriptor file created in :doc:`tutorial_generate_robot_config`.
+To enable obstacle avoidance, pass ``--with-obstacle``:
 
-.. dropdown:: controllers/rmpflow.py
+.. code-block:: bash
 
-    .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_pickplace_example/follow_target_example_using_rmp_flow.py
-        :language: python
+    ./python.sh standalone_examples/tutorials/manipulation/tutorial_9_follow_target.py --with-obstacle
 
-The ``follow_target_example_rmpflow.py`` script initializes the ``FollowTarget`` task and the ``RMPFlowController`` created in the previous step with a target location for the cube to be followed by the end effector.
-
-.. dropdown:: follow_target_example_rmpflow.py
-
-    .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_pickplace_example/follow_target_example_using_rmp_flow_1.py
-        :language: python
-
-Basic Pick and Place Task using RMP Flow
-=========================================
-
-Use the RMPFlow controller to pick up a block and place it in a target location.
-
-.. note::
-    The provided script can be run using:
-    
-    .. code-block:: bash
-
-        ./python.sh standalone_examples/deprecated/api/isaacsim.robot.manipulators/ur10e/pick_up_example.py
-
-.. image:: /images/isim_5.0_full_tut_gui_ur10e_pick_place_rmp.webp
+.. image:: /images/isim_6.0_full_tut_gui_ur10e_follow_target_with_obstacle.webp
     :align: center
     :width: 80%
 
-The ``controllers/pick_place.py`` script creates a ``PickPlace`` controller that will pick up a block and place it in a target location.
+**Key concepts:**
 
-.. dropdown:: controllers/pick_place.py
+- ``load_cumotion_supported_robot("ur10")`` loads the built-in cuMotion robot model for the UR10, which includes the kinematic chain and collision spheres.
+- ``mg.WorldBinding`` connects the cuMotion world interface to the Isaac Sim stage. It uses ``mg.SceneQuery`` to find collision objects in the scene and registers them as obstacles.
+- ``RmpFlowController`` is initialized with the robot model, world interface, joint space, and tool frame. It accepts an estimated robot state and a Cartesian setpoint each step, and returns desired joint positions.
+- ``create_setpoint_state`` packages a target position and orientation into an ``mg.RobotState`` that the controller can track.
+- ``world_binding.synchronize_transforms()`` must be called each step to update obstacle transforms before planning.
 
-    .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_pickplace_example/basic_pick_and_place_task_using_rmp_flow.py
+.. dropdown:: tutorial_9_follow_target.py — scene and controller setup
+
+    .. literalinclude:: ../../../source/standalone_examples/tutorials/manipulation/tutorial_9_follow_target.py
         :language: python
+        :start-after: # <start-follow-target-setup-snippet>
+        :end-before: # <end-follow-target-setup-snippet>
 
-The ``tasks/pick_place.py`` script creates a ``PickPlace`` task that sets up the UR10e manipulator and the gripper to pick up a block and place it in a target location.
+.. dropdown:: tutorial_9_follow_target.py — per-step control loop
 
-.. dropdown:: tasks/pick_place.py
-
-    .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_pickplace_example/basic_pick_and_place_task_using_rmp_flow_1.py
+    .. literalinclude:: ../../../source/standalone_examples/tutorials/manipulation/tutorial_9_follow_target.py
         :language: python
+        :start-after: # <start-follow-target-loop-snippet>
+        :end-before: # <end-follow-target-loop-snippet>
 
-The ``pick_place_example.py`` script puts everything together and runs the simulation. 
 
-.. important:: Make sure to tune the ``end_effector_offset`` parameter to get the best results, this is the offset between the end effector link on the robot and optimal grasp position for the claw.
+Part 4: Pick and Place 
+=======================
 
-.. dropdown:: pick_place_example.py
+This example puts it all together by implementing a pick-and-place sequence. Two example scripts are provided: one using cuMotion RMPflow and one using PINK differential IK.
 
-    .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_pickplace_example/define_the_manipulator_1.py
+cuMotion RMPflow
+----------------
+
+.. important::
+    cuMotion requires a ``tool_frames`` entry in the XRDF. See :ref:`isaac_sim_app_tutorial_generate_robot_config_adding_tool`.
+
+.. code-block:: bash
+
+    ./python.sh standalone_examples/tutorials/manipulation/tutorial_9_pick_place_cumotion.py \
+        --xrdf-dir /path/to/robot/config
+
+.. note::
+    ``--xrdf-dir`` should point to the directory containing the robot URDF and XRDF files made in the previous tutorial. ``--urdf`` and ``--xrdf`` select the filenames within that directory and default to ``robot.urdf`` and ``robot.xrdf``, respectively.
+
+    If no ``--xrdf-dir`` is provided, ``load_cumotion_supported_robot("ur10")`` will be used to load the built-in UR10 robot configuration.
+
+.. image:: /images/isim_6.0_full_tut_gui_ur10e_pick_place_rmp.webp
+    :align: center
+    :width: 80%
+
+**Key concepts:**
+
+- ``--xrdf-dir`` (optional) points to the directory containing custom robot config files. ``load_cumotion_robot`` loads the URDF and XRDF from that directory using the filenames given by ``--urdf`` and ``--xrdf``. If omitted, the built-in UR10 configuration is used via ``load_cumotion_supported_robot("ur10")``.
+- ``RmpFlowController.get_rmp_flow_config().set_param(key, value)`` allows tuning RMPflow parameters at runtime. For this example, ``cspace_target_rmp/metric_scalar`` is reduced to 1.0 to reduce the influence of the initial position error on the motion planning.
+- ``controller.reset(estimated_state, setpoint, t)`` must be called at the start of each arm motion segment to re-initialize the planner from the current robot state.
+
+.. dropdown:: tutorial_9_pick_place_cumotion.py — UR10ePickPlace state machine class
+
+    .. literalinclude:: ../../../source/standalone_examples/tutorials/manipulation/tutorial_9_pick_place_cumotion.py
         :language: python
+        :start-after: # <start-pick-place-sequence-snippet>
+        :end-before: # <end-pick-place-sequence-snippet>
 
-Advanced Pick and Place Task using RMPFlow and Foundation Pose
-===============================================================
 
-In the pick and place example above, you used the RMPFlow controller to pick up a block and place it in a target location. However there are some limitations to this approach.
+PINK Differential IK
+--------------------
 
-- The robot gets the cube pose directly from the simulator observation, which does not translate to the real world.
-- The class set up is limited to the cube, and in real life different objects have different shapes and sizes, and different grasping strategies.
+This example demonstrates an alternative motion controller: **PINK differential IK**. The same pick-and-place sequence is implemented using the ``PinkIKController``, which solves inverse kinematics using `PINK <https://github.com/stephane-caron/pink>`_ and `Pinocchio <https://github.com/stack-of-tasks/pinocchio>`_.
 
-To address these limitations, see `Isaac Manipulator <https://nvidia-isaac-ros.github.io/reference_workflows/isaac_manipulator/index.html>`_ tutorials for more advanced pick and place tasks.
+Run this example with:
+
+.. code-block:: bash
+
+    # Load the built-in PINK robot model for the UR10
+    ./python.sh standalone_examples/tutorials/manipulation/tutorial_9_pick_place_pink.py
+    # Load a custom URDF
+    ./python.sh standalone_examples/tutorials/manipulation/tutorial_9_pick_place_pink.py --urdf <path_to_urdf>
+
+.. image:: /images/isim_6.0_full_tut_gui_ur10e_pick_place_pink.webp
+    :align: center
+    :width: 80%
+
+**Key concepts:**
+
+- ``load_pink_supported_robot("ur10")`` loads the built-in PINK robot model for the UR10, backed by a Pinocchio model. Alternatively, a custom URDF can be loaded using ``load_pink_robot`` by passing in ``--urdf <path_to_urdf>``.
+- ``PinkIKController`` accepts a tool frame name, position and orientation costs, a posture cost, and a QP solver (``"osqp"``). It integrates Cartesian velocity commands into joint positions each step.
+- ``_init_pink_q0`` sets ``pink_robot.q0`` to the elbow-up configuration. PINK's PostureTask regularizes the IK solution toward this reference, steering the solver away from elbow-down or degenerate configurations.
+
+.. dropdown:: tutorial_9_pick_place_pink.py — UR10ePickPlace state machine class
+
+    .. literalinclude:: ../../../source/standalone_examples/tutorials/manipulation/tutorial_9_pick_place_pink.py
+        :language: python
+        :start-after: # <start-pick-place-pink-sequence-snippet>
+        :end-before: # <end-pick-place-pink-sequence-snippet>
 
 Summary
 =======
 
-In this tutorial, you learned how to use the Lula kinematics solver to follow a target and the RMPFlow to pick up a block.
+In this tutorial, you learned how to:
 
+- Control the 2F-140 gripper using the Articulation API and ``set_dof_position_targets``.
+- Plan and execute joint-space trajectories using ``mg.Path`` and ``mg.TrajectoryFollower``.
+- Use the cuMotion ``RmpFlowController`` to track a Cartesian target in real time with obstacle avoidance.
+- Implement an 8-phase pick-and-place sequence with cuMotion RMPflow.
+- Implement the same sequence with PINK differential IK as an alternative CPU-based solver.
