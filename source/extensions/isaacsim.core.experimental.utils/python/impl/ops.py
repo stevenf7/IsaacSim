@@ -22,6 +22,8 @@ import numpy as np
 import warp as wp
 from warp._src.types import np_dtype_to_warp_type
 
+_INDICES_CACHE: dict[tuple[int, type, str], wp.array] = {}
+
 
 def _broadcastable_shape(src: tuple[int], dst: tuple[int]) -> tuple[tuple[int] | None, tuple[bool] | None]:
     """Determine the broadcastable shape and axis information for broadcasting operations.
@@ -259,7 +261,13 @@ def resolve_indices(
     if x is None:
         if count is None:
             raise ValueError("Either input argument `x` or `count` must be provided")
-        return wp.array(np.arange(count), dtype=dtype, device=device)
+        resolved_device = parse_device(device)
+        key = (count, dtype, str(resolved_device))
+        cached = _INDICES_CACHE.get(key)
+        if cached is None:
+            cached = wp.array(np.arange(count), dtype=dtype, device=resolved_device)
+            _INDICES_CACHE[key] = cached
+        return cached
     elif isinstance(x, wp.array):
         if device is not None:
             x = x.to(device)

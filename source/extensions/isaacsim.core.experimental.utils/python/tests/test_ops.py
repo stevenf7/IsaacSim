@@ -224,3 +224,16 @@ class TestOps(omni.kit.test.AsyncTestCase):
                         output = ops_utils.broadcast_to(wp.array(x), shape=shape, dtype=dtype, device=device)
                         self.check_array(output, shape=shape, dtype=dtype, device=device)
                         self.check_equal(broadcasted, output)
+
+    async def test_resolve_indices_cache(self):
+        """Test that resolve_indices caches arange arrays and reuses them across calls."""
+        for device in ["cpu", "cuda:0"]:
+            for count in [1, 5, 10]:
+                arr1 = ops_utils.resolve_indices(None, count=count, dtype=wp.int32, device=device)
+                arr2 = ops_utils.resolve_indices(None, count=count, dtype=wp.int32, device=device)
+                self.assertIs(
+                    arr1, arr2, f"resolve_indices must return the same cached array (count={count}, device={device})"
+                )
+                # Explicit indices must not return the cached arange object.
+                explicit = ops_utils.resolve_indices([0], count=count, dtype=wp.int32, device=device)
+                self.assertIsNot(explicit, arr1, "Explicit indices must not return the cached arange")
