@@ -98,8 +98,22 @@ class TestRTSPWriterInit(omni.kit.test.AsyncTestCase):
         self.assertEqual(writer.node_type_id, WRITER_NAME)
 
     async def test_kwargs_captured(self):
-        writer = RTSPStreamWriter(port=9000, mountPath="/test", encoding="raw", width=800, height=600)
-        expected = {"port": 9000, "mountPath": "/test", "encoding": "raw", "width": 800, "height": 600}
+        writer = RTSPStreamWriter(
+            port=9000,
+            mountPath="/test",
+            encoding="raw",
+            width=800,
+            height=600,
+            sensorSetName="ss-configured",
+        )
+        expected = {
+            "port": 9000,
+            "mountPath": "/test",
+            "encoding": "raw",
+            "width": 800,
+            "height": 600,
+            "sensorSetName": "ss-configured",
+        }
         self.assertEqual(writer._kwargs, expected)
 
     async def test_annotators_list_synced(self):
@@ -133,6 +147,43 @@ class TestRTSPWriterDeepCopy(omni.kit.test.AsyncTestCase):
         self.assertEqual(cloned._frame_num, 0)
         self.assertFalse(cloned._stream_failed)
         self.assertIsNone(cloned._server)
+
+
+class TestRTSPWriterSrtxSensorSetInitParams(omni.kit.test.AsyncTestCase):
+    """Tests for forwarding SRTX sensor-set names through annotator init params."""
+
+    async def test_h264_encoding_adds_sensor_set_name_to_ldrcolor_init_params(self):
+        """H.264 LdrColor annotator should receive compression and sensor-set init params."""
+        ldr_annotator = MagicMock()
+        sim_time_annotator = MagicMock()
+        with patch(
+            "isaacsim.streaming.rtsp.impl.rtsp_writer.AnnotatorRegistry.get_annotator",
+            side_effect=[ldr_annotator, sim_time_annotator],
+        ) as mock_get_annotator:
+            writer = RTSPStreamWriter(encoding="h264", sensorSetName="ss-configured")
+
+        self.assertEqual(writer.annotators, [ldr_annotator, sim_time_annotator])
+        self.assertEqual(
+            mock_get_annotator.call_args_list[0],
+            (("LdrColor",), {"init_params": {"compression": "h264", "sensorSetName": "ss-configured"}}),
+        )
+
+    async def test_raw_encoding_adds_sensor_set_name_to_ldrcolor_init_params(self):
+        """Raw LdrColor annotator should receive sensor-set init params with CUDA routing."""
+        ldr_annotator = MagicMock()
+        with patch(
+            "isaacsim.streaming.rtsp.impl.rtsp_writer.AnnotatorRegistry.get_annotator",
+            return_value=ldr_annotator,
+        ) as mock_get_annotator:
+            writer = RTSPStreamWriter(encoding="raw", sensorSetName="ss-configured")
+
+        self.assertEqual(writer.annotators, [ldr_annotator])
+        mock_get_annotator.assert_called_once_with(
+            "LdrColor",
+            init_params={"sensorSetName": "ss-configured"},
+            device="cuda",
+            do_array_copy=False,
+        )
 
 
 class TestRTSPWriterDetach(omni.kit.test.AsyncTestCase):
