@@ -17,13 +17,13 @@
 
 
 import json
-from typing import Dict, List
+from typing import Any
 
 import numpy as np
 from omni.replicator.core.utils import ReplicatorItem
 
 
-def set_distribution_params(distribution: ReplicatorItem, parameters: Dict):
+def set_distribution_params(distribution: ReplicatorItem, parameters: dict) -> None:
     """Updates parameter values of a replicator distribution object.
 
     Args:
@@ -44,7 +44,7 @@ def set_distribution_params(distribution: ReplicatorItem, parameters: Dict):
         node.get_attribute(attribute_name).set(value)
 
 
-def get_distribution_params(distribution: ReplicatorItem, parameters: List[str]) -> List:
+def get_distribution_params(distribution: ReplicatorItem, parameters: list[str]) -> list:
     """Retrieves parameter values from a replicator distribution object.
 
     Args:
@@ -58,7 +58,7 @@ def get_distribution_params(distribution: ReplicatorItem, parameters: List[str])
         ValueError: If the distribution does not have the specified parameter.
     """
     node = distribution.node
-    params = list()
+    params = []
 
     for parameter in parameters:
         attribute_name = "inputs:" + parameter
@@ -72,14 +72,14 @@ def get_distribution_params(distribution: ReplicatorItem, parameters: List[str])
 
 
 def get_semantics(
-    num_semantics,
-    num_semantic_tokens,
-    instance_semantic_map,
-    min_semantic_idx,
-    max_semantic_hierarchy_depth,
-    semantic_token_map,
-    required_semantic_types,
-):
+    num_semantics: Any,
+    num_semantic_tokens: Any,
+    instance_semantic_map: Any,
+    min_semantic_idx: Any,
+    max_semantic_hierarchy_depth: Any,
+    semantic_token_map: Any,
+    required_semantic_types: Any,
+) -> tuple:
     """Extracts and processes semantic information from instance semantic data.
 
     Processes semantic tokens to build hierarchical relationships between semantic entities and their parents,
@@ -99,7 +99,6 @@ def get_semantics(
         serialized_labels is JSON string of semantic mappings, semantic_ids is list of unique identifiers,
         valid_count is number of valid semantic entities, and prim_paths is list of primitive paths.
     """
-
     instance_to_semantic = instance_semantic_map - min_semantic_idx
 
     id_to_parents = {}
@@ -129,7 +128,7 @@ def get_semantics(
             self_labels = semantic_token_map[i * num_semantic_tokens : (i + 1) * num_semantic_tokens]
             parent_labels = []
 
-            if i in id_to_parents.keys():
+            if i in id_to_parents:
                 for parent_semantic_id in id_to_parents[i]:
                     parent_labels.extend(
                         semantic_token_map[
@@ -174,7 +173,7 @@ def get_semantics(
     return serialized_index_to_labels, semantic_ids, valid_semantic_entity_count, prim_paths
 
 
-def get_image_space_points(points, view_proj_matrix) -> np.ndarray:
+def get_image_space_points(points: Any, view_proj_matrix: Any) -> np.ndarray:
     """Projects 3D world space points into 2D image space coordinates.
 
     Args:
@@ -184,7 +183,6 @@ def get_image_space_points(points, view_proj_matrix) -> np.ndarray:
     Returns:
         Numpy array of shape (N, 3) of points projected into the image space.
     """
-
     homo = np.pad(points, ((0, 0), (0, 1)), constant_values=1.0)
     tf_points = np.dot(homo, view_proj_matrix)
     tf_points = tf_points / (tf_points[..., -1:])
@@ -194,7 +192,7 @@ def get_image_space_points(points, view_proj_matrix) -> np.ndarray:
     return image_space_points
 
 
-def calculate_truncation_ratio_simple(corners, img_width: int, img_height: int) -> float:
+def calculate_truncation_ratio_simple(corners: Any, img_width: int, img_height: int) -> float:
     """Calculate the truncation ratio of a cuboid using a simplified bounding box method.
 
     Args:
@@ -206,7 +204,6 @@ def calculate_truncation_ratio_simple(corners, img_width: int, img_height: int) 
         The truncation ratio of the cuboid.
         1 means object is fully truncated and 0 means object is fully within screen.
     """
-
     # Calculate the bounding box of the cuboid
     x_min, y_min = np.min(corners, axis=0)
     x_max, y_max = np.max(corners, axis=0)
@@ -237,7 +234,7 @@ class NumpyEncoder(json.JSONEncoder):
     the array to a list format that can be included in the JSON output.
     """
 
-    def default(self, obj):
+    def default(self, obj: Any) -> Any:
         """Converts NumPy arrays to Python lists for JSON serialization.
 
         Args:

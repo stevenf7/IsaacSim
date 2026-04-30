@@ -92,7 +92,11 @@ class PeckContext(DfRobotApiContext):
         self.active_target_p = None
 
     def get_latest_block_positions(self) -> list:
-        """Return a list of current world positions for all blocks."""
+        """Return a list of current world positions for all blocks.
+
+        Returns:
+            A list of 3D numpy arrays representing each block's world position.
+        """
         block_positions = []
         for block in self.blocks:
             block_p, _ = block.get_world_pose()
@@ -153,7 +157,11 @@ class PeckAction(DfAction):
         self.context.robot.arm.disable_obstacle(self.block)
 
     def step(self) -> Any:
-        """Send the end-effector toward the active target each cycle."""
+        """Send the end-effector toward the active target each cycle.
+
+        Returns:
+            None always (action steps do not return a state).
+        """
         target_p = self.context.active_target_p
         target_q = math_util.matrix_to_quat(
             math_util.make_rotation_matrix(az_dominant=np.array([0.0, 0.0, -1.0]), ax_suggestion=-target_p)
@@ -180,7 +188,11 @@ class Dispatch(DfDecider):
         self.add_child("go_home", make_go_home())
 
     def decide(self) -> Any:
-        """Decide to lift, peck, or go home based on the current state."""
+        """Decide to lift, peck, or go home based on the current state.
+
+        Returns:
+            A DfDecision directing to lift, peck, or go_home.
+        """
         if self.context.is_eff_close_to_inactive_block:
             return DfDecision("lift")
 
@@ -192,5 +204,12 @@ class Dispatch(DfDecider):
 
 
 def make_decider_network(robot: Any) -> Any:
-    """Create the peck game decider network for the given robot."""
+    """Create the peck game decider network for the given robot.
+
+    Args:
+        robot: The robot API instance.
+
+    Returns:
+        A configured DfNetwork for the peck game behavior.
+    """
     return DfNetwork(Dispatch(), context=PeckContext(robot))

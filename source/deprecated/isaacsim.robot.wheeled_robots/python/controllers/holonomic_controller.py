@@ -86,7 +86,7 @@ class HolonomicController(BaseController):
         max_wheel_speed: float = 1.0e20,
         linear_gain: float = 1.0,
         angular_gain: float = 1.0,
-    ):
+    ) -> None:
         super().__init__(name)
 
         self.num_wheels = len(wheel_positions)
@@ -111,7 +111,7 @@ class HolonomicController(BaseController):
         self.joint_commands = np.zeros((self.num_wheels, 0), dtype=float)
         self.build_base()
 
-    def build_base(self):
+    def build_base(self) -> None:
         """Build the base constraint matrix and optimization problem setup for the holonomic controller.
 
         Sets up the quadratic programming problem by computing wheel direction vectors, distance matrices,
@@ -177,7 +177,7 @@ class HolonomicController(BaseController):
         if (np.array(command) == 0).all():
             self.joint_commands = [float(0) for i in range(self.num_wheels)]
         else:
-            v = np.array([command[0], command[1], 0]).reshape((3)) * self.linear_gain
+            v = np.array([command[0], command[1], 0]).reshape(3) * self.linear_gain
             w = np.array([command[2]]) * self.angular_gain
 
             if np.linalg.norm(v) > 0:
@@ -209,6 +209,6 @@ class HolonomicController(BaseController):
                 self.joint_commands = [float(values[i]) for i in range(self.num_wheels)]
         return ArticulationAction(joint_velocities=list(self.joint_commands))
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the controller state."""
         return

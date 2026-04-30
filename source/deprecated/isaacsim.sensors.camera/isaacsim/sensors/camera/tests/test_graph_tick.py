@@ -56,7 +56,15 @@ class TestGraphSDGPipelineConflict(omni.kit.test.AsyncTestCase):
         stage.DefinePrim("/Cube", "Cube")
 
         def make_graph(graph_path: str, cube_path: str) -> object:
-            """Execute make_graph."""
+            """Execute make_graph.
+
+            Args:
+                graph_path: The USD path for the OmniGraph to create.
+                cube_path: The USD path to the cube prim used in the graph.
+
+            Returns:
+                The result of the OmniGraph controller edit operation.
+            """
             return og.Controller.edit(
                 {"graph_path": graph_path, "evaluator_name": "execution"},
                 {

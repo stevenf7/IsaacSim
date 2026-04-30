@@ -16,7 +16,7 @@
 """Common test utilities and helpers."""
 
 from dataclasses import dataclass, field
-from typing import List, Tuple
+from typing import Any
 
 import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -38,15 +38,24 @@ SMALL_TOLERANCE = 0.01
 
 
 async def step_simulation(seconds: float) -> None:
-    """Step the simulation forward by the given number of seconds."""
+    """Step the simulation forward by the given number of seconds.
+
+    Args:
+        seconds: Number of seconds to simulate.
+    """
     dt = SimulationManager.get_physics_dt()
     steps = max(1, int(round(seconds / dt)))
     for _ in range(steps):
         await omni.kit.app.get_app().next_update_async()
 
 
-async def reset_timeline(timeline=None, *, steps: int = 2) -> None:
-    """Stop and restart the timeline."""
+async def reset_timeline(timeline: Any = None, *, steps: int = 2) -> None:
+    """Stop and restart the timeline.
+
+    Args:
+        timeline: Timeline interface to control. Defaults to the global timeline if None.
+        steps: Number of simulation steps to run after restarting.
+    """
     if timeline is None:
         timeline = omni.timeline.get_timeline_interface()
     timeline.stop()
@@ -60,25 +69,25 @@ async def reset_timeline(timeline=None, *, steps: int = 2) -> None:
 class AntConfig:
     """Configuration data for ant robot used in sensor tests."""
 
-    leg_paths: List[str] = field(default_factory=lambda: ["/Ant/Arm_{:02d}/Lower_Arm".format(i + 1) for i in range(4)])
+    leg_paths: list[str] = field(default_factory=lambda: [f"/Ant/Arm_{i + 1:02d}/Lower_Arm" for i in range(4)])
     sphere_path: str = "/Ant/Sphere"
-    sensor_offsets: List[Gf.Vec3d] = field(default_factory=lambda: [Gf.Vec3d(40, 0, 0) for _ in range(4)])
+    sensor_offsets: list[Gf.Vec3d] = field(default_factory=lambda: [Gf.Vec3d(40, 0, 0) for _ in range(4)])
     # IMU sensor offsets (at origin for each sensor location)
-    imu_sensor_offsets: List[Gf.Vec3d] = field(default_factory=lambda: [Gf.Vec3d(0, 0, 0) for _ in range(5)])
+    imu_sensor_offsets: list[Gf.Vec3d] = field(default_factory=lambda: [Gf.Vec3d(0, 0, 0) for _ in range(5)])
     # IMU sensor orientations (identity quaternions)
-    sensor_quatd: List[Gf.Quatd] = field(default_factory=lambda: [Gf.Quatd(1, 0, 0, 0) for _ in range(5)])
-    colors: List[Tuple[float, float, float, float]] = field(
+    sensor_quatd: list[Gf.Quatd] = field(default_factory=lambda: [Gf.Quatd(1, 0, 0, 0) for _ in range(5)])
+    colors: list[tuple[float, float, float, float]] = field(
         default_factory=lambda: [(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1), (1, 1, 0, 1)]
     )
-    shoulder_joints: List[str] = field(
-        default_factory=lambda: ["/Ant/Arm_{:02d}/Upper_Arm/shoulder_joint".format(i + 1) for i in range(4)]
+    shoulder_joints: list[str] = field(
+        default_factory=lambda: [f"/Ant/Arm_{i + 1:02d}/Upper_Arm/shoulder_joint" for i in range(4)]
     )
-    lower_joints: List[str] = field(default_factory=list)
+    lower_joints: list[str] = field(default_factory=list)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Initialize computed fields after dataclass creation."""
         if not self.lower_joints:
-            self.lower_joints = ["{}/lower_arm_joint".format(path) for path in self.leg_paths]
+            self.lower_joints = [f"{path}/lower_arm_joint" for path in self.leg_paths]
 
 
 async def setup_ant_scene(physics_rate: float = 60.0) -> AntConfig:

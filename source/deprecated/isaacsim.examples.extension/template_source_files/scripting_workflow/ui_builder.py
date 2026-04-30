@@ -60,7 +60,7 @@ class UIBuilder:
         """Callback for Timeline events (Play, Pause, Stop).
 
         Args:
-            event (omni.timeline.TimelineEventType): Event Type
+            event: Event type.
         """
         if event.event_name == omni.timeline.GLOBAL_EVENT_STOP:
             # When the user hits the stop button through the UI, they will inevitably discover edge cases where things break
@@ -76,14 +76,14 @@ class UIBuilder:
         Physics steps only occur when the timeline is playing.
 
         Args:
-            step (float): Size of physics step
+            step: Size of physics step.
         """
 
     def on_stage_event(self, event: object) -> None:
         """Callback for Stage Events.
 
         Args:
-            event (omni.usd.StageEventType): Event Type
+            event: Event type.
         """
         if event.event_name == omni.usd.get_context().stage_event_name(StageEventType.OPENED):
             # If the user opens a new stage, the extension should completely reset
@@ -203,7 +203,7 @@ class UIBuilder:
         This function will repeatedly advance the script in scenario.py until it is finished.
 
         Args:
-            step (float): The dt of the current physics step
+            step: The dt of the current physics step.
             context: The physics context object.
         """
         done = self._scenario.update(step)

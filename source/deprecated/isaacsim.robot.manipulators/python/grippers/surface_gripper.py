@@ -37,7 +37,7 @@ class SurfaceGripper(Gripper):
         self,
         end_effector_prim_path: str,
         surface_gripper_path: str,
-    ):
+    ) -> None:
         Gripper.__init__(self, end_effector_prim_path=end_effector_prim_path)
         self._surface_gripper_interface = surface_gripper.acquire_surface_gripper_interface()
         self._surface_gripper_path = surface_gripper_path
@@ -45,7 +45,7 @@ class SurfaceGripper(Gripper):
 
     def initialize(
         self, physics_sim_view: omni.physics.tensors.SimulationView = None, articulation_num_dofs: int = None
-    ):
+    ) -> None:
         """Create a physics simulation view if not passed and creates a rigid prim view using physX tensor api.
 
         This needs to be called after each hard reset (i.e stop + play on the timeline) before interacting with any
@@ -62,7 +62,7 @@ class SurfaceGripper(Gripper):
             self._default_state = not self.is_closed()
         return
 
-    def close(self):
+    def close(self) -> None:
         """Applies actions to the articulation that closes the gripper (ex: to hold an object)."""
         if not self.is_closed():
             self._surface_gripper_interface.close_gripper(self._surface_gripper_path)
@@ -70,7 +70,7 @@ class SurfaceGripper(Gripper):
             carb.log_warn("gripper didn't close successfully")
         return
 
-    def open(self):
+    def open(self) -> None:
         """Applies actions to the articulation that opens the gripper (ex: to release an object held)."""
         self._surface_gripper_interface.open_gripper(self._surface_gripper_path)
         if not self.is_open():
@@ -78,7 +78,7 @@ class SurfaceGripper(Gripper):
 
         return
 
-    def update(self):
+    def update(self) -> None:
         """Updates the gripper state."""
         # self._virtual_gripper.update()
         return
@@ -105,7 +105,7 @@ class SurfaceGripper(Gripper):
             == surface_gripper.GripperStatus.Open
         )
 
-    def set_default_state(self, opened: bool):
+    def set_default_state(self, opened: bool) -> None:
         """Sets the default state of the gripper.
 
         Args:
@@ -123,7 +123,7 @@ class SurfaceGripper(Gripper):
         """
         return {"opened": self._default_state}
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Resets the gripper to its default state."""
         Gripper.post_reset(self)
         if self._default_state:  # means opened is true
@@ -156,5 +156,5 @@ class SurfaceGripper(Gripper):
         elif action == "close":
             self.close()
         else:
-            raise Exception("action {} is not defined for SurfaceGripper".format(action))
+            raise Exception(f"action {action} is not defined for SurfaceGripper")
         return ArticulationAction(joint_positions=[None] * self._articulation_num_dofs)

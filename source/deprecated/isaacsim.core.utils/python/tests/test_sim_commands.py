@@ -35,7 +35,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
     """Test cases for IsaacSimCommands."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -46,10 +46,8 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
             carb.log_error("Could not find Isaac Sim assets folder")
             return
 
-        pass
-
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
@@ -58,9 +56,8 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
         self._stage = None
         self._timeline = None
         gc.collect()
-        pass
 
-    async def test_spawn_command(self):
+    async def test_spawn_command(self) -> None:
         """Test spawn command."""
         articulation_usd = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         static_usd = self._assets_root_path + "/Isaac/Props/KLT_Bin/small_KLT.usd"
@@ -94,7 +91,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
             (100, -100, 0),
         )
 
-    async def test_teleport_command(self):
+    async def test_teleport_command(self) -> None:
         """Test teleport command."""
         articulation_usd = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         omni.kit.commands.execute(
@@ -108,7 +105,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
             (-100, -100, 0),
         )
 
-    async def test_scale(self):
+    async def test_scale(self) -> None:
         """Test scale."""
         from pxr import Gf
 
@@ -125,7 +122,7 @@ class TestIsaacSimCommands(omni.kit.test.AsyncTestCase):
             (1.5, 1.5, 1.5),
         )
 
-    async def test_destroy_command(self):
+    async def test_destroy_command(self) -> None:
         """Test destroy command."""
         articulation_usd = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         omni.kit.commands.execute("IsaacSimSpawnPrim", usd_path=articulation_usd, prim_path="/franka")

@@ -33,20 +33,20 @@ from .common import CoreTestCase
 class TestParticleMaterial(CoreTestCase, TestProperties):
     """Test particle material."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
         await super().setUp()
         World.clear_instance()
         await create_new_stage_async()
         self.my_world = World(backend="torch")  # , device="cuda")
         await self.my_world.initialize_simulation_context_async()
-        self._test_cfg = dict()
+        self._test_cfg = {}
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
         await super().tearDown()
 
-    async def test_cloth_prim(self):
+    async def test_cloth_prim(self) -> None:
         """Test cloth prim."""
         await update_stage_async()
         self.stage = omni.usd.get_context().get_stage()

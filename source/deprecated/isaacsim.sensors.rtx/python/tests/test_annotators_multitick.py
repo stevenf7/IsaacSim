@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for RTX sensor annotators with multi-tick and multi-frame validation."""
+
 import asyncio
 import math
+from typing import Any
 
 import carb
 import isaacsim.sensors.rtx.generic_model_output as gmo_utils
@@ -40,8 +43,15 @@ DEFAULT_VARIANT = None  # Default variant for tests
 NEAR_EDGE_THRESHOLD = 0.5  # Threshold for near edge returns in degrees
 
 
-def _extract_gmo_raw(rp_data):
-    """Extract raw GMO array from render product data, returning None if unavailable."""
+def _extract_gmo_raw(rp_data: Any) -> Any:
+    """Extract raw GMO array from render product data, returning None if unavailable.
+
+    Args:
+        rp_data: Render product data dictionary.
+
+    Returns:
+        Raw GMO numpy array or None if unavailable.
+    """
     gmo_raw = rp_data.get("GenericModelOutput")
     if gmo_raw is None:
         return None
@@ -68,7 +78,8 @@ class _SarcophagusTestCase(omni.kit.test.AsyncTestCase):
         (20, 20, 15),
     ]
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Set up the test environment with a new stage and sarcophagus scene."""
         await create_new_stage_async()
         await update_stage_async()
         self._octant_dimensions = list(self._OCTANT_DIMENSIONS)
@@ -77,7 +88,8 @@ class _SarcophagusTestCase(omni.kit.test.AsyncTestCase):
         self._hydra_texture = None
         self._writer = None
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Tear down the test environment and stop timeline."""
         self._timeline.stop()
         if self._writer is not None:
             self._writer.detach()
@@ -93,12 +105,18 @@ class _SarcophagusTestCase(omni.kit.test.AsyncTestCase):
 
 
 class TestGenericModelOutput(_SarcophagusTestCase):
-    """Test the Generic Model Output annotator"""
+    """Test the Generic Model Output annotator."""
 
     class _GmoTestWriter(Writer):
-        """Custom Writer that validates GenericModelOutput data each frame."""
+        """Custom Writer that validates GenericModelOutput data each frame.
 
-        def __init__(self, test_instance=None, sensor_type=None, sensor_prim=None):
+        Args:
+            test_instance: Test case instance for assertions.
+            sensor_type: Sensor type string, e.g., "lidar" or "radar".
+            sensor_prim: USD prim for the sensor.
+        """
+
+        def __init__(self, test_instance: Any = None, sensor_type: Any = None, sensor_prim: Any = None) -> None:
             self.data_structure = "renderProduct"
             self.annotators = [
                 rep.annotators.get("GenericModelOutput"),
@@ -131,7 +149,7 @@ class TestGenericModelOutput(_SarcophagusTestCase):
             self._expected_advance_ns = round(1.0 / tick_rate * 1e9)
             np.seterr(divide="ignore")
 
-        def write(self, data):
+        def write(self, data: Any) -> None:
             if "renderProducts" not in data:
                 return
             for rp_name, rp_data in data["renderProducts"].items():
@@ -186,8 +204,12 @@ class TestGenericModelOutput(_SarcophagusTestCase):
 
         _OCTANT_TO_CUBE = np.array([0, 0, 3, 3, 1, 1, 2, 2], dtype=int)
 
-        def _test_point_cloud(self, gmo):
-            """Tests sensor returns stored in GMO buffer against expected range."""
+        def _test_point_cloud(self, gmo: Any) -> None:
+            """Tests sensor returns stored in GMO buffer against expected range.
+
+            Args:
+                gmo: GMO data object with sensor return fields.
+            """
             unit_vecs = np.concatenate(
                 [
                     np.cos(np.radians(gmo.x))[..., None],
@@ -246,27 +268,27 @@ class TestGenericModelOutput(_SarcophagusTestCase):
             cube_idx[np.bitwise_and(octant % 2 == 1, plane_idx == 2)] += 1
             self._cube_prim_paths = cube_idx
 
-        def _test_intensity(self, gmo):
+        def _test_intensity(self, gmo: Any) -> None:
             if self._sensor_type == "lidar":
                 self._test.assertTrue(np.all(gmo.scalar >= 0), "Intensities are not non-negative.")
             elif self._sensor_type == "radar":
                 self._test.assertTrue(np.all(gmo.scalar != 0), "Intensities are not zero.")
 
-        def _test_timestamp(self, gmo):
+        def _test_timestamp(self, gmo: Any) -> None:
             timestamp_diffs = np.diff(gmo.timeOffsetNs)
             self._test.assertTrue(np.all(timestamp_diffs >= 0), "Timestamps are not monotonically increasing.")
             max_timestamp_diff = np.max(timestamp_diffs)
             self._test.assertLessEqual(max_timestamp_diff, self._max_timeOffsetNs_expected)
 
-        def _test_emitter_id(self, gmo):
+        def _test_emitter_id(self, gmo: Any) -> None:
             self._test.assertTrue(np.all(gmo.emitterId >= 0), "Emitter IDs are not non-negative.")
             self._test.assertTrue(np.all(gmo.emitterId < 1024), "Emitter IDs are expected to be less than 1024.")
 
-        def _test_channel_id(self, gmo):
+        def _test_channel_id(self, gmo: Any) -> None:
             self._test.assertTrue(np.all(gmo.channelId >= 0), "Channel IDs are not non-negative.")
             self._test.assertTrue(np.all(gmo.channelId < 1024), "Channel IDs are expected to be less than 1024.")
 
-        def _test_material_id(self, gmo):
+        def _test_material_id(self, gmo: Any) -> None:
             self._test.assertEqual(
                 len(gmo.matId),
                 len(self._cube_prim_paths),
@@ -292,10 +314,10 @@ class TestGenericModelOutput(_SarcophagusTestCase):
                 f"{failure_count} of {checked_count} returns ({failure_pct:.2f}%) failed.",
             )
 
-        def _test_velocity(self, gmo):
+        def _test_velocity(self, gmo: Any) -> None:
             self._test.assertTrue(np.allclose(gmo.velocities, 0, atol=5e-3), "Velocities are expected to be 0.")
 
-        def _test_object_id(self, gmo):
+        def _test_object_id(self, gmo: Any) -> None:
             self._test.assertGreater(len(self._stable_id_map), 0, "Expected non-empty stable id map.")
             object_ids = np.array(LidarRtx.get_object_ids(gmo.objId))
             self._test.assertEqual(
@@ -323,26 +345,27 @@ class TestGenericModelOutput(_SarcophagusTestCase):
                 f"{failure_count} of {checked_count} returns ({failure_pct:.2f}%) failed.",
             )
 
-        def _test_echo_id(self, gmo):
+        def _test_echo_id(self, gmo: Any) -> None:
             self._test.assertTrue(np.all(gmo.echoId == 0), "Echo IDs are expected to be 0.")
 
-        def _test_tick_state(self, gmo):
+        def _test_tick_state(self, gmo: Any) -> None:
             self._test.assertTrue(np.all(gmo.tickStates == 0), "Tick states are expected to be 0.")
 
-        def _test_radial_velocity(self, gmo):
+        def _test_radial_velocity(self, gmo: Any) -> None:
             self._test.assertLessEqual(
                 np.max(np.abs(gmo.rv_ms)), 1e-2, "Radial velocity is expected to be (close to) 0."
             )
 
     _writer_registered = False
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Set up test environment and register GMO writer."""
         await super().setUp()
         if not TestGenericModelOutput._writer_registered:
             rep.WriterRegistry.register(TestGenericModelOutput._GmoTestWriter)
             TestGenericModelOutput._writer_registered = True
 
-    async def _test_sensor(self, sensor_type: str, **kwargs):
+    async def _test_sensor(self, sensor_type: str, **kwargs: Any) -> None:
         COLLECTION_SECONDS = 3.0
 
         sensor_kwargs = {
@@ -384,15 +407,16 @@ class TestGenericModelOutput(_SarcophagusTestCase):
 
         self.assertGreater(self._writer.valid_frame_count, 0, "Expected at least one valid GMO frame.")
 
-    async def test_lidar(self):
+    async def test_lidar(self) -> None:
+        """Test GMO annotator with a lidar sensor."""
         kwargs = {
             "omni:sensor:Core:outputFrameOfReference": "WORLD",
             "omni:sensor:Core:auxOutputType": "FULL",
         }
         await self._test_sensor("lidar", **kwargs)
 
-    async def test_radar(self):
-
+    async def test_radar(self) -> None:
+        """Test GMO annotator with a radar sensor."""
         kwargs = {
             "omni:sensor:WpmDmat:outputFrameOfReference": "WORLD",
             "omni:sensor:WpmDmat:auxOutputType": "BASIC",
@@ -401,7 +425,7 @@ class TestGenericModelOutput(_SarcophagusTestCase):
 
 
 class TestIsaacCreateRTXLidarScanBuffer(_SarcophagusTestCase):
-    """Test the Isaac Create RTX Lidar Scan Buffer annotator"""
+    """Test the Isaac Create RTX Lidar Scan Buffer annotator."""
 
     _SCAN_BUFFER_INIT_PARAMS = {
         "outputAzimuth": True,
@@ -421,9 +445,13 @@ class TestIsaacCreateRTXLidarScanBuffer(_SarcophagusTestCase):
     }
 
     class _ScanBufferTestWriter(Writer):
-        """Custom Writer that validates IsaacCreateRTXLidarScanBuffer against GenericModelOutput."""
+        """Custom Writer that validates IsaacCreateRTXLidarScanBuffer against GenericModelOutput.
 
-        def __init__(self, test_instance=None):
+        Args:
+            test_instance: Test case instance for assertions.
+        """
+
+        def __init__(self, test_instance: Any = None) -> None:
             self.data_structure = "renderProduct"
             self.annotators = [
                 rep.annotators.get("GenericModelOutput"),
@@ -438,7 +466,7 @@ class TestIsaacCreateRTXLidarScanBuffer(_SarcophagusTestCase):
             self.num_elements_zero_count = 0
             self.valid_frame_count = 0
 
-        def write(self, data):
+        def write(self, data: Any) -> None:
             if "renderProducts" not in data:
                 return
             for rp_name, rp_data in data["renderProducts"].items():
@@ -483,8 +511,12 @@ class TestIsaacCreateRTXLidarScanBuffer(_SarcophagusTestCase):
                 self._validate_scan_buffer(sb)
                 self.valid_frame_count += 1
 
-        def _validate_scan_buffer(self, sb):
-            """Validate scan buffer structure and compare against buffered GMO data."""
+        def _validate_scan_buffer(self, sb: Any) -> None:
+            """Validate scan buffer structure and compare against buffered GMO data.
+
+            Args:
+                sb: Scan buffer data dictionary.
+            """
             t = self._test
 
             point_cloud = sb["data"]
@@ -538,8 +570,13 @@ class TestIsaacCreateRTXLidarScanBuffer(_SarcophagusTestCase):
 
             self._compare_to_gmo(sb, expected_keys)
 
-        def _compare_to_gmo(self, sb, expected_keys):
-            """Compare scan buffer output against buffered GMO data."""
+        def _compare_to_gmo(self, sb: Any, expected_keys: Any) -> None:
+            """Compare scan buffer output against buffered GMO data.
+
+            Args:
+                sb: Scan buffer data dictionary.
+                expected_keys: Dictionary of expected attribute keys with (size, dtype) tuples.
+            """
             t = self._test
             ts_key = sb["timestamp"][0]
             t.assertIn(
@@ -583,13 +620,14 @@ class TestIsaacCreateRTXLidarScanBuffer(_SarcophagusTestCase):
 
     _writer_registered = False
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Set up test environment and register scan buffer writer."""
         await super().setUp()
         if not TestIsaacCreateRTXLidarScanBuffer._writer_registered:
             rep.WriterRegistry.register(TestIsaacCreateRTXLidarScanBuffer._ScanBufferTestWriter)
             TestIsaacCreateRTXLidarScanBuffer._writer_registered = True
 
-    async def _test_annotator_outputs(self):
+    async def _test_annotator_outputs(self) -> None:
         COLLECTION_SECONDS = 3.0
 
         kwargs = {
@@ -630,12 +668,13 @@ class TestIsaacCreateRTXLidarScanBuffer(_SarcophagusTestCase):
 
         self.assertGreater(self._writer.valid_frame_count, 0, "Expected at least one valid scan buffer frame.")
 
-    async def test_3d_lidar(self):
+    async def test_3d_lidar(self) -> None:
+        """Test IsaacCreateRTXLidarScanBuffer annotator with a 3D lidar sensor."""
         await self._test_annotator_outputs()
 
 
 class TestIsaacComputeRTXLidarFlatScan(_SarcophagusTestCase):
-    """Test class for IsaacComputeRTXLidarFlatScan annotator"""
+    """Test class for IsaacComputeRTXLidarFlatScan annotator."""
 
     _EXPECTED_FLAT_SCAN_KEYS = [
         "azimuthRange",
@@ -650,9 +689,14 @@ class TestIsaacComputeRTXLidarFlatScan(_SarcophagusTestCase):
     ]
 
     class _FlatScanTestWriter(Writer):
-        """Custom Writer that validates IsaacComputeRTXLidarFlatScan against GenericModelOutput."""
+        """Custom Writer that validates IsaacComputeRTXLidarFlatScan against GenericModelOutput.
 
-        def __init__(self, test_instance=None, sensor_attrs=None):
+        Args:
+            test_instance: Test case instance for assertions.
+            sensor_attrs: Dictionary of sensor attributes for validation.
+        """
+
+        def __init__(self, test_instance: Any = None, sensor_attrs: Any = None) -> None:
             self.data_structure = "renderProduct"
             self.annotators = [
                 rep.annotators.get("GenericModelOutput"),
@@ -666,7 +710,7 @@ class TestIsaacComputeRTXLidarFlatScan(_SarcophagusTestCase):
             self.num_elements_zero_count = 0
             self.valid_frame_count = 0
 
-        def write(self, data):
+        def write(self, data: Any) -> None:
             if "renderProducts" not in data:
                 return
             for rp_name, rp_data in data["renderProducts"].items():
@@ -693,7 +737,7 @@ class TestIsaacComputeRTXLidarFlatScan(_SarcophagusTestCase):
                 self._validate_flat_scan(fs, gmo)
                 self.valid_frame_count += 1
 
-        def _validate_flat_scan(self, fs, gmo):
+        def _validate_flat_scan(self, fs: Any, gmo: Any) -> None:
             t = self._test
 
             for key in TestIsaacComputeRTXLidarFlatScan._EXPECTED_FLAT_SCAN_KEYS:
@@ -770,13 +814,14 @@ class TestIsaacComputeRTXLidarFlatScan(_SarcophagusTestCase):
 
     _writer_registered = False
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Set up test environment and register flat scan writer."""
         await super().setUp()
         if not TestIsaacComputeRTXLidarFlatScan._writer_registered:
             rep.WriterRegistry.register(TestIsaacComputeRTXLidarFlatScan._FlatScanTestWriter)
             TestIsaacComputeRTXLidarFlatScan._writer_registered = True
 
-    async def _test_annotator_outputs(self, config: str = DEFAULT_CONFIG, variant: str = DEFAULT_VARIANT):
+    async def _test_annotator_outputs(self, config: str = DEFAULT_CONFIG, variant: str = DEFAULT_VARIANT) -> None:
         COLLECTION_SECONDS = 3.0
 
         kwargs = {
@@ -829,20 +874,26 @@ class TestIsaacComputeRTXLidarFlatScan(_SarcophagusTestCase):
 
         self.assertGreater(self._writer.valid_frame_count, 0, "Expected at least one valid flat scan frame.")
 
-    async def test_3d_lidar(self):
+    async def test_3d_lidar(self) -> None:
+        """Test IsaacComputeRTXLidarFlatScan annotator with a 3D lidar sensor."""
         await self._test_annotator_outputs(config="Example_Rotary", variant=None)
 
-    async def test_2d_lidar(self):
+    async def test_2d_lidar(self) -> None:
+        """Test IsaacComputeRTXLidarFlatScan annotator with a 2D lidar sensor."""
         await self._test_annotator_outputs(config="SICK_picoScan150", variant="Profile_1")
 
 
 class TestIsaacCreateRTXRadarPointCloud(_SarcophagusTestCase):
-    """Test class for IsaacCreateRTXRadarPointCloud annotator"""
+    """Test class for IsaacCreateRTXRadarPointCloud annotator."""
 
     class _RadarTestWriter(Writer):
-        """Custom Writer that validates IsaacCreateRTXRadarPointCloud output."""
+        """Custom Writer that validates IsaacCreateRTXRadarPointCloud output.
 
-        def __init__(self, test_instance=None):
+        Args:
+            test_instance: Test case instance for assertions.
+        """
+
+        def __init__(self, test_instance: Any = None) -> None:
             self.data_structure = "renderProduct"
             self.annotators = [
                 rep.annotators.get(
@@ -853,7 +904,7 @@ class TestIsaacCreateRTXRadarPointCloud(_SarcophagusTestCase):
             self._test = test_instance
             self.valid_frame_count = 0
 
-        def write(self, data):
+        def write(self, data: Any) -> None:
             if "renderProducts" not in data:
                 return
             for rp_name, rp_data in data["renderProducts"].items():
@@ -865,7 +916,7 @@ class TestIsaacCreateRTXRadarPointCloud(_SarcophagusTestCase):
                 self._validate(rd)
                 self.valid_frame_count += 1
 
-        def _validate(self, rd):
+        def _validate(self, rd: Any) -> None:
             t = self._test
             for key in ["data", "intensity", "radialVelocityMS"]:
                 t.assertIn(key, rd, f"Expected {key} in radar point cloud data.")
@@ -877,14 +928,15 @@ class TestIsaacCreateRTXRadarPointCloud(_SarcophagusTestCase):
 
     _writer_registered = False
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Set up test environment and register radar writer."""
         await super().setUp()
         if not TestIsaacCreateRTXRadarPointCloud._writer_registered:
             rep.WriterRegistry.register(TestIsaacCreateRTXRadarPointCloud._RadarTestWriter)
             TestIsaacCreateRTXRadarPointCloud._writer_registered = True
 
-    async def test_rtx_radar(self):
-
+    async def test_rtx_radar(self) -> None:
+        """Test IsaacCreateRTXRadarPointCloud annotator with a radar sensor."""
         COLLECTION_SECONDS = 3.0
 
         kwargs = {
@@ -944,19 +996,19 @@ class TestTimestepVsScanRate(omni.kit.test.AsyncTestCase):
     class _CadenceTestWriter(Writer):
         """Writer that collects unique GMO scan timestamps."""
 
-        def __init__(self):
+        def __init__(self) -> None:
             self.data_structure = "renderProduct"
             self.annotators = [rep.annotators.get("GenericModelOutput")]
             self.scans = []
             self.warmup_count = 0
             self._last_ts = None
 
-        def reset(self):
+        def reset(self) -> None:
             self.scans.clear()
             self.warmup_count = 0
             self._last_ts = None
 
-        def write(self, data):
+        def write(self, data: Any) -> None:
             if "renderProducts" not in data:
                 self.warmup_count += 1
                 return
@@ -982,7 +1034,8 @@ class TestTimestepVsScanRate(omni.kit.test.AsyncTestCase):
 
     _writer_registered = False
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Set up test environment with a new stage and cadence writer."""
         await create_new_stage_async()
         await update_stage_async()
         self.stage = omni.usd.get_context().get_stage()
@@ -994,7 +1047,8 @@ class TestTimestepVsScanRate(omni.kit.test.AsyncTestCase):
             rep.WriterRegistry.register(TestTimestepVsScanRate._CadenceTestWriter)
             TestTimestepVsScanRate._writer_registered = True
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Tear down the test environment and stop timeline."""
         self._timeline.stop()
         if self._writer is not None:
             self._writer.detach()
@@ -1007,8 +1061,14 @@ class TestTimestepVsScanRate(omni.kit.test.AsyncTestCase):
             await asyncio.sleep(1.0)
         await update_stage_async()
 
-    async def _run_test(self, physics_dt: float, timeline_dt: float, scan_rate_hz: float):
-        """Run a single combination and assert timestamp invariants."""
+    async def _run_test(self, physics_dt: float, timeline_dt: float, scan_rate_hz: float) -> None:
+        """Run a single combination and assert timestamp invariants.
+
+        Args:
+            physics_dt: Physics simulation time step in seconds.
+            timeline_dt: Timeline rendering time step in seconds.
+            scan_rate_hz: Lidar scan rate in Hz.
+        """
         label = f"phys={physics_dt:.6f} tl={timeline_dt:.6f} scan={scan_rate_hz}Hz"
 
         SimulationManager.set_physics_dt(dt=physics_dt)
@@ -1088,87 +1148,114 @@ class TestTimestepVsScanRate(omni.kit.test.AsyncTestCase):
 
     # --- physics_dt = 1/30 ---
 
-    async def test_phys30_tl30_scan5(self):
+    async def test_phys30_tl30_scan5(self) -> None:
+        """Test phys=1/30s, timeline=1/30s, scan=5Hz."""
         await self._run_test(1.0 / 30, 1.0 / 30, 5.0)
 
-    async def test_phys30_tl30_scan10(self):
+    async def test_phys30_tl30_scan10(self) -> None:
+        """Test phys=1/30s, timeline=1/30s, scan=10Hz."""
         await self._run_test(1.0 / 30, 1.0 / 30, 10.0)
 
-    async def test_phys30_tl30_scan20(self):
+    async def test_phys30_tl30_scan20(self) -> None:
+        """Test phys=1/30s, timeline=1/30s, scan=20Hz."""
         await self._run_test(1.0 / 30, 1.0 / 30, 20.0)
 
-    async def test_phys30_tl60_scan5(self):
+    async def test_phys30_tl60_scan5(self) -> None:
+        """Test phys=1/30s, timeline=1/60s, scan=5Hz."""
         await self._run_test(1.0 / 30, 1.0 / 60, 5.0)
 
-    async def test_phys30_tl60_scan10(self):
+    async def test_phys30_tl60_scan10(self) -> None:
+        """Test phys=1/30s, timeline=1/60s, scan=10Hz."""
         await self._run_test(1.0 / 30, 1.0 / 60, 10.0)
 
-    async def test_phys30_tl60_scan20(self):
+    async def test_phys30_tl60_scan20(self) -> None:
+        """Test phys=1/30s, timeline=1/60s, scan=20Hz."""
         await self._run_test(1.0 / 30, 1.0 / 60, 20.0)
 
-    async def test_phys30_tl120_scan5(self):
+    async def test_phys30_tl120_scan5(self) -> None:
+        """Test phys=1/30s, timeline=1/120s, scan=5Hz."""
         await self._run_test(1.0 / 30, 1.0 / 120, 5.0)
 
-    async def test_phys30_tl120_scan10(self):
+    async def test_phys30_tl120_scan10(self) -> None:
+        """Test phys=1/30s, timeline=1/120s, scan=10Hz."""
         await self._run_test(1.0 / 30, 1.0 / 120, 10.0)
 
-    async def test_phys30_tl120_scan20(self):
+    async def test_phys30_tl120_scan20(self) -> None:
+        """Test phys=1/30s, timeline=1/120s, scan=20Hz."""
         await self._run_test(1.0 / 30, 1.0 / 120, 20.0)
 
     # --- physics_dt = 1/60 ---
 
-    async def test_phys60_tl30_scan5(self):
+    async def test_phys60_tl30_scan5(self) -> None:
+        """Test phys=1/60s, timeline=1/30s, scan=5Hz."""
         await self._run_test(1.0 / 60, 1.0 / 30, 5.0)
 
-    async def test_phys60_tl30_scan10(self):
+    async def test_phys60_tl30_scan10(self) -> None:
+        """Test phys=1/60s, timeline=1/30s, scan=10Hz."""
         await self._run_test(1.0 / 60, 1.0 / 30, 10.0)
 
-    async def test_phys60_tl30_scan20(self):
+    async def test_phys60_tl30_scan20(self) -> None:
+        """Test phys=1/60s, timeline=1/30s, scan=20Hz."""
         await self._run_test(1.0 / 60, 1.0 / 30, 20.0)
 
-    async def test_phys60_tl60_scan5(self):
+    async def test_phys60_tl60_scan5(self) -> None:
+        """Test phys=1/60s, timeline=1/60s, scan=5Hz."""
         await self._run_test(1.0 / 60, 1.0 / 60, 5.0)
 
-    async def test_phys60_tl60_scan10(self):
+    async def test_phys60_tl60_scan10(self) -> None:
+        """Test phys=1/60s, timeline=1/60s, scan=10Hz."""
         await self._run_test(1.0 / 60, 1.0 / 60, 10.0)
 
-    async def test_phys60_tl60_scan20(self):
+    async def test_phys60_tl60_scan20(self) -> None:
+        """Test phys=1/60s, timeline=1/60s, scan=20Hz."""
         await self._run_test(1.0 / 60, 1.0 / 60, 20.0)
 
-    async def test_phys60_tl120_scan5(self):
+    async def test_phys60_tl120_scan5(self) -> None:
+        """Test phys=1/60s, timeline=1/120s, scan=5Hz."""
         await self._run_test(1.0 / 60, 1.0 / 120, 5.0)
 
-    async def test_phys60_tl120_scan10(self):
+    async def test_phys60_tl120_scan10(self) -> None:
+        """Test phys=1/60s, timeline=1/120s, scan=10Hz."""
         await self._run_test(1.0 / 60, 1.0 / 120, 10.0)
 
-    async def test_phys60_tl120_scan20(self):
+    async def test_phys60_tl120_scan20(self) -> None:
+        """Test phys=1/60s, timeline=1/120s, scan=20Hz."""
         await self._run_test(1.0 / 60, 1.0 / 120, 20.0)
 
     # --- physics_dt = 1/120 ---
 
-    async def test_phys120_tl30_scan5(self):
+    async def test_phys120_tl30_scan5(self) -> None:
+        """Test phys=1/120s, timeline=1/30s, scan=5Hz."""
         await self._run_test(1.0 / 120, 1.0 / 30, 5.0)
 
-    async def test_phys120_tl30_scan10(self):
+    async def test_phys120_tl30_scan10(self) -> None:
+        """Test phys=1/120s, timeline=1/30s, scan=10Hz."""
         await self._run_test(1.0 / 120, 1.0 / 30, 10.0)
 
-    async def test_phys120_tl30_scan20(self):
+    async def test_phys120_tl30_scan20(self) -> None:
+        """Test phys=1/120s, timeline=1/30s, scan=20Hz."""
         await self._run_test(1.0 / 120, 1.0 / 30, 20.0)
 
-    async def test_phys120_tl60_scan5(self):
+    async def test_phys120_tl60_scan5(self) -> None:
+        """Test phys=1/120s, timeline=1/60s, scan=5Hz."""
         await self._run_test(1.0 / 120, 1.0 / 60, 5.0)
 
-    async def test_phys120_tl60_scan10(self):
+    async def test_phys120_tl60_scan10(self) -> None:
+        """Test phys=1/120s, timeline=1/60s, scan=10Hz."""
         await self._run_test(1.0 / 120, 1.0 / 60, 10.0)
 
-    async def test_phys120_tl60_scan20(self):
+    async def test_phys120_tl60_scan20(self) -> None:
+        """Test phys=1/120s, timeline=1/60s, scan=20Hz."""
         await self._run_test(1.0 / 120, 1.0 / 60, 20.0)
 
-    async def test_phys120_tl120_scan5(self):
+    async def test_phys120_tl120_scan5(self) -> None:
+        """Test phys=1/120s, timeline=1/120s, scan=5Hz."""
         await self._run_test(1.0 / 120, 1.0 / 120, 5.0)
 
-    async def test_phys120_tl120_scan10(self):
+    async def test_phys120_tl120_scan10(self) -> None:
+        """Test phys=1/120s, timeline=1/120s, scan=10Hz."""
         await self._run_test(1.0 / 120, 1.0 / 120, 10.0)
 
-    async def test_phys120_tl120_scan20(self):
+    async def test_phys120_tl120_scan20(self) -> None:
+        """Test phys=1/120s, timeline=1/120s, scan=20Hz."""
         await self._run_test(1.0 / 120, 1.0 / 120, 20.0)

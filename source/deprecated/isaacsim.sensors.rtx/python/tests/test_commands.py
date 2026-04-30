@@ -35,16 +35,16 @@ from pxr import Gf, Sdf, UsdGeom
 class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
     """Test cases for RTX sensor creation commands."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Create a new stage for each test."""
         await omni.usd.get_context().new_stage_async()
         self.stage = omni.usd.get_context().get_stage()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up the stage after each test."""
         await omni.usd.get_context().close_stage_async()
 
-    async def test_create_rtx_lidar_configs(self):
+    async def test_create_rtx_lidar_configs(self) -> None:
         """Test creating RTX Lidar sensors with different configurations."""
         translation = Gf.Vec3d(0.0, 0.0, 0.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -100,7 +100,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
                             f"Incorrect variant selection {current_variant} for config {allowed_config} and variant {variant}",
                         )
 
-    async def test_create_rtx_lidar_invalid_config(self):
+    async def test_create_rtx_lidar_invalid_config(self) -> None:
         """Test creating an RTX Lidar sensor with an invalid configuration."""
         translation = Gf.Vec3d(0.0, 0.0, 0.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -119,7 +119,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(prim.IsValid())
         self.assertTrue(prim.IsA("OmniLidar"))
 
-    async def test_create_rtx_radar_no_config(self):
+    async def test_create_rtx_radar_no_config(self) -> None:
         """Test creating an RTX Radar sensor without a configuration."""
         translation = Gf.Vec3d(0.0, 1.0, 2.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -135,7 +135,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(prim.IsValid())
         self.assertTrue(prim.IsA("OmniRadar"))
 
-    async def test_create_rtx_radar_with_config(self):
+    async def test_create_rtx_radar_with_config(self) -> None:
         """Test creating an RTX Radar sensor with a configuration."""
         translation = Gf.Vec3d(0.0, 1.0, 2.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -153,7 +153,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(prim.IsValid())
         self.assertTrue(prim.IsA("OmniRadar"))
 
-    async def test_create_rtx_ids_default_config(self):
+    async def test_create_rtx_ids_default_config(self) -> None:
         """Test creating an RTX IDS sensor with default configuration."""
         translation = Gf.Vec3d(0.0, 0.0, 1.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -183,7 +183,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(plugin_attr.IsValid())
         self.assertEqual(plugin_attr.Get(), "omni.sensors.nv.ids.ids.plugin")
 
-    async def test_create_rtx_ids_with_config(self):
+    async def test_create_rtx_ids_with_config(self) -> None:
         """Test creating an RTX IDS sensor with a specific configuration."""
         translation = Gf.Vec3d(0.0, 0.0, 1.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -213,7 +213,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(plugin_attr.IsValid())
         self.assertEqual(plugin_attr.Get(), "omni.sensors.nv.ids.ids.plugin")
 
-    async def test_create_rtx_ultrasonic_default(self):
+    async def test_create_rtx_ultrasonic_default(self) -> None:
         """Test creating an RTX Ultrasonic sensor with default configuration."""
         translation = Gf.Vec3d(-1.0, 0.0, 0.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -239,7 +239,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(plugin_attr.IsValid())
         self.assertEqual(plugin_attr.Get(), "omni.sensors.nv.acoustic.wpm_ultrasonic.plugin")
 
-    async def test_create_rtx_ultrasonic_with_config(self):
+    async def test_create_rtx_ultrasonic_with_config(self) -> None:
         """Test creating an RTX Ultrasonic sensor with a specific configuration."""
         translation = Gf.Vec3d(-1.0, 0.0, 0.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -265,7 +265,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(plugin_attr.IsValid())
         self.assertEqual(plugin_attr.Get(), "omni.sensors.nv.acoustic.wpm_ultrasonic.plugin")
 
-    async def test_sensor_with_parent(self):
+    async def test_sensor_with_parent(self) -> None:
         """Test creating a sensor with a parent prim."""
         # Create a parent Xform
         parent_path = "/World"
@@ -290,7 +290,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
 
         self.assertTrue(found_lidar, "Failed to find OmniLidar prim with parent")
 
-    async def test_rtx_radar_force_camera_prim_with_config(self):
+    async def test_rtx_radar_force_camera_prim_with_config(self) -> None:
         """Test RTX Radar with force_camera_prim=True and config specified."""
         translation = Gf.Vec3d(0.0, 1.0, 2.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -321,7 +321,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(plugin_attr.IsValid())
         self.assertEqual(plugin_attr.Get(), "omni.sensors.nv.radar.wpm_dmatapprox.plugin")
 
-    async def test_rtx_lidar_force_camera_prim_with_config(self):
+    async def test_rtx_lidar_force_camera_prim_with_config(self) -> None:
         """Test RTX Lidar with force_camera_prim=True and config specified."""
         translation = Gf.Vec3d(0.0, 0.0, 0.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -353,7 +353,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(plugin_attr.IsValid())
         self.assertEqual(plugin_attr.Get(), "omni.sensors.nv.lidar.lidar_core.plugin")
 
-    async def test_rtx_lidar_default_creation(self):
+    async def test_rtx_lidar_default_creation(self) -> None:
         """Test RTX Lidar default creation (no config, no force_camera_prim)."""
         translation = Gf.Vec3d(0.0, 0.0, 0.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -370,7 +370,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         # Verify it's an OmniLidar prim
         self.assertTrue(prim.IsA("OmniLidar"))
 
-    async def test_rtx_lidar_accumulate_outputs_set(self):
+    async def test_rtx_lidar_accumulate_outputs_set(self) -> None:
         """Test that IsaacSensorCreateRtxLidar sets accumulateOutputs=True on OmniLidar prims."""
         _, prim = omni.kit.commands.execute(
             "IsaacSensorCreateRtxLidar",
@@ -394,9 +394,8 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
             f"Expected accumulateOutputs to be {is_multitick_enabled} after command execution.",
         )
 
-    async def test_rtx_lidar_default_creation_with_path(self):
+    async def test_rtx_lidar_default_creation_with_path(self) -> None:
         """Test RTX Lidar default creation (no config, no force_camera_prim)."""
-
         print(get_prim_at_path("/").GetAllChildren())
         translation = Gf.Vec3d(0.0, 0.0, 0.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -445,7 +444,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(prim.IsA("OmniLidar"))
         self.assertEqual(prim.GetPath(), Sdf.Path("/Render/RtxLidar"))
 
-    async def test_rtx_lidar_force_camera_no_config(self):
+    async def test_rtx_lidar_force_camera_no_config(self) -> None:
         """Test RTX Lidar with force_camera_prim=True but no config specified."""
         translation = Gf.Vec3d(0.0, 0.0, 0.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -473,7 +472,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(plugin_attr.IsValid())
         self.assertEqual(plugin_attr.Get(), "omni.sensors.nv.lidar.lidar_core.plugin")
 
-    async def test_rtx_lidar_usd_path_no_variant(self):
+    async def test_rtx_lidar_usd_path_no_variant(self) -> None:
         """Test RTX Lidar creation with usd_path (no variant)."""
         translation = Gf.Vec3d(0.0, 0.0, 0.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -492,7 +491,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(prim.IsValid())
         self.assertTrue(prim.IsA("OmniLidar"))
 
-    async def test_rtx_lidar_usd_path_with_variant(self):
+    async def test_rtx_lidar_usd_path_with_variant(self) -> None:
         """Test RTX Lidar creation with usd_path that has variants."""
         translation = Gf.Vec3d(0.0, 0.0, 0.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -511,7 +510,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(prim.IsValid())
         self.assertTrue(prim.IsA("OmniLidar"))
 
-    async def test_rtx_lidar_usd_path_with_variant_selection(self):
+    async def test_rtx_lidar_usd_path_with_variant_selection(self) -> None:
         """Test RTX Lidar creation with usd_path and variant selection."""
         translation = Gf.Vec3d(0.0, 0.0, 0.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -539,7 +538,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         current_variant = variant_set.GetVariantSelection()
         self.assertEqual(current_variant, variant)
 
-    async def test_rtx_lidar_config_and_usd_path_both_provided(self):
+    async def test_rtx_lidar_config_and_usd_path_both_provided(self) -> None:
         """Test that config takes precedence over usd_path when both are provided."""
         translation = Gf.Vec3d(0.0, 0.0, 0.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -561,7 +560,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(prim.IsA("OmniLidar"))
         # The prim should be from the config (OS1), not the usd_path
 
-    async def test_rtx_radar_usd_path(self):
+    async def test_rtx_radar_usd_path(self) -> None:
         """Test RTX Radar creation with usd_path."""
         translation = Gf.Vec3d(0.0, 1.0, 2.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -580,7 +579,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(prim.IsValid())
         self.assertTrue(prim.IsA("OmniRadar"))
 
-    async def test_undo_deletes_prim(self):
+    async def test_undo_deletes_prim(self) -> None:
         """Test that undo properly deletes the created prim."""
         translation = Gf.Vec3d(0.0, 0.0, 0.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -603,7 +602,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         deleted_prim = get_prim_at_path(path)
         self.assertFalse(deleted_prim.IsValid())
 
-    async def test_undo_with_config(self):
+    async def test_undo_with_config(self) -> None:
         """Test that undo properly deletes a prim created with config."""
         translation = Gf.Vec3d(0.0, 0.0, 0.0)
         orientation = Gf.Quatd(1.0, 0.0, 0.0, 0.0)
@@ -627,7 +626,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         deleted_prim = get_prim_at_path(path)
         self.assertFalse(deleted_prim.IsValid())
 
-    async def test_rtx_radar_motion_bvh_disabled(self):
+    async def test_rtx_radar_motion_bvh_disabled(self) -> None:
         """Test that RTX Radar creation fails when Motion BVH is disabled."""
         settings = carb.settings.get_settings()
         # Save the original setting
@@ -657,7 +656,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
             # Restore the original setting
             settings.set("/renderer/raytracingMotion/enabled", original_value)
 
-    async def test_rtx_radar_motion_bvh_enabled(self):
+    async def test_rtx_radar_motion_bvh_enabled(self) -> None:
         """Test that RTX Radar creation succeeds when Motion BVH is enabled."""
         settings = carb.settings.get_settings()
         # Save the original setting

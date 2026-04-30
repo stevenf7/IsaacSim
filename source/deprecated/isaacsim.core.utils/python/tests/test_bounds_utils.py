@@ -33,18 +33,16 @@ class TestBounds(omni.kit.test.AsyncTestCase):
     """Test cases for Bounds."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
-        pass
 
-    async def test_recompute_extents(self):
+    async def test_recompute_extents(self) -> None:
         """Test recompute extents."""
         stage = get_current_stage()
         cubeGeom = UsdGeom.Cube.Define(stage, "/cube_shape")
@@ -84,7 +82,7 @@ class TestBounds(omni.kit.test.AsyncTestCase):
         aabb_with_children = compute_aabb(cache, "/", include_children=True)
         self.assertListEqual(combined_aabb.tolist(), aabb_with_children.tolist())
 
-    async def test_nested_recompute_extents(self):
+    async def test_nested_recompute_extents(self) -> None:
         """Test nested recompute extents."""
         stage = get_current_stage()
         cubeA = UsdGeom.Cube.Define(stage, "/nested_cube")
@@ -126,7 +124,7 @@ class TestBounds(omni.kit.test.AsyncTestCase):
         # This should not fail
         recompute_extents(cubeA.GetPrim(), include_children=True)
 
-    async def test_obb_default(self):
+    async def test_obb_default(self) -> None:
         """Test obb default."""
         stage = get_current_stage()
         UsdGeom.Cube.Define(stage, "/cube_shape")
@@ -175,7 +173,7 @@ class TestBounds(omni.kit.test.AsyncTestCase):
         for a, b in zip(corners.flatten().tolist(), corners_expected):
             self.assertAlmostEqual(a, b)
 
-    async def test_obb_transformed(self):
+    async def test_obb_transformed(self) -> None:
         """Test obb transformed."""
         stage = get_current_stage()
         cubeGeom = UsdGeom.Cube.Define(stage, "/cube_shape")
@@ -242,7 +240,7 @@ class TestBounds(omni.kit.test.AsyncTestCase):
         for a, b in zip(corners.flatten().tolist(), corners_expected):
             self.assertAlmostEqual(a, b)
 
-    async def test_obb_nested(self):
+    async def test_obb_nested(self) -> None:
         """Test obb nested."""
         stage = get_current_stage()
         cubeA = UsdGeom.Cube.Define(stage, "/nested_cube")

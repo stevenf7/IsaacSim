@@ -63,8 +63,8 @@ class PickPlaceController(BaseController):
         cspace_controller: BaseController,
         gripper: Gripper,
         end_effector_initial_height: typing.Optional[float] = None,
-        events_dt: typing.Optional[typing.List[float]] = None,
-    ):
+        events_dt: typing.Optional[list[float]] = None,
+    ) -> None:
         BaseController.__init__(self, name=name)
         self._event = 0
         self._t = 0
@@ -162,7 +162,7 @@ class PickPlaceController(BaseController):
             self._t = 0
         return target_joint_positions
 
-    def _get_interpolated_xy(self, target_x, target_y, current_x, current_y):
+    def _get_interpolated_xy(self, target_x: float, target_y: float, current_x: float, current_y: float) -> np.ndarray:
         """Interpolates between current and target XY positions based on the current phase.
 
         Args:
@@ -178,7 +178,7 @@ class PickPlaceController(BaseController):
         xy_target = (1 - alpha) * np.array([current_x, current_y]) + alpha * np.array([target_x, target_y])
         return xy_target
 
-    def _get_alpha(self):
+    def _get_alpha(self) -> float:
         """Calculates the interpolation alpha value based on the current event and time.
 
         Returns:
@@ -195,7 +195,7 @@ class PickPlaceController(BaseController):
         else:
             raise ValueError()
 
-    def _get_target_hs(self, target_height):
+    def _get_target_hs(self, target_height: float) -> float:
         """Calculates the target height based on the current event and interpolation.
 
         Args:
@@ -228,7 +228,7 @@ class PickPlaceController(BaseController):
             raise ValueError()
         return h
 
-    def _mix_sin(self, t):
+    def _mix_sin(self, t: float) -> float:
         """Applies a sinusoidal mixing function for smooth interpolation.
 
         Args:
@@ -239,7 +239,7 @@ class PickPlaceController(BaseController):
         """
         return 0.5 * (1 - np.cos(t * np.pi))
 
-    def _combine_convex(self, a, b, alpha):
+    def _combine_convex(self, a: float, b: float, alpha: float) -> float:
         """Performs convex combination of two values.
 
         Args:
@@ -255,8 +255,8 @@ class PickPlaceController(BaseController):
     def reset(
         self,
         end_effector_initial_height: typing.Optional[float] = None,
-        events_dt: typing.Optional[typing.List[float]] = None,
-    ):
+        events_dt: typing.Optional[list[float]] = None,
+    ) -> None:
         """Resets the state machine to start from the first phase/ event.
 
         Args:
@@ -296,12 +296,12 @@ class PickPlaceController(BaseController):
         else:
             return False
 
-    def pause(self):
+    def pause(self) -> None:
         """Pauses the state machine's time and phase."""
         self._pause = True
         return
 
-    def resume(self):
+    def resume(self) -> None:
         """Resumes the state machine's time and phase."""
         self._pause = False
         return

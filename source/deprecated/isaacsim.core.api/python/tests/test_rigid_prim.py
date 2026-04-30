@@ -34,7 +34,7 @@ from .common import CoreTestCase
 class TestSingleRigidPrimPose(CoreTestCase):
     """Test single rigid prim pose."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
         await super().setUp()
         World.clear_instance()
@@ -42,11 +42,11 @@ class TestSingleRigidPrimPose(CoreTestCase):
         self._my_world = World(device="cpu")
         await self._my_world.initialize_simulation_context_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
         await super().tearDown()
 
-    async def test_position_orientation_scale(self):
+    async def test_position_orientation_scale(self) -> None:
         """Test position orientation scale."""
         # Test constructor setting of pose
         position = [1.0, 2.0, 3.0]
@@ -81,7 +81,7 @@ class TestSingleRigidPrimPose(CoreTestCase):
             self.assertAlmostEqual(scale[i], real_scale[i])
         return
 
-    async def test_set_local_pose(self):
+    async def test_set_local_pose(self) -> None:
         """Test set local pose."""
         # Test constructor setting of pose
         position = [1.0, 2.0, 3.0]

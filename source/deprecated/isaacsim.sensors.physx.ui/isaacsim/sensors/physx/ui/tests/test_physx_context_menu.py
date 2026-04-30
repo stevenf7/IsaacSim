@@ -47,7 +47,7 @@ LIGHTBEAM_SENSORS = {
 class TestPhysxContextMenu(MenuUITestCase):
     """Test physx context menu."""
 
-    async def test_physx_sensors_context_menu_count(self):
+    async def test_physx_sensors_context_menu_count(self) -> None:
         """Test all the PhysX sensors are added to context menus correctly."""
         viewport_context_menu = await self.get_viewport_context_menu()
         self.assertIsNotNone(viewport_context_menu, "Failed to get viewport context menu")
@@ -120,7 +120,7 @@ class TestPhysxContextMenu(MenuUITestCase):
             failure_msg = "The following PhysX Lidar sensors failed to create prims:\n" + "\n".join(failures)
             self.fail(failure_msg)
 
-    async def test_lightbeam_context_menu_click(self):
+    async def test_lightbeam_context_menu_click(self) -> None:
         """Test the LightBeam sensors are created correctly via context menu."""
         failures = []
 

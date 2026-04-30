@@ -33,18 +33,16 @@ class TestHolonomicController(omni.kit.test.AsyncTestCase):
     tolerance levels.
     """
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up the test environment."""
-        pass
 
     # ----------------------------------------------------------------------
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up the test environment."""
-        pass
 
     # ----------------------------------------------------------------------
 
-    async def test_holonomic_drive(self):
+    async def test_holonomic_drive(self) -> None:
         """Test the holonomic controller forward method with velocity commands.
 
         Validates that the controller correctly computes joint velocities for a three-wheeled holonomic drive

@@ -16,6 +16,8 @@
 """Context management for Isaac Sim domain randomization using Replicator."""
 
 
+from typing import Any
+
 import omni.graph.core as og
 from omni.replicator.core.utils import utils
 
@@ -36,7 +38,7 @@ class ReplicatorIsaacContext:
         action_graph_entry_node: Entry node for the action graph that handles randomization execution.
     """
 
-    def __init__(self, num_envs, action_graph_entry_node):
+    def __init__(self, num_envs: Any, action_graph_entry_node: Any) -> None:
         self._num_envs = num_envs
         self._action_graph_entry_node = action_graph_entry_node
         self._reset_inds = None
@@ -46,7 +48,7 @@ class ReplicatorIsaacContext:
         self._graph = controller.graph(utils.GRAPH_PATH)
         self._tendon_attribute_stack = [None]
 
-    def trigger_randomization(self, reset_inds):
+    def trigger_randomization(self, reset_inds: Any) -> None:
         """Trigger randomization for specified environment indices.
 
         Args:
@@ -66,7 +68,7 @@ class ReplicatorIsaacContext:
         """
         return self._reset_inds
 
-    def get_tendon_exec_context(self):
+    def get_tendon_exec_context(self) -> Any:
         """Get the current tendon execution context.
 
         Returns:
@@ -74,7 +76,7 @@ class ReplicatorIsaacContext:
         """
         return self._tendon_attribute_stack[-1]
 
-    def add_tendon_exec_context(self, node):
+    def add_tendon_exec_context(self, node: Any) -> None:
         """Add a tendon execution context to the attribute stack.
 
         Args:
@@ -83,7 +85,7 @@ class ReplicatorIsaacContext:
         self._tendon_attribute_stack.append(node)
 
 
-def initialize_context(num_envs, action_graph_entry_node):
+def initialize_context(num_envs: Any, action_graph_entry_node: Any) -> None:
     """Initialize the Replicator Isaac context for domain randomization.
 
     Args:
@@ -103,7 +105,7 @@ def get_reset_inds() -> list[int]:
     return _context.reset_inds
 
 
-def trigger_randomization(reset_inds):
+def trigger_randomization(reset_inds: Any) -> None:
     """Trigger domain randomization for specified environments.
 
     Args:

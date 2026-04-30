@@ -22,6 +22,8 @@
 """
 
 
+from __future__ import annotations
+
 import gc
 import warnings
 from abc import abstractmethod
@@ -54,7 +56,7 @@ class BaseSample(object):
     hot reloading scenarios.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         warnings.warn(
             "BaseSample from isaacsim.examples.interactive.base_sample is deprecated. "
             "Use BaseSample from isaacsim.examples.base (base_sample_experimental) instead.",
@@ -67,7 +69,7 @@ class BaseSample(object):
         # self._logging_info = ""
         return
 
-    def get_world(self):
+    def get_world(self) -> World | None:
         """The current World instance.
 
         Returns:

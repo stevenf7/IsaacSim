@@ -35,7 +35,15 @@ from isaacsim.cortex.framework.dfb import (
 
 
 def make_grasp_T(t: np.ndarray, ay: np.ndarray) -> np.ndarray:  # noqa: N802
-    """Construct a 4x4 grasp transform from a translation and approach-y axis."""
+    """Construct a 4x4 grasp transform from a translation and approach-y axis.
+
+    Args:
+        t: The translation vector defining the grasp position.
+        ay: The approach-y axis direction.
+
+    Returns:
+        A 4x4 homogeneous transform matrix representing the grasp.
+    """
     az = math_util.normalized(-t)
     ax = np.cross(ay, az)
 
@@ -49,7 +57,14 @@ def make_grasp_T(t: np.ndarray, ay: np.ndarray) -> np.ndarray:  # noqa: N802
 
 
 def make_block_grasp_Ts(block_pick_height: float) -> list:  # noqa: N802
-    """Generate all candidate grasp transforms for a block at the given pick height."""
+    """Generate all candidate grasp transforms for a block at the given pick height.
+
+    Args:
+        block_pick_height: The height above the block center at which to grasp.
+
+    Returns:
+        A list of 4x4 candidate grasp transform matrices.
+    """
     R = np.eye(3)
 
     Ts = []
@@ -74,7 +89,21 @@ def get_world_block_grasp_Ts(  # noqa: N802
     axis_z_filter: np.ndarray | None = None,
     axis_z_filter_thresh: float = 0.1,
 ) -> list:
-    """Transform object-local grasp transforms to world frame, filtering by axis alignment."""
+    """Transform object-local grasp transforms to world frame, filtering by axis alignment.
+
+    Args:
+        obj_T: The object world transform.
+        obj_grasp_Ts: List of grasp transforms in object-local coordinates.
+        axis_x_filter: Optional desired x-axis direction to filter grasps.
+        axis_x_filter_thresh: Maximum allowed deviation from axis_x_filter.
+        axis_y_filter: Optional desired y-axis direction to filter grasps.
+        axis_y_filter_thresh: Maximum allowed deviation from axis_y_filter.
+        axis_z_filter: Optional desired z-axis direction to filter grasps.
+        axis_z_filter_thresh: Maximum allowed deviation from axis_z_filter.
+
+    Returns:
+        A list of world-frame grasp transforms that pass the axis filters.
+    """
     world_grasp_Ts = []
     for gT in obj_grasp_Ts:
         world_gT = obj_T.dot(gT)
@@ -150,10 +179,19 @@ def get_best_obj_grasp(
     return T
 
 
-def calc_grasp_for_block_T(
+def calc_grasp_for_block_T(  # noqa: N802
     context: Any, block_T: np.ndarray, desired_ax: np.ndarray
-) -> np.ndarray | None:  # noqa: N802
-    """Calculate the best grasp transform for a block given a desired x-axis direction."""
+) -> np.ndarray | None:
+    """Calculate the best grasp transform for a block given a desired x-axis direction.
+
+    Args:
+        context: The build-tower context providing block and grasp information.
+        block_T: The world transform of the block to grasp.
+        desired_ax: The desired x-axis direction for the grasp.
+
+    Returns:
+        The best grasp transform, or None if no valid grasps are found.
+    """
     ct = context
     candidate_Ts = get_world_block_grasp_Ts(block_T, ct.active_block.grasp_Ts, axis_z_filter=np.array([0.0, 0.0, -1.0]))
     if len(candidate_Ts) == 0:
@@ -166,7 +204,14 @@ def calc_grasp_for_block_T(
 
 
 def calc_grasp_for_top_of_tower(context: Any) -> np.ndarray | None:
-    """Calculate the best grasp for placing a block on top of the tower."""
+    """Calculate the best grasp for placing a block on top of the tower.
+
+    Args:
+        context: The build-tower context providing block and tower information.
+
+    Returns:
+        The best grasp transform for the tower top, or None if no valid grasps are found.
+    """
     # TODO: use calc_grasp_for_block_T for this calculation
     ct = context
     block_target_T = ct.block_tower.next_block_placement_T
@@ -227,11 +272,31 @@ class BuildTowerContext(DfRobotApiContext):
             axis_z_filter: np.ndarray | None = None,
             axis_z_filter_thresh: float = 0.1,
         ) -> list:
-            """Get grasp transforms in world coordinates with optional axis filtering."""
+            """Get grasp transforms in world coordinates with optional axis filtering.
+
+            Args:
+                axis_x_filter: Optional desired x-axis direction to filter grasps.
+                axis_x_filter_thresh: Maximum allowed deviation from axis_x_filter.
+                axis_y_filter: Optional desired y-axis direction to filter grasps.
+                axis_y_filter_thresh: Maximum allowed deviation from axis_y_filter.
+                axis_z_filter: Optional desired z-axis direction to filter grasps.
+                axis_z_filter_thresh: Maximum allowed deviation from axis_z_filter.
+
+            Returns:
+                A list of world-frame grasp transforms that pass the axis filters.
+            """
             return get_world_block_grasp_Ts(self.obj.get_transform(), self.grasp_Ts)
 
         def get_best_grasp(self, eff_T: np.ndarray, other_obj_Ts: list) -> np.ndarray | None:
-            """Select the best grasp considering end-effector pose and nearby objects."""
+            """Select the best grasp considering end-effector pose and nearby objects.
+
+            Args:
+                eff_T: The current end-effector transform.
+                other_obj_Ts: The transforms of all surrounding blocks to consider.
+
+            Returns:
+                The best grasp transform, or None if no valid grasps are found.
+            """
             return get_best_obj_grasp(self.obj.get_transform(), self.grasp_Ts, eff_T, other_obj_Ts)
 
         def set_aligned(self) -> None:
@@ -292,7 +357,12 @@ class BuildTowerContext(DfRobotApiContext):
             self.stack = []
 
         def find_new_and_removed(self) -> tuple | list:
-            """Find blocks that were added to or removed from the stack since last stash."""
+            """Find blocks that were added to or removed from the stack since last stash.
+
+            Returns:
+                A list of new blocks if prev_stack is None, otherwise a tuple of
+                (new_blocks, removed_blocks) since the last stash.
+            """
             if self.prev_stack is None:
                 return list(self.stack)
 
@@ -389,7 +459,11 @@ class BuildTowerContext(DfRobotApiContext):
         return self.active_block is not None
 
     def activate_block(self, name: str) -> None:
-        """Set the named block as the active block."""
+        """Set the named block as the active block.
+
+        Args:
+            name: The name of the block to activate.
+        """
         self.active_block = self.blocks[name]
 
     def reset_active_block(self) -> None:
@@ -452,7 +526,11 @@ class BuildTowerContext(DfRobotApiContext):
         return name
 
     def find_not_in_tower(self) -> list:
-        """Return a list of blocks that are not currently in the tower."""
+        """Return a list of blocks that are not currently in the tower.
+
+        Returns:
+            A list of Block objects that are not part of the current tower stack.
+        """
         blocks = list(self.blocks.values())
         for b in self.block_tower.stack:
             blocks[b.i] = None
@@ -460,7 +538,11 @@ class BuildTowerContext(DfRobotApiContext):
         return [b for b in blocks if b is not None]
 
     def print_tower_status(self) -> str:
-        """Format and return a string describing the current tower status."""
+        """Format and return a string describing the current tower status.
+
+        Returns:
+            A formatted multi-line string showing the current and stacked block states.
+        """
         in_tower = self.block_tower.stack
         out = "\nin tower:\n"
         for i, b in enumerate(in_tower):
@@ -627,7 +709,11 @@ class OpenGripperRd(DfRldsNode):
         self.add_child("open_gripper", DfOpenGripper())
 
     def is_runnable(self) -> bool | None:
-        """Check whether the gripper should be opened based on proximity to the grasp."""
+        """Check whether the gripper should be opened based on proximity to the grasp.
+
+        Returns:
+            True if the end-effector is within the distance threshold of the grasp, else None.
+        """
         ct = self.context
         if self.context.is_gripper_clear and not self.context.robot.gripper.is_open():
             if ct.has_active_block and ct.active_block.has_chosen_grasp:
@@ -639,7 +725,11 @@ class OpenGripperRd(DfRldsNode):
                 return dist_to_target < self.dist_thresh_for_open
 
     def decide(self) -> Any:
-        """Decide to open the gripper."""
+        """Decide to open the gripper.
+
+        Returns:
+            A DfDecision directing to the open_gripper child.
+        """
         return DfDecision("open_gripper")
 
 
@@ -651,16 +741,29 @@ class ReachToBlockRd(DfRldsNode):
         self.child_name = None
 
     def link_to(self, name: str, decider: Any) -> None:
-        """Link a named child decider to this node."""
+        """Link a named child decider to this node.
+
+        Args:
+            name: The name to assign the child decider.
+            decider: The child decider to link.
+        """
         self.child_name = name
         self.add_child(name, decider)
 
     def is_runnable(self) -> bool:
-        """Check whether the gripper is clear."""
+        """Check whether the gripper is clear.
+
+        Returns:
+            True if the gripper is clear, False otherwise.
+        """
         return self.context.is_gripper_clear
 
     def decide(self) -> Any:
-        """Decide to dispatch to the linked child."""
+        """Decide to dispatch to the linked child.
+
+        Returns:
+            A DfDecision directing to the linked child.
+        """
         return DfDecision(self.child_name)
 
 
@@ -676,7 +779,11 @@ class GoHome(DfDecider):
         self.context.robot.gripper.close()
 
     def decide(self) -> Any:
-        """Decide to go home."""
+        """Decide to go home.
+
+        Returns:
+            A DfDecision directing to the go_home child.
+        """
         return DfDecision("go_home")
 
 
@@ -690,12 +797,21 @@ class ChooseNextBlockForTowerBuildUp(DfDecider):
         self.child_name = None
 
     def link_to(self, name: str, decider: Any) -> None:
-        """Link a named child decider to this node."""
+        """Link a named child decider to this node.
+
+        Args:
+            name: The name to assign the child decider.
+            decider: The child decider to link.
+        """
         self.child_name = name
         self.add_child(name, decider)
 
     def decide(self) -> Any:
-        """Select the next block and compute the best grasp, or go home if conditions are bad."""
+        """Select the next block and compute the best grasp, or go home if conditions are bad.
+
+        Returns:
+            A DfDecision directing to the linked child or go_home.
+        """
         ct = self.context
         ct.active_block = ct.blocks[ct.next_block_name]
 
@@ -733,12 +849,21 @@ class ChooseNextBlockForTowerTeardown(DfDecider):
         self.child_name = None
 
     def link_to(self, name: str, decider: Any) -> None:
-        """Link a named child decider to this node."""
+        """Link a named child decider to this node.
+
+        Args:
+            name: The name to assign the child decider.
+            decider: The child decider to link.
+        """
         self.child_name = name
         self.add_child(name, decider)
 
     def decide(self) -> Any:
-        """Select the top block of the tower and compute its grasp."""
+        """Select the top block of the tower and compute its grasp.
+
+        Returns:
+            A DfDecision directing to the linked child with the computed grasp.
+        """
         ct = self.context
         ct.active_block = ct.block_tower.top_block
         active_block_T = ct.active_block.obj.get_transform()
@@ -759,12 +884,21 @@ class ChooseNextBlock(DfDecider):
         self.add_child("choose_tower_block", ChooseNextBlockForTowerTeardown())
 
     def link_to(self, name: str, decider: Any) -> None:
-        """Link a named child decider to all sub-children."""
+        """Link a named child decider to all sub-children.
+
+        Args:
+            name: The name to assign the child decider.
+            decider: The child decider to link.
+        """
         for _, child in self.children.items():
             child.link_to(name, decider)
 
     def decide(self) -> Any:
-        """Decide whether to build up or tear down the tower."""
+        """Decide whether to build up or tear down the tower.
+
+        Returns:
+            A DfDecision directing to choose_next_block_for_tower or choose_tower_block.
+        """
         if self.context.block_tower.current_stack_in_correct_order:
             return DfDecision("choose_next_block_for_tower")
         else:
@@ -800,7 +934,14 @@ class LiftState(DfState):
         self.success_z = self.context.robot.arm.get_fk_p()[2] + self.success_delta_z
 
     def closest_non_grasped_block_dist(self, eff_p: np.ndarray) -> float:
-        """Return the distance to the closest block that is not currently grasped."""
+        """Return the distance to the closest block that is not currently grasped.
+
+        Args:
+            eff_p: The current end-effector position.
+
+        Returns:
+            The distance to the closest non-grasped block.
+        """
         blocks_with_dists = []
         for name, block in self.context.blocks.items():
             block_p, _ = block.obj.get_world_pose()
@@ -813,7 +954,11 @@ class LiftState(DfState):
         return closest_dist
 
     def step(self) -> Any:
-        """Lift the end-effector upward until the success height is reached."""
+        """Lift the end-effector upward until the success height is reached.
+
+        Returns:
+            Self to continue lifting, or None when the success height is reached.
+        """
         pose = self.context.robot.arm.get_fk_pq()
         if pose.p[2] >= self.success_z:
             return None
@@ -853,7 +998,11 @@ class PickBlockRd(DfStateMachineDecider, DfRldsNode):
         self.is_locked = False
 
     def is_runnable(self) -> bool:
-        """Check whether the end-effector is close enough to the grasp to begin picking."""
+        """Check whether the end-effector is close enough to the grasp to begin picking.
+
+        Returns:
+            True if the end-effector is within threshold of the chosen grasp, False otherwise.
+        """
         ct = self.context
         if ct.has_active_block and ct.active_block.has_chosen_grasp:
             grasp_T = ct.active_block.chosen_grasp
@@ -866,7 +1015,11 @@ class PickBlockRd(DfStateMachineDecider, DfRldsNode):
 
 
 def make_pick_rlds() -> Any:
-    """Construct the RLDS decider for the block picking behavior."""
+    """Construct the RLDS decider for the block picking behavior.
+
+    Returns:
+        A configured DfRldsDecider for the block picking behavior.
+    """
     rlds = DfRldsDecider()
 
     open_gripper_rd = OpenGripperRd(dist_thresh_for_open=0.15)
@@ -903,7 +1056,14 @@ class TablePointValidator:
         self.std_devs = np.array([0.2, 0.3])
 
     def validate_point(self, p: np.ndarray) -> bool:
-        """Check whether a 2D point is a valid placement location on the table."""
+        """Check whether a 2D point is a valid placement location on the table.
+
+        Args:
+            p: The 2D point to validate.
+
+        Returns:
+            True if the point is a valid placement location, False otherwise.
+        """
         for p_avoid, d_thresh in self.avoid_pts_with_dist_threshs:
             d = np.linalg.norm(p_avoid - p)
             if d < d_thresh:
@@ -919,7 +1079,11 @@ class TablePointValidator:
         return True
 
     def sample_random_position_2d(self) -> np.ndarray:
-        """Sample a random valid 2D position on the table."""
+        """Sample a random valid 2D position on the table.
+
+        Returns:
+            A 2D numpy array representing a valid table position.
+        """
         while True:
             p = self.std_devs * (np.random.randn(2) + self.center_p)
             if self.validate_point(p):
@@ -934,7 +1098,11 @@ class ReachToPlaceOnTower(DfDecider):
         self.add_child("approach_grasp", DfApproachGrasp())
 
     def decide(self) -> Any:
-        """Compute the tower-top grasp and dispatch to approach."""
+        """Compute the tower-top grasp and dispatch to approach.
+
+        Returns:
+            A DfDecision directing to the approach_grasp child.
+        """
         ct = self.context
         ct.placement_target_eff_T = calc_grasp_for_top_of_tower(ct)
         return DfDecision("approach_grasp", ct.placement_target_eff_T)
@@ -952,7 +1120,11 @@ class ReachToPlaceOnTable(DfDecider):
         self.add_child("approach_grasp", DfApproachGrasp())
 
     def choose_random_T_on_table(self) -> np.ndarray | None:  # noqa: N802
-        """Sample a random valid table position and compute the corresponding grasp."""
+        """Sample a random valid table position and compute the corresponding grasp.
+
+        Returns:
+            The grasp transform for the sampled table position, or None if not found.
+        """
         ct = self.context
 
         table_point_validator = TablePointValidator(self.context)
@@ -971,7 +1143,11 @@ class ReachToPlaceOnTable(DfDecider):
         self.context.placement_target_eff_T = self.choose_random_T_on_table()
 
     def decide(self) -> Any:
-        """Re-sample if the current placement is invalid, then dispatch to approach."""
+        """Re-sample if the current placement is invalid, then dispatch to approach.
+
+        Returns:
+            A DfDecision directing to the approach_grasp child.
+        """
         ct = self.context
 
         table_point_validator = TablePointValidator(self.context)
@@ -994,7 +1170,11 @@ class ReachToPlacementRd(DfRldsNode):
         self.add_child("reach_to_place_table", ReachToPlaceOnTable())
 
     def is_runnable(self) -> bool:
-        """Check whether the gripper is holding a block."""
+        """Check whether the gripper is holding a block.
+
+        Returns:
+            True if the gripper is holding a block, False otherwise.
+        """
         return self.context.gripper_has_block
 
     def enter(self) -> None:
@@ -1002,7 +1182,11 @@ class ReachToPlacementRd(DfRldsNode):
         self.context.placement_target_eff_T = None
 
     def decide(self) -> Any:
-        """Decide to place on the tower if the block is correct, otherwise on the table."""
+        """Decide to place on the tower if the block is correct, otherwise on the table.
+
+        Returns:
+            A DfDecision directing to reach_to_place_on_tower or reach_to_place_table.
+        """
         ct = self.context
 
         if ct.block_tower.current_stack_in_correct_order and ct.block_tower.next_block == ct.in_gripper:
@@ -1012,7 +1196,11 @@ class ReachToPlacementRd(DfRldsNode):
 
 
 def set_top_block_aligned(ct: Any) -> None:
-    """Mark the top block of the tower as aligned."""
+    """Mark the top block of the tower as aligned.
+
+    Args:
+        ct: The build-tower context.
+    """
     top_block = ct.block_tower.top_block
     if top_block is not None:
         top_block.set_aligned()
@@ -1040,7 +1228,11 @@ class PlaceBlockRd(DfStateMachineDecider, DfRldsNode):
         self.is_locked = False
 
     def is_runnable(self) -> bool:
-        """Check whether the end-effector is close enough to the placement target."""
+        """Check whether the end-effector is close enough to the placement target.
+
+        Returns:
+            True if the end-effector is within threshold of the placement target, False otherwise.
+        """
         ct = self.context
         if ct.gripper_has_block and ct.has_placement_target_eff_T:
             eff_T = ct.robot.arm.get_fk_T()
@@ -1062,7 +1254,11 @@ class PlaceBlockRd(DfStateMachineDecider, DfRldsNode):
 
 
 def make_place_rlds() -> Any:
-    """Construct the RLDS decider for the block placement behavior."""
+    """Construct the RLDS decider for the block placement behavior.
+
+    Returns:
+        A configured DfRldsDecider for the block placement behavior.
+    """
     rlds = DfRldsDecider()
     rlds.append_rlds_node("reach_to_placement", ReachToPlacementRd())
     rlds.append_rlds_node("place_block", PlaceBlockRd())
@@ -1079,7 +1275,11 @@ class BlockPickAndPlaceDispatch(DfDecider):
         self.add_child("go_home", GoHome())
 
     def decide(self) -> Any:
-        """Decide to pick, place, or go home based on tower and gripper state."""
+        """Decide to pick, place, or go home based on tower and gripper state.
+
+        Returns:
+            A DfDecision directing to pick, place, or go_home.
+        """
         ct = self.context
         if ct.block_tower.is_complete:
             return DfDecision("go_home")
@@ -1091,7 +1291,14 @@ class BlockPickAndPlaceDispatch(DfDecider):
 
 
 def make_decider_network(robot: Any) -> Any:
-    """Create the block stacking decider network for the given robot."""
+    """Create the block stacking decider network for the given robot.
+
+    Args:
+        robot: The robot API instance.
+
+    Returns:
+        A configured DfNetwork for the block stacking behavior.
+    """
     return DfNetwork(
         BlockPickAndPlaceDispatch(), context=BuildTowerContext(robot, tower_position=np.array([0.25, 0.3, 0.0]))
     )

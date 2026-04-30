@@ -16,11 +16,13 @@
 """Contains trigger functions for controlling when domain randomization occurs in Isaac Sim."""
 
 
+from typing import Any
+
 from omni.replicator.core.utils import ReplicatorItem, ReplicatorWrapper, create_node
 
 
 @ReplicatorWrapper
-def on_interval(interval) -> ReplicatorItem:
+def on_interval(interval: Any) -> ReplicatorItem:
     """Create a trigger node for domain randomization that activates at specified intervals.
 
     This function sets up a filtering node that triggers randomization at regular intervals

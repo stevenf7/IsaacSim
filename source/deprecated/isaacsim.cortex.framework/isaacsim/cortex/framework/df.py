@@ -233,7 +233,11 @@ class DfDecider(DfBindable):
         self.children = {}
 
     def __str__(self) -> str:
-        """Return the name of this decider node."""
+        """Return the name of this decider node.
+
+        Returns:
+            String representation of the object.
+        """
         return self.name
 
     def add_child(self, name: str, child: "DfDecider") -> None:
@@ -405,7 +409,11 @@ class DfState(DfBindable):
     """
 
     def __str__(self) -> str:
-        """Return a string representation of this state."""
+        """Return a string representation of this state.
+
+        Returns:
+            String representation of the object.
+        """
         out = ""
         if hasattr(self, "name"):
             out = self.name
@@ -485,7 +493,11 @@ class DfStateSequence(DfState):
         self.state = None
 
     def __str__(self) -> str:
-        """Return a string representation of the sequence and its current state."""
+        """Return a string representation of the sequence and its current state.
+
+        Returns:
+            String representation of the object.
+        """
         return f"{type(self).__name__}[{self.state}]"
 
     def bind(self, context: DfLogicalState, params: Any) -> None:
@@ -580,7 +592,11 @@ class DfHierarchicalState(DfState):
         self.active_state = None
 
     def __str__(self) -> str:
-        """Return a string representation of this hierarchical state."""
+        """Return a string representation of this hierarchical state.
+
+        Returns:
+            String representation of the object.
+        """
         return f"{type(self).__name__}[{self.active_state}]"
 
     def enter(self) -> None:
@@ -649,7 +665,11 @@ class DfHsmAction(DfAction):
         self.hsm = hsm
 
     def __str__(self) -> str:
-        """Return a string representation by delegating to the internal HSM."""
+        """Return a string representation by delegating to the internal HSM.
+
+        Returns:
+            String representation of the object.
+        """
         return self.hsm.__str__()
 
     def enter(self) -> None:
@@ -725,7 +745,11 @@ class DfDeciderState(DfState):
         self.stack = []
 
     def __str__(self) -> str:
-        """Return a string showing the decider name and current decision stack."""
+        """Return a string showing the decider name and current decision stack.
+
+        Returns:
+            String representation of the object.
+        """
         return f"{self.decider.name}[{'->'.join(str(i) for i in self.stack)}]"
 
     def bind(self, context: DfLogicalState, params: Any) -> None:
@@ -790,7 +814,11 @@ class DfTimedDeciderState(DfDeciderState):
         self.activity_duration = activity_duration
 
     def __str__(self) -> str:
-        """Return a string showing the timed decider stack and activity duration."""
+        """Return a string showing the timed decider stack and activity duration.
+
+        Returns:
+            String representation of the object.
+        """
         return f"TimedDecider[{'->'.join([str(i) for i in self.stack])}]({self.activity_duration})"
 
     def enter(self) -> None:
@@ -831,7 +859,11 @@ class DfWaitState(DfState):
         self.wait_time = wait_time
 
     def __str__(self) -> str:
-        """Return a string showing the wait time."""
+        """Return a string showing the wait time.
+
+        Returns:
+            String representation of the object.
+        """
         return f"Wait({self.wait_time})"
 
     def enter(self) -> None:
@@ -873,7 +905,11 @@ class DfStateMachineDecider(DfDecider):
         self.state = None
 
     def __str__(self) -> str:
-        """Return a string showing the decider name and current state."""
+        """Return a string showing the decider name and current state.
+
+        Returns:
+            String representation of the object.
+        """
         return f"{self.name}[{self.state}]"
 
     def enter(self) -> None:
@@ -929,7 +965,11 @@ class DfSetLockState(DfState):
         self.decider = decider
 
     def __str__(self) -> str:
-        """Return a string showing the lock state and decider name."""
+        """Return a string showing the lock state and decider name.
+
+        Returns:
+            String representation of the object.
+        """
         return f"SetLockState(set_locked_to:{self.set_locked_to}, {self.decider.name})"
 
     def enter(self) -> None:
@@ -955,7 +995,11 @@ class DfWriteContextState(DfState):
         self.write_method = write_method
 
     def __str__(self) -> str:
-        """Return a string showing the write method name."""
+        """Return a string showing the write method name.
+
+        Returns:
+            String representation of the object.
+        """
         return f"WriteContextState({self.write_method.__name__})"
 
     def enter(self) -> None:
@@ -1036,7 +1080,11 @@ class DfNetwork(DfBehavior):
         self.reset()
 
     def __str__(self) -> str:
-        """Return a string showing the network type and decider state."""
+        """Return a string showing the network type and decider state.
+
+        Returns:
+            String representation of the object.
+        """
         return f"{type(self).__name__}[{self._decider_state}]"
 
     def reset(self) -> None:
@@ -1135,7 +1183,11 @@ class DfRldsNode(DfDecider):
     """
 
     def is_runnable(self) -> bool | None:
-        """Override this method to implement the IsRunnable condition of the RLDS node."""
+        """Override this method to implement the IsRunnable condition of the RLDS node.
+
+        Returns:
+            True if the node is runnable, False otherwise, or None if not overridden.
+        """
 
     def is_enterable(self) -> bool | None:
         """Specify a slightly different enterable condition than the runnable condition.
@@ -1195,7 +1247,11 @@ class DfRldsDecider(DfDecider):
         self.sequence = []
 
     def __str__(self) -> str:
-        """Return the class name of this RLDS decider."""
+        """Return the class name of this RLDS decider.
+
+        Returns:
+            String representation of the object.
+        """
         return type(self).__name__
 
     class NamedRldsNode:
@@ -1211,7 +1267,11 @@ class DfRldsDecider(DfDecider):
             self.rlds_node = rlds_node
 
         def __str__(self) -> str:
-            """Return the name of this RLDS node."""
+            """Return the name of this RLDS node.
+
+            Returns:
+                String representation of the object.
+            """
             return self.name
 
     def append_rlds_node(self, name: str, rlds_node: DfRldsNode) -> None:

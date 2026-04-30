@@ -16,7 +16,8 @@
 """High level wrapper for a manipulator with a single end effector and optional gripper."""
 
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
+from typing import Optional
 
 import omni.kit.app
 from isaacsim.core.prims import SingleArticulation, SingleRigidPrim
@@ -59,7 +60,7 @@ class SingleManipulator(SingleArticulation):
         scale: Optional[Sequence[float]] = None,
         visible: Optional[bool] = None,
         gripper: Gripper = None,
-    ):
+    ) -> None:
         self._end_effector_prim_path = end_effector_prim_path
         self._gripper = gripper
         self._end_effector = None
@@ -94,7 +95,7 @@ class SingleManipulator(SingleArticulation):
         """
         return self._gripper
 
-    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None):
+    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
         """Create a physics simulation view if not passed and creates an articulation view using physX tensor api.
 
         This needs to be called after each hard reset (i.e stop + play on the timeline) before interacting with any
@@ -118,10 +119,10 @@ class SingleManipulator(SingleArticulation):
             self._gripper.initialize(physics_sim_view=physics_sim_view, articulation_num_dofs=self.num_dof)
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Resets the manipulator, the end effector and the gripper to its default state."""
         SingleArticulation.post_reset(self)
         self._end_effector.post_reset()
-        if self._gripper != None:
+        if self._gripper is not None:
             self._gripper.post_reset()
         return

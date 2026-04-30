@@ -32,7 +32,7 @@ class TestLightBeamSensor(omni.kit.test.AsyncTestCase):
     """Test light beam sensor."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         self._lb = _range_sensor.acquire_lightbeam_sensor_interface()
         await omni.usd.get_context().new_stage_async()
@@ -42,10 +42,9 @@ class TestLightBeamSensor(omni.kit.test.AsyncTestCase):
             stage_units_in_meters=1.0, physics_dt=1.0 / self._physics_rate, rendering_dt=1.0 / self._physics_rate
         )
         await self.my_world.initialize_simulation_context_async()
-        pass
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         self.my_world.stop()
         self.my_world.clear_instance()
@@ -54,11 +53,18 @@ class TestLightBeamSensor(omni.kit.test.AsyncTestCase):
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
-        pass
 
-    async def add_cube(self, path, size, offset):
-        """Perform add cube operation."""
+    async def add_cube(self, path: str, size: float, offset: object) -> UsdGeom.Cube:
+        """Perform add cube operation.
 
+        Args:
+            path: USD path for the cube prim.
+            size: Size of the cube.
+            offset: Translation offset for the cube.
+
+        Returns:
+            The created cube geometry object.
+        """
         cubeGeom = UsdGeom.Cube.Define(self._stage, path)
         cubePrim = self._stage.GetPrimAtPath(path)
 
@@ -69,9 +75,8 @@ class TestLightBeamSensor(omni.kit.test.AsyncTestCase):
         return cubeGeom
 
     # Tests a light beam sensor with a cube in front of it breaking the beam
-    async def test_basic_lightbeam_sensor(self):
+    async def test_basic_lightbeam_sensor(self) -> None:
         """Test basic lightbeam sensor."""
-
         # Add a cube
         cubePath = "/World/Cube"
         await self.add_cube(cubePath, 1.000, Gf.Vec3f(0.8, -0.5, 0.0))
@@ -105,9 +110,8 @@ class TestLightBeamSensor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(linear_depth[0], 0.4)
         self.assertEqual(n_length, 1)
 
-    async def test_lightbeam_curtain(self):
+    async def test_lightbeam_curtain(self) -> None:
         """Test lightbeam curtain."""
-
         # Add a cube
         cubePath = "/World/Cube"
         await self.add_cube(cubePath, 1.000, Gf.Vec3f(1.5, -0.5, 0.0))

@@ -16,13 +16,15 @@
 """Module for triggering domain randomization events in Isaac Sim."""
 
 
+from typing import Any
+
 from omni.replicator.core.utils import ReplicatorWrapper, create_node
 
 from .context import initialize_context
 
 
 @ReplicatorWrapper
-def on_rl_frame(num_envs: int):
+def on_rl_frame(num_envs: int) -> Any:
     """Creates a node that triggers domain randomization on reinforcement learning frames.
 
     This function sets up domain randomization to occur at specific intervals during RL training,

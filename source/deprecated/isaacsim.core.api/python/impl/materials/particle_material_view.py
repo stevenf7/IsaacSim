@@ -219,7 +219,7 @@ class ParticleMaterialView:
         # Keep count from __init__ so USD attribute access (stopped-timeline) still works.
         carb.log_warn("create_particle_material_view is no longer available; using USD attribute access only.")
         self._physics_view = None
-        carb.log_info("Particle material View Device: {}".format(self._device))
+        carb.log_info(f"Particle material View Device: {self._device}")
         return
 
     def set_frictions(
@@ -441,6 +441,15 @@ class ParticleMaterialView:
         """Gets the lifts of materials indicated by the indices.
 
         Note: lift attribute was removed from PhysxPBDMaterialAPI. Always returns zeros.
+
+        Args:
+            indices: Indices to specify which material prims to query.
+                Defaults to None (i.e: all prims in the view).
+            clone: True to return a clone of the internal buffer. Otherwise False.
+
+        Returns:
+            Tensor of zeros with shape (M, ).
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         return self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)
@@ -453,6 +462,12 @@ class ParticleMaterialView:
         """Sets the drags for the material prims indicated by the indices.
 
         Note: drag attribute was removed from PhysxPBDMaterialAPI. This is a no-op.
+
+        Args:
+            values: Material drag tensor with the shape (M, ) (ignored).
+            indices: Indices to specify which material prims to manipulate.
+                Defaults to None (i.e: all prims in the view).
+
         """
         # drag attribute was removed from PhysxPBDMaterialAPI — no-op for compatibility
         carb.log_warn("physxPBDMaterial:drag has been removed; set_drags is a no-op.")
@@ -463,6 +478,15 @@ class ParticleMaterialView:
         """Gets the drags of materials indicated by the indices.
 
         Note: drag attribute was removed from PhysxPBDMaterialAPI. Always returns zeros.
+
+        Args:
+            indices: Indices to specify which material prims to query.
+                Defaults to None (i.e: all prims in the view).
+            clone: True to return a clone of the internal buffer. Otherwise False.
+
+        Returns:
+            Tensor of zeros with shape (M, ).
+
         """
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         return self._backend_utils.create_zeros_tensor([indices.shape[0]], dtype="float32", device=self._device)

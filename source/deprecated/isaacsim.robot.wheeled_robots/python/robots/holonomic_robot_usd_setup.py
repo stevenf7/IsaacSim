@@ -16,6 +16,8 @@
 """Module for setting up USD attributes and parameters for holonomic robots with mecanum wheels."""
 
 
+from typing import Any
+
 import numpy as np
 import omni
 from isaacsim.core.utils.prims import get_prim_at_path
@@ -33,12 +35,12 @@ class HolonomicRobotUsdSetup:
         com_prim_path: Path of the xform representing the center of mass of the vehicle.
     """
 
-    def __init__(self, robot_prim_path: str, com_prim_path: str):
+    def __init__(self, robot_prim_path: str, com_prim_path: str) -> None:
         self._robot_prim_path = robot_prim_path
         self._com_prim_path = com_prim_path  # TODO: make this one of USD attribute
         self.from_usd(self._robot_prim_path, self._com_prim_path)
 
-    def from_usd(self, robot_prim_path, com_prim_path):
+    def from_usd(self, robot_prim_path: str, com_prim_path: str) -> None:
         """Extract and compile necessary information from USD when available.
 
         Args:
@@ -79,7 +81,7 @@ class HolonomicRobotUsdSetup:
         self._up_axis = axis[UsdGeom.GetStageUpAxis(stage)]
         self._wheel_axis = axis[joint.GetAxisAttr().Get()]
 
-    def get_holonomic_controller_params(self):
+    def get_holonomic_controller_params(self) -> tuple:
         """Parameters needed for holonomic robot control.
 
         Returns:
@@ -94,7 +96,7 @@ class HolonomicRobotUsdSetup:
             self._up_axis,
         )
 
-    def get_articulation_controller_params(self):
+    def get_articulation_controller_params(self) -> list:
         """Parameters needed for articulation control.
 
         Returns:
@@ -103,7 +105,7 @@ class HolonomicRobotUsdSetup:
         return self._wheel_dof_names
 
     @property
-    def wheel_radius(self):
+    def wheel_radius(self) -> list:
         """Radius values for each wheel.
 
         Returns:
@@ -112,7 +114,7 @@ class HolonomicRobotUsdSetup:
         return self._wheel_radius
 
     @property
-    def wheel_positions(self):
+    def wheel_positions(self) -> Any:
         """Position coordinates for each wheel relative to the center of mass.
 
         Returns:
@@ -121,7 +123,7 @@ class HolonomicRobotUsdSetup:
         return self._wheel_positions
 
     @property
-    def wheel_orientations(self):
+    def wheel_orientations(self) -> Any:
         """Orientation quaternions for each wheel relative to the center of mass.
 
         Returns:
@@ -130,7 +132,7 @@ class HolonomicRobotUsdSetup:
         return self._wheel_orientations
 
     @property
-    def mecanum_angles(self):
+    def mecanum_angles(self) -> list:
         """Mecanum wheel angles for each wheel joint.
 
         Returns:
@@ -139,7 +141,7 @@ class HolonomicRobotUsdSetup:
         return self._mecanum_angles
 
     @property
-    def wheel_dof_names(self):
+    def wheel_dof_names(self) -> list:
         """Degree of freedom names for each wheel joint.
 
         Returns:
@@ -148,7 +150,7 @@ class HolonomicRobotUsdSetup:
         return self._wheel_dof_names
 
     @property
-    def wheel_axis(self):
+    def wheel_axis(self) -> Any:
         """Axis of rotation for the wheels.
 
         Returns:
@@ -157,7 +159,7 @@ class HolonomicRobotUsdSetup:
         return self._wheel_axis
 
     @property
-    def up_axis(self):
+    def up_axis(self) -> Any:
         """Up axis of the USD stage.
 
         Returns:

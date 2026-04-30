@@ -407,6 +407,10 @@ class ParticleMaterial:
 
         .. deprecated::
             physxPBDMaterial:lift was deprecated by PhysX. This method is a no-op.
+
+        Args:
+            value: The lift coefficient (ignored).
+
         """
         carb.log_warn("ParticleMaterial.set_lift is a no-op — physxPBDMaterial:lift was removed by PhysX.")
 
@@ -415,6 +419,10 @@ class ParticleMaterial:
 
         .. deprecated::
             physxPBDMaterial:drag was deprecated by PhysX. This method is a no-op.
+
+        Args:
+            value: The drag coefficient (ignored).
+
         """
         carb.log_warn("ParticleMaterial.set_drag is a no-op — physxPBDMaterial:drag was removed by PhysX.")
 
@@ -526,6 +534,10 @@ class ParticleMaterial:
 
         .. deprecated::
             physxPBDMaterial:lift was deprecated by PhysX. Always returns 0.0.
+
+        Returns:
+            Always 0.0 since the lift attribute was removed by PhysX.
+
         """
         return 0.0
 
@@ -534,5 +546,9 @@ class ParticleMaterial:
 
         .. deprecated::
             physxPBDMaterial:drag was deprecated by PhysX. Always returns 0.0.
+
+        Returns:
+            Always 0.0 since the drag attribute was removed by PhysX.
+
         """
         return 0.0

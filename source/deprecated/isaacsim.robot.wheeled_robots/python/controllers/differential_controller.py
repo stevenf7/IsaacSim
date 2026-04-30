@@ -49,7 +49,7 @@ class DifferentialController(BaseController):
         max_linear_speed: float = 1.0e20,
         max_angular_speed: float = 1.0e20,
         max_wheel_speed: float = 1.0e20,
-    ):
+    ) -> None:
         super().__init__(name)
         if wheel_radius <= 0:
             raise ValueError(f"wheel_radius must be positive, got {wheel_radius}")

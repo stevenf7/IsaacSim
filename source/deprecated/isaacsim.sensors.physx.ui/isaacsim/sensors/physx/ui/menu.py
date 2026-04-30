@@ -46,7 +46,7 @@ class RangeSensorMenu:
         ext_id: Extension identifier used to register actions and manage the menu lifecycle.
     """
 
-    def __init__(self, ext_id: str):
+    def __init__(self, ext_id: str) -> None:
         self._ext_name = omni.ext.get_extension_name(ext_id)
         self._registered_actions = []
 
@@ -145,7 +145,7 @@ class RangeSensorMenu:
 
         self._viewport_create_menu = omni.kit.context_menu.add_menu(context_menu_dict, "CREATE")
 
-    def _get_stage_and_path(self):
+    def _get_stage_and_path(self) -> str | None:
         """Gets the current stage and selected prim path.
 
         Returns:
@@ -219,7 +219,7 @@ class RangeSensorMenu:
             forward_axis=Gf.Vec3d(1, 0, 0),
         )
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Shuts down the range sensor menu by removing menu items and deregistering actions."""
         remove_menu_items(self._menu_items, "Create")
         self._viewport_create_menu = None

@@ -51,7 +51,7 @@ class Extension(omni.ext.IExt):
     including Z-up axis orientation and physics scene setup.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize extension and UI elements.
 
         Args:
@@ -68,10 +68,10 @@ class Extension(omni.ext.IExt):
             category=self.category,
         )
 
-    def build_window(self):
+    def build_window(self) -> None:
         """Build the main window for the extension."""
 
-    def build_ui(self):
+    def build_ui(self) -> None:
         """Build the user interface components for the LIDAR sensor extension.
 
         Creates command panel with buttons to load LIDAR sensor, spawn obstacles, and display data stream.
@@ -135,7 +135,7 @@ class Extension(omni.ext.IExt):
                     }
                     self._info_cb, self._info_label = combo_cb_scrolling_frame_builder(**dict)
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Perform cleanup when the extension shuts down.
 
         Deregisters the example from the browser instance and clears event subscriptions.
@@ -215,7 +215,7 @@ class Extension(omni.ext.IExt):
             self._load_lidar_button.enabled = True
             self._load_lidar_scene_button.enabled = True
 
-    def _on_spawn_lidar_button(self):
+    def _on_spawn_lidar_button(self) -> None:
         """Handle the spawn LIDAR button click event.
 
         Creates a new stage and spawns a LIDAR sensor. Sets up event subscription for editor updates
@@ -317,7 +317,7 @@ class Extension(omni.ext.IExt):
             # The data on the c++ side is stored as uint16.  in order to get our depth values into centimeters, we
             # must first convert from uint16 into float on [0,1], and then scale to the maximum distance.
             entry = [ray * maxDepth / 65535.0 for ray in cols]
-            tableString += rowString.format("{0:.5f}".format(azimuth[row]), " | ", *entry)
+            tableString += rowString.format(f"{azimuth[row]:.5f}", " | ", *entry)
 
         self._info_label.text = tableString
 

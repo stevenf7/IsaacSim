@@ -47,7 +47,7 @@ class WheelBasePoseController(BaseController):
         is_holonomic: Whether the robot uses holonomic drive.
     """
 
-    def __init__(self, name: str, open_loop_wheel_controller: BaseController, is_holonomic: bool = False):
+    def __init__(self, name: str, open_loop_wheel_controller: BaseController, is_holonomic: bool = False) -> None:
         super().__init__(name)
         self._open_loop_wheel_controller = open_loop_wheel_controller
         self._is_holonomic = is_holonomic
@@ -108,6 +108,6 @@ class WheelBasePoseController(BaseController):
 
         return self._open_loop_wheel_controller.forward(command)
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the controller state."""
         return

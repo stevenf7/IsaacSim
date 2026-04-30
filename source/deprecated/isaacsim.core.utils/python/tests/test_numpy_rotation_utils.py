@@ -24,18 +24,16 @@ import omni.kit.test
 class TestRotationUtils(omni.kit.test.AsyncTestCase):
     """Test cases for RotationUtils."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
-        pass
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         await omni.kit.app.get_app().next_update_async()
-        pass
 
-    async def test_rotation_conversions(self):
+    async def test_rotation_conversions(self) -> None:
         """Test rotation conversions."""
         # ith index of rotations are equivalent
 

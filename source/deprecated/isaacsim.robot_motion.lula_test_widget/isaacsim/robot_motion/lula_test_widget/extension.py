@@ -979,6 +979,10 @@ class Extension(omni.ext.IExt):
         self._models["rmpflow_follow_sinusoid_btn"].enabled = enable
 
     def _get_selected_ee_frame(self) -> str:
-        """Get the selected end effector frame name from the dropdown options."""
+        """Get the selected end effector frame name from the dropdown options.
+
+        Returns:
+            The name of the selected end effector frame.
+        """
         name = "ee_frame"
         return self._ee_frame_options[self._models[name].get_item_value_model().as_int]

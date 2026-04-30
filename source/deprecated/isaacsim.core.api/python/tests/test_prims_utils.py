@@ -34,18 +34,18 @@ class TestPrims(CoreTestCase):
     """Test prims."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
         await super().tearDown()
 
-    async def test_get_all_matching_child_prims(self):
+    async def test_get_all_matching_child_prims(self) -> None:
         """Test get all matching child prims."""
         from isaacsim.core.utils.prims import create_prim, get_prim_path
         from isaacsim.core.utils.stage import clear_stage
@@ -59,7 +59,7 @@ class TestPrims(CoreTestCase):
         result = [get_prim_path(prim) for prim in result]
         self.assertListEqual(result, ["/World", "/World/Floor", "/World/Room", "/World/Floor/thefloor"])
 
-    async def test_create_prim(self):
+    async def test_create_prim(self) -> None:
         """Test create prim."""
         from isaacsim.core.utils.prims import create_prim, get_prim_path
         from isaacsim.core.utils.stage import clear_stage
@@ -85,7 +85,7 @@ class TestPrims(CoreTestCase):
             result, ["/World", "/World/thebox", "/World/thechair1", "/World/thechair2", "/World/thetable"]
         )
 
-    async def test_is_prim_non_root_articulation_link(self):
+    async def test_is_prim_non_root_articulation_link(self) -> None:
         """Test is prim non root articulation link."""
         from isaacsim.core.api.objects import DynamicCuboid
         from isaacsim.core.utils.prims import is_prim_non_root_articulation_link
@@ -108,7 +108,7 @@ class TestPrims(CoreTestCase):
         self.assertFalse(is_prim_non_root_articulation_link(prim_path="/World/Franka/panda_link1/test_1"))
         self.assertFalse(is_prim_non_root_articulation_link(prim_path="/World/Franka/test_1"))
 
-    async def test_get_articulation_root_api_prim_path(self):
+    async def test_get_articulation_root_api_prim_path(self) -> None:
         """Test get articulation root api prim path."""
         ext_manager = omni.kit.app.get_app().get_extension_manager()
         ext_manager.get_enabled_extension_id("isaacsim.core.cloner")
@@ -155,7 +155,7 @@ class TestPrims(CoreTestCase):
             ],
         )
 
-    async def test_find_matching_prim_paths(self):
+    async def test_find_matching_prim_paths(self) -> None:
         """Test find matching prim paths."""
         assets_root_path = await get_assets_root_path_async()
         if assets_root_path is None:

@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Quintic Polynomials Planner.
+"""Quintic Polynomials Planner.
 
 author: Atsushi Sakai (@Atsushi_twi)
 Source: https://github.com/AtsushiSakai/PythonRobotics/blob/master/PathPlanning/QuinticPolynomialsPlanner/quintic_polynomials_planner.py
@@ -82,7 +81,7 @@ class QuinticPolynomial:
         time: Total time duration for the trajectory.
     """
 
-    def __init__(self, xs, vxs, axs, xe, vxe, axe, time):
+    def __init__(self, xs: float, vxs: float, axs: float, xe: float, vxe: float, axe: float, time: float) -> None:
         # calc coefficient of quintic polynomial
         # See jupyter notebook document for derivation of this equation.
         self.a0 = xs
@@ -105,7 +104,7 @@ class QuinticPolynomial:
         self.a4 = x[1]
         self.a5 = x[2]
 
-    def calc_point(self, t):
+    def calc_point(self, t: float) -> float:
         """Calculate the position on the quintic polynomial trajectory at time t.
 
         Args:
@@ -118,7 +117,7 @@ class QuinticPolynomial:
 
         return xt
 
-    def calc_first_derivative(self, t):
+    def calc_first_derivative(self, t: float) -> float:
         """Calculate the first derivative (velocity) of the quintic polynomial trajectory at time t.
 
         Args:
@@ -131,7 +130,7 @@ class QuinticPolynomial:
 
         return xt
 
-    def calc_second_derivative(self, t):
+    def calc_second_derivative(self, t: float) -> float:
         """Calculate the second derivative (acceleration) of the quintic polynomial trajectory at time t.
 
         Args:
@@ -144,7 +143,7 @@ class QuinticPolynomial:
 
         return xt
 
-    def calc_third_derivative(self, t):
+    def calc_third_derivative(self, t: float) -> float:
         """Calculate the third derivative (jerk) of the quintic polynomial trajectory at time t.
 
         Args:

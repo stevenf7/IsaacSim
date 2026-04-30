@@ -58,7 +58,7 @@ class AckermannController(BaseController):
         max_wheel_rotation_angle: float = 6.28,
         max_acceleration: float = 0.0,
         max_steering_angle_velocity: float = 0.0,
-    ):
+    ) -> None:
         super().__init__(name)
         self.wheel_base = np.fabs(wheel_base)
         self.track_width = np.fabs(track_width)

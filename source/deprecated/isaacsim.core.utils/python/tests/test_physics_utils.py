@@ -26,18 +26,16 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
     """Test cases for Physics."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
-        pass
 
-    async def test_rigid_body_enabled(self):
+    async def test_rigid_body_enabled(self) -> None:
         """Test rigid body enabled."""
         from isaacsim.core.utils.prims import create_prim
         from isaacsim.core.utils.stage import clear_stage

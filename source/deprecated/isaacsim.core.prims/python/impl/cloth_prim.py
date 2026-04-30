@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Deprecated ClothPrim stub module."""
+
+from typing import Any
+
 import carb
 
 _ERROR_MSG = (
@@ -22,6 +26,13 @@ _ERROR_MSG = (
 
 
 class ClothPrim:
-    def __init__(self, *args, **kwargs):
+    """Deprecated cloth prim class. No longer available.
+
+    Args:
+        *args: Unused positional arguments.
+        **kwargs: Unused keyword arguments.
+    """
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         carb.log_error(_ERROR_MSG)
         raise NotImplementedError(_ERROR_MSG)

@@ -27,19 +27,23 @@ class TestSimulationContext(CoreTestCase):
     """Test simulation context."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
         await super().setUp()
         await create_new_stage_async()
         World.clear_instance()
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
         await super().tearDown()
 
-    async def test_singleton(self):
-        """Test singleton."""
+    async def test_singleton(self) -> None:
+        """Test singleton.
+
+        Returns:
+            None.
+        """
         my_world_1 = World()
         my_world_2 = World()
         self.assertTrue(my_world_1 == my_world_2)
@@ -54,8 +58,12 @@ class TestSimulationContext(CoreTestCase):
         my_world_3.clear_instance()
         return
 
-    async def test_set_defaults(self):
-        """Test set defaults."""
+    async def test_set_defaults(self) -> None:
+        """Test set defaults.
+
+        Returns:
+            None.
+        """
         await create_new_stage_async()
         set_stage_units(stage_units_in_meters=1.0)
         simulation_context = SimulationContext(set_defaults=False)
@@ -80,8 +88,12 @@ class TestSimulationContext(CoreTestCase):
         simulation_context.set_simulation_dt(physics_dt=None, rendering_dt=None)
         return
 
-    async def test_default_dt(self):
-        """Test default dt."""
+    async def test_default_dt(self) -> None:
+        """Test default dt.
+
+        Returns:
+            None.
+        """
         await create_new_stage_async()
         stage = get_current_stage()
         set_stage_units(stage_units_in_meters=1.0)
@@ -90,7 +102,7 @@ class TestSimulationContext(CoreTestCase):
         assert 1.0 / simulation_context.get_rendering_dt() == stage.GetTimeCodesPerSecond()
         return
 
-    async def test_physics_context_solve_articulation_contact_last(self):
+    async def test_physics_context_solve_articulation_contact_last(self) -> None:
         """Test physics context solve articulation contact last."""
         simulation_context = SimulationContext(set_defaults=False)
         await simulation_context.initialize_simulation_context_async()

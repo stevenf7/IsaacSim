@@ -33,18 +33,18 @@ from .common import CoreTestCase
 class TestXformPrimPose(CoreTestCase):
     """Test xform prim pose."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         SimulationManager.set_backend("numpy")
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
         await super().tearDown()
 
-    async def test_position_orientation_scale(self):
+    async def test_position_orientation_scale(self) -> None:
         """Test position orientation scale."""
         # Test constructor setting of pose
         position = [1.0, 2.0, 3.0]

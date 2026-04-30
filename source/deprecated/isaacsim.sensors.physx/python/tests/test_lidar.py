@@ -33,7 +33,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
     """Test lidar."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         self._lidar = _range_sensor.acquire_lidar_sensor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -60,13 +60,19 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         self._extension_path = ext_manager.get_extension_path(ext_id)
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         self._timeline.stop()
-        pass
 
-    async def sweep_parameter(self, parameter, min_v, max_v, step):
-        """Perform sweep parameter operation."""
+    async def sweep_parameter(self, parameter: object, min_v: float, max_v: float, step: float) -> None:
+        """Perform sweep parameter operation.
+
+        Args:
+            parameter: The USD attribute to sweep.
+            min_v: Minimum value for sweep.
+            max_v: Maximum value for sweep.
+            step: Step size for sweep.
+        """
         print(parameter.GetName())
         for value in np.arange(min_v, max_v, step):
             # print(value)
@@ -74,9 +80,17 @@ class TestLidar(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
             await omni.kit.app.get_app().next_update_async()
 
-    async def add_cube(self, path, size, offset):
-        """Perform add cube operation."""
+    async def add_cube(self, path: str, size: float, offset: object) -> UsdGeom.Cube:
+        """Perform add cube operation.
 
+        Args:
+            path: USD path for the cube prim.
+            size: Size of the cube.
+            offset: Translation offset for the cube.
+
+        Returns:
+            The created cube geometry object.
+        """
         cubeGeom = UsdGeom.Cube.Define(self._stage, path)
         cubePrim = self._stage.GetPrimAtPath(path)
 
@@ -90,7 +104,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         return cubeGeom
 
     # Tests a static lidar with a cube in front of it
-    async def test_static_lidar(self):
+    async def test_static_lidar(self) -> None:
         """Test static lidar."""
         # Plane
         PhysicsSchemaTools.addGroundPlane(
@@ -135,7 +149,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         self._timeline.play()
 
     # Tests a lidar on a falling cube, with a cube in front of it after it lands
-    async def test_dynamic_lidar(self):
+    async def test_dynamic_lidar(self) -> None:
         """Test dynamic lidar."""
         # Plane
         PhysicsSchemaTools.addGroundPlane(
@@ -184,7 +198,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         self.assertLess(depth[0, 0], 2000)
         self.assertEqual(depth[450, 0], 65535)
 
-    async def test_parameter_ranges(self):
+    async def test_parameter_ranges(self) -> None:
         """Test parameter ranges."""
         # Plane
         PhysicsSchemaTools.addGroundPlane(
@@ -226,8 +240,12 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         await self.sweep_parameter(RangeSensorSchema.RangeSensor(lidar).GetMaxRangeAttr(), -1024, 1024, 256)
         lidar.GetHighLodAttr().Set(False)
 
-    async def test_carter_lidar(self):
-        """Test carter lidar."""
+    async def test_carter_lidar(self) -> None:
+        """Test carter lidar.
+
+        Returns:
+            None
+        """
         self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
@@ -275,7 +293,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         self._timeline.play()
 
     # Tests a static lidar with a cube in front of it and get semantic id for hit points
-    async def test_static_lidar_semantic(self):
+    async def test_static_lidar_semantic(self) -> None:
         """Test static lidar semantic."""
         # Plane
         PhysicsSchemaTools.addGroundPlane(

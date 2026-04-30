@@ -56,6 +56,7 @@ class RigidContactView(object):
             (although slow for large number of prims) this ensures that
             appropriate physics settings are applied on all the prim in the view.
         disable_stablization: Disables the contact stabilization parameter in the physics context.
+        disable_stabilization: Overrides disable_stablization when provided; disables contact stabilization in the physics context.
         max_contact_count: Maximum number of contact data to report when detailed contact information is needed.
 
     Example:

@@ -24,19 +24,18 @@ from isaacsim.sensors.physx import _range_sensor
 class TestExtensionDocstrings(isaacsim.test.docstring.AsyncDocTestCase):
     """Test extension docstrings."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Method called to prepare the test fixture."""
         super().setUp()
         # create new stage
         await stage_utils.create_new_stage_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Method called immediately after the test method has been called."""
         super().tearDown()
 
-    async def test_lidar_docstrings(self):
+    async def test_lidar_docstrings(self) -> None:
         """Test lidar docstrings."""
-
         # Add lidar
         result, lidar = omni.kit.commands.execute(
             "RangeSensorCreateLidar",

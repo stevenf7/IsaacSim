@@ -224,7 +224,7 @@ class ParticleSystem:
         # Keep count from __init__ so USD attribute access (stopped-timeline) still works.
         carb.log_warn("create_particle_system_view is no longer available; using USD attribute access only.")
         self._physics_view = None
-        carb.log_info("Particle System View Device: {}".format(self._device))
+        carb.log_info(f"Particle System View Device: {self._device}")
         return
 
     def _invalidate_physics_handle_callback(self, event: object) -> None:

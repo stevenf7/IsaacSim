@@ -56,7 +56,11 @@ class Extension(omni.ext.IExt):
     """Extension class for the loaded scenario workflow template."""
 
     def on_startup(self, ext_id: str) -> None:
-        """Initialize extension and UI elements."""
+        """Initialize extension and UI elements.
+
+        Args:
+            ext_id: Extension identifier provided by the extension manager.
+        """
         self.ext_id = ext_id
         self._usd_context = omni.usd.get_context()
 
@@ -165,7 +169,11 @@ class Extension(omni.ext.IExt):
         self.ui_builder.on_menu_callback()
 
     def _on_timeline_play(self, event: object) -> None:
-        """Timeline play event callback."""
+        """Timeline play event callback.
+
+        Args:
+            event: The timeline play event.
+        """
         if not self._physics_subscription:
             self._physics_subscription = self._physics_simulation_interface.subscribe_physics_on_step_events(
                 pre_step=False, order=0, on_update=self._on_physics_step
@@ -173,7 +181,11 @@ class Extension(omni.ext.IExt):
         self.ui_builder.on_timeline_event(event)
 
     def _on_timeline_stop(self, event: object) -> None:
-        """Timeline stop event callback."""
+        """Timeline stop event callback.
+
+        Args:
+            event: The timeline stop event.
+        """
         self._physics_subscription = None
         self.ui_builder.on_timeline_event(event)
 
@@ -181,13 +193,21 @@ class Extension(omni.ext.IExt):
         self.ui_builder.on_physics_step(step)
 
     def _on_stage_opened(self, event: object) -> None:
-        """Stage opened event callback."""
+        """Stage opened event callback.
+
+        Args:
+            event: The stage opened event.
+        """
         self._physics_subscription = None
         self.ui_builder.cleanup()
         self.ui_builder.on_stage_event(event)
 
     def _on_stage_closed(self, event: object) -> None:
-        """Stage closed event callback."""
+        """Stage closed event callback.
+
+        Args:
+            event: The stage closed event.
+        """
         self._physics_subscription = None
         self.ui_builder.cleanup()
         self.ui_builder.on_stage_event(event)

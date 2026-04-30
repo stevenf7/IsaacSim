@@ -22,9 +22,12 @@
 """
 
 
+from __future__ import annotations
+
 import asyncio
 import warnings
 from abc import abstractmethod
+from typing import Any
 
 import carb.eventdispatcher
 import omni.kit.app
@@ -73,7 +76,7 @@ class BaseSampleUITemplate:
         self._overview = kwargs.get("overview", "")
         self._sample = kwargs.get("sample", BaseSample())
 
-        self._buttons = dict()
+        self._buttons = {}
         self.extra_stacks = None
         self._stage_event_sub = None
         self._timeline_stop_callback_id = None
@@ -88,7 +91,7 @@ class BaseSampleUITemplate:
         return self._sample
 
     @sample.setter
-    def sample(self, sample):
+    def sample(self, sample: Any) -> None:
         self._sample = sample
 
     def get_world(self) -> World:
@@ -99,7 +102,7 @@ class BaseSampleUITemplate:
         """
         return World.instance()
 
-    def build_window(self):
+    def build_window(self) -> None:
         """Builds the main window for the sample UI template."""
         # separating out building the window and building the UI, so that example browser can build_ui but not the window
         # self._window = omni.ui.Window(
@@ -185,7 +188,7 @@ class BaseSampleUITemplate:
         and updates button states.
         """
 
-        async def _on_load_world_async():
+        async def _on_load_world_async() -> None:
             await self._sample.load_world_async()
             await omni.kit.app.get_app().next_update_async()
 
@@ -215,7 +218,7 @@ class BaseSampleUITemplate:
         Asynchronously resets the sample and triggers post-reset button event handling.
         """
 
-        async def _on_reset_async():
+        async def _on_reset_async() -> None:
             await self._sample.reset_async()
             await omni.kit.app.get_app().next_update_async()
             self.post_reset_button_event()

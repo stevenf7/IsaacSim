@@ -19,4 +19,4 @@
 from .commands import *
 from .extension import *
 from .proximity_sensor import *
-from .rotating_lidar_physX import RotatingLidarPhysX
+from .rotating_lidar_physX import RotatingLidarPhysX as RotatingLidarPhysX

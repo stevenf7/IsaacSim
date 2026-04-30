@@ -59,7 +59,7 @@ class UIBuilder:
         """Callback for Timeline events (Play, Pause, Stop).
 
         Args:
-            event (omni.timeline.TimelineEventType): Event Type
+            event: Event type.
         """
 
     def on_physics_step(self, step: object) -> None:
@@ -68,14 +68,14 @@ class UIBuilder:
         Physics steps only occur when the timeline is playing.
 
         Args:
-            step (float): Size of physics step
+            step: Size of physics step.
         """
 
     def on_stage_event(self, event: object) -> None:
         """Callback for Stage Events.
 
         Args:
-            event (omni.usd.StageEventType): Event Type
+            event: Event type.
         """
 
     def cleanup(self) -> None:

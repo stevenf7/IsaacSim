@@ -16,6 +16,7 @@
 """Test contact sensor functionality."""
 
 import asyncio
+from typing import Any
 
 import carb.tokens
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -41,8 +42,20 @@ from .common import reset_timeline, setup_ant_scene, step_simulation
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
 
 
-async def add_cube(stage, path, size, offset, physics=True, mass=0.0) -> Usd.Prim:
-    """Add a cube prim to the stage."""
+async def add_cube(stage: Any, path: Any, size: Any, offset: Any, physics: bool = True, mass: float = 0.0) -> Usd.Prim:
+    """Add a cube prim to the stage.
+
+    Args:
+        stage: The USD stage to add the cube to.
+        path: USD path for the cube prim.
+        size: Size of the cube.
+        offset: Translation offset for the cube.
+        physics: Whether to apply rigid body physics to the cube.
+        mass: Mass of the cube in kg. Only used when physics is True and mass > 0.
+
+    Returns:
+        The created USD prim for the cube.
+    """
     cube_geom = UsdGeom.Cube.Define(stage, path)
     cube_prim = stage.GetPrimAtPath(path)
     cube_geom.CreateSizeAttr(size)
@@ -67,7 +80,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     """Test contact sensor."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         # This needs to be set so that kit updates match physics updates
         self._physics_rate = 60
@@ -80,29 +93,29 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             carb.log_error("Could not find Isaac Sim assets folder")
             return
 
-    async def _setup_ant(self):
+    async def _setup_ant(self) -> None:
         """Load the ant scene and configure ant-specific test data."""
         self._ant_config = await setup_ant_scene(self._physics_rate)
         self._stage = stage_utils.get_current_stage()
 
     # Convenience properties for ant configuration
     @property
-    def leg_paths(self):
+    def leg_paths(self) -> list:
         """Return leg paths."""
         return self._ant_config.leg_paths
 
     @property
-    def sensor_offsets(self):
+    def sensor_offsets(self) -> list:
         """Return sensor offsets."""
         return self._ant_config.sensor_offsets
 
     @property
-    def color(self):
+    def color(self) -> list:
         """Return color values."""
         return self._ant_config.colors
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         await omni.kit.app.get_app().next_update_async()
         if self._timeline.is_playing():
@@ -113,7 +126,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
 
-    async def _add_sensor_prims(self):
+    async def _add_sensor_prims(self) -> None:
         """Helper to add contact sensors to ant legs. Requires ant to be loaded."""
         self.sensorGeoms = []
         for i in range(4):
@@ -132,7 +145,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             self.assertTrue(result)
             self.assertIsNotNone(sensor)
 
-    async def test_add_sensor_prim(self):
+    async def test_add_sensor_prim(self) -> None:
         """Ensure contact sensors can be created on ant legs."""
         await self._setup_ant()
         await self._add_sensor_prims()
@@ -142,7 +155,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
     # move the ground to -0.78, simulate 60 steps, test for contact
     # test raw contact value, z-normal ~ 1.0
     # move teh ground to -15, simulate 30 steps, test for no contact
-    async def test_lost_contacts(self):
+    async def test_lost_contacts(self) -> None:
         """Validate contact detection when ground moves in/out of reach."""
         await self._setup_ant()
         await self._add_sensor_prims()
@@ -167,7 +180,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         body0 = self._cs.decode_body_name(c["body0"])
         body1 = self._cs.decode_body_name(c["body1"])
         if self.leg_paths[0] not in [body0, body1]:
-            self.fail("Raw contact does not contain queried body {} ({},{})".format(self.leg_paths[0], body0, body1))
+            self.fail(f"Raw contact does not contain queried body {self.leg_paths[0]} ({body0},{body1})")
         self.assertAlmostEqual(1.0, c["normal"]["z"], delta=0.1)
         # # print(c)
 
@@ -179,7 +192,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         contacts_raw = self._cs.get_contact_sensor_raw_data(self.leg_paths[0] + "/sensor")
         self.assertEqual(len(contacts_raw), 0)
 
-    async def test_get_body_raw_data(self):
+    async def test_get_body_raw_data(self) -> None:
         """Test raw contact data retrieval between rigid bodies without using ant."""
         await stage_utils.create_new_stage_async()
         stage_utils.set_stage_units(meters_per_unit=1.0)
@@ -204,7 +217,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         )
         PhysxSchema.PhysxContactReportAPI.Apply(block_1.prims[0])
 
-        def block_1_is_contacting_block_0():
+        def block_1_is_contacting_block_0() -> bool:
             raw_data = self._cs.get_rigid_body_raw_data(block_1.paths[0])
             in_contact = False
             for c in raw_data:
@@ -225,7 +238,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
 
         self.assertTrue(count < 500)
 
-    async def test_get_raw_data(self):
+    async def test_get_raw_data(self) -> None:
         """Validate raw contact data from a sensor when the ant contacts ground."""
         await self._setup_ant()
         await self._add_sensor_prims()
@@ -239,11 +252,11 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         body0 = self._cs.decode_body_name(c["body0"])
         body1 = self._cs.decode_body_name(c["body1"])
         if self.leg_paths[0] not in [body0, body1]:
-            self.fail("Raw contact does not contain queried body {} ({},{})".format(self.leg_paths[0], body0, body1))
+            self.fail(f"Raw contact does not contain queried body {self.leg_paths[0]} ({body0},{body1})")
         self.assertAlmostEqual(1.0, c["normal"]["z"], delta=0.1)
         ## print(c)
 
-    async def test_persistent_raw_data(self):
+    async def test_persistent_raw_data(self) -> None:
         """Ensure raw contact data remains available during persistent contacts."""
         await self._setup_ant()
         await self._add_sensor_prims()
@@ -256,11 +269,11 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         body0 = self._cs.decode_body_name(c["body0"])
         body1 = self._cs.decode_body_name(c["body1"])
         if self.leg_paths[0] not in [body0, body1]:
-            self.fail("Raw contact does not contain queried body {} ({},{})".format(self.leg_paths[0], body0, body1))
+            self.fail(f"Raw contact does not contain queried body {self.leg_paths[0]} ({body0},{body1})")
         self.assertAlmostEqual(1.0, c["normal"]["z"], delta=6)
         ## print(c)
 
-    async def test_delayed_get_sensor_reading(self):
+    async def test_delayed_get_sensor_reading(self) -> None:
         """Compare delayed sensor readings against raw impulse-derived force."""
         await self._setup_ant()
         await self._add_sensor_prims()
@@ -275,7 +288,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         sensor_reading = self._cs.get_sensor_reading(self.leg_paths[0] + "/sensor")
         self.assertTrue(sensor_reading.is_valid)
 
-        if len((contacts_raw)):
+        if len(contacts_raw):
             # there is a contact, compute force from impulse, compare to sensor reading
             force = (
                 np.linalg.norm(
@@ -288,7 +301,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             # No contact, reading should be zero
             self.assertEqual(sensor_reading.value, 0)
 
-    async def test_contact_outside_range(self):
+    async def test_contact_outside_range(self) -> None:
         """Ensure sensors out of contact range report zero readings."""
         await self._setup_ant()
         self.sensorGeoms = []
@@ -320,7 +333,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             self.assertTrue(sensor_reading.is_valid)
             self.assertEqual(sensor_reading.value, 0)
 
-    async def test_sensor_period(self):
+    async def test_sensor_period(self) -> None:
         """Verify sensor outputs update at the configured frequency."""
         await self._setup_ant()
         # create four sensors that run at 30hz
@@ -362,7 +375,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         # print(len(readings))
         self.assertTrue(abs(len(readings) - 30) <= 1)
 
-    async def test_stop_start(self):
+    async def test_stop_start(self) -> None:
         """Verify sensor readings are consistent across timeline stop/start."""
         await self._setup_ant()
         await self._add_sensor_prims()
@@ -386,7 +399,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         self.assertEqual(init_reading.value, sensor_reading.value)
         self.assertEqual(init_reading.time, sensor_reading.time)
 
-    async def test_sensor_latest_data(self):
+    async def test_sensor_latest_data(self) -> None:
         """Ensure latest-data reads return monotonically increasing times."""
         await self._setup_ant()
         # create four sensors that run at 30hz
@@ -418,7 +431,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             self.assertTrue(latest_sensor_reading.time > old_time)
             old_time = latest_sensor_reading.time
 
-    async def test_wrong_sensor_path(self):
+    async def test_wrong_sensor_path(self) -> None:
         """Ensure invalid sensor paths return invalid readings."""
         await self._setup_ant()
         await self._add_sensor_prims()
@@ -433,7 +446,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             self.assertFalse(latest_sensor_reading.is_valid)
             self.assertEqual(latest_sensor_reading.time, 0)
 
-    async def test_sensor_threshold(self):
+    async def test_sensor_threshold(self) -> None:
         """Verify min/max thresholds gate contact readings as expected."""
         await self._setup_ant()
         await self._add_sensor_prims()
@@ -478,7 +491,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         self.assertGreater(float(sensor_2.value), 0.1)
         self.assertAlmostEqual(float(sensor_3.value), 0.1, delta=1e-5)
 
-    async def test_sensor_with_skip_parents(self):
+    async def test_sensor_with_skip_parents(self) -> None:
         """Verify sensors work when inserted under intermediate Xform prims."""
         await self._setup_ant()
         await self._add_sensor_prims()
@@ -516,7 +529,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             self.assertTrue(sensor_reading.inContact)
             self.assertGreater(float(sensor_reading.value), 0.1)
 
-    async def test_stacked_cubes_contact_forces(self):
+    async def test_stacked_cubes_contact_forces(self) -> None:
         """Test contact sensor force calculations with stacked cubes in equilibrium."""
         await stage_utils.create_new_stage_async()
         stage_utils.set_stage_units(meters_per_unit=1.0)
@@ -608,7 +621,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             msg=f"Top cube force {top_force:.3f} should be approximately {expected_force:.3f} N (m*g)",
         )
 
-    async def test_is_contact_sensor(self):
+    async def test_is_contact_sensor(self) -> None:
         """Test is_contact_sensor returns correct values for valid sensor, invalid prim, and non-existent prim."""
         await stage_utils.create_new_stage_async()
         SimulationManager.setup_simulation(dt=1.0 / 60.0)
@@ -650,7 +663,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         # Test non-existent prim path - should return False
         self.assertFalse(self._cs.is_contact_sensor("/World/NonExistent/sensor"))
 
-    async def test_raw_data_all_fields(self):
+    async def test_raw_data_all_fields(self) -> None:
         """Validate CsRawData fields include dt and position."""
         await self._setup_ant()
         await self._add_sensor_prims()
@@ -669,7 +682,7 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         for axis in ("x", "y", "z"):
             self.assertTrue(np.isfinite(position[axis]))
 
-    async def test_cs_sensor_reading_defaults(self):
+    async def test_cs_sensor_reading_defaults(self) -> None:
         """Verify CsSensorReading default construction values."""
         reading = _sensor.CsSensorReading()
         self.assertEqual(reading.time, 0.0)

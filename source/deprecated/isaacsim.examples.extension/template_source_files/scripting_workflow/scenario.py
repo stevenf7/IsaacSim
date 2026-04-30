@@ -43,14 +43,15 @@ class FrankaRmpFlowExampleScript:
         self._script_generator = None
 
     def load_example_assets(self) -> tuple:
-        """Load assets onto the stage and return them so they can be registered with the.
+        """Load assets onto the stage and return them so they can be registered with the core World.
 
-        core.World.
-
-        This function is called from ui_builder._setup_scene()
+        This function is called from `ui_builder._setup_scene()`.
 
         The position in which things are loaded is also the position to which
         they will be returned on reset.
+
+        Returns:
+            Tuple of loaded assets that can be registered with the core World.
         """
         robot_prim_path = "/panda"
         path_to_robot_usd = get_assets_root_path() + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
@@ -140,14 +141,25 @@ class FrankaRmpFlowExampleScript:
     """
 
     def update(self, step: float) -> bool | None:
-        """Update the script generator on each physics step."""
+        """Update the script generator on each physics step.
+
+        Args:
+            step: The size of the current physics step in seconds.
+
+        Returns:
+            True when the script generator is exhausted, None otherwise.
+        """
         try:
             result = next(self._script_generator)
         except StopIteration:
             return True
 
     def my_script(self) -> object:
-        """Execute the main scripting sequence for the robot."""
+        """Execute the main scripting sequence for the robot.
+
+        Yields:
+            Control back to the caller on each physics step until the sequence is complete.
+        """
         translation_target, orientation_target = self._target.get_world_pose()
 
         yield from self.close_gripper_franka(self._articulation)
@@ -210,8 +222,23 @@ class FrankaRmpFlowExampleScript:
     ) -> object:
         """Use RMPflow to move a robot Articulation to a desired task-space position.
 
-        Exit upon timeout or when end effector comes within the provided threshholds of the target pose.
-        """
+        Exit upon timeout or when end effector comes within the provided thresholds of the target pose.
+
+        Args:
+            translation_target: Target translation position for the end effector.
+            orientation_target: Target orientation for the end effector.
+            articulation: The robot articulation to control.
+            rmpflow: The RMPflow motion policy instance.
+            translation_thresh: Translational distance threshold for success.
+            orientation_thresh: Rotational distance threshold for success.
+            timeout: Maximum number of physics steps before giving up.
+
+        Returns:
+            True if the target was reached, False if timed out.
+
+        Yields:
+            Control back to the caller on each physics step until the target is reached or timeout.
+        """  # noqa: DOC405
         articulation_motion_policy = ArticulationMotionPolicy(articulation, rmpflow, 1 / 60)
         rmpflow.set_end_effector_target(translation_target, orientation_target)
 
@@ -240,7 +267,17 @@ class FrankaRmpFlowExampleScript:
         return False
 
     def open_gripper_franka(self, articulation: object) -> object:
-        """Open the Franka gripper to the fully open position."""
+        """Open the Franka gripper to the fully open position.
+
+        Args:
+            articulation: The robot articulation whose gripper will be opened.
+
+        Returns:
+            True when the gripper has reached the open position.
+
+        Yields:
+            Control back to the caller on each physics step until the gripper is fully open.
+        """  # noqa: DOC405
         open_gripper_action = ArticulationAction(np.array([0.04, 0.04]), joint_indices=np.array([7, 8]))
         articulation.apply_action(open_gripper_action)
 
@@ -253,7 +290,19 @@ class FrankaRmpFlowExampleScript:
     def close_gripper_franka(
         self, articulation: object, close_position: object = np.array([0, 0]), atol: float = 0.001
     ) -> object:
-        """Close the Franka gripper to the specified position."""
+        """Close the Franka gripper to the specified position.
+
+        Args:
+            articulation: The robot articulation whose gripper will be closed.
+            close_position: Target joint positions for the gripper fingers.
+            atol: Absolute tolerance for determining when the gripper has reached the target.
+
+        Returns:
+            True when the gripper has reached the close position.
+
+        Yields:
+            Control back to the caller on each physics step until the gripper is fully closed.
+        """  # noqa: DOC405
         # To close around the cube, different values are passed in for close_position and atol
         open_gripper_action = ArticulationAction(np.array(close_position), joint_indices=np.array([7, 8]))
         articulation.apply_action(open_gripper_action)

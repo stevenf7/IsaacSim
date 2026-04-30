@@ -18,7 +18,6 @@
 
 from pathlib import Path
 
-import carb
 import omni.kit.test
 from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 from isaacsim.sensors.rtx import SUPPORTED_LIDAR_CONFIGS
@@ -36,15 +35,18 @@ class TestSupportedLidarConfigs(omni.kit.test.AsyncTestCase):
     The stage and scene geometry are created once; the checker is reused across all configs.
     """
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Set up the test environment with a new stage and sarcophagus scene."""
         await create_new_stage_async()
         await update_stage_async()
         create_sarcophagus(enable_nonvisual_material=True)
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Tear down the test environment."""
         await omni.kit.app.get_app().next_update_async()
 
-    async def test_supported_lidar_configs(self):
+    async def test_supported_lidar_configs(self) -> None:
+        """Test all supported lidar configurations and variants."""
         checker = SensorCheckerUtil()
 
         model_info = ModelInfo()

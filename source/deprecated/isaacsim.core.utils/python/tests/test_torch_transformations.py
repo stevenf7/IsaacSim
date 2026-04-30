@@ -25,15 +25,13 @@ from isaacsim.core.utils.torch.transformations import get_world_from_local_posit
 class TestTorchTransformations(omni.kit.test.AsyncTestCase):
     """Test suite for torch transformation utilities."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
-        pass
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
-        pass
 
-    async def test_get_world_from_local_position_identity(self):
+    async def test_get_world_from_local_position_identity(self) -> None:
         """Test with identity rotation - position should just be translated."""
         # Identity quaternion [w, x, y, z] = [1, 0, 0, 0]
         # Global pose: position [1, 2, 3], quaternion [1, 0, 0, 0]
@@ -49,7 +47,7 @@ class TestTorchTransformations(omni.kit.test.AsyncTestCase):
             f"Identity rotation failed: got {result}, expected {expected}",
         )
 
-    async def test_get_world_from_local_position_90deg_z_rotation(self):
+    async def test_get_world_from_local_position_90deg_z_rotation(self) -> None:
         """Test with 90 degree rotation around Z axis.
 
         This test specifically catches the quaternion format bug where [x, y, z, 0]
@@ -82,7 +80,7 @@ class TestTorchTransformations(omni.kit.test.AsyncTestCase):
             f"90deg Z rotation failed: got {result}, expected {expected}",
         )
 
-    async def test_get_world_from_local_position_90deg_x_rotation(self):
+    async def test_get_world_from_local_position_90deg_x_rotation(self) -> None:
         """Test with 90 degree rotation around X axis.
 
         A 90-degree rotation around X axis transforms:
@@ -112,7 +110,7 @@ class TestTorchTransformations(omni.kit.test.AsyncTestCase):
             f"90deg X rotation failed: got {result}, expected {expected}",
         )
 
-    async def test_get_world_from_local_position_with_translation(self):
+    async def test_get_world_from_local_position_with_translation(self) -> None:
         """Test rotation combined with translation."""
         # 90 degrees around Z axis with translation [10, 20, 30]
         angle = math.pi / 2  # 90 degrees
@@ -131,7 +129,7 @@ class TestTorchTransformations(omni.kit.test.AsyncTestCase):
             f"Rotation+translation failed: got {result}, expected {expected}",
         )
 
-    async def test_get_world_from_local_position_batched(self):
+    async def test_get_world_from_local_position_batched(self) -> None:
         """Test batched operation with multiple poses."""
         angle = math.pi / 2
         qw = math.cos(angle / 2)
@@ -168,7 +166,7 @@ class TestTorchTransformations(omni.kit.test.AsyncTestCase):
             f"Batched operation failed: got {result}, expected {expected}",
         )
 
-    async def test_get_world_from_local_position_180deg_rotation(self):
+    async def test_get_world_from_local_position_180deg_rotation(self) -> None:
         """Test with 180 degree rotation around Z axis.
 
         This further validates the quaternion convention.

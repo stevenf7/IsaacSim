@@ -162,27 +162,64 @@ def normalise_quat_in_pose(pose: object) -> object:  # noqa: N802
 
 
 @torch.jit.script
-def tf_inverse(q, t):  # noqa: ANN001, ANN201
-    """Compute the inverse of a transform given by quaternion and translation."""
+def tf_inverse(q: torch.Tensor, t: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    """Compute the inverse of a transform given by quaternion and translation.
+
+    Args:
+        q: Rotation quaternion tensor of shape (N, 4) in [w, x, y, z] format.
+        t: Translation tensor of shape (N, 3).
+
+    Returns:
+        Tuple of (inverse_quaternion, inverse_translation) tensors.
+    """
     q_inv = quat_conjugate(q)
     return q_inv, -quat_apply(q_inv, t)
 
 
 @torch.jit.script
-def tf_apply(q, t, v):  # noqa: ANN001, ANN201
-    """Apply a rigid transform (quaternion + translation) to a vector."""
+def tf_apply(q: torch.Tensor, t: torch.Tensor, v: torch.Tensor) -> torch.Tensor:
+    """Apply a rigid transform (quaternion + translation) to a vector.
+
+    Args:
+        q: Rotation quaternion tensor of shape (N, 4) in [w, x, y, z] format.
+        t: Translation tensor of shape (N, 3).
+        v: Vector tensor of shape (N, 3) to transform.
+
+    Returns:
+        Transformed vector tensor of shape (N, 3).
+    """
     return quat_apply(q, v) + t
 
 
 @torch.jit.script
-def tf_vector(q, v):  # noqa: ANN001, ANN201
-    """Rotate a vector by a quaternion without translation."""
+def tf_vector(q: torch.Tensor, v: torch.Tensor) -> torch.Tensor:
+    """Rotate a vector by a quaternion without translation.
+
+    Args:
+        q: Rotation quaternion tensor of shape (N, 4) in [w, x, y, z] format.
+        v: Vector tensor of shape (N, 3) to rotate.
+
+    Returns:
+        Rotated vector tensor of shape (N, 3).
+    """
     return quat_apply(q, v)
 
 
 @torch.jit.script
-def tf_combine(q1, t1, q2, t2):  # noqa: ANN001, ANN201
-    """Combine two rigid transforms into a single transform."""
+def tf_combine(
+    q1: torch.Tensor, t1: torch.Tensor, q2: torch.Tensor, t2: torch.Tensor
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Combine two rigid transforms into a single transform.
+
+    Args:
+        q1: First rotation quaternion tensor of shape (N, 4) in [w, x, y, z] format.
+        t1: First translation tensor of shape (N, 3).
+        q2: Second rotation quaternion tensor of shape (N, 4) in [w, x, y, z] format.
+        t2: Second translation tensor of shape (N, 3).
+
+    Returns:
+        Tuple of (combined_quaternion, combined_translation) tensors.
+    """
     return quat_mul(q1, q2), quat_apply(q1, t2) + t1
 
 

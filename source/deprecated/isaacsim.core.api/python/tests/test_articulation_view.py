@@ -17,6 +17,7 @@
 
 import os
 import unittest
+from typing import Any
 
 import carb
 import numpy as np
@@ -48,7 +49,7 @@ BACKEND = ["torch", "numpy", "warp"]
 class TestArticulationView(CoreTestCase):
     """Test articulation view."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
         await super().setUp()
         World.clear_instance()
@@ -56,14 +57,20 @@ class TestArticulationView(CoreTestCase):
         self._assets_root_path = await get_assets_root_path_async()
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
         carb.settings.get_settings().set_bool("/physics/suppressReadback", False)
         await update_stage_async()
         await super().tearDown()
 
-    async def setUpWorld(self, backend="torch", device="cpu"):
-        """Setupworld."""
+    async def setup_world(self, backend: Any = "torch", device: Any = "cpu") -> None:
+        """Set up the world for testing.
+
+        Args:
+            backend: Backend to use for simulation.
+            device: Device to use for computation.
+
+        """
         World.clear_instance()
         await create_new_stage_async()
         self._my_world = World(stage_units_in_meters=1.0, backend=backend, device=device)
@@ -71,8 +78,13 @@ class TestArticulationView(CoreTestCase):
         self._my_world.scene.add_default_ground_plane()
         self._my_world._physics_context.set_gravity(0)
 
-    async def add_frankas(self, backend):
-        """Add frankas."""
+    async def add_frankas(self, backend: Any) -> None:
+        """Add frankas to the scene.
+
+        Args:
+            backend: Backend to use for simulation.
+
+        """
         asset_path = self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         robot1 = add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka_1")
         robot1.GetVariantSet("Gripper").SetVariantSelection("AlternateFinger")
@@ -96,8 +108,13 @@ class TestArticulationView(CoreTestCase):
         self._my_world.scene.add(self._frankas_view)
         await self._my_world.reset_async()
 
-    async def add_humanoids(self, backend):
-        """Add humanoids."""
+    async def add_humanoids(self, backend: Any) -> None:
+        """Add humanoids to the scene.
+
+        Args:
+            backend: Backend to use for simulation.
+
+        """
         asset_path = self._assets_root_path + "/Isaac/Robots/IsaacSim/Humanoid/humanoid_instanceable.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Humanoid_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Humanoid_2")
@@ -113,8 +130,13 @@ class TestArticulationView(CoreTestCase):
         self._my_world.scene.add(self._humanoids_view)
         await self._my_world.reset_async()
 
-    async def add_cartpoles(self, backend):
-        """Add cartpoles."""
+    async def add_cartpoles(self, backend: Any) -> None:
+        """Add cartpoles to the scene.
+
+        Args:
+            backend: Backend to use for simulation.
+
+        """
         asset_path = self._assets_root_path + "/Isaac/Robots/IsaacSim/Cartpole/cartpole.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Cartpole_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Cartpole_2")
@@ -134,8 +156,14 @@ class TestArticulationView(CoreTestCase):
         self._my_world.scene.add(self._cartpoles_view)
         await self._my_world.reset_async()
 
-    async def add_shadow_hands(self, backend, device="cpu"):
-        """Add shadow hands."""
+    async def add_shadow_hands(self, backend: Any, device: Any = "cpu") -> None:
+        """Add shadow hands to the scene.
+
+        Args:
+            backend: Backend to use for simulation.
+            device: Device to use for computation.
+
+        """
         asset_path = self._assets_root_path + "/Isaac/Robots/ShadowRobot/ShadowHand/shadow_hand_instanceable.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/ShadowHand_1")
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/ShadowHand_2")
@@ -152,16 +180,16 @@ class TestArticulationView(CoreTestCase):
         self._my_world.scene.add(self._hands_view)
         await self._my_world.reset_async()
 
-    async def _step(self):
+    async def _step(self) -> None:
         self._my_world.step_async()
         await update_stage_async()
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_world_poses_torch(self):
+    async def test_world_poses_torch(self) -> None:
         """Test world poses torch."""
         for usd in USD_PATH:
             for device in ["cpu"] if usd else ["cpu", "cuda:0"]:
-                await self.setUpWorld(backend="torch", device=device)
+                await self.setup_world(backend="torch", device=device)
                 await self.add_frankas(backend="torch")
                 for indexed in INDEXED:
 
@@ -200,9 +228,9 @@ class TestArticulationView(CoreTestCase):
                     )
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_world_poses_numpy(self):
+    async def test_world_poses_numpy(self) -> None:
         """Test world poses numpy."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
             for usd in USD_PATH:
@@ -231,10 +259,10 @@ class TestArticulationView(CoreTestCase):
                 )
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_world_poses_warp(self):
+    async def test_world_poses_warp(self) -> None:
         """Test world poses warp."""
         for device in ["cuda:0", "cpu"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
                 for usd in USD_PATH:
@@ -273,10 +301,10 @@ class TestArticulationView(CoreTestCase):
                     )
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_velocities_torch(self):
-        """Test velocities torch."""
+    async def test_velocities_torch_per_device(self) -> None:
+        """Test velocities torch per device."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_humanoids(backend="torch")
             for indexed in INDEXED:
 
@@ -296,9 +324,9 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.isclose(new_v1.cpu().numpy(), gt_v1.cpu().numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_velocities_numpy(self):
+    async def test_velocities_numpy(self) -> None:
         """Test velocities numpy."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_humanoids(backend="numpy")
         for indexed in INDEXED:
             if indexed:
@@ -312,10 +340,10 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.isclose(new_v1, gt_v1, atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_velocities_warp(self):
+    async def test_velocities_warp(self) -> None:
         """Test velocities warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_humanoids(backend="warp")
             for indexed in INDEXED:
                 print("index:", indexed, "device:", device)
@@ -335,9 +363,9 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.isclose(new_v1.numpy(), gt_v1.numpy(), atol=1e-05).all(), f"{new_v1}, {gt_v1}")
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_velocities_torch(self):
+    async def test_velocities_torch(self) -> None:
         """Test velocities torch."""
-        await self.setUpWorld(backend="torch")
+        await self.setup_world(backend="torch")
         await self.add_humanoids(backend="torch")
         for indexed in INDEXED:
             if indexed:
@@ -351,9 +379,9 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.isclose(new_v1.cpu().numpy(), gt_v1.cpu().numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_linear_velocities_torch(self):
+    async def test_linear_velocities_torch(self) -> None:
         """Test linear velocities torch."""
-        await self.setUpWorld(backend="torch")
+        await self.setup_world(backend="torch")
         await self.add_frankas(backend="torch")
         for indexed in INDEXED:
             if indexed:
@@ -367,9 +395,9 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.isclose(new_v1.cpu().numpy(), gt_v1.cpu().numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_linear_velocities_numpy(self):
+    async def test_linear_velocities_numpy(self) -> None:
         """Test linear velocities numpy."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
             if indexed:
@@ -383,9 +411,9 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.isclose(new_v1, gt_v1, atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_linear_velocities_warp(self):
+    async def test_linear_velocities_warp(self) -> None:
         """Test linear velocities warp."""
-        await self.setUpWorld(backend="warp")
+        await self.setup_world(backend="warp")
         await self.add_frankas(backend="warp")
         for indexed in INDEXED:
             if indexed:
@@ -399,9 +427,9 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.isclose(new_v1.numpy(), gt_v1.numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_angular_velocities_torch(self):
+    async def test_angular_velocities_torch(self) -> None:
         """Test angular velocities torch."""
-        await self.setUpWorld(backend="torch")
+        await self.setup_world(backend="torch")
         await self.add_frankas(backend="torch")
         for indexed in INDEXED:
             if indexed:
@@ -415,9 +443,9 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.isclose(new_v1.cpu().numpy(), gt_v1.cpu().numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_angular_velocities_numpy(self):
+    async def test_angular_velocities_numpy(self) -> None:
         """Test angular velocities numpy."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
             if indexed:
@@ -431,9 +459,9 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.isclose(new_v1, gt_v1, atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_angular_velocities_warp(self):
+    async def test_angular_velocities_warp(self) -> None:
         """Test angular velocities warp."""
-        await self.setUpWorld(backend="warp")
+        await self.setup_world(backend="warp")
         await self.add_frankas(backend="warp")
         for indexed in INDEXED:
             if indexed:
@@ -447,10 +475,10 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.isclose(new_v1.numpy(), gt_v1.numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_friction_coefficients_torch(self):
+    async def test_friction_coefficients_torch(self) -> None:
         """Test friction coefficients torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_frankas(backend="torch")
             for indexed in INDEXED:
                 for usd in USD_PATH:
@@ -473,9 +501,9 @@ class TestArticulationView(CoreTestCase):
                     self.assertTrue(np.isclose(new_friction.cpu().numpy(), friction.cpu().numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_friction_coefficients_numpy(self):
+    async def test_friction_coefficients_numpy(self) -> None:
         """Test friction coefficients numpy."""
-        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.setup_world(backend="numpy", device="cpu")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
             for usd in USD_PATH:
@@ -495,10 +523,10 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.isclose(new_friction, friction, atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_friction_coefficients_warp(self):
+    async def test_friction_coefficients_warp(self) -> None:
         """Test friction coefficients warp."""
         for device in ["cuda:0", "cpu"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
                 for usd in USD_PATH:
@@ -522,10 +550,10 @@ class TestArticulationView(CoreTestCase):
                     self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_armatures_torch(self):
+    async def test_armatures_torch(self) -> None:
         """Test armatures torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_frankas(backend="torch")
             for indexed in INDEXED:
                 for usd in USD_PATH:
@@ -547,9 +575,9 @@ class TestArticulationView(CoreTestCase):
                     self.assertTrue(np.isclose(new_value.cpu().numpy(), value.cpu().numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_armatures_numpy(self):
+    async def test_armatures_numpy(self) -> None:
         """Test armatures numpy."""
-        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.setup_world(backend="numpy", device="cpu")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
             for usd in USD_PATH:
@@ -567,10 +595,10 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.isclose(new_value, value, atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_armatures_warp(self):
+    async def test_armatures_warp(self) -> None:
         """Test armatures warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
                 for usd in USD_PATH:
@@ -595,17 +623,17 @@ class TestArticulationView(CoreTestCase):
                     self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_physics_callback(self):
+    async def test_physics_callback(self) -> None:
         """Test physics callback."""
         for backend in BACKEND:
             for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
-                await self.setUpWorld(backend=backend, device=device)
+                await self.setup_world(backend=backend, device=device)
                 await self.add_frankas(backend=backend)
                 for indexed in INDEXED:
 
                     print("index:", indexed, "device:", device)
 
-                    def step_callback_1(step_size, context):
+                    def step_callback_1(step_size: Any, context: Any) -> None:
                         self._frankas_view.get_joint_positions()
 
                     omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
@@ -617,11 +645,11 @@ class TestArticulationView(CoreTestCase):
                     await self._my_world.reset_async()
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_local_pose_torch(self):
+    async def test_local_pose_torch(self) -> None:
         """Test local pose torch."""
         for usd in USD_PATH:
             for device in ["cpu"] if usd else ["cpu", "cuda:0"]:
-                await self.setUpWorld(backend="torch", device=device)
+                await self.setup_world(backend="torch", device=device)
                 await self.add_frankas(backend="torch")
                 for indexed in INDEXED:
 
@@ -649,9 +677,9 @@ class TestArticulationView(CoreTestCase):
                     self.assertTrue(np.isclose(new_ori.cpu().numpy(), rot.cpu().numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_local_pose_numpy(self):
+    async def test_local_pose_numpy(self) -> None:
         """Test local pose numpy."""
-        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.setup_world(backend="numpy", device="cpu")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
             for usd in [False]:
@@ -673,10 +701,10 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.isclose(new_ori, rot, atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_local_pose_warp(self):
+    async def test_local_pose_warp(self) -> None:
         """Test local pose warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
                 for usd in USD_PATH:
@@ -706,11 +734,11 @@ class TestArticulationView(CoreTestCase):
                     self.assertTrue(np.isclose(new_ori.numpy(), rot.numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_effort_modes(self):
+    async def test_effort_modes(self) -> None:
         """Test effort modes."""
         for backend in BACKEND:
             for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
-                await self.setUpWorld(backend=backend, device=device)
+                await self.setup_world(backend=backend, device=device)
                 await self.add_frankas(backend=backend)
                 for indexed in INDEXED:
 
@@ -727,10 +755,10 @@ class TestArticulationView(CoreTestCase):
                     self.assertTrue(values == new_values)
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_gains_torch(self):
+    async def test_gains_torch(self) -> None:
         """Test gains torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_frankas(backend="torch")
             for indexed in INDEXED:
                 for usd in USD_PATH:
@@ -758,9 +786,9 @@ class TestArticulationView(CoreTestCase):
                     self.assertTrue(np.isclose(old_kds.cpu().numpy(), kds.cpu().numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_gains_numpy(self):
+    async def test_gains_numpy(self) -> None:
         """Test gains numpy."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
             for usd in USD_PATH:
@@ -787,10 +815,10 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.isclose(old_kds, kds, atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_gains_warp(self):
+    async def test_gains_warp(self) -> None:
         """Test gains warp."""
         for device in ["cuda:0", "cpu"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
                 for usd in USD_PATH:
@@ -819,13 +847,13 @@ class TestArticulationView(CoreTestCase):
                     self.assertTrue(np.isclose(old_kds.numpy(), kds.numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_switch_control_mode(self):
+    async def test_switch_control_mode(self) -> None:
         """Test switch control mode."""
         for indexed in INDEXED:
             for backend in BACKEND:
                 for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
                     print("index:", indexed, "device:", device, "backend:", backend)
-                    await self.setUpWorld(backend=backend, device=device)
+                    await self.setup_world(backend=backend, device=device)
                     await self.add_frankas(backend=backend)
                     self._frankas_view.switch_control_mode(mode="velocity")
                     kps, kds = self._frankas_view.get_gains()
@@ -840,11 +868,11 @@ class TestArticulationView(CoreTestCase):
                         self.assertTrue(np.any(kds.numpy()))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_switch_dof_control_mode(self):
+    async def test_switch_dof_control_mode(self) -> None:
         """Test switch dof control mode."""
         for backend in BACKEND:
             for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
-                await self.setUpWorld(backend=backend, device=device)
+                await self.setup_world(backend=backend, device=device)
                 await self.add_frankas(backend=backend)
                 for indexed in INDEXED:
 
@@ -867,10 +895,10 @@ class TestArticulationView(CoreTestCase):
                         self.assertTrue(np.any(kds.numpy()))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_max_efforts_torch(self):
+    async def test_max_efforts_torch(self) -> None:
         """Test max efforts torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_frankas(backend="torch")
             for indexed in INDEXED:
                 for usd in USD_PATH:
@@ -901,9 +929,9 @@ class TestArticulationView(CoreTestCase):
                     self.assertTrue(np.isclose(new_efforts.cpu().numpy(), efforts.cpu().numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_max_efforts_numpy(self):
+    async def test_max_efforts_numpy(self) -> None:
         """Test max efforts numpy."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
             for usd in USD_PATH:
@@ -929,10 +957,10 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.isclose(new_efforts, efforts, atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_max_efforts_warp(self):
+    async def test_max_efforts_warp(self) -> None:
         """Test max efforts warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
                 for usd in USD_PATH:
@@ -960,10 +988,10 @@ class TestArticulationView(CoreTestCase):
                     self.assertTrue(np.isclose(new_efforts.numpy(), efforts.numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_physics_properties_torch(self):
+    async def test_physics_properties_torch(self) -> None:
         """Test physics properties torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_frankas(backend="torch")
             self._frankas_view.set_effort_modes("force")
             stiffness_tensor = torch.tensor(
@@ -993,9 +1021,9 @@ class TestArticulationView(CoreTestCase):
             self._frankas_view.set_max_efforts(max_efforts_tensor)
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_physics_properties_numpy(self):
+    async def test_physics_properties_numpy(self) -> None:
         """Test physics properties numpy."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_frankas(backend="numpy")
         self._frankas_view.set_effort_modes("force")
         stiffness_tensor = np.array(
@@ -1022,10 +1050,10 @@ class TestArticulationView(CoreTestCase):
         self._frankas_view.set_max_efforts(max_efforts_tensor)
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_physics_properties_warp(self):
+    async def test_physics_properties_warp(self) -> None:
         """Test physics properties warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             self._frankas_view.set_effort_modes("force")
             stiffness_tensor = wp.array(
@@ -1058,11 +1086,11 @@ class TestArticulationView(CoreTestCase):
             self._frankas_view.set_max_efforts(max_efforts_tensor)
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_initializing_views(self):
+    async def test_initializing_views(self) -> None:
         """Test initializing views."""
         for backend in BACKEND:
             for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
-                await self.setUpWorld(backend=backend, device=device)
+                await self.setup_world(backend=backend, device=device)
                 await self.add_frankas(backend=backend)
                 robots = Articulation(prim_paths_expr="/World/Franka_[1-2]")
                 robots.initialize()
@@ -1074,11 +1102,11 @@ class TestArticulationView(CoreTestCase):
                 self.right_fingers.initialize()
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_physics_handles_none(self):
+    async def test_physics_handles_none(self) -> None:
         """Test physics handles none."""
         for backend in BACKEND:
             for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
-                await self.setUpWorld(backend=backend, device=device)
+                await self.setup_world(backend=backend, device=device)
                 await self.add_frankas(backend=backend)
                 robots = Articulation(prim_paths_expr="/World/Franka_[1-2]")
                 robots.initialize()
@@ -1095,10 +1123,10 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(robots.get_joint_positions() is not None)
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_position_targets_torch(self):
+    async def test_position_targets_torch(self) -> None:
         """Test position targets torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_frankas(backend="torch")
             for indexed in INDEXED:
 
@@ -1117,9 +1145,9 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.isclose(new_value.cpu().numpy(), value.cpu().numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_position_targets_numpy(self):
+    async def test_position_targets_numpy(self) -> None:
         """Test position targets numpy."""
-        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.setup_world(backend="numpy", device="cpu")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
 
@@ -1136,10 +1164,10 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.isclose(new_value, value, atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_position_targets_warp(self):
+    async def test_position_targets_warp(self) -> None:
         """Test position targets warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
 
@@ -1162,10 +1190,10 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_velocity_targets_torch(self):
+    async def test_velocity_targets_torch(self) -> None:
         """Test velocity targets torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_frankas(backend="torch")
             for indexed in INDEXED:
 
@@ -1184,9 +1212,9 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.isclose(new_value.cpu().numpy(), value.cpu().numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_velocity_targets_numpy(self):
+    async def test_velocity_targets_numpy(self) -> None:
         """Test velocity targets numpy."""
-        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.setup_world(backend="numpy", device="cpu")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
 
@@ -1202,10 +1230,10 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.isclose(new_value, value, atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_velocity_targets_warp(self):
+    async def test_velocity_targets_warp(self) -> None:
         """Test velocity targets warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
 
@@ -1228,10 +1256,10 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_joint_velocities_torch(self):
+    async def test_joint_velocities_torch(self) -> None:
         """Test joint velocities torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_cartpoles(backend="torch")
             for indexed in INDEXED:
 
@@ -1252,9 +1280,9 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.isclose(new_value.cpu().numpy(), value.cpu().numpy(), atol=1e-03).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_joint_velocities_numpy(self):
+    async def test_joint_velocities_numpy(self) -> None:
         """Test joint velocities numpy."""
-        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.setup_world(backend="numpy", device="cpu")
         await self.add_cartpoles(backend="numpy")
         for indexed in INDEXED:
             self._cartpoles_view.get_joint_velocities()
@@ -1272,10 +1300,10 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.isclose(new_value, value, atol=1e-03).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_joint_velocities_warp(self):
+    async def test_joint_velocities_warp(self) -> None:
         """Test joint velocities warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_cartpoles(backend="warp")
             for indexed in INDEXED:
 
@@ -1297,10 +1325,10 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-03).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_joint_positions_torch(self):
+    async def test_joint_positions_torch(self) -> None:
         """Test joint positions torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_frankas(backend="torch")
             for indexed in INDEXED:
 
@@ -1326,9 +1354,9 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.isclose(new_value.cpu().numpy(), value.cpu().numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_joint_positions_numpy(self):
+    async def test_joint_positions_numpy(self) -> None:
         """Test joint positions numpy."""
-        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.setup_world(backend="numpy", device="cpu")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
 
@@ -1349,10 +1377,10 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.isclose(new_value, value, atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_joint_positions_warp(self):
+    async def test_joint_positions_warp(self) -> None:
         """Test joint positions warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
 
@@ -1379,10 +1407,10 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.isclose(new_value.numpy(), value.numpy(), atol=1e-05).all())
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_joint_efforts_torch(self):
+    async def test_joint_efforts_torch(self) -> None:
         """Test joint efforts torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_frankas(backend="torch")
         for indexed in INDEXED:
 
@@ -1399,9 +1427,9 @@ class TestArticulationView(CoreTestCase):
             await update_stage_async()
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_joint_efforts_numpy(self):
+    async def test_joint_efforts_numpy(self) -> None:
         """Test joint efforts numpy."""
-        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.setup_world(backend="numpy", device="cpu")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
 
@@ -1415,10 +1443,10 @@ class TestArticulationView(CoreTestCase):
                 self._frankas_view.set_joint_efforts(new_value)
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_joint_efforts_warp(self):
+    async def test_joint_efforts_warp(self) -> None:
         """Test joint efforts warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
 
@@ -1440,9 +1468,9 @@ class TestArticulationView(CoreTestCase):
                 await update_stage_async()
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_body_indices(self):
+    async def test_body_indices(self) -> None:
         """Test body indices."""
-        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.setup_world(backend="numpy", device="cpu")
         await self.add_frankas(backend="numpy")
         await self._my_world.reset_async()
         # ground-truth values
@@ -1452,9 +1480,9 @@ class TestArticulationView(CoreTestCase):
             self.assertEqual(self._frankas_view.get_body_index(name), value)
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_efforts(self):
+    async def test_efforts(self) -> None:
         """Test efforts."""
-        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.setup_world(backend="numpy", device="cpu")
         await self.add_frankas(backend="numpy")
         await self._my_world.reset_async()
         current_forces = self._frankas_view.get_applied_joint_efforts()
@@ -1466,7 +1494,7 @@ class TestArticulationView(CoreTestCase):
         self.assertTrue(np.isclose(current_forces, new_forces).all())
         self.assertTrue(np.isclose(current_forces, self._frankas_view.get_applied_actions().joint_efforts).all())
 
-        await self.setUpWorld(backend="torch", device="cuda:0")
+        await self.setup_world(backend="torch", device="cuda:0")
         await self.add_frankas(backend="torch")
         await self._my_world.reset_async()
         current_forces = self._frankas_view.get_applied_joint_efforts()
@@ -1478,7 +1506,7 @@ class TestArticulationView(CoreTestCase):
         self.assertTrue(torch.isclose(current_forces, new_forces).all())
         self.assertTrue(torch.isclose(current_forces, self._frankas_view.get_applied_actions().joint_efforts).all())
 
-        await self.setUpWorld(backend="warp", device="cuda:0")
+        await self.setup_world(backend="warp", device="cuda:0")
         await self.add_frankas(backend="warp")
         await self._my_world.reset_async()
         current_forces = self._frankas_view.get_applied_joint_efforts()
@@ -1493,11 +1521,11 @@ class TestArticulationView(CoreTestCase):
         )
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_jacobians(self):
+    async def test_jacobians(self) -> None:
         """Test jacobians."""
         for backend in BACKEND:
             for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
-                await self.setUpWorld(backend=backend, device=device)
+                await self.setup_world(backend=backend, device=device)
                 await self.add_frankas(backend=backend)
                 for indexed in INDEXED:
                     print("index:", indexed, "backend:", backend, "device:", device)
@@ -1519,11 +1547,11 @@ class TestArticulationView(CoreTestCase):
                         self.assertTrue(len(i) == 0)
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_mass_matrices(self):
+    async def test_mass_matrices(self) -> None:
         """Test mass matrices."""
         for backend in BACKEND:
             for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
-                await self.setUpWorld(backend=backend, device=device)
+                await self.setup_world(backend=backend, device=device)
                 await self.add_frankas(backend=backend)
                 for indexed in INDEXED:
                     print("index:", indexed, "backend:", backend, "device:", device)
@@ -1544,11 +1572,11 @@ class TestArticulationView(CoreTestCase):
                         self.assertTrue(len(i) == 0)
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_coriolis_centrifugal(self):
+    async def test_coriolis_centrifugal(self) -> None:
         """Test coriolis centrifugal."""
         for backend in BACKEND:
             for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
-                await self.setUpWorld(backend=backend, device=device)
+                await self.setup_world(backend=backend, device=device)
                 await self.add_frankas(backend=backend)
                 for indexed in INDEXED:
                     print("index:", indexed, "backend:", backend, "device:", device)
@@ -1563,11 +1591,11 @@ class TestArticulationView(CoreTestCase):
                         self.assertTrue(forces.shape == (self._frankas_view.count, self._frankas_view.num_dof))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_generalized_gravity(self):
+    async def test_generalized_gravity(self) -> None:
         """Test generalized gravity."""
         for backend in BACKEND:
             for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
-                await self.setUpWorld(backend=backend, device=device)
+                await self.setup_world(backend=backend, device=device)
                 self._my_world.get_physics_context().set_gravity(0.0)
                 await self.add_frankas(backend=backend)
                 for indexed in INDEXED:
@@ -1587,7 +1615,7 @@ class TestArticulationView(CoreTestCase):
                     self.assertTrue(np.count_nonzero(forces) == 0)
         for backend in BACKEND:
             for device in ["cpu", "cuda:0"] if backend != "numpy" else ["cpu"]:
-                await self.setUpWorld(backend=backend, device=device)
+                await self.setup_world(backend=backend, device=device)
                 self._my_world.get_physics_context().set_gravity(-9.81)
                 await self.add_frankas(backend=backend)
                 for indexed in INDEXED:
@@ -1613,10 +1641,10 @@ class TestArticulationView(CoreTestCase):
                         )
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_masses_torch(self):
+    async def test_masses_torch(self) -> None:
         """Test masses torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_frankas(backend="torch")
             for indexed in INDEXED:
                 print("index:", indexed, "device:", device)
@@ -1640,9 +1668,9 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.allclose(values.cpu().numpy(), new_values.cpu().numpy()))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_masses_numpy(self):
+    async def test_masses_numpy(self) -> None:
         """Test masses numpy."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
 
@@ -1663,10 +1691,10 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_masses_warp(self):
+    async def test_masses_warp(self) -> None:
         """Test masses warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
                 print("index:", indexed, "device:", device)
@@ -1690,9 +1718,9 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.allclose(values.numpy().squeeze(), new_values.numpy().squeeze(), atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_com_torch(self):
+    async def test_com_torch(self) -> None:
         """Test com torch."""
-        await self.setUpWorld(backend="torch")
+        await self.setup_world(backend="torch")
         await self.add_frankas(backend="torch")
         for indexed in INDEXED:
             if indexed:
@@ -1710,9 +1738,9 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.allclose(cur_ori.cpu().numpy(), ori.cpu().numpy(), atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_com_numpy(self):
+    async def test_com_numpy(self) -> None:
         """Test com numpy."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
             if indexed:
@@ -1729,9 +1757,9 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.allclose(cur_ori, ori, atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_com_warp(self):
+    async def test_com_warp(self) -> None:
         """Test com warp."""
-        await self.setUpWorld(backend="warp")
+        await self.setup_world(backend="warp")
         await self.add_frankas(backend="warp")
         for indexed in INDEXED:
             if indexed:
@@ -1750,10 +1778,10 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.allclose(cur_ori.numpy(), ori.numpy(), atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_inertia_torch(self):
+    async def test_inertia_torch(self) -> None:
         """Test inertia torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_frankas(backend="torch")
             for indexed in INDEXED:
                 print("index:", indexed, "device:", device)
@@ -1779,9 +1807,9 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.allclose(new_value.cpu().numpy(), value.cpu().numpy(), atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_inertia_numpy(self):
+    async def test_inertia_numpy(self) -> None:
         """Test inertia numpy."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
             if indexed:
@@ -1807,10 +1835,10 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.allclose(new_value, value, atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_inertia_warp(self):
+    async def test_inertia_warp(self) -> None:
         """Test inertia warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
 
@@ -1842,10 +1870,10 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.allclose(new_value.numpy(), value.numpy(), atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_fixed_tendon_properties_torch(self):
+    async def test_fixed_tendon_properties_torch(self) -> None:
         """Test fixed tendon properties torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_shadow_hands(backend="torch", device=device)
             for indexed in INDEXED:
 
@@ -1981,9 +2009,9 @@ class TestArticulationView(CoreTestCase):
                         )
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_fixed_tendon_properties_numpy(self):
+    async def test_fixed_tendon_properties_numpy(self) -> None:
         """Test fixed tendon properties numpy."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_shadow_hands(backend="numpy")
         for indexed in INDEXED:
             if indexed:
@@ -2060,10 +2088,10 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.allclose(self._hands_view.get_fixed_tendon_offsets(), new_offsets, atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_fixed_tendon_properties_warp(self):
+    async def test_fixed_tendon_properties_warp(self) -> None:
         """Test fixed tendon properties warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_shadow_hands(backend="warp", device=device)
             for indexed in INDEXED:
 
@@ -2206,10 +2234,10 @@ class TestArticulationView(CoreTestCase):
                         )
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_position_iteration_count_torch(self):
+    async def test_position_iteration_count_torch(self) -> None:
         """Test position iteration count torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_frankas(backend="torch")
             for indexed in INDEXED:
 
@@ -2226,9 +2254,9 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.allclose(values.cpu().numpy(), new_values.cpu().numpy()))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_position_iteration_count_numpy(self):
+    async def test_position_iteration_count_numpy(self) -> None:
         """Test position iteration count numpy."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
 
@@ -2243,10 +2271,10 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_position_iteration_count_warp(self):
+    async def test_position_iteration_count_warp(self) -> None:
         """Test position iteration count warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
 
@@ -2263,10 +2291,10 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.allclose(values.numpy(), new_values.numpy(), atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_velocity_iteration_count_torch(self):
+    async def test_velocity_iteration_count_torch(self) -> None:
         """Test velocity iteration count torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_frankas(backend="torch")
             for indexed in INDEXED:
 
@@ -2283,9 +2311,9 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.allclose(values.cpu().numpy(), new_values.cpu().numpy()))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_velocity_iteration_count_numpy(self):
+    async def test_velocity_iteration_count_numpy(self) -> None:
         """Test velocity iteration count numpy."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
 
@@ -2300,10 +2328,10 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_velocity_iteration_count_warp(self):
+    async def test_velocity_iteration_count_warp(self) -> None:
         """Test velocity iteration count warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
 
@@ -2320,10 +2348,10 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.allclose(values.numpy(), new_values.numpy(), atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_stabilization_thresholds_torch(self):
+    async def test_stabilization_thresholds_torch(self) -> None:
         """Test stabilization thresholds torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_frankas(backend="torch")
             for indexed in INDEXED:
 
@@ -2340,9 +2368,9 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.allclose(values.cpu().numpy(), new_values.cpu().numpy()))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_stabilization_thresholds_numpy(self):
+    async def test_stabilization_thresholds_numpy(self) -> None:
         """Test stabilization thresholds numpy."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
 
@@ -2357,10 +2385,10 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_stabilization_thresholds_warp(self):
+    async def test_stabilization_thresholds_warp(self) -> None:
         """Test stabilization thresholds warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
 
@@ -2377,10 +2405,10 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.allclose(values.numpy(), new_values.numpy(), atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_sleep_thresholds_torch(self):
+    async def test_sleep_thresholds_torch(self) -> None:
         """Test sleep thresholds torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_frankas(backend="torch")
             for indexed in INDEXED:
 
@@ -2397,9 +2425,9 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.allclose(values.cpu().numpy(), new_values.cpu().numpy()))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_sleep_thresholds_numpy(self):
+    async def test_sleep_thresholds_numpy(self) -> None:
         """Test sleep thresholds numpy."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
 
@@ -2414,10 +2442,10 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_sleep_thresholds_warp(self):
+    async def test_sleep_thresholds_warp(self) -> None:
         """Test sleep thresholds warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
 
@@ -2434,10 +2462,10 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.allclose(values.numpy(), new_values.numpy(), atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_enabled_self_collisions_torch(self):
+    async def test_enabled_self_collisions_torch(self) -> None:
         """Test enabled self collisions torch."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="torch", device=device)
+            await self.setup_world(backend="torch", device=device)
             await self.add_frankas(backend="torch")
             for indexed in INDEXED:
 
@@ -2454,9 +2482,9 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.allclose(values.cpu().numpy(), new_values.cpu().numpy()))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_enabled_self_collisions_numpy(self):
+    async def test_enabled_self_collisions_numpy(self) -> None:
         """Test enabled self collisions numpy."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_frankas(backend="numpy")
         for indexed in INDEXED:
 
@@ -2471,10 +2499,10 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(np.allclose(values, new_values, atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_enabled_self_collisions_warp(self):
+    async def test_enabled_self_collisions_warp(self) -> None:
         """Test enabled self collisions warp."""
         for device in ["cpu", "cuda:0"]:
-            await self.setUpWorld(backend="warp", device=device)
+            await self.setup_world(backend="warp", device=device)
             await self.add_frankas(backend="warp")
             for indexed in INDEXED:
 
@@ -2491,9 +2519,9 @@ class TestArticulationView(CoreTestCase):
                 self.assertTrue(np.allclose(values.numpy(), new_values.numpy(), atol=1e-05))
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_get_dof_types(self):
+    async def test_get_dof_types(self) -> None:
         """Test get dof types."""
-        await self.setUpWorld(backend="numpy")
+        await self.setup_world(backend="numpy")
         await self.add_frankas(backend="numpy")
         ground_truth = [0] * 7 + [1] * 2  # DofType.Rotation: 0, DofType.Translation: 1
         values = [dof_type.value for dof_type in self._frankas_view.get_dof_types()]
@@ -2503,26 +2531,26 @@ class TestArticulationView(CoreTestCase):
             self.assertTrue(value == dof_type)
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_get_measured_joint_efforts(self):
+    async def test_get_measured_joint_efforts(self) -> None:
         """Test get measured joint efforts."""
         for backend in BACKEND:
             for clone in [True, False]:
                 for device in ["cpu", "cuda:0"]:
-                    if not backend == "numpy" and device == "cuda:0":
+                    if backend != "numpy" and device == "cuda:0":
                         print("backend:", backend, "clone:", clone, "device:", device)
-                        await self.setUpWorld(backend=backend, device=device)
+                        await self.setup_world(backend=backend, device=device)
                         await self.add_frankas(backend=backend)
                         self._frankas_view.get_measured_joint_efforts(clone=clone)
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_get_measured_joint_forces(self):
+    async def test_get_measured_joint_forces(self) -> None:
         """Test get measured joint forces."""
         for backend in BACKEND:
             for clone in [True, False]:
                 for device in ["cpu", "cuda:0"]:
-                    if not backend == "numpy" and device == "cuda:0":
+                    if backend != "numpy" and device == "cuda:0":
                         print("backend:", backend, "clone:", clone, "device:", device)
-                        await self.setUpWorld(backend=backend, device=device)
+                        await self.setup_world(backend=backend, device=device)
                         await self.add_frankas(backend=backend)
                         self._frankas_view.get_measured_joint_forces(clone=clone)
                         # check joint name/index conversion
@@ -2544,9 +2572,9 @@ class TestArticulationView(CoreTestCase):
                         )
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_pause_resume_motion(self):
+    async def test_pause_resume_motion(self) -> None:
         """Test pause resume motion."""
-        await self.setUpWorld(backend="numpy", device="cpu")
+        await self.setup_world(backend="numpy", device="cpu")
         await self.add_frankas(backend="numpy")
         initial_joint_positions = self._frankas_view.get_joint_positions()
         targets = np.array([1.4999933, 1.4999993, 1.500006, -0.06979994, 1.4996891, 1.5208117, 1.2542528, 0.04, 0.04])

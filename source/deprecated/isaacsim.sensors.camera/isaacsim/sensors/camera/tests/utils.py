@@ -71,7 +71,16 @@ def save_image(
     save_as_golden: bool = False,
     save_as_test: bool = False,
 ) -> None:
-    """Save an image to the golden or test directory."""
+    """Save an image to the golden or test directory.
+
+    Args:
+        image: The image data to save.
+        filename: The filename to use when saving the image.
+        golden_dir: Directory path where golden reference images are stored.
+        test_dir: Directory path where test output images are stored.
+        save_as_golden: If True, save the image to the golden directory.
+        save_as_test: If True, save the image to the test directory.
+    """
     if not filename.lower().endswith(".png"):
         filename += ".png"
     if save_as_test:
@@ -87,7 +96,18 @@ def save_image(
 
 
 def compare_images(src1: object, src2: object, ksize: int = 5, thresh: int = 30, hist_div: int = 1) -> tuple:
-    """Compare two images using histogram correlation and background subtraction."""
+    """Compare two images using histogram correlation and background subtraction.
+
+    Args:
+        src1: The first image to compare.
+        src2: The second image to compare.
+        ksize: Kernel size used for median blur and erosion operations.
+        thresh: Threshold value for binary thresholding in background subtraction.
+        hist_div: Divisor applied to histogram bin counts to reduce resolution.
+
+    Returns:
+        A tuple of (combined_score, histogram_score, background_subtraction_score).
+    """
 
     def compare_histograms(src1: object, src2: object) -> float:
         # gray scale images

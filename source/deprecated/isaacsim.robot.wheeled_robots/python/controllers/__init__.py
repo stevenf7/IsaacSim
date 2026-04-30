@@ -16,9 +16,14 @@
 """Controllers for wheeled robot motion planning and control in Isaac Sim."""
 
 
-from .ackermann_controller import AckermannController
-from .differential_controller import DifferentialController
-from .holonomic_controller import HolonomicController
-from .quintic_path_planner import QuinticPolynomial, quintic_polynomials_planner
-from .stanley_control import State, calc_target_index, normalize_angle, pid_control, stanley_control
-from .wheel_base_pose_controller import WheelBasePoseController
+from .ackermann_controller import AckermannController as AckermannController
+from .differential_controller import DifferentialController as DifferentialController
+from .holonomic_controller import HolonomicController as HolonomicController
+from .quintic_path_planner import QuinticPolynomial as QuinticPolynomial
+from .quintic_path_planner import quintic_polynomials_planner as quintic_polynomials_planner
+from .stanley_control import State as State
+from .stanley_control import calc_target_index as calc_target_index
+from .stanley_control import normalize_angle as normalize_angle
+from .stanley_control import pid_control as pid_control
+from .stanley_control import stanley_control as stanley_control
+from .wheel_base_pose_controller import WheelBasePoseController as WheelBasePoseController

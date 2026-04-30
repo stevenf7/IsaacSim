@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Path tracking simulation with Stanley steering control and PID speed control.
+"""Path tracking simulation with Stanley steering control and PID speed control.
 
 author: Atsushi Sakai (@Atsushi_twi)
 Source: https://github.com/AtsushiSakai/PythonRobotics/blob/master/PathTracking/stanley_controller/stanley_controller.py
@@ -69,8 +68,16 @@ class State(object):
         Ks: Maximum steering angle.
     """
 
-    def __init__(self, wheel_base, x=0.0, y=0.0, yaw=0.0, v=0.0, Ks=np.radians(5.0)):
-        super(State, self).__init__()
+    def __init__(
+        self,
+        wheel_base: float,
+        x: float = 0.0,
+        y: float = 0.0,
+        yaw: float = 0.0,
+        v: float = 0.0,
+        Ks: float = np.radians(5.0),
+    ) -> None:
+        super().__init__()
         self.wheel_base = wheel_base
         self.x = x
         self.y = y
@@ -79,7 +86,7 @@ class State(object):
         self.w = 0
         self.Ks = Ks
 
-    def update(self, acceleration, delta, dt):
+    def update(self, acceleration: float, delta: float, dt: float) -> None:
         """Update the state of the vehicle.
 
             Stanley Control uses bicycle model.
@@ -114,7 +121,7 @@ def pid_control(target: float, current: float, Kp: float = 0.1) -> float:
 
 
 def stanley_control(
-    state,
+    state: "State",
     cx: list[float],
     cy: list[float],
     cyaw: list[float],
@@ -175,7 +182,7 @@ def normalize_angle(angle: float) -> float:
     return angle
 
 
-def calc_target_index(state, cx: list[float], cy: list[float]) -> tuple[int, float]:
+def calc_target_index(state: "State", cx: list[float], cy: list[float]) -> tuple[int, float]:
     """Compute index in the trajectory list of the target.
 
     Args:

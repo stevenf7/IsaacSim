@@ -72,7 +72,12 @@ class ExampleScenario(ScenarioTemplate):
         self._calculate_velocity = lambda t, x: 0
 
     def setup_scenario(self, articulation: object, object_prim: object) -> None:
-        """Set up the scenario with the given articulation and object."""
+        """Set up the scenario with the given articulation and object.
+
+        Args:
+            articulation: The robot articulation to use in the scenario.
+            object_prim: The object prim to move in the scenario.
+        """
         self._articulation = articulation
         self._object = object_prim
 
@@ -109,7 +114,11 @@ class ExampleScenario(ScenarioTemplate):
         self._calculate_velocity = lambda t, x: 0
 
     def update_scenario(self, step: float) -> None:
-        """Update the scenario for the current physics step."""
+        """Update the scenario for the current physics step.
+
+        Args:
+            step: The size of the current physics step in seconds.
+        """
         if not self._running_scenario:
             return
 

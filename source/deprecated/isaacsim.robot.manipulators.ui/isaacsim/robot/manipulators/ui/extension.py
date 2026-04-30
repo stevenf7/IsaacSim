@@ -39,7 +39,7 @@ class Extension(omni.ext.IExt, MenuHelperExtensionFull):
     controller nodes for robotic manipulators in Isaac Sim.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initializes the extension by creating menu entries for OmniGraph robot controllers.
 
         Sets up menu items for Articulation Position Controller, Articulation Velocity Controller,
@@ -65,6 +65,6 @@ class Extension(omni.ext.IExt, MenuHelperExtensionFull):
             lambda: GripperWindow(), "Gripper Controller", "Open Loop Gripper", "Tools/Robotics/OmniGraph Controllers"
         )
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleans up the extension by removing all menu entries."""
         self.menu_shutdown()

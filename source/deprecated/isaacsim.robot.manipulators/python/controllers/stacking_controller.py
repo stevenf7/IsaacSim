@@ -38,9 +38,9 @@ class StackingController(BaseController):
         self,
         name: str,
         pick_place_controller: PickPlaceController,
-        picking_order_cube_names: typing.List[str],
+        picking_order_cube_names: list[str],
         robot_observation_name: str,
-    ):
+    ) -> None:
         BaseController.__init__(self, name=name)
         self._pick_place_controller = pick_place_controller
         self._picking_order_cube_names = picking_order_cube_names
@@ -79,7 +79,7 @@ class StackingController(BaseController):
             self._pick_place_controller.reset()
         return actions
 
-    def reset(self, picking_order_cube_names: typing.Optional[typing.List[str]] = None):
+    def reset(self, picking_order_cube_names: typing.Optional[list[str]] = None) -> None:
         """Reset the controller state and optionally update the picking order.
 
         Args:

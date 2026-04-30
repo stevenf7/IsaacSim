@@ -38,16 +38,16 @@ from pxr import Sdf, UsdGeom, UsdShade
 class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
     """Test cases for nonvisual materials functionality."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Create a new stage for each test."""
         await omni.usd.get_context().new_stage_async()
         self.stage = omni.usd.get_context().get_stage()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up the stage after each test."""
         await omni.usd.get_context().close_stage_async()
 
-    def test_base_materials_dictionary(self):
+    def test_base_materials_dictionary(self) -> None:
         """Test that base materials dictionary has expected values."""
         # Test some key materials exist
         self.assertIn("none", BASE_MATERIALS)
@@ -58,7 +58,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         # Test none is 0
         self.assertEqual(BASE_MATERIALS["none"], 0)
 
-    def test_coatings_dictionary(self):
+    def test_coatings_dictionary(self) -> None:
         """Test that coatings dictionary has expected values."""
         # Test coatings exist and are within 3-bit range (0-7)
         for coating_name, coating_id in COATINGS.items():
@@ -69,7 +69,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         self.assertEqual(COATINGS["none"], 0)
         self.assertEqual(len(COATINGS), 4)  # Should have 4 defined values
 
-    def test_attributes_dictionary(self):
+    def test_attributes_dictionary(self) -> None:
         """Test that attributes dictionary has expected values."""
         # Test attributes exist and are within 5-bit range (0-31)
         for attr_name, attr_id in ATTRIBUTES.items():
@@ -79,7 +79,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         # Test none is 0
         self.assertEqual(ATTRIBUTES["none"], 0)
 
-    def test_apply_nonvisual_material_with_strings(self):
+    def test_apply_nonvisual_material_with_strings(self) -> None:
         """Test applying nonvisual material with string inputs."""
         # Create a material prim
         material = UsdShade.Material.Define(self.stage, "/World/TestMaterial")
@@ -103,7 +103,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         self.assertTrue(attr_attr.IsValid())
         self.assertEqual(attr_attr.Get(), "emissive")
 
-    def test_apply_nonvisual_material_with_integers(self):
+    def test_apply_nonvisual_material_with_integers(self) -> None:
         """Test applying nonvisual material with integer inputs."""
         # Create a material prim
         material = UsdShade.Material.Define(self.stage, "/World/TestMaterial")
@@ -130,7 +130,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         # ID 2 should map to "retroreflective"
         self.assertEqual(attr_attr.Get(), "retroreflective")
 
-    def test_apply_nonvisual_material_with_defaults(self):
+    def test_apply_nonvisual_material_with_defaults(self) -> None:
         """Test applying nonvisual material with default coating and attribute."""
         # Create a material prim
         material = UsdShade.Material.Define(self.stage, "/World/TestMaterial")
@@ -150,7 +150,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         self.assertTrue(attr_attr.IsValid())
         self.assertEqual(attr_attr.Get(), "none")
 
-    def test_apply_nonvisual_material_invalid_prim(self):
+    def test_apply_nonvisual_material_invalid_prim(self) -> None:
         """Test applying nonvisual material to invalid prim."""
         # Test with None prim
         result = apply_nonvisual_material(None, base="aluminum")
@@ -164,7 +164,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         result = apply_nonvisual_material(xform_prim, base="aluminum")
         self.assertFalse(result)
 
-    def test_apply_nonvisual_material_invalid_base(self):
+    def test_apply_nonvisual_material_invalid_base(self) -> None:
         """Test applying nonvisual material with invalid base material."""
         # Create a material prim
         material = UsdShade.Material.Define(self.stage, "/World/TestMaterial")
@@ -174,7 +174,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         result = apply_nonvisual_material(material_prim, base="InvalidMaterial")
         self.assertFalse(result)
 
-    def test_apply_nonvisual_material_invalid_coating(self):
+    def test_apply_nonvisual_material_invalid_coating(self) -> None:
         """Test applying nonvisual material with invalid coating."""
         # Create a material prim
         material = UsdShade.Material.Define(self.stage, "/World/TestMaterial")
@@ -184,7 +184,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         result = apply_nonvisual_material(material_prim, base="aluminum", coating="invalidcoating")
         self.assertFalse(result)
 
-    def test_apply_nonvisual_material_invalid_attribute(self):
+    def test_apply_nonvisual_material_invalid_attribute(self) -> None:
         """Test applying nonvisual material with invalid attribute."""
         # Create a material prim
         material = UsdShade.Material.Define(self.stage, "/World/TestMaterial")
@@ -194,7 +194,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         result = apply_nonvisual_material(material_prim, base="aluminum", attribute="invalidattribute")
         self.assertFalse(result)
 
-    def test_get_material_id_basic(self):
+    def test_get_material_id_basic(self) -> None:
         """Test getting material ID from a material with nonvisual attributes."""
         # Create a material prim
         material = UsdShade.Material.Define(self.stage, "/World/TestMaterial")
@@ -217,7 +217,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         self.assertEqual(material_id, expected_id)
         self.assertEqual(material_id, 2305)
 
-    def test_get_material_id_bit_encoding(self):
+    def test_get_material_id_bit_encoding(self) -> None:
         """Test material ID bit encoding with various values."""
         test_cases = [
             # (base, coating, attribute, expected_id)
@@ -240,7 +240,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
                 material_id = get_material_id(material_prim)
                 self.assertEqual(material_id, expected_id)
 
-    def test_get_material_id_no_attributes(self):
+    def test_get_material_id_no_attributes(self) -> None:
         """Test getting material ID from a material without nonvisual attributes."""
         # Create a material prim without setting nonvisual attributes
         material = UsdShade.Material.Define(self.stage, "/World/TestMaterial")
@@ -250,7 +250,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         material_id = get_material_id(material_prim)
         self.assertEqual(material_id, 0)
 
-    def test_get_material_id_partial_attributes(self):
+    def test_get_material_id_partial_attributes(self) -> None:
         """Test getting material ID with only some attributes set."""
         # Create a material prim
         material = UsdShade.Material.Define(self.stage, "/World/TestMaterial")
@@ -267,7 +267,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         expected_id = 4  # Only base value
         self.assertEqual(material_id, expected_id)
 
-    def test_get_material_id_invalid_prim(self):
+    def test_get_material_id_invalid_prim(self) -> None:
         """Test getting material ID from invalid prim."""
         # Test with None prim - should return 0
         material_id = get_material_id(None)
@@ -281,7 +281,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         material_id = get_material_id(xform_prim)
         self.assertEqual(material_id, 0)
 
-    def test_get_material_id_uint16_overflow(self):
+    def test_get_material_id_uint16_overflow(self) -> None:
         """Test material ID is properly masked to uint16 range."""
         # Create a material prim
         material = UsdShade.Material.Define(self.stage, "/World/TestMaterial")
@@ -315,7 +315,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         self.assertEqual(material_id, expected_id)
         self.assertEqual(material_id, 0)  # Should be 0 for all invalid strings
 
-    def test_material_id_roundtrip(self):
+    def test_material_id_roundtrip(self) -> None:
         """Test applying and retrieving material properties maintains consistency."""
         # Create a material prim
         material = UsdShade.Material.Define(self.stage, "/World/TestMaterial")
@@ -352,7 +352,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
 
                 self.assertEqual(material_id, expected_id)
 
-    def test_decode_material_id_basic(self):
+    def test_decode_material_id_basic(self) -> None:
         """Test basic decoding of material ID into component strings."""
         # Test known material ID (aluminum + paint + emissive = 2305)
         base, coating, attribute = decode_material_id(2305)
@@ -361,7 +361,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         self.assertEqual(coating, "paint")
         self.assertEqual(attribute, "emissive")
 
-    def test_decode_material_id_zero(self):
+    def test_decode_material_id_zero(self) -> None:
         """Test decoding material ID of 0 (all none values)."""
         base, coating, attribute = decode_material_id(0)
 
@@ -369,7 +369,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         self.assertEqual(coating, "none")
         self.assertEqual(attribute, "none")
 
-    def test_decode_material_id_boundary_values(self):
+    def test_decode_material_id_boundary_values(self) -> None:
         """Test decoding with boundary values for each component."""
         # Test maximum valid values within bit ranges
         test_cases = [
@@ -394,7 +394,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
                 self.assertEqual(coating, expected_coating)
                 self.assertEqual(attribute, expected_attribute)
 
-    def test_decode_material_id_various_combinations(self):
+    def test_decode_material_id_various_combinations(self) -> None:
         """Test decoding various material ID combinations."""
         test_cases = [
             # (material_id, expected_base, expected_coating, expected_attribute)
@@ -413,7 +413,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
                 self.assertEqual(coating, expected_coating)
                 self.assertEqual(attribute, expected_attribute)
 
-    def test_decode_material_id_invalid_components(self):
+    def test_decode_material_id_invalid_components(self) -> None:
         """Test decoding material ID with invalid component values."""
         # Create material ID with undefined base, coating, and attribute values
         # Use values that are within bit ranges but not defined in dictionaries
@@ -428,7 +428,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         self.assertEqual(coating, "none")
         self.assertEqual(attribute, "none")
 
-    def test_decode_material_id_error_handling(self):
+    def test_decode_material_id_error_handling(self) -> None:
         """Test error handling for invalid material ID values."""
         # Test negative value
         with self.assertRaises(ValueError) as context:
@@ -450,7 +450,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
         except Exception as e:
             self.fail(f"decode_material_id raised unexpected exception for valid uint16: {e}")
 
-    def test_material_id_encode_decode_roundtrip(self):
+    def test_material_id_encode_decode_roundtrip(self) -> None:
         """Test that encoding and decoding material properties is consistent."""
         # Create a material prim for testing
         material = UsdShade.Material.Define(self.stage, "/World/RoundtripMaterial")
@@ -489,7 +489,7 @@ class TestNonvisualMaterials(omni.kit.test.AsyncTestCase):
                 self.assertEqual(decoded_coating, original_coating)
                 self.assertEqual(decoded_attribute, original_attribute)
 
-    def test_decode_material_id_bit_extraction(self):
+    def test_decode_material_id_bit_extraction(self) -> None:
         """Test that bit extraction works correctly for decode_material_id."""
         # Manually construct material ID with known bit patterns
         base_value = 15  # 0x0F (lower 8 bits)

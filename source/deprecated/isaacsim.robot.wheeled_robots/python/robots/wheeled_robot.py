@@ -17,7 +17,7 @@
 
 
 import re
-from typing import Optional
+from typing import Any, Optional
 
 import carb
 import numpy as np
@@ -86,7 +86,7 @@ class WheeledRobot(Robot):
         create_robot: Optional[bool] = False,
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
-    ):
+    ) -> None:
         prim = get_prim_at_path(prim_path)
         if not prim.IsValid():
             if create_robot:
@@ -113,7 +113,7 @@ class WheeledRobot(Robot):
         return
 
     @property
-    def wheel_dof_indices(self):
+    def wheel_dof_indices(self) -> Any:
         """Indices of the wheel joints in the articulation.
 
         Returns:
@@ -121,7 +121,7 @@ class WheeledRobot(Robot):
         """
         return self._wheel_dof_indices
 
-    def get_wheel_positions(self):
+    def get_wheel_positions(self) -> list:
         """Get the current positions of the wheel joints.
 
         Returns:
@@ -131,7 +131,7 @@ class WheeledRobot(Robot):
         wheel_joint_positions = [full_dofs_positions[i] for i in self._wheel_dof_indices]
         return wheel_joint_positions
 
-    def set_wheel_positions(self, positions):
+    def set_wheel_positions(self, positions: Any) -> None:
         """Set the positions of the wheel joints.
 
         Args:
@@ -143,18 +143,17 @@ class WheeledRobot(Robot):
         self.set_joint_positions(positions=np.array(full_dofs_positions))
         return
 
-    def get_wheel_velocities(self):
+    def get_wheel_velocities(self) -> list:
         """Get the current velocities of the wheel joints.
 
         Returns:
             List of wheel joint velocities.
         """
-
         full_dofs_velocities = self.get_joint_velocities()
         wheel_dof_velocities = [full_dofs_velocities[i] for i in self._wheel_dof_indices]
         return wheel_dof_velocities
 
-    def set_wheel_velocities(self, velocities):
+    def set_wheel_velocities(self, velocities: Any) -> None:
         """Set the velocities of the wheel joints.
 
         Args:
@@ -166,7 +165,7 @@ class WheeledRobot(Robot):
         self.set_joint_velocities(velocities=np.array(full_dofs_velocities))
         return
 
-    def apply_wheel_actions(self, actions: ArticulationAction):
+    def apply_wheel_actions(self, actions: ArticulationAction) -> None:
         """Apply action to the wheels to move the robot.
 
         Args:
@@ -194,7 +193,7 @@ class WheeledRobot(Robot):
         self.apply_action(control_actions=joint_actions)
         return
 
-    def initialize(self, physics_sim_view=None):
+    def initialize(self, physics_sim_view: Any = None) -> None:
         """Initialize the wheeled robot and resolve wheel DOF indices.
 
         Args:
@@ -212,13 +211,13 @@ class WheeledRobot(Robot):
 
         return
 
-    def post_reset(self):
+    def post_reset(self) -> None:
         """Reset callback to switch control mode to velocity."""
         super().post_reset()
         self._articulation_controller.switch_control_mode(mode="velocity")
         return
 
-    def get_articulation_controller_properties(self):
+    def get_articulation_controller_properties(self) -> tuple:
         """Get the articulation controller properties for the wheel joints.
 
         Returns:

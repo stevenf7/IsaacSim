@@ -171,7 +171,11 @@ class DfGoTarget(DfAction):
         self.set_target_only_on_entry = set_target_only_on_entry
 
     def __str__(self) -> str:
-        """Return a string representation including the set_target_only_on_entry flag."""
+        """Return a string representation including the set_target_only_on_entry flag.
+
+        Returns:
+            String representation of the object.
+        """
         return f"{super().__str__()}({self.set_target_only_on_entry})"
 
     def enter(self) -> None:
@@ -235,7 +239,11 @@ class DfApproachTarget(DfDecider):
         self.add_child("go_target", DfGoTarget())
 
     def __str__(self) -> str:
-        """Return a string representation including approach axis and direction length."""
+        """Return a string representation including approach axis and direction length.
+
+        Returns:
+            String representation of the object.
+        """
         return f"{super().__str__()}({self.approach_along_axis},{self.direction_length})"
 
     def decide(self) -> DfDecision:
@@ -312,7 +320,11 @@ class DfApproachTargetLinearly(DfDecider):
         self.add_child("go_target", DfGoTarget())
 
     def __str__(self) -> str:
-        """Return a string representation including the step length."""
+        """Return a string representation including the step length.
+
+        Returns:
+            String representation of the object.
+        """
         return f"{super().__str__()}({self.step_length})"
 
     def enter(self) -> None:
@@ -375,7 +387,11 @@ class DfLift(DfDecider):
         self.add_child("go_target", DfGoTarget())
 
     def __str__(self) -> str:
-        """Return a string representation including the lift height and axis."""
+        """Return a string representation including the lift height and axis.
+
+        Returns:
+            String representation of the object.
+        """
         return f"{super().__str__()}({self.height}, {self.axis})"
 
     def enter(self) -> None:
@@ -413,7 +429,11 @@ class DfMoveEndEffectorRel(DfDecider):
         self.add_child("go_target", DfGoTarget())
 
     def __str__(self) -> str:
-        """Return a string representation including the local offset."""
+        """Return a string representation including the local offset.
+
+        Returns:
+            String representation of the object.
+        """
         return f"{super().__str__()}({self.p_local})"
 
     def enter(self) -> None:
