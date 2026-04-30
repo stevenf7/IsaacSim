@@ -20,7 +20,7 @@ This framework also provides control over actor behaviors, environments, and sen
 
 This framework simplifies simulation customization with features like:
 
-* **Codeless Interaction**: Configurations are expressed in YAML file. No code is needed to get synthetic data.
+* **Codeless Interaction**: Configurations are expressed in a YAML file. No code is needed to get synthetic data.
 * **Simplified Setup**: Included in Isaac Sim, it offers both GUI and scripting interfaces for interactive and headless workflows.
 * **High-Fidelity Data**: Leverages Omniverse's SimReady assets, physics, and rendering to produce realistic imagery and accurate annotations essential for AI training.
 * **Seamless Integration**: As part of Kit extensions, it works natively with ``omni.anim.behavior``, ``omni.anim.navigation``, and ``omni.replicator.core``.
@@ -60,9 +60,9 @@ Enable Extensions
 
 Getting Started in the UI
 -------------------------
-For first-time users, it is recommended that you use the UI. Refer to :ref:`Running from script <actor_sim_running_from_script>` section for running with Python script in IsaacSim headless mode.
+For first-time users, it is recommended that you use the UI. Refer to the :ref:`Running from script <actor_sim_running_from_script>` section for running with a Python script in Isaac Sim headless mode.
 
-1. Follow the :ref:`Enable Extensions <actor_sim_getting_started>` and open the UI panel.
+1. Follow the :ref:`Enable Extensions <actor_sim_enable_extensions>` section and open the UI panel.
 
 2. The default minimal config is loaded by default. You can also load a separate config file using the folder browser icon.
 
@@ -78,12 +78,14 @@ For first-time users, it is recommended that you use the UI. Refer to :ref:`Runn
 
 3. [Optional] Modify the configuration file to your needs.
 
-    * Use Save or Save As icon to save the changes in UI to config file.
-    * Use Reload icon to reset changes in UI and load the original config file again.
+    * Use the New icon to create a new config file.
+    * Use the Reload icon to reset changes in UI and load the original config file again.
+    * Use the Save or Save As icon to save the changes in UI to config file.
+    * Use the Verbose save checkbox to control how much detail is written when saving your configuration file. When off, the written file is kept compact, only writing the values that are modified. When on, all non-empty fields are included — useful if you want a complete reference of every available option or need to share a fully explicit config with others.
 
 4. Click the **Set Up Simulation** button from the top of the UI and it will start loading simulation assets (scene, cameras, actors) according to the UI.
 
-    * The scene requires a NavMesh to spawn assets and control them correctly. The scenes in the example config has NavMesh set up in advance. If you are using a external scene, refer to :doc:`Navigation Mesh<extensions:ext_navigation-mesh>` for NavMesh set up.
+    * The scene requires a NavMesh to spawn assets and control them correctly. The scenes in the example config have NavMesh set up in advance. If you are using an external scene, refer to :doc:`Navigation Mesh<extensions:ext_navigation-mesh>` for NavMesh set up.
     * You can also go to **Window > Navigation > NavMesh** and turn off **Auto-Bake** in the NavMesh settings. Turning it off can increase the performance.
 
     .. note::
@@ -91,7 +93,7 @@ For first-time users, it is recommended that you use the UI. Refer to :ref:`Runn
 
 5. Click the **Start Data Generation** button from the top of the UI and the simulation and data generation will start. It will run for the duration (in seconds) specified in the **Simulation Duration** in **Actor SDG Setup** panel.
 
-6. When data generation finishes, the output data can be found from the **Output Directory** according to the output directory in  **Replicator** panel.
+6. When data generation finishes, the output data is available in the **Output Directory** specified in the **Replicator** panel.
 
     * By default, it is in the User folder for Windows and the home folder for Linux.
 
@@ -120,7 +122,7 @@ To run from script, open a terminal from where Isaac Sim is installed and run th
 
 API Usage
 --------------------------
-This extension also exposes a Python API which you can use to set up simulations and generate data from your own script.
+This extension also exposes a Python API that you can use to set up simulations and generate data from your own script.
 Ensure that ``isaacsim.replicator.agent.core`` is enabled, and use the API as in the following example.
 
 .. note:: The snippet below uses the minimal config bundled with the extension (``data/sample_configs/minimal.yaml``).
@@ -228,11 +230,11 @@ Actors perform a "routine-trigger" behavior loop at play. This pattern is config
 The Routine Trigger Loop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When no actor triggers are activated, actors perform routine loop by repeatedly pick behaviors under routines to perform by their probability weights, using the ``actor global seed``.
+When no actor triggers are activated, actors perform a routine loop by repeatedly picking behaviors from routines to perform, weighted by their probability, using the ``actor global seed``.
 
 When any trigger is activated, the actor will pause routine and start performing the behaviors under each active trigger. Running triggers will be paused and pushed to queue if a trigger with higher priority happens (triggers with lower priority will be skipped).
 The trigger will be marked complete when its behaviors are all finished. Then the first trigger in queue will resume running.
-After all active triggers complete, the actors will fallback to their routine.
+After all active triggers complete, the actors fall back to their routine.
 
 .. image:: /images/isim_6.0_full_tut_external_actor_sim_actor_behavior_flowchart.png
     :width: 900
@@ -244,7 +246,7 @@ After all active triggers complete, the actors will fallback to their routine.
 Configure Behaviors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After the actors are loaded into scene by config file, the configurations are embedded in the USD API schemas and USD Prims. Each actor is represented by MetroAgentAPI schema and its derived type.
+After the actors are loaded into the scene from the config file, the configurations are embedded in the USD API schemas and USD Prims. Each actor is represented by a MetroAgentAPI schema and its derived type.
 For a human character, it is the ``IRACharacterAPI`` attached on the SkelRoot prim. For an animated robot, it is the ``AnimRobotAPI`` attached on the root prim of the robot payload.
 Each behavior and trigger becomes an individual USD Prim that the actor USD API can have reference to, each actor trigger prim can also have reference to a list of behaviors.
 
@@ -256,7 +258,7 @@ The actor USD API schema defines basic information of the actor:
 - a routine reference slot and a trigger reference slot
 
 At play, the name, group, and seed will be combined and hashed into a single seed as ``actor global seed``. This seed will be used for all the "randomness" of the actor, including random routine picking for the actor itself and the picking within each behavior such as picking a speed from speed range.
-This also means the same ``actor global seed`` will display same result if other settings and the environment don't change.
+This also means the same ``actor global seed`` displays the same result if other settings and the environment do not change.
 
 Each type of actor behavior is represented by a USD Prim type. It defines the configuration of the behavior:
 
@@ -264,10 +266,10 @@ Each type of actor behavior is represented by a USD Prim type. It defines the co
 - repeat
 - behavior 
 
-For human characters, the behavior prim types follows the ``CharacterXXXBehavior`` naming pattern. For animated robots, they are ``RobotXXXBehavior``.
+For human characters, the behavior prim types follow the ``CharacterXXXBehavior`` naming pattern. For animated robots, they are ``RobotXXXBehavior``.
 
-Each actor trigger is also a USD Prim. It defines the trigger priority and has a reference of behavior list to be executed sequentially when this trigger activates.
-Human characters and anim robots share the same trigger types that's defined in OMP with naming ``MetroXXXTrigger``.
+Each actor trigger is also a USD Prim. It defines the trigger priority and has a reference to a behavior list to be executed sequentially when this trigger activates.
+Human characters and anim robots share the same trigger types that are defined in OMP with the ``MetroXXXTrigger`` naming pattern.
 
 In addition, the actors leverage ``omni.behavior.behavior`` (Human characters) and ``isaacsim.anim.robot.core`` (Animated robots) as their animation implementation.
 For more information about them, refer to the following documents:
@@ -281,7 +283,7 @@ Behavior Tree (Experimental)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. warning::
-    Behavior tree character support is **experimental** and may change in future releases.
+    Behavior tree character support is **experimental** and might change in future releases.
 
 In addition to the routine-trigger behavior system described above, IRA 1.3.0 introduces support for driving character behavior through **behavior trees**. Behavior trees are authored with the ``omni.behavior.tree.core`` and ``omni.anim.behavior.tree`` extensions.
 
@@ -306,7 +308,7 @@ Behavior tree mode is an alternative to the routine-trigger system. Each charact
 
 **Workflow**
 
-1.  Author a behavior tree using ``omni.behavior.tree.ui`` and save it as a JSON file. The tree references node libraries ``omni.behavior.tree.core`` and ``omni.anim.behavior.tree`` for its action, composite, and modifier nodes. Refer to the `Behavior Tree's User Guide <https://docs.omniverse.nvidia.com/kit/docs/behavior-tree/latest/user-guide.html>`_ on how to author a behavior tree.
+1.  Author a behavior tree using ``omni.behavior.tree.ui`` and save it as a JSON file. The tree references node libraries ``omni.behavior.tree.core`` and ``omni.anim.behavior.tree`` for its action, composite, and modifier nodes. Refer to the `Behavior Tree's User Guide <https://docs.omniverse.nvidia.com/kit/docs/behavior-tree/latest/user-guide.html>`_ for how to author a behavior tree.
 2.  In the IRA configuration YAML, create a character group with a ``behavior_tree`` field pointing to the JSON file. Optionally provide an ``overrides`` field to assign node parameters for different character groups without modifying the tree file.
 
     .. warning::
@@ -317,7 +319,7 @@ Behavior tree mode is an alternative to the routine-trigger system. Each charact
 Some sample config files with behavior tree character groups are provided in the ``[Isaac Sim Assets Path]/Samples/BehaviorTree`` folder as well as bundled in the ``data/sample_configs`` folder in the ``isaacsim.replicator.agent.core`` extension. For configuration details, parameter reference, and YAML examples, refer to :ref:`Behavior Tree Character Group (Experimental) <ira_bt_character_group>` in the Configuration File Guide.
 
 .. warning::
-    Behavior tree characters set up by IRA still have the ``IRACharacterAPI`` schema applied, but this is only used for data-generation identification (name, group, semantic labels, etc.). The character's behavior is entirely controlled by the behavior tree through ``omni.behavior.tree.core`` (OBT). IRA-level settings such as ``seed`` have no effect on behavior-tree characters.
+    Behavior tree characters set up by IRA still have the ``IRACharacterAPI`` schema applied, but this is only used for data-generation identification (name, group, semantic labels, and related fields). The character's behavior is entirely controlled by the behavior tree through ``omni.behavior.tree.core`` (OBT). IRA-level settings such as ``seed`` have no effect on behavior-tree characters.
 
 Terminology
 -------------
