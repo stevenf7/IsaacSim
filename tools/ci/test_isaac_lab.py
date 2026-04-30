@@ -19,6 +19,31 @@ import xml.etree.ElementTree as ET
 import omni.repo.ci
 from omni.repo.man import find_and_extract_package
 
+# Exit codes consumed by .gitlab-ci.yml `allow_failure.exit_codes`.
+# 42 lets the MR variant flag test failures as a warning while still failing
+# the job hard on any infrastructure problem (66) — clone, checkout, link,
+# IsaacLab installer, or pytest crashing before producing a junit report.
+EXIT_TEST_FAILURE = 42
+EXIT_INFRA_FAILURE = 66
+
+
+def _run_step(cmd: list[str], *, step: str) -> None:
+    """Run *cmd* via ``omni.repo.ci.launch`` and exit 66 on any non-zero rc.
+
+    ``warning_only=True`` keeps ``launch`` from calling ``sys.exit`` itself so
+    we can substitute the infrastructure-failure exit code instead of the
+    underlying tool's rc, which keeps the GitLab `allow_failure.exit_codes`
+    contract clean.
+    """
+    rc = omni.repo.ci.launch(cmd, warning_only=True)
+    if rc != 0:
+        print(
+            f"[isaaclab-ci] {step} failed with exit code {rc}; "
+            f"treating as infrastructure failure (exit {EXIT_INFRA_FAILURE}).",
+            file=sys.stderr,
+        )
+        sys.exit(EXIT_INFRA_FAILURE)
+
 
 def _restore_repointed_prebundle(isaac_sim_path: str) -> None:
     """Undo IsaacLab's ``_repoint_prebundle_packages()`` for the ``nvidia`` namespace.
@@ -47,27 +72,59 @@ def _restore_repointed_prebundle(isaac_sim_path: str) -> None:
 
 
 def _reconcile_exit_code(process_rc: int, junit_path: str) -> int:
-    """Upgrade a zero ``process_rc`` to 1 when the junit report records failures/errors.
+    """Map pytest's process rc + junit report into one of {0, 42, 66}.
 
-    Pytest has been observed to exit 0 while the junit report still records failures or
-    errors (e.g. teardown errors, plugin quirks).  When that happens the junit file — which
-    the downstream dashboard already treats as authoritative — is a more reliable signal
-    than the process rc.  A non-zero ``process_rc`` is preserved as-is so the original
-    failure cause is not masked.
+    - ``0`` — pytest exited cleanly and junit reports no failures/errors.
+    - ``42`` (``EXIT_TEST_FAILURE``) — tests ran but at least one failed/errored.
+      Pytest has been observed to exit 0 while still recording failures (teardown
+      errors, plugin quirks); the junit report is treated as authoritative.
+    - ``66`` (``EXIT_INFRA_FAILURE``) — pytest could not be trusted to have run
+      the test suite, e.g. it exited non-zero before producing usable results,
+      or it exited 0 but the junit report is missing/unparseable so we cannot
+      verify what (if anything) ran. Caller treats this the same as a
+      clone/setup failure so MR jobs still fail hard.
     """
-    if process_rc != 0 or not os.path.exists(junit_path):
-        return process_rc
-    try:
-        root = ET.parse(junit_path).getroot()
-    except ET.ParseError:
-        # Matches the malformed-XML handling in _combine_junit_xmls: a crashed
-        # pytest can leave behind an unparseable report, so fall back to the
-        # original process rc rather than propagating the parse error.
-        return process_rc
-    for suite in root.iter("testsuite"):
-        if int(suite.get("failures", 0)) or int(suite.get("errors", 0)):
-            return 1
-    return process_rc
+    junit_parseable = False
+    junit_has_results = False
+    junit_has_failures = False
+    if os.path.exists(junit_path):
+        try:
+            root = ET.parse(junit_path).getroot()
+            junit_parseable = True
+            for suite in root.iter("testsuite"):
+                # Per-suite ValueError protects against a single bogus
+                # attribute (e.g. tests="N/A" from a misbehaving plugin)
+                # taking down the whole reconcile.
+                try:
+                    if int(suite.get("tests", 0)) > 0:
+                        junit_has_results = True
+                    if int(suite.get("failures", 0)) or int(suite.get("errors", 0)):
+                        junit_has_failures = True
+                except ValueError as exc:
+                    print(
+                        f"[isaaclab-ci] Skipping suite with non-numeric counters: {exc}",
+                        file=sys.stderr,
+                    )
+        except ET.ParseError:
+            # Matches the malformed-XML handling in _combine_junit_xmls: a
+            # crashed pytest can leave behind an unparseable report.
+            pass
+
+    if process_rc == 0:
+        # Clean rc means nothing if we cannot read the report — pytest may have
+        # been killed before flushing the test loop, or the path may be wrong.
+        # Don't paper over that with a green job.
+        if not junit_parseable:
+            print(
+                f"[isaaclab-ci] pytest rc=0 but junit at '{junit_path}' "
+                f"is missing or unparseable; treating as infrastructure failure.",
+                file=sys.stderr,
+            )
+            return EXIT_INFRA_FAILURE
+        return EXIT_TEST_FAILURE if junit_has_failures else 0
+    if junit_has_results:
+        return EXIT_TEST_FAILURE
+    return EXIT_INFRA_FAILURE
 
 
 def _combine_junit_xmls(xml_dir: str, output_path: str) -> None:
@@ -93,29 +150,25 @@ def _combine_junit_xmls(xml_dir: str, output_path: str) -> None:
 def main(args: argparse.Namespace) -> None:
 
     isaac_lab_repo = os.getenv("ISAAC_LAB_REPO", "https://github.com/isaac-sim/IsaacLab.git")
-    git_clone_command = ["git", "clone", isaac_lab_repo, "_isaaclab"]
-    omni.repo.ci.launch(git_clone_command)
+    _run_step(["git", "clone", isaac_lab_repo, "_isaaclab"], step="git clone IsaacLab")
 
     os.chdir("_isaaclab")
 
     isaac_lab_branch = os.getenv("ISAAC_LAB_BRANCH", "develop")
-    git_checkout_command = ["git", "checkout", isaac_lab_branch]
-    omni.repo.ci.launch(git_checkout_command)
+    _run_step(["git", "checkout", isaac_lab_branch], step=f"git checkout {isaac_lab_branch}")
 
     os.chdir("..")
 
     folder, _ = find_and_extract_package("_build/packages/isaac-sim-standalone*.7z")
 
-    link_cmd = ["ln", "-s", f"../{folder}", "_isaaclab/_isaac_sim"]
-    omni.repo.ci.launch(link_cmd)
+    _run_step(["ln", "-s", f"../{folder}", "_isaaclab/_isaac_sim"], step="link Isaac Sim package")
 
     os.chdir("_isaaclab")
 
     os.environ["TERM"] = "linux"
     os.environ["PIP_EXTRA_INDEX_URL"] = "https://pypi.nvidia.com"
 
-    setup_command = ["./isaaclab.sh", "-i"]
-    omni.repo.ci.launch(setup_command)
+    _run_step(["./isaaclab.sh", "-i"], step="IsaacLab installer")
 
     # IsaacLab's installer may replace prebundled nvidia/ directories with
     # symlinks to site-packages, losing CUDA shared objects.  Undo that.

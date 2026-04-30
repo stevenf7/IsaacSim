@@ -307,7 +307,7 @@ osec:sonarqube:
       - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_BRANCH =~ /^release\/\d+\.\d+$/ && $RUN_DOCS_BUILD == "true"'
         variables:
           PAGES_PATH_PREFIX: "$CI_COMMIT_REF_NAME"
-      # Publish root docs from develop on push pipelines
+      # Publish develop docs under the develop Pages deployment on push pipelines
       - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "develop"
         variables:
           PAGES_PATH_PREFIX: "develop"
@@ -1210,6 +1210,12 @@ pages:
     extends:
       - .build-common
       - .ipp_lnx_x86_64_cpu_small
+    # Heatmap artifact basenames (no extension) — must live in `variables:` so
+    # every script step sees them; assigning in a prior `script:` line does not
+    # persist across separate runner shell invocations.
+    variables:
+      LAB_HM: "pipeline_test_chart_isaaclab_heatmap"
+      SIM_HM: "pipeline_test_chart_isaacsim_heatmap"
     script:
       - mkdir -p .public
       - cp -r _build/docs/isaac-sim/latest/* .public/ || true
@@ -1222,40 +1228,61 @@ pages:
           # Co-locate the IsaacLab heatmap next to its dashboard so the in-page
           # "Open heatmap" link (which points at the namespace-specific
           # filename) resolves.
-          cp _isaaclab_cache/output/pipeline_test_chart_isaaclab_heatmap.html ".public/isaac-lab/${ILAB_BRANCH}/" 2>/dev/null || true
-          cp _isaaclab_cache/output/pipeline_test_chart_isaaclab_heatmap.png ".public/isaac-lab/${ILAB_BRANCH}/" 2>/dev/null || true
+          cp _isaaclab_cache/output/$LAB_HM.html ".public/isaac-lab/${ILAB_BRANCH}/" 2>/dev/null || true
+          cp _isaaclab_cache/output/$LAB_HM.png ".public/isaac-lab/${ILAB_BRANCH}/" 2>/dev/null || true
         fi
       - |
         if [ -d _isaacsim_cache/output ]; then
           mkdir -p .public/isaac-sim/data
           cp _isaacsim_cache/output/dashboard.html .public/isaac-sim/index.html
           cp -r _isaacsim_cache/output/data/. .public/isaac-sim/data/
-          cp _isaacsim_cache/output/pipeline_test_chart_isaacsim_heatmap.html .public/isaac-sim/ 2>/dev/null || true
-          cp _isaacsim_cache/output/pipeline_test_chart_isaacsim_heatmap.png .public/isaac-sim/ 2>/dev/null || true
+          cp _isaacsim_cache/output/$SIM_HM.html .public/isaac-sim/ 2>/dev/null || true
+          cp _isaacsim_cache/output/$SIM_HM.png .public/isaac-sim/ 2>/dev/null || true
           # IsaacSim heatmap also stays at the generic top-level location for
           # backward compatibility with existing links.
-          cp _isaacsim_cache/output/pipeline_test_chart_isaacsim_heatmap.html .public/heatmap.html 2>/dev/null || true
-          cp _isaacsim_cache/output/pipeline_test_chart_isaacsim_heatmap.png .public/heatmap.png 2>/dev/null || true
+          cp _isaacsim_cache/output/$SIM_HM.html .public/heatmap.html 2>/dev/null || true
+          cp _isaacsim_cache/output/$SIM_HM.png .public/heatmap.png 2>/dev/null || true
         fi
       - mv .public public
       - |
         # Print the public URLs for the dashboards and heatmaps that were published.
-        # CI_PAGES_URL already includes PAGES_PATH_PREFIX when multi-deployment is in use.
+        # Some GitLab versions/instances expose CI_PAGES_URL as the project Pages
+        # root even when pages:path_prefix is set, so add the normalized prefix
+        # here if GitLab has not already included it.
         ILAB_BRANCH="${ISAAC_LAB_BRANCH:-develop}"
         BASE="${CI_PAGES_URL%/}"
-        SIM_HM="pipeline_test_chart_isaacsim_heatmap.html"
-        LAB_HM="pipeline_test_chart_isaaclab_heatmap.html"
+        case "${BASE}" in
+          http://omniverse.gitlab-master-pages.nvidia.com|http://omniverse.gitlab-master-pages.nvidia.com/*)
+            BASE="https://${BASE#http://}"
+            ;;
+        esac
+        PATH_PREFIX="${PAGES_PATH_PREFIX:-}"
+        if [ -n "${PATH_PREFIX}" ]; then
+          NORMALIZED_PREFIX="$(
+            printf '%s' "${PATH_PREFIX}" \
+              | LC_ALL=C tr '[:upper:]' '[:lower:]' \
+              | LC_ALL=C sed -e 's/[^a-z0-9.]/-/g' -e 's/^[.-]*//' \
+              | LC_ALL=C cut -b1-63 \
+              | LC_ALL=C sed -e 's/[.-]*$//'
+          )"
+          if [ -n "${NORMALIZED_PREFIX}" ]; then
+            case "${BASE}/" in
+              */"${NORMALIZED_PREFIX}/") ;;
+              *) BASE="${BASE}/${NORMALIZED_PREFIX}" ;;
+            esac
+          fi
+        fi
         echo "=== Published pages URLs ==="
         [ -f "public/isaac-sim/index.html" ] && echo "IsaacSim dashboard:  ${BASE}/isaac-sim/"
-        [ -f "public/isaac-sim/${SIM_HM}" ] && echo "IsaacSim heatmap:    ${BASE}/isaac-sim/${SIM_HM}"
+        [ -f "public/isaac-sim/${SIM_HM}.html" ] && echo "IsaacSim heatmap:    ${BASE}/isaac-sim/${SIM_HM}.html"
         [ -f "public/isaac-lab/${ILAB_BRANCH}/dashboard.html" ] && echo "IsaacLab dashboard:  ${BASE}/isaac-lab/${ILAB_BRANCH}/dashboard.html"
-        [ -f "public/isaac-lab/${ILAB_BRANCH}/${LAB_HM}" ] && echo "IsaacLab heatmap:    ${BASE}/isaac-lab/${ILAB_BRANCH}/${LAB_HM}"
+        [ -f "public/isaac-lab/${ILAB_BRANCH}/${LAB_HM}.html" ] && echo "IsaacLab heatmap:    ${BASE}/isaac-lab/${ILAB_BRANCH}/${LAB_HM}.html"
     artifacts:
         expire_in: never
         paths:
           - public
     pages:
-      # develop -> root (empty prefix), release/x.y -> prefixed deployment
+      # develop -> develop, release/x.y -> normalized branch-prefixed deployment
       path_prefix: "$PAGES_PATH_PREFIX"
     rules:
       - !reference [.rules-publish-docs, rules]
@@ -2316,8 +2343,14 @@ generate-public-extension-mr:
 # ==============================================================================================================
 
 # ==============================================================================================================
-# Shared GitLab cache for IsaacLab dashboard: historical GitLab/GitHub data under _isaaclab_cache/.
-# get-isaac-lab-historical-data runs fetch-gitlab/fetch-github subcommands (no tests); generate-isaac-lab-dashboard runs the ci subcommand (needs JUnit).
+# Shared variables for the IsaacLab dashboard producer/consumer pair.
+# Historical data is now transmitted via an evergreen artifact (see
+# tools/ci/dashboards/fetch_latest_cache.sh): get-isaac-lab-historical-data
+# hydrates from the most recent successful run of itself on the default
+# branch, then publishes a fresh _isaaclab_cache/ artifact that
+# generate-isaac-lab-dashboard consumes via `needs: artifacts: true`.
+# GitLab `cache:` was previously used here but is unreliable across
+# runners — it has been removed in favour of the artifact path.
 .isaac-lab-dashboard-cache:
     variables:
         ISAAC_LAB_BRANCH: "develop"
@@ -2330,11 +2363,6 @@ generate-public-extension-mr:
             kit-integration/feature/110.1
             kit-integration/production/110.1
             kit-integration/major/111
-    cache:
-        key: "isaac-lab-dashboard-${ISAAC_LAB_BRANCH}"
-        paths:
-            - _isaaclab_cache/
-        policy: pull-push
 
 # ==============================================================================================================
 # Shared rules for IsaacLab test/agent jobs.
@@ -2373,7 +2401,12 @@ get-isaac-lab-historical-data:
     extends:
       - .isaac-lab-dashboard-cache
       - .ipp_lnx_x86_64_cpu_small
-      - .isaac-test-rules
+      # Always run so the dashboard's hard `needs:` on this job doesn't get
+      # blocked when an unrelated upstream (e.g. build) fails.
+      - .isaac-test-rules-always
+    # Failures still don't block the pipeline — we publish whatever cache
+    # state we managed to seed (`when: always` on artifacts), and the
+    # dashboard consumes that via `needs: artifacts: true`.
     allow_failure: true
     artifacts:
         expire_in: 1 week
@@ -2381,10 +2414,20 @@ get-isaac-lab-historical-data:
         paths:
           - _isaaclab_cache/
     script:
+      # Evergreen seed: hydrate _isaaclab_cache/ from the most recent successful
+      # run of this same job on the default branch.  This makes the cache
+      # transmission durable across pipelines without relying on GitLab's
+      # runner-affinity-bound `cache:` mechanism.
+      - >
+        ./tools/ci/dashboards/fetch_latest_cache.sh
+        --project "${CI_PROJECT_PATH}"
+        --job get-isaac-lab-historical-data
+        --ref "${CI_DEFAULT_BRANCH:-develop}"
+        --dest .
       - ./tools/packman/python.sh -m pip install -r tools/ci/requirements.txt --quiet
       - echo "=== GitLab / GitHub API (GITLAB_AUTH_TOKEN, GITHUB_NVIDIA_DEV_TOKEN) ==="
       - ./tools/packman/python.sh tools/ci/dashboards/verify_api_tokens.py
-      # Historical GitLab + GitHub data (no JUnit — same cache key as generate-isaac-lab-dashboard).
+      # Historical GitLab + GitHub data — appended on top of the evergreen seed.
       - |
         set +e
         ERR_COUNT=0
@@ -2438,6 +2481,8 @@ test-linux-x86_64-isaac-lab-integration:
     - .test-common
     - .test-linux-x86_64-isaac-lab-integration-base
     - .isaac-test-rules
+  # Test failures return exit code 42, but failures of the test job itself (e.g. pytest crashing) return exit code 66.
+  # allow_failure has been disabled to enforce the contract that IsaacLab tests are gating to pipeline success.
   variables:
     ISAACSIM_CI_SHORT: "true"
 
@@ -2456,8 +2501,14 @@ generate-isaac-lab-dashboard:
       - .isaac-lab-dashboard-cache
       - .ipp_lnx_x86_64_cpu_small
       - .isaac-test-rules-always
-    dependencies:
-      - get-isaac-lab-historical-data
+    # Hard dependency on the historical-data fetch.  Without its artifact
+    # the slack subcommand can't compute regressions ("Failed to fetch
+    # baseline test report") and the dashboard renders against an empty
+    # cache, so we wait for it explicitly and consume its artifact directly
+    # instead of relying on the stage-level `dependencies:` model.
+    needs:
+      - job: get-isaac-lab-historical-data
+        artifacts: true
     script:
       - export TZ="America/Los_Angeles"
       # Installing kaleido/chrome deps here so the heatmap PNG can be rendered
@@ -2501,10 +2552,13 @@ post-to-isaac-lab-slack:
   extends:
     - .ipp_lnx_x86_64_cpu_small
     - .isaac-test-rules-always
+  # Hard `needs:` (no `optional: true`) — if the dashboard didn't produce an
+  # artifact there is no baseline to diff against, and posting a degraded
+  # report is worse than posting nothing.  Skipping this job cleanly is the
+  # intended behaviour in that case.
   needs:
     - job: generate-isaac-lab-dashboard
       artifacts: true
-      optional: true
   script:
     - ./tools/packman/python.sh -m pip install -r tools/ci/requirements.txt --quiet
     - ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py slack --config tools/ci/dashboards/config_isaac_lab.yml
@@ -2608,8 +2662,11 @@ post-to-isaac-lab-slack:
 # To populate the cache, run get-isaacsim-historical-data manually from the CI pipeline UI.
 # ==============================================================================================================
 
-# Shared GitLab cache for the IsaacSim dashboard.  Stored separately from the IsaacLab cache to
-# avoid key collisions; same cache.policy so the generate job can pull what the fetch job pushed.
+# Shared variables for the IsaacSim dashboard producer/consumer pair.  Same
+# evergreen-artifact transmission model as .isaac-lab-dashboard-cache; see
+# tools/ci/dashboards/fetch_latest_cache.sh.  GitLab `cache:` was previously
+# used here but is unreliable across runners — it has been removed in favour
+# of the artifact path.
 .isaac-sim-dashboard-cache:
     variables:
         ISAACSIM_BRANCH: "develop"
@@ -2619,11 +2676,6 @@ post-to-isaac-lab-slack:
             develop
             develop-kit-tot
             kit-integration/master
-    cache:
-        key: "isaac-sim-dashboard-${ISAACSIM_BRANCH}"
-        paths:
-            - _isaacsim_cache/
-        policy: pull-push
 
 # ==============================================================================================================
 # Fetch historical IsaacSim test data from GitLab CI + GitHub mirror.
@@ -2634,7 +2686,9 @@ get-isaac-sim-historical-data:
     extends:
       - .isaac-sim-dashboard-cache
       - .ipp_lnx_x86_64_cpu_small
-      - .isaac-test-rules
+      # Always run so the dashboard's hard `needs:` on this job doesn't get
+      # blocked when an unrelated upstream (e.g. build) fails.
+      - .isaac-test-rules-always
     allow_failure: true
     artifacts:
         expire_in: 1 week
@@ -2642,6 +2696,14 @@ get-isaac-sim-historical-data:
         paths:
           - _isaacsim_cache/
     script:
+      # Evergreen seed: hydrate _isaacsim_cache/ from the most recent successful
+      # run of this same job on the default branch.
+      - >
+        ./tools/ci/dashboards/fetch_latest_cache.sh
+        --project "${CI_PROJECT_PATH}"
+        --job get-isaac-sim-historical-data
+        --ref "${CI_DEFAULT_BRANCH:-develop}"
+        --dest .
       - ./tools/packman/python.sh -m pip install -r tools/ci/requirements.txt --quiet
       - echo "=== GitLab / GitHub API (GITLAB_AUTH_TOKEN, GITHUB_NVIDIA_DEV_TOKEN) ==="
       - ./tools/packman/python.sh tools/ci/dashboards/verify_api_tokens.py
@@ -2684,8 +2746,11 @@ generate-isaac-sim-dashboard:
       - .ipp_lnx_x86_64_cpu_small
       - .isaac-test-rules-always
     allow_failure: true
-    dependencies:
-      - get-isaac-sim-historical-data
+    # Hard dependency on the historical-data fetch — see the matching note
+    # on generate-isaac-lab-dashboard.
+    needs:
+      - job: get-isaac-sim-historical-data
+        artifacts: true
     script:
       - export TZ="America/Los_Angeles"
       # Installing kaleido/chrome deps here so the heatmap PNG can be rendered
@@ -2732,10 +2797,10 @@ post-to-isaac-sim-slack:
   extends:
     - .ipp_lnx_x86_64_cpu_small
     - .isaac-test-rules-always
+  # Hard `needs:` — see the matching note on post-to-isaac-lab-slack.
   needs:
     - job: generate-isaac-sim-dashboard
       artifacts: true
-      optional: true
   script:
     - ./tools/packman/python.sh -m pip install -r tools/ci/requirements.txt --quiet
     - ./tools/packman/python.sh tools/ci/dashboards/ci_dashboard.py slack --config tools/ci/dashboards/config_isaac_sim.yml
