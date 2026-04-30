@@ -1981,6 +1981,47 @@ check_externals:
     - ./tools/packman/python.sh tools/check_externals/new_check_externals.py --allowed-external linbuild
 
 # ==============================================================================================================
+check_oss_baseline:
+  extends:
+    - .repo-artifacts
+    - .check-common
+    - .ipp_lnx_x86_64_cpu_small
+    - .post_job_status_to_slack
+  stage: check-externals
+  needs:
+    - job: build-linux-x86_64-release
+      artifacts: true
+  allow_failure: false
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"'
+      when: never
+    # On MR contexts route the Slack notification to #isaac-sim-ci-mr; on
+    # protected pushes fall through to the dashboard's default channel.
+    - if: '$CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE == "merge_request"'
+      variables:
+        SLACK_CHANNEL: "#isaac-sim-ci-mr"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      variables:
+        SLACK_CHANNEL: "#isaac-sim-ci-mr"
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_PROTECTED == "true"'
+    - !reference [.check-common, rules]
+  artifacts:
+    when: always
+    # expose_as surfaces both files on the MR widget (note: GitLab restricts
+    # the label to letters, digits, '-', '_' and spaces).
+    expose_as: "OSS baseline snapshot and diff"
+    paths:
+      - oss_baseline_current.csv
+      - oss_baseline_diff.json
+    expire_in: 1 week
+  script:
+    # The build job publishes _build/packages/*.7z, not the loose release
+    # tree. Unzip the standalone package so the scanner can walk .dist-info
+    # dirs (same pattern as publish-python-package and dockertest).
+    - ./repo.sh unzip_file --file _build/packages/isaac-sim-standalone*.7z --dst _build/linux-x86_64/release
+    - ./repo.sh check_oss_baseline --release-dir _build/linux-x86_64/release
+
+# ==============================================================================================================
 check-python-packages-dependencies-linux-x86_64:
   extends:
     - .repo-artifacts

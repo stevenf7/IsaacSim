@@ -15,6 +15,9 @@ Makefile
 *.swo
 exts.deps.generated.kit
 
+/oss_baseline_current.csv
+/oss_baseline_diff.json
+
 # byte-compiled python files
 *.py[cod]
 

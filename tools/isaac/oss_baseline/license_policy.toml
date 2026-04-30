@@ -1,0 +1,72 @@
+# SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Policy file for the third-party OSS baseline check. Consumed by
+# generate_oss_baseline.py. See README_INTERNAL.md for the workflow.
+
+# When a new UNKNOWN-licensed package appears: "warn" (don't fail) or "fail".
+unknown_policy = "warn"
+
+# Top-level directories in the release tree owned by other teams and dropped
+# from the snapshot before classification (so they cannot trigger regressions
+# here). Plain directory names; match is exact or "<name>/" prefix, no globs.
+excluded_locations = [
+    "extscache",
+    "kit",
+]
+
+# Licenses acceptable for Isaac Sim distributions without per-package OSRB
+# review. Compared case-sensitive against the normalized identifier.
+allowed_licenses = [
+    "Apache-2.0",
+    "Apache",          # generic Apache; review on first appearance
+    "BSD-3-Clause",
+    "BSD-2-Clause",
+    "BSD",             # generic BSD; review on first appearance
+    "MIT",
+    "ISC",
+    "Zlib",
+    "MPL-2.0",
+    "Python-2.0",
+    "PSF-2.0",
+    "Unlicense",
+    "CC0-1.0",
+]
+
+# Licenses that BLOCK the MR pipeline when a new (per baseline.csv diff)
+# package carrying one of these lands without a matching exception below.
+restricted_licenses = [
+    "GPL-2.0",
+    "GPL-3.0",
+    "LGPL-2.0",
+    "LGPL-2.1",
+    "LGPL-3.0",
+    "AGPL-3.0",
+    "SSPL-1.0",
+    "BUSL-1.1",
+    "CC-BY-NC-4.0",
+]
+
+# OSRB-cleared exceptions.
+#
+# Fields (validated at policy load time):
+#   package         - REQUIRED. fnmatch glob against the package name.
+#   osrb_ticket     - REQUIRED when the entry can match a restricted-licensed
+#                     package (i.e. license is in restricted_licenses above,
+#                     or license is unset). nvbug URL form
+#                     https://nvbugspro.nvidia.com/bug/<id>; clone the
+#                     template at https://nvbugspro.nvidia.com/bug/2885977.
+#   version_pattern - optional fnmatch glob; defaults to "*".
+#   license         - optional; if set, must equal the normalized identifier.
+#   comment         - optional context for reviewers.
+
+# qpsolvers (LGPL-3.0): OSRB-approved per the canonical tracking sheet
+# https://docs.google.com/spreadsheets/d/170aaZUi5SUmL3MQ0GNmlj3VsUcpmPJI2zO-e13u_I64
+# Pulled via deps/pip_pink.toml for isaacsim.robot_motion.pink. Both Isaac Sim
+# 4.11.0 (nvbug 6047066) and Isaac Lab 4.5.1 (nvbug 5222836) are approved.
+[[exceptions]]
+package = "qpsolvers"
+version_pattern = "*"
+license = "LGPL-3.0"
+osrb_ticket = "https://nvbugspro.nvidia.com/bug/6047066"
+comment = "OSRB-approved for Isaac Sim per the OSRB tracking sheet (PIC: Sachin Sulkunte)."
