@@ -107,8 +107,8 @@ Extension Tutorials
    ./tutorial_sensors_rtx_placement
 
 
-Integration Examples
---------------------
+Integration Tutorials
+---------------------
 
 End-to-end examples that wire multiple extensions together.
 
