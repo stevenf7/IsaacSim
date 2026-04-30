@@ -14,7 +14,13 @@
 # limitations under the License.
 """Demonstrate UR10e pick-up task."""
 
+import argparse
+
 from isaacsim import SimulationApp
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, _ = parser.parse_known_args()
 
 simulation_app = SimulationApp({"headless": False})
 import numpy as np
@@ -40,6 +46,7 @@ articulation_controller = my_ur10e.get_articulation_controller()
 
 reset_needed = False
 task_completed = False
+frame_count = 0
 
 while simulation_app.is_running():
     my_world.step(render=True)
@@ -68,6 +75,10 @@ while simulation_app.is_running():
 
     if my_world.is_stopped():
         reset_needed = True
+
+    frame_count += 1
+    if args.test and frame_count >= 10:
+        break
 
 
 simulation_app.close()

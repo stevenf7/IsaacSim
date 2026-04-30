@@ -26,7 +26,7 @@ import omni.kit.app
 import omni.kit.commands
 import omni.timeline
 import omni.usd
-from isaacsim.core.utils.extensions import get_extension_path_from_name
+from isaacsim.core.experimental.utils.app import get_extension_path as get_extension_path_from_name
 from isaacsim.replicator.behavior.behaviors import (
     LightRandomizer,
     LocationRandomizer,

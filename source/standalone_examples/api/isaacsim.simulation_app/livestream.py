@@ -15,7 +15,13 @@
 
 """Demonstrate headless simulation with livestream server."""
 
+import argparse
+
 from isaacsim import SimulationApp
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, _ = parser.parse_known_args()
 
 # This sample enables a livestream server to connect to when running headless
 CONFIG = {
@@ -42,8 +48,12 @@ kit.set_setting("/app/window/drawMouse", True)
 enable_extension("omni.kit.livestream.app")
 
 # Run until closed
+frame_count = 0
 while kit._app.is_running() and not kit.is_exiting():
     # Run in realtime mode, we don't specify the step size
     kit.update()
+    frame_count += 1
+    if args.test and frame_count >= 10:
+        break
 
 kit.close()

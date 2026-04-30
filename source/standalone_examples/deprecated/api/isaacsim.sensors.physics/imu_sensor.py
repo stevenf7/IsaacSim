@@ -15,9 +15,20 @@
 
 """Demonstrate IMU sensor usage."""
 
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", action="store_true", help="Run in test mode (exit after 10 frames)")
+args, _ = parser.parse_known_args()
+
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": False})
+simulation_app = SimulationApp(
+    {
+        "headless": False,
+        "extra_args": ["--enable", "isaacsim.sensors.physics"],
+    }
+)
 
 import sys
 
@@ -59,6 +70,7 @@ imu_sensor = my_world.scene.add(
 )
 my_world.reset()
 i = 0
+frame_count = 0
 reset_needed = False
 while simulation_app.is_running():
     my_world.step(render=True)
@@ -97,5 +109,8 @@ while simulation_app.is_running():
                 joint_actions.joint_velocities[0, wheel_dof_indices[j]] = actions.joint_velocities[0, j]
 
         my_carter.apply_action(joint_actions)
+        frame_count += 1
+        if args.test and frame_count >= 10:
+            break
 
 simulation_app.close()

@@ -14,7 +14,13 @@
 # limitations under the License.
 """Demonstrate UR10e follow-target with RMPflow controller."""
 
+import argparse
+
 from isaacsim import SimulationApp
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, _ = parser.parse_known_args()
 
 simulation_app = SimulationApp({"headless": False})
 
@@ -40,6 +46,7 @@ my_controller = RMPFlowController(name="target_follower_controller", robot_artic
 my_controller.reset()
 
 # run the simulation
+frame_count = 0
 while simulation_app.is_running():
     my_world.step(render=True)
     if my_world.is_playing():
@@ -53,4 +60,7 @@ while simulation_app.is_running():
             target_end_effector_orientation=observations[target_name]["orientation"],
         )
         articulation_controller.apply_action(actions)
+    frame_count += 1
+    if args.test and frame_count >= 10:
+        break
 simulation_app.close()

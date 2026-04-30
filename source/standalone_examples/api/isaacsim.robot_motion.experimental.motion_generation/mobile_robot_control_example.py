@@ -39,8 +39,8 @@ import omni.timeline
 import warp as wp
 from isaacsim.core.experimental.objects import Cylinder
 from isaacsim.core.experimental.prims import Articulation
+from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.storage.native import get_assets_root_path_async
 
 
@@ -501,7 +501,7 @@ async def setup_scene() -> tuple[Articulation, list[str]]:
     await omni.kit.app.get_app().next_update_async()
 
     # Set camera view
-    set_camera_view(eye=[0.0, 0.1, 1.5], target=[0.0, 0.1, 0.0], camera_prim_path="/OmniverseKit_Persp")
+    ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=[0.0, 0.1, 1.5], target=[0.0, 0.1, 0.0])
 
     # draw a small red disk:
     disk = Cylinder(
@@ -554,7 +554,7 @@ def main():
         action="store_true",
         help="Ignore: used for snippet testing only",
     )
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
 
     print("=" * 60)
     print("Motion Generation API - Differential Drive Controller Example")

@@ -16,7 +16,12 @@
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": True})
+simulation_app = SimulationApp(
+    {
+        "headless": True,
+        "extra_args": ["--enable", "isaacsim.sensors.physics"],
+    }
+)
 
 import sys
 

@@ -92,7 +92,7 @@ camera.initialize()
 
 i = 0
 camera.add_motion_vectors_to_frame()
-while simulation_app.is_running() and (not args.test or i < 601):
+while simulation_app.is_running() and (not args.test or i < 10):
     simulation_app.update()
     if not timeline.is_playing():
         continue

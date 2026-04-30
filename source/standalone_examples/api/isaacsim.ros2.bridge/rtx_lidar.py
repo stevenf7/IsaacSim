@@ -14,24 +14,29 @@
 # limitations under the License.
 """Demonstrate RTX lidar sensor with ROS 2 PointCloud2 publishing."""
 
+import argparse
 import sys
 
 from isaacsim import SimulationApp
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, _ = parser.parse_known_args()
+
 # Example for creating a RTX lidar sensor and publishing PointCloud2 data
 simulation_app = SimulationApp({"headless": False})
 import carb
+import isaacsim.core.experimental.utils.app as app_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni
 import omni.kit.viewport.utility
 import omni.replicator.core as rep
-from isaacsim.core.api import SimulationContext
-from isaacsim.core.utils import stage
-from isaacsim.core.utils.extensions import enable_extension
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf
 
 # enable ROS2 bridge extension
-enable_extension("isaacsim.ros2.bridge")
+app_utils.enable_extension("isaacsim.ros2.bridge")
 
 simulation_app.update()
 
@@ -45,7 +50,7 @@ if assets_root_path is None:
 
 simulation_app.update()
 # Loading the simple_room environment
-stage.add_reference_to_stage(
+stage_utils.add_reference_to_stage(
     assets_root_path + "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/background"
 )
 simulation_app.update()
@@ -80,7 +85,7 @@ _, sensor_2D = omni.kit.commands.execute(
 # RTX sensors are cameras and must be assigned to their own render product
 hydra_texture_2D = rep.create.render_product(sensor_2D.GetPath(), [1, 1], name="Isaac")
 
-simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
+SimulationManager.setup_simulation(dt=1.0 / 60.0, device="cpu")
 simulation_app.update()
 
 # Create Point cloud publisher pipeline in the post process graph
@@ -103,11 +108,15 @@ writer.attach([hydra_texture_2D])
 
 simulation_app.update()
 
-simulation_context.play()
+app_utils.play()
 
+frame_count = 0
 while simulation_app.is_running():
     simulation_app.update()
+    frame_count += 1
+    if args.test and frame_count >= 10:
+        break
 
 # cleanup and shutdown
-simulation_context.stop()
+app_utils.stop()
 simulation_app.close()

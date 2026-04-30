@@ -15,6 +15,7 @@
 
 """Demonstrate maintaining a constant frame rate in simulation."""
 
+import argparse
 import time
 
 from isaacsim import SimulationApp
@@ -25,6 +26,10 @@ from isaacsim import SimulationApp
 
 DESIRED_FRAME_RATE = 10.0  # frames per second
 frame_period_s = 1.0 / DESIRED_FRAME_RATE
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, _ = parser.parse_known_args()
 
 simulation_app = SimulationApp({"headless": True})
 
@@ -50,6 +55,7 @@ update_sub = carb.eventdispatcher.get_eventdispatcher().observe_event(
     observer_name="constant_fps.update_event_callback",
 )
 
+frame_count = 0
 while simulation_app.is_running():
     # Measure duration of single app update
     simulation_app.update()
@@ -61,6 +67,9 @@ while simulation_app.is_running():
         time.sleep(sleep_duration_s)
     instantaneous_fps = 1.0 / max(frame_period_s, app_update_time_s)
     carb.log_warn(f"FPS is {instantaneous_fps}")
+    frame_count += 1
+    if args.test and frame_count >= 10:
+        break
 
 update_sub = None
 

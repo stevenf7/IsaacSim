@@ -14,7 +14,13 @@
 # limitations under the License.
 """Demonstrate UR10e follow-target with IK solver."""
 
+import argparse
+
 from isaacsim import SimulationApp
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, _ = parser.parse_known_args()
 
 simulation_app = SimulationApp({"headless": False})
 
@@ -38,6 +44,7 @@ ik_solver = KinematicsSolver(my_ur10e)
 articulation_controller = my_ur10e.get_articulation_controller()
 
 # run the simulation
+frame_count = 0
 while simulation_app.is_running():
     my_world.step(render=True)
     if my_world.is_playing():
@@ -53,4 +60,7 @@ while simulation_app.is_running():
             articulation_controller.apply_action(actions)
         else:
             print("IK did not converge to a solution.  No action is being taken.")
+    frame_count += 1
+    if args.test and frame_count >= 10:
+        break
 simulation_app.close()

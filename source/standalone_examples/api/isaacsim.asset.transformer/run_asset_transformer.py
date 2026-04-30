@@ -141,7 +141,8 @@ kit = SimulationApp({"headless": args.headless})
 # Now import the rest after SimulationApp is initialized
 import carb
 from isaacsim.asset.transformer import AssetTransformerManager, RuleProfile
-from isaacsim.core.utils.extensions import enable_extension, get_extension_path_from_name
+from isaacsim.core.experimental.utils.app import enable_extension
+from isaacsim.core.experimental.utils.app import get_extension_path as get_extension_path_from_name
 
 
 def get_rules_extension_path() -> str:

@@ -999,6 +999,7 @@ test-windows-x86_64-nativepythontests:
       matrix:
         - BUCKET:
           - api
+          - deprecated
           - replicator
           - testing
     script:

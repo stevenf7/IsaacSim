@@ -23,7 +23,7 @@ import os
 
 import omni.kit.app
 import omni.usd
-from isaacsim.core.utils.extensions import get_extension_path_from_name
+from isaacsim.core.experimental.utils.app import get_extension_path as get_extension_path_from_name
 from isaacsim.storage.native import get_assets_root_path
 
 # Make sure the grasping extension is loaded and enabled

@@ -44,12 +44,15 @@ if tick_rate > 0:
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpus, "extra_args": extra_args})
+simulation_app = SimulationApp(
+    {"headless": True, "enable_motion_bvh": True, "max_gpu_count": n_gpus, "extra_args": extra_args}
+)
 
 import carb
 import omni.kit.test
 import omni.replicator.core as rep
 from isaacsim.core.utils.extensions import enable_extension
+from isaacsim.sensors.experimental.rtx import Radar
 from pxr import Gf
 
 enable_extension("isaacsim.benchmark.services")
@@ -59,15 +62,21 @@ from isaacsim.benchmark.services import BaseIsaacBenchmark
 # Create RTX Radar from params
 def add_rtx_radar(prim_path, sensor_translation, sensor_orientation):
     """Create an RTX radar sensor at the specified path and transform."""
-    _, sensor = omni.kit.commands.execute(
-        "IsaacSensorCreateRtxRadar",
+    radar = Radar.create(
         path=prim_path,
-        parent=None,
-        config="Example",
-        translation=sensor_translation,
-        orientation=sensor_orientation,
+        translations=[
+            sensor_translation[0],
+            sensor_translation[1],
+            sensor_translation[2],
+        ],
+        orientations=[
+            sensor_orientation.GetReal(),
+            sensor_orientation.GetImaginary()[0],
+            sensor_orientation.GetImaginary()[1],
+            sensor_orientation.GetImaginary()[2],
+        ],
     )
-    return sensor
+    return radar.prims[0]
 
 
 # ----------------------------------------------------------------------
@@ -96,6 +105,9 @@ for i in range(n_sensor):
     sensor_translation = Gf.Vec3f([-0.937, -2.0 + i * 2.0, 0.8940])  # defined for full_warehouse.usd
     sensor_orientation = Gf.Quatd(0.70711, 0.70711, 0, 0)
     sensor = add_rtx_radar(radar_path, sensor_translation, sensor_orientation)
+    if sensor is None:
+        carb.log_error(f"Failed to create RTX radar at {radar_path}. Ensure Motion BVH is enabled.")
+        continue
     if tick_rate > 0:
         sensor.GetAttribute("omni:sensor:tickRate").Set(tick_rate)
     sensors.append(sensor)

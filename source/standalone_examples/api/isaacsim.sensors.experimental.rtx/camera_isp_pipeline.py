@@ -54,8 +54,8 @@ import cv2
 import numpy as np
 import omni
 from isaacsim.core.experimental.objects import Cube, DistantLight
+from isaacsim.core.experimental.utils.app import enable_extension
 from isaacsim.core.experimental.utils.stage import get_current_stage
-from isaacsim.core.utils.extensions import enable_extension
 from isaacsim.sensors.experimental.rtx import CameraSensor, RtxCamera
 
 # The omni.sensors.nv.camera extension provides the GPU-side ISP pipeline that

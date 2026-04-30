@@ -112,7 +112,7 @@ while simulation_app.is_running():
         elif i == 200:
             i = 0
             if args.test is True:
-                print("Reached: ", spot.robot.get_world_pose()[0])
+                print("Reached: ", spot.robot.get_world_poses()[0])
                 break
         i += 1
     else:

@@ -15,6 +15,7 @@
 
 """Combined test suite for SimulationApp configuration options."""
 
+import os
 import sys
 
 from isaacsim import SimulationApp
@@ -43,12 +44,12 @@ def test_createstage_config(kit):
     omni.kit.app.get_app().print_and_log("Config: No empty stage was created")
 
     if omni.usd.get_context().get_stage() is not None:
-        print("[fatal] Stage is not None")
+        print("[fatal] Stage is not None", flush=True)
         sys.exit(1)
     stage_utils.create_new_stage()
 
     if omni.usd.get_context().get_stage() is None:
-        print("[fatal] Stage is None")
+        print("[fatal] Stage is None", flush=True)
         sys.exit(1)
 
     for i in range(100):
@@ -71,19 +72,21 @@ def test_extra_args(kit):
 
     server_check = carb.settings.get_settings().get_as_string("/persistent/isaac/asset_root/default")
 
-    if server_check != "omniverse://ov-test-this-is-working":
-        print(f"[fatal] isaac nucleus default setting not omniverse://ov-test-this-is-working, instead: {server_check}")
+    env_asset_root = os.environ.get("ISAACSIM_ASSET_ROOT")
+    expected_asset_root = env_asset_root if env_asset_root is not None else "omniverse://ov-test-this-is-working"
+    if server_check != expected_asset_root:
+        print(f"[fatal] isaac nucleus default setting not {expected_asset_root}, instead: {server_check}", flush=True)
         sys.exit(1)
 
     arg_1 = carb.settings.get_settings().get_as_int("/app/extra/arg")
     arg_2 = carb.settings.get_settings().get_as_int("/app/some/other/arg")
 
     if arg_1 != 1:
-        print(f"[fatal] /app/extra/arg was not 1 and was {arg_1} instead")
+        print(f"[fatal] /app/extra/arg was not 1 and was {arg_1} instead", flush=True)
         sys.exit(1)
 
     if arg_2 != 2:
-        print(f"[fatal] /app/some/other/arg was not 2 and was {arg_2} instead")
+        print(f"[fatal] /app/some/other/arg was not 2 and was {arg_2} instead", flush=True)
         sys.exit(1)
 
     print("[TEST 2] PASSED - extra_args configuration works correctly")

@@ -42,6 +42,7 @@ parser.add_argument(
     help="Path to the environment url",
 )
 parser.add_argument("--device", type=str, choices=["cpu", "cuda"], default="cpu", help="Simulation device")
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
 
 args, unknown = parser.parse_known_args()
 print(f"Number of robots: {args.num_robots}")
@@ -112,6 +113,8 @@ while simulation_app.is_running():
     simulation_app.update()
 
     if SimulationManager.is_simulating():
+        if args.test and i > 10:
+            break
         if i >= 0 and i < 80:
             # forward
             base_command = torch.tensor([0.5, 0, 0], device=args.device)

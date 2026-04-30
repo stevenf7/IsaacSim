@@ -43,8 +43,8 @@ import omni.kit.app
 import omni.timeline
 import warp as wp
 from isaacsim.core.experimental.prims import Articulation
+from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.core.utils.viewports import set_camera_view
 from isaacsim.storage.native import get_assets_root_path_async
 
 
@@ -223,7 +223,7 @@ async def setup_scene() -> tuple[Articulation, list[str]]:
     robot_prim.GetVariantSet("Mesh").SetVariantSelection("Performance")
 
     # Set camera view
-    set_camera_view(eye=[2.0, 2.0, 1.5], target=[0.0, 0.0, 0.5], camera_prim_path="/OmniverseKit_Persp")
+    ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=[2.0, 2.0, 1.5], target=[0.0, 0.0, 0.5])
 
     # Create articulation wrapper
     robot = Articulation("/World/Franka")
@@ -425,7 +425,7 @@ def main():
         action="store_true",
         help="Ignore: used for snippet testing only",
     )
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
 
     print("=" * 60)
     print("Motion Generation API - Trajectory Following Example")

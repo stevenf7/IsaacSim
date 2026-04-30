@@ -19,6 +19,7 @@ import argparse
 from isaacsim import SimulationApp
 
 parser = argparse.ArgumentParser("franka_examples")
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
 parser.add_argument(
     "--behavior",
     type=str,
@@ -81,7 +82,16 @@ def main():
     decider_network.context.add_monitor(context_monitor.monitor)
     world.add_decider_network(decider_network)
 
-    world.run(simulation_app)
+    if args.test:
+        _test_frames = {"count": 0}
+
+        def _test_done_cb():
+            _test_frames["count"] += 1
+            return _test_frames["count"] >= 10
+
+        world.run(simulation_app, is_done_cb=_test_done_cb)
+    else:
+        world.run(simulation_app)
     simulation_app.close()
 
 

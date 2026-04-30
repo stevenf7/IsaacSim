@@ -18,6 +18,8 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
+import argparse
+
 import carb
 import numpy as np
 from isaacsim.core.api import World
@@ -103,6 +105,10 @@ with dr.trigger.on_rl_frame(num_envs=num_envs):
 
 
 frame_idx = 0
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, _ = parser.parse_known_args()
+
 while simulation_app.is_running():
     if world.is_playing():
         reset_inds = list()
@@ -112,5 +118,7 @@ while simulation_app.is_running():
         dr.physics_view.step_randomization(reset_inds)
         world.step(render=True)
         frame_idx += 1
+        if args.test and frame_idx >= 10:
+            break
 
 simulation_app.close()

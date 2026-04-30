@@ -43,19 +43,20 @@ output_dir = os.path.join(os.getcwd(), "_example_output_isaacsim.sensors.experim
 os.makedirs(output_dir, exist_ok=True)
 
 import carb
+import isaacsim.core.experimental.utils.app as app_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni
 import omni.replicator.core as rep
-from isaacsim.core.api import World
-from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.utils.extensions import enable_extension
-from isaacsim.core.utils.stage import is_stage_loading, open_stage
-from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
-from isaacsim.robot.wheeled_robots.robots import WheeledRobot
+from isaacsim.core.experimental.objects import Cube, GroundPlane
+from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
+from isaacsim.core.simulation_manager import SimulationManager
+from isaacsim.robot.experimental.wheeled_robots.controllers import DifferentialController
+from isaacsim.robot.experimental.wheeled_robots.robots import WheeledRobot
 from isaacsim.sensors.experimental.rtx import Lidar, LidarSensor, parse_generic_model_output_data
 from isaacsim.storage.native import get_assets_root_path
 
-enable_extension("isaacsim.sensors.rtx.nodes")
+app_utils.enable_extension("isaacsim.sensors.rtx.nodes")
 from omni.kit.viewport.utility import get_active_viewport
 from omni.replicator.core import Writer
 from pxr import Gf, UsdGeom
@@ -72,46 +73,41 @@ if assets_root_path is None:
 # =============================================================================
 # SET UP WORLD AND ROBOT
 # =============================================================================
-my_world = World(stage_units_in_meters=1.0)
-my_world.scene.add_default_ground_plane()
+stage_utils.set_stage_units(meters_per_unit=1.0)
+GroundPlane("/World/GroundPlane")
 
 # Load NovaCarter robot
 asset_path = assets_root_path + "/Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd"
-my_carter = my_world.scene.add(
-    WheeledRobot(
-        prim_path="/World/Carter",
-        name="my_carter",
-        wheel_dof_names=["joint_wheel_left", "joint_wheel_right"],
-        create_robot=True,
-        usd_path=asset_path,
-        position=np.array([0, 0.0, 0]),
-    )
+my_carter = WheeledRobot(
+    "/World/Carter",
+    wheel_dof_names=["joint_wheel_left", "joint_wheel_right"],
+    usd_path=asset_path,
+    positions=np.array([[0, 0.0, 0]]),
 )
 
 # Add walls for the lidar to detect
-cube_1 = my_world.scene.add(
-    DynamicCuboid(
-        prim_path="/World/wall_left",
-        name="wall_left",
-        position=np.array([5, 5, 2.5]),
-        scale=np.array([20, 0.2, 5]),
-    )
+wall_left = Cube(
+    paths="/World/wall_left",
+    positions=np.array([[5, 5, 2.5]]),
+    scales=np.array([[20, 0.2, 5]]),
 )
-cube_2 = my_world.scene.add(
-    DynamicCuboid(
-        prim_path="/World/wall_right",
-        name="wall_right",
-        position=np.array([5, -5, 2.5]),
-        scale=np.array([20, 0.2, 5]),
-    )
+RigidPrim(paths="/World/wall_left")
+GeomPrim(paths="/World/wall_left", apply_collision_apis=True)
+
+wall_right = Cube(
+    paths="/World/wall_right",
+    positions=np.array([[5, -5, 2.5]]),
+    scales=np.array([[20, 0.2, 5]]),
 )
+RigidPrim(paths="/World/wall_right")
+GeomPrim(paths="/World/wall_right", apply_collision_apis=True)
 
 # =============================================================================
 # SET UP CAMERA FOR OBSERVATION
 # =============================================================================
-stage = omni.usd.get_context().get_stage()
+usd_stage = omni.usd.get_context().get_stage()
 camera_path = "/World/ObservationCamera"
-camera_prim = stage.DefinePrim(camera_path, "Camera")
+camera_prim = usd_stage.DefinePrim(camera_path, "Camera")
 
 xform = UsdGeom.Xformable(camera_prim)
 xform.ClearXformOpOrder()
@@ -190,46 +186,39 @@ if args.test:
 # =============================================================================
 # INITIALIZE WORLD AND CONTROLLER
 # =============================================================================
-my_world.reset()
-my_controller = DifferentialController(name="simple_control", wheel_radius=0.04295, wheel_base=0.4132)
+SimulationManager.setup_simulation(dt=1.0 / 60.0, device="cpu")
+my_controller = DifferentialController(wheel_radius=0.04295, wheel_base=0.4132)
 
 # =============================================================================
 # RUN SIMULATION
 # =============================================================================
-timeline = omni.timeline.get_timeline_interface()
-timeline.play()
+app_utils.play()
+simulation_app.update()
 
 print("Starting simulation - robot will drive in a circular pattern")
 print("Observe the lidar point cloud updating in real-time")
 
 frame_count = 0
-was_playing = False
 
 while simulation_app.is_running():
     simulation_app.update()
 
-    if not timeline.is_playing():
-        was_playing = False
+    if not app_utils.is_playing():
         continue
-
-    # Reinitialize physics when timeline restarts
-    if not was_playing:
-        my_world.reset()
-        my_controller.reset()
-        was_playing = True
 
     # =============================================================================
     # DRIVE ROBOT IN A CIRCULAR PATTERN
     # =============================================================================
-    my_carter.apply_wheel_actions(my_controller.forward(command=[0.3, np.pi / 8]))
+    wheel_velocities = my_controller.forward(command=[0.3, np.pi / 8])
+    my_carter.apply_wheel_actions(wheel_velocities)
 
     frame_count += 1
 
-    if args.test and frame_count > 100:
+    if args.test and frame_count > 10:
         break
 
 # =============================================================================
 # CLEANUP
 # =============================================================================
-timeline.stop()
+app_utils.stop()
 simulation_app.close()

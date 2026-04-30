@@ -17,9 +17,20 @@
 
 # In this example, please drag the cube along the arm and see how the effort measurement from the effort sensor changes
 
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", action="store_true", help="Run in test mode (exit after 10 frames)")
+args, _ = parser.parse_known_args()
+
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": False})
+simulation_app = SimulationApp(
+    {
+        "headless": False,
+        "extra_args": ["--enable", "isaacsim.sensors.physics"],
+    }
+)
 
 import sys
 
@@ -61,6 +72,7 @@ DynamicCuboid(
 my_world.reset()
 effort_sensor = EffortSensor(prim_path=arm_joint)
 reset_needed = False
+frame_count = 0
 while simulation_app.is_running():
     my_world.step(render=True)
     if my_world.is_stopped() and not reset_needed:
@@ -72,5 +84,8 @@ while simulation_app.is_running():
         if reset_needed:
             my_world.reset()
             reset_needed = False
+        frame_count += 1
+        if args.test and frame_count >= 10:
+            break
 
 simulation_app.close()

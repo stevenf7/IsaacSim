@@ -17,13 +17,19 @@
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": False})
+simulation_app = SimulationApp(
+    {
+        "headless": False,
+        "extra_args": ["--enable", "isaacsim.sensors.physics"],
+    }
+)
 
 import argparse
 import sys
 
 import carb
 import numpy as np
+import omni.usd
 from isaacsim.core.api import World
 from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.stage import add_reference_to_stage
@@ -48,7 +54,21 @@ add_reference_to_stage(usd_path=asset_path, prim_path="/World/Ant")
 
 ant = my_world.scene.add(Articulation("/World/Ant/torso", name="ant", translations=np.array([[0, 0, 1.5]])))
 
+# Tick the stage so the USD reference is fully loaded
+simulation_app.update()
+
 ant_foot_prim_names = ["right_back_foot", "left_back_foot", "front_right_foot", "front_left_foot"]
+
+# The Ant USD only has CollisionAPI on child collision meshes, not on the
+# foot prims themselves.  The deprecated ContactSensor requires CollisionAPI
+# on the *parent* of the sensor prim, so apply it to each foot link.
+from pxr import UsdPhysics
+
+stage = omni.usd.get_context().get_stage()
+for name in ant_foot_prim_names:
+    foot_prim = stage.GetPrimAtPath(f"/World/Ant/{name}")
+    if foot_prim.IsValid() and not foot_prim.HasAPI(UsdPhysics.CollisionAPI):
+        UsdPhysics.CollisionAPI.Apply(foot_prim)
 
 translations = np.array(
     [[0.38202, -0.40354, -0.0887], [-0.4, -0.40354, -0.0887], [-0.4, 0.4, -0.0887], [0.4, 0.4, -0.0887]]
@@ -72,6 +92,7 @@ for i in range(4):
 ant_sensors[0].add_raw_contact_data_to_frame()
 my_world.reset()
 reset_needed = False
+frame_count = 0
 while simulation_app.is_running():
     my_world.step(render=True)
     if my_world.is_stopped() and not reset_needed:
@@ -81,5 +102,8 @@ while simulation_app.is_running():
         if reset_needed:
             my_world.reset()
             reset_needed = False
+        frame_count += 1
+        if args.test and frame_count >= 10:
+            break
 
 simulation_app.close()

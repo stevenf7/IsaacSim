@@ -38,7 +38,12 @@ Pass ``--render`` to additionally attach a :class:`BasicWriter` during replay to
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp(launch_config={"headless": True})
+simulation_app = SimulationApp(
+    launch_config={
+        "headless": True,
+        "extra_args": ["--enable", "isaacsim.replicator.episode_recorder"],
+    }
+)
 
 import argparse
 import os
@@ -199,7 +204,7 @@ def main() -> None:
     parser.add_argument("--replay", action="store_true", help="After recording, load the session and replay it.")
     parser.add_argument("--render", action="store_true", help="Attach a BasicWriter during replay and dump RGB frames.")
     parser.add_argument("--existing_hdf5", default=None, help="Skip recording; replay this HDF5 file instead.")
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
 
     hdf5_path = args.existing_hdf5
     if hdf5_path is None:

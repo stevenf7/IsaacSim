@@ -108,7 +108,7 @@ while simulation_app.is_running():
         follow_target.move_to_target(ik_method=args.ik_method)
         frame_count += 1
 
-    if args.test and frame_count >= 100:
+    if args.test and frame_count >= 10:
         break
 
     # - Update simulation

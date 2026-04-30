@@ -90,7 +90,7 @@ if __name__ == "__main__":
     kit = SimulationApp()
 
     import omni
-    from isaacsim.core.utils.extensions import enable_extension
+    from isaacsim.core.experimental.utils.app import enable_extension
 
     enable_extension("omni.kit.asset_converter")
 
