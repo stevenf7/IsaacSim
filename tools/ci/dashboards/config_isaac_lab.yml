@@ -75,10 +75,14 @@ slack:
   #   mr_description_checkbox — Slack checkbox label to look for in MR description
   #   default             — always matches (use as last rule)
   routing:
+    # Any pipeline running on a kit-integration/* ref posts to the
+    # kit-integration channel — whether it's an upstream-triggered Kit MR,
+    # nightly, post-merge, or a direct MR on a kit-integration branch.
+    # This rule must come first so the more general MR / schedule rules
+    # below don't snag kit-integration pipelines.
     - condition:
         ref_pattern: "^kit-integration/"
-        variable: "UPSTREAM_PIPELINE_SOURCE=merge_request"
-      channel: "#isaac-lab-ci-mr"
+      channel: "#isaac-lab-ci-kit-integration"
     - condition:
         ref_pattern: "^develop-kit-tot$"
         variable: "UPSTREAM_PIPELINE_SOURCE=nightly"
@@ -89,10 +93,13 @@ slack:
     - condition:
         mr_description_checkbox: "Post pipeline reports to slack"
       channel: "#isaac-lab-ci-mr"
+    # Catch-all for omni_isaac_sim's own MR pipelines (not triggered from an
+    # upstream Kit pipeline).  Without this rule a regular MR on a non-kit
+    # branch with no opt-in checkbox would fall through to the default and
+    # post to #isaac-lab-ci instead of the MR channel.
     - condition:
-        ref_pattern: "^kit-integration/"
-        variable: "UPSTREAM_PIPELINE_SOURCE=nightly"
-      channel: "#isaac-lab-ci-kit-integration"
+        pipeline_source: merge_request_event
+      channel: "#isaac-lab-ci-mr"
     - condition:
         pipeline_source: schedule
       channel: "#isaac-lab-ci"

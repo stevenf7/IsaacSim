@@ -22,6 +22,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from dashboards.parsing import (
     get_testcase_status,
+    merge_section,
     merge_summaries,
     parse_junit_xml,
     parse_test_report_api,
@@ -58,6 +59,28 @@ class TestGetTestcaseStatus:
     def test_skipped_child_is_skip(self):
         assert get_testcase_status(self._tc("skipped")) == "skip"
 
+    def test_skipped_with_teardown_error_is_skip(self):
+        """pytest emits <error> alongside <skipped> on skip-with-teardown-failure;
+        the test was still bypassed by design — don't mis-classify it as an error."""
+        tc = ET.Element("testcase")
+        ET.SubElement(tc, "error").set("message", "teardown failed")
+        ET.SubElement(tc, "skipped")
+        assert get_testcase_status(tc) == "skip"
+
+    def test_skipped_with_timeout_message_error_is_skip(self):
+        """Same precedence applies even when the error looks like a timeout."""
+        tc = ET.Element("testcase")
+        ET.SubElement(tc, "error").set("message", "timed out cleaning up")
+        ET.SubElement(tc, "skipped")
+        assert get_testcase_status(tc) == "skip"
+
+    def test_failure_still_wins_over_skipped(self):
+        """A real <failure> always surfaces — skip cannot mask actionable errors."""
+        tc = ET.Element("testcase")
+        ET.SubElement(tc, "failure").set("message", "AssertionError")
+        ET.SubElement(tc, "skipped")
+        assert get_testcase_status(tc) == "fail"
+
     def test_unknown_child_tag_is_pass(self):
         tc = ET.Element("testcase")
         ET.SubElement(tc, "system-out")
@@ -73,8 +96,14 @@ class TestWorstStatus:
     def test_timeout_beats_error(self):
         assert worst_status("error", "timeout") == "timeout"
 
-    def test_error_beats_fail(self):
-        assert worst_status("fail", "error") == "error"
+    def test_fail_beats_error(self):
+        """A real failure outranks a non-fail error in the suite roll-up."""
+        assert worst_status("fail", "error") == "fail"
+
+    def test_fail_beats_timeout(self):
+        """A real failure outranks a timeout — failures are more diagnostic
+        than 'we ran out of time waiting' and must surface."""
+        assert worst_status("fail", "timeout") == "fail"
 
     def test_single_value(self):
         assert worst_status("pass") == "pass"
@@ -83,7 +112,7 @@ class TestWorstStatus:
         assert worst_status("pass", "unknown_status") == "pass"
 
     def test_all_statuses_ordered(self):
-        assert worst_status("pass", "skip", "fail", "error", "timeout") == "timeout"
+        assert worst_status("pass", "skip", "fail", "error", "timeout") == "fail"
 
 
 # ── parse_junit_xml ───────────────────────────────────────────────────────────
@@ -152,13 +181,16 @@ class TestParseJunitXml:
         assert summary["skipped"] == 1
 
     def test_timeout_suite_promotes_errors(self):
-        """Suite named timeout_* should promote 'error' status to 'timeout'."""
+        """Suite named timeout_* promotes 'error' status to 'timeout' AND
+        the section is collapsed to its canonical name (no ``timeout_`` row
+        in the heatmap)."""
         xml = _build_xml([("timeout_tests", [("test_foo", "error", "generic error")])])
         summary, sections = parse_junit_xml(xml)
         assert summary["timed_out"] == 1
         assert summary["errored"] == 0
-        assert sections["timeout_tests"]["summary"]["worst_status"] == "timeout"
-        assert sections["timeout_tests"]["suites"]["test_foo"]["worst_status"] == "timeout"
+        assert "timeout_tests" not in sections
+        assert sections["tests"]["summary"]["worst_status"] == "timeout"
+        assert sections["tests"]["suites"]["test_foo"]["worst_status"] == "timeout"
 
     def test_multiple_testsuites_become_sections(self):
         xml = _build_xml([
@@ -185,17 +217,53 @@ class TestParseJunitXml:
         assert round(summary["pass_rate"], 4) == 0.75
 
     def test_section_summary_worst_status(self):
+        """Real failures outrank non-fail errors in the suite roll-up — a
+        failing test is the most diagnostic outcome and must surface even
+        when other testcases errored separately."""
         xml = _build_xml([("s", [
             ("p1", None, ""),
             ("f1", "failure", ""),
             ("e1", "error", "msg"),
         ])])
         _, sections = parse_junit_xml(xml)
-        assert sections["s"]["summary"]["worst_status"] == "error"
+        assert sections["s"]["summary"]["worst_status"] == "fail"
 
-    def test_malformed_xml_raises(self):
+    def test_malformed_xml_with_no_recoverable_suites_raises(self):
         with pytest.raises(ET.ParseError):
             parse_junit_xml(b"<not valid xml")
+
+    def test_concatenated_testsuites_documents_recover(self):
+        """Two JUnit docs concatenated (a buggy upstream merge) still parse.
+
+        Reproduces the failure pattern observed for IsaacLab daily-compat
+        run 24326760154, whose ``combined-compat-results.xml`` had two
+        ``<testsuites>`` roots glued together with no surrounding wrapper.
+        """
+        doc_a = _build_xml([("suite_a", [("t_a1", None, ""), ("t_a2", "failure", "")])])
+        doc_b = _build_xml([("suite_b", [("t_b1", None, "")])])
+        combined = doc_a + doc_b
+        with pytest.raises(ET.ParseError):
+            ET.fromstring(combined)
+        summary, sections = parse_junit_xml(combined)
+        assert set(sections.keys()) == {"suite_a", "suite_b"}
+        assert summary["total"] == 3
+        assert summary["passed"] == 2
+        assert summary["failed"] == 1
+
+    def test_recovery_skips_individually_malformed_suites(self):
+        """A truncated ``<testsuite>`` is dropped; intact siblings survive."""
+        good = b'<testsuite name="ok"><testcase name="t1"/></testsuite>'
+        # Missing closing testsuite tag — the regex still picks up something
+        # ending in </testsuite> elsewhere, but ET.fromstring on this
+        # individual fragment fails and is skipped.
+        broken = b'<testsuite name="bad"><testcase name="t2" attr=unquoted/></testsuite>'
+        # Wrap them so the document's outer parse fails (extra junk between).
+        body = good + b'<stray>garbage' + broken
+        summary, sections = parse_junit_xml(body)
+        assert "ok" in sections
+        assert "bad" not in sections
+        assert summary["total"] == 1
+        assert summary["passed"] == 1
 
     def test_root_testsuite_not_testsuites(self):
         """A bare <testsuite> root (not wrapped in <testsuites>) should be handled."""
@@ -251,6 +319,99 @@ class TestParseJunitXml:
         _, sections = parse_junit_xml(xml)
         assert "my_suite" in sections
         assert "t" in sections["my_suite"]["suites"]
+
+    def test_timeout_suite_renames_to_canonical_when_alone(self):
+        """``timeout_X`` collapses to ``X`` even when no normal ``X`` exists.
+
+        IsaacLab's runner emits the synthetic ``timeout_<name>`` suite when a
+        test file is killed by timeout enforcement. The dashboard should show
+        the test under its real name (``X``), not as a separate row.
+        """
+        xml = _build_xml([("timeout_test_visuotactile_render",
+                           [("test_visuotactile_render.py", "error", "timed out after 300s")])])
+        summary, sections = parse_junit_xml(xml)
+        assert "timeout_test_visuotactile_render" not in sections
+        assert "test_visuotactile_render" in sections
+        # ``is_timeout_suite`` converts the inner error to a timeout outcome,
+        # which then dictates the section's worst_status.
+        assert sections["test_visuotactile_render"]["summary"]["worst_status"] == "timeout"
+        assert sections["test_visuotactile_render"]["summary"]["timed_out"] == 1
+        assert summary["timed_out"] == 1
+
+    def test_timeout_suite_merges_into_existing_canonical(self):
+        """When both ``X`` and ``timeout_X`` are present, merge into ``X``.
+
+        Counts add up, the per-case rows from the timeout suite are appended,
+        and the section worst_status reflects the most-actionable outcome
+        across both halves (here: pass + timeout → timeout).
+        """
+        xml = _build_xml([
+            ("test_X", [("case_a", None, ""), ("case_b", None, "")]),
+            ("timeout_test_X", [("case_a", "error", "timed out")]),
+        ])
+        summary, sections = parse_junit_xml(xml)
+        assert set(sections.keys()) == {"test_X"}
+        sec = sections["test_X"]
+        assert sec["summary"]["total"] == 3
+        assert sec["summary"]["passed"] == 2
+        assert sec["summary"]["timed_out"] == 1
+        assert sec["summary"]["worst_status"] == "timeout"
+        # Per-case row from the timeout suite must not silently overwrite the
+        # existing pass row of the same name.
+        assert "case_a" in sec["suites"]
+        assert "case_a#1" in sec["suites"]
+
+    def test_failure_beats_timeout_in_merged_section(self):
+        """If the canonical ``X`` failed and ``timeout_X`` also exists, the
+        merged section reports failure — a real failure is always more
+        actionable than a timeout."""
+        xml = _build_xml([
+            ("test_X", [("case_a", "failure", "AssertionError")]),
+            ("timeout_test_X", [("case_b", "error", "timed out")]),
+        ])
+        _, sections = parse_junit_xml(xml)
+        assert sections["test_X"]["summary"]["worst_status"] == "fail"
+
+
+class TestMergeSection:
+    """Direct tests for :func:`merge_section`. Used both by the timeout-suite
+    collapse in parse_junit_xml and by the per-version aggregate build in
+    github_fetch."""
+
+    def _section(self, *, total=0, passed=0, failed=0, errored=0, skipped=0,
+                 timed_out=0, worst="pass", suites=None):
+        return {
+            "summary": {
+                "total": total, "passed": passed, "failed": failed,
+                "errored": errored, "skipped": skipped, "timed_out": timed_out,
+                "total_duration_seconds": 0.0,
+                "pass_rate": (passed / total) if total else 0.0,
+                "worst_status": worst,
+            },
+            "suites": suites or {},
+        }
+
+    def test_summary_counts_add(self):
+        target = self._section(total=2, passed=2, worst="pass")
+        source = self._section(total=1, timed_out=1, worst="timeout")
+        merge_section(target, source)
+        assert target["summary"]["total"] == 3
+        assert target["summary"]["passed"] == 2
+        assert target["summary"]["timed_out"] == 1
+        assert target["summary"]["worst_status"] == "timeout"
+
+    def test_per_case_collisions_get_disambiguated(self):
+        target = self._section(total=1, passed=1, suites={"case_a": {"worst_status": "pass"}})
+        source = self._section(total=1, timed_out=1, worst="timeout",
+                               suites={"case_a": {"worst_status": "timeout"}})
+        merge_section(target, source)
+        assert set(target["suites"].keys()) == {"case_a", "case_a#1"}
+
+    def test_failure_in_either_side_wins(self):
+        target = self._section(total=1, timed_out=1, worst="timeout")
+        source = self._section(total=1, failed=1, worst="fail")
+        merge_section(target, source)
+        assert target["summary"]["worst_status"] == "fail"
 
 
 # ── parse_test_report_api ─────────────────────────────────────────────────────

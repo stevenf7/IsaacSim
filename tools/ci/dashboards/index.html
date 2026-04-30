@@ -147,6 +147,7 @@
     .legend-filter.active { color: var(--text); }
     .heatmap-row.filtered-out { display: none; }
     .suite-label.filtered-out { display: none; }
+    .section-group.filtered-out { display: none; }
     .filter-active-hint { font-size: 0.65rem; color: var(--accent); margin-left: 4px; display: none; }
     .filter-active-hint.visible { display: inline; }
 
@@ -160,7 +161,36 @@
     .section-group.collapsed .arrow { transform: rotate(-90deg); }
     .section-group.collapsed .rows-section,
     .section-group.collapsed .labels-section { display: none; }
-    .section-summary { margin-left: auto; font-size: 0.68rem; color: var(--text-muted); }
+    /* Section badges (worst-status icon, stability indicator). Only meaningful
+       when the section is collapsed — hidden otherwise so expanded rows aren't
+       visually crowded. */
+    .section-badges { margin-left: auto; display: none; align-items: center; gap: 6px; }
+    .section-group.collapsed .section-badges { display: inline-flex; }
+    /* Per-run worst-status mini-row visible only when the section is collapsed.
+       Lives in the rows column (cells, scrolls horizontally with the heatmap)
+       and in the labels column (empty placeholder, just to keep both columns'
+       heights in lockstep so collapsed sections don't drift vertically). */
+    .section-summary-row { display: none; height: var(--cell-h); border-bottom: 1px solid var(--border); }
+    .section-group.collapsed .section-summary-row { display: flex; }
+    .labels-section-summary { background: transparent; }
+    .section-icon { display: inline-block; width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+    .section-icon.status-pass { background: var(--c-pass); }
+    .section-icon.status-fail { background: var(--c-fail); }
+    .section-icon.status-error { background: var(--c-error); }
+    .section-icon.status-timeout { background: var(--c-timeout); }
+    .section-icon.status-skip { background: var(--c-skip); }
+    .section-icon.status-unavailable { background: var(--c-unavailable); }
+    .section-stability { display: inline-flex; align-items: center; gap: 3px; font-size: 0.7rem; }
+    .section-stability .stab-up { color: var(--c-fail); }
+    .section-stability .stab-down { color: var(--c-pass); }
+    .section-stability .stab-flake { color: #fbbf24; }
+    /* Heatmap toolbar (Expand/Collapse All) sits next to the legend. */
+    .heatmap-tools { display: inline-flex; gap: 6px; margin-left: auto; }
+    .heatmap-tools button {
+      background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border);
+      border-radius: 4px; padding: 3px 8px; font-size: 0.68rem; cursor: pointer;
+    }
+    .heatmap-tools button:hover { color: var(--text); border-color: var(--text-muted); }
   </style>
 </head>
 <body>
@@ -226,6 +256,10 @@
       </span>
       <span class="legend-item">
         <span class="legend-swatch" style="border-top:3px solid #fbbf24;box-shadow:inset 2px 0 0 rgba(251,191,36,0.65)"></span>current CI run
+      </span>
+      <span class="heatmap-tools">
+        <button type="button" id="expandAllBtn" title="Expand every suite section">Expand all</button>
+        <button type="button" id="collapseAllBtn" title="Collapse every suite section">Collapse all</button>
       </span>
     </div>
     <div id="heatmapOuter" class="heatmap-outer">
@@ -306,7 +340,10 @@ const CONCLUSION_COLORS = {
   success: '#22c55e', failure: '#ef4444', cancelled: '#64748b',
   timed_out: '#a855f7', skipped: '#64748b',
 };
-const STATUS_PRIORITY = { timeout: 5, error: 4, fail: 3, skip: 2, pass: 1 };
+// Failure outranks timeout — a real failure is more diagnostic than "the
+// runner gave up waiting" (which says nothing about whether the test would
+// have ultimately passed). Mirrors STATUS_PRIORITY in tools/ci/dashboards/parsing.py.
+const STATUS_PRIORITY = { fail: 5, timeout: 4, error: 3, skip: 2, pass: 1 };
 
 // ── State ────────────────────────────────────────────────────────────────────
 
@@ -366,9 +403,25 @@ function getWorkflowData() {
   return d ? (d[state.workflow] || null) : null;
 }
 
-function getRuns() {
+/** All runs in the cache index, including those whose artifacts have aged
+ *  out and were never successfully parsed. Used only for the "Runs Cached"
+ *  KPI card so the user can still see the total cache size. */
+function getCachedRuns() {
   const wf = getWorkflowData();
   return wf ? (wf.runs || []) : [];
+}
+
+/** Runs the dashboard actually visualizes — only those with parsed test data.
+ *
+ *  Cached entries with ``data_fetched: false`` are runs whose source artifacts
+ *  expired on the upstream side before we could fetch them. Showing them in
+ *  the heatmap as a column of grey "unavailable" cells creates the false
+ *  impression that *every test* skipped/failed in that run, when really we
+ *  just have no data for it. Keeping them in the cache index lets the fetcher
+ *  remember it has already tried; hiding them from the renderers keeps the
+ *  visualization honest. */
+function getRuns() {
+  return getCachedRuns().filter(r => r.data_fetched !== false);
 }
 
 function getTestData(run) {
@@ -383,7 +436,7 @@ function getTestData(run) {
  *  works during the cache rollover. */
 const _sectionsCache = new WeakMap();
 
-const _STATUS_PRIORITY = { pass: 1, skip: 2, fail: 3, error: 4, timeout: 5 };
+const _STATUS_PRIORITY = { pass: 1, skip: 2, error: 3, timeout: 4, fail: 5 };
 
 function _legacyFlatToSections(rawSuites) {
   // Each old top-level suite key (typically a pytest test file) becomes a
@@ -443,8 +496,35 @@ function _legacyFlatToSections(rawSuites) {
   return sections;
 }
 
+function _compatSource(td) {
+  // Specific version selected: prefer that version's data when present.
+  // Falling back to td.aggregate is normally undesirable because it would
+  // mix in other versions' data — but it IS desirable when this run has
+  // *no* per-version data at all (e.g. the per-version artifacts aged out
+  // on GitHub and only the aggregate survived via combined-XML recovery).
+  // Without this fallback, the run renders as a column of "no data" cells
+  // even though we have valid aggregate test results for it.
+  if (state.version && state.version !== 'all') {
+    const v = td.versions && td.versions[state.version];
+    if (v) return v;
+    // No per-version split available — fall back to aggregate only when
+    // the versions map is empty. Don't fall back when *other* versions
+    // exist, since that would cross-pollute the version selector.
+    const versionsCount = td.versions ? Object.keys(td.versions).length : 0;
+    return versionsCount === 0 ? (td.aggregate || null) : null;
+  }
+  return td.aggregate || null;
+}
+
 function getSections(td) {
   if (!td) return null;
+  // Compat shape ({aggregate, versions}) depends on state.version, so don't
+  // memoize — the version dropdown switches the active source.
+  if (state.workflow === 'compat') {
+    const src = _compatSource(td);
+    if (src && src.suites && Object.keys(src.suites).length > 0) return src.suites;
+    return null;
+  }
   const cached = _sectionsCache.get(td);
   if (cached !== undefined) return cached;
   let result = null;
@@ -460,6 +540,14 @@ function getSections(td) {
 
 /** Aggregate summary across all sections (sum counts, recompute pass_rate). */
 function getSectionsSummary(td) {
+  // Compat data carries a pre-computed run/version summary that already
+  // aggregates across versions; aggregate.suites is a union with
+  // latest-version-wins, so re-summing sections would underreport.
+  if (state.workflow === 'compat') {
+    const src = td ? _compatSource(td) : null;
+    if (src && src.summary) return src.summary;
+    return null;
+  }
   const secs = getSections(td);
   if (!secs) return null;
   const vals = Object.values(secs);
@@ -473,13 +561,8 @@ function getSectionsSummary(td) {
 function getRunSummaryAndSuites(run) {
   const td = getTestData(run);
   if (!td) return null;
-  if (state.workflow === 'compat') {
-    if (state.version === 'all') return td.aggregate || null;
-    return td.versions ? (td.versions[state.version] || null) : null;
-  }
-  // For isaaclab/isaacsim workflows: aggregate across all sections.
-  // Prefix suite names with their section to avoid collisions when multiple
-  // jobs emit identically named suites.
+  // Aggregate across all sections.  Prefix suite names with their section to
+  // avoid collisions when multiple jobs/files emit identically named suites.
   const secs = getSections(td);
   if (!secs) return null;
   const entries = Object.entries(secs);
@@ -545,8 +628,10 @@ function computeKPIs() {
     passRate, passTotal, avgDuration, failSuites, totalSuites, flakyCount,
     lastConclusion: latestRun.conclusion,
     lastRunDate: fmtDate(latestRun.created_at),
-    totalRuns: runs.length,
-    runsWithData: runs.filter(r => r.data_fetched).length,
+    // Total cached count needs the unfiltered list since getRuns() now
+    // hides unfetched entries from the visualization.
+    totalRuns: getCachedRuns().length,
+    runsWithData: runs.length,
     lastRun: latestRun,
   };
 }
@@ -687,17 +772,130 @@ function measureLabelWidth(names) {
   return Math.min(natural, capWidth);
 }
 
-function computeSectionStats(sectionName, runs, nRecent = 10) {
+/**
+ * Section-level stability roll-up across the recent window.
+ *
+ * Returns:
+ *   worst   — worst suite-status seen in the recent window ('pass'|'fail'|...).
+ *             Used to color the at-a-glance section icon. null when no data.
+ *   regression — last run worse than prior run (pass→bad transition just happened).
+ *   recovery   — last run better than prior run (bad→pass transition just happened).
+ *   flips      — number of pass↔not-pass transitions in the last `recentN` runs.
+ *                A long-stable section sits at 0; a chronically-flaky one stays >1.
+ *   recent / overall — pass-rate fractions, kept for the hover tooltip only;
+ *                the row label no longer shows raw percentages because steady-
+ *                state 100%/100% is pure noise.
+ *
+ * Cheap: one summary lookup per (section, run). Safe to call per section.
+ */
+function computeSectionStability(sectionName, runs, recentN = 30) {
+  const statuses = [];
   let rPass=0, rTotal=0, oPass=0, oTotal=0;
   for (const [i, run] of runs.entries()) {
     const secs = getSections(getTestData(run));
-    const sec = secs && secs[sectionName]; if (!sec) continue;
+    const sec = secs && secs[sectionName];
+    if (i < recentN) {
+      statuses.push(sec ? (sec.summary && sec.summary.worst_status) || 'pass' : null);
+    }
+    if (!sec) continue;
     const sm = sec.summary || {};
-    if (i < nRecent) { rPass += sm.passed||0; rTotal += sm.total||0; }
+    if (i < 10) { rPass += sm.passed||0; rTotal += sm.total||0; }
     const relevant = (sm.passed||0) + (sm.failed||0) + (sm.errored||0) + (sm.timed_out||0);
     if (relevant > 0) { oPass += sm.passed||0; oTotal += relevant; }
   }
-  return { recent: rTotal>0 ? rPass/rTotal : null, overall: oTotal>0 ? oPass/oTotal : null };
+
+  const known = statuses.filter(s => s != null);
+  let worst = null;
+  for (const s of known) {
+    if (worst === null || (STATUS_PRIORITY[s] || 0) > (STATUS_PRIORITY[worst] || 0)) worst = s;
+  }
+
+  const lastBad = statuses[0] != null && statuses[0] !== 'pass';
+  const priorBad = statuses[1] != null && statuses[1] !== 'pass';
+  const regression = statuses[0] != null && statuses[1] != null && lastBad && !priorBad;
+  const recovery = statuses[0] != null && statuses[1] != null && !lastBad && priorBad;
+
+  let flips = 0;
+  for (let i = 1; i < known.length; i++) {
+    const a = known[i-1] !== 'pass';
+    const b = known[i] !== 'pass';
+    if (a !== b) flips++;
+  }
+
+  return {
+    worst, regression, recovery, flips, recentN,
+    recent: rTotal > 0 ? rPass/rTotal : null,
+    overall: oTotal > 0 ? oPass/oTotal : null,
+  };
+}
+
+function renderSectionBadges(stats) {
+  if (!stats) return '';
+  const iconClass = stats.worst ? `status-${stats.worst}` : 'status-unavailable';
+  const tipParts = [];
+  if (stats.recent != null)  tipParts.push(`last 10: ${(stats.recent*100).toFixed(0)}%`);
+  if (stats.overall != null) tipParts.push(`all-time: ${(stats.overall*100).toFixed(0)}%`);
+  if (stats.flips > 0)       tipParts.push(`${stats.flips} flip${stats.flips===1?'':'s'} in last ${stats.recentN}`);
+  if (stats.regression)      tipParts.push('regressed vs prior run');
+  if (stats.recovery)        tipParts.push('recovered vs prior run');
+  const tip = tipParts.join(' · ') || 'no recent data';
+  // ▲ regression, ▼ recovery, ≈N flake. Single flip is normal noise; only
+  // surface flake when there's a pattern (>1 flip).
+  const stab = [];
+  if (stats.regression) stab.push('<span class="stab-up" title="regressed in most recent run">▲</span>');
+  if (stats.recovery)   stab.push('<span class="stab-down" title="recovered in most recent run">▼</span>');
+  if (stats.flips > 1)  stab.push(`<span class="stab-flake" title="${stats.flips} status flips in last ${stats.recentN} runs">≈${stats.flips}</span>`);
+  const stabHtml = stab.length ? `<span class="section-stability">${stab.join('')}</span>` : '';
+  return `<span class="section-badges" title="${tip.replace(/"/g, '&quot;')}"><span class="section-icon ${iconClass}"></span>${stabHtml}</span>`;
+}
+
+/**
+ * Builds the per-run summary cell row shown on the rows-column side of a
+ * section group when that group is collapsed. One cell per run, colored by
+ * the section's worst-status in that run (taken from sec.summary.worst_status,
+ * which is computed by parse_junit_xml at ingest time). Cells are hover-
+ * tooltipped with the run label + worst status, and clicking opens the run.
+ */
+function buildSectionSummaryCells(sectionName, runs, selectedId) {
+  const row = document.createElement('div');
+  row.className = 'section-summary-row';
+  for (const run of runs) {
+    const cell = document.createElement('div');
+    cell.className = 'heatmap-cell' + (run.is_ci_run ? ' ci-col' : '');
+    cell.style.width = CELL_W + 'px';
+    const td = getTestData(run);
+    const secs = td ? getSections(td) : null;
+    const sec = secs && secs[sectionName];
+    if (!run.data_fetched || !td) {
+      cell.classList.add('status-unavailable');
+      cell.style.opacity = '0.4';
+      cell.title = 'Data unavailable';
+    } else if (sec) {
+      const status = (sec.summary && sec.summary.worst_status) || 'pass';
+      cell.classList.add(`status-${status}`);
+      const sm = sec.summary || {};
+      cell.addEventListener('mouseenter', e => showTooltip(e,
+        `<strong>${sectionName}</strong><br>${runLabel(run)} · ${fmtDate(run.created_at)}<br>` +
+        `Worst: ${status}<br>${sm.passed||0}/${sm.total||0} passed` +
+        (sm.skipped ? ` · ${sm.skipped} skipped` : '') +
+        (sm.failed   ? ` · ${sm.failed} failed`   : '') +
+        (sm.errored  ? ` · ${sm.errored} errored` : '') +
+        (sm.timed_out ? ` · ${sm.timed_out} timed out` : '') +
+        `<br><span style="color:var(--text-muted)">click to open run</span>`));
+      cell.addEventListener('mouseleave', hideTooltip);
+      cell.addEventListener('click', () => window.open(runUrl(run), '_blank', 'noopener'));
+      cell.style.cursor = 'pointer';
+    } else {
+      cell.classList.add('status-nodata');
+      cell.title = 'Suite not present in this run';
+    }
+    if (runId(run) === selectedId) {
+      cell.style.outlineOffset = '-1px';
+      cell.style.outline = '1px solid var(--c-selected)';
+    }
+    row.appendChild(cell);
+  }
+  return row;
 }
 
 function renderHeatmap(runs, suiteNamesBySection, selectedId) {
@@ -724,20 +922,28 @@ function renderHeatmap(runs, suiteNamesBySection, selectedId) {
     let labelSectionEl, rowsSectionEl;
 
     if (showHeaders) {
-      const stats = computeSectionStats(sectionName, runs);
-      const recentPct = stats.recent != null ? `recent: ${(stats.recent*100).toFixed(0)}%` : '';
-      const overallPct = stats.overall != null ? `overall: ${(stats.overall*100).toFixed(0)}%` : '';
-      const summaryText = [recentPct, overallPct].filter(Boolean).join(' · ');
+      // Stability roll-up across the recent window. Badges are only rendered
+      // on the label-column header (left, sticky). The right-column header
+      // stays clean to avoid the duplicated text the old layout produced when
+      // both columns rendered the same summary.
+      const stats = computeSectionStability(sectionName, runs);
+      const badgesHtml = renderSectionBadges(stats);
 
       // Create section group for label column
       const labelGroup = document.createElement('div');
       labelGroup.className = 'section-group';
       const labelHeader = document.createElement('div');
       labelHeader.className = 'section-group-header';
-      labelHeader.innerHTML = `<span class="arrow">▼</span>${sectionName}<span class="section-summary">${summaryText}</span>`;
+      labelHeader.innerHTML = `<span class="arrow">▼</span>${sectionName}${badgesHtml}`;
       labelSectionEl = document.createElement('div');
       labelSectionEl.className = 'labels-section';
+      // Empty placeholder summary row to keep label column's collapsed height
+      // matching the rows column's collapsed height (which contains the
+      // per-run cells below).
+      const labelSummaryRow = document.createElement('div');
+      labelSummaryRow.className = 'section-summary-row labels-section-summary';
       labelGroup.appendChild(labelHeader);
+      labelGroup.appendChild(labelSummaryRow);
       labelGroup.appendChild(labelSectionEl);
       labelCol.appendChild(labelGroup);
 
@@ -746,10 +952,16 @@ function renderHeatmap(runs, suiteNamesBySection, selectedId) {
       rowsGroup.className = 'section-group';
       const rowsHeader = document.createElement('div');
       rowsHeader.className = 'section-group-header';
-      rowsHeader.innerHTML = `<span class="arrow">▼</span>${sectionName}<span class="section-summary">${summaryText}</span>`;
+      rowsHeader.innerHTML = `<span class="arrow">▼</span>${sectionName}`;
       rowsSectionEl = document.createElement('div');
       rowsSectionEl.className = 'rows-section';
+      // Per-run summary cells (one cell per pipeline run, colored by the
+      // section's worst-status for that run). Visible only when collapsed —
+      // CSS handles the toggle. Aligns with the heatmap columns because
+      // each cell uses the same CELL_W width as a regular heatmap-cell.
+      const rowsSummaryRow = buildSectionSummaryCells(sectionName, runs, selectedId);
       rowsGroup.appendChild(rowsHeader);
+      rowsGroup.appendChild(rowsSummaryRow);
       rowsGroup.appendChild(rowsSectionEl);
       rowsEl.appendChild(rowsGroup);
 
@@ -798,10 +1010,14 @@ function renderHeatmap(runs, suiteNamesBySection, selectedId) {
           const status = sd.worst_status || 'pass';
           cell.classList.add(`status-${status}`);
           rowStatuses.add(status);
-          const jobUrl = sec ? sec.job_url : (run.job_url || run.pipeline_url);
+          // Per-section job URL when available (GitLab fetcher fills this in
+          // per-suite); otherwise fall back to the run-level URL so ctrl+click
+          // always opens *something* — for GitHub data sec.job_url is always
+          // null, and the previous ternary silently dropped that case.
+          const jobUrl = (sec && sec.job_url) || run.job_url || run.pipeline_url || runUrl(run);
           cell.addEventListener('click', ((sn, suite, jUrl) => (e) => {
             if (e.ctrlKey || e.metaKey) {
-              if (jUrl) window.open(jUrl, '_blank', 'noopener');
+              window.open(jUrl, '_blank', 'noopener');
             } else {
               showDrilldown(runId(run), suite, sn);
             }
@@ -861,7 +1077,8 @@ function renderDurationChart(runs) {
   const ctx = document.getElementById('durationChart').getContext('2d');
   if (durationChartInst) { durationChartInst.destroy(); durationChartInst = null; }
 
-  const ordered = [...runs.filter(r => r.duration_seconds != null).slice(0, 50)].reverse();
+  // Match heatmap orientation: newest on the left, oldest on the right.
+  const ordered = runs.filter(r => r.duration_seconds != null).slice(0, 50);
   if (!ordered.length) return;
 
   const labels = ordered.map(r => runLabel(r));
@@ -1008,10 +1225,15 @@ function showDrilldown(runKey, suiteName, sectionName) {
   if (!d || !d.suites || !d.suites[suiteName]) return;
   const sd = d.suites[suiteName];
   const jobId = sec && sec.job_id;
-  const jobUrl = (sec && sec.job_url) || run.job_url;
-  const jobLink = jobUrl
-    ? ` · <a href="${jobUrl}" target="_blank" rel="noopener">Job ${jobId != null ? jobId : '?'}</a>`
-    : '';
+  const sectionJobUrl = (sec && sec.job_url) || run.job_url;
+  // Always provide a link in the drilldown header so the user can navigate
+  // to the source of truth. Use a section-specific job URL when the fetcher
+  // recorded one (GitLab); otherwise fall back to the run-level page so the
+  // user can still drill down from the CI side (GitHub data has no per-suite
+  // job link).
+  const jobLink = sectionJobUrl
+    ? ` · <a href="${sectionJobUrl}" target="_blank" rel="noopener">Job ${jobId != null ? jobId : '?'}</a>`
+    : ` · <a href="${runUrl(run)}" target="_blank" rel="noopener">Open run</a>`;
   document.getElementById('drilldownTitle').innerHTML =
     `${suiteName}  ·  ${runLinkHtml(run)}${jobLink}  ·  ${sd.passed}/${sd.total} passed`;
   const body = document.getElementById('drilldownBody');
@@ -1135,6 +1357,20 @@ function applyStatusFilter() {
     row.classList.toggle('filtered-out', !show);
     if (labels[i]) labels[i].classList.toggle('filtered-out', !show);
   });
+  // Hide section group + header on both the label and rows columns when
+  // every row inside the group has been filtered out — the header and its
+  // empty content area would otherwise leave large gaps that obscure the
+  // sections that do still match the filter.  renderHeatmap creates these
+  // two groups in lockstep so the indices line up.
+  const labelGroups = [...document.querySelectorAll('#labelCol .section-group')];
+  const rowsGroups  = [...document.querySelectorAll('#heatmapRows .section-group')];
+  rowsGroups.forEach((group, i) => {
+    const groupRows = [...group.querySelectorAll('.heatmap-row')];
+    const allHidden = groupRows.length > 0
+      && groupRows.every(r => r.classList.contains('filtered-out'));
+    group.classList.toggle('filtered-out', allHidden);
+    if (labelGroups[i]) labelGroups[i].classList.toggle('filtered-out', allHidden);
+  });
   // Dim unchecked labels and show hint when any status is hidden
   document.querySelectorAll('.legend-filter').forEach(lbl => {
     lbl.classList.toggle('active', lbl.querySelector('input').checked);
@@ -1187,6 +1423,17 @@ function init() {
   document.querySelectorAll('.status-filter').forEach(cb => {
     cb.addEventListener('change', applyStatusFilter);
   });
+
+  // Expand All / Collapse All work on every section group in both columns,
+  // since the existing toggle keeps both columns' .collapsed state in sync.
+  function setAllSectionsCollapsed(collapsed) {
+    document.querySelectorAll('#labelCol .section-group, #heatmapRows .section-group')
+      .forEach(g => g.classList.toggle('collapsed', collapsed));
+  }
+  const expandBtn = document.getElementById('expandAllBtn');
+  const collapseBtn = document.getElementById('collapseAllBtn');
+  if (expandBtn) expandBtn.addEventListener('click', () => setAllSectionsCollapsed(false));
+  if (collapseBtn) collapseBtn.addEventListener('click', () => setAllSectionsCollapsed(true));
 
   const d = getData();
   if (!d) {

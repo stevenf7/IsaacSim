@@ -18,6 +18,7 @@ fetching workflow runs from GitHub and caching them locally.
 from __future__ import annotations
 
 import argparse
+import copy
 import io
 import json
 import os
@@ -28,7 +29,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .clients import GitHubClient, GITHUB_BASE_URL
-from .parsing import parse_junit_xml, merge_summaries, SCHEMA_VERSION
+from .parsing import (
+    merge_section,
+    merge_summaries,
+    normalize_test_data,
+    parse_junit_xml,
+    SCHEMA_VERSION,
+)
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -110,10 +117,18 @@ def _gh_save_index(gh_dir: Path, workflow: str, data: dict) -> None:
 
 
 def _gh_load_test_data(gh_dir: Path, subdir: str, run_id: int) -> dict | None:
+    """Load a per-run test_data JSON, retro-fitting the timeout-suite collapse.
+
+    Cached files written before parse_junit_xml learned to collapse
+    ``timeout_<X>`` testsuites still have those entries as standalone rows.
+    Normalizing here lets the dashboard show one merged row per test
+    regardless of when the cache entry was written. New entries are
+    already-collapsed, so this is a no-op for them.
+    """
     path = gh_dir / subdir / f"{run_id}.json"
-    if path.exists():
-        return json.loads(path.read_text())
-    return None
+    if not path.exists():
+        return None
+    return normalize_test_data(json.loads(path.read_text()))
 
 
 def _gh_save_test_data(gh_dir: Path, subdir: str, run_id: int, data: dict) -> None:
@@ -158,12 +173,17 @@ def _process_build_run_gh(
         if zip_bytes is not None:
             try:
                 xml_bytes = _gh_extract_xml_from_zip(zip_bytes, "combined-results.xml")
-                summary, suites = parse_junit_xml(xml_bytes)
+                summary, sections = parse_junit_xml(xml_bytes)
+                # Save under the canonical "sections" key (matches what
+                # parse_junit_xml returns and what the dashboard JS reads).
+                # Older caches used "suites" here for the same dict; the
+                # load-time normalize_test_data hoists those for backward
+                # compat.
                 _gh_save_test_data(gh_dir, "tests_build", run_id, {
                     "schema_version": SCHEMA_VERSION,
                     "run_id": run_id,
                     "summary": summary,
-                    "suites": suites,
+                    "sections": sections,
                 })
                 data_fetched = True
                 print(
@@ -179,6 +199,22 @@ def _process_build_run_gh(
         data_fetched = True
         if verbose:
             print(f"    ↩  Using cached data for run {run_id}", file=sys.stderr)
+
+    # Re-fetch can fail (artifact gone, malformed XML) on a run we already
+    # have good data for — keep the existing on-disk file in that case rather
+    # than marking the run as missing.
+    if not data_fetched and already_cached:
+        data_fetched = True
+        print(
+            f"    ↩  Re-fetch failed for run {run_id}; keeping prior cached data",
+            file=sys.stderr,
+        )
+    elif not data_fetched and artifact_id is None:
+        print(
+            f"    ⚠  No combined-test-results artifact for build run {run_id}; "
+            "data missing",
+            file=sys.stderr,
+        )
 
     return {
         "run_id": run_id,
@@ -214,7 +250,16 @@ def _process_compat_run_gh(
         if verbose:
             print(f"    ↩  Using cached data for run {run_id}", file=sys.stderr)
     else:
-        versions_data = {}
+        # Per-version artifacts (``isaaclab-tasks-compat-results-X`` and
+        # ``general-tests-compat-results-X``) are the canonical source. When
+        # they are present we synthesize the aggregate ourselves and skip the
+        # ``daily-compat-*-combined-test-results`` artifact entirely — its
+        # producer (the IsaacLab ``combine-compat-results`` job) is
+        # consistently failing and uploading malformed XML, and the data it
+        # would carry is just a re-aggregation of what we already have.
+        versions_data: dict = {}
+        expired_artifacts: list[str] = []
+        combined_failure: str | None = None
         for version in COMPAT_VERSIONS:
             version_xml_list = []
             for art_name in [f"isaaclab-tasks-compat-results-{version}", f"general-tests-compat-results-{version}"]:
@@ -223,8 +268,8 @@ def _process_compat_run_gh(
                     continue
                 zip_bytes = _gh_download_artifact_zip(client, art["id"])
                 if zip_bytes is None:
-                    if verbose:
-                        print(f"    ⚠  {art_name} expired", file=sys.stderr)
+                    expired_artifacts.append(art_name)
+                    print(f"    ⚠  {art_name} expired", file=sys.stderr)
                     continue
                 try:
                     version_xml_list.extend(_gh_extract_all_xmls_from_zip(zip_bytes))
@@ -246,35 +291,105 @@ def _process_compat_run_gh(
                         "suites": v_suites,
                     }
 
-        combined_art = artifacts_by_name.get(f"daily-compat-{run_id}-combined-test-results")
         aggregate_summary, aggregate_suites = None, {}
-        if combined_art:
-            zip_bytes = _gh_download_artifact_zip(client, combined_art["id"])
-            if zip_bytes is not None:
-                try:
-                    xml_bytes = _gh_extract_xml_from_zip(zip_bytes, "combined-compat-results.xml")
-                    aggregate_summary, aggregate_suites = parse_junit_xml(xml_bytes)
-                except Exception as e:
-                    print(f"    ⚠  Combined compat XML failed: {e}", file=sys.stderr)
+        if versions_data:
+            agg_suites: dict = {}
+            agg_summaries: list = []
+            for v_data in versions_data.values():
+                agg_summaries.append(v_data["summary"])
+                # When two versions report the same canonical section (e.g.
+                # one ran normally while another timed out and parse_junit_xml
+                # collapsed its ``timeout_<X>`` synthetic suite into ``X``),
+                # combine their per-case rows and re-roll the worst_status so
+                # the aggregate reflects both versions' contributions instead
+                # of the last-write-wins behaviour of dict.update.
+                for sec_name, sec_data in (v_data.get("suites") or {}).items():
+                    if sec_name in agg_suites:
+                        merge_section(agg_suites[sec_name], sec_data)
+                    else:
+                        agg_suites[sec_name] = copy.deepcopy(sec_data)
+            aggregate_summary = merge_summaries(agg_summaries)
+            aggregate_suites = agg_suites
+        else:
+            # Per-version data is gone — the malformed combined artifact is
+            # the only remaining source for an aggregate. Recovery in
+            # parse_junit_xml lets us salvage usable suites from it.
+            combined_art = artifacts_by_name.get(f"daily-compat-{run_id}-combined-test-results")
+            if combined_art:
+                zip_bytes = _gh_download_artifact_zip(client, combined_art["id"])
+                if zip_bytes is None:
+                    combined_failure = "combined artifact expired"
+                    print(f"    ⚠  daily-compat-{run_id}-combined-test-results expired", file=sys.stderr)
+                else:
+                    try:
+                        xml_bytes = _gh_extract_xml_from_zip(zip_bytes, "combined-compat-results.xml")
+                        aggregate_summary, aggregate_suites = parse_junit_xml(xml_bytes)
+                    except Exception as e:
+                        combined_failure = f"combined artifact parse failed: {e}"
+                        print(f"    ⚠  Combined compat XML failed: {e}", file=sys.stderr)
+            else:
+                combined_failure = "no combined artifact"
 
         data_fetched = bool(versions_data or aggregate_summary)
         if data_fetched:
-            test_data = {"schema_version": SCHEMA_VERSION, "run_id": run_id, "versions": versions_data}
+            # Don't downgrade: if a prior fetch captured per-version data
+            # while those artifacts were still alive, but this fetch only
+            # got the combined-recovery aggregate, keep the richer cached
+            # entry rather than overwriting it.
+            if not versions_data and already_cached:
+                cached = _gh_load_test_data(gh_dir, "tests_compat", run_id) or {}
+                cached_versions = cached.get("versions") or {}
+                if cached_versions:
+                    print(
+                        f"    ↩  Re-fetch produced only aggregate; keeping cached "
+                        f"data with {len(cached_versions)} version(s) for run {run_id}",
+                        file=sys.stderr,
+                    )
+                    return {
+                        "run_id": run_id,
+                        "run_number": run["run_number"],
+                        "head_sha": run["head_sha"],
+                        "head_branch": run.get("head_branch", ""),
+                        "event": run.get("event", ""),
+                        "conclusion": conclusion,
+                        "created_at": run["created_at"],
+                        "duration_seconds": duration,
+                        "isaacsim_versions": COMPAT_VERSIONS,
+                        "data_file": f"tests_compat/{run_id}.json",
+                        "data_fetched": True,
+                    }
+            test_data = {
+                "schema_version": SCHEMA_VERSION,
+                "run_id": run_id,
+                "versions": versions_data,
+            }
             if aggregate_summary:
                 test_data["aggregate"] = {"summary": aggregate_summary, "suites": aggregate_suites}
-            elif versions_data:
-                agg_suites, agg_summaries = {}, []
-                for v_data in versions_data.values():
-                    agg_summaries.append(v_data["summary"])
-                    agg_suites.update(v_data["suites"])
-                test_data["aggregate"] = {
-                    "summary": merge_summaries(agg_summaries),
-                    "suites": agg_suites,
-                }
             _gh_save_test_data(gh_dir, "tests_compat", run_id, test_data)
             if verbose:
                 agg = test_data.get("aggregate", {}).get("summary", {})
                 print(f"    ✅ Compat parsed: {agg.get('passed','?')}/{agg.get('total','?')} passed", file=sys.stderr)
+        elif already_cached:
+            # Both fetch sources failed but we have known-good data on disk
+            # from a prior successful fetch; preserve it rather than marking
+            # the run as missing.
+            data_fetched = True
+            print(
+                f"    ↩  Re-fetch failed for run {run_id}; keeping prior cached data",
+                file=sys.stderr,
+            )
+        else:
+            reasons = []
+            if expired_artifacts:
+                reasons.append(f"{len(expired_artifacts)} per-version artifact(s) expired")
+            if combined_failure:
+                reasons.append(combined_failure)
+            if not reasons:
+                reasons.append("no compat artifacts found")
+            print(
+                f"    ⚠  No data fetched for compat run {run_id}: {'; '.join(reasons)}",
+                file=sys.stderr,
+            )
 
     return {
         "run_id": run_id,

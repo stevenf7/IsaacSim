@@ -21,6 +21,7 @@ from pathlib import Path
 
 from .cache import _collect_all_branch_runs, _add_branch_placeholders
 from .github_fetch import _gh_load_index, _gh_load_test_data
+from .parsing import normalize_test_data
 
 
 def _load_github_from_cache(gh_dir: str | Path) -> dict:
@@ -123,7 +124,10 @@ def generate_output(
             per_run_file = bdir / run["data_file"]
             if per_run_file.exists():
                 try:
-                    test_data[pid] = json.loads(per_run_file.read_text())
+                    # normalize_test_data collapses timeout_X testsuites
+                    # so legacy GitLab caches display merged just like fresh
+                    # parses do.
+                    test_data[pid] = normalize_test_data(json.loads(per_run_file.read_text()))
                     runs_with_data.append(run)
                 except json.JSONDecodeError as exc:
                     print(f"Warning: skipping corrupt per-run JSON {per_run_file}: {exc}", file=sys.stderr)
