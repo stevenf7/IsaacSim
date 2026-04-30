@@ -17,6 +17,7 @@
 
 import os
 import unittest
+from typing import Any
 
 import carb
 import numpy as np
@@ -95,20 +96,20 @@ default_sim_params = {
 class TestRigidPrimView(CoreTestCase):
     """Test rigid prim view."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
         await super().setUp()
         World.clear_instance()
         self._sim_params = default_sim_params
-        self._test_cfg = dict()
+        self._test_cfg = {}
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
         carb.settings.get_settings().set_bool("/physics/suppressReadback", False)
         await super().tearDown()
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_rigid_prim_view_gpu_pipeline(self):
+    async def test_rigid_prim_view_gpu_pipeline(self) -> None:
         """Test rigid prim view gpu pipeline."""
         test_configs = {"use_gpu": True, "use_gpu_pipeline": True, "device": "gpu"}
         for backend in ["torch", "warp"]:
@@ -138,7 +139,7 @@ class TestRigidPrimView(CoreTestCase):
             await self._runner()
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_rigid_prim_view_cpu_pipeline(self):
+    async def test_rigid_prim_view_cpu_pipeline(self) -> None:
         """Test rigid prim view cpu pipeline."""
         test_configs = {"use_gpu_pipeline": False, "device": "cpu"}
 
@@ -170,7 +171,7 @@ class TestRigidPrimView(CoreTestCase):
 
                 await self._runner()
 
-    async def _setup_scene(self):
+    async def _setup_scene(self) -> None:
         World.clear_instance()
         await create_new_stage_async()
         self._my_world = World(sim_params=self._sim_params, backend=self._test_cfg["backend"], device=self._device)
@@ -191,7 +192,7 @@ class TestRigidPrimView(CoreTestCase):
         )
         self._my_world.scene.add(self._cubes_view)
 
-    async def _setup_contacts_scene(self):
+    async def _setup_contacts_scene(self) -> None:
         self.cube_height = 0.502
         self.top_cube_height = self.cube_height + 1.02
         World.clear_instance()
@@ -238,7 +239,7 @@ class TestRigidPrimView(CoreTestCase):
         self._my_world.scene.add(self._box_view)
         self._my_world.scene.add(self._top_box_view)
 
-    async def _setup_friction_scene(self):
+    async def _setup_friction_scene(self) -> None:
         self.cube_height = 0.502
         self.top_cube_height = self.cube_height + 1.02
         World.clear_instance()
@@ -279,7 +280,7 @@ class TestRigidPrimView(CoreTestCase):
         )
         self._my_world.scene.add(self._box_view)
 
-    async def _runner(self):
+    async def _runner(self) -> None:
         await self._setup_scene()
         for indexed in [False, True]:
             self._test_cfg["indexed"] = indexed
@@ -338,11 +339,15 @@ class TestRigidPrimView(CoreTestCase):
 
         self._my_world.clear_instance()
 
-    async def apply_forces_and_torques_at_pos_test(self, is_global, apply_at_pos):
-        """Apply forces and torques at pos test."""
+    async def apply_forces_and_torques_at_pos_test(self, is_global: Any, apply_at_pos: Any) -> None:
+        """Apply forces and torques at pos test.
+
+        Args:
+            is_global: Whether to apply forces and torques in the global frame.
+            apply_at_pos: Whether to apply forces at a specific position.
+        """
         print(
-            "Apply %s forces and torques %s test"
-            % ("global" if is_global else "local", "at pos" if apply_at_pos else "at COM")
+            f"Apply {'global' if is_global else 'local'} forces and torques {'at pos' if apply_at_pos else 'at COM'} test"
         )
         await self._my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else [0, 1, 2]
@@ -439,9 +444,13 @@ class TestRigidPrimView(CoreTestCase):
                 ).all()
             )
 
-    async def friction_force_test(self, force_multiplier):
-        """Friction force test."""
-        print("friction force test with external force f= %.3f  * (mu * m * g)" % force_multiplier)
+    async def friction_force_test(self, force_multiplier: Any) -> None:
+        """Friction force test.
+
+        Args:
+            force_multiplier: Multiplier applied to friction force magnitude.
+        """
+        print(f"friction force test with external force f= {force_multiplier:.3f}  * (mu * m * g)")
         await self._my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
         view_size = 2 if self._test_cfg["indexed"] else 3
@@ -548,7 +557,7 @@ class TestRigidPrimView(CoreTestCase):
                 ).all()
             )
 
-    async def contact_force_test(self):
+    async def contact_force_test(self) -> None:
         """Contact force test."""
         print("contact force test")
         wp.config.verify_cuda = True
@@ -748,7 +757,7 @@ class TestRigidPrimView(CoreTestCase):
                 ).all()
             )
 
-    async def com_test(self):
+    async def com_test(self) -> None:
         """Com test."""
         if self._device == "cpu":
             await self._my_world.reset_async()
@@ -771,7 +780,7 @@ class TestRigidPrimView(CoreTestCase):
             self.assertTrue(self.isclose(new_pos, pos).all())
             self.assertTrue(self.isclose(new_ori, ori).all())
 
-    async def inertias_test(self):
+    async def inertias_test(self) -> None:
         """Inertias test."""
         await self._my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else [0, 1, 2]
@@ -794,8 +803,12 @@ class TestRigidPrimView(CoreTestCase):
         inv_masses = self._cubes_view.get_inv_inertias()
         self.assertTrue(inv_masses.shape == (self._cubes_view.count, 9))
 
-    async def world_poses_test(self, usd=False):
-        """World poses test."""
+    async def world_poses_test(self, usd: bool = False) -> None:
+        """World poses test.
+
+        Args:
+            usd: Whether to use USD-based pose queries instead of physics tensors.
+        """
         await self._my_world.reset_async()
         if usd:
             await self._my_world.stop_async()
@@ -827,8 +840,12 @@ class TestRigidPrimView(CoreTestCase):
 
         return
 
-    async def local_poses_test(self, usd=False):
-        """Local poses test."""
+    async def local_poses_test(self, usd: bool = False) -> None:
+        """Local poses test.
+
+        Args:
+            usd: Whether to use USD-based pose queries instead of physics tensors.
+        """
         await self._my_world.reset_async()
         if usd:
             await self._my_world.stop_async()
@@ -895,8 +912,12 @@ class TestRigidPrimView(CoreTestCase):
         self.assertTrue(self.isclose(current_positions, expected_positions, atol=1e-4).all())
         self.assertTrue(self.isclose(current_orientations, expected_orientations, atol=1e-4).all())
 
-    async def linear_velocities_test(self, usd=False):
-        """Linear velocities test."""
+    async def linear_velocities_test(self, usd: bool = False) -> None:
+        """Linear velocities test.
+
+        Args:
+            usd: Whether to use USD-based velocity queries instead of physics tensors.
+        """
         if self._device == "cpu":
             await self._my_world.reset_async()
             if usd:
@@ -921,8 +942,12 @@ class TestRigidPrimView(CoreTestCase):
 
         return
 
-    async def angular_velocities_test(self, usd=False):
-        """Angular velocities test."""
+    async def angular_velocities_test(self, usd: bool = False) -> None:
+        """Angular velocities test.
+
+        Args:
+            usd: Whether to use USD-based velocity queries instead of physics tensors.
+        """
         if self._device == "cpu":
             await self._my_world.reset_async()
             if usd:
@@ -944,8 +969,12 @@ class TestRigidPrimView(CoreTestCase):
             self.assertTrue(self.isclose(current_angular_velocities, angular_velocities, atol=1e-1).all())
         return
 
-    async def masses_test(self, usd=False):
-        """Masses test."""
+    async def masses_test(self, usd: bool = False) -> None:
+        """Masses test.
+
+        Args:
+            usd: Whether to use USD-based mass queries instead of physics tensors.
+        """
         await self._my_world.reset_async()
         if usd:
             await self._my_world.stop_async()
@@ -961,8 +990,12 @@ class TestRigidPrimView(CoreTestCase):
         self.assertTrue(self.isclose(masses, current_masses, atol=1e-4).all())
         return
 
-    async def densities_test(self, usd=False):
-        """Densities test."""
+    async def densities_test(self, usd: bool = False) -> None:
+        """Densities test.
+
+        Args:
+            usd: Whether to use USD-based density queries instead of physics tensors.
+        """
         await self._my_world.reset_async()
         if usd:
             await self._my_world.stop_async()
@@ -978,8 +1011,12 @@ class TestRigidPrimView(CoreTestCase):
         self.assertTrue(self.isclose(densities, current_densities, atol=1e-4).all())
         return
 
-    async def sleep_thresholds_test(self, usd=False):
-        """Sleep thresholds test."""
+    async def sleep_thresholds_test(self, usd: bool = False) -> None:
+        """Sleep thresholds test.
+
+        Args:
+            usd: Whether to use USD-based threshold queries instead of physics tensors.
+        """
         await self._my_world.reset_async()
         if usd:
             await self._my_world.stop_async()
@@ -995,8 +1032,12 @@ class TestRigidPrimView(CoreTestCase):
         self.assertTrue(self.isclose(thresholds, current_thresholds, atol=1e-4).all())
         return
 
-    async def enable_disable_physics_test(self, usd=False):
-        """Enable disable physics test."""
+    async def enable_disable_physics_test(self, usd: bool = False) -> None:
+        """Enable disable physics test.
+
+        Args:
+            usd: Whether to use USD-based physics enable/disable instead of physics tensors.
+        """
         await self._my_world.reset_async()
         if usd:
             await self._my_world.stop_async()
@@ -1009,8 +1050,12 @@ class TestRigidPrimView(CoreTestCase):
 
         return
 
-    async def enable_disable_gravity_test(self, usd=False):
-        """Enable disable gravity test."""
+    async def enable_disable_gravity_test(self, usd: bool = False) -> None:
+        """Enable disable gravity test.
+
+        Args:
+            usd: Whether to use USD-based gravity enable/disable instead of physics tensors.
+        """
         await self._my_world.reset_async()
         if usd:
             await self._my_world.stop_async()
@@ -1022,8 +1067,12 @@ class TestRigidPrimView(CoreTestCase):
         self._cubes_view.disable_gravities(indices)
         return
 
-    async def default_state_post_reset_test(self, usd=False):
-        """Default state post reset test."""
+    async def default_state_post_reset_test(self, usd: bool = False) -> None:
+        """Default state post reset test.
+
+        Args:
+            usd: Whether to use USD-based state queries instead of physics tensors.
+        """
         await self._my_world.reset_async()
         if usd:
             await self._my_world.stop_async()
@@ -1179,7 +1228,7 @@ class TestRigidPrimView(CoreTestCase):
                     ).all()
                 )
 
-    async def default_state_before_reset_test(self):
+    async def default_state_before_reset_test(self) -> None:
         """Default state before reset test."""
         # test set state before reset
         indices = None
@@ -1287,7 +1336,7 @@ class TestRigidPrimView(CoreTestCase):
                 ).all()
             )
 
-    async def transforms_test(self):
+    async def transforms_test(self) -> None:
         """Transforms test."""
         await self._my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None
@@ -1314,8 +1363,12 @@ class TestRigidPrimView(CoreTestCase):
         self.assertTrue(self.isclose(current_orientations, new_orientations, atol=1e-4).all())
         return
 
-    async def velocities_test(self, usd=False):
-        """Velocities test."""
+    async def velocities_test(self, usd: bool = False) -> None:
+        """Velocities test.
+
+        Args:
+            usd: Whether to use USD-based velocity queries instead of physics tensors.
+        """
         await self._my_world.reset_async()
         if usd:
             await self._my_world.stop_async()
@@ -1335,7 +1388,7 @@ class TestRigidPrimView(CoreTestCase):
         self.assertTrue(self.isclose(current_velocities, velocities, atol=1e-1).all())
         return
 
-    async def apply_forces_test(self):
+    async def apply_forces_test(self) -> None:
         """Apply forces test."""
         await self._my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else None

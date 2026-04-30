@@ -16,6 +16,6 @@
 """Provides gripper implementations for robotic manipulators including parallel and surface grippers."""
 
 
-from isaacsim.robot.manipulators.grippers.gripper import Gripper
-from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper
-from isaacsim.robot.manipulators.grippers.surface_gripper import SurfaceGripper
+from isaacsim.robot.manipulators.grippers.gripper import Gripper as Gripper
+from isaacsim.robot.manipulators.grippers.parallel_gripper import ParallelGripper as ParallelGripper
+from isaacsim.robot.manipulators.grippers.surface_gripper import SurfaceGripper as SurfaceGripper

@@ -15,6 +15,8 @@
 
 """OmniGraph node for controlling parallel grippers on articulated robots."""
 
+from typing import Any
+
 import numpy as np
 from isaacsim.core.nodes import BaseResetNode
 from isaacsim.core.prims import SingleArticulation
@@ -26,7 +28,7 @@ from isaacsim.robot.manipulators.ogn.OgnIsaacGripperControllerDatabase import Og
 class OgnIsaacGripperControllerInternalState(BaseResetNode):
     """Internal state for the gripper controller OmniGraph node."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.STOPPED = 0
         self.INCREASING = 1
         self.DECREASING = 2
@@ -47,7 +49,7 @@ class OgnIsaacGripperControllerInternalState(BaseResetNode):
         self.printed = False
         super().__init__(initialize=False)
 
-    def initialize_controller(self):
+    def initialize_controller(self) -> None:
         """Initialize the robot articulation and gripper handles."""
         print("initializing robot")
         try:
@@ -55,7 +57,7 @@ class OgnIsaacGripperControllerInternalState(BaseResetNode):
             self.robot_handle.initialize()
             self.joint_indices = [self.robot_handle.get_dof_index(name) for i, name in enumerate(self.joint_names)]
 
-        except:
+        except Exception:
             print("WARNING: unable to initialize robot. check if joint names and robotPrim target are correct")
 
         # if both open and close limits are zeros, user did not put in a valid limit, default to joint limits
@@ -105,7 +107,7 @@ class OgnIsaacGripperControllerInternalState(BaseResetNode):
         self.next_position = self.gripper_handle.get_joint_positions()
         self.apply_action()
 
-    def gripper_commands(self):
+    def gripper_commands(self) -> None:
         """Update gripper position based on current gripper state."""
         if self.gripper_state == self.INCREASING:
             self.next_position += self.distance_per_frame
@@ -130,7 +132,7 @@ class OgnIsaacGripperControllerInternalState(BaseResetNode):
 
         # print("next position", self.next_position)
 
-    def apply_action(self):
+    def apply_action(self) -> None:
         """Apply the current joint position action to the gripper."""
         if self.initialized:
             joint_actions = ArticulationAction()
@@ -139,15 +141,19 @@ class OgnIsaacGripperControllerInternalState(BaseResetNode):
 
             self.gripper_handle.apply_action(control_actions=joint_actions)
 
-    def print_once(self, msg):
-        """Print a message only on the first call."""
+    def print_once(self, msg: Any) -> None:
+        """Print a message only on the first call.
+
+        Args:
+            msg: The message to print.
+        """
         if not self.printed:
             print(msg)
             self.printed = True
         else:
             pass
 
-    def custom_reset(self):
+    def custom_reset(self) -> None:
         """Reset all internal state to initial values."""
         self.robot_prim = None
         self.gripper_prim = None
@@ -160,24 +166,33 @@ class OgnIsaacGripperControllerInternalState(BaseResetNode):
         self.initialized = False
         self.robot_handle = None
         self.print_once = False
-        pass
 
 
 class OgnIsaacGripperController:
-    """
-    Node that prepare the inputs to ArticulationController to only control the gripper. It does not directly call actions. Assumes the gripper joints are position controlled.
+    """Node that prepare the inputs to ArticulationController to only control the gripper. It does not directly call actions. Assumes the gripper joints are position controlled.
 
     also assumes positive direction on the joint is opening, and negative position is closing
     """
 
     @staticmethod
-    def internal_state():
-        """Return the internal state object for this node."""
+    def internal_state() -> "OgnIsaacGripperControllerInternalState":
+        """Return the internal state object for this node.
+
+        Returns:
+            A new internal state instance for this node.
+        """
         return OgnIsaacGripperControllerInternalState()
 
     @staticmethod
-    def compute(db) -> bool:
-        """Compute gripper control commands based on input signals."""
+    def compute(db: Any) -> bool:
+        """Compute gripper control commands based on input signals.
+
+        Args:
+            db: The OmniGraph node database providing inputs and outputs.
+
+        Returns:
+            True if compute succeeded, False otherwise.
+        """
         state = db.per_instance_state
 
         try:
@@ -285,13 +300,16 @@ class OgnIsaacGripperController:
         return True
 
     @staticmethod
-    def release(node):
-        """Release and reset the node's internal state."""
+    def release(node: Any) -> None:
+        """Release and reset the node's internal state.
+
+        Args:
+            node: The OmniGraph node whose state should be released.
+        """
         try:
             state = OgnIsaacGripperControllerDatabase.get_internal_state(node)
         except Exception:
             state = None
-            pass
 
         if state is not None:
             state.reset()

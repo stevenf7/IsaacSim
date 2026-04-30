@@ -82,7 +82,11 @@ class ApproachParams(object):
         self.std_dev = std_dev
 
     def __str__(self) -> str:
-        """Return a string representation of the approach parameters."""
+        """Return a string representation of the approach parameters.
+
+        Returns:
+            String representation of the object.
+        """
         return f"{{direction: {self.approach!s}, std_dev {self.std_dev!s}}}"
 
 

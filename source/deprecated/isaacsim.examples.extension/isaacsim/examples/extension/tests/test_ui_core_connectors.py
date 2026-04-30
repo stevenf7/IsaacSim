@@ -37,7 +37,11 @@ from isaacsim.storage.native import get_assets_root_path
 
 
 async def wait_until_stage_loaded(timeout_s: float = 20.0) -> None:
-    """Wait until the stage finishes loading or timeout is reached."""
+    """Wait until the stage finishes loading or timeout is reached.
+
+    Args:
+        timeout_s: Maximum time in seconds to wait for the stage to load.
+    """
 
     async def _wait() -> None:
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:

@@ -17,7 +17,6 @@
 
 
 import time
-from typing import Dict, List
 
 import carb
 import numpy as np
@@ -50,7 +49,11 @@ class ProximitySensor:
             Objects at these paths will not trigger sensor events or appear in overlap data.
     """
 
-    def __init__(self, parent: Usd.Prim, callback_fns: list = [None, None, None], exclusions: list = []):
+    def __init__(self, parent: Usd.Prim, callback_fns: list | None = None, exclusions: list | None = None) -> None:
+        if callback_fns is None:
+            callback_fns = [None, None, None]
+        if exclusions is None:
+            exclusions = []
         self.parent = parent
         self._callback_fns = callback_fns
         self._exclusions = exclusions
@@ -151,7 +154,7 @@ class ProximitySensor:
             self._active_zones.append(path)
 
         # Start the timer
-        if not path in self._data and not path in self._exclusions:
+        if path not in self._data and path not in self._exclusions:
             self._data[path] = {"start_time": time.time(), "duration": 0}
 
         return True  # return True to continue the query
@@ -186,7 +189,7 @@ class ProximitySensor:
         """
         return (self.overlapping, self._data)
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets the proximity sensor to its initial state.
 
         Clears all active zones, entered zones, exited zones, and overlap data, and sets the
@@ -198,7 +201,7 @@ class ProximitySensor:
         self._exited_zones = []
         self._data.clear()
 
-    def get_data(self) -> Dict[str, Dict[str, float]]:
+    def get_data(self) -> dict[str, dict[str, float]]:
         """Returns dictionary of overlapped geometry and respective metadata.
 
             key: prim_path of overlapped geometry
@@ -221,8 +224,8 @@ class ProximitySensor:
         """
         msg = f"Tracker: {self.parent.GetPath()}, \tname: {self.name}, \tactive_zones: "
         for key, val in self._data.items():
-            duration = "%.4f" % val["duration"]
-            distance = "%.4f" % val["distance"]
+            duration = f"{val['duration']:.4f}"
+            distance = f"{val['distance']:.4f}"
             msg += f"({key}, duration: {duration}, distance: {distance}), "
         return msg
 
@@ -234,7 +237,7 @@ class ProximitySensor:
         """
         return self.overlapping
 
-    def get_active_zones(self) -> List[str]:
+    def get_active_zones(self) -> list[str]:
         """Returns a list of the prim paths of all the collision meshes the tracker is inside of.
 
         Returns:
@@ -242,7 +245,7 @@ class ProximitySensor:
         """
         return self._active_zones
 
-    def get_entered_zones(self) -> List[str]:
+    def get_entered_zones(self) -> list[str]:
         """Returns a list of the prim paths of all the collision meshes the tracker just entered.
 
         Returns:
@@ -250,7 +253,7 @@ class ProximitySensor:
         """
         return self._entered_zones
 
-    def get_exited_zones(self) -> List[str]:
+    def get_exited_zones(self) -> list[str]:
         """Prim paths of all the collision meshes the tracker just exited.
 
         Returns:
@@ -274,7 +277,7 @@ class ProximitySensorManager(object):
     _instance = None
     """Singleton instance of the ProximitySensorManager class."""
 
-    def __new__(cls: type):
+    def __new__(cls: type) -> "ProximitySensorManager":
         """Creates or returns the singleton instance of ProximitySensorManager.
 
         Implements the singleton pattern to ensure only one instance of the manager exists.
@@ -284,11 +287,11 @@ class ProximitySensorManager(object):
             The singleton instance of ProximitySensorManager.
         """
         if cls._instance is None:
-            cls._instance = super(ProximitySensorManager, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
             cls.sensors = []
         return cls._instance
 
-    def register_sensor(self, sensor: ProximitySensor):
+    def register_sensor(self, sensor: ProximitySensor) -> None:
         """Registers a proximity sensor with the manager.
 
         Args:
@@ -296,14 +299,14 @@ class ProximitySensorManager(object):
         """
         self.sensors.append(sensor)
 
-    def clear_sensors(self):
+    def clear_sensors(self) -> None:
         """Removes all registered sensors from the manager.
 
         Clears the internal sensors list, effectively unregistering all proximity sensors.
         """
         self.sensors = []
 
-    def update(self):
+    def update(self) -> None:
         """Updates all registered proximity sensors.
 
         Iterates through all registered sensors and calls their update method to check for
@@ -314,7 +317,7 @@ class ProximitySensorManager(object):
 
 
 # Public API:
-def register_sensor(sensor: ProximitySensor):
+def register_sensor(sensor: ProximitySensor) -> None:
     """Register a proximity sensor with the global sensor manager.
 
     Adds the sensor to the list of active sensors that will be updated during physics simulation.
@@ -326,7 +329,7 @@ def register_sensor(sensor: ProximitySensor):
     ProximitySensorManager().register_sensor(sensor)
 
 
-def clear_sensors():
+def clear_sensors() -> None:
     """Clear all registered proximity sensors from the global sensor manager.
 
     Removes all sensors from the active sensor list, stopping their overlap monitoring and callbacks.

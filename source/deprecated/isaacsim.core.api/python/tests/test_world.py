@@ -40,17 +40,17 @@ class TestScene(CoreTestCase):
     """Test scene."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
         await super().setUp()
         World.clear_instance()
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
         await super().tearDown()
 
-    async def test_clear_instance(self):
+    async def test_clear_instance(self) -> None:
         """Test clear instance."""
         await create_new_stage_async()
         my_world = World(device="cpu")
@@ -66,8 +66,12 @@ class TestScene(CoreTestCase):
         my_world = World(device="cpu")
         self.assertTrue(my_world.instance() is not None)
 
-    async def test_create_new_stage(self):
-        """Test create new stage."""
+    async def test_create_new_stage(self) -> None:
+        """Test create new stage.
+
+        Returns:
+            None.
+        """
         await create_new_stage_async()
         my_world = World(device="cpu")
         await my_world.initialize_simulation_context_async()
@@ -108,8 +112,12 @@ class TestScene(CoreTestCase):
         self.assertTrue(my_world.instance() is None)
         return
 
-    async def test_clear_world(self):
-        """Test clear world."""
+    async def test_clear_world(self) -> None:
+        """Test clear world.
+
+        Returns:
+            None.
+        """
         await create_new_stage_async()
         my_world = World(stage_units_in_meters=1.0, device="cpu")
         await my_world.initialize_simulation_context_async()
@@ -160,8 +168,12 @@ class TestScene(CoreTestCase):
         await create_new_stage_async()
         return
 
-    async def test_clear_scene_ref(self):
-        """Test clear scene ref."""
+    async def test_clear_scene_ref(self) -> None:
+        """Test clear scene ref.
+
+        Returns:
+            None.
+        """
         await create_new_stage_async()
         my_world = World(stage_units_in_meters=1.0, device="cpu")
         await my_world.initialize_simulation_context_async()
@@ -184,8 +196,12 @@ class TestScene(CoreTestCase):
         await create_new_stage_async()
         return
 
-    async def test_clear_prim_view(self):
-        """Test clear prim view."""
+    async def test_clear_prim_view(self) -> None:
+        """Test clear prim view.
+
+        Returns:
+            None.
+        """
         await create_new_stage_async()
         my_world = World(stage_units_in_meters=1.0, device="cpu")
         await my_world.initialize_simulation_context_async()

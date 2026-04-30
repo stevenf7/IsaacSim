@@ -35,7 +35,7 @@ class TestIMU(omni.kit.test.AsyncTestCase):
     """Test i m u."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await stage_utils.create_new_stage_async()
         SimulationManager.setup_simulation(dt=1.0 / 60.0)
@@ -61,7 +61,7 @@ class TestIMU(omni.kit.test.AsyncTestCase):
         return
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         if self._timeline.is_playing():
             self._timeline.stop()
@@ -73,19 +73,19 @@ class TestIMU(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         return
 
-    async def test_data_acquisition(self):
+    async def test_data_acquisition(self) -> None:
         """Test data acquisition."""
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         data = self._imu.get_current_frame()
         for key in ["time", "physics_step", "lin_acc", "ang_vel", "orientation"]:
-            self.assertTrue(key in data.keys())
+            self.assertTrue(key in data)
         data = self._imu.get_current_frame(read_gravity=False)
         for key in ["time", "physics_step", "lin_acc", "ang_vel", "orientation"]:
-            self.assertTrue(key in data.keys())
+            self.assertTrue(key in data)
         return
 
-    async def test_data_values_gravity_toggle(self):
+    async def test_data_values_gravity_toggle(self) -> None:
         """Test data values gravity toggle."""
         await reset_timeline(self._timeline, steps=2)
         data = None
@@ -104,7 +104,7 @@ class TestIMU(omni.kit.test.AsyncTestCase):
         orientation_norm = float(np.linalg.norm(data["orientation"]))
         self.assertAlmostEqual(orientation_norm, 1.0, delta=ORIENTATION_TOLERANCE)
 
-    async def test_pause_resume(self):
+    async def test_pause_resume(self) -> None:
         """Test pause resume."""
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
@@ -134,7 +134,7 @@ class TestIMU(omni.kit.test.AsyncTestCase):
         self.assertTrue(data["physics_step"] == 3)
         return
 
-    async def test_properties(self):
+    async def test_properties(self) -> None:
         """Test properties."""
         self._imu.set_frequency(20)
         self.assertAlmostEqual(20, self._imu.get_frequency(), delta=2)
@@ -142,7 +142,7 @@ class TestIMU(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(0.2, self._imu.get_dt(), delta=SMALL_TOLERANCE)
         return
 
-    async def test_filter_size_parameters(self):
+    async def test_filter_size_parameters(self) -> None:
         """Test filter size parameters."""
         filter_imu = IMUSensor(
             prim_path="/World/Carter/chassis_link/Imu_Sensor_filtered",

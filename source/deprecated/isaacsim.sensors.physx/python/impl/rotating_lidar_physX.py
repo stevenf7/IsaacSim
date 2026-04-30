@@ -16,7 +16,7 @@
 """Implementation of rotating lidar sensor using PhysX simulation for range detection and data acquisition."""
 
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import carb
 import carb.eventdispatcher
@@ -64,10 +64,10 @@ class RotatingLidarPhysX(BaseSensor):
         position: Optional[np.ndarray] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
-        fov: Optional[Tuple[float, float]] = None,
-        resolution: Optional[Tuple[float, float]] = None,
-        valid_range: Optional[Tuple[float, float]] = None,
-    ):
+        fov: Optional[tuple[float, float]] = None,
+        resolution: Optional[tuple[float, float]] = None,
+        valid_range: Optional[tuple[float, float]] = None,
+    ) -> None:
         if rotation_frequency is not None and rotation_dt is not None:
             raise Exception("Rotation Frequency and Rotation dt can't be both specified")
 
@@ -78,7 +78,7 @@ class RotatingLidarPhysX(BaseSensor):
         if is_prim_path_valid(prim_path):
             self._lidar_prim = RangeSensorSchema.Lidar(get_prim_at_path(prim_path))
         else:
-            carb.log_info("Creating a new Lidar prim at path {}".format(prim_path))
+            carb.log_info(f"Creating a new Lidar prim at path {prim_path}")
             self._lidar_prim = RangeSensorSchema.Lidar.Define(get_current_stage(), Sdf.Path(prim_path))
             if rotation_frequency is None:
                 rotation_frequency = 20.0
@@ -102,7 +102,7 @@ class RotatingLidarPhysX(BaseSensor):
         self._pause = False
         self._current_time = 0
         self._number_of_physics_steps = 0
-        self._current_frame = dict()
+        self._current_frame = {}
         self._current_frame["time"] = 0
         self._current_frame["physics_step"] = 0
         return
@@ -282,7 +282,7 @@ class RotatingLidarPhysX(BaseSensor):
                         )
                     else:
                         self._current_frame[key] = self._backend_utils.create_tensor_from_list(
-                            getattr(self._lidar_sensor_interface, "get_{}_data".format(key))(self.prim_path),
+                            getattr(self._lidar_sensor_interface, f"get_{key}_data")(self.prim_path),
                             dtype="float32",
                             device=self._device,
                         )
@@ -347,7 +347,7 @@ class RotatingLidarPhysX(BaseSensor):
         """
         return self._pause
 
-    def set_fov(self, value: Tuple[float, float]):
+    def set_fov(self, value: tuple[float, float]) -> None:
         """Sets the field of view for the lidar sensor.
 
         Args:
@@ -362,7 +362,7 @@ class RotatingLidarPhysX(BaseSensor):
         else:
             self.prim.GetAttribute("verticalFov").Set(value[1])
 
-    def get_fov(self) -> Tuple[float, float]:
+    def get_fov(self) -> tuple[float, float]:
         """Field of view of the lidar sensor.
 
         Returns:
@@ -370,7 +370,7 @@ class RotatingLidarPhysX(BaseSensor):
         """
         return self.prim.GetAttribute("horizontalFov").Get(), self.prim.GetAttribute("verticalFov").Get()
 
-    def set_resolution(self, value: float):
+    def set_resolution(self, value: float) -> None:
         """Sets the resolution for the lidar sensor.
 
         Args:
@@ -393,7 +393,7 @@ class RotatingLidarPhysX(BaseSensor):
         """
         return self.prim.GetAttribute("horizontalResolution").Get(), self.prim.GetAttribute("verticalResolution").Get()
 
-    def set_rotation_frequency(self, value: int):
+    def set_rotation_frequency(self, value: int) -> None:
         """Sets the rotation frequency of the lidar sensor.
 
         Args:
@@ -412,7 +412,7 @@ class RotatingLidarPhysX(BaseSensor):
         """
         return self.prim.GetAttribute("rotationRate").Get()
 
-    def set_valid_range(self, value: Tuple[float, float]) -> None:
+    def set_valid_range(self, value: tuple[float, float]) -> None:
         """Sets the valid range of the lidar sensor.
 
         Args:
@@ -428,7 +428,7 @@ class RotatingLidarPhysX(BaseSensor):
             self.prim.GetAttribute("maxRange").Set(value[1])
         return
 
-    def get_valid_range(self) -> Tuple[float, float]:
+    def get_valid_range(self) -> tuple[float, float]:
         """Valid range of the lidar sensor.
 
         Returns:
@@ -436,14 +436,14 @@ class RotatingLidarPhysX(BaseSensor):
         """
         return self.prim.GetAttribute("minRange").Get(), self.prim.GetAttribute("maxRange").Get()
 
-    def enable_semantics(self):
+    def enable_semantics(self) -> None:
         """Enables semantic data collection for the lidar sensor."""
         if self.prim.GetAttribute("enableSemantics").Get() is None:
             self._lidar_prim.CreateEnableSemanticsAttr().Set(True)
         else:
             self.prim.GetAttribute("enableSemantics").Set(True)
 
-    def disable_semantics(self):
+    def disable_semantics(self) -> None:
         """Disables semantic data collection for the lidar sensor."""
         if self.prim.GetAttribute("enableSemantics").Get() is None:
             self._lidar_prim.CreateEnableSemanticsAttr().Set(True)

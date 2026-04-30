@@ -18,7 +18,6 @@
 from __future__ import annotations
 
 # omniverse
-import carb
 import numpy as np
 from pxr import Gf
 

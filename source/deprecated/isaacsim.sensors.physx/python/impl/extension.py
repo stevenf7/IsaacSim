@@ -36,7 +36,7 @@ class Extension(omni.ext.IExt):
     the lifecycle of various range sensor interfaces including LiDAR, generic range sensors, and lightbeam sensors.
     """
 
-    def on_startup(self):
+    def on_startup(self) -> None:
         """Initializes the extension by setting up physics step subscriptions and sensor managers.
 
         Subscribes to physics step events to update sensors on each physics step, creates a proximity
@@ -51,7 +51,7 @@ class Extension(omni.ext.IExt):
         self._generic = _range_sensor.acquire_generic_sensor_interface()
         self._lightbeam = _range_sensor.acquire_lightbeam_sensor_interface()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleans up the extension by releasing resources and clearing subscriptions.
 
         Clears the physics step subscription, clears all proximity sensors, releases the proximity
@@ -67,7 +67,7 @@ class Extension(omni.ext.IExt):
         _range_sensor.release_generic_sensor_interface(self._generic)
         _range_sensor.release_lightbeam_sensor_interface(self._lightbeam)
 
-    def _on_update(self, dt: float, context: object):
+    def _on_update(self, dt: float, context: object) -> None:
         """Updates the proximity sensor manager on each physics step.
 
         Args:

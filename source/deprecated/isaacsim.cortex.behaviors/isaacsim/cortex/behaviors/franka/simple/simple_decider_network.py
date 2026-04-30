@@ -67,7 +67,11 @@ class PrintAction(DfAction):
         self.msg = msg
 
     def __str__(self) -> str:
-        """Return the message as a string representation."""
+        """Return the message as a string representation.
+
+        Returns:
+            The message string.
+        """
         return self.msg
 
     def enter(self) -> None:
@@ -89,7 +93,11 @@ class Dispatch(DfDecider):
         self.add_child("print", PrintAction(""))
 
     def decide(self) -> Any:
-        """Decide which print action to run based on lateral position."""
+        """Decide which print action to run based on lateral position.
+
+        Returns:
+            A DfDecision directing to print_left, print_right, or print.
+        """
         if self.context.is_middle:
             return DfDecision("print", "<middle>")  # Send parameters down to generic print.
 
@@ -100,5 +108,12 @@ class Dispatch(DfDecider):
 
 
 def make_decider_network(robot: Any) -> Any:
-    """Create the simple decider network for the given robot."""
+    """Create the simple decider network for the given robot.
+
+    Args:
+        robot: The robot API instance.
+
+    Returns:
+        A configured DfNetwork for the simple decider behavior.
+    """
     return DfNetwork(Dispatch(), context=Context(robot))

@@ -120,8 +120,16 @@ def deg2rad(degree_value: float, device: object = None) -> torch.Tensor:
 
 
 @torch.jit.script
-def quat_mul(a, b):  # noqa: ANN001, ANN201
-    """Multiply two quaternion tensors (scalar first)."""
+def quat_mul(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
+    """Multiply two quaternion tensors (scalar first).
+
+    Args:
+        a: First quaternion tensor of shape (..., 4) in [w, x, y, z] format.
+        b: Second quaternion tensor of shape (..., 4) in [w, x, y, z] format.
+
+    Returns:
+        Product quaternion tensor of same shape as inputs.
+    """
     assert a.shape == b.shape
     shape = a.shape
     a = a.reshape(-1, 4)
@@ -145,16 +153,31 @@ def quat_mul(a, b):  # noqa: ANN001, ANN201
 
 
 @torch.jit.script
-def quat_conjugate(a):  # noqa: ANN001, ANN201
-    """Compute the conjugate of a quaternion tensor (scalar first)."""
+def quat_conjugate(a: torch.Tensor) -> torch.Tensor:
+    """Compute the conjugate of a quaternion tensor (scalar first).
+
+    Args:
+        a: Quaternion tensor of shape (..., 4) in [w, x, y, z] format.
+
+    Returns:
+        Conjugate quaternion tensor of same shape.
+    """
     shape = a.shape
     a = a.reshape(-1, 4)
     return torch.cat((a[:, 0:1], -a[:, 1:]), dim=-1).view(shape)
 
 
 @torch.jit.script
-def quat_apply(a, b):  # noqa: ANN001, ANN201
-    """Apply quaternion rotation to a 3D vector tensor."""
+def quat_apply(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
+    """Apply quaternion rotation to a 3D vector tensor.
+
+    Args:
+        a: Quaternion tensor of shape (..., 4) in [w, x, y, z] format.
+        b: Vector tensor of shape (..., 3) to rotate.
+
+    Returns:
+        Rotated vector tensor of same shape as b.
+    """
     shape = b.shape
     a = a.reshape(-1, 4)
     b = b.reshape(-1, 3)
@@ -164,8 +187,16 @@ def quat_apply(a, b):  # noqa: ANN001, ANN201
 
 
 @torch.jit.script
-def quat_rotate(q, v):  # noqa: ANN001, ANN201
-    """Rotate a vector by a quaternion."""
+def quat_rotate(q: torch.Tensor, v: torch.Tensor) -> torch.Tensor:
+    """Rotate a vector by a quaternion.
+
+    Args:
+        q: Quaternion tensor of shape (N, 4) in [w, x, y, z] format.
+        v: Vector tensor of shape (N, 3) to rotate.
+
+    Returns:
+        Rotated vector tensor of shape (N, 3).
+    """
     shape = q.shape
     q_w = q[:, 0]
     q_vec = q[:, 1:]
@@ -176,8 +207,16 @@ def quat_rotate(q, v):  # noqa: ANN001, ANN201
 
 
 @torch.jit.script
-def quat_rotate_inverse(q, v):  # noqa: ANN001, ANN201
-    """Rotate a vector by the inverse of a quaternion."""
+def quat_rotate_inverse(q: torch.Tensor, v: torch.Tensor) -> torch.Tensor:
+    """Rotate a vector by the inverse of a quaternion.
+
+    Args:
+        q: Quaternion tensor of shape (N, 4) in [w, x, y, z] format.
+        v: Vector tensor of shape (N, 3) to rotate.
+
+    Returns:
+        Rotated vector tensor of shape (N, 3).
+    """
     shape = q.shape
     q_w = q[:, 0]
     q_vec = q[:, 1:]
@@ -188,14 +227,29 @@ def quat_rotate_inverse(q, v):  # noqa: ANN001, ANN201
 
 
 @torch.jit.script
-def quat_unit(a):  # noqa: ANN001, ANN201
-    """Normalize a quaternion to unit length."""
+def quat_unit(a: torch.Tensor) -> torch.Tensor:
+    """Normalize a quaternion to unit length.
+
+    Args:
+        a: Quaternion tensor to normalize.
+
+    Returns:
+        Unit quaternion tensor.
+    """
     return normalize(a)
 
 
 @torch.jit.script
-def quat_from_angle_axis(angle, axis):  # noqa: ANN001, ANN201
-    """Create a quaternion from an angle and axis of rotation."""
+def quat_from_angle_axis(angle: torch.Tensor, axis: torch.Tensor) -> torch.Tensor:
+    """Create a quaternion from an angle and axis of rotation.
+
+    Args:
+        angle: Rotation angle tensor in radians.
+        axis: Rotation axis tensor of shape (N, 3).
+
+    Returns:
+        Unit quaternion tensor of shape (N, 4) in [w, x, y, z] format.
+    """
     theta = (angle / 2).unsqueeze(-1)
     xyz = normalize(axis) * theta.sin()
     w = theta.cos()
@@ -203,29 +257,58 @@ def quat_from_angle_axis(angle, axis):  # noqa: ANN001, ANN201
 
 
 @torch.jit.script
-def quat_axis(q, axis=0):  # noqa: ANN001, ANN201
-    """Get a basis vector rotated by the given quaternion."""
-    # type: (Tensor, int) -> Tensor
+def quat_axis(q: torch.Tensor, axis: int = 0) -> torch.Tensor:
+    """Get a basis vector rotated by the given quaternion.
+
+    Args:
+        q: Quaternion tensor of shape (N, 4) in [w, x, y, z] format.
+        axis: Index of the basis vector (0, 1, or 2 for x, y, z).
+
+    Returns:
+        Rotated basis vector tensor of shape (N, 3).
+    """
     basis_vec = torch.zeros(q.shape[0], 3, device=q.device)
     basis_vec[:, axis] = 1
     return quat_rotate(q, basis_vec)
 
 
 @torch.jit.script
-def normalize_angle(x):  # noqa: ANN001, ANN201
-    """Normalize an angle to the range [-pi, pi]."""
+def normalize_angle(x: torch.Tensor) -> torch.Tensor:
+    """Normalize an angle to the range [-pi, pi].
+
+    Args:
+        x: Input angle tensor in radians.
+
+    Returns:
+        Normalized angle tensor in the range [-pi, pi].
+    """
     return torch.atan2(torch.sin(x), torch.cos(x))
 
 
 @torch.jit.script
-def get_basis_vector(q, v):  # noqa: ANN001, ANN201
-    """Get a basis vector rotated by the given quaternion."""
+def get_basis_vector(q: torch.Tensor, v: torch.Tensor) -> torch.Tensor:
+    """Get a basis vector rotated by the given quaternion.
+
+    Args:
+        q: Quaternion tensor of shape (N, 4) in [w, x, y, z] format.
+        v: Basis vector tensor of shape (N, 3) to rotate.
+
+    Returns:
+        Rotated basis vector tensor of shape (N, 3).
+    """
     return quat_rotate(q, v)
 
 
 @torch.jit.script
-def quats_to_rot_matrices(quats):  # noqa: ANN001, ANN201
-    """Convert quaternions (scalar first) to rotation matrices."""
+def quats_to_rot_matrices(quats: torch.Tensor) -> torch.Tensor:
+    """Convert quaternions (scalar first) to rotation matrices.
+
+    Args:
+        quats: Quaternion tensor of shape (N, 4) or (4,) in [w, x, y, z] format.
+
+    Returns:
+        Rotation matrix tensor of shape (N, 3, 3) or (3, 3).
+    """
     squeeze_flag = False
     if quats.dim() == 1:
         squeeze_flag = True
@@ -251,8 +334,16 @@ def quats_to_rot_matrices(quats):  # noqa: ANN001, ANN201
 
 
 @torch.jit.script
-def matrices_to_euler_angles(mat, extrinsic: bool = True):  # noqa: ANN001, ANN201
-    """Convert rotation matrices to Euler angles (XYZ convention)."""
+def matrices_to_euler_angles(mat: torch.Tensor, extrinsic: bool = True) -> torch.Tensor:
+    """Convert rotation matrices to Euler angles (XYZ convention).
+
+    Args:
+        mat: Rotation matrix tensor of shape (N, 3, 3).
+        extrinsic: If True, uses extrinsic XYZ convention; otherwise intrinsic.
+
+    Returns:
+        Euler angles tensor of shape (N, 3) in radians.
+    """
     _POLE_LIMIT = 1.0 - 1e-6
     if extrinsic:
         north_pole = mat[:, 2, 0] > _POLE_LIMIT
@@ -300,8 +391,16 @@ def matrices_to_euler_angles(mat, extrinsic: bool = True):  # noqa: ANN001, ANN2
 
 
 @torch.jit.script
-def get_euler_xyz(q, extrinsic: bool = True):  # noqa: ANN001, ANN201
-    """Get Euler XYZ angles from quaternions (scalar first)."""
+def get_euler_xyz(q: torch.Tensor, extrinsic: bool = True) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Get Euler XYZ angles from quaternions (scalar first).
+
+    Args:
+        q: Quaternion tensor of shape (N, 4) in [w, x, y, z] format.
+        extrinsic: If True, uses extrinsic XYZ convention; otherwise intrinsic.
+
+    Returns:
+        Tuple of (roll, pitch, yaw) tensors each of shape (N,) in radians.
+    """
     if extrinsic:
         qw, qx, qy, qz = 0, 1, 2, 3
         # roll (x-axis rotation)
@@ -325,8 +424,20 @@ def get_euler_xyz(q, extrinsic: bool = True):  # noqa: ANN001, ANN201
 
 
 @torch.jit.script
-def quat_from_euler_xyz(roll, pitch, yaw, extrinsic: bool = True):  # noqa: ANN001, ANN201
-    """Create quaternions from roll, pitch, and yaw angles."""
+def quat_from_euler_xyz(
+    roll: torch.Tensor, pitch: torch.Tensor, yaw: torch.Tensor, extrinsic: bool = True
+) -> torch.Tensor:
+    """Create quaternions from roll, pitch, and yaw angles.
+
+    Args:
+        roll: Roll angle tensor in radians.
+        pitch: Pitch angle tensor in radians.
+        yaw: Yaw angle tensor in radians.
+        extrinsic: If True, uses extrinsic XYZ convention; otherwise intrinsic.
+
+    Returns:
+        Quaternion tensor of shape (N, 4) in [w, x, y, z] format.
+    """
     cy = torch.cos(yaw * 0.5)
     sy = torch.sin(yaw * 0.5)
     cr = torch.cos(roll * 0.5)
@@ -382,9 +493,27 @@ def normalise_quat_in_pose(pose: object) -> object:  # noqa: N802
 
 
 @torch.jit.script
-def compute_heading_and_up(torso_rotation, inv_start_rot, to_target, vec0, vec1, up_idx):  # noqa: ANN001, ANN201
-    """Compute heading and up vectors from torso rotation and target direction."""
-    # type: (Tensor, Tensor, Tensor, Tensor, Tensor, int) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor]
+def compute_heading_and_up(
+    torso_rotation: torch.Tensor,
+    inv_start_rot: torch.Tensor,
+    to_target: torch.Tensor,
+    vec0: torch.Tensor,
+    vec1: torch.Tensor,
+    up_idx: int,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Compute heading and up vectors from torso rotation and target direction.
+
+    Args:
+        torso_rotation: Torso rotation quaternion tensor of shape (N, 4).
+        inv_start_rot: Inverse start rotation quaternion tensor of shape (N, 4).
+        to_target: Direction vector to target of shape (N, 3).
+        vec0: Heading basis vector of shape (N, 3).
+        vec1: Up basis vector of shape (N, 3).
+        up_idx: Index of the up axis (0, 1, or 2).
+
+    Returns:
+        Tuple of (torso_quat, up_proj, heading_proj, up_vec, heading_vec).
+    """
     num_envs = torso_rotation.shape[0]
     target_dirs = normalize(to_target)
 
@@ -406,7 +535,19 @@ def compute_rot(
     torso_positions: torch.Tensor,
     extrinsic: bool = True,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-    """Compute local velocities and angles to target from torso rotation."""
+    """Compute local velocities and angles to target from torso rotation.
+
+    Args:
+        torso_quat: Torso rotation quaternion tensor of shape (N, 4).
+        velocity: Linear velocity tensor of shape (N, 3).
+        ang_velocity: Angular velocity tensor of shape (N, 3).
+        targets: Target position tensor of shape (N, 3).
+        torso_positions: Torso position tensor of shape (N, 3).
+        extrinsic: If True, uses extrinsic XYZ convention; otherwise intrinsic.
+
+    Returns:
+        Tuple of (vel_loc, angvel_loc, roll, pitch, yaw, angle_to_target).
+    """
     vel_loc = quat_rotate_inverse(torso_quat, velocity)
     angvel_loc = quat_rotate_inverse(torso_quat, ang_velocity)
 

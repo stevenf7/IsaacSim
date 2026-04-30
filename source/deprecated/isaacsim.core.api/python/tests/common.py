@@ -18,6 +18,7 @@
 import asyncio
 import gc
 import time
+from typing import Any
 
 import omni
 from isaacsim.core.api import World
@@ -35,12 +36,12 @@ class CoreTestCase(omni.kit.test.AsyncTestCase):
     from this instead of omni.kit.test.AsyncTestCase directly.
     """
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test timing before each test method."""
         self._test_start_time = time.time()
         self._timeline = omni.timeline.get_timeline_interface()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
@@ -60,8 +61,15 @@ class CoreTestCase(omni.kit.test.AsyncTestCase):
 class TestProperties:
     """Test properties."""
 
-    async def scalar_prop_test(self, getFunc, setFunc, set_value=0.2, is_stopped=False):
-        """Scalar prop test."""
+    async def scalar_prop_test(self, getFunc: Any, setFunc: Any, set_value: Any = 0.2, is_stopped: Any = False) -> None:
+        """Scalar prop test.
+
+        Args:
+            getFunc: Getter function to retrieve the current value.
+            setFunc: Setter function to set the value.
+            set_value: Value to set and verify.
+            is_stopped: Whether the simulation is stopped.
+        """
         await self.my_world.reset_async()
         if is_stopped:
             await self.my_world.stop_async()
@@ -75,8 +83,23 @@ class TestProperties:
         cur_value = getFunc()
         self.assertTrue(torch.isclose(cur_value, torch.tensor(set_value)), f"getFunc={getFunc}\nsetFunc={setFunc}")
 
-    async def bool_prop_test(self, getFunc, setFunc, set_value_1=False, set_value_2=True, is_stopped=False):
-        """Bool prop test."""
+    async def bool_prop_test(
+        self,
+        getFunc: Any,
+        setFunc: Any,
+        set_value_1: Any = False,
+        set_value_2: Any = True,
+        is_stopped: Any = False,
+    ) -> None:
+        """Bool prop test.
+
+        Args:
+            getFunc: Getter function to retrieve the current value.
+            setFunc: Setter function to set the value.
+            set_value_1: First value to set and verify.
+            set_value_2: Second value to set and verify.
+            is_stopped: Whether the simulation is stopped.
+        """
         await self.my_world.reset_async()
         if is_stopped:
             await self.my_world.stop_async()
@@ -90,8 +113,23 @@ class TestProperties:
         cur_value = getFunc()
         self.assertTrue(cur_value == set_value_2, f"getFunc={getFunc}\nsetFunc={setFunc}")
 
-    async def int_prop_test(self, getFunc, setFunc, set_value=27, set_value_2=28, is_stopped=False):
-        """Int prop test."""
+    async def int_prop_test(
+        self,
+        getFunc: Any,
+        setFunc: Any,
+        set_value: Any = 27,
+        set_value_2: Any = 28,
+        is_stopped: Any = False,
+    ) -> None:
+        """Int prop test.
+
+        Args:
+            getFunc: Getter function to retrieve the current value.
+            setFunc: Setter function to set the value.
+            set_value: First value to set and verify.
+            set_value_2: Second value to set and verify.
+            is_stopped: Whether the simulation is stopped.
+        """
         await self.my_world.reset_async()
         if is_stopped:
             await self.my_world.stop_async()
@@ -107,13 +145,21 @@ class TestProperties:
 
     async def vector_prop_test(
         self,
-        getFunc,
-        setFunc,
-        set_value_1=torch.Tensor([10, 12, 18]),
-        set_value_2=torch.Tensor([100, 102, 120]),
-        is_stopped=False,
-    ):
-        """Vector prop test."""
+        getFunc: Any,
+        setFunc: Any,
+        set_value_1: Any = torch.Tensor([10, 12, 18]),
+        set_value_2: Any = torch.Tensor([100, 102, 120]),
+        is_stopped: Any = False,
+    ) -> None:
+        """Vector prop test.
+
+        Args:
+            getFunc: Getter function to retrieve the current value.
+            setFunc: Setter function to set the value.
+            set_value_1: First vector value to set and verify.
+            set_value_2: Second vector value to set and verify.
+            is_stopped: Whether the simulation is stopped.
+        """
         await self.my_world.reset_async()
         if is_stopped:
             await self.my_world.stop_async()

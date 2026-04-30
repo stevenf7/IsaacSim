@@ -17,6 +17,7 @@
 
 
 from abc import abstractmethod
+from typing import Any
 
 import omni.kit.app
 from isaacsim.core.prims import SingleRigidPrim
@@ -30,13 +31,13 @@ class Gripper(SingleRigidPrim):
         end_effector_prim_path: Prim path of the Prim that corresponds to the gripper root/ end effector.
     """
 
-    def __init__(self, end_effector_prim_path: str):
+    def __init__(self, end_effector_prim_path: str) -> None:
         SingleRigidPrim.__init__(self, prim_path=end_effector_prim_path, name="gripper")
         self._end_effector_prim_path = end_effector_prim_path
         self._default_state = None
         return
 
-    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None):
+    def initialize(self, physics_sim_view: omni.physics.tensors.SimulationView = None) -> None:
         """Create a physics simulation view if not passed and creates a rigid prim view using physX tensor api.
 
         This needs to be called after each hard reset (i.e stop + play on the timeline) before interacting with any
@@ -49,17 +50,17 @@ class Gripper(SingleRigidPrim):
         return
 
     @abstractmethod
-    def open(self):
+    def open(self) -> None:
         """Applies actions to the articulation that opens the gripper (ex: to release an object held)."""
         raise NotImplementedError
 
     @abstractmethod
-    def close(self):
+    def close(self) -> None:
         """Applies actions to the articulation that closes the gripper (ex: to hold an object)."""
         raise NotImplementedError
 
     @abstractmethod
-    def set_default_state(self, *args, **kwargs):
+    def set_default_state(self, *args: Any, **kwargs: Any) -> None:
         """Sets the default state of the gripper.
 
         Args:
@@ -69,18 +70,21 @@ class Gripper(SingleRigidPrim):
         raise NotImplementedError
 
     @abstractmethod
-    def get_default_state(self, *args, **kwargs):
+    def get_default_state(self, *args: Any, **kwargs: Any) -> Any:
         """Gets the default state of the gripper.
 
         Args:
             *args: Variable length argument list.
             **kwargs: Additional keyword arguments.
+
+        Returns:
+            The default state of the gripper.
         """
         raise NotImplementedError
 
     @abstractmethod
-    def forward(self, *args, **kwargs) -> ArticulationAction:
-        """calculates the ArticulationAction for all of the articulation joints that corresponds to a specific action.
+    def forward(self, *args: Any, **kwargs: Any) -> ArticulationAction:
+        """Calculates the ArticulationAction for all of the articulation joints that corresponds to a specific action.
 
         such as "open" for an example.
 

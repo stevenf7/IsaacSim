@@ -29,7 +29,7 @@ class TestGeneric(omni.kit.test.AsyncTestCase):
     """Test generic."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         self._sensor = _range_sensor.acquire_generic_sensor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -52,14 +52,21 @@ class TestGeneric(omni.kit.test.AsyncTestCase):
         scene.CreateGravityMagnitudeAttr().Set(9.81)
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         self._timeline.stop()
-        pass
 
-    async def add_cube(self, path, size, offset):
-        """Perform add cube operation."""
+    async def add_cube(self, path: str, size: float, offset: object) -> UsdGeom.Cube:
+        """Perform add cube operation.
 
+        Args:
+            path: USD path for the cube prim.
+            size: Size of the cube.
+            offset: Translation offset for the cube.
+
+        Returns:
+            The created cube geometry object.
+        """
         cubeGeom = UsdGeom.Cube.Define(self._stage, path)
         cubePrim = self._stage.GetPrimAtPath(path)
 
@@ -70,9 +77,8 @@ class TestGeneric(omni.kit.test.AsyncTestCase):
         return cubeGeom
 
     # Tests a static sensor with a cube in front of it
-    async def test_set_pattern_generic(self):
+    async def test_set_pattern_generic(self) -> None:
         """Test set pattern generic."""
-
         # Add a cube
         cubePath = "/World/Cube"
         await self.add_cube(cubePath, 1.000, Gf.Vec3f(-2.000, 0.0, 0.500))
@@ -122,9 +128,8 @@ class TestGeneric(omni.kit.test.AsyncTestCase):
         self.assertEqual(np.size(np.where(random_segment == 100)), 3)
 
     # Tests a static sensor with a cube in front of it
-    async def test_offset_generic(self):
+    async def test_offset_generic(self) -> None:
         """Test offset generic."""
-
         # Add a cube
         cubePath = "/World/Cube"
         await self.add_cube(cubePath, 1.000, Gf.Vec3f(-2.000, 0.0, 0.500))

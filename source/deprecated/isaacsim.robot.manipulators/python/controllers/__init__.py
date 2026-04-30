@@ -16,5 +16,5 @@
 """Controllers for robotic manipulator tasks including pick-and-place and stacking operations."""
 
 
-from isaacsim.robot.manipulators.controllers.pick_place_controller import PickPlaceController
-from isaacsim.robot.manipulators.controllers.stacking_controller import StackingController
+from isaacsim.robot.manipulators.controllers.pick_place_controller import PickPlaceController as PickPlaceController
+from isaacsim.robot.manipulators.controllers.stacking_controller import StackingController as StackingController

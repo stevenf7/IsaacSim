@@ -67,7 +67,7 @@ class UIBuilder:
         """Callback for Timeline events (Play, Pause, Stop).
 
         Args:
-            event (omni.timeline.TimelineEventType): Event Type
+            event: Event type.
         """
 
     def on_physics_step(self, step: object) -> None:
@@ -76,14 +76,14 @@ class UIBuilder:
         Physics steps only occur when the timeline is playing.
 
         Args:
-            step (float): Size of physics step
+            step: Size of physics step.
         """
 
     def on_stage_event(self, event: object) -> None:
         """Callback for Stage Events.
 
         Args:
-            event (omni.usd.StageEventType): Event Type
+            event: Event type.
         """
         event_name = event.event_name
         usd_context = omni.usd.get_context()
@@ -192,7 +192,7 @@ class UIBuilder:
         since the Articulation they had selected may no longer be present on the stage.
 
         Args:
-            selection (str): The item that is currently selected in the drop-down menu.
+            selection: The item that is currently selected in the drop-down menu.
         """
         # If the timeline is stopped, the Articulation won't be usable.
         if selection is None or self._timeline.is_stopped():
@@ -246,8 +246,8 @@ class UIBuilder:
         these guarantees are met.
 
         Args:
-            joint_index (int): Index of robot joint that was modified
-            position_target (float): New position target for robot joint
+            joint_index: Index of robot joint that was modified.
+            position_target: New position target for robot joint.
         """
         robot_action = ArticulationAction(
             joint_positions=np.array([position_target]),

@@ -35,7 +35,11 @@ class ReachState(DfState):
         self.target_p = target_p
 
     def __str__(self) -> str:
-        """Return a string representation including the target position."""
+        """Return a string representation including the target position.
+
+        Returns:
+            A string representation of this state with the target position.
+        """
         return f"{super().__str__()}({self.target_p})"
 
     def enter(self) -> None:
@@ -43,14 +47,25 @@ class ReachState(DfState):
         self.context.robot.arm.send_end_effector(target_position=self.target_p)
 
     def step(self) -> Any:
-        """Continue until the end-effector reaches the target."""
+        """Continue until the end-effector reaches the target.
+
+        Returns:
+            Self to keep moving, or None when the target is reached.
+        """
         if np.linalg.norm(self.target_p - self.context.robot.arm.get_fk_p()) < 0.01:
             return None
         return self
 
 
 def make_decider_network(robot: Any) -> Any:
-    """Create the simple state machine decider network for the given robot."""
+    """Create the simple state machine decider network for the given robot.
+
+    Args:
+        robot: The robot API instance.
+
+    Returns:
+        A configured DfNetwork for the simple state machine behavior.
+    """
     p1 = np.array([0.2, -0.2, 0.01])
     p2 = np.array([0.6, 0.3, 0.6])
     root = DfStateMachineDecider(DfStateSequence([ReachState(p1), ReachState(p2)], loop=True))

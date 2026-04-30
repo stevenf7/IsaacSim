@@ -28,7 +28,7 @@ torch = import_module("torch")
 
 @torch.jit.script
 def normalize(x, eps: float = 1e-9):  # noqa: ANN001, ANN201
-    """Normalize a tensor along the last dimension."""
+    """Normalize a tensor along the last dimension."""  # noqa: DOC101, DOC103, DOC106, DOC107, DOC201
     return x / x.norm(p=2, dim=-1).clamp(min=eps, max=None).unsqueeze(-1)
 
 
@@ -74,7 +74,7 @@ def unscale_transform(x: torch.Tensor, lower: torch.Tensor, upper: torch.Tensor)
 
 @torch.jit.script
 def copysign(a, b):  # noqa: ANN001, ANN201
-    """Return a tensor with magnitude of a and sign of b."""
+    """Return a tensor with magnitude of a and sign of b."""  # noqa: DOC101, DOC103, DOC106, DOC107, DOC201
     # type: (float, Tensor) -> Tensor
     a = torch.tensor(a, device=b.device, dtype=torch.float).repeat(b.shape[0])
     return torch.abs(a) * torch.sign(b)
@@ -82,34 +82,61 @@ def copysign(a, b):  # noqa: ANN001, ANN201
 
 @torch.jit.script
 def torch_rand_float(lower, upper, shape, device):  # noqa: ANN001, ANN201
-    """Generate random floats uniformly distributed in [lower, upper]."""
+    """Generate random floats uniformly distributed in [lower, upper]."""  # noqa: DOC101, DOC103, DOC106, DOC107, DOC201
     # type: (float, float, Tuple[int, int], str) -> Tensor
     return (upper - lower) * torch.rand(*shape, device=device) + lower
 
 
 @torch.jit.script
 def torch_random_dir_2(shape, device):  # noqa: ANN001, ANN201
-    """Generate random 2D unit direction vectors."""
+    """Generate random 2D unit direction vectors."""  # noqa: DOC101, DOC103, DOC106, DOC107, DOC201
     # type: (Tuple[int, int], str) -> Tensor
     angle = torch_rand_float(-np.pi, np.pi, shape, device).squeeze(-1)
     return torch.stack([torch.cos(angle), torch.sin(angle)], dim=-1)
 
 
 @torch.jit.script
-def tensor_clamp(t, min_t, max_t):  # noqa: ANN001, ANN201
-    """Clamp tensor values element-wise between min and max tensors."""
+def tensor_clamp(t: torch.Tensor, min_t: torch.Tensor, max_t: torch.Tensor) -> torch.Tensor:
+    """Clamp tensor values element-wise between min and max tensors.
+
+    Args:
+        t: Input tensor to clamp.
+        min_t: Tensor of minimum values.
+        max_t: Tensor of maximum values.
+
+    Returns:
+        Tensor with values clamped between min_t and max_t.
+    """
     return torch.max(torch.min(t, max_t), min_t)
 
 
 @torch.jit.script
-def scale(x, lower, upper):  # noqa: ANN001, ANN201
-    """Scale a tensor from [-1, 1] to [lower, upper] range."""
+def scale(x: torch.Tensor, lower: torch.Tensor, upper: torch.Tensor) -> torch.Tensor:
+    """Scale a tensor from [-1, 1] to [lower, upper] range.
+
+    Args:
+        x: Input tensor in [-1, 1] range.
+        lower: Lower bound of the target range.
+        upper: Upper bound of the target range.
+
+    Returns:
+        Tensor scaled to [lower, upper] range.
+    """
     return 0.5 * (x + 1.0) * (upper - lower) + lower
 
 
 @torch.jit.script
-def unscale(x, lower, upper):  # noqa: ANN001, ANN201
-    """Scale a tensor from [lower, upper] range to [-1, 1]."""
+def unscale(x: torch.Tensor, lower: torch.Tensor, upper: torch.Tensor) -> torch.Tensor:
+    """Scale a tensor from [lower, upper] range to [-1, 1].
+
+    Args:
+        x: Input tensor in [lower, upper] range.
+        lower: Lower bound of the source range.
+        upper: Upper bound of the source range.
+
+    Returns:
+        Tensor scaled to [-1, 1] range.
+    """
     return (2.0 * x - upper - lower) / (upper - lower)
 
 

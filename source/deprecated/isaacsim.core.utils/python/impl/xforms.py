@@ -95,6 +95,9 @@ def _get_world_pose_transform_w_scale(prim_path: str, fabric: bool = False) -> u
 
     Raises:
         Exception: If the prim path is not valid.
+
+    Returns:
+        World transformation matrix including scale for the prim.
     """
     # This will return a transformation matrix with translation as the last row and scale included
     if not is_prim_path_valid(prim_path, fabric=False):

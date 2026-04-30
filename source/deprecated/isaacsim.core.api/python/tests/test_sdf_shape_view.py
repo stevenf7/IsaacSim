@@ -81,19 +81,19 @@ default_sim_params = {
 class TestRigidPrimView(CoreTestCase):
     """Test rigid prim view."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
         await super().setUp()
         World.clear_instance()
         self._sim_params = default_sim_params
-        self._test_cfg = dict()
+        self._test_cfg = {}
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
         carb.settings.get_settings().set_bool("/physics/suppressReadback", False)
         await super().tearDown()
 
-    async def test_sdf_shape_view_gpu_pipeline(self):
+    async def test_sdf_shape_view_gpu_pipeline(self) -> None:
         """Test sdf shape view gpu pipeline."""
         test_configs = {"use_gpu": True, "use_gpu_pipeline": True, "device": "gpu"}
         for backend in ["torch", "warp"]:
@@ -121,7 +121,7 @@ class TestRigidPrimView(CoreTestCase):
 
             await self._runner()
 
-    async def _setup_sdf_scene(self, num_query_points=10, prepare_sdf_schemas=True):
+    async def _setup_sdf_scene(self, num_query_points: int = 10, prepare_sdf_schemas: bool = True) -> None:
         World.clear_instance()
         await create_new_stage_async()
         self._my_world = World(sim_params=self._sim_params, backend=self._test_cfg["backend"], device="cuda")
@@ -144,7 +144,7 @@ class TestRigidPrimView(CoreTestCase):
         )
         self._my_world.scene.add(self._cubes_view)
 
-    async def _runner(self):
+    async def _runner(self) -> None:
         await self._setup_sdf_scene()
         for indexed in [False, True]:
             self._test_cfg["indexed"] = indexed
@@ -154,7 +154,7 @@ class TestRigidPrimView(CoreTestCase):
 
         self._my_world.clear_instance()
 
-    async def signed_distance_test(self):
+    async def signed_distance_test(self) -> None:
         """Signed distance test."""
         await self._my_world.reset_async()
         indices = [1, 2] if self._test_cfg["indexed"] else [0, 1, 2]

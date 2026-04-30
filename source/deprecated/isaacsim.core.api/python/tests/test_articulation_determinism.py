@@ -32,8 +32,12 @@ class TestArticulationDeterminism(CoreTestCase):
     """Test articulation determinism."""
 
     # Before running each test
-    async def setUp(self):
-        """Set up test environment."""
+    async def setUp(self) -> None:
+        """Set up test environment.
+
+        Returns:
+            None.
+        """
         await super().setUp()
         World.clear_instance()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -43,11 +47,11 @@ class TestArticulationDeterminism(CoreTestCase):
             carb.log_error("Could not find Isaac Sim assets folder")
             return
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
         await super().tearDown()
 
-    async def test_inconsistent_result(self):
+    async def test_inconsistent_result(self) -> None:
         """Test inconsistent result."""
         frames_to_converge = np.empty(5)
         for i in range(5):
@@ -65,7 +69,12 @@ class TestArticulationDeterminism(CoreTestCase):
         print(f"frames_to_converge[0] = {frames_to_converge[0]}")
         self.assertEqual(frames_to_converge[0], 27, "Took a different number of frames to converge!")
 
-    async def _test_franka_slow_convergence(self):
+    async def _test_franka_slow_convergence(self) -> int:
+        """Run franka slow convergence test and return frame count.
+
+        Returns:
+            Number of frames to converge to target joint positions.
+        """
         World.clear_instance()
         (result, error) = await open_stage_async(
             self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"

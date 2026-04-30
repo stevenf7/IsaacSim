@@ -17,7 +17,7 @@
 
 
 import copy
-from typing import Optional, Union
+from typing import Any, Optional
 
 import isaacsim.core.api
 import numpy as np
@@ -35,22 +35,22 @@ from .context import trigger_randomization
 torch = import_module("torch")
 
 _simulation_context = None
-_rigid_prim_views = dict()
-_articulation_views = dict()
+_rigid_prim_views = {}
+_articulation_views = {}
 
-_simulation_context_initial_values = dict()
-_rigid_prim_views_initial_values = dict()
-_articulation_views_initial_values = dict()
-_current_tendon_properties = dict()
+_simulation_context_initial_values = {}
+_rigid_prim_views_initial_values = {}
+_articulation_views_initial_values = {}
+_current_tendon_properties = {}
 
-_simulation_context_reset_values = dict()
-_rigid_prim_views_reset_values = dict()
-_articulation_views_reset_values = dict()
+_simulation_context_reset_values = {}
+_rigid_prim_views_reset_values = {}
+_articulation_views_reset_values = {}
 
 
 def register_simulation_context(
-    simulation_context: Union[isaacsim.core.api.SimulationContext, isaacsim.core.api.World],
-):
+    simulation_context: isaacsim.core.api.SimulationContext | isaacsim.core.api.World,
+) -> None:
     """Register a simulation context for domain randomization.
 
     Stores the simulation context and captures its initial property values for use in randomization.
@@ -67,7 +67,7 @@ def register_simulation_context(
     _simulation_context_reset_values["gravity"] = copy.deepcopy(gravity_vector)
 
 
-def register_rigid_prim_view(rigid_prim_view: RigidPrim):
+def register_rigid_prim_view(rigid_prim_view: RigidPrim) -> None:
     """Register a rigid prim view for domain randomization.
 
     Stores the rigid prim view and captures its initial property values for use in randomization.
@@ -83,7 +83,7 @@ def register_rigid_prim_view(rigid_prim_view: RigidPrim):
 
     name = rigid_prim_view.name
     _rigid_prim_views[name] = rigid_prim_view
-    initial_values = dict()
+    initial_values = {}
     pos, quats = rigid_prim_view.get_world_poses()
     initial_values["position"] = pos
     if rigid_prim_view._backend == "torch":
@@ -113,7 +113,7 @@ def register_rigid_prim_view(rigid_prim_view: RigidPrim):
     _rigid_prim_views_reset_values[name] = copy.deepcopy(initial_values)
 
 
-def register_articulation_view(articulation_view: Articulation):
+def register_articulation_view(articulation_view: Articulation) -> None:
     """Register an articulation view for domain randomization.
 
     Stores the articulation view and captures its initial property values for use in randomization.
@@ -129,7 +129,7 @@ def register_articulation_view(articulation_view: Articulation):
 
     name = articulation_view.name
     _articulation_views[name] = articulation_view
-    initial_values = dict()
+    initial_values = {}
     initial_values["stiffness"] = clone_tensor(articulation_view._physics_view.get_dof_stiffnesses(), device="cpu")
     initial_values["damping"] = clone_tensor(articulation_view._physics_view.get_dof_dampings(), device="cpu")
     initial_values["joint_friction"] = clone_tensor(
@@ -202,12 +202,14 @@ def register_articulation_view(articulation_view: Articulation):
     _articulation_views_reset_values[name] = copy.deepcopy(initial_values)
 
 
-def step_randomization(reset_inds: Optional[Union[list, np.ndarray, torch.Tensor]] = list()):
+def step_randomization(reset_inds: Optional[list | np.ndarray | torch.Tensor] = None) -> None:
     """Trigger the randomization step for the specified environment indices.
 
     Args:
         reset_inds: The indices corresponding to the prims to be reset in the views.
     """
+    if reset_inds is None:
+        reset_inds = []
     if torch.is_tensor(reset_inds):
         trigger_randomization(reset_inds.cpu().numpy())
     else:
@@ -215,7 +217,9 @@ def step_randomization(reset_inds: Optional[Union[list, np.ndarray, torch.Tensor
 
 
 @ReplicatorWrapper
-def _write_physics_view_node(view, attribute, values, operation, node_type, num_buckets=None) -> ReplicatorItem:
+def _write_physics_view_node(
+    view: Any, attribute: Any, values: Any, operation: Any, node_type: Any, num_buckets: Any = None
+) -> ReplicatorItem:
     """Create and configures a physics view node for domain randomization.
 
     Creates a node of the specified type and connects it to the replicator graph to randomize
@@ -283,7 +287,7 @@ def randomize_rigid_prim_view(
     material_properties: ReplicatorItem = None,
     contact_offset: ReplicatorItem = None,
     rest_offset: ReplicatorItem = None,
-):
+) -> None:
     """Randomizes various properties of a registered rigid prim view.
 
     Args:
@@ -312,7 +316,6 @@ def randomize_rigid_prim_view(
     Raises:
         ValueError: If called outside the correct context managers or if the view is not registered.
     """
-
     # check whether randomization occurs within the correct context
     upstream_node_name = ReplicatorItem._get_context().get_node_type().get_node_type()
     if upstream_node_name != "isaacsim.replicator.domain_randomization.OgnIntervalFiltering":
@@ -383,7 +386,7 @@ def randomize_articulation_view(
     tendon_upper_limits: ReplicatorItem = None,
     tendon_rest_lengths: ReplicatorItem = None,
     tendon_offsets: ReplicatorItem = None,
-):
+) -> None:
     """Randomizes various properties of a registered articulation view.
 
     Args:
@@ -454,7 +457,7 @@ def randomize_articulation_view(
     if _articulation_views.get(view_name) is None:
         raise ValueError(f"Expected a registered articulation view, but instead received {view_name}")
 
-    tendon_nodes = list()
+    tendon_nodes = []
 
     if stiffness is not None:
         _write_physics_view_node(view_name, "stiffness", stiffness, operation, node_type)
@@ -538,7 +541,7 @@ def randomize_articulation_view(
 
 
 @ReplicatorWrapper
-def randomize_simulation_context(operation: str = "direct", gravity: ReplicatorItem = None):
+def randomize_simulation_context(operation: str = "direct", gravity: ReplicatorItem = None) -> None:
     """Randomizes properties of the simulation context.
 
     Args:

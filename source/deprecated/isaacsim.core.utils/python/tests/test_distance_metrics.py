@@ -15,6 +15,8 @@
 
 """Tests for distance metric functions."""
 
+from typing import Any
+
 import numpy as np
 
 # NOTE:
@@ -37,16 +39,22 @@ from scipy.spatial.transform import Rotation as R
 class TestDistanceMetrics(omni.kit.test.AsyncTestCase):
     """Test cases for DistanceMetrics."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
-        pass
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
-        pass
 
-    async def is_distance_metric(self, t1, t2, t3, dist_fun, *args):
-        """Verify that a function satisfies distance metric properties."""
+    async def is_distance_metric(self, t1: Any, t2: Any, t3: Any, dist_fun: Any, *args: Any) -> None:
+        """Verify that a function satisfies distance metric properties.
+
+        Args:
+            t1: First test value.
+            t2: Second test value.
+            t3: Third test value.
+            dist_fun: Distance function to test.
+            *args: Additional arguments passed to dist_fun.
+        """
         # satisfies identity
         self.assertAlmostEqual(dist_fun(t1, t1, *args), 0, delta=1e-07)
         self.assertAlmostEqual(dist_fun(t2, t2, *args), 0, delta=1e-07)
@@ -62,14 +70,12 @@ class TestDistanceMetrics(omni.kit.test.AsyncTestCase):
         self.assertGreaterEqual(dist_fun(t1, t3, *args) + dist_fun(t2, t3, *args), dist_fun(t1, t2, *args))
         self.assertGreaterEqual(dist_fun(t1, t2, *args) + dist_fun(t1, t3, *args), dist_fun(t2, t3, *args))
 
-        pass
-
     """
     There are distance metrics implemented for 3d translation and rotation independently.  The inputs
     to these functions can be 4x4 transformation matrices, or they can be purely translations/rotations.
     """
 
-    async def test_weighted_translational_distance(self):
+    async def test_weighted_translational_distance(self) -> None:
         """Test weighted translational distance."""
         # Check that the conditions for being a distance metric are met for 200 random translations/weights.
         for i in range(200):
@@ -121,9 +127,7 @@ class TestDistanceMetrics(omni.kit.test.AsyncTestCase):
         weight_matrix = rot.T @ weight_matrix @ rot
         self.assertAlmostEqual(weighted_translational_distance(translate1, translate2, weight_matrix), np.sqrt(3))
 
-        pass
-
-    async def test_rotational_distance_angle(self):
+    async def test_rotational_distance_angle(self) -> None:
         """Test rotational distance angle."""
         rad2deg = 360 / np.pi / 2
         transform1_gf = Gf.Matrix4d().SetRotate(Gf.Rotation(Gf.Vec3d(0.0, 0.0, 1.0), np.pi / 4 * rad2deg))
@@ -147,9 +151,7 @@ class TestDistanceMetrics(omni.kit.test.AsyncTestCase):
 
             await self.is_distance_metric(r1, r2, r3, rotational_distance_angle)
 
-        pass
-
-    async def test_rotational_distance_identity_matrix_deviation(self):
+    async def test_rotational_distance_identity_matrix_deviation(self) -> None:
         """Test rotational distance identity matrix deviation."""
         # Check that the conditions for being a distance metric are met for 200 random rotations.
         for i in range(200):
@@ -161,9 +163,7 @@ class TestDistanceMetrics(omni.kit.test.AsyncTestCase):
 
             await self.is_distance_metric(r1, r2, r3, rotational_distance_identity_matrix_deviation)
 
-        pass
-
-    async def test_rotational_distance_single_axis(self):
+    async def test_rotational_distance_single_axis(self) -> None:
         """Test rotational distance single axis."""
         r1 = R.from_rotvec([0, 0, np.pi / 2]).as_matrix()
         r2 = R.from_rotvec([0.1, 0, 0]).as_matrix()
@@ -182,5 +182,3 @@ class TestDistanceMetrics(omni.kit.test.AsyncTestCase):
 
             axis = np.random.uniform(size=3)
             await self.is_distance_metric(r1, r2, r3, rotational_distance_single_axis, axis)
-
-        pass

@@ -35,7 +35,7 @@ class TestSingleManipulators(omni.kit.test.AsyncTestCase):
     and basic operations of manipulator systems in Isaac Sim.
     """
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up the test environment by creating a new world, stage, and timeline interface."""
         World.clear_instance()
         await create_new_stage_async()
@@ -45,7 +45,7 @@ class TestSingleManipulators(omni.kit.test.AsyncTestCase):
         self._my_world.scene.add_default_ground_plane()
         self._timeline = omni.timeline.get_timeline_interface()
 
-    async def test_single_manipulators(self):
+    async def test_single_manipulators(self) -> None:
         """Test SingleManipulator creation and initialization with a UR10 robot and SurfaceGripper."""
         asset_path = self._assets_root_path + "/Isaac/Robots/UniversalRobots/ur10/ur10.usd"
         robot = add_reference_to_stage(usd_path=asset_path, prim_path="/World/UR10")
@@ -64,9 +64,8 @@ class TestSingleManipulators(omni.kit.test.AsyncTestCase):
         ur10.gripper.set_default_state(opened=True)
         await self._my_world.reset_async()
         self.assertFalse(ur10.gripper is None)
-        pass
 
-    async def test_parallel_gripper(self):
+    async def test_parallel_gripper(self) -> None:
         """Test ParallelGripper functionality with a UR10e robot and Robotiq gripper."""
         asset_path = self._assets_root_path + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd"
         robot = add_reference_to_stage(usd_path=asset_path, prim_path="/World/ur10e")
@@ -106,7 +105,7 @@ class TestSingleManipulators(omni.kit.test.AsyncTestCase):
 
         self.assertAlmostEqual(ur10.gripper.get_joint_positions()[0], 45 / 180 * np.pi, delta=1e-2)
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up the test environment by stopping the timeline."""
         await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()

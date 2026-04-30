@@ -19,6 +19,8 @@
 # NOTE:
 #   omni.kit.test - std python's unittest module with additional wrapping to add support for async/await tests
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
+from typing import Any
+
 from isaacsim.core.api import World
 from isaacsim.core.deprecation_manager import import_module
 
@@ -43,8 +45,12 @@ torch = import_module("torch")
 class TestSingleArticulation(CoreTestCase):
     """Test single articulation."""
 
-    async def setUp(self, device="cpu"):
-        """Set up test environment."""
+    async def setUp(self, device: Any = "cpu") -> None:
+        """Set up test environment.
+
+        Args:
+            device: The device to use for computation.
+        """
         await super().setUp()
         World.clear_instance()
         await create_new_stage_async()
@@ -52,12 +58,16 @@ class TestSingleArticulation(CoreTestCase):
         await self._my_world.initialize_simulation_context_async()
         self._my_world.scene.add_default_ground_plane()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
         await super().tearDown()
 
-    async def test_get_applied_action(self, add_view_to_scene=True):
-        """Test get applied action."""
+    async def test_get_applied_action(self, add_view_to_scene: Any = True) -> None:
+        """Test get applied action.
+
+        Args:
+            add_view_to_scene: Whether to add view to scene.
+        """
         assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
@@ -67,8 +77,12 @@ class TestSingleArticulation(CoreTestCase):
         await self._my_world.stop_async()
         self.assertTrue(franka.get_applied_action() is None)
 
-    async def test_apply_partial_articulation(self, add_view_to_scene=True):
-        """Test apply partial articulation."""
+    async def test_apply_partial_articulation(self, add_view_to_scene: Any = True) -> None:
+        """Test apply partial articulation.
+
+        Args:
+            add_view_to_scene: Whether to add view to scene.
+        """
         World.clear_instance()
         await create_new_stage_async()
         self._my_world = World(stage_units_in_meters=1.0, backend="numpy", device="cpu")
@@ -87,8 +101,12 @@ class TestSingleArticulation(CoreTestCase):
         await update_stage_async()
         await self._my_world.stop_async()
 
-    async def test_dof_efforts(self, add_view_to_scene=True):
-        """Test dof efforts."""
+    async def test_dof_efforts(self, add_view_to_scene: Any = True) -> None:
+        """Test dof efforts.
+
+        Args:
+            add_view_to_scene: Whether to add view to scene.
+        """
         assets_root_path = await get_assets_root_path_async()
         self._my_world.set_simulation_dt(0.001)
         asset_path = assets_root_path + "/Isaac/Robots/IsaacSim/Cartpole/cartpole.usd"
@@ -114,8 +132,12 @@ class TestSingleArticulation(CoreTestCase):
             f"current_efforts: {current_efforts}, efforts: {efforts}",
         )
 
-    async def test_joint_forces(self, add_view_to_scene=True):
-        """Test joint forces."""
+    async def test_joint_forces(self, add_view_to_scene: Any = True) -> None:
+        """Test joint forces.
+
+        Args:
+            add_view_to_scene: Whether to add view to scene.
+        """
         assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         add_reference_to_stage(usd_path=asset_path, prim_path="/World/Franka")
@@ -129,7 +151,7 @@ class TestSingleArticulation(CoreTestCase):
         await self._my_world.stop_async()
         self.assertEqual(forces.shape, torch.Size([franka._articulation_view.num_bodies, 6]))
 
-    async def test_articulation_joint_signs(self):
+    async def test_articulation_joint_signs(self) -> None:
         """Test articulation joint signs."""
         assets_root_path = await get_assets_root_path_async()
         asset_path = assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/articulation_3_joints.usd"

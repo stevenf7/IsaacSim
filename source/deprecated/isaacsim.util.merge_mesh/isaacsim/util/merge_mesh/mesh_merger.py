@@ -32,12 +32,6 @@ class MeshMerger(object):
     """
 
     def __init__(self, stage: object) -> None:
-        """Initialize the mesh merger.
-
-        Args:
-            stage: The USD stage containing the meshes to merge.
-
-        """
         self._clear_parent_xform = False
         self._combine_materials = False
         self._deactivate_source = False

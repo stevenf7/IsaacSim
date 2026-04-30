@@ -17,4 +17,4 @@
 """Module for robot manipulator functionality."""
 
 
-from isaacsim.robot.manipulators.manipulators.single_manipulator import SingleManipulator
+from isaacsim.robot.manipulators.manipulators.single_manipulator import SingleManipulator as SingleManipulator

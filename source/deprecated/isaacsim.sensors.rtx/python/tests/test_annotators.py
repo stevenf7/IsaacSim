@@ -44,7 +44,7 @@ NEAR_EDGE_THRESHOLD = 0.5  # Threshold for near edge returns in degrees
 class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
     """Test the Generic Model Output annotator."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Setup test environment with a cube and lidar."""
         await create_new_stage_async()
         await update_stage_async()
@@ -67,7 +67,7 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
         self._annotator = rep.AnnotatorRegistry.get_annotator("GenericModelOutput")
         self._annotator_data = None
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up test environment and stop timeline."""
         self._timeline.stop()
         if self._annotator.is_attached:
@@ -82,7 +82,7 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
             await asyncio.sleep(1.0)
         await update_stage_async()
 
-    async def _test_point_cloud(self):
+    async def _test_point_cloud(self) -> None:
         """Tests sensor returns stored in GMO buffer against expected range."""
         # NOTE: if an element of unit_vecs is 0, indicating the return vector is parallel to the plane, the result of np.divide will be inf
         # Suppress the error
@@ -170,12 +170,11 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
         # Finally, convert the cube index to the prim path of the cube.
         self.cube_prim_paths = [f"/World/cube_{int(i)}" for i in cube_idx]
 
-    async def _test_intensity(self):
+    async def _test_intensity(self) -> None:
         """Tests that intensity values are non-negative."""
         self.assertTrue(np.all(self.intensity >= 0), "Intensities are not non-negative.")
-        pass
 
-    async def _test_timestamp(self):
+    async def _test_timestamp(self) -> None:
         """Tests that timestamps are monotonically increasing and within expected range."""
         timestamp_diffs = np.diff(self.timestamp)
         self.assertTrue(np.all(timestamp_diffs >= 0), "Timestamps are not monotonically increasing.")
@@ -185,17 +184,17 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
             f"Max difference in timestamps {max_timestamp_diff}ns > {MAX_TIMESTAMP_DIFF}ns, the maximum difference in fireTimeNs in the Example_Rotary configuration.",
         )
 
-    async def _test_emitter_id(self):
+    async def _test_emitter_id(self) -> None:
         """Tests that emitter IDs are non-negative and within expected range."""
         self.assertTrue(np.all(self.emitterId >= 0), "Emitter IDs are not non-negative.")
         self.assertTrue(np.all(self.emitterId < 1024), "Emitter IDs are expected to be less than 1024.")
 
-    async def _test_channel_id(self):
+    async def _test_channel_id(self) -> None:
         """Tests that channel IDs are non-negative and within expected range."""
         self.assertTrue(np.all(self.channelId >= 0), "Channel IDs are not non-negative.")
         self.assertTrue(np.all(self.channelId < 1024), "Channel IDs are expected to be less than 1024.")
 
-    async def _test_material_id(self):
+    async def _test_material_id(self) -> None:
         """Tests that material IDs match expected values for cube prim paths."""
         self.assertEqual(
             len(self.materialId),
@@ -221,16 +220,14 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
             f"{failure_count} of {checked_count} returns ({failure_pct:.2f}%) failed.",
         )
 
-    async def _test_tick_id(self):
+    async def _test_tick_id(self) -> None:
         """Tests tick ID values."""
-        pass
 
-    async def _test_hit_normal(self):
+    async def _test_hit_normal(self) -> None:
         """Tests hit normal values from GMO data."""
         # TODO: Implement hitNormal validation
-        pass
 
-    async def _test_velocity(self):
+    async def _test_velocity(self) -> None:
         """Validates that velocity values are near zero for stationary objects.
 
         Prints the maximum absolute velocity and asserts all velocities are close to zero with a tolerance of 5e-3.
@@ -238,7 +235,7 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
         print(np.max(np.abs(self.velocity)))
         self.assertTrue(np.allclose(self.velocity, 0, atol=5e-3), "Velocities are expected to be 0.")
 
-    async def _test_object_id(self):
+    async def _test_object_id(self) -> None:
         """Validates object ID mapping and consistency with cube prim paths.
 
         Decodes the stable ID mapping, validates object IDs exist in the mapping, and checks that object IDs
@@ -277,17 +274,15 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
             f"{failure_count} of {checked_count} returns ({failure_pct:.2f}%) failed.",
         )
 
-    async def _test_echo_id(self):
+    async def _test_echo_id(self) -> None:
         """Validates that all echo IDs are zero as expected."""
         self.assertTrue(np.all(self.echoId == 0), "Echo IDs are expected to be 0.")
-        pass
 
-    async def _test_tick_state(self):
+    async def _test_tick_state(self) -> None:
         """Validates that all tick states are zero as expected."""
         self.assertTrue(np.all(self.tickState == 0), "Tick states are expected to be 0.")
-        pass
 
-    async def _test_annotator_outputs(self, config: str = DEFAULT_CONFIG, variant: str = DEFAULT_VARIANT):
+    async def _test_annotator_outputs(self, config: str = DEFAULT_CONFIG, variant: str = DEFAULT_VARIANT) -> None:
         """Creates RTX Lidar sensor and validates all Generic Model Output annotator data.
 
         Creates an OmniLidar prim with specified configuration, attaches GenericModelOutput and StableIdMap
@@ -399,7 +394,7 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
         await self._test_echo_id()
         await self._test_tick_state()
 
-    async def _soak_annotator(self, config: str = DEFAULT_CONFIG, variant: str = DEFAULT_VARIANT):
+    async def _soak_annotator(self, config: str = DEFAULT_CONFIG, variant: str = DEFAULT_VARIANT) -> None:
         """Performs sustained testing of the Generic Model Output annotator over multiple frames.
 
         Creates an RTX Lidar sensor and runs extended validation including frame data consistency,
@@ -503,15 +498,15 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
         expected_valid_frames = NUM_FRAMES - WARMUP_FRAMES
         self.assertGreaterEqual(data_frame_count, expected_valid_frames)
 
-    async def test_3d_lidar(self):
+    async def test_3d_lidar(self) -> None:
         """Tests Generic Model Output annotator with Example_Rotary 3D LiDAR configuration."""
         await self._test_annotator_outputs(config="Example_Rotary", variant=None)
 
-    async def test_3d_lidar_soak(self):
+    async def test_3d_lidar_soak(self) -> None:
         """Performs sustained testing of Generic Model Output annotator with Example_Rotary 3D LiDAR."""
         await self._soak_annotator(config="Example_Rotary", variant=None)
 
-    async def _test_timestamp_alignment(self, sensor_type: str):
+    async def _test_timestamp_alignment(self, sensor_type: str) -> None:
         """Test that GMO timestampNs aligns with timeline time and pausing prevents new data.
 
         Args:
@@ -715,20 +710,19 @@ class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
             prev_gmo_timestamp_ns = gmo_timestamp_ns
             resumed_frames_collected += 1
 
-    async def test_lidar_timestamp_alignment(self):
+    async def test_lidar_timestamp_alignment(self) -> None:
         """Test that RTX Lidar GMO timestamps align with timeline and pause/resume behavior."""
         await self._test_timestamp_alignment("lidar")
 
-    async def test_radar_timestamp_alignment(self):
+    async def test_radar_timestamp_alignment(self) -> None:
         """Test that RTX Radar GMO timestamps align with timeline and pause/resume behavior."""
-
         await self._test_timestamp_alignment("radar")
 
 
 class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
     """Test the Isaac Create RTX Lidar Scan Buffer annotator."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Setup test environment with a cube and lidar."""
         await create_new_stage_async()
         await update_stage_async()
@@ -753,7 +747,7 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
         self._annotator_generic_model_output_data = None
         self._default_use_fixed_time_stepping = carb.settings.get_settings().get("/app/player/useFixedTimeStepping")
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up test environment and restore default settings."""
         self._timeline.stop()
         if self._annotator.is_attached:
@@ -771,7 +765,7 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
 
     async def _test_annotator_outputs(
         self, config: str = DEFAULT_CONFIG, variant: str = DEFAULT_VARIANT, enable_per_frame_output: bool = False
-    ):
+    ) -> None:
         """Test the IsaacCreateRTXLidarScanBuffer annotator output data.
 
         Args:
@@ -930,7 +924,9 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
 
         self._compare_annotator_to_gmo(gmo_buffer, expected_keys, compare_data_values=enable_per_frame_output)
 
-    def _compare_annotator_to_gmo(self, gmo_buffer: dict, expected_keys: dict, compare_data_values: bool = True):
+    def _compare_annotator_to_gmo(
+        self, gmo_buffer: dict, expected_keys: dict, compare_data_values: bool = True
+    ) -> None:
         """Compare annotator output data against GMO buffer data.
 
         Args:
@@ -1007,7 +1003,7 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
         variant: str = DEFAULT_VARIANT,
         enable_full_scan: bool = False,
         enable_fixed_time_stepping: bool = False,
-    ):
+    ) -> None:
         """Test the annotator over multiple frames to verify stability and correct data production patterns.
 
         Args:
@@ -1118,23 +1114,23 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
         )
         self.assertGreaterEqual(data_frame_count, expected_data_frame_count)
 
-    async def test_3d_lidar(self):
+    async def test_3d_lidar(self) -> None:
         """Test the annotator with 3D lidar in per-frame output mode."""
         await self._test_annotator_outputs(config="Example_Rotary", variant=None, enable_per_frame_output=True)
 
-    async def test_3d_lidar_full_scan(self):
+    async def test_3d_lidar_full_scan(self) -> None:
         """Test the annotator with 3D lidar in full scan mode."""
         await self._test_annotator_outputs(config="Example_Rotary", variant=None, enable_per_frame_output=False)
 
-    async def test_3d_lidar_soak(self):
+    async def test_3d_lidar_soak(self) -> None:
         """Test the annotator stability with 3D lidar in per-frame output mode over multiple frames."""
         await self._soak_annotator(config="Example_Rotary", variant=None, enable_full_scan=False)
 
-    async def test_3d_lidar_soak_full_scan(self):
+    async def test_3d_lidar_soak_full_scan(self) -> None:
         """Test the annotator stability with 3D lidar in full scan mode over multiple frames."""
         await self._soak_annotator(config="Example_Rotary", variant=None, enable_full_scan=True)
 
-    async def test_3d_lidar_soak_full_scan_fixed_time_stepping(self):
+    async def test_3d_lidar_soak_full_scan_fixed_time_stepping(self) -> None:
         """Test the annotator stability with 3D lidar in full scan mode using fixed time stepping over multiple frames."""
         await self._soak_annotator(
             config="Example_Rotary", variant=None, enable_full_scan=True, enable_fixed_time_stepping=True
@@ -1144,7 +1140,7 @@ class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
 class TestIsaacComputeRTXLidarFlatScan(omni.kit.test.AsyncTestCase):
     """Test class for IsaacComputeRTXLidarFlatScan annotator."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Setup test environment with a cube and lidar."""
         await create_new_stage_async()
         await update_stage_async()
@@ -1171,7 +1167,7 @@ class TestIsaacComputeRTXLidarFlatScan(omni.kit.test.AsyncTestCase):
         )
         self._lidar_flat_scan_annotator = rep.AnnotatorRegistry.get_annotator("IsaacComputeRTXLidarFlatScan")
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up test environment by stopping timeline and detaching annotators."""
         self._timeline.stop()
         if self._lidar_scan_buffer_annotator.is_attached:
@@ -1186,7 +1182,7 @@ class TestIsaacComputeRTXLidarFlatScan(omni.kit.test.AsyncTestCase):
 
     async def _test_annotator_outputs(
         self, config: str = DEFAULT_CONFIG, variant: str = DEFAULT_VARIANT
-    ):  # Create sensor prim
+    ) -> None:  # Create sensor prim
         """Test the IsaacComputeRTXLidarFlatScan annotator outputs against expected values.
 
         Creates RTX Lidar sensor, attaches scan buffer and flat scan annotators, then validates
@@ -1220,7 +1216,7 @@ class TestIsaacComputeRTXLidarFlatScan(omni.kit.test.AsyncTestCase):
         nearRangeM = self.sensor.GetAttribute("omni:sensor:Core:nearRangeM").Get()
         farRangeM = self.sensor.GetAttribute("omni:sensor:Core:farRangeM").Get()
         is_solid_state = self.sensor.GetAttribute("omni:sensor:Core:scanType").Get() == "SOLID_STATE"
-        self._is_2d_lidar = all([abs(i) < 1e-3 for i in list(elevationDeg)])
+        self._is_2d_lidar = all(abs(i) < 1e-3 for i in list(elevationDeg))
         carb.log_warn(f"is_2d_lidar: {self._is_2d_lidar}")
 
         # Create render product and attach to sensor
@@ -1328,11 +1324,11 @@ class TestIsaacComputeRTXLidarFlatScan(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(self.linearDepthData, expectedLinearDepthData))
         self.assertTrue(np.allclose(self.intensitiesData, expectedIntensitiesData))
 
-    async def test_3d_lidar(self):
+    async def test_3d_lidar(self) -> None:
         """Test 3D lidar using Example_Rotary configuration."""
         await self._test_annotator_outputs(config="Example_Rotary", variant=None)
 
-    async def test_2d_lidar(self):
+    async def test_2d_lidar(self) -> None:
         """Test 2D lidar using SICK_picoScan150 configuration with Profile_1 variant."""
         await self._test_annotator_outputs(config="SICK_picoScan150", variant="Profile_1")
 
@@ -1340,7 +1336,7 @@ class TestIsaacComputeRTXLidarFlatScan(omni.kit.test.AsyncTestCase):
 class TestIsaacCreateRTXRadarPointCloud(omni.kit.test.AsyncTestCase):
     """Test class for IsaacCreateRTXRadarPointCloud annotator."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Setup test environment with a cube and radar sensor.
 
         Creates a new stage, initializes octant dimensions for geometric testing,
@@ -1367,7 +1363,7 @@ class TestIsaacCreateRTXRadarPointCloud(omni.kit.test.AsyncTestCase):
         self._annotator_data = None
         self._hydra_texture = None
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up test environment.
 
         Stops the timeline, detaches the annotator, destroys the hydra texture,
@@ -1386,14 +1382,13 @@ class TestIsaacCreateRTXRadarPointCloud(omni.kit.test.AsyncTestCase):
             await asyncio.sleep(1.0)
         await update_stage_async()
 
-    async def test_rtx_radar(self):
+    async def test_rtx_radar(self) -> None:
         """Test RTX radar point cloud generation and data validation.
 
         Creates an RTX radar sensor, attaches the IsaacCreateRTXRadarPointCloud annotator,
         and validates that the generated point cloud data contains proper intensity values
         and zero radial velocity measurements for stationary objects.
         """
-
         kwargs = {
             "path": "radar",
             "parent": None,

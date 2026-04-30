@@ -32,7 +32,7 @@ class Extension(omni.ext.IExt):
     the property panel and context menus.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Called when the extension is starting up.
 
         Initializes the range sensor interfaces, creates the menu, and sets up hooks for property menu registration.
@@ -53,7 +53,7 @@ class Extension(omni.ext.IExt):
             hook_name="isaacsim.sensors.physx omni.kit.property.usd listener",
         )
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Called when the extension is shutting down.
 
         Cleans up resources by unregistering the property menu, shutting down the menu, and releasing sensor interfaces.

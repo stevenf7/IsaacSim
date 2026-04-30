@@ -26,12 +26,12 @@ class Extension(omni.ext.IExt):
     It handles the initialization and management of manipulator-related components and services.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Called when the extension is starting up.
 
         Args:
             ext_id: The unique identifier of the extension being started.
         """
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Called when the extension is shutting down."""

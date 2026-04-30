@@ -16,7 +16,7 @@
 """Provides command classes for creating and managing PhysX range sensor prims in Isaac Sim."""
 
 
-from typing import Optional
+from typing import Any, Optional
 
 import carb
 import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
@@ -35,7 +35,7 @@ def setup_base_prim(
     draw_lines: bool,
     min_range: float,
     max_range: float,
-):
+) -> None:
     """Set up base attributes for a range sensor prim.
 
     Args:
@@ -95,14 +95,14 @@ class RangeSensorCreatePrim(omni.kit.commands.Command):
         max_range: Optional[float] = 100.0,
         draw_points: Optional[bool] = False,
         draw_lines: Optional[bool] = False,
-    ):
+    ) -> None:
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
             if name != "self":
                 setattr(self, f"_{name}", value)
         self._prim_path = None
 
-    def do(self):
+    def do(self) -> Any:
         """Execute the command to create the range sensor prim.
 
         Returns:
@@ -138,7 +138,7 @@ class RangeSensorCreatePrim(omni.kit.commands.Command):
 
         return self._schema_obj
 
-    def undo(self):
+    def undo(self) -> Any:
         """Undo the command by removing the created prim.
 
         Returns:
@@ -212,7 +212,7 @@ class RangeSensorCreateLidar(omni.kit.commands.Command):
         high_lod: bool = False,
         yaw_offset: float = 0.0,
         enable_semantics: bool = False,
-    ):
+    ) -> None:
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
             if name != "self":
@@ -220,7 +220,7 @@ class RangeSensorCreateLidar(omni.kit.commands.Command):
         self._prim = None
         self._prim_path = None
 
-    def do(self):
+    def do(self) -> Any:
         """Execute the command to create the lidar sensor.
 
         Returns:
@@ -260,7 +260,7 @@ class RangeSensorCreateLidar(omni.kit.commands.Command):
             carb.log_error("Failed to create lidar sensor prim")
             return None
 
-    def undo(self):
+    def undo(self) -> Any:
         """Undo the command by removing the created prim.
 
         Returns:
@@ -314,7 +314,7 @@ class RangeSensorCreateGeneric(omni.kit.commands.Command):
         draw_points: bool = False,
         draw_lines: bool = False,
         sampling_rate: int = 60,
-    ):
+    ) -> None:
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
             if name != "self":
@@ -322,7 +322,7 @@ class RangeSensorCreateGeneric(omni.kit.commands.Command):
         self._prim = None
         self._prim_path = None
 
-    def do(self):
+    def do(self) -> Any:
         """Execute the command to create the generic range sensor.
 
         Returns:
@@ -355,7 +355,7 @@ class RangeSensorCreateGeneric(omni.kit.commands.Command):
             carb.log_error("Failed to create generic sensor prim")
             return None
 
-    def undo(self):
+    def undo(self) -> Any:
         """Undo the command by removing the created prim.
 
         Returns:
@@ -399,8 +399,8 @@ class IsaacSensorCreateLightBeamSensor(omni.kit.commands.Command):
         max_range: float = 100.0,
         draw_points: bool = False,
         draw_lines: bool = False,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         # condensed way to copy all input arguments into self with an underscore prefix
         for name, value in vars().items():
             if name != "self":
@@ -408,7 +408,7 @@ class IsaacSensorCreateLightBeamSensor(omni.kit.commands.Command):
         self._prim = None
         self._prim_path = None
 
-    def do(self):
+    def do(self) -> Any:
         """Execute the command to create the light beam sensor.
 
         Returns:
@@ -448,7 +448,7 @@ class IsaacSensorCreateLightBeamSensor(omni.kit.commands.Command):
             carb.log_error("Failed to create light beam sensor prim")
             return None
 
-    def undo(self):
+    def undo(self) -> Any:
         """Undo the command by removing the created prim.
 
         Returns:

@@ -13,12 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the ML archive pip package imports."""
+
 import omni.kit.test
 
 
 class TestPipArchive(omni.kit.test.AsyncTestCase):
-    # import all packages to make sure dependencies were not missed
-    async def test_import_all(self):
+    """Test case for verifying ML archive pip package imports."""
+
+    async def test_import_all(self) -> None:
+        """Verify that all ML archive pip dependencies can be imported successfully."""
         import filelock
         import fsspec
         import mpmath

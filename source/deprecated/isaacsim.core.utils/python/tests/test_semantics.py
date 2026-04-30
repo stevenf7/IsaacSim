@@ -19,6 +19,8 @@
 
 """Tests for semantic labeling utility functions."""
 
+from typing import Any
+
 import omni.kit.test
 import Semantics
 from isaacsim.core.utils.prims import get_prim_at_path
@@ -39,19 +41,21 @@ from isaacsim.core.utils.semantics import (
 class TestSemantics(omni.kit.test.AsyncTestCase):
     """Test cases for Semantics."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
-        pass
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         await omni.kit.app.get_app().next_update_async()
-        pass
 
-    def create_test_environment_new_labels(self):
-        """Create a test environment with semantic labels."""
+    def create_test_environment_new_labels(self) -> list:
+        """Create a test environment with semantic labels.
+
+        Returns:
+            List of created prim paths.
+        """
         # creates a test environment with 4 cubes meshes using the new LabelsAPI
         # assign labels "cube" for 2, "sphere" for 1, and leave the last one missing
         # Also add a nested prim with labels
@@ -70,8 +74,15 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
 
         return [path_0, path_1, path_2, path_3, path_4]
 
-    def _apply_old_semantics(self, prim, semantic_label, type_label="class", suffix=""):
-        """Helper to apply old SemanticsAPI directly for testing upgrade functionality."""
+    def _apply_old_semantics(self, prim: Any, semantic_label: Any, type_label: Any = "class", suffix: str = "") -> None:
+        """Apply old SemanticsAPI directly for testing upgrade functionality.
+
+        Args:
+            prim: The prim to apply semantics to.
+            semantic_label: The semantic label value.
+            type_label: The semantic type label.
+            suffix: Optional suffix for the semantics API instance.
+        """
         semantic_api = Semantics.SemanticsAPI.Get(prim, "Semantics" + suffix)
         if not semantic_api:
             semantic_api = Semantics.SemanticsAPI.Apply(prim, "Semantics" + suffix)
@@ -86,7 +97,7 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
         if semantic_label is not None:
             data_attr.Set(semantic_label)
 
-    async def test_upgrade_prim_semantics_to_labels(self):
+    async def test_upgrade_prim_semantics_to_labels(self) -> None:
         """Test upgrade prim semantics to labels."""
         stage = omni.usd.get_context().get_stage()
         prim = stage.DefinePrim("/test_upgrade", "Xform")
@@ -118,7 +129,7 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
             "New labels should be present and correct after upgrade.",
         )
 
-    async def test_new_labels_api(self):
+    async def test_new_labels_api(self) -> None:
         """Test new labels api."""
         stage = omni.usd.get_context().get_stage()
         # Create a test prim and a nested prim
@@ -185,9 +196,7 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
         self.assertNotIn("class", nested_labels_dict)
         self.assertIn("shape", nested_labels_dict)  # shape should remain
 
-        pass
-
-    async def test_check_missing_labels(self):
+    async def test_check_missing_labels(self) -> None:
         """Test the check_missing_labels function using the new LabelsAPI."""
         cube_paths = self.create_test_environment_new_labels()
         # Check from root
@@ -204,7 +213,7 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
         # Cube_0 has labels, Nested_Cube has labels. None missing in this subtree.
         self.assertEqual(len(missing_paths_subtree), 0)
 
-    async def test_check_incorrect_labels(self):
+    async def test_check_incorrect_labels(self) -> None:
         """Test the check_incorrect_labels function using the new LabelsAPI."""
         cube_paths = self.create_test_environment_new_labels()
         # Check from root
@@ -225,7 +234,7 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
         # Cube_0: OK, Nested_Cube: OK. None mismatching in this subtree.
         self.assertEqual(len(mismatch_prims_subtree), 0)
 
-    async def test_count_labels_in_scene_new(self):
+    async def test_count_labels_in_scene_new(self) -> None:
         """Test the count_labels_in_scene function using the new LabelsAPI."""
         self.create_test_environment_new_labels()
         # Count from root

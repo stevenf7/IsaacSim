@@ -38,11 +38,11 @@ from pxr import Gf
 class TestArticulationGraphs(MenuUITestCase):
     """Test articulation controller graph creation and execution."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await super().setUp()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up after each test."""
         self._timeline.stop()
         await self.wait_for_stage_loading()

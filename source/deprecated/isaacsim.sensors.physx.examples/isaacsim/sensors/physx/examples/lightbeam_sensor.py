@@ -59,7 +59,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
     - Action graph configuration for sensor data processing and visualization
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initializes the LightBeam sensor extension.
 
         Args:
@@ -77,7 +77,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
             category="Sensors",
         )
 
-    def build_window(self):
+    def build_window(self) -> None:
         """Placeholder method for building the extension window."""
 
     def _on_stage_closed(self, event: object) -> None:
@@ -88,7 +88,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
         """
         self.on_closed()
 
-    def build_ui(self):
+    def build_ui(self) -> None:
         """Builds the user interface for the LightBeam sensor example.
 
         Creates the main UI with header information, documentation links, and a button to load
@@ -107,7 +107,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
             setup_ui_headers(self._ext_id, __file__, title, doc_link, overview, info_collapsed=False)
             ui.Button("Load Scene", clicked_fn=lambda: self._load_scene())
 
-    def _load_scene(self):
+    def _load_scene(self) -> None:
         """Loads and initializes the LightBeam sensor demonstration scene.
 
         Sets up the sensor interface, physics simulation subscription, UI window with real-time
@@ -194,7 +194,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
 
         asyncio.ensure_future(self.create_scenario())
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleans up resources when the extension is shut down.
 
         Closes any open windows and deregisters the example from the browser.
@@ -203,7 +203,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
         # remove_menu_items(self._menu_items, "Isaac Examples")
         get_browser_instance().deregister_example(name="LightBeam Sensor", category="Sensors")
 
-    def _on_visibility_changed(self, visible: bool):
+    def _on_visibility_changed(self, visible: bool) -> None:
         """Handles window visibility changes.
 
         Args:
@@ -212,7 +212,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
         if not visible:
             self.on_closed()
 
-    def on_closed(self):
+    def on_closed(self) -> None:
         """Cleans up resources when the demonstration window is closed.
 
         Destroys the window, unsubscribes from physics events, and clears timeline and stage

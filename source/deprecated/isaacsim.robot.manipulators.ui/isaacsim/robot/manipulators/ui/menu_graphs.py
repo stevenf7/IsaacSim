@@ -51,7 +51,7 @@ class ArticulationPositionWindow(MenuHelperWindow):
     joints, and proper unit conversion between USD degrees and PhysX radians for revolute joints.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("Articulation Position Controller", width=400, height=500)
 
         # Initialize parameters
@@ -154,7 +154,7 @@ class ArticulationPositionWindow(MenuHelperWindow):
                             )
         return
 
-    def make_graph(self):
+    def make_graph(self) -> None:
         """Creates the Omniverse graph for articulation position control.
 
         Stops the timeline, creates or uses an existing graph, and adds nodes for joint command arrays,
@@ -243,7 +243,7 @@ class ArticulationPositionWindow(MenuHelperWindow):
             },
         )
 
-    def _on_ok(self):
+    def _on_ok(self) -> None:
         """Handles the OK button click event.
 
         Retrieves input values, validates parameters, creates the articulation graph if validation
@@ -330,7 +330,7 @@ class ArticulationPositionWindow(MenuHelperWindow):
 
         return True
 
-    def _on_cancel(self):
+    def _on_cancel(self) -> None:
         """Handles the Cancel button click event.
 
         Closes the window without creating the articulation graph.
@@ -362,7 +362,7 @@ class ArticulationVelocityWindow(MenuHelperWindow):
     values are extracted from the joint drive APIs of the robot's joints.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("Articulation Velocity Controller", width=500, height=470)
 
         # Initialize parameters
@@ -464,7 +464,7 @@ class ArticulationVelocityWindow(MenuHelperWindow):
 
         return
 
-    def make_graph(self):
+    def make_graph(self) -> None:
         """Creates an OmniGraph for articulation velocity control.
 
         Stops the simulation timeline, then creates or modifies a graph with nodes for joint command arrays,
@@ -553,7 +553,7 @@ class ArticulationVelocityWindow(MenuHelperWindow):
             },
         )
 
-    def _on_ok(self):
+    def _on_ok(self) -> None:
         """Handles the OK button click to create the velocity controller graph.
 
         Retrieves input values, validates parameters, creates the graph if validation passes,
@@ -631,7 +631,7 @@ class ArticulationVelocityWindow(MenuHelperWindow):
 
         return True
 
-    def _on_cancel(self):
+    def _on_cancel(self) -> None:
         """Handles the Cancel button click to close the window without creating a graph."""
         self.visible = False
 
@@ -658,7 +658,7 @@ class GripperWindow(MenuHelperWindow):
     should be controlled as gripper joints when not all articulated joints are part of the gripper mechanism.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("Gripper Controller", width=400, height=550)
 
         self._og_path = "/Graphs/Gripper_Controller"
@@ -805,7 +805,7 @@ class GripperWindow(MenuHelperWindow):
 
         return
 
-    def make_graph(self):
+    def make_graph(self) -> None:
         """Creates the gripper controller OmniGraph.
 
         Generates an OmniGraph with gripper controller nodes, array nodes for joint positions and speeds,
@@ -950,7 +950,7 @@ class GripperWindow(MenuHelperWindow):
                 og.Controller.attribute(self._og_path + "/GripperController.inputs:stop"),
             )
 
-    def _on_ok(self):
+    def _on_ok(self) -> None:
         """Handles OK button click to create the gripper controller graph.
 
         Retrieves all input values, validates parameters, and creates the graph if validation passes.
@@ -1019,7 +1019,7 @@ class GripperWindow(MenuHelperWindow):
 
         return True
 
-    def _on_cancel(self):
+    def _on_cancel(self) -> None:
         """Handles Cancel button click to close the window.
 
         Hides the gripper controller configuration window without creating the graph.

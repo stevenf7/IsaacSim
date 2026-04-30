@@ -16,6 +16,8 @@
 """Test suite for the OgnWritePhysicsRigidPrimView OmniGraph node used in Isaac Sim domain randomization."""
 
 
+from typing import Any
+
 import isaacsim.replicator.domain_randomization as dr
 import numpy as np
 import omni.graph.core as og
@@ -56,7 +58,7 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
     and validate the domain randomization capabilities of the OgnWritePhysicsRigidPrimView node.
     """
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up the test environment with a physics world, rigid body, and OmniGraph nodes."""
         await create_new_stage_async()
         self._my_world = World(backend="torch")
@@ -93,15 +95,15 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         dr.physics_view.register_rigid_prim_view(self._rb_view)
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up the test environment by stopping timeline, clearing world instance, and closing stage."""
         self._iface.stop()
         self._my_world.clear_instance()
-        dr.physics_view._rigid_prim_views = dict()
-        dr.physics_view._rigid_prim_views_initial_values = dict()
+        dr.physics_view._rigid_prim_views = {}
+        dr.physics_view._rigid_prim_views_initial_values = {}
         omni.usd.get_context().close_stage()
 
-    async def _setup_random_attribute(self, attribute_name, value):
+    async def _setup_random_attribute(self, attribute_name: Any, value: Any) -> None:
         """Set up a random attribute for the rigid prim view node with specified value.
 
         Args:
@@ -129,7 +131,7 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         )
         await self._controller.evaluate(self._graph)
 
-    async def test_randomize_position(self):
+    async def test_randomize_position(self) -> None:
         """Test randomization of rigid body position and verify the position is set correctly."""
         value = [100, 200, 300]
         await self._setup_random_attribute(attribute_name="position", value=value)
@@ -138,7 +140,7 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         print(f"value: {value}, position: {position}")
         self.assertTrue(np.all(np.isclose(position, value)))
 
-    async def test_randomize_orientation(self):
+    async def test_randomize_orientation(self) -> None:
         """Test randomization of rigid body orientation and verify the orientation is set correctly."""
         value = [0, np.pi, 0]
         await self._setup_random_attribute(attribute_name="orientation", value=value)
@@ -147,7 +149,7 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         print(f"value: {value}, orientation: {orientation}")
         self.assertTrue(np.all(np.isclose(orientation, [0, 0, 1, 0], atol=1e-04)))
 
-    async def test_randomize_linear_velocity(self):
+    async def test_randomize_linear_velocity(self) -> None:
         """Test randomization of rigid body linear velocity and verify the velocity is set correctly."""
         value = [100, 200, 300]
         await self._setup_random_attribute(attribute_name="linear_velocity", value=value)
@@ -155,7 +157,7 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         print(f"value: {value}, linear_velocity: {linear_velocity}")
         self.assertTrue(np.all(np.isclose(linear_velocity, value)))
 
-    async def test_randomize_angular_velocity(self):
+    async def test_randomize_angular_velocity(self) -> None:
         """Test randomization of rigid body angular velocity and verify the velocity is set correctly."""
         value = [100, 200, 300]
         await self._setup_random_attribute(attribute_name="angular_velocity", value=value)
@@ -163,12 +165,12 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         print(f"value: {value}, angular_velocity: {angular_velocity}")
         self.assertTrue(np.all(np.isclose(angular_velocity, value)))
 
-    async def test_randomize_forces(self):
+    async def test_randomize_forces(self) -> None:
         """Test randomization of forces applied to the rigid body."""
         value = [100, 100, 100]
         await self._setup_random_attribute(attribute_name="force", value=value)
 
-    async def test_randomize_masses(self):
+    async def test_randomize_masses(self) -> None:
         """Test randomization of rigid body masses and verify the masses are set correctly when using CPU device."""
         if self._rb_view._device == "cpu":
             value = [100] * self._rb_view.count
@@ -177,7 +179,7 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
             print(f"value: {value}, new_value: {new_value}")
             self.assertTrue(np.all(np.isclose(new_value, value)))
 
-    async def test_randomize_inertias(self):
+    async def test_randomize_inertias(self) -> None:
         """Test randomization of rigid body inertias and verify the inertia diagonal values are set correctly when using CPU device."""
         if self._rb_view._device == "cpu":
             inertias = [0.1, 0.1, 0.1] * self._rb_view.count
@@ -187,7 +189,7 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
             print(f"inertias: {inertias}, diagonal: {diagonal}")
             self.assertTrue(np.all(np.isclose(diagonal.flatten(), inertias)))
 
-    async def test_randomize_material_properties(self):
+    async def test_randomize_material_properties(self) -> None:
         """Tests randomization of material properties for rigid body prims.
 
         Sets up a uniform distribution to randomize material properties (static friction, dynamic friction,
@@ -199,7 +201,7 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         print(f"value: {value}, new_value: {new_value}")
         self.assertTrue(np.all(np.isclose(new_value, value)))
 
-    async def test_randomize_contact_offsets(self):
+    async def test_randomize_contact_offsets(self) -> None:
         """Tests randomization of contact offsets for rigid body prims.
 
         Sets up a uniform distribution to randomize contact offsets across all shapes in the rigid prim view
@@ -211,7 +213,7 @@ class TestOgnWritePhysicsRigidPrimView(omni.kit.test.AsyncTestCase):
         print(f"value: {value}, new_value: {new_value}")
         self.assertTrue(np.all(np.isclose(new_value, value)))
 
-    async def test_randomize_rest_offset(self):
+    async def test_randomize_rest_offset(self) -> None:
         """Tests randomization of rest offsets for rigid body prims.
 
         Sets up a uniform distribution to randomize rest offsets (set to half the contact offset values)

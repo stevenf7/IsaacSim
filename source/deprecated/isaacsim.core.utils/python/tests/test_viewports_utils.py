@@ -38,17 +38,15 @@ class TestViewports(omni.kit.test.AsyncTestCase):
     """Test cases for Viewports."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await omni.usd.get_context().new_stage_async()
-        pass
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
-        pass
 
-    async def test_get_intrinsics(self):
+    async def test_get_intrinsics(self) -> None:
         """Test get intrinsics."""
         viewport_api = get_active_viewport()
         viewport_api.set_texture_resolution((800, 600))
@@ -71,9 +69,8 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(matrix[0, 2], 400, delta=1)
         self.assertAlmostEqual(matrix[1, 1], 2419, delta=1)
         self.assertAlmostEqual(matrix[1, 2], 300, delta=1)
-        pass
 
-    async def test_set_intrinsics(self):
+    async def test_set_intrinsics(self) -> None:
         """Test set intrinsics."""
         viewport_api = get_active_viewport()
         viewport_api.set_texture_resolution((800, 600))
@@ -89,9 +86,8 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(matrix[0, 2], 400, delta=1)
         self.assertAlmostEqual(matrix[1, 1], 3871, delta=1)
         self.assertAlmostEqual(matrix[1, 2], 300, delta=1)
-        pass
 
-    async def test_get_viewport_names(self):
+    async def test_get_viewport_names(self) -> None:
         """Test get viewport names."""
         self.assertEqual(len(get_viewport_names()), 1)
         await omni.kit.app.get_app().next_update_async()
@@ -105,7 +101,7 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         window_2.destroy()
         await omni.kit.app.get_app().next_update_async()
 
-    async def test_get_window_from_id(self):
+    async def test_get_window_from_id(self) -> None:
         """Test get window from id."""
         window_0 = get_active_viewport_window()
         await omni.kit.app.get_app().next_update_async()
@@ -127,7 +123,7 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         window_2.destroy()
         await omni.kit.app.get_app().next_update_async()
 
-    async def test_get_id_from_index(self):
+    async def test_get_id_from_index(self) -> None:
         """Test get id from index."""
         window_0 = get_active_viewport_window()
         await omni.kit.app.get_app().next_update_async()
@@ -146,7 +142,7 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         self.assertEqual(window_test.title, window_1.title)
         window_1.destroy()
 
-    async def test_create_destroy_window(self):
+    async def test_create_destroy_window(self) -> None:
         """Test create destroy window."""
         from omni.kit.viewport.utility import create_viewport_window
 
@@ -156,7 +152,7 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         window_1.destroy()
         await omni.kit.app.get_app().next_update_async()
 
-    async def test_destroy_windows(self):
+    async def test_destroy_windows(self) -> None:
         """Test destroy windows."""
         from omni.kit.viewport.utility import create_viewport_window
 
@@ -169,7 +165,7 @@ class TestViewports(omni.kit.test.AsyncTestCase):
 
         destroy_all_viewports(None, False)
 
-    async def test_set_camera_view_perspective(self):
+    async def test_set_camera_view_perspective(self) -> None:
         """Test set camera view perspective."""
         import numpy as np
 
@@ -201,7 +197,7 @@ class TestViewports(omni.kit.test.AsyncTestCase):
         set_camera_view(eye=np.array([0, 0, 0]), target=np.array([0, 0, 1]), camera_prim_path="/OmniverseKit_Right")
         set_camera_view(eye=np.array([0, 0, 0]), target=np.array([0, 0, 1]), camera_prim_path="/OmniverseKit_Front")
 
-    async def test_set_camera_view_camera_prim(self):
+    async def test_set_camera_view_camera_prim(self) -> None:
         """Test set camera view camera prim."""
         # create a camera prim using isaacsim.sensors.camera
         import numpy as np

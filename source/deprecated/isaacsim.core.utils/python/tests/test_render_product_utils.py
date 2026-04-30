@@ -30,17 +30,15 @@ class TestRenderProduct(omni.kit.test.AsyncTestCase):
     """Test cases for RenderProduct."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await omni.usd.get_context().new_stage_async()
-        pass
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
-        pass
 
-    async def test_hydra_texture(self):
+    async def test_hydra_texture(self) -> None:
         """Test hydra texture."""
         await omni.kit.app.get_app().next_update_async()
         hydra_texture = rep.create.render_product("/OmniverseKit_Persp", [512, 512], name="Isaac")

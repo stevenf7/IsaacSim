@@ -32,7 +32,7 @@ class TestContactSensorWrapper(omni.kit.test.AsyncTestCase):
     """Test contact sensor wrapper."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await create_new_stage_async()
         SimulationManager.setup_simulation(dt=1.0 / 60.0)
@@ -57,7 +57,7 @@ class TestContactSensorWrapper(omni.kit.test.AsyncTestCase):
         return
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         if self._timeline.is_playing():
             self._timeline.stop()
@@ -69,29 +69,29 @@ class TestContactSensorWrapper(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         return
 
-    async def test_data_acquisition(self):
+    async def test_data_acquisition(self) -> None:
         """Verify current frame contains expected fields and optional contacts."""
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         data = self._contact_sensor.get_current_frame()
         for key in ["time", "physics_step", "in_contact", "force", "number_of_contacts"]:
-            self.assertTrue(key in data.keys())
+            self.assertTrue(key in data)
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
-        self.assertTrue("contacts" not in data.keys())
+        self.assertTrue("contacts" not in data)
         self._contact_sensor.add_raw_contact_data_to_frame()
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
-        self.assertTrue("contacts" in data.keys())
+        self.assertTrue("contacts" in data)
         self._contact_sensor.remove_raw_contact_data_from_frame()
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
-        self.assertTrue("contacts" not in data.keys())
+        self.assertTrue("contacts" not in data)
         return
 
-    async def test_pause_resume(self):
+    async def test_pause_resume(self) -> None:
         """Verify pause/resume freezes and resumes frame updates."""
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
@@ -120,7 +120,7 @@ class TestContactSensorWrapper(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(data["time"], 0.03333, delta=0.01)
         return
 
-    async def test_properties(self):
+    async def test_properties(self) -> None:
         """Verify contact sensor property setters update the underlying values."""
         self._contact_sensor.set_frequency(20)
         self.assertAlmostEqual(20, self._contact_sensor.get_frequency(), delta=2)

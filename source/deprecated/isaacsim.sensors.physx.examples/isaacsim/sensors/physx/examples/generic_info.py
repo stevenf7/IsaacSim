@@ -56,7 +56,7 @@ class Extension(omni.ext.IExt):
     streaming mode for continuous data flow and repeating mode for batch processing of predefined patterns.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize extension and UI elements.
 
         Args:
@@ -73,15 +73,15 @@ class Extension(omni.ext.IExt):
             category=self.category,
         )
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up extension resources and deregister example from browser."""
         get_browser_instance().deregister_example(name=self.example_name, category=self.category)
         self._editor_event_subscription = None
 
-    def build_window(self):
+    def build_window(self) -> None:
         """Build the extension window interface."""
 
-    def build_ui(self):
+    def build_ui(self) -> None:
         """Build the user interface with command panel and output controls for the Generic Range Sensor example."""
         self._sensor = _range_sensor.acquire_generic_sensor_interface()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -221,7 +221,7 @@ class Extension(omni.ext.IExt):
                 observer_name="isaacsim.sensors.physx.examples.generic_info.Extension._on_editor_step",
             )
 
-    def _on_spawn_generic_button(self):
+    def _on_spawn_generic_button(self) -> None:
         """Handle the Load Sensor button click to create a new stage and spawn the Generic Range Sensor."""
         # wait for new stage before creating sensor
         task = asyncio.ensure_future(omni.usd.get_context().new_stage_async())
@@ -259,7 +259,7 @@ class Extension(omni.ext.IExt):
         # to do this, we give our cube the collision API, and set it's material and collision group.
         UsdPhysics.CollisionAPI.Apply(self.cubePrim)
 
-    def _set_sensor_pattern(self):
+    def _set_sensor_pattern(self) -> None:
         """Set the custom scanning pattern for the Range Sensor based on streaming or repeating mode."""
         if self._streaming:
             self.sensor_pattern, self.origin_offsets = self._test_streaming_data()
@@ -268,7 +268,7 @@ class Extension(omni.ext.IExt):
 
         self._pattern_set = True
 
-    def _test_streaming_data(self):
+    def _test_streaming_data(self) -> tuple:
         """Custom generated data for testing streaming data mode.
 
             Data profile: zigzag left to right, slowly going up and down.
@@ -309,7 +309,7 @@ class Extension(omni.ext.IExt):
 
         return sensor_pattern, origin_offsets
 
-    def _test_repeating_data(self):
+    def _test_repeating_data(self) -> tuple:
         """Custom data to test repeating (non-streaming) mode.
 
             Data profile: zigzag left and right, half of it scanning high in zenith, the other half scanning low.
@@ -438,7 +438,7 @@ class Extension(omni.ext.IExt):
         im.save(filename)
 
     @staticmethod
-    def _data_processing(data: object, cube_scale: object, cube_pos: object):
+    def _data_processing(data: object, cube_scale: object, cube_pos: object) -> object:
         """Filters point cloud data to extract points that hit the wall surface.
 
         Args:
@@ -460,7 +460,7 @@ class Extension(omni.ext.IExt):
             hit_pts = np.squeeze(data[hit_idx, 1:3])
             return hit_pts
 
-    def data_processing(self, data: object):
+    def data_processing(self, data: object) -> object:
         """Filters point cloud data to extract points that hit the wall surface.
 
         Calculates the wall surface location and filters the input data to return only the Y and Z coordinates

@@ -28,16 +28,16 @@ from pxr import Gf, Sdf, UsdGeom
 class TestPhysXSensorCommands(omni.kit.test.AsyncTestCase):
     """Test cases for PhysX sensor creation commands."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Create a new stage for each test."""
         await omni.usd.get_context().new_stage_async()
         self.stage = omni.usd.get_context().get_stage()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up the stage after each test."""
         await omni.usd.get_context().close_stage_async()
 
-    async def test_range_sensor_create_prim_default(self):
+    async def test_range_sensor_create_prim_default(self) -> None:
         """Test creating a range sensor prim with default parameters."""
         path = "/TestSensor"
         parent = ""
@@ -100,7 +100,7 @@ class TestPhysXSensorCommands(omni.kit.test.AsyncTestCase):
         ops = xformable.GetOrderedXformOps()
         self.assertGreater(len(ops), 0)
 
-    async def test_range_sensor_create_prim_with_parent(self):
+    async def test_range_sensor_create_prim_with_parent(self) -> None:
         """Test creating a range sensor prim with a parent."""
         # Create a parent Xform
         parent_path = "/World"
@@ -127,7 +127,7 @@ class TestPhysXSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(prim.IsValid())
         self.assertTrue(prim.GetPath().HasPrefix(parent_path))
 
-    async def test_range_sensor_create_lidar_default(self):
+    async def test_range_sensor_create_lidar_default(self) -> None:
         """Test creating a lidar sensor with default parameters."""
         _, schema_obj = omni.kit.commands.execute("RangeSensorCreateLidar")
 
@@ -160,7 +160,7 @@ class TestPhysXSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(max_range_attr.IsValid())
         self.assertAlmostEqual(max_range_attr.Get(), 100.0, places=6)
 
-    async def test_range_sensor_create_lidar_custom_parameters(self):
+    async def test_range_sensor_create_lidar_custom_parameters(self) -> None:
         """Test creating a lidar sensor with custom parameters including translation and orientation."""
         custom_translation = Gf.Vec3d(5.0, 10.0, 15.0)
         custom_orientation = Gf.Quatd(0.707, 0.0, 0.707, 0.0)  # 90 degree rotation around Y
@@ -220,7 +220,7 @@ class TestPhysXSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(vertical_fov_attr.IsValid())
         self.assertAlmostEqual(vertical_fov_attr.Get(), custom_vertical_fov, places=6)
 
-    async def test_range_sensor_create_generic_default(self):
+    async def test_range_sensor_create_generic_default(self) -> None:
         """Test creating a generic range sensor with default parameters."""
         _, schema_obj = omni.kit.commands.execute("RangeSensorCreateGeneric")
 
@@ -257,7 +257,7 @@ class TestPhysXSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(sampling_rate_attr.IsValid())
         self.assertEqual(sampling_rate_attr.Get(), 60)
 
-    async def test_range_sensor_create_generic_custom_parameters(self):
+    async def test_range_sensor_create_generic_custom_parameters(self) -> None:
         """Test creating a generic range sensor with custom parameters including translation and orientation."""
         custom_translation = Gf.Vec3d(-3.0, 7.0, -12.0)
         custom_orientation = Gf.Quatd(0.5, 0.5, 0.5, 0.5)  # Complex rotation
@@ -310,7 +310,7 @@ class TestPhysXSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(sampling_rate_attr.IsValid())
         self.assertEqual(sampling_rate_attr.Get(), custom_sampling_rate)
 
-    async def test_isaac_sensor_create_light_beam_sensor_default(self):
+    async def test_isaac_sensor_create_light_beam_sensor_default(self) -> None:
         """Test creating a light beam sensor with default parameters."""
         _, schema_obj = omni.kit.commands.execute("IsaacSensorCreateLightBeamSensor")
 
@@ -342,7 +342,7 @@ class TestPhysXSensorCommands(omni.kit.test.AsyncTestCase):
         # Note: IsaacLightBeamSensor doesn't have minRange and maxRange attributes
         # These are only available on RangeSensor schemas
 
-    async def test_isaac_sensor_create_light_beam_sensor_custom_parameters(self):
+    async def test_isaac_sensor_create_light_beam_sensor_custom_parameters(self) -> None:
         """Test creating a light beam sensor with custom parameters."""
         _, schema_obj = omni.kit.commands.execute(
             "IsaacSensorCreateLightBeamSensor",
@@ -387,7 +387,7 @@ class TestPhysXSensorCommands(omni.kit.test.AsyncTestCase):
         # Note: IsaacLightBeamSensor doesn't have minRange, maxRange, drawPoints, or drawLines attributes
         # These are only available on RangeSensor schemas
 
-    async def test_isaac_sensor_create_light_beam_sensor_multiple_rays(self):
+    async def test_isaac_sensor_create_light_beam_sensor_multiple_rays(self) -> None:
         """Test creating a light beam sensor with multiple rays and curtain length."""
         _, schema_obj = omni.kit.commands.execute(
             "IsaacSensorCreateLightBeamSensor",
@@ -414,7 +414,7 @@ class TestPhysXSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(curtain_length_attr.IsValid())
         self.assertEqual(curtain_length_attr.Get(), 5.0)
 
-    async def test_isaac_sensor_create_light_beam_sensor_invalid_rays(self):
+    async def test_isaac_sensor_create_light_beam_sensor_invalid_rays(self) -> None:
         """Test creating a light beam sensor with invalid ray configuration."""
         _, schema_obj = omni.kit.commands.execute(
             "IsaacSensorCreateLightBeamSensor",
@@ -428,7 +428,7 @@ class TestPhysXSensorCommands(omni.kit.test.AsyncTestCase):
         # Should return None due to validation error
         self.assertIsNone(schema_obj)
 
-    async def test_sensor_undo_functionality(self):
+    async def test_sensor_undo_functionality(self) -> None:
         """Test that sensor creation commands support undo operations."""
         # Create a sensor
         _, schema_obj = omni.kit.commands.execute("RangeSensorCreateLidar")
@@ -448,7 +448,7 @@ class TestPhysXSensorCommands(omni.kit.test.AsyncTestCase):
         # Verify the sensor was removed
         self.assertFalse(prim.IsValid())
 
-    async def test_sensor_with_parent_undo(self):
+    async def test_sensor_with_parent_undo(self) -> None:
         """Test undo functionality when creating sensor with parent."""
         # Create a parent Xform
         parent_path = "/World"
@@ -474,7 +474,7 @@ class TestPhysXSensorCommands(omni.kit.test.AsyncTestCase):
         # Verify the sensor was removed
         self.assertFalse(prim.IsValid())
 
-    async def test_multiple_sensors_creation(self):
+    async def test_multiple_sensors_creation(self) -> None:
         """Test creating multiple sensors of different types."""
         # Create a lidar sensor
         _, lidar_schema = omni.kit.commands.execute("RangeSensorCreateLidar")
@@ -513,7 +513,7 @@ class TestPhysXSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertNotEqual(lidar_prim.GetPath(), light_beam_prim.GetPath())
         self.assertNotEqual(generic_prim.GetPath(), light_beam_prim.GetPath())
 
-    async def test_sensor_attributes_consistency(self):
+    async def test_sensor_attributes_consistency(self) -> None:
         """Test that sensor attributes are consistently set across different sensor types."""
         # Create different types of sensors
         _, range_schema = omni.kit.commands.execute(
@@ -575,7 +575,7 @@ class TestPhysXSensorCommands(omni.kit.test.AsyncTestCase):
             self.assertTrue(draw_lines_attr.IsValid(), f"{name} missing drawLines attribute")
             self.assertEqual(draw_lines_attr.Get(), False, f"{name} drawLines mismatch")
 
-    async def test_isaac_sensor_create_light_beam_sensor_custom_transform(self):
+    async def test_isaac_sensor_create_light_beam_sensor_custom_transform(self) -> None:
         """Test creating a light beam sensor with custom translation and orientation."""
         custom_translation = Gf.Vec3d(2.5, -5.0, 8.0)
         custom_orientation = Gf.Quatd(0.866, 0.0, 0.5, 0.0)  # 60 degree rotation around Y
@@ -635,7 +635,7 @@ class TestPhysXSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(curtain_length_attr.IsValid())
         self.assertAlmostEqual(curtain_length_attr.Get(), custom_curtain_length, places=6)
 
-    async def test_range_sensor_create_prim_custom_parameters(self):
+    async def test_range_sensor_create_prim_custom_parameters(self) -> None:
         """Test creating a range sensor prim with custom parameters including translation and orientation."""
         path = "/CustomTestSensor"
         parent = ""

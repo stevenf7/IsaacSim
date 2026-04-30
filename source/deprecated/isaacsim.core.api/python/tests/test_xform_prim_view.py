@@ -40,7 +40,7 @@ from .common import CoreTestCase
 class TestXFormPrimView(CoreTestCase):
     """Test x form prim view."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
         await super().setUp()
         SimulationContext.clear_instance()
@@ -62,17 +62,21 @@ class TestXFormPrimView(CoreTestCase):
         self._targets_view = XFormPrim(prim_paths_expr="/World/Frame_[1-3]/Target", name="targets_view")
         self._frames_view = XFormPrim(prim_paths_expr="/World/Frame_[1-3]", name="frames_view")
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
         await super().tearDown()
 
-    async def test_list_of_regular_exprs(self):
+    async def test_list_of_regular_exprs(self) -> None:
         """Test list of regular exprs."""
         view = XFormPrim(prim_paths_expr=["/World/Franka_[1-2]", "/World/Frame_*"], name="random_view")
         self.assertTrue(view.count == 5)
 
-    async def test_world_poses(self):
-        """Test world poses."""
+    async def test_world_poses(self) -> None:
+        """Test world poses.
+
+        Returns:
+            None.
+        """
         current_positions, current_orientations = self._frankas_view.get_world_poses()
         self.assertTrue(np.isclose(current_positions, np.zeros([2, 3], dtype=np.float32)).all())
         expected_orientations = np.zeros([2, 4], dtype=np.float32)
@@ -93,8 +97,12 @@ class TestXFormPrimView(CoreTestCase):
         return
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
-    async def test_world_poses_fabric(self):
-        """Test world poses fabric."""
+    async def test_world_poses_fabric(self) -> None:
+        """Test world poses fabric.
+
+        Returns:
+            None.
+        """
         print("test_world_poses_fabric get_world_poses started")
         current_positions, current_orientations = self._frankas_view.get_world_poses(usd=False)
         print("test_world_poses_fabric get_world_poses done")
@@ -120,8 +128,12 @@ class TestXFormPrimView(CoreTestCase):
         print("test_world_poses_fabric done")
         return
 
-    async def test_local_pose(self):
-        """Test local pose."""
+    async def test_local_pose(self) -> None:
+        """Test local pose.
+
+        Returns:
+            None.
+        """
         self._frames_view.set_local_poses(
             translations=np.array([[0, 0, 0], [0, 10, 5], [0, 3, 5]]),
             orientations=euler_angles_to_quats(
@@ -141,8 +153,12 @@ class TestXFormPrimView(CoreTestCase):
         )
         return
 
-    async def test_local_on_init(self):
-        """Test local on init."""
+    async def test_local_on_init(self) -> None:
+        """Test local on init.
+
+        Returns:
+            None.
+        """
         initial_translations = np.array([[0, 0, 0], [0, 10, 5]])
         view = XFormPrim(
             prim_paths_expr="/World/Franka_[1-2]", name="frankas_view_2", translations=initial_translations
@@ -151,7 +167,7 @@ class TestXFormPrimView(CoreTestCase):
         self.assertTrue(np.isclose(current_translations, initial_translations).all())
         return
 
-    async def test_visibilities(self):
+    async def test_visibilities(self) -> None:
         """Test visibilities."""
         prim_paths = "/World/Franka_[1-2]"
         visibilities = np.array([False, True])
@@ -164,7 +180,7 @@ class TestXFormPrimView(CoreTestCase):
             else:
                 self.assertEqual(visibility_attr, "invisible")
 
-    async def test_scale_units_resolve(self):
+    async def test_scale_units_resolve(self) -> None:
         """Test scale units resolve."""
         os.path.dirname(os.path.abspath(__file__))
         add_reference_to_stage(

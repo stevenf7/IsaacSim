@@ -15,6 +15,8 @@
 
 """Tests for prim utility functions."""
 
+from typing import Any
+
 import carb
 import omni.kit.test
 from isaacsim.core.utils.prims import define_prim, get_prim_attribute_value, set_prim_attribute_value
@@ -25,16 +27,15 @@ class TestPrims(omni.kit.test.AsyncTestCase):
     """Test cases for Prims."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await omni.usd.get_context().new_stage_async()
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
-        pass
 
-    def _create_attributes(self, prim):
+    def _create_attributes(self, prim: Any) -> list:
         specs = [
             (Sdf.ValueTypeNames.Asset, "./abc"),
             (Sdf.ValueTypeNames.AssetArray, ["./abc", "./def"]),
@@ -152,7 +153,7 @@ class TestPrims(omni.kit.test.AsyncTestCase):
             attributes.append((name, spec[0], spec[1]))
         return attributes
 
-    async def test_prim_attribute_value(self):
+    async def test_prim_attribute_value(self) -> None:
         """Test prim attribute value."""
         prim_path = "/prim"
         prim = define_prim(prim_path=prim_path, prim_type="Xform")

@@ -33,17 +33,17 @@ from .common import CoreTestCase
 class TestSingleGeometryPrim(CoreTestCase):
     """Test single geometry prim."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
         await super().tearDown()
 
-    async def test_collision_approximation(self):
+    async def test_collision_approximation(self) -> None:
         """Test collision approximation."""
         define_prim("/test", prim_type="cube")
         geometry_prim = SingleGeometryPrim("/test", "test", collision=True)
@@ -53,7 +53,7 @@ class TestSingleGeometryPrim(CoreTestCase):
             self.assertEqual(possible_approx, geometry_prim.get_collision_approximation())
         return
 
-    async def test_collision_enabled(self):
+    async def test_collision_enabled(self) -> None:
         """Test collision enabled."""
         define_prim("/test", prim_type="cube")
         geometry_prim = SingleGeometryPrim("/test", "test")
@@ -62,7 +62,7 @@ class TestSingleGeometryPrim(CoreTestCase):
         self.assertTrue(geometry_prim.get_collision_enabled())
         return
 
-    async def test_physics_material(self):
+    async def test_physics_material(self) -> None:
         """Test physics material."""
         define_prim("/test", prim_type="cube")
         geometry_prim = SingleGeometryPrim("/test", "test")

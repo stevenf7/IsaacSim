@@ -16,6 +16,7 @@
 """Tests for articulation utility functions."""
 
 import asyncio
+from typing import Any
 
 import omni.kit.test
 from isaacsim.core.utils.articulations import (
@@ -34,26 +35,31 @@ class TestArticulationUtils(omni.kit.test.AsyncTestCase):
     """Test cases for ArticulationUtils."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         await create_new_stage_async()
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await update_stage_async()
 
-    def assertListsSame(self, l1, l2):
-        """Assert that two lists contain the same elements."""
+    def assertListsSame(self, l1: Any, l2: Any) -> None:  # noqa: N802
+        """Assert that two lists contain the same elements.
+
+        Args:
+            l1: First list.
+            l2: Second list.
+        """
         for item in l1:
             self.assertTrue(item in l2, f"{l1}, {l2}")
 
         self.assertTrue(len(l2) == len(l1), f"{l1}, {l2}")
 
-    async def test_find_articulation_base_paths(self):
+    async def test_find_articulation_base_paths(self) -> None:
         """Test find articulation base paths."""
         assets_root_path = await get_assets_root_path_async()
         add_reference_to_stage(assets_root_path + "/Isaac/Robots/UniversalRobots/ur10e/ur10e.usd", "/World/ur10e")

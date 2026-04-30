@@ -20,6 +20,7 @@
 #   For most things refer to unittest docs: https://docs.python.org/3/library/unittest.html
 
 import asyncio
+from typing import Any
 
 import carb.tokens
 import isaacsim.core.experimental.utils.prim as prim_utils
@@ -39,7 +40,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
     """Test effort sensor."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
         self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
@@ -47,10 +48,21 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
             return
         self._timeline = omni.timeline.get_timeline_interface()
 
-    async def createSimpleArticulation(
-        self, physics_rate=60, include_cube=False, cube_path="/new_cube", cube_position=np.array([1, 0, 0.1])
-    ):
-        """Create SimpleArticulation."""
+    async def createSimpleArticulation(  # noqa: N802
+        self,
+        physics_rate: int = 60,
+        include_cube: bool = False,
+        cube_path: str = "/new_cube",
+        cube_position: Any = np.array([1, 0, 0.1]),
+    ) -> None:
+        """Create SimpleArticulation.
+
+        Args:
+            physics_rate: Physics simulation rate in Hz.
+            include_cube: Whether to add a cube to the scene.
+            cube_path: USD path for the cube prim.
+            cube_position: World position of the cube.
+        """
         self.pivot_path = "/Articulation/CenterPivot"
         self.slider_path = "/Articulation/Slider"
         self.arm_path = "/Articulation/Arm"
@@ -78,10 +90,9 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
 
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         if self._timeline.is_playing():
             self._timeline.stop()
@@ -94,9 +105,8 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
             # print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
-        pass
 
-    async def test_sensor_reading(self):
+    async def test_sensor_reading(self) -> None:
         """Test sensor reading."""
         await self.createSimpleArticulation()
 
@@ -137,7 +147,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
         reading = self.effort_sensor.get_sensor_reading()
         self.assertFalse(reading.is_valid)
 
-    async def test_sensor_period(self):
+    async def test_sensor_period(self) -> None:
         """Test sensor period."""
         await self.createSimpleArticulation()
 
@@ -166,12 +176,11 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
         # tolerance +-1 reading (9,10,11) will be accepted)
         # print(len(readings))
         self.assertTrue(abs(len(readings) - 10) <= 1)
-        pass
 
-    async def test_custom_interpolation_function(self):
+    async def test_custom_interpolation_function(self) -> None:
         """Test custom interpolation function."""
 
-        def custom_function(sensorReadings, time: float) -> EsSensorReading():
+        def custom_function(sensorReadings: Any, time: float) -> EsSensorReading():
             override_sensor_reading = EsSensorReading()
             override_sensor_reading.value = 1000
             override_sensor_reading.time = time
@@ -197,10 +206,9 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
             self.assertEqual(custom_reading.time, sensor_reading.time)
             self.assertEqual(custom_reading.value, 1000)
             self.assertNotEqual(custom_reading.value, sensor_reading.value)
-        pass
 
     # Remove this test later
-    async def test_change_to_wrong_dof_name_in_play(self):
+    async def test_change_to_wrong_dof_name_in_play(self) -> None:
         """Test change to wrong dof name in play."""
         await self.createSimpleArticulation()
 
@@ -223,7 +231,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
         # set the sensor with incorrect joint
         try:
             self.effort_sensor.update_dof_name("RevoluteJoint_doesnt_exist")
-        except:
+        except Exception:
             print(f"can't update dof, dof index is: {self.effort_sensor.dof}")
         for i in range(10):
             await omni.kit.app.get_app().next_update_async()
@@ -246,7 +254,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
         self.assertNotEqual(reading.value, 0)
         self.assertEqual(reading.is_valid, True)
 
-    async def test_change_buffer_size(self):
+    async def test_change_buffer_size(self) -> None:
         """Test change buffer size."""
         await self.createSimpleArticulation()
 

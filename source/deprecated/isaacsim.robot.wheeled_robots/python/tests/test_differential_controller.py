@@ -16,7 +16,6 @@
 """Unit tests for the DifferentialController and DifferentialController node functionality in wheeled robots."""
 
 
-import numpy as np
 import omni.kit.test
 from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
 
@@ -34,18 +33,16 @@ class TestDifferentialController(omni.kit.test.AsyncTestCase):
     - Controller response to linear and angular velocity commands
     """
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment for differential controller tests."""
-        pass
 
     # ----------------------------------------------------------------------
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up test environment after differential controller tests."""
-        pass
 
     # ----------------------------------------------------------------------
 
-    async def test_differential_drive(self):
+    async def test_differential_drive(self) -> None:
         """Test differential drive calculations and wheel speed limits.
 
         Validates that the DifferentialController correctly computes joint velocities from linear and angular speed
