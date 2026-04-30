@@ -146,6 +146,7 @@ from pxr import Gf, Usd, UsdGeom
 
 enable_extension("isaacsim.benchmark.services")
 
+import omni.replicator.core as rep
 from isaacsim.benchmark.services import DEFAULT_RECORDERS, BaseIsaacBenchmark
 from isaacsim.benchmark.services.validation import Validator
 from omni.replicator.core import functional as F
@@ -350,8 +351,6 @@ for frame_idx in range(0, n_frames):
     if args.use_timestamp_matching:
         frame_timestamps.append(timeline.get_current_time())
 print(f"*** DONE ***")
-
-import omni.replicator.core as rep
 
 # WAR Disable timeline + replicator sync
 rep.orchestrator.set_capture_on_play(False)

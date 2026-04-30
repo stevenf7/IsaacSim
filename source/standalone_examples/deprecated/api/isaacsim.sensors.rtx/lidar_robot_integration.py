@@ -214,7 +214,7 @@ while simulation_app.is_running():
     frame_count += 1
 
     # Exit after a few frames in test mode
-    if args.test and frame_count > 100:
+    if args.test and frame_count > 10:
         break
 
 # =============================================================================

@@ -22,11 +22,13 @@ simulation_app = SimulationApp({"headless": False})
 import sys
 
 import carb
+import isaacsim.core.experimental.utils.app as app_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-from isaacsim.core.api import World
 from isaacsim.core.cloner import GridCloner
-from isaacsim.core.prims import Articulation
-from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.core.experimental.objects import GroundPlane
+from isaacsim.core.experimental.prims import Articulation
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.storage.native import get_assets_root_path
 
 assets_root_path = get_assets_root_path()
@@ -35,12 +37,12 @@ if assets_root_path is None:
     simulation_app.close()
     sys.exit()
 
-my_world = World(stage_units_in_meters=1.0)
-my_world.scene.add_default_ground_plane()
+stage_utils.set_stage_units(meters_per_unit=1.0)
+GroundPlane("/World/GroundPlane")
 
 # create initial robot
 asset_path = assets_root_path + "/Isaac/Robots/IsaacSim/Ant/ant.usd"
-add_reference_to_stage(usd_path=asset_path, prim_path="/World/Ants/Ant_0")
+stage_utils.add_reference_to_stage(usd_path=asset_path, path="/World/Ants/Ant_0")
 
 # create GridCloner instance
 cloner = GridCloner(spacing=2)
@@ -59,11 +61,13 @@ cloner.clone(
 )
 
 # create Articulation
-ants = Articulation("/World/Ants/.*/torso", name="ants_view")
-my_world.scene.add(ants)
+ants = Articulation("/World/Ants/.*/torso")
 
-my_world.reset()
+SimulationManager.setup_simulation(dt=1.0 / 60.0, device="cpu")
+app_utils.play()
+simulation_app.update()
+
 for i in range(1000):
     print(ants.get_world_poses())
-    my_world.step()
+    simulation_app.update()
 simulation_app.close()

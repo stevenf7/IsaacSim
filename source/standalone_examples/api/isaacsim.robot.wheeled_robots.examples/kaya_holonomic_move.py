@@ -18,7 +18,13 @@
 
 """Demonstrate Kaya holonomic movement."""
 
+import argparse
+
 from isaacsim import SimulationApp
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, _ = parser.parse_known_args()
 
 simulation_app = SimulationApp({"headless": False})
 
@@ -89,6 +95,7 @@ app_utils.update_app(steps=10)
 # -----------------------------------------------------------------------------
 i = 0
 reset_needed = False
+frame_count = 0
 while simulation_app.is_running():
     simulation_app.update()
     if not app_utils.is_playing() and not reset_needed:
@@ -112,6 +119,9 @@ while simulation_app.is_running():
         elif i == 1200:
             i = 0
         i += 1
+    frame_count += 1
+    if args.test and frame_count >= 10:
+        break
 
 app_utils.stop()
 simulation_app.close()

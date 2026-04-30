@@ -18,7 +18,12 @@ import os
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp(launch_config={"headless": False})
+simulation_app = SimulationApp(
+    launch_config={
+        "headless": False,
+        "extra_args": ["--enable", "isaacsim.replicator.episode_recorder"],
+    }
+)
 
 import carb.settings
 import omni.replicator.core as rep

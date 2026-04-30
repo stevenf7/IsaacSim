@@ -40,6 +40,7 @@ from omni.kit.viewport.utility import get_active_viewport
 from pxr import Usd, UsdGeom
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
 parser.add_argument(
     "-v",
     "--verbose",
@@ -132,6 +133,7 @@ if active_viewport and active_viewport.camera_path:
 
 my_world.reset()
 reset_needed = False
+frame_count = 0
 while simulation_app.is_running():
     my_world.step(render=True)
     if my_world.is_stopped() and not reset_needed:
@@ -155,5 +157,8 @@ while simulation_app.is_running():
 
         actions = articulation_rmpflow.get_next_articulation_action()
         articulation_controller.apply_action(actions)
+    frame_count += 1
+    if args.test and frame_count >= 10:
+        break
 
 simulation_app.close()

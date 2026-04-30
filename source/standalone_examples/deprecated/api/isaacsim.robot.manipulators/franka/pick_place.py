@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
 parser.add_argument("--device", type=str, choices=["cpu", "cuda"], default="cpu", help="Simulation device")
 parser.add_argument(
     "--ik-method",
@@ -32,11 +33,21 @@ args, _ = parser.parse_known_args()
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": False})
+simulation_app = SimulationApp(
+    {
+        "headless": False,
+        "extra_args": [
+            "--enable",
+            "isaacsim.robot.manipulators.examples",
+            "--enable",
+            "isaacsim.robot.experimental.manipulators.examples",
+        ],
+    }
+)
 
 import omni.timeline
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.robot.manipulators.examples.franka import FrankaPickPlace
+from isaacsim.robot.experimental.manipulators.examples.franka import FrankaPickPlace
 
 
 def main():
@@ -56,6 +67,7 @@ def main():
     task_completed = False
 
     print("Starting pick-and-place execution")
+    frame_count = 0
     while simulation_app.is_running():
         if SimulationManager.is_simulating() and not task_completed:
             if reset_needed:
@@ -70,6 +82,9 @@ def main():
             task_completed = True
 
         simulation_app.update()
+        frame_count += 1
+        if args.test and frame_count >= 10:
+            break
 
 
 if __name__ == "__main__":

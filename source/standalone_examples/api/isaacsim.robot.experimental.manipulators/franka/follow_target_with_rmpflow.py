@@ -249,7 +249,7 @@ def main() -> None:
                 t += physics_dt
                 run_step(controller, cumotion_robot, articulation, world_binding, target_object, t)
             frame += 1
-            if args.test and frame >= 100:
+            if args.test and frame >= 10:
                 break
         elif not app_utils.is_playing():
             rmpflow_reset_needed = True

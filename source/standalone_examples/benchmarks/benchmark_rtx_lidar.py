@@ -55,6 +55,7 @@ import carb
 import omni
 import omni.replicator.core as rep
 from isaacsim.core.utils.extensions import enable_extension
+from isaacsim.sensors.experimental.rtx import Lidar
 from pxr import Gf
 
 enable_extension("isaacsim.benchmark.services")
@@ -87,14 +88,13 @@ for i in range(n_sensor):
     lidar_config = "Example_" + lidar_type
     print("Lidar Config:", lidar_config)
 
-    _, sensor = omni.kit.commands.execute(
-        "IsaacSensorCreateRtxLidar",
+    lidar = Lidar.create(
         path=lidar_path,
-        parent=None,
         config=lidar_config,
-        translation=sensor_translation,
-        orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
+        translations=[sensor_translation[0], sensor_translation[1], sensor_translation[2]],
+        orientations=[1.0, 0.0, 0.0, 0.0],  # wxyz
     )
+    sensor = lidar.prims[0]
     sensors.append(sensor)
 
     if enable_lidar_multitick:

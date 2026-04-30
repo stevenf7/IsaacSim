@@ -15,9 +15,14 @@
 
 """Demonstrate manual ROS 2 camera publishing."""
 
+import argparse
 import sys
 
 from isaacsim import SimulationApp
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, _ = parser.parse_known_args()
 
 CAMERA_STAGE_PATH = "/Camera"
 ROS_CAMERA_GRAPH_PATH = "/ROS_Camera"
@@ -29,21 +34,22 @@ CONFIG = {"renderer": "RealTimePathTracing", "headless": False}
 # Example ROS2 bridge sample demonstrating the manual loading of stages and manual publishing of images
 simulation_app = SimulationApp(CONFIG)
 import carb
+import isaacsim.core.experimental.utils.app as app_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni
 import omni.graph.core as og
 import usdrt.Sdf
-from isaacsim.core.api import SimulationContext
-from isaacsim.core.utils import extensions, stage
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.storage.native import get_assets_root_path
 from omni.kit.viewport.utility import get_active_viewport
 from pxr import Gf, Sdf, Usd, UsdGeom
 
 # enable ROS2 bridge extension
-extensions.enable_extension("isaacsim.ros2.bridge")
+app_utils.enable_extension("isaacsim.ros2.bridge")
 
 simulation_app.update()
 
-simulation_context = SimulationContext(stage_units_in_meters=1.0)
+stage_utils.set_stage_units(meters_per_unit=1.0)
 
 # Locate Isaac Sim assets folder to load environment and robot stages
 assets_root_path = get_assets_root_path()
@@ -53,7 +59,7 @@ if assets_root_path is None:
     sys.exit()
 
 # Loading the simple_room environment
-stage.add_reference_to_stage(assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH)
+stage_utils.add_reference_to_stage(assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH)
 
 # Creating a Camera prim
 camera_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(CAMERA_STAGE_PATH, "Camera"))
@@ -158,17 +164,18 @@ if viewport_api is not None:
 
 
 # Need to initialize physics getting any articulation..etc
-simulation_context.initialize_physics()
+SimulationManager.setup_simulation(dt=1.0 / 60.0, device="cpu")
 
-simulation_context.play()
+app_utils.play()
+simulation_app.update()
 
 frame = 0
 
-while simulation_app.is_running() and simulation_context.is_playing():
+while simulation_app.is_running() and app_utils.is_playing():
     # Run with a fixed step size
-    simulation_context.step(render=True)
+    simulation_app.update()
 
-    if simulation_context.is_playing():
+    if app_utils.is_playing():
         # Rotate camera by 0.5 degree every frame
         xform_api.SetRotate((90, 0, frame / 4.0), UsdGeom.XformCommonAPI.RotationOrderXYZ)
 
@@ -191,6 +198,8 @@ while simulation_app.is_running() and simulation_context.is_playing():
         og.Controller.attribute(camera_info_gate_path + ".inputs:step").set(1)
 
         frame = frame + 1
+        if args.test and frame >= 10:
+            break
 
-simulation_context.stop()
+app_utils.stop()
 simulation_app.close()

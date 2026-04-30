@@ -14,10 +14,15 @@
 # limitations under the License.
 """Demonstrate MoveIt integration with ROS 2 bridge."""
 
+import argparse
 import sys
 
 import numpy as np
 from isaacsim import SimulationApp
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, _ = parser.parse_known_args()
 
 FRANKA_STAGE_PATH = "/Franka"
 FRANKA_USD_PATH = "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
@@ -30,19 +35,22 @@ CONFIG = {"renderer": "RealTimePathTracing", "headless": False}
 # and creation of ROS components
 simulation_app = SimulationApp(CONFIG)
 import carb
+import isaacsim.core.experimental.utils.app as app_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.graph.core as og
 import usdrt.Sdf
-from isaacsim.core.api import SimulationContext
-from isaacsim.core.utils import extensions, prims, rotations, stage, viewports
+from isaacsim.core.experimental.utils.prim import get_prim_at_path
+from isaacsim.core.rendering_manager import ViewportManager
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf
 
 # enable ROS2 bridge extension
-extensions.enable_extension("isaacsim.ros2.bridge")
+app_utils.enable_extension("isaacsim.ros2.bridge")
 
 simulation_app.update()
 
-simulation_context = SimulationContext(stage_units_in_meters=1.0)
+stage_utils.set_stage_units(meters_per_unit=1.0)
 
 # Locate Isaac Sim assets folder to load environment and robot stages
 assets_root_path = get_assets_root_path()
@@ -52,19 +60,19 @@ if assets_root_path is None:
     sys.exit()
 
 # Preparing stage
-viewports.set_camera_view(eye=np.array([1.2, 1.2, 0.8]), target=np.array([0, 0, 0.5]))
+ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=np.array([1.2, 1.2, 0.8]), target=np.array([0, 0, 0.5]))
 
 # Loading the simple_room environment
-stage.add_reference_to_stage(assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH)
+stage_utils.add_reference_to_stage(assets_root_path + BACKGROUND_USD_PATH, BACKGROUND_STAGE_PATH)
 
 # Loading the franka robot USD
-robot = prims.create_prim(
-    FRANKA_STAGE_PATH,
-    "Xform",
-    position=np.array([0, -0.64, 0]),
-    orientation=rotations.gf_rotation_to_np_array(Gf.Rotation(Gf.Vec3d(0, 0, 1), 90)),
-    usd_path=assets_root_path + FRANKA_USD_PATH,
-)
+stage_utils.add_reference_to_stage(assets_root_path + FRANKA_USD_PATH, FRANKA_STAGE_PATH)
+robot = get_prim_at_path(FRANKA_STAGE_PATH)
+from pxr import UsdGeom
+
+xform_api = UsdGeom.XformCommonAPI(robot)
+xform_api.SetTranslate(Gf.Vec3d(0, -0.64, 0))
+xform_api.SetRotate((0, 0, 90), UsdGeom.XformCommonAPI.RotationOrderXYZ)
 
 # Set variant selections for the Franka robot
 robot.GetVariantSet("Gripper").SetVariantSelection("AlternateFinger")
@@ -122,17 +130,22 @@ except Exception as e:
 simulation_app.update()
 
 # need to initialize physics getting any articulation etc.
-simulation_context.initialize_physics()
+SimulationManager.setup_simulation(dt=1.0 / 60.0, device="cpu")
 
-simulation_context.play()
+app_utils.play()
+simulation_app.update()
 
+frame_count = 0
 while simulation_app.is_running():
 
     # Run with a fixed step size
-    simulation_context.step(render=True)
+    simulation_app.update()
 
     # Tick the Publish/Subscribe JointState and Publish Clock nodes each frame
     og.Controller.set(og.Controller.attribute("/ActionGraph/OnImpulseEvent.state:enableImpulse"), True)
+    frame_count += 1
+    if args.test and frame_count >= 10:
+        break
 
-simulation_context.stop()
+app_utils.stop()
 simulation_app.close()

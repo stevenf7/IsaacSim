@@ -898,6 +898,10 @@ tc_report_enabled = false
 timeout = 960
 
 [[repo_test.suites.nativepythontests.bucket]]
+include = ["tests-nativepython-deprecated*${shell_ext}"]
+name = "deprecated"
+
+[[repo_test.suites.nativepythontests.bucket]]
 include = ["tests-nativepython-replicator*${shell_ext}"]
 name = "replicator"
 

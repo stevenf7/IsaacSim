@@ -25,6 +25,7 @@ from typing import Any
 
 import carb
 import isaacsim.core.experimental.utils.prim as prim_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni.replicator.core as rep
 import warp as wp
@@ -140,6 +141,13 @@ class Lidar(_SensorAuthoring):
         path_parts = path.rsplit("/", 1)
         parent = path_parts[0] if len(path_parts) > 1 and path_parts[0] else None
         name = path_parts[-1]
+        # Replicator's parent-valid check runs against the pxr USD stage.
+        # ``stage.DefinePrim`` is idempotent: it creates missing ancestors as
+        # typeless overs and upgrades only untyped prims to the supplied type.
+        if parent is not None:
+            stage = stage_utils.get_current_stage(backend="usd")
+            if not stage.GetPrimAtPath(parent).IsValid():
+                stage.DefinePrim(parent, "Xform")
         prims = rep.functional.create.omni_lidar(
             name=name,
             parent=parent,

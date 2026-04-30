@@ -15,9 +15,21 @@
 
 """Demonstrate UR10 follow-target using inverse kinematics."""
 
+import argparse
+
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": False})
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, _ = parser.parse_known_args()
+
+simulation_app = SimulationApp(
+    {
+        "headless": False,
+        "extra_args": ["--enable", "isaacsim.robot.manipulators.examples"],
+    }
+)
+
 
 import carb
 from isaacsim.core.api import World
@@ -35,6 +47,7 @@ my_ur10 = my_world.scene.get_object(ur10_name)
 my_controller = KinematicsSolver(my_ur10, attach_gripper=True)
 articulation_controller = my_ur10.get_articulation_controller()
 reset_needed = False
+frame_count = 0
 while simulation_app.is_running():
     my_world.step(render=True)
     if my_world.is_stopped() and not reset_needed:
@@ -52,5 +65,8 @@ while simulation_app.is_running():
             articulation_controller.apply_action(actions)
         else:
             carb.log_warn("IK did not converge to a solution.  No action is being taken.")
+    frame_count += 1
+    if args.test and frame_count >= 10:
+        break
 
 simulation_app.close()

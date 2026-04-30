@@ -15,9 +15,21 @@
 
 """Demonstrate UR10 pick-and-place task."""
 
+import argparse
+
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": False})
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, _ = parser.parse_known_args()
+
+simulation_app = SimulationApp(
+    {
+        "headless": False,
+        "extra_args": ["--enable", "isaacsim.robot.manipulators.examples"],
+    }
+)
+
 
 import numpy as np
 from isaacsim.core.api import World
@@ -35,6 +47,7 @@ articulation_controller = my_ur10.get_articulation_controller()
 
 task_completed = False
 reset_needed = False
+frame_count = 0
 while simulation_app.is_running():
     my_world.step(render=True)
     if my_world.is_stopped() and not reset_needed:
@@ -57,4 +70,7 @@ while simulation_app.is_running():
             print("done picking and placing")
             task_completed = True
         articulation_controller.apply_action(actions)
+    frame_count += 1
+    if args.test and frame_count >= 10:
+        break
 simulation_app.close()

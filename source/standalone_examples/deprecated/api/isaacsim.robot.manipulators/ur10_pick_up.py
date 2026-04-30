@@ -17,7 +17,13 @@
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": False})
+simulation_app = SimulationApp(
+    {
+        "headless": False,
+        "extra_args": ["--enable", "isaacsim.robot.manipulators.examples"],
+    }
+)
+
 
 import argparse
 import sys
@@ -76,6 +82,8 @@ cube = my_world.scene.add(
 )
 my_world.scene.add_default_ground_plane()
 ur10.gripper.set_default_state(opened=True)
+for _ in range(10):
+    simulation_app.update()
 my_world.reset()
 # Eye from viewport translate (1 d.p.); target matches other manipulator examples (e.g. trajectory_example.py).
 set_camera_view(eye=[3.0, 1.5, 1.0], target=[0.0, 0.0, 0.25], camera_prim_path="/OmniverseKit_Persp")
@@ -88,11 +96,15 @@ import omni.timeline
 timeline = omni.timeline.get_timeline_interface()
 print("Set up recording, then press Play…")
 my_world.pause()
-while simulation_app.is_running() and not timeline.is_playing():
-    my_world.step(render=True)
+if args.test:
+    my_world.play()
+else:
+    while simulation_app.is_running() and not timeline.is_playing():
+        my_world.step(render=True)
 
 reset_needed = False
 task_completed = False
+frame_count = 0
 while simulation_app.is_running():
     my_world.step(render=True)
     if my_world.is_stopped() and not reset_needed:
@@ -115,7 +127,8 @@ while simulation_app.is_running():
             print("done picking and placing")
             task_completed = True
         articulation_controller.apply_action(actions)
-    if args.test is True:
+        frame_count += 1
+    if args.test and frame_count >= 10:
         break
 
 

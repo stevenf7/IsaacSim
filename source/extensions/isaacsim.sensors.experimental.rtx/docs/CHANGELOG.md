@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.2] - 2026-04-29
+### Fixed
+- `Radar` and `Lidar` authoring classes now auto-materialize a missing parent prim on the pxr USD stage before invoking `rep.functional.create.omni_radar` / `omni_lidar`. Replicator's parent-valid check runs strictly against pxr, so newly opened large scenes (where the parent exists on the Fabric/USDRT side but not yet on pxr) would previously raise `ValueError: Parent /World is not a valid prim`. Callers no longer need the `stage_utils.define_prim("/World", "Xform")` workaround.
+
 ## [1.1.1] - 2026-04-28
 ### Fixed
 - `resolve_lidar_object_ids.py` standalone example was using only the lower 32 bits of each 128-bit object ID as the `StableIdMap` lookup key, which only matched in trivial scenes where the upper 96 bits happened to be zero. The example now uses `parse_object_ids()` to extract full 128-bit ints, so the lookup also resolves correctly for multi-subset meshes and procedural geometry.

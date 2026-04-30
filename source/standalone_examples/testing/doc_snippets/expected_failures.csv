@@ -34,8 +34,6 @@ robot_simulation/grasp_editor/using_authored_grasps_in_isaac_sim.py,ModuleNotFou
 # Require external robot USD assets (Nucleus server)
 robot_simulation/articulation_controller/wrap_the_prim_as_an_articulation.py,FileNotFoundError
 robot_simulation/articulation_controller/create_the_articulation_controller.py,FileNotFoundError
-# Async examples requiring external assets
-robot_simulation/articulation_controller/script_editor_example.py
 # Sequential snippets referencing articulation/controller from prior context (need Nucleus assets)
 robot_simulation/articulation_controller/initialize_the_controller.py
 robot_simulation/articulation_controller/initialize_the_controller_1.py
@@ -86,11 +84,6 @@ python_scripting/manual_standalone_python/run_headless_1.py
 python_scripting/manual_standalone_python/details_how_simulationapp_works_1.py
 python_scripting/manual_standalone_python/details_how_simulationapp_works.py
 # Code fragment referencing articulations from prior snippet — COMBINED into wrapping_articulations.py
-# Pre-existing failures: async World snippets with API/physics issues
-python_scripting/environment_setup/contact_forces_between_the_top_and_the_bottom_boxe.py
-python_scripting/environment_setup/create_rigidprim.py
-python_scripting/environment_setup/create_rigidcontactview.py
-python_scripting/environment_setup/rigid_prim_is_now_initialized_and_can_be_used.py
 #
 # ---- WG8: ros2_tutorials/ ----
 # ROS2 bridge node types not available in default experience

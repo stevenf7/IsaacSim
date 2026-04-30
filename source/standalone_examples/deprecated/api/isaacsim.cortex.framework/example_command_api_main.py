@@ -14,7 +14,13 @@
 # limitations under the License.
 """Demonstrate the Cortex command API with nullspace posture shifting."""
 
+import argparse
+
 from isaacsim import SimulationApp
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, _ = parser.parse_known_args()
 
 simulation_app = SimulationApp({"headless": False})
 
@@ -72,7 +78,16 @@ def main():
     )
     world.add_decider_network(decider_network)
 
-    world.run(simulation_app)
+    if args.test:
+        _test_frames = {"count": 0}
+
+        def _test_done_cb():
+            _test_frames["count"] += 1
+            return _test_frames["count"] >= 10
+
+        world.run(simulation_app, is_done_cb=_test_done_cb)
+    else:
+        world.run(simulation_app)
     simulation_app.close()
 
 

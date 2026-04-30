@@ -17,7 +17,13 @@
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": False})
+simulation_app = SimulationApp(
+    {
+        "headless": False,
+        "extra_args": ["--enable", "isaacsim.robot.manipulators.examples"],
+    }
+)
+
 
 import argparse
 

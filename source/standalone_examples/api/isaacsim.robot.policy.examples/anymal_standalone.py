@@ -35,6 +35,7 @@ from isaacsim.storage.native import get_assets_root_path
 torch = import_module("torch")
 
 parser = argparse.ArgumentParser(description="Select simulation device.")
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
 parser.add_argument("--device", type=str, choices=["cpu", "cuda"], default="cpu", help="Simulation device")
 
 args, unknown = parser.parse_known_args()
@@ -148,10 +149,14 @@ class Anymal_runner(object):
         Runs until the simulation application is closed.
         """
         # change to sim running
+        frame_count = 0
         while simulation_app.is_running():
             simulation_app.update()
             if not SimulationManager.is_simulating():
                 self.needs_reset = True
+            frame_count += 1
+            if args.test and frame_count >= 10:
+                break
         return
 
     def _sub_keyboard_event(self, event: carb.input.KeyboardEvent, *args, **kwargs) -> bool:

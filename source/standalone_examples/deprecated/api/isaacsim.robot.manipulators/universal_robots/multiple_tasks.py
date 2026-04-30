@@ -17,7 +17,14 @@
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": False})
+simulation_app = SimulationApp(
+    {
+        "headless": False,
+        "extra_args": ["--enable", "isaacsim.robot.manipulators.examples"],
+    }
+)
+
+import argparse
 
 import carb
 import numpy as np
@@ -35,6 +42,10 @@ from isaacsim.robot.wheeled_robots.controllers.holonomic_controller import Holon
 from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 from isaacsim.robot.wheeled_robots.robots.holonomic_robot_usd_setup import HolonomicRobotUsdSetup
 from isaacsim.storage.native import get_assets_root_path
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
+args, _ = parser.parse_known_args()
 
 my_world = World(stage_units_in_meters=1.0)
 tasks = []
@@ -70,6 +81,8 @@ my_jetbot = my_world.scene.add(
     )
 )
 
+for _ in range(10):
+    simulation_app.update()
 my_world.reset()
 robots = []
 for i in range(num_of_tasks):
@@ -128,6 +141,8 @@ for i in range(num_of_tasks):
 i = 0
 my_world.pause()
 reset_needed = False
+if args.test:
+    my_world.play()
 while simulation_app.is_running():
     my_world.step(render=True)
     if my_world.is_stopped() and not reset_needed:
@@ -155,6 +170,8 @@ while simulation_app.is_running():
         elif i >= 1000 and i < 1500:
             my_kaya.apply_wheel_actions(kaya_controller.forward(command=[0, 0.0, 0.6]))
             my_jetbot.apply_wheel_actions(jetbot_controller.forward(command=[0.1, 0]))
+        if args.test and i >= 10:
+            break
         i += 1
 
 

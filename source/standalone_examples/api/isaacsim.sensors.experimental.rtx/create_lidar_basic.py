@@ -51,8 +51,8 @@ os.makedirs(output_dir, exist_ok=True)
 import carb
 import numpy as np
 import omni
-from isaacsim.core.utils.extensions import enable_extension
-from isaacsim.core.utils.stage import is_stage_loading, open_stage
+from isaacsim.core.experimental.utils.app import enable_extension
+from isaacsim.core.experimental.utils.stage import is_stage_loading, open_stage
 from isaacsim.sensors.experimental.rtx import Lidar, LidarSensor
 from isaacsim.storage.native import get_assets_root_path
 
