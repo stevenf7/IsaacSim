@@ -127,6 +127,67 @@ The controller provides access to the underlying |cumotion| RMPflow configuratio
 
 For a complete list of available parameters and their usage, see the |cumotion| Python and C++ API documentation.
 
+Configuring rmp_flow.yaml
+==========================
+
+The ``rmp_flow.yaml`` file controls all RMPflow parameters. Save it alongside ``robot.urdf`` and ``robot.xrdf`` in your robot configuration directory (see :ref:`isaac_sim_cumotion_tutorial_robot_configuration`).
+
+.. list-table:: Top-level keys
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Key
+     - Purpose
+   * - ``joint_limit_buffers``
+     - Per-joint safety margin (radians) applied inside the URDF joint limits.
+   * - ``rmp_params``
+     - Per-RMP gain and weight parameters (see table below).
+   * - ``canonical_resolve``
+     - Global acceleration norm cap and solver verbosity.
+   * - ``body_capsules`` / ``body_collision_controllers``
+     - Self-collision avoidance geometry (see below).
+
+RMP Parameter Groups
+--------------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 28 42 30
+
+   * - Group
+     - Purpose
+     - Key params to tune
+   * - ``cspace_target_rmp``
+     - Pulls joints toward a preferred posture (redundancy resolution).
+     - ``metric_scalar``, ``position_gain``
+   * - ``target_rmp``
+     - Drives the end-effector position to the Cartesian target.
+     - ``accel_p_gain``, ``accel_d_gain``
+   * - ``axis_target_rmp``
+     - Drives end-effector orientation to the target.
+     - ``accel_p_gain``, ``proximity_metric_boost_scalar``
+   * - ``joint_velocity_cap_rmp``
+     - Soft velocity limiter — set ``max_velocity`` to match your robot's URDF limits.
+     - ``max_velocity``, ``velocity_damping_region``
+   * - ``collision_rmp``
+     - Repels the robot from obstacles registered in the world interface.
+     - ``repulsion_gain``, ``metric_scalar``
+   * - ``damping_rmp``
+     - Smooth global damping to reduce oscillation.
+     - ``accel_d_gain``
+   * - ``joint_limit_rmp``
+     - Repels joints away from their soft limits.
+     - ``accel_damper_gain``
+
+Self-Collision Avoidance
+------------------------
+
+``body_capsules`` define fixed-frame capsules (specified by two absolute-coordinate endpoints and a radius) that approximate the robot base or other stationary links. ``body_collision_controllers`` place spheres at named URDF frames on the moving arm. RMPflow prevents any controller sphere from intersecting any body capsule.
+
+Start with one capsule covering the robot base and one sphere near the end effector, then add more geometry only if you observe self-collisions in practice.
+
+For a step-by-step tuning procedure, see the :ref:`RMPflow Tuning Guide <isaac_sim_motion_generation_rmpflow_tuning_guide>`.
+
 Example Usage
 =============
 
@@ -177,5 +238,3 @@ Next Steps
 * :ref:`Trajectory Optimizer tutorial <isaac_sim_cumotion_tutorial_trajectory_optimizer>` - Optimization-based trajectory planning
 * |cumotion| library documentation - Advanced parameter configuration
 
-.. note::
-   The :ref:`RMPflow Tuning Guide <isaac_sim_motion_generation_rmpflow_tuning_guide>` is still a valid documentation for tuning RMPflow in |cumotion|.

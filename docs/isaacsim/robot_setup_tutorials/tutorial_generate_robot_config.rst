@@ -7,7 +7,7 @@ Learning Objectives
 =======================
 
 This is the third manipulator tutorial in a series of four tutorials. This tutorial will show you how to generate the robot configuration file for the UR10e robot from Universal Robots and the 2F-140 gripper from Robotiq.
-These robot configuration files provide information about the robot's kinematics, dynamics, and other properties that are used in RMPFlow, CuMotion, and Lula kinematics solvers.
+These robot configuration files provide information about the robot's kinematics, dynamics, and other properties that are used in RMPFlow and CuMotion motion planners.
 
 *30 Minutes Tutorial*
 
@@ -40,11 +40,15 @@ Export the URDF File
 
 #. Open the ``ur_gripper.usd`` asset you made in the previous tutorial, or use the completed asset provided above.
 #. Click **File** > **Export URDF**.
-#. In File name on the bottom left corner, save the file name to ``ur_gripper.urdf``.
+#. In File name on the bottom left corner, save the file name to ``robot.urdf``.
+
+   .. tip::
+      Using ``robot.urdf`` matches the default ``--urdf`` value in the pick-and-place tutorial scripts, so you won't need to pass ``--urdf`` explicitly when running them.
+
 #. In the **Mesh Directory Path** field, select the correct folder path to save the URDF meshes.
 #. Click **Export**.
 
-.. image:: /images/isim_5.0_full_tut_gui_export_urdf.png
+.. image:: /images/isim_6.0_full_tut_gui_export_urdf.png
    :width: 80%
    :align: center
 
@@ -54,122 +58,218 @@ Export the URDF File
 .. _isaac_sim_app_tutorial_generate_robot_config_lula:
 
 
-Generate Lula Robot Description Files and Collision Spheres
+Generate Robot Description Files and Collision Spheres
 =============================================================
 
-Generate the Lula robot description files and collision spheres for the UR10e robot and the 2F-140 gripper. 
+Generate the XRDF file and collision spheres for the UR10e robot and the 2F-140 gripper. 
 
-Enable the Isaac Sim Lula Extension
------------------------------------
+Enable the Robot Description Editor Extension
+---------------------------------------------
 
-#. Go to  **Window** > **Extensions**.
-#. Type **Lula** in the search box, and find the **Isaac Sim Lula** Extension.
+#. Go to **Window** > **Extensions**.
+#. Search for ``isaacsim.robot_setup.xrdf_editor`` and find the **Robot Description Editor** extension.
 #. If you can't find it, remove the **@feature** filter from the search box.
 #. Enable the extension by clicking the toggle button labeled **ENABLE**.
 #. Check the box for **AUTOLOAD**, just to the right of **ENABLE**.
 
 
-Prepare the Robot Asset for Lula
---------------------------------
+Prepare the Robot Asset
+-----------------------
 
-The Lula robot description editor does not support instantiable meshes. You must prepare the robot asset for Lula by removing the instantiable meshes.
+The Robot Description Editor does not support instanceable meshes. You must prepare the robot asset by disabling instanceable meshes.
 
 #. Open the ``ur_gripper.usd`` asset you made in the previous tutorial, or use the completed asset provided above.
-#. Select all ``visuals`` and ``collisions`` prims on the stage. 
-#. On the property editor, uncheck the **Instantiable** field.
+#. Select all ``visuals`` and ``collisions`` prims on the stage.
+#. In the **Property** panel, uncheck the **Instanceable** checkbox for each.
 
    .. hint::
       You can use the search feature to find the ``visuals`` and ``collisions`` prims by searching for ``visuals`` and ``collisions`` respectively.
 
+Configure Joint Properties
+--------------------------
 
-The completed asset for this tutorial can be found in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/configure_manipulator/ur10e/ur/ur_gripper_lula.usd``.
+#. Press **Play** to start the simulation.
+#. Open the editor via **Tools** > **Robotics** > **Robot Description Editor**.
+#. In the **Selection Panel**, set **Select Articulation** to the **ur** articulation prim path.
+#. In **Set Joint Properties**, assign each joint a **Joint Status**:
 
-Configure Joints in Lula Robot Description Editor
--------------------------------------------------
-
-1. Press **PLAY** to start the simulation.
-2. Click **Tools** > **Robotics > **Lula Robot Description Editor**.
-3. In the **Selection Panel**, select the **ur** articulation.
-4. Go down to the **Set Joint Properties** section.
-5. For each of the Universal Robots joints, set the **Joint Status** to **Active Joint**, keep the other settings as default.
-6. Keep the Robotiq 2F-140 gripper joints as **Fixed Joint**, so the robotics controller will not attempt to move the gripper joints to optimize for the robot position.
-
-.. hint:: 
-   The gripper and arm usually are controlled separately. Because the Lula framework does not actually control the gripper during collision checking, the cspace does not need to include the gripper joints.
+   * Mark each Universal Robots arm joint as **Active Joint**. These joints are directly controlled by cuMotion.
+   * Keep the Robotiq 2F-140 gripper joints as **Fixed Joint**. cuMotion holds these joints at the specified default position.
 
 .. important:: **Do not stop the simulation**, you will need it to generate the collision spheres.
 
-.. image:: /images/isim_5.0_full_tut_gui_lula_robot_description_editor.png
-   :width: 80%
+.. image:: /images/isim_6.0_full_tut_gui_robot_description_editor.png
+   :width: 50%
    :align: center
 
-
- 
-Pay attention to the default values of the joints in ``cspace_to_urdf_rules``. 
-They must be the same positions with the initial pose in the manipulator USD, or you need to reset the robot joint positions to these initial positions during task initialization. 
+Pay attention to the default joint positions for fixed joints. They should match the initial pose defined in the manipulator USD, or you will need to reset the robot to those positions during task initialization.
 
 Generate Collision Spheres
----------------------------
+--------------------------
 
-#. **Do not stop the simulation**, or exit the Lula Robot Description Editor, or you will need to redo the previous steps.
-#. Go down to the **Link Sphere editor** section.
-#. For each of the robot links that you want ot generate collision spheres for, in the **Selection Panel/Select link**, select the link. Use **upper_arm_link** as an example.
-#. In the **Link Sphere editor/Generate Spheres/Select Mesh** dropdown menu, select the mesh that the collision spheres are based on. For example, select ``/collisions/upperarm/mesh``.
-#. Set the **Radius Offset** to ``0.03``. This is the offset between the mesh radius and the collision sphere radius.
-#. Set the **Number of Spheres** to ``8``. This is the number of collision spheres to generate. Validate that you see eight red spheres on the **upper_arm_link**.
-#. Optionally, adjust the **Sphere Position** by left clicking on the spheres and dragging them around.
-#. Click **Generate Spheres**, the sphere will turn a cyan color to indicate that the collision spheres have been generated.
-#. Repeat the same steps for all the other links in the **ur** articulation, including the gripper links.
+.. important:: **Do not stop the simulation** or exit the Robot Description Editor during this step, or you will need to redo the previous steps.
 
-   .. image:: /images/isim_5.0_full_tut_gui_lula_link_sphere_editor.png
-      :width: 80%
-      :align: center
+Repeat the following for each link in the **ur** articulation, including gripper links:
 
-   .. important:: **Do not stop the simulation**, you will need it to generate the robot configuration file.
+#. In the **Selection Panel**, select the link under **Select Link**. Use **upper_arm_link** as an example.
+#. In **Link Sphere Editor** > **Generate Spheres**, select a mesh from the **Select Mesh** dropdown (e.g. ``/collisions/upperarm/mesh``).
+#. Set the **Radius Offset** and **Number of Spheres** (e.g. ``0.03`` and ``8`` respectively).
+#. Optionally adjust sphere positions by clicking and dragging them in the viewport.
+#. Click **GENERATE SPHERES**. The spheres will turn cyan when finalized.
 
-#. Verify that the completed asset looks like the following image:
+.. dropdown:: Suggested per-link sphere settings (ur10e + Robotiq 2F-140)
+   :icon: table
 
-   .. image:: /images/isim_5.0_full_tut_gui_lula_link_sphere_editor_add_spheres.png
-      :width: 80%
-      :align: center
+   For links with multiple mesh entries, generate spheres for each mesh and combine them on the same link.
 
-The following suggestions can help you tune the collision spheres:
+   .. list-table::
+      :header-rows: 1
+      :widths: 30 15 15 40
 
-    #. In general, make the collision spheres large enough to encompass the link, but not too large to cause solver issues. 
-    #. When choosing the size and number of collision spheres, the more collision spheres the more accurate the collision detection will be, but too many collision spheres will slow down the solver.
-    #. Unless you have specified collider meshes, there's no restrictions to generate collision spheres on the collision meshes of the links only. If the visual mesh give you better collision mesh approximation, you can generate the collision spheres on the visual mesh.
-    #. For longer arm links, it is generally easier to use the method above to only generate collision spheres on the ends of the link, then use ``Link Sphere editor/Generate Spheres/Add Spheres`` to add the collision spheres to the entire link evenly.
-    #. If the sphere sizes are too small or too large, you can use ``Link Sphere editor/Generate Spheres/Scale Spheres in Link`` to scale the sphere sizes.
-    #. The generate spheres utility is not guaranteed to work for all meshes.  It only works for water-tight triangle meshes. If the automatic generator doesn't work for a link, add the spheres and connect them by hand.
+      * - Select Link
+        - Number of Spheres
+        - Radius Offset
+        - Select Mesh
+      * - ``/shoulder_link``
+        - 1
+        - 0.03
+        - ``/collisions/shoulder/mesh``
+      * - ``/upper_arm_link``
+        - 8
+        - 0.03
+        - ``/visuals/upperarm/mesh``
+      * - ``/forearm_link``
+        - 8
+        - 0.03
+        - ``/visuals/forearm/mesh``
+      * - ``/wrist_1_link``
+        - 1
+        - 0.03
+        - ``/visuals/wrist1/mesh``
+      * - ``/wrist_2_link``
+        - 1
+        - 0.02
+        - ``/visuals/wrist3/mesh``
+      * - ``/wrist_3_link``
+        - 1
+        - 0.02
+        - ``/visuals/wrist3/mesh``
+      * - ``/ee_link/robotiq_arg2f_base_link``
+        - 1
+        - 0.02
+        - ``/visuals/robotiq_arg2f_base_link/mesh``
+      * - ``/ee_link/left_outer_knuckle``
+        - 2
+        - 0.02
+        - ``/visuals/robotiq_arg2f_140_outer_knuckle/mesh``
+      * - ``/ee_link/left_outer_knuckle``
+        - 2
+        - 0.02
+        - ``/visuals/robotiq_arg2f_140_outer_finger/mesh``
+      * - ``/ee_link/left_inner_finger``
+        - 2
+        - 0.02
+        - ``/collisions/robotiq_arg2f_140_inner_finger/mesh``
+      * - ``/ee_link/right_inner_finger``
+        - 2
+        - 0.02
+        - ``/collisions/robotiq_arg2f_140_inner_finger/mesh``
+      * - ``/ee_link/left_inner_knuckle``
+        - 2
+        - 0.02
+        - ``/visuals/robotiq_arg2f_140_inner_knuckle/mesh``
+      * - ``/ee_link/right_inner_knuckle``
+        - 2
+        - 0.02
+        - ``/visuals/robotiq_arg2f_140_inner_knuckle/mesh``
+      * - ``/ee_link/right_outer_knuckle``
+        - 2
+        - 0.02
+        - ``/visuals/robotiq_arg2f_140_outer_knuckle/mesh``
+      * - ``/ee_link/right_outer_knuckle``
+        - 2
+        - 0.02
+        - ``/visuals/robotiq_arg2f_140_outer_finger/mesh``
 
-
-Export the Lula Robot Description File
---------------------------------------
-
-#. **Do not stop the simulation or save the file**, you need it to export the robot configuration file.
-#. In the **Lula Robot Description Editor**, go to the very bottom and find the **Export To File** section.
-#. Expand **Export to Lula Robot Description File**, click the file icon and specify the file name to ``ur10e.yaml``.
-#. Click **Save** to export the robot configuration file:
-
-   .. image:: /images/isim_5.0_full_tut_gui_lula_export_robot_description_file.png
-      :width: 80%
-      :align: center
-
-#. You can also export the cuMotion XRDF file by going to **Export To File** > **Export to cuMotion XRDF** and specify the file name to ``ur10e.xrdf``.
-#. Stop the simulation after the robot configuration files are exported.
-
-.. image:: /images/isim_5.0_full_tut_gui_lula_export_cucore_xrdf_file.png
+.. image:: /images/isim_6.0_full_tut_gui_link_sphere_editor.png
    :width: 80%
    :align: center
 
-See :ref:`isaac_sim_app_tutorial_motion_generation_robot_description_editor` for more information on the robot description files.
+   Spheres generated for the upper_arm_link.
+
+.. image:: /images/isim_6.0_full_tut_gui_link_sphere_editor_add_spheres.png
+   :width: 80%
+   :align: center
+
+   Spheres generated for the full ur10e robot.
+
+
+.. admonition:: General tuning tips
+   :class: tip
+
+   * Size spheres to cover the link without being oversized — large spheres cause solver conservatism.
+   * More spheres improves collision accuracy but reduces solver performance.
+   * For long cylindrical links, generate spheres on the ends and use **Connect Spheres** to fill the middle evenly.
+   * Use **Scale Spheres in Link** to resize spheres uniformly across a link.
+   * The auto-generator requires water-tight triangle meshes. If it fails for a link, add and connect spheres manually.
+
+
+Export to XRDF
+--------------
+
+.. important:: **Do not stop the simulation** before exporting.
+
+#. At the bottom of the Robot Description Editor, expand **Export To File** > **Export to cuMotion XRDF**.
+#. Click the file icon and specify the file name as ``robot.xrdf``.
+#. Select the XRDF version to export (version 2.0 is recommended).
+#. Click **Save**. Save to the same directory as the robot URDF file.
+#. Stop the simulation after the file is exported.
+
+See :ref:`isaac_sim_cumotion_tutorial_robot_configuration` for more information on XRDF files and loading robot configurations into cuMotion.
+
+
+Assemble the Robot Configuration Directory
+===========================================
+
+The pick-and-place tutorial scripts and the ``load_cumotion_robot`` API expect all robot configuration files to live in a single directory. After completing the export steps above, your directory should look like this:
+
+.. code-block:: text
+
+    /path/to/robot/config/
+    ├── robot.urdf
+    ├── robot.xrdf
+    ├── rmp_flow.yaml
+    └── meshes/
+        └── ...
+
+Pass this directory to the tutorial scripts with ``--xrdf-dir /path/to/robot/config``. For a full description of the directory structure and how it is used by cuMotion, see the :ref:`Robot Configuration Directory Structure <isaac_sim_cumotion_tutorial_robot_configuration>` section of the cuMotion tutorial.
+
+The ``rmp_flow.yaml`` file configures the RMPflow reactive motion controller. Save the text below in a file named ``rmp_flow.yaml`` and save it to the same directory as your ``robot.urdf`` and ``robot.xrdf`` files.
+
+.. dropdown:: rmp_flow.yaml — RMPflow configuration example
+
+    .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_generate_robot_config/rmp_flow.yaml
+        :language: yaml
+
+.. _isaac_sim_app_tutorial_generate_robot_config_adding_tool:
+
+Adding a Tool to the Robot Configuration
+----------------------------------------
+
+CuMotion requires a tool frame defined in the XRDF file. The tool frame is used to specify the end-effector frame for the robot.
+
+#. Open the ``robot.xrdf`` file in a text editor.
+#. Add the following line to the file:
+
+   .. code-block:: text
+
+      tool_frames: ["wrist_3_link"]
 
 
 Summary
 =======
 
-In this tutorial, you have learned how to generate the robot configuration file for the UR10e robot and the 2F-140 gripper using the :ref:`isaac_sim_app_tutorial_motion_generation_robot_description_editor` 
-and the :ref:`isaac_sim_app_extension_urdf_exporter` extensions.
+In this tutorial, you have learned how to generate the robot configuration files for the UR10e robot and the 2F-140 gripper using the :ref:`Robot Description Editor <isaac_sim_app_tutorial_motion_generation_robot_description_editor>` and the :ref:`isaac_sim_app_extension_urdf_exporter` extensions. The resulting XRDF file can be loaded directly into cuMotion motion planners as described in :ref:`isaac_sim_cumotion_tutorial_robot_configuration`.
 
 
 
