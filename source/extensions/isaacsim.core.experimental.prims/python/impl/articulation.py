@@ -4762,15 +4762,20 @@ class Articulation(XformPrim):
 
     @staticmethod
     def _deferred_switch_remotesim() -> bool:
-        """Switch to the remotesim engine if it is registered but not yet active.
+        """Switch to the remotesim engine if it is not the only active engine.
 
         Called after PhysX query_prim so articulation metadata is already populated
         before the engine transition.
         """
         available = SimulationManager.get_available_physics_engines()
         remotesim_entry = next(((name, active) for name, active in available if name == "remotesim"), None)
-        if remotesim_entry is None or remotesim_entry[1]:
+        if remotesim_entry is None:
             return False
+        other_engine_active = any(name != "remotesim" and active for name, active in available)
+        if remotesim_entry[1] and not other_engine_active:
+            return False
+        if other_engine_active:
+            carb.log_warn(f"Available physics engines: {available}. Switching to remotesim to deactivate other engines")
         return SimulationManager.switch_physics_engine("remotesim")
 
     """

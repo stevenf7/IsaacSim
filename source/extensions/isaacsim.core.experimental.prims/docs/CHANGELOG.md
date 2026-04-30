@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.8.5] - 2026-05-01
+### Fixed
+- Switch to the `remotesim` physics engine when other physics engines are still active, even if
+  `remotesim` is already marked active.
+
 ## [1.8.4] - 2026-04-28
 ### Changed
 - `Articulation.get_world_poses`, `get_velocities`: skip Warp row-axis fancy-indexing when
