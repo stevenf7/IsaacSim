@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.8.4] - 2026-04-28
+### Changed
+- `Articulation.get_world_poses`, `get_velocities`: skip Warp row-axis fancy-indexing when
+  `indices=None`; column reorder for quaternion xyzw→wxyz still uses the cached index array.
+- `Articulation.get_dof_positions`, `get_dof_velocities`, `get_dof_position_targets`,
+  `get_dof_velocity_targets`: skip Warp fancy-indexing when `indices=None` and
+  `dof_indices=None` (guarded by `data.shape[1] == num_dofs` for heterogeneous safety).
+- Quaternion reorder index array `[6, 3, 4, 5]` cached per device at module level to avoid
+  repeated allocation on `get_world_poses` / `get_coms` / `set_world_poses` / `set_coms`.
+
 ## [1.8.3] - 2026-04-24
 ### Changed
 - Use `SimulationManager.get_active_physics_engine()` for Newton engine detection in `RigidPrim` and `Articulation` instead of checking for `_newton_stage` attribute on the view object.

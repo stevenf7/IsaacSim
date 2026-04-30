@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.17.1] - 2026-04-28
+### Changed
+- Cache `arange` index arrays globally in `ops.resolve_indices` (keyed by `(count, dtype, device)`) so repeated `x=None` calls across all callers reuse the same Warp array without re-allocating
+
 ## [0.17.0] - 2026-04-24
 ### Added
 - Add `upgrade_prim_semantics_to_labels` to semantics utils for migrating deprecated `Semantics.SemanticsAPI` to `UsdSemantics.LabelsAPI`

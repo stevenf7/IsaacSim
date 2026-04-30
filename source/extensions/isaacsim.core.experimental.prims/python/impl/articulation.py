@@ -43,6 +43,18 @@ from . import _transform
 from .prim import _MSG_PHYSICS_TENSOR_ENTITY_NOT_INITIALIZED, _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID, _MSG_PRIM_NOT_VALID
 from .xform_prim import XformPrim
 
+# cache index array used to reorder a quaternion
+_XYZW_WXYZ_REORDER_INDICES: dict[str, wp.array] = {}
+
+
+def _get_xyzw_wxyz_reorder_indices(device) -> wp.array:
+    key = str(device)
+    indices = _XYZW_WXYZ_REORDER_INDICES.get(key)
+    if indices is None:
+        indices = wp.array([6, 3, 4, 5], dtype=wp.int32, device=device)
+        _XYZW_WXYZ_REORDER_INDICES[key] = indices
+    return indices
+
 
 class Articulation(XformPrim):
     """High level wrapper for manipulating prims (that have the Root Articulation API applied) and their attributes.
@@ -1954,6 +1966,8 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_dof_positions()  # shape: (N, max_dofs)
+        if indices is None and dof_indices is None and data.shape[1] == self.num_dofs:
+            return data.contiguous().to(self._device)
         indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
         dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
         return data[indices, dof_indices].contiguous().to(self._device)
@@ -1997,6 +2011,8 @@ class Articulation(XformPrim):
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_position_targets()  # shape: (N, max_dofs)
+            if indices is None and dof_indices is None and data.shape[1] == self.num_dofs:
+                return data.contiguous().to(self._device)
             indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
             dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
             return data[indices, dof_indices].contiguous().to(self._device)
@@ -2053,6 +2069,8 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_dof_velocities()  # shape: (N, max_dofs)
+        if indices is None and dof_indices is None and data.shape[1] == self.num_dofs:
+            return data.contiguous().to(self._device)
         indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
         dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
         return data[indices, dof_indices].contiguous().to(self._device)
@@ -2096,6 +2114,8 @@ class Articulation(XformPrim):
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_dof_velocity_targets()  # shape: (N, max_dofs)
+            if indices is None and dof_indices is None and data.shape[1] == self.num_dofs:
+                return data.contiguous().to(self._device)
             indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
             dof_indices = ops_utils.resolve_indices(dof_indices, count=self.num_dofs, device=data.device)
             return data[indices, dof_indices].contiguous().to(self._device)
@@ -2169,7 +2189,7 @@ class Articulation(XformPrim):
                 orientations = ops_utils.broadcast_to(
                     orientations, shape=(indices.shape[0], 4), dtype=wp.float32, device=data.device
                 )
-                wp.copy(data[indices, wp.array([6, 3, 4, 5], dtype=wp.int32, device=data.device)], orientations)
+                wp.copy(data[indices, _get_xyzw_wxyz_reorder_indices(data.device)], orientations)
             self._physics_articulation_view.set_root_transforms(data, indices)
         # USD/USDRT/Fabric API
         else:
@@ -2213,10 +2233,15 @@ class Articulation(XformPrim):
         # Tensor API
         if backend == "tensor":
             data = self._physics_articulation_view.get_root_transforms()  # shape: (N, 7), quaternion is xyzw
+            if indices is None:
+                return (
+                    data[:, :3].contiguous().to(self._device),
+                    data[:, _get_xyzw_wxyz_reorder_indices(data.device)].contiguous().to(self._device),
+                )
             indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
             return (
                 data[indices, :3].contiguous().to(self._device),
-                data[indices, wp.array([6, 3, 4, 5], dtype=wp.int32, device=data.device)].contiguous().to(self._device),
+                data[indices, _get_xyzw_wxyz_reorder_indices(data.device)].contiguous().to(self._device),
             )
         # USD/USDRT/Fabric API
         else:
@@ -2443,6 +2468,8 @@ class Articulation(XformPrim):
         assert self.is_physics_tensor_entity_valid(), _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID
         # Tensor API
         data = self._physics_articulation_view.get_root_velocities()  # shape: (N, 6)
+        if indices is None:
+            return data[:, :3].contiguous().to(self._device), data[:, 3:].contiguous().to(self._device)
         indices = ops_utils.resolve_indices(indices, count=len(self), device=data.device)
         return data[indices, :3].contiguous().to(self._device), data[indices, 3:].contiguous().to(self._device)
 
@@ -3885,9 +3912,7 @@ class Articulation(XformPrim):
         link_indices = ops_utils.resolve_indices(link_indices, count=self.num_links, device=data.device)
         return (
             data[indices, link_indices, :3].contiguous().to(self._device),
-            data[indices, link_indices, wp.array([6, 3, 4, 5], dtype=wp.int32, device=data.device)]
-            .contiguous()
-            .to(self._device),
+            data[indices, link_indices, _get_xyzw_wxyz_reorder_indices(data.device)].contiguous().to(self._device),
         )
 
     def get_link_inertias(
@@ -4149,9 +4174,7 @@ class Articulation(XformPrim):
             orientations = ops_utils.broadcast_to(
                 orientations, shape=(indices.shape[0], link_indices.shape[0], 4), dtype=wp.float32, device=data.device
             )
-            wp.copy(
-                data[indices, link_indices, wp.array([6, 3, 4, 5], dtype=wp.int32, device=data.device)], orientations
-            )
+            wp.copy(data[indices, link_indices, _get_xyzw_wxyz_reorder_indices(data.device)], orientations)
         self._physics_articulation_view.set_coms(data, indices)
 
     def set_link_enabled_gravities(
