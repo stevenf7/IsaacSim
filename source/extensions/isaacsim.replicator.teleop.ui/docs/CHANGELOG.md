@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.2] - 2026-05-01
+### Changed
+- Teleop UI tests now use the shared menu UI test base class for more robust
+  menu interactions in CI.
+
 ## [0.3.1] - 2026-04-28
 ### Added
 - `TeleopWindow` activates a pre-session XR anchor on open and restores prior

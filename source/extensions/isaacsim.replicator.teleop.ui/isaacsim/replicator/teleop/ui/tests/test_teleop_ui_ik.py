@@ -32,40 +32,25 @@ import os
 import tempfile
 from unittest.mock import patch
 
-import omni.kit.app
 import omni.ui as ui
-import omni.usd
 from isaacsim.replicator.teleop.ui.teleop_ui_extension import TeleopUIExtension
-from isaacsim.test.utils.menu_utils import menu_click_with_retry
-from omni.ui.tests.test_base import OmniUiTest
+from isaacsim.test.utils import MenuUITestCase
 
 WINDOW_TITLE = TeleopUIExtension.WINDOW_NAME
 MENU_PATH = f"{TeleopUIExtension.MENU_GROUP}/{TeleopUIExtension.WINDOW_NAME}"
 
 
-class TestTeleopUIIKPinkQPFilter(OmniUiTest):
+class TestTeleopUIIKPinkQPFilter(MenuUITestCase):
     """Validate that the IK panel hides PINK QP solver backends that cannot be imported."""
 
-    async def setUp(self) -> None:
-        await omni.kit.app.get_app().next_update_async()
-        omni.usd.get_context().new_stage()
-        await omni.kit.app.get_app().next_update_async()
-
-    async def tearDown(self) -> None:
-        omni.usd.get_context().close_stage()
-        await omni.kit.app.get_app().next_update_async()
-        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            await omni.kit.app.get_app().next_update_async()
-
     async def _open_window(self, tmp_dir: str):
-        await menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
+        await self.menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
         window = ui.Workspace.get_window(WINDOW_TITLE)
         self.assertIsNotNone(window, "Teleop window should exist after opening via the menu")
         window._last_profile_path = os.path.join(tmp_dir, "last_profile.yaml")
         window.visible = True
         window.focus()
-        for _ in range(5):
-            await omni.kit.app.get_app().next_update_async()
+        await self.wait_n_frames(5)
         return window
 
     async def test_dropdown_lists_only_available_pink_qp_solvers(self):
@@ -171,7 +156,7 @@ class TestTeleopUIIKPinkQPFilter(OmniUiTest):
 
                     ik_panel._on_pink_qp_solver_changed("left", 0)
                     ik_panel._on_pink_qp_solver_changed("right", 0)
-                    await omni.kit.app.get_app().next_update_async()
+                    await self.wait_n_frames(1)
             finally:
                 if window is not None:
                     window._last_profile_path = os.path.join(tmp_dir, "last_profile.yaml")

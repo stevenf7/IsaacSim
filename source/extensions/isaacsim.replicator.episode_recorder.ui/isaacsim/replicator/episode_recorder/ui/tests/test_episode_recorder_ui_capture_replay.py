@@ -23,12 +23,10 @@ import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.app
 import omni.timeline
 import omni.ui as ui
-import omni.usd
 from isaacsim.replicator.episode_recorder.ui.episode_recorder_extension import EpisodeRecorderUIExtension
 from isaacsim.replicator.episode_recorder.ui.episode_recorder_panel import EpisodeRecorderPanel
 from isaacsim.replicator.episode_recorder.ui.episode_recorder_window import EpisodeRecorderWindow
-from isaacsim.test.utils.menu_utils import menu_click_with_retry
-from omni.ui.tests.test_base import OmniUiTest
+from isaacsim.test.utils import MenuUITestCase
 from pxr import Gf, UsdGeom, UsdPhysics
 
 WINDOW_TITLE = EpisodeRecorderUIExtension.WINDOW_NAME
@@ -57,14 +55,14 @@ def _build_rigid_cube_scene() -> None:
     mass_api.CreateMassAttr(1.0)
 
 
-async def _open_panel(test: OmniUiTest) -> tuple[EpisodeRecorderWindow, EpisodeRecorderPanel]:
-    await menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
+async def _open_panel(test: MenuUITestCase) -> tuple[EpisodeRecorderWindow, EpisodeRecorderPanel]:
+    await test.menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
+    await test.find_widget_with_retry(WINDOW_TITLE)
     window = ui.Workspace.get_window(WINDOW_TITLE)
     test.assertIsNotNone(window, "Episode Recorder window should exist after opening via the menu")
     window.visible = True
     window.focus()
-    for _ in range(5):
-        await omni.kit.app.get_app().next_update_async()
+    await test.wait_n_frames(5)
 
     panel = window._panel
     test.assertIsNotNone(panel, "Episode Recorder panel should be initialized")
@@ -78,7 +76,7 @@ def _configure_panel(panel: EpisodeRecorderPanel, output_dir: str, file_prefix: 
 
 
 async def _record_session(
-    test: OmniUiTest,
+    test: MenuUITestCase,
     panel: EpisodeRecorderPanel,
     output_dir: str,
     file_prefix: str = _FILE_PREFIX,
@@ -134,20 +132,12 @@ def _close_panel(window: EpisodeRecorderWindow | None, panel: EpisodeRecorderPan
         window.destroy()
 
 
-class TestEpisodeRecorderUICaptureReplay(OmniUiTest):
+class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
     """Drive the Episode Recorder UI through capture and replay against a temp directory."""
 
-    async def setUp(self):
-        await omni.kit.app.get_app().next_update_async()
-        omni.usd.get_context().new_stage()
-        await omni.kit.app.get_app().next_update_async()
-
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         omni.timeline.get_timeline_interface().stop()
-        omni.usd.get_context().close_stage()
-        await omni.kit.app.get_app().next_update_async()
-        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            await omni.kit.app.get_app().next_update_async()
+        await super().tearDown()
 
     async def test_open_close_session_round_trip(self):
         """Opening then closing a session via the UI button leaves no recorder attached."""
@@ -643,9 +633,8 @@ class TestEpisodeRecorderUICaptureReplay(OmniUiTest):
                 window, panel = await _open_panel(self)
                 hdf5_path = await _record_session(self, panel, tmp_dir)
 
-                omni.usd.get_context().new_stage()
-                for _ in range(3):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.new_stage()
+                await self.wait_n_frames(3)
 
                 panel._replay_file_field.model.set_value(hdf5_path)
                 await omni.kit.app.get_app().next_update_async()

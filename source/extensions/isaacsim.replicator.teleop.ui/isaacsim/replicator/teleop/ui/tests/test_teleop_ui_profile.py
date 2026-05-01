@@ -18,35 +18,21 @@
 import os
 import tempfile
 
-import omni.kit.app
 import omni.ui as ui
-import omni.usd
 from isaacsim.replicator.teleop import (
     TeleopProfile,
     TeleopSettingsProfile,
     save_teleop_profile,
 )
 from isaacsim.replicator.teleop.ui.teleop_ui_extension import TeleopUIExtension
-from isaacsim.test.utils.menu_utils import menu_click_with_retry
-from omni.ui.tests.test_base import OmniUiTest
+from isaacsim.test.utils import MenuUITestCase
 
 WINDOW_TITLE = TeleopUIExtension.WINDOW_NAME
 MENU_PATH = f"{TeleopUIExtension.MENU_GROUP}/{TeleopUIExtension.WINDOW_NAME}"
 
 
-class TestTeleopUIProfile(OmniUiTest):
+class TestTeleopUIProfile(MenuUITestCase):
     """Round-trip a unified teleop profile through the live Profiles panel."""
-
-    async def setUp(self):
-        await omni.kit.app.get_app().next_update_async()
-        omni.usd.get_context().new_stage()
-        await omni.kit.app.get_app().next_update_async()
-
-    async def tearDown(self):
-        omni.usd.get_context().close_stage()
-        await omni.kit.app.get_app().next_update_async()
-        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            await omni.kit.app.get_app().next_update_async()
 
     async def test_load_profile_applies_to_session_panel(self):
         """A YAML profile loaded through the Profiles panel must update session state."""
@@ -55,14 +41,13 @@ class TestTeleopUIProfile(OmniUiTest):
 
         with tempfile.TemporaryDirectory(prefix="teleop_ui_profile_") as tmp_dir:
             try:
-                await menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
+                await self.menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
                 window = ui.Workspace.get_window(WINDOW_TITLE)
                 self.assertIsNotNone(window, "Teleop window should exist after opening via the menu")
                 window._last_profile_path = os.path.join(tmp_dir, "last_profile.yaml")
                 window.visible = True
                 window.focus()
-                for _ in range(5):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(5)
 
                 profile = TeleopProfile(
                     session=TeleopSettingsProfile(
@@ -86,8 +71,7 @@ class TestTeleopUIProfile(OmniUiTest):
 
                 profile_panel._dir_field.model.set_value(tmp_dir)
                 profile_panel._on_directory_changed()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
 
                 profile_names = [name for name, _ in profile_panel._profiles]
                 self.assertIn(profile_name, profile_names, f"Profile '{profile_name}' should be discovered")
@@ -95,8 +79,7 @@ class TestTeleopUIProfile(OmniUiTest):
                 profile_panel._profile_combo.model.get_item_value_model().set_value(index)
 
                 profile_panel._on_load_clicked()
-                for _ in range(5):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(5)
 
                 self.assertIsNotNone(session_panel._marker_scale_field, "Marker scale field should exist after load")
                 self.assertAlmostEqual(session_panel._marker_scale_field.model.get_value_as_float(), 0.137, places=4)
@@ -118,14 +101,13 @@ class TestTeleopUIProfile(OmniUiTest):
 
         with tempfile.TemporaryDirectory(prefix="teleop_ui_profile_") as tmp_dir:
             try:
-                await menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
+                await self.menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
                 window = ui.Workspace.get_window(WINDOW_TITLE)
                 self.assertIsNotNone(window, "Teleop window should exist after opening via the menu")
                 window._last_profile_path = os.path.join(tmp_dir, "last_profile.yaml")
                 window.visible = True
                 window.focus()
-                for _ in range(5):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(5)
 
                 profile_panel = window._teleop_profile_panel
                 session_panel = window._session_panel
@@ -134,35 +116,30 @@ class TestTeleopUIProfile(OmniUiTest):
 
                 profile_panel._dir_field.model.set_value(tmp_dir)
                 profile_panel._on_directory_changed()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
 
                 marker_scale_field = session_panel._marker_scale_field
                 self.assertIsNotNone(marker_scale_field, "Session panel marker scale field should exist")
                 marker_scale_field.model.set_value(0.211)
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
 
                 self.assertIsNotNone(profile_panel._save_name_field, "Save name field should exist")
                 profile_panel._save_name_field.model.set_value(profile_name)
                 profile_panel._on_save_confirm()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
 
                 saved_path = os.path.join(tmp_dir, f"{profile_name}.yaml")
                 self.assertTrue(os.path.isfile(saved_path), f"Profile file was not written: {saved_path}")
 
                 marker_scale_field.model.set_value(0.099)
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
 
                 profile_names = [name for name, _ in profile_panel._profiles]
                 self.assertIn(profile_name, profile_names, "Saved profile should appear in the rescanned list")
                 index = profile_names.index(profile_name)
                 profile_panel._profile_combo.model.get_item_value_model().set_value(index)
                 profile_panel._on_load_clicked()
-                for _ in range(5):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(5)
 
                 self.assertAlmostEqual(marker_scale_field.model.get_value_as_float(), 0.211, places=4)
             finally:
@@ -177,37 +154,33 @@ class TestTeleopUIProfile(OmniUiTest):
 
         with tempfile.TemporaryDirectory(prefix="teleop_ui_profile_") as tmp_dir:
             try:
-                await menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
+                await self.menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
                 window = ui.Workspace.get_window(WINDOW_TITLE)
                 self.assertIsNotNone(window, "Teleop window should exist after opening via the menu")
                 window._last_profile_path = os.path.join(tmp_dir, "last_profile.yaml")
                 window.visible = True
                 window.focus()
-                for _ in range(5):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(5)
 
                 profile_panel = window._teleop_profile_panel
                 session_panel = window._session_panel
 
                 profile_panel._dir_field.model.set_value(tmp_dir)
                 profile_panel._on_directory_changed()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
 
                 seed = TeleopProfile(session=TeleopSettingsProfile(marker_scale=0.111))
                 saved_path = os.path.join(tmp_dir, f"{profile_name}.yaml")
                 ok, message = save_teleop_profile(saved_path, seed)
                 self.assertTrue(ok, message)
                 profile_panel._rescan_profiles()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
 
                 session_panel._marker_scale_field.model.set_value(0.222)
                 profile_panel._save_name_field.model.set_value(profile_name)
 
                 profile_panel._on_save_confirm()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
 
                 self.assertIsNotNone(
                     profile_panel._confirm_dialog,
@@ -224,8 +197,7 @@ class TestTeleopUIProfile(OmniUiTest):
                 self.assertIn("0.111", before_confirm, "Showing the dialog must not modify the existing YAML")
 
                 profile_panel._confirm_dialog._on_cancel()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
                 with open(saved_path, encoding="utf-8") as fh:
                     after_cancel = fh.read()
                 self.assertIn("0.111", after_cancel, "Cancelling the dialog must not modify the existing YAML")
@@ -236,12 +208,10 @@ class TestTeleopUIProfile(OmniUiTest):
                 )
 
                 profile_panel._on_save_confirm()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
                 self.assertIsNotNone(profile_panel._confirm_dialog, "Second Save click must reopen the dialog")
                 profile_panel._confirm_dialog._on_okay()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
 
                 with open(saved_path, encoding="utf-8") as fh:
                     after_overwrite = fh.read()
@@ -267,28 +237,25 @@ class TestTeleopUIProfile(OmniUiTest):
 
         with tempfile.TemporaryDirectory(prefix="teleop_ui_profile_") as tmp_dir:
             try:
-                await menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
+                await self.menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
                 window = ui.Workspace.get_window(WINDOW_TITLE)
                 self.assertIsNotNone(window, "Teleop window should exist after opening via the menu")
                 window._last_profile_path = os.path.join(tmp_dir, "last_profile.yaml")
                 window.visible = True
                 window.focus()
-                for _ in range(5):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(5)
 
                 profile_panel = window._teleop_profile_panel
                 profile_panel._dir_field.model.set_value(tmp_dir)
                 profile_panel._on_directory_changed()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
 
                 saved_path = os.path.join(tmp_dir, f"{profile_name}.yaml")
                 ok, message = save_teleop_profile(saved_path, TeleopProfile())
                 self.assertTrue(ok, message)
                 settings.set_string(last_profile_key, saved_path)
                 profile_panel._rescan_profiles()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
 
                 profile_names = [name for name, _ in profile_panel._profiles]
                 self.assertIn(profile_name, profile_names, "Profile must be discovered before delete")
@@ -296,8 +263,7 @@ class TestTeleopUIProfile(OmniUiTest):
                 profile_panel._profile_combo.model.get_item_value_model().set_value(index)
 
                 profile_panel._on_delete_clicked()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
                 self.assertIsNotNone(
                     profile_panel._confirm_dialog,
                     "Delete must open a confirm dialog before removing the file",
@@ -305,18 +271,15 @@ class TestTeleopUIProfile(OmniUiTest):
                 self.assertTrue(os.path.exists(saved_path), "Profile must remain on disk while the dialog is open")
 
                 profile_panel._confirm_dialog._on_cancel()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
                 self.assertTrue(os.path.exists(saved_path), "Cancelling the dialog must not delete the file")
                 profile_names_after_cancel = [name for name, _ in profile_panel._profiles]
                 self.assertIn(profile_name, profile_names_after_cancel, "Cancel must keep the profile listed")
 
                 profile_panel._on_delete_clicked()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
                 profile_panel._confirm_dialog._on_okay()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
 
                 self.assertFalse(os.path.exists(saved_path), "Profile file should be removed from disk")
                 self.assertEqual(
@@ -338,25 +301,22 @@ class TestTeleopUIProfile(OmniUiTest):
 
         with tempfile.TemporaryDirectory(prefix="teleop_ui_profile_") as tmp_dir:
             try:
-                await menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
+                await self.menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
                 window = ui.Workspace.get_window(WINDOW_TITLE)
                 self.assertIsNotNone(window, "Teleop window should exist after opening via the menu")
                 window._last_profile_path = os.path.join(tmp_dir, "last_profile.yaml")
                 window.visible = True
                 window.focus()
-                for _ in range(5):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(5)
 
                 profile_panel = window._teleop_profile_panel
                 profile_panel._dir_field.model.set_value(tmp_dir)
                 profile_panel._on_directory_changed()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
 
                 profile_panel._save_name_field.model.set_value("noext_profile")
                 profile_panel._on_save_confirm()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
 
                 self.assertTrue(
                     os.path.isfile(os.path.join(tmp_dir, "noext_profile.yaml")),
@@ -365,8 +325,7 @@ class TestTeleopUIProfile(OmniUiTest):
 
                 profile_panel._save_name_field.model.set_value("explicit_profile.yml")
                 profile_panel._on_save_confirm()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
                 self.assertTrue(
                     os.path.isfile(os.path.join(tmp_dir, "explicit_profile.yml")),
                     "Save must keep .yml extension when explicitly provided",
