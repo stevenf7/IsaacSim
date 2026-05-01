@@ -1,4 +1,15 @@
 # Changelog
+
+## [1.17.8] - 2026-04-29
+### Fixed
+- Fixed `OgnROS2PublishLaserScan` to call `generateBuffers` before `writeData` so output buffers are correctly sized before being populated
+- Updated joint state subscriber tests to use `get_dof_positions`/`get_dof_velocities`; extended velocity convergence timeout and broadened multi-joint condition check
+- Stabilized camera and camera info tests with fixed frame counts, proper `None` resets before timeline replay, and increased max frame limits
+- Replaced manual `threading.Thread` spinning with `start_async_spinning` in waypoint follower tests
+- Clean up subscriber queue tests
+
+### Changed
+- Added simulate until condition functions to tests to reduce test time
 ## [1.17.7] - 2026-04-30
 ### Changed
 - Migrated `create_raycast_lidar_sensor` test helper and physics raycast tests to the new `isaacsim.sensors.experimental.physics` 3.0.0 API: call `Raycast.create(...)` (the authoring class) directly, return the authoring object's `paths[0]` instead of going through the runtime sensor, and use plural `translations=[[x, y, z]]` instead of singular `translation=Gf.Vec3d(...)`. The runtime sensor no longer forwards XformPrim attribute access or exposes a `create()` class method, so callers go through the typed authoring accessor.

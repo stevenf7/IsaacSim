@@ -17,7 +17,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import csv
 import json
 import os
@@ -417,7 +416,7 @@ class TestROS2BboxPublishing(ROS2TestCase):
         def spin():
             rclpy.spin_once(node, timeout_sec=0.01)
 
-        await asyncio.sleep(2.0)
+        await self.simulate_until_condition(lambda: False, max_frames=30)
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -580,8 +579,7 @@ class TestROS2BboxPublishing(ROS2TestCase):
             self._timeline.stop()
             await omni.kit.app.get_app().next_update_async()
             ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=eye, target=target)
-            for _ in range(5):
-                await omni.kit.app.get_app().next_update_async()
+            await self.simulate_until_condition(lambda: False, max_frames=5)
             # Drain queued Detection2DArray from the previous camera pose; otherwise the first
             # message after play() can be stale and fingerprints repeat across viewpoints.
             for _ in range(128):

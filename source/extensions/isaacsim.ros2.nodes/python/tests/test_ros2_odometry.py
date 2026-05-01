@@ -29,7 +29,7 @@ from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 
-from .common import get_qos_profile, simulate_async
+from .common import get_qos_profile
 
 
 class TestRos2Odometry(ROS2TestCase):
@@ -203,7 +203,7 @@ class TestRos2Odometry(ROS2TestCase):
             # Verify the received odometry messages
             self.assertIsNotNone(self._cube_odometry_data)
 
-        await simulate_async(1.5, 60, spin)
+        await self.simulate_until_condition(lambda: False, max_frames=120, per_frame_callback=spin)
 
         standard_checks()
 
@@ -232,7 +232,8 @@ class TestRos2Odometry(ROS2TestCase):
 
         self._timeline.play()
 
-        await simulate_async(1, 60, spin)
+        # drive at z=1.0 m/s for 1s (60 frames) → position.z ~1.0m > 0.2m
+        await self.simulate_until_condition(lambda: False, max_frames=60, per_frame_callback=spin)
 
         standard_checks()
 
@@ -273,12 +274,15 @@ class TestRos2Odometry(ROS2TestCase):
 
         self._timeline.play()
 
-        await simulate_async(0.5, 60, spin)
+        await self.simulate_until_condition(
+            lambda: self._cube_odometry_data is not None, max_frames=60, per_frame_callback=spin
+        )
 
         self.lin_vel_cmd = [1.0, 0.0, 0.0]
         self.ang_vel_cmd = [0.0, 1.0, 0.0]
 
-        await simulate_async(1, 60, spin)
+        # drive at x=1.0 m/s for 1s (60 frames) → position.x ~1.0m > 0.2m
+        await self.simulate_until_condition(lambda: False, max_frames=60, per_frame_callback=spin)
 
         standard_checks()
 
@@ -314,12 +318,15 @@ class TestRos2Odometry(ROS2TestCase):
 
         self._timeline.play()
 
-        await simulate_async(0.5, 60, spin)
+        await self.simulate_until_condition(
+            lambda: self._cube_odometry_data is not None, max_frames=60, per_frame_callback=spin
+        )
 
         self.lin_vel_cmd = [1.0, 0.0, 0.0]
         self.ang_vel_cmd = [0.0, 1.0, 0.0]
 
-        await simulate_async(1, 60, spin)
+        # drive at x=1.0 m/s for 1s (60 frames) → position.x ~1.0m > 0.2m
+        await self.simulate_until_condition(lambda: False, max_frames=60, per_frame_callback=spin)
 
         standard_checks()
 
@@ -356,12 +363,15 @@ class TestRos2Odometry(ROS2TestCase):
 
         self._timeline.play()
 
-        await simulate_async(0.5, 60, spin)
+        await self.simulate_until_condition(
+            lambda: self._cube_odometry_data is not None, max_frames=60, per_frame_callback=spin
+        )
 
         self.lin_vel_cmd = [1.0, 0.0, 0.0]
         self.ang_vel_cmd = [0.0, 1.0, 0.0]
 
-        await simulate_async(1, 60, spin)
+        # drive at x=1.0 m/s for 1s (60 frames) → position.x ~1.0m > 0.2m
+        await self.simulate_until_condition(lambda: False, max_frames=60, per_frame_callback=spin)
 
         standard_checks()
 
@@ -434,7 +444,7 @@ class TestRos2Odometry(ROS2TestCase):
 
         # Give the robot a little extra time to settle
         print("Waiting a bit longer for the robot to settle...")
-        await simulate_async(1.0, callback=spin)
+        await self.simulate_until_condition(lambda: False, max_frames=60, per_frame_callback=spin)
 
         # Record initial position
         initial_position = np.array(
@@ -510,7 +520,9 @@ class TestRos2Odometry(ROS2TestCase):
             ackermann_pub.publish(msg)
 
             # Simulate a step
-            await simulate_async(step_time, callback=spin)
+            await self.simulate_until_condition(
+                lambda: False, max_frames=max(1, int(step_time * 60)), per_frame_callback=spin
+            )
 
             # Print progress periodically
             if i % 10 == 0:
@@ -597,7 +609,7 @@ class TestRos2Odometry(ROS2TestCase):
         ackermann_pub.publish(msg)
 
         # Let it come to a stop
-        await simulate_async(1, callback=spin)
+        await self.simulate_until_condition(lambda: False, max_frames=60, per_frame_callback=spin)
 
         # Clean up
         self._timeline.stop()
@@ -699,7 +711,9 @@ class TestRos2Odometry(ROS2TestCase):
             ackermann_pub.publish(msg)
 
             # Simulate a step
-            await simulate_async(step_time, callback=spin)
+            await self.simulate_until_condition(
+                lambda: False, max_frames=max(1, int(step_time * 60)), per_frame_callback=spin
+            )
 
             # Print progress periodically
             if i % 10 == 0:
@@ -780,7 +794,7 @@ class TestRos2Odometry(ROS2TestCase):
         ackermann_pub.publish(msg)
 
         # Let it come to a stop
-        await simulate_async(1, callback=spin)
+        await self.simulate_until_condition(lambda: False, max_frames=60, per_frame_callback=spin)
 
         # Clean up
         self._timeline.stop()

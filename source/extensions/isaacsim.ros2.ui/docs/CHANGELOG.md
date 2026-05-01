@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.6.3] - 2026-04-30
+### Fixed
+- Fixed crash (SIGSEGV) in `test_odometry_null_conditions` and `test_tf_null_conditions` when empty prim fields are submitted; `_check_params` in `Ros2OdometryGraph` and `Ros2TfPubGraph` now rejects empty required prims before graph creation
+### Changed
+- TF and Odometry builders now use the IsaacComputeTransformTree node
+
 ## [1.6.2] - 2026-04-27
 ### Removed
 - Remove the `omni.isaac.ml_archive` dependency

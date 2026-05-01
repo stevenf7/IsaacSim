@@ -40,7 +40,6 @@ import omni.graph.core as og
 import usdrt.Sdf
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.storage.native import get_assets_root_path
-from omni.kit.viewport.utility import get_active_viewport
 from pxr import Gf, Sdf, UsdGeom
 
 # enable ROS bridge extension
@@ -87,28 +86,24 @@ keys = og.Controller.Keys
     {
         keys.CREATE_NODES: [
             ("OnTick", "omni.graph.action.OnTick"),
-            ("createViewport", "isaacsim.core.nodes.IsaacCreateViewport"),
-            ("getRenderProduct", "isaacsim.core.nodes.IsaacGetViewportRenderProduct"),
-            ("setCamera", "isaacsim.core.nodes.IsaacSetCameraOnRenderProduct"),
+            ("createRenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
             ("cameraHelperRgb", "isaacsim.ros2.bridge.ROS2CameraHelper"),
             ("cameraHelperInfo", "isaacsim.ros2.bridge.ROS2CameraInfoHelper"),
             ("cameraHelperDepth", "isaacsim.ros2.bridge.ROS2CameraHelper"),
         ],
         keys.CONNECT: [
-            ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
-            ("createViewport.outputs:execOut", "getRenderProduct.inputs:execIn"),
-            ("createViewport.outputs:viewport", "getRenderProduct.inputs:viewport"),
-            ("getRenderProduct.outputs:execOut", "setCamera.inputs:execIn"),
-            ("getRenderProduct.outputs:renderProductPath", "setCamera.inputs:renderProductPath"),
-            ("setCamera.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
-            ("setCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
-            ("setCamera.outputs:execOut", "cameraHelperDepth.inputs:execIn"),
-            ("getRenderProduct.outputs:renderProductPath", "cameraHelperRgb.inputs:renderProductPath"),
-            ("getRenderProduct.outputs:renderProductPath", "cameraHelperInfo.inputs:renderProductPath"),
-            ("getRenderProduct.outputs:renderProductPath", "cameraHelperDepth.inputs:renderProductPath"),
+            ("OnTick.outputs:tick", "createRenderProduct.inputs:execIn"),
+            ("createRenderProduct.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
+            ("createRenderProduct.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
+            ("createRenderProduct.outputs:execOut", "cameraHelperDepth.inputs:execIn"),
+            ("createRenderProduct.outputs:renderProductPath", "cameraHelperRgb.inputs:renderProductPath"),
+            ("createRenderProduct.outputs:renderProductPath", "cameraHelperInfo.inputs:renderProductPath"),
+            ("createRenderProduct.outputs:renderProductPath", "cameraHelperDepth.inputs:renderProductPath"),
         ],
         keys.SET_VALUES: [
-            ("createViewport.inputs:viewportId", 0),
+            ("createRenderProduct.inputs:cameraPrim", [usdrt.Sdf.Path(CAMERA_STAGE_PATH)]),
+            ("createRenderProduct.inputs:width", 1280),
+            ("createRenderProduct.inputs:height", 720),
             ("cameraHelperRgb.inputs:frameId", "sim_camera"),
             ("cameraHelperRgb.inputs:topicName", "rgb"),
             ("cameraHelperRgb.inputs:type", "rgb"),
@@ -117,7 +112,6 @@ keys = og.Controller.Keys
             ("cameraHelperDepth.inputs:frameId", "sim_camera"),
             ("cameraHelperDepth.inputs:topicName", "depth"),
             ("cameraHelperDepth.inputs:type", "depth"),
-            ("setCamera.inputs:cameraPrim", [usdrt.Sdf.Path(CAMERA_STAGE_PATH)]),
         ],
     },
 )
@@ -127,50 +121,52 @@ og.Controller.evaluate_sync(ros_camera_graph)
 
 simulation_app.update()
 
-# Inside the SDGPipeline graph, Isaac Simulation Gate nodes are added to control the execution rate of each of the ROS image and camera info publishers.
-# By default the step input of each Isaac Simulation Gate node is set to a value of 1 to execute every frame.
-# We can change this value to N for each Isaac Simulation Gate node individually to publish every N number of frames.
-viewport_api = get_active_viewport()
+# Inside the SDGPipeline graph, Isaac Simulation Gate nodes are added to control the execution rate of each of the ROS
+# image and camera info publishers. By default the step input of each Isaac Simulation Gate node is set to a value of
+# 1 to execute every frame. We can change this value to N for each Isaac Simulation Gate node individually to publish
+# every N number of frames.
 
-if viewport_api is not None:
-    import omni.syntheticdata._syntheticdata as sd
+# Get the render product path from the IsaacCreateRenderProduct node output
+render_product_path = og.Controller.attribute(
+    f"{ROS_CAMERA_GRAPH_PATH}/createRenderProduct.outputs:renderProductPath"
+).get()
 
-    # Get name of rendervar for RGB sensor type
-    rv_rgb = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
+import omni.syntheticdata._syntheticdata as sd
 
-    # Get path to IsaacSimulationGate node in RGB pipeline
-    rgb_camera_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
-        rv_rgb + "IsaacSimulationGate", viewport_api.get_render_product_path()
-    )
+# Get name of rendervar for RGB sensor type
+rv_rgb = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
 
-    # Get name of rendervar for DistanceToImagePlane sensor type
-    rv_depth = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
-        sd.SensorType.DistanceToImagePlane.name
-    )
+# Get path to IsaacSimulationGate node in RGB pipeline
+rgb_camera_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
+    rv_rgb + "IsaacSimulationGate", render_product_path
+)
 
-    # Get path to IsaacSimulationGate node in Depth pipeline
-    depth_camera_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
-        rv_depth + "IsaacSimulationGate", viewport_api.get_render_product_path()
-    )
+# Get name of rendervar for DistanceToImagePlane sensor type
+rv_depth = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.DistanceToImagePlane.name)
 
-    # Get path to IsaacSimulationGate node in CameraInfo pipeline
-    camera_info_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
-        "PostProcessDispatch" + "IsaacSimulationGate", viewport_api.get_render_product_path()
-    )
+# Get path to IsaacSimulationGate node in Depth pipeline
+depth_camera_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
+    rv_depth + "IsaacSimulationGate", render_product_path
+)
 
-    # Set Rgb execution step to 5 frames
-    rgb_step_size = 5
+# Get path to IsaacSimulationGate node in CameraInfo pipeline
+camera_info_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
+    "PostProcessDispatch" + "IsaacSimulationGate", render_product_path
+)
 
-    # Set Depth execution step to 60 frames
-    depth_step_size = 60
+# Set Rgb execution step to 5 frames
+rgb_step_size = 5
 
-    # Set Camera info execution step to every frame
-    info_step_size = 1
+# Set Depth execution step to 60 frames
+depth_step_size = 60
 
-    # Set step input of the Isaac Simulation Gate nodes upstream of ROS publishers to control their execution rate
-    og.Controller.attribute(rgb_camera_gate_path + ".inputs:step").set(rgb_step_size)
-    og.Controller.attribute(depth_camera_gate_path + ".inputs:step").set(depth_step_size)
-    og.Controller.attribute(camera_info_gate_path + ".inputs:step").set(info_step_size)
+# Set Camera info execution step to every frame
+info_step_size = 1
+
+# Set step input of the Isaac Simulation Gate nodes upstream of ROS publishers to control their execution rate
+og.Controller.attribute(rgb_camera_gate_path + ".inputs:step").set(rgb_step_size)
+og.Controller.attribute(depth_camera_gate_path + ".inputs:step").set(depth_step_size)
+og.Controller.attribute(camera_info_gate_path + ".inputs:step").set(info_step_size)
 
 # Need to initialize physics getting any articulation..etc
 SimulationManager.setup_simulation(dt=1.0 / 60.0, device="cpu")

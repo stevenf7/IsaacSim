@@ -107,9 +107,9 @@ public:
         auto tasking = carb::getCachedInterface<carb::tasking::ITasking>();
 
         state.m_message->writeHeader(db.inputs.timeStamp(), state.m_frameId);
+        state.m_message->generateBuffers(buffSize);
         state.m_message->writeData(db.inputs.azimuthRange(), db.inputs.rotationRate(), db.inputs.depthRange(),
                                    db.inputs.horizontalResolution(), db.inputs.horizontalFov());
-        state.m_message->generateBuffers(buffSize);
 
         std::vector<float>& rangeData = state.m_message->getRangeData();
         memcpy(rangeData.data(), rangeDataSrc, sizeof(float) * buffSize);

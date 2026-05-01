@@ -46,9 +46,12 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
     # After running each test
     async def tearDown(self):
         """Tear down test fixtures."""
-        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+        if omni.usd.get_context().get_stage_loading_status()[2] > 0:
             print("tearDown, assets still loading, waiting to finish...")
-            await asyncio.sleep(1.0)
+            await self.simulate_until_condition(
+                lambda: omni.usd.get_context().get_stage_loading_status()[2] == 0,
+                max_frames=3600,
+            )
 
         self._timeline.is_stopped()
         await omni.kit.app.get_app().next_update_async()
@@ -56,6 +59,18 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         self._timeline = None
 
         gc.collect()
+
+    async def simulate_until_condition(self, condition_func, max_frames=180, per_frame_callback=None):
+        """Simulate until condition is met or maximum frames reached."""
+        frames_run = 0
+        while frames_run < max_frames:
+            await omni.kit.app.get_app().next_update_async()
+            if per_frame_callback is not None:
+                per_frame_callback()
+            frames_run += 1
+            if condition_func():
+                return True
+        return False
 
     def create_test_stage(self):
         """Handle create test stage operation."""
@@ -280,7 +295,6 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         # Test PLAY state
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await asyncio.sleep(0.5)
 
         result = await self._call_service_async(GetSimulationState, "/get_simulation_state", request)
 
@@ -290,7 +304,6 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         # Test PAUSE state
         self._timeline.pause()
         await omni.kit.app.get_app().next_update_async()
-        await asyncio.sleep(0.5)
 
         result = await self._call_service_async(GetSimulationState, "/get_simulation_state", request)
 
@@ -300,7 +313,6 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         # Test STOP state
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
-        await asyncio.sleep(0.5)
 
         result = await self._call_service_async(GetSimulationState, "/get_simulation_state", request)
 
@@ -338,7 +350,6 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         self.assertTrue(result.result.result == Result.RESULT_OK)
 
         await omni.kit.app.get_app().next_update_async()
-        await asyncio.sleep(0.5)
 
         # Verify timeline is now playing
         self.assertTrue(self._timeline.is_playing())
@@ -353,7 +364,6 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         self.assertTrue(result.result.result == Result.RESULT_OK)
 
         await omni.kit.app.get_app().next_update_async()
-        await asyncio.sleep(0.5)
 
         # Verify timeline is now paused (not playing and not stopped)
         self.assertFalse(self._timeline.is_playing())
@@ -368,7 +378,6 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         self.assertTrue(result.result.result == Result.RESULT_OK)
 
         await omni.kit.app.get_app().next_update_async()
-        await asyncio.sleep(0.5)
 
         # Verify timeline is now stopped
         self.assertTrue(self._timeline.is_stopped())
@@ -1213,7 +1222,6 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         # Start simulation to activate ROS topics
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await asyncio.sleep(0.5)  # Wait for topics to be published
 
         # Check ROS topics for namespace directly
         unique_id = f"{int(time.time() * 1000)}"
@@ -1423,7 +1431,6 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         # Start simulation to accumulate time and state changes
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await asyncio.sleep(0.5)  # Let some simulation time pass
 
         # Test SCOPE_DEFAULT reset (only scope actually implemented)
         reset_request = ResetSimulation.Request()

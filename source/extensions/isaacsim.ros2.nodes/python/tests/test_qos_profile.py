@@ -289,8 +289,7 @@ class TestROS2QoSProfile(ROS2TestCase):
         exception_caught = False
         try:
             self._timeline.play()
-            await omni.kit.app.get_app().next_update_async()
-            await omni.kit.app.get_app().next_update_async()
+            await self.simulate_until_condition(lambda: False, max_frames=2)
         except Exception:
             exception_caught = True
         finally:

@@ -27,7 +27,7 @@ from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from pxr import Gf
 from sensor_msgs_py.point_cloud2 import read_points
 
-from .common import add_cube, create_raycast_lidar_sensor, get_qos_profile, simulate_async
+from .common import add_cube, create_raycast_lidar_sensor, get_qos_profile
 
 HORIZONTAL_FOV = 360.0
 HORIZONTAL_RESOLUTION = 0.4
@@ -372,7 +372,9 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
         self._lidar_callback_count = 0
         self._timeline.play()
         await self.wait_for_publishers_on_topic(node, "scan", per_frame_callback=spin)
-        await simulate_async(0.5, 60, spin)
+        await self.simulate_until_condition(
+            lambda: self._lidar_callback_count > 0, max_frames=30, per_frame_callback=spin
+        )
         self.assertGreater(self._lidar_callback_count, 0)
         self.assertEqual(self._lidar_data.time_increment, 0)
 
@@ -390,7 +392,9 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
 
         self._timeline.play()
         await self.wait_for_publishers_on_topic(node, "scan", per_frame_callback=spin)
-        await simulate_async(0.5, 60, spin)
+        await self.simulate_until_condition(
+            lambda: self._lidar_callback_count > 0, max_frames=30, per_frame_callback=spin
+        )
         self.assertGreater(self._lidar_callback_count, 0)
         self.assertGreater(self._lidar_data.time_increment, 0.0)
 
@@ -410,7 +414,9 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
 
         self._timeline.play()
         await self.wait_for_publishers_on_topic(node, "scan", per_frame_callback=spin)
-        await simulate_async(0.5, 60, spin)
+        await self.simulate_until_condition(
+            lambda: self._lidar_callback_count > 0, max_frames=30, per_frame_callback=spin
+        )
         self.assertGreater(self._lidar_callback_count, 0)
         self.assertGreater(prev_time_increment, self._lidar_data.time_increment)
 

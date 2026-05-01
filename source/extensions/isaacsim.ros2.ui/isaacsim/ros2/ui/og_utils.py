@@ -911,25 +911,32 @@ class Ros2TfPubGraph(MenuHelperWindow):
             existing_targets.append(Sdf.Path(self._target_prim))
             # must use this controller edit function, not og.controller.attribute().set() for some reason
             og.Controller.edit(
-                graph_handle, {keys.SET_VALUES: [(self._og_path + "/PublisherTF.inputs:targetPrims", existing_targets)]}
+                graph_handle, {keys.SET_VALUES: [(tf_pub_node + ".inputs:targetPrims", existing_targets)]}
             )
 
         else:
             ## if need to create a new tf node
+            compute_tf_name = "Compute" + tf_pub_name
             og.Controller.edit(
                 graph_handle,
                 {
                     keys.CREATE_NODES: [
+                        (compute_tf_name, "isaacsim.core.nodes.IsaacComputeTransformTree"),
                         (tf_pub_name, "isaacsim.ros2.bridge.ROS2PublishTransformTree"),
                     ],
                     keys.SET_VALUES: [
-                        (tf_pub_name + ".inputs:parentPrim", self._parent_prim),
-                        (tf_pub_name + ".inputs:targetPrims", self._target_prim),
+                        (compute_tf_name + ".inputs:parentPrim", self._parent_prim),
+                        (compute_tf_name + ".inputs:targetPrims", self._target_prim),
                         (tf_pub_name + ".inputs:topicName", self._pub_topic),
                         (tf_pub_name + ".inputs:nodeNamespace", self._node_namespace),
                     ],
                     keys.CONNECT: [
-                        (tick_node + ".outputs:tick", tf_pub_name + ".inputs:execIn"),
+                        (tick_node + ".outputs:tick", compute_tf_name + ".inputs:execIn"),
+                        (compute_tf_name + ".outputs:execOut", tf_pub_name + ".inputs:execIn"),
+                        (compute_tf_name + ".outputs:parentFrames", tf_pub_name + ".inputs:parentFrames"),
+                        (compute_tf_name + ".outputs:childFrames", tf_pub_name + ".inputs:childFrames"),
+                        (compute_tf_name + ".outputs:translations", tf_pub_name + ".inputs:translations"),
+                        (compute_tf_name + ".outputs:orientations", tf_pub_name + ".inputs:orientations"),
                         (sim_time_node + ".outputs:simulationTime", tf_pub_name + ".inputs:timeStamp"),
                         (context_node + ".outputs:context", tf_pub_name + ".inputs:context"),
                     ],
@@ -1046,6 +1053,10 @@ class Ros2TfPubGraph(MenuHelperWindow):
 
         """
         stage = omni.usd.get_context().get_stage()
+
+        if not self._target_prim:
+            post_notification("Target prim is required", status=NotificationStatus.WARNING)
+            return False
 
         if self._add_to_existing_graph:
             # make sure the "existing" graph exist
@@ -1276,20 +1287,27 @@ class Ros2OdometryGraph(MenuHelperWindow):
 
         # if user also wanted to publish TF tree of the robot
         if self._tf_robot_pub:
+            compute_tf_robot_name = "Compute" + tf_robot_name
             og.Controller.edit(
                 graph_handle,
                 {
                     keys.CREATE_NODES: [
+                        (compute_tf_robot_name, "isaacsim.core.nodes.IsaacComputeTransformTree"),
                         (tf_robot_name, "isaacsim.ros2.bridge.ROS2PublishTransformTree"),
                     ],
                     keys.SET_VALUES: [
-                        (tf_robot_name + ".inputs:parentPrim", self._chassis_prim),
-                        (tf_robot_name + ".inputs:targetPrims", self._art_root_prim),
+                        (compute_tf_robot_name + ".inputs:parentPrim", self._chassis_prim),
+                        (compute_tf_robot_name + ".inputs:targetPrims", self._art_root_prim),
                         (tf_robot_name + ".inputs:topicName", self._tf_pub_topic),
                         (tf_robot_name + ".inputs:nodeNamespace", self._node_namespace),
                     ],
                     keys.CONNECT: [
-                        (tick_node + ".outputs:tick", tf_robot_name + ".inputs:execIn"),
+                        (tick_node + ".outputs:tick", compute_tf_robot_name + ".inputs:execIn"),
+                        (compute_tf_robot_name + ".outputs:execOut", tf_robot_name + ".inputs:execIn"),
+                        (compute_tf_robot_name + ".outputs:parentFrames", tf_robot_name + ".inputs:parentFrames"),
+                        (compute_tf_robot_name + ".outputs:childFrames", tf_robot_name + ".inputs:childFrames"),
+                        (compute_tf_robot_name + ".outputs:translations", tf_robot_name + ".inputs:translations"),
+                        (compute_tf_robot_name + ".outputs:orientations", tf_robot_name + ".inputs:orientations"),
                         (sim_time_node + ".outputs:simulationTime", tf_robot_name + ".inputs:timeStamp"),
                         (context_node + ".outputs:context", tf_robot_name + ".inputs:context"),
                     ],
@@ -1400,6 +1418,10 @@ class Ros2OdometryGraph(MenuHelperWindow):
 
         """
         stage = omni.usd.get_context().get_stage()
+
+        if not self._art_root_prim:
+            post_notification("Robot Articulation Root prim is required", status=NotificationStatus.WARNING)
+            return False
 
         if self._add_to_existing_graph:
             # make sure the "existing" graph exist

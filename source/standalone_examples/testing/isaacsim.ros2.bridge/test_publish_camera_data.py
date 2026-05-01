@@ -202,6 +202,7 @@ def publish_camera_tf(camera: Camera):
             ros_camera_graph_path,
             {
                 og.Controller.Keys.CREATE_NODES: [
+                    ("ComputeTF_" + camera_frame_id, "isaacsim.core.nodes.IsaacComputeTransformTree"),
                     ("PublishTF_" + camera_frame_id, "isaacsim.ros2.bridge.ROS2PublishTransformTree"),
                     ("PublishRawTF_" + camera_frame_id + "_world", "isaacsim.ros2.bridge.ROS2PublishRawTransformTree"),
                 ],
@@ -216,7 +217,30 @@ def publish_camera_tf(camera: Camera):
                     ("PublishRawTF_" + camera_frame_id + "_world.inputs:rotation", [0.5, -0.5, 0.5, 0.5]),
                 ],
                 og.Controller.Keys.CONNECT: [
-                    (ros_camera_graph_path + "/OnTick.outputs:tick", "PublishTF_" + camera_frame_id + ".inputs:execIn"),
+                    (
+                        ros_camera_graph_path + "/OnTick.outputs:tick",
+                        "ComputeTF_" + camera_frame_id + ".inputs:execIn",
+                    ),
+                    (
+                        "ComputeTF_" + camera_frame_id + ".outputs:execOut",
+                        "PublishTF_" + camera_frame_id + ".inputs:execIn",
+                    ),
+                    (
+                        "ComputeTF_" + camera_frame_id + ".outputs:parentFrames",
+                        "PublishTF_" + camera_frame_id + ".inputs:parentFrames",
+                    ),
+                    (
+                        "ComputeTF_" + camera_frame_id + ".outputs:childFrames",
+                        "PublishTF_" + camera_frame_id + ".inputs:childFrames",
+                    ),
+                    (
+                        "ComputeTF_" + camera_frame_id + ".outputs:translations",
+                        "PublishTF_" + camera_frame_id + ".inputs:translations",
+                    ),
+                    (
+                        "ComputeTF_" + camera_frame_id + ".outputs:orientations",
+                        "PublishTF_" + camera_frame_id + ".inputs:orientations",
+                    ),
                     (
                         ros_camera_graph_path + "/OnTick.outputs:tick",
                         "PublishRawTF_" + camera_frame_id + "_world.inputs:execIn",
@@ -235,9 +259,9 @@ def publish_camera_tf(camera: Camera):
     except Exception as e:
         print(e)
 
-    # Add target prims for the USD pose. All other frames are static.
+    # Set target prims on the compute node for USD pose. All other frames are static.
     set_target_prims(
-        primPath=ros_camera_graph_path + "/PublishTF_" + camera_frame_id,
+        primPath=ros_camera_graph_path + "/ComputeTF_" + camera_frame_id,
         inputName="inputs:targetPrims",
         targetPrimPaths=[camera_prim],
     )

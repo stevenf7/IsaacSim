@@ -34,7 +34,6 @@ from .common import (
     get_qos_profile,
     set_rotate,
     set_translate,
-    simulate_async,
 )
 
 
@@ -147,11 +146,12 @@ class TestRos2DifferentialBase(ROS2TestCase):
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
-        # wait for physics to settle and for all data to be received by subscribers
-        await simulate_async(1, 60, self.spin)
+        # wait for physics to settle (60 frames = original simulate_async(1,60) duration),
+        # then wait for subscriber data — odom.z reflects settling at this timing
+        await self.simulate_until_condition(lambda: False, max_frames=60, per_frame_callback=self.spin)
         await self.simulate_until_condition(
             lambda: self._trans is not None and self._odom_data is not None,
-            max_frames=120,  # Combined: 1s physics settle + 1s data wait at 60fps
+            max_frames=120,
             per_frame_callback=self.spin,
         )
 
@@ -162,10 +162,10 @@ class TestRos2DifferentialBase(ROS2TestCase):
         expected_odom = [0, 0, -0.23, 0, 0, 0, 1]
         self.check_pose(expected_trans, expected_odom, tolerance=1)
 
-        # straight forward
+        # straight forward for 3s at 0.1 m/s → ~0.3m accumulated
         move_cmd = self.move_cmd_msg(0.1, 0.0, 0.0, 0.0, 0.0, 0.0)
         cmd_vel_pub.publish(move_cmd)
-        await simulate_async(3, 60, self.spin)
+        await self.simulate_until_condition(lambda: False, max_frames=180, per_frame_callback=self.spin)
 
         # stop
         move_cmd = self.move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
@@ -186,6 +186,7 @@ class TestRos2DifferentialBase(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
         self.spin()
         self._trans = None
+        self._odom_data = None
 
         # change wheel rotation and wheel base
         og.Controller.set(og.Controller.attribute(graph_path + "/differential_controller.inputs:wheelRadius"), 0.1)
@@ -193,11 +194,11 @@ class TestRos2DifferentialBase(ROS2TestCase):
 
         self._timeline.play()
 
-        # wait for physics to settle and for all data to be received by subscribers
-        await simulate_async(1, 60, self.spin)
+        # fixed 60 frames to let physics settle before reading subscriber data
+        await self.simulate_until_condition(lambda: False, max_frames=60, per_frame_callback=self.spin)
         await self.simulate_until_condition(
             lambda: self._trans is not None and self._odom_data is not None,
-            max_frames=120,  # Combined: 1s physics settle + 1s data wait at 60fps
+            max_frames=120,
             per_frame_callback=self.spin,
         )
 
@@ -208,20 +209,21 @@ class TestRos2DifferentialBase(ROS2TestCase):
         expected_odom = [0, 0, -0.23, 0, 0, 0, 1]
         self.check_pose(expected_trans, expected_odom, tolerance=1)
 
-        # straight forward
+        # straight forward for 3s at 0.1 m/s (odometry units, new wheel params) → ~0.7m accumulated
         move_cmd = self.move_cmd_msg(0.1, 0.0, 0.0, 0.0, 0.0, 0.0)
         cmd_vel_pub.publish(move_cmd)
-        await simulate_async(3, 60, self.spin)
+        await self.simulate_until_condition(lambda: False, max_frames=180, per_frame_callback=self.spin)
 
         # stop
         move_cmd = self.move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         cmd_vel_pub.publish(move_cmd)
-        await simulate_async(1, 60, self.spin)
 
         # check 4: location after change radius
         # wait for all data to be received by subscribers
         await self.simulate_until_condition(
-            lambda: self._trans is not None and self._odom_data is not None, max_frames=60, per_frame_callback=self.spin
+            lambda: self._trans is not None and self._odom_data is not None,
+            max_frames=120,
+            per_frame_callback=self.spin,
         )
 
         # [tx, ty, tz, rx, ry, rz, rw]
@@ -253,7 +255,8 @@ class TestRos2DifferentialBase(ROS2TestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1, 60, self.spin)
+        # fixed 60 frames: match original simulate_async(1, 60) settle before checking data
+        await self.simulate_until_condition(lambda: False, max_frames=60, per_frame_callback=self.spin)
 
         # check 0: is carter initially stationary
         # No transform expected in this test, only check odometry
@@ -261,21 +264,19 @@ class TestRos2DifferentialBase(ROS2TestCase):
         expected_odom = [0, 0, 0, 0, 0, 0, 1]
         self.check_pose(None, expected_odom, tolerance=1)
 
-        # rotate
+        # rotate for 2s at angular_z=0.2 rad/s → orientation.z ~0.40
         move_cmd = self.move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.2)
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(2, 60, self.spin)
+        await self.simulate_until_condition(lambda: False, max_frames=120, per_frame_callback=self.spin)
 
         # stop
         move_cmd = self.move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await self.simulate_until_condition(
-            lambda: self._odom_data is not None, max_frames=60, per_frame_callback=self.spin
-        )
+        await self.simulate_until_condition(lambda: False, max_frames=60, per_frame_callback=self.spin)
 
         # check 1: location using default param
         odom_data = deepcopy(self._odom_data)
@@ -295,21 +296,22 @@ class TestRos2DifferentialBase(ROS2TestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1, 60, self.spin)
+        # fixed 60 frames: match original simulate_async(1, 60) settle before issuing rotation command
+        await self.simulate_until_condition(lambda: False, max_frames=60, per_frame_callback=self.spin)
 
-        # rotate back
+        # rotate back for 2s at angular_z=-0.2 rad/s (wider wheelbase → faster rotation) → orientation.z ~-0.61
         move_cmd = self.move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, -0.2)
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(2, 60, self.spin)
+        await self.simulate_until_condition(lambda: False, max_frames=120, per_frame_callback=self.spin)
 
         # stop
         move_cmd = self.move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1, 60, self.spin)
+        await self.simulate_until_condition(lambda: False, max_frames=60, per_frame_callback=self.spin)
 
         # check 3: location after change radius
         odom_data = deepcopy(self._odom_data)
@@ -377,10 +379,9 @@ class TestRos2DifferentialBase(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # wait for physics to settle and for all data to be received by subscribers
-        await simulate_async(1, 60, self.spin)
         await self.simulate_until_condition(
             lambda: self._trans is not None and self._odom_data is not None,
-            max_frames=120,  # Combined: 1s physics settle + 1s data wait at 60fps
+            max_frames=240,
             per_frame_callback=self.spin,
         )
 
@@ -391,12 +392,12 @@ class TestRos2DifferentialBase(ROS2TestCase):
         expected_odom = [0, 0, 0, 0, 0, 0, 1]
         self.check_pose(expected_trans, expected_odom, delta=0.1)
 
-        # straight forward
+        # straight forward for 3s at 0.1 m/s → ~0.3m accumulated
         move_cmd = self.move_cmd_msg(0.1, 0.0, 0.0, 0.0, 0.0, 0.0)
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(3, 60, self.spin)
+        await self.simulate_until_condition(lambda: False, max_frames=180, per_frame_callback=self.spin)
 
         # stop
         move_cmd = self.move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
@@ -421,6 +422,7 @@ class TestRos2DifferentialBase(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
         self.spin()
         self._trans = None
+        self._odom_data = None
 
         # change wheel rotation and wheel base
         og.Controller.set(
@@ -431,10 +433,9 @@ class TestRos2DifferentialBase(ROS2TestCase):
         )
 
         self._timeline.play()
-        await simulate_async(1, 60, self.spin)
         await self.simulate_until_condition(
             lambda: self._trans is not None and self._odom_data is not None,
-            max_frames=120,  # Combined: 1s physics settle + 1s data wait at 60fps
+            max_frames=240,
             per_frame_callback=self.spin,
         )
 
@@ -445,12 +446,12 @@ class TestRos2DifferentialBase(ROS2TestCase):
         expected_odom = [0, 0, 0, 0, 0, 0, 1]
         self.check_pose(expected_trans, expected_odom, delta=0.1)
 
-        # straight forward
+        # straight forward for 3s at 0.1 m/s (odometry units, new wheel params) → ~0.43m accumulated
         move_cmd = self.move_cmd_msg(0.1, 0.0, 0.0, 0.0, 0.0, 0.0)
         cmd_vel_pub.publish(move_cmd)
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(3, 60, self.spin)
+        await self.simulate_until_condition(lambda: False, max_frames=180, per_frame_callback=self.spin)
 
         # stop
         move_cmd = self.move_cmd_msg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
