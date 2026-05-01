@@ -30,7 +30,7 @@ from isaacsim.core.experimental.objects import GroundPlane
 from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.robot.experimental.wheeled_robots.controllers import DifferentialController
-from isaacsim.sensors.experimental.physics import IMUSensor
+from isaacsim.sensors.experimental.physics import IMU, IMUSensor
 from isaacsim.storage.native import get_assets_root_path
 
 parser = argparse.ArgumentParser()
@@ -56,9 +56,10 @@ my_controller = DifferentialController(wheel_radius=0.04295, wheel_base=0.4132)
 
 
 imu_sensor = IMUSensor(
-    prim_path="/World/Carter/caster_wheel_left/imu_sensor",
-    name="imu",
-    translation=np.array([0, 0, 0]),
+    IMU.create(
+        "/World/Carter/caster_wheel_left/imu_sensor",
+        translations=np.array([[0.0, 0.0, 0.0]]),
+    )
 )
 
 SimulationManager.setup_simulation(dt=1.0 / 60.0, device="cpu")
@@ -79,7 +80,7 @@ while simulation_app.is_running():
             app_utils.play()
             app_utils.update_app(steps=5)
             reset_needed = False
-        print(imu_sensor.get_current_frame())
+        print(imu_sensor.get_data())
         if i >= 0 and i < 1000:
             # forward
             wheel_velocities = my_controller.forward([0.05, 0])

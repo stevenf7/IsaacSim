@@ -27,9 +27,9 @@ import omni.ui as ui
 import omni.usd
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.ui_utils import LABEL_WIDTH, get_style, setup_ui_headers
-from isaacsim.sensors.experimental.physics import IMUSensor, ImuSensorBackend
+from isaacsim.sensors.experimental.physics import IMU, IMUSensor
 from isaacsim.storage.native import get_assets_root_path
-from pxr import Gf, UsdGeom
+from pxr import UsdGeom
 
 EXTENSION_NAME = "IMU Sensor Example"
 
@@ -101,7 +101,7 @@ class Extension(omni.ext.IExt):
             # clear existing window
             self.on_closed()
 
-        self._imu_backend: ImuSensorBackend | None = None
+        self._imu_reader: IMUSensor | None = None
 
         self._timeline = omni.timeline.get_timeline_interface()
         self.sub = omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
@@ -208,9 +208,9 @@ class Extension(omni.ext.IExt):
             context: Physics update context.
         """
         if self._timeline.is_playing() and self.sliders:
-            if self._imu_backend is None:
-                self._imu_backend = ImuSensorBackend(self.body_path + "/sensor")
-            reading = self._imu_backend.get_sensor_reading()
+            if self._imu_reader is None:
+                self._imu_reader = IMUSensor(self.body_path + "/sensor")
+            reading = self._imu_reader.get_sensor_reading()
             if reading.is_valid:
                 self.sliders[0].model.set_value(float(reading.linear_acceleration_x) * self.meters_per_unit)  # readings
                 self.sliders[1].model.set_value(float(reading.linear_acceleration_y) * self.meters_per_unit)  # readings
@@ -258,10 +258,10 @@ class Extension(omni.ext.IExt):
 
         self.meters_per_unit = UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())
 
-        IMUSensor.create(
+        IMU.create(
             f"{self.body_path}/sensor",
-            translation=Gf.Vec3d(0, 0, 0),
-            orientation=Gf.Quatd(1, 0, 0, 0),
+            translations=[[0.0, 0.0, 0.0]],
+            orientations=[[1.0, 0.0, 0.0, 0.0]],
         )
 
         self._usd_context = omni.usd.get_context()

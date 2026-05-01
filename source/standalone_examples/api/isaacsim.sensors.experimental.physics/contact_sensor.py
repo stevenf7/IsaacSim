@@ -29,7 +29,7 @@ import numpy as np
 from isaacsim.core.experimental.objects import GroundPlane
 from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.sensors.experimental.physics import ContactSensor
+from isaacsim.sensors.experimental.physics import Contact, ContactSensor
 from isaacsim.storage.native import get_assets_root_path
 
 parser = argparse.ArgumentParser()
@@ -58,12 +58,13 @@ translations = np.array(
 ant_sensors = []
 for i in range(4):
     sensor = ContactSensor(
-        prim_path="/World/Ant/" + ant_foot_prim_names[i] + "/contact_sensor",
-        name="ant_contact_sensor_{}".format(i),
-        min_threshold=0,
-        max_threshold=10000000,
-        radius=0.1,
-        translation=translations[i],
+        Contact.create(
+            "/World/Ant/" + ant_foot_prim_names[i] + "/contact_sensor",
+            min_threshold=0,
+            max_threshold=10000000,
+            radius=0.1,
+            translations=translations[i : i + 1],
+        )
     )
     ant_sensors.append(sensor)
 
@@ -80,7 +81,7 @@ while simulation_app.is_running():
     if not app_utils.is_playing() and not reset_needed:
         reset_needed = True
     if app_utils.is_playing():
-        print(ant_sensors[0].get_current_frame())
+        print(ant_sensors[0].get_data())
         if reset_needed:
             app_utils.stop()
             app_utils.update_app(steps=5)

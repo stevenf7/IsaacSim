@@ -24,7 +24,7 @@ import usdrt.Sdf
 from isaacsim.core.experimental.objects import Cube, GroundPlane
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.sensors.experimental.physics import ContactSensor
+from isaacsim.sensors.experimental.physics import Contact
 from pxr import PhysxSchema
 
 from .common import setup_ant_scene, step_simulation
@@ -56,7 +56,7 @@ class TestContactSensorOgn(omni.kit.test.AsyncTestCase):
         RigidPrim("/World/Cube", masses=[1.0])
         contact_report_api = PhysxSchema.PhysxContactReportAPI.Apply(prim_utils.get_prim_at_path("/World/Cube"))
         contact_report_api.CreateThresholdAttr().Set(0)
-        ContactSensor.create(
+        Contact.create(
             "/World/Cube/contact_sensor",
             max_threshold=10000000,
         )
@@ -172,13 +172,13 @@ class TestContactSensorOgnWithAnt(omni.kit.test.AsyncTestCase):
     async def _add_sensor_prims(self):
         """Helper to add contact sensors to ant legs."""
         for i in range(4):
-            sensor = ContactSensor.create(
+            sensor = Contact.create(
                 f"{self.leg_paths[i]}/sensor",
                 min_threshold=0,
                 max_threshold=10000000,
                 color=self.color[i],
                 radius=0.12,
-                translation=self.sensor_offsets[i],
+                translations=self.sensor_offsets[i],
             )
             self.assertIsNotNone(sensor)
 
@@ -204,13 +204,13 @@ class TestContactSensorOgnWithAnt(omni.kit.test.AsyncTestCase):
 
     async def test_node_outputs_reset(self):
         """Ensure OGN node outputs reset after playback stops."""
-        sensor = ContactSensor.create(
+        sensor = Contact.create(
             f"{self.leg_paths[0]}/sensor",
             min_threshold=0,
             max_threshold=10000000,
             color=self.color[0],
             radius=0.12,
-            translation=self.sensor_offsets[0],
+            translations=self.sensor_offsets[0],
         )
         self.assertIsNotNone(sensor)
 

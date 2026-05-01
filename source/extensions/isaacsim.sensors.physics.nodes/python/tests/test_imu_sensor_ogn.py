@@ -25,7 +25,7 @@ import usdrt.Sdf
 from isaacsim.core.experimental.objects import Cube, GroundPlane
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.sensors.experimental.physics import IMUSensor
+from isaacsim.sensors.experimental.physics import IMU
 
 from .common import (
     ANGULAR_VEL_TOLERANCE,
@@ -63,7 +63,7 @@ class TestIMUSensorOgn(omni.kit.test.AsyncTestCase):
         GeomPrim("/World/Cube", apply_collision_apis=True)
         RigidPrim("/World/Cube", masses=[1.0])
 
-        IMUSensor.create(
+        IMU.create(
             "/World/Cube/imu_sensor",
         )
         prim_utils.get_prim_at_path("/World/Cube/imu_sensor").GetAttribute("linearAccelerationFilterWidth").Set(10)

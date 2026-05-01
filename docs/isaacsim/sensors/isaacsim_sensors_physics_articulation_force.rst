@@ -9,7 +9,7 @@
 .. _isaac_sim_sensors_force:
 
 ==========================
-Articulation Joint Sensors
+Articulation joint sensors
 ==========================
 
 Articulation sensors allow reading the active and passive components of the joint forces using the
@@ -28,6 +28,8 @@ See :ref:`isaac_robot_simulation_how_to` for more details about the Articulation
     torques, or efforts exerted by the joint connecting the child link to the parent link.
     In short, the forces reported by these APIs denote the link incoming joint forces.
 
+.. _isaacsim_sensors_physics_articulation_force_gui:
+
 GUI
 ===
 
@@ -40,7 +42,9 @@ This section describes how to read articulation joint forces through the Script 
     :language: python
 
 
-API Documentation
+.. _isaacsim_sensors_physics_articulation_force_api_documentation:
+
+API documentation
 =================
 
 See the `isaacsim.core.experimental.prims API Documentation <../py/source/extensions/isaacsim.core.experimental.prims/docs/index.html>`_ for the full ``Articulation`` class reference.

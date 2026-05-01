@@ -16,21 +16,21 @@
 
 
 =======================
-Physics Raycast Sensor
+Physics raycast sensor
 =======================
 
-The Physics Raycast Sensor uses physics raycasts to measure distances between a sensor prim and surrounding geometry.
-Unlike the fixed-pattern sensors in |isaac-sim_short|, the physics raycast sensor accepts explicit per-ray origin offsets, direction vectors, and optional time offsets, making it suitable for a wide range of configurations including solid state sensors, rotating sensors, and beam curtains.
+The physics raycast sensor uses physics raycasts to measure distances between a sensor prim and surrounding geometry.
+Unlike the fixed-pattern sensors in |isaac-sim_short|, the physics raycast sensor accepts explicit per-ray origin offsets, direction vectors, and optional time offsets, making it suitable for a wide range of configurations, including solid-state sensors, rotating sensors, and beam curtains.
 
 Each physics step, the sensor casts rays from the prim's world-space position (plus per-ray origin offsets) along the specified directions.
 When ``rayTimeOffsets`` are provided, only the subset of rays whose time offsets fall within the current physics step's time window are fired, producing a sweeping pattern over multiple steps.
 
 See the :ref:`isaac_sim_conventions` documentation for a complete list of |isaac-sim_short| conventions.
 
-**Physics Raycast Sensor Properties**
+**Physics raycast sensor properties**
 
 #. ``enabled`` parameter determines if the sensor is running or not.
-#. ``numRays`` (unsigned int) parameter specifies the authoritative ray count. ``rayOrigins`` and ``rayDirections`` must each have exactly this many elements. This is set automatically when using ``RaycastSensor.create()`` or the ``RaycastSensor`` constructor.
+#. ``numRays`` (unsigned int) parameter specifies the authoritative ray count. ``rayOrigins`` and ``rayDirections`` must each have exactly this many elements. This is set automatically when using ``Raycast.create()`` or the ``Raycast`` authoring constructor.
 #. ``minRange`` parameter specifies the minimum detection range in stage length units. Rays start at ``origin + direction * minRange``.
 #. ``maxRange`` parameter specifies the maximum detection range in stage length units.
 #. ``rayOrigins`` parameter specifies per-ray origin translations in the sensor's local coordinate frame.
@@ -46,10 +46,12 @@ For the full USD attribute definitions, see the :ref:`Raycast Sensor schema refe
     All sensor properties are read once when the simulation starts. Changing attribute values while the simulation is playing has no effect; stop and restart the simulation to pick up changes.
 
 
+.. _isaacsim_sensors_physics_raycast_gui:
+
 GUI
 ===
 
-Creating a Physics Raycast Sensor
+Creating a physics raycast sensor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To create a physics raycast sensor from the GUI:
@@ -65,23 +67,23 @@ To create a physics raycast sensor from the GUI:
 #. To change the position and orientation of the sensor, select the sensor prim and modify the **Transform** properties under the **Property** tab.
 #. To change sensor properties, expand the **Raw USD Properties** section to modify range, ray geometry, and output frame settings.
 
-Physics Raycast Sensor Example
+Physics raycast sensor example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To run the Physics Raycast Sensor Example:
+To run the physics raycast sensor example:
 
 #. Activate **Robotics Examples** tab from **Windows** > **Examples** > **Robotics Examples**.
 #. Click **Robotics Examples** > **Sensors** > **Physics Raycast Sensor** > **Load Scene**.
 #. Verify that three physics raycast sensors are created: a solid state sensor (green rays), a rotating sensor (blue rays), and a beam curtain sensor (red rays).
-#. Press the **PLAY** button to begin simulating.
+#. Press the **Play** button to begin simulating.
 #. Observe the debug ray visualization in the viewport and the hit count / min depth readings in the example window.
 
-OmniGraph Workflow
+OmniGraph workflow
 ^^^^^^^^^^^^^^^^^^
 
 The following is a tutorial on using OmniGraph to read and visualize physics raycast sensor data.
 
-Scene Setup
+Scene setup
 ###########
 
 #. Create a Physics Scene by **Create > Physics > Physics Scene**.
@@ -89,7 +91,7 @@ Scene Setup
 #. Add a ground plane by **Create > Physics > GroundPlane**.
 #. Create a physics raycast sensor by **Create > Sensors > Physics Raycast Sensor > Solid State Physics Raycast Sensor**.
 
-OmniGraph Setup
+OmniGraph setup
 ###############
 
 To set up the |omnigraph_short| to collect readings from this sensor:
@@ -105,12 +107,14 @@ To set up the |omnigraph_short| to collect readings from this sensor:
 #. Press the **Play** button. If set up correctly, ray lines appear from the sensor to hit points in the viewport.
 
 
+.. _isaacsim_sensors_physics_raycast_standalone_python:
+
 Standalone Python
 =================
 
 .. _isaacsim_sensors_physics_raycast_standalone_python_create_modify:
 
-Creating a Physics Raycast Sensor
+Creating a physics raycast sensor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For the example snippets below, prepare the scene using the following snippet by adding a ``PhysicsScene``, collision geometry, and a sensor parent ``Xform``.
@@ -121,12 +125,12 @@ For the example snippets below, prepare the scene using the following snippet by
 Using the Python API
 ####################
 
-Physics raycast sensors are created with ``RaycastSensor.create()``. You must provide ``ray_origins`` and ``ray_directions`` arrays of the same length. The path must include the parent prim path.
+Physics raycast sensors are created with ``Raycast.create()`` (the authoring class) and the returned authoring object is wrapped with ``RaycastSensor`` for runtime data access. You must provide ``ray_origins`` and ``ray_directions`` arrays of the same length. The path must include the parent prim path.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_raycast/using_python_api.py
     :language: python
 
-Using Time Offsets
+Using time offsets
 ##################
 
 To create a sensor with a sweeping pattern, provide ``ray_time_offsets``. Rays are only fired when their time offset falls within the current physics step's time window. The sweep period equals ``max(ray_time_offsets)``.
@@ -134,18 +138,18 @@ To create a sensor with a sweeping pattern, provide ``ray_time_offsets``. Rays a
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_raycast/using_time_offsets.py
     :language: python
 
-Using the RaycastSensor Wrapper
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Using the RaycastSensor runtime
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``RaycastSensor`` class provides a higher-level interface that combines sensor creation and data access. It creates the sensor prim if it doesn't already exist and provides frame-based data output.
+The ``RaycastSensor`` class wraps an existing ``Raycast`` authoring object or an existing ``IsaacRaycastSensor`` prim for runtime data access. Configure and create new prims with ``Raycast.create()``.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_raycast/using_raycast_sensor_wrapper.py
     :language: python
 
-Reading Sensor Output
+Reading sensor output
 ^^^^^^^^^^^^^^^^^^^^^
 
-The physics raycast sensor is created dynamically on **Play**. Use the ``RaycastSensorBackend`` class to read sensor data. The reading includes depths, hit positions, hit normals, and optionally hit prim paths.
+The physics raycast sensor is created dynamically on **Play**. Use ``RaycastSensor.get_sensor_reading()`` to read raw sensor data, or ``RaycastSensor.get_data()`` for a structured dictionary. The reading includes depths, hit positions, hit normals, and optionally hit prim paths.
 
 The following snippet assumes you have created a sensor prim using one of the snippets :ref:`above<isaacsim_sensors_physics_raycast_standalone_python_create_modify>`.
 
@@ -164,8 +168,10 @@ The ``get_sensor_reading()`` function returns a ``RaycastSensorReading`` object 
 * ``ray_origins_world``: Per-ray world-space origins as an Nx3 array.
 * ``ray_end_points_world``: Per-ray world-space end points as an Nx3 array (useful for debug visualization).
 
+The ``get_data()`` function returns a structured dictionary with ``depths``, ``hit_positions``, ``hit_normals``, ``hit_prim_paths``, ``time``, and ``physics_step``. ``ray_origins_world`` and ``ray_end_points_world`` are only available on the raw ``get_sensor_reading()`` result.
 
-API Documentation
+
+API documentation
 ^^^^^^^^^^^^^^^^^
 
 See the |link_ext| for complete usage information.

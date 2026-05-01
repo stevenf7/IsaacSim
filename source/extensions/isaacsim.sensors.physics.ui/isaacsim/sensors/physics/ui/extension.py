@@ -25,9 +25,9 @@ import omni.ext
 import omni.kit.actions.core
 from isaacsim.gui.components.menu import create_submenu
 from isaacsim.sensors.experimental.physics import (
-    ContactSensor,
-    IMUSensor,
-    RaycastSensor,
+    IMU,
+    Contact,
+    Raycast,
 )
 from omni.kit.menu.utils import add_menu_items, remove_menu_items
 from pxr import Gf
@@ -181,13 +181,13 @@ class Extension(omni.ext.IExt):
         if parent is None:
             carb.log_error("No prim selected for contact sensor creation.")
             return
-        ContactSensor.create(
+        Contact.create(
             f"{parent}/Contact_Sensor",
             min_threshold=0.0,
             max_threshold=100000.0,
             color=Gf.Vec4f(1, 0, 0, 1),
             radius=-1,
-            translation=Gf.Vec3d(0, 0, 0),
+            translations=[[0.0, 0.0, 0.0]],
         )
 
     def _add_imu_sensor(self, *args: Any, **kwargs: Any) -> None:
@@ -201,11 +201,11 @@ class Extension(omni.ext.IExt):
         if parent is None:
             carb.log_error("No prim selected for IMU sensor creation.")
             return
-        sensor = IMUSensor.create(
+        imu = IMU.create(
             f"{parent}/Imu_Sensor",
-            translation=Gf.Vec3d(0, 0, 0),
+            translations=[[0.0, 0.0, 0.0]],
         )
-        sensor.set_visibilities([False])
+        imu.set_visibilities([False])
 
     def _add_solid_state_physics_raycast_sensor(self, *args: Any, **kwargs: Any) -> None:
         """Create a solid state physics raycast sensor under the current selection.
@@ -232,7 +232,7 @@ class Extension(omni.ext.IExt):
                 origins.append([0.0, 0.0, 0.0])
                 directions.append([dx, dy, dz])
 
-        RaycastSensor.create(
+        Raycast.create(
             f"{parent}/Solid_State_Physics_Raycast_Sensor",
             min_range=0.4,
             max_range=100.0,
@@ -273,7 +273,7 @@ class Extension(omni.ext.IExt):
                 directions.append([dx, dy, dz])
                 time_offsets.append(t_offset)
 
-        RaycastSensor.create(
+        Raycast.create(
             f"{parent}/Rotating_Physics_Raycast_Sensor",
             min_range=0.4,
             max_range=100.0,
@@ -303,7 +303,7 @@ class Extension(omni.ext.IExt):
             origins.append([0.0, 0.0, z])
             directions.append([1.0, 0.0, 0.0])
 
-        RaycastSensor.create(
+        Raycast.create(
             f"{parent}/Beam_Curtain_Physics_Raycast_Sensor",
             min_range=0.2,
             max_range=10.0,

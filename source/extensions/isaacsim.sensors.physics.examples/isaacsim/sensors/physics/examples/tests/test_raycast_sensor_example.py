@@ -20,7 +20,7 @@ from typing import Any
 import omni.kit.test
 import omni.timeline
 import omni.usd
-from isaacsim.sensors.experimental.physics import RaycastSensor, RaycastSensorBackend
+from isaacsim.sensors.experimental.physics import Raycast, RaycastSensor
 from isaacsim.sensors.physics.examples.raycast_sensor import (
     _generate_curtain_rays,
     _generate_rotating_rays,
@@ -79,14 +79,16 @@ class TestRaycastSensorExample(omni.kit.test.AsyncTestCase):
         stage = await self._create_scene()
 
         origins, directions, _ = _generate_solid_state_rays()
-        sensor = RaycastSensor.create(
-            "/World/Sensors/Solid_State_Physics_Raycast_Sensor",
-            min_range=0.4,
-            max_range=100.0,
-            ray_origins=origins,
-            ray_directions=directions,
-            output_frame="WORLD",
-            translation=Gf.Vec3d(0, 0, 1.5),
+        sensor = RaycastSensor(
+            Raycast.create(
+                "/World/Sensors/Solid_State_Physics_Raycast_Sensor",
+                min_range=0.4,
+                max_range=100.0,
+                ray_origins=origins,
+                ray_directions=directions,
+                output_frame="WORLD",
+                translations=[[0.0, 0.0, 1.5]],
+            )
         )
         self.assertIsNotNone(sensor, "Failed to create solid state physics raycast sensor")
 
@@ -97,8 +99,8 @@ class TestRaycastSensorExample(omni.kit.test.AsyncTestCase):
         for _ in range(20):
             await omni.kit.app.get_app().next_update_async()
 
-        backend = RaycastSensorBackend("/World/Sensors/Solid_State_Physics_Raycast_Sensor")
-        reading = backend.get_sensor_reading()
+        reader = RaycastSensor("/World/Sensors/Solid_State_Physics_Raycast_Sensor")
+        reading = reader.get_sensor_reading()
         self.assertTrue(reading.is_valid, "Solid state physics raycast sensor reading not valid")
         self.assertEqual(reading.ray_count, len(origins))
 
@@ -110,22 +112,24 @@ class TestRaycastSensorExample(omni.kit.test.AsyncTestCase):
         stage = await self._create_scene()
 
         origins, directions, time_offsets = _generate_rotating_rays()
-        sensor = RaycastSensor.create(
-            "/World/Sensors/Rotating_Physics_Raycast_Sensor",
-            min_range=0.4,
-            max_range=100.0,
-            ray_origins=origins,
-            ray_directions=directions,
-            ray_time_offsets=time_offsets,
-            output_frame="WORLD",
-            translation=Gf.Vec3d(0, 3, 1.5),
+        sensor = RaycastSensor(
+            Raycast.create(
+                "/World/Sensors/Rotating_Physics_Raycast_Sensor",
+                min_range=0.4,
+                max_range=100.0,
+                ray_origins=origins,
+                ray_directions=directions,
+                ray_time_offsets=time_offsets,
+                output_frame="WORLD",
+                translations=[[0.0, 3.0, 1.5]],
+            )
         )
         self.assertIsNotNone(sensor, "Failed to create rotating physics raycast sensor")
 
         prim = stage.GetPrimAtPath("/World/Sensors/Rotating_Physics_Raycast_Sensor")
         self.assertTrue(prim.IsValid(), "Rotating physics raycast sensor prim not found")
 
-        backend = RaycastSensorBackend("/World/Sensors/Rotating_Physics_Raycast_Sensor")
+        reader = RaycastSensor("/World/Sensors/Rotating_Physics_Raycast_Sensor")
 
         # Run for a full sweep (~1s at 1Hz) so every azimuth column fires.
         # Accumulate hits across steps since only a subset of rays are active each step.
@@ -133,7 +137,7 @@ class TestRaycastSensorExample(omni.kit.test.AsyncTestCase):
         total_hits = 0
         for _ in range(65):
             await omni.kit.app.get_app().next_update_async()
-            reading = backend.get_sensor_reading()
+            reading = reader.get_sensor_reading()
             if reading.is_valid and reading.ray_count > 0:
                 total_hits += sum(1 for d in reading.depths if d < 100.0)
 
@@ -145,14 +149,16 @@ class TestRaycastSensorExample(omni.kit.test.AsyncTestCase):
         stage = await self._create_scene()
 
         origins, directions, _ = _generate_curtain_rays()
-        sensor = RaycastSensor.create(
-            "/World/Sensors/Beam_Curtain_Physics_Raycast_Sensor",
-            min_range=0.2,
-            max_range=10.0,
-            ray_origins=origins,
-            ray_directions=directions,
-            output_frame="WORLD",
-            translation=Gf.Vec3d(0, -3, 1.0),
+        sensor = RaycastSensor(
+            Raycast.create(
+                "/World/Sensors/Beam_Curtain_Physics_Raycast_Sensor",
+                min_range=0.2,
+                max_range=10.0,
+                ray_origins=origins,
+                ray_directions=directions,
+                output_frame="WORLD",
+                translations=[[0.0, -3.0, 1.0]],
+            )
         )
         self.assertIsNotNone(sensor, "Failed to create beam curtain physics raycast sensor")
 
@@ -163,8 +169,8 @@ class TestRaycastSensorExample(omni.kit.test.AsyncTestCase):
         for _ in range(20):
             await omni.kit.app.get_app().next_update_async()
 
-        backend = RaycastSensorBackend("/World/Sensors/Beam_Curtain_Physics_Raycast_Sensor")
-        reading = backend.get_sensor_reading()
+        reader = RaycastSensor("/World/Sensors/Beam_Curtain_Physics_Raycast_Sensor")
+        reading = reader.get_sensor_reading()
         self.assertTrue(reading.is_valid, "Beam curtain physics raycast sensor reading not valid")
         self.assertEqual(reading.ray_count, len(origins))
 

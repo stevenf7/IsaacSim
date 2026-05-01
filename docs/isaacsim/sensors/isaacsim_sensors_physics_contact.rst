@@ -12,7 +12,7 @@
 
 
 ===============
-Contact Sensor
+Contact sensor
 ===============
 
 .. deprecated:: 6.0
@@ -20,37 +20,39 @@ Contact Sensor
    Use ``isaacsim.sensors.experimental.physics.ContactSensor`` instead.
    See the `API Documentation`_ section below for links.
 
-The Contact Sensor uses the PhysX Contact Report API to generate a sensor reading similar to what you would have with contact cells, or pressure based sensors placed on the surface of an object.
-The Contact Sensor API builds on the Contact Report API by providing contact data filtered by the object it was placed in, along with an optional filter only consider contacts in a specific region of the object. For example, imagine a quadruped robot with sensors in its feet. While in the simulation the entire leg is treated as a rigid body, the only place you can measure contact are on the foot pads, so you can add a region filter that will discard any contacts outside of that boundary.
-The Contact Sensor API also provides persistent contact data, even when the PhysX engine stops streaming contacts to preserve compute time. While the simulation provides full information about the contacts, such as contact pairs, normals and contact points, the Contact Sensor API was designed to match real-data obtained by single-cell contact pads. Ultimately, if full contact data is needed, the Contact Sensor API gets you the filtered contact information without any changes from what was acquired in PhysX.
+The contact sensor uses the PhysX Contact Report API to generate a sensor reading similar to contact cells or pressure-based sensors placed on the surface of an object.
+The Contact Sensor API builds on the Contact Report API by providing contact data filtered by the object it was placed in, along with an optional filter that only considers contacts in a specific region of the object. For example, imagine a quadruped robot with sensors in its feet. While the simulation treats the entire leg as a rigid body, you can only measure contact on the foot pads, so you can add a region filter that discards contacts outside that boundary.
+The Contact Sensor API also provides persistent contact data, even when the PhysX engine stops streaming contacts to preserve compute time. While the simulation provides full information about contacts, such as contact pairs, normals, and contact points, the Contact Sensor API matches real data obtained by single-cell contact pads. If you need full contact data, the Contact Sensor API gets you filtered contact information without changes to the data acquired in PhysX.
 
 See the :ref:`isaac_sim_conventions` documentation for a complete list of |isaac-sim_short| conventions.
 
-**Contact Sensor Properties**
+**Contact sensor properties**
 
 #. ``radius`` parameter specifies the distance of the contact force that it would detect. A value of ``-1`` uses the prim's collision geometry.
 #. ``enabled`` parameter determines if the sensor is running or not.
 #. ``min threshold`` parameter specifies the minimum amount of force to trigger a contact.
-#. ``max threshold`` parameter specifies the maximum amount of force the sensor will output.
-#. ``sensorPeriod`` parameter specifies the time in between sensor measurement. **Deprecated** since ``isaacsim.robot.schema`` 6.2.0 -- only used by the deprecated ``isaacsim.sensors.physx`` extension. The new ``isaacsim.sensors.experimental.physics`` extension reads every physics step.
+#. ``max threshold`` parameter specifies the maximum amount of force the sensor outputs.
+#. ``sensorPeriod`` parameter specifies the time in between sensor measurement. **Deprecated** since ``isaacsim.robot.schema`` 6.2.0 --- only used by the deprecated ``isaacsim.sensors.physics`` extension. The new ``isaacsim.sensors.experimental.physics`` extension reads every physics step.
 
 For the full USD attribute definitions, see the :ref:`Contact Sensor schema reference <isaac_sim_sensor_schema_contact>`.
 
 
+.. _isaacsim_sensors_physics_contact_gui:
+
 GUI
 ===
 
-Creating and Modifying the Contact Sensor
+Creating and modifying the contact sensor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Assuming there is a prim present in the scene to which you want to add a contact sensor, the following steps will let you create and modify a contact sensor.
+To create and modify a contact sensor, start with a prim in the scene that you want to attach the sensor to.
 
 #. To create a Physics Scene, go to the top Menu Bar and click **Create > Physics > Physics Scene**. Verify that there is now a ``PhysicsScene`` :ref:`isaac_sim_glossary_prim` in the :ref:`isaac_sim_glossary_stage` panel on the right.
 #. To create a contact sensor, left click on the prim to attach the contact sensor on the stage, then go to the top Menu Bar and click **Create > Sensors > Contact_sensor**.
 #. To change the position and orientation of the contact sensor, use **Translate and Orientate** tab.
-#. To change other contact sensor properties, click **Raw USD Properties** and properties such as min/max force threshold, enable/disable sensor, sensor period will be available to modify.
+#. To change other contact sensor properties, click **Raw USD Properties** and modify properties such as min/max force threshold, enable/disable sensor, and sensor period.
 
-Contact Sensor Example
+Contact sensor example
 ^^^^^^^^^^^^^^^^^^^^^^
 
 To run the Contact Sensor Example:
@@ -59,19 +61,20 @@ To run the Contact Sensor Example:
 #. Click **Robotics Examples** > **Sensors** > **Contact Sensor**.
 #. Verify that you see a window containing the sensor's force readings color coded by each ant's arm.
 #. Press the **Open Source Code** button to view the source code. The source code illustrates how to load an Ant body into the scene and then add sensors to it using the Python API.
-#. Press the **PLAY** button to begin simulating.
+#. Press the **Play** button to begin simulating.
 #. Press ``SHIFT + LEFT_CLICK`` to drag the ant around  and see changes in the readings.
 
 .. image:: /images/isim_4.5_full_tut_gui_create_contact_sensor.webp
     :align: center
     :width: 100%
+    :alt: Contact sensor example window with force readings.
 
-OmniGraph Workflow
+OmniGraph workflow
 ^^^^^^^^^^^^^^^^^^
 
-The following is a tutorial on using OmniGraph to interact with and visualize the Contact Sensor's readings.
+The following tutorial shows how to use OmniGraph to interact with and visualize the contact sensor readings.
 
-Scene Setup
+Scene setup
 ###########
 
 #. Add a cube to the stage by **Create > Mesh > Cube**, select the cube and drag it up. Then select the cube and right click **Add > Physics > Rigid Body with Colliders Preset**.
@@ -84,7 +87,7 @@ Scene Setup
     :width: 100%
     :alt: Read Contact Sensor Action Graph set up
 
-OmniGraph Setup
+OmniGraph setup
 ###############
 
 To set up the |omnigraph_short| to collect readings from this sensor:
@@ -111,11 +114,11 @@ To set up the |omnigraph_short| to collect readings from this sensor:
         :width: 100%
         :alt: Read Contact Sensor Action Graph set up
 
-**Contact Sensor Visualization**
+**Contact sensor visualization**
 
-The Contact sensor position and radius can be visualized using the ``Isaac xPrim Radius Visualizer Node``, connect the xPrim input to the Contact Sensor Prim, connect ``Tick`` to ``Exec in``. Then insert the correct radius and configure the desired color and line thickness visualization, and the Contact sensor will be visible on **PLAY**.
+You can visualize the contact sensor position and radius using the ``Isaac xPrim Radius Visualizer Node``. Connect the xPrim input to the contact sensor prim and connect ``Tick`` to ``Exec in``. Then set the radius, color, and line thickness. The contact sensor appears when you press **Play**.
 
-.. note:: The spherical region only determines the boundary for contacts that will be accounted for. All contacts still only happen at the surface of the object bounded by the spherical region.
+.. note:: The spherical region only determines the boundary for contacts that are counted. All contacts still only happen at the surface of the object bounded by the spherical region.
 
 .. image:: /images/isaac_tutorial_visualize_contact.png
     :align: center
@@ -123,16 +126,18 @@ The Contact sensor position and radius can be visualized using the ``Isaac xPrim
     :alt: Contact Sensor Visualization Action Graph set up
 
 
+.. _isaacsim_sensors_physics_contact_standalone_python:
+
 Standalone Python
 =================
 
 .. _isaacsim_sensors_physics_contact_standalone_python_create_modify:
 
-Creating and Modifying the Contact Sensor
+Creating and modifying the contact sensor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For the example snippets below, prepare the scene using the following snippet by adding a ``PhysicsScene``, ``GroundPlane``, and a ``Cube`` prim with collision and rigid body physics.
-The contact sensor will be attached to the latter.
+Attach the contact sensor to the latter.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/creating_and_modifying_the_contact_sensor.py
     :language: python
@@ -140,17 +145,17 @@ The contact sensor will be attached to the latter.
 Using the Python API
 ####################
 
-Contact sensors can be created with Python using ``ContactSensor.create()``, with available parameters to set, specified below, with default values. The path must include the parent prim path.
+Contact sensors are created with Python by calling ``Contact.create()`` (the authoring class) and wrapping the returned authoring object with ``ContactSensor`` for runtime data access. Available parameters and their defaults are listed below; the path must include the parent prim path.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/contact_sensor.py
     :language: python
     :start-after: # [create-python-api]
     :end-before: # [/create-python-api]
 
-Using Python Wrapper
-####################
+Using the Python wrapper
+########################
 
-The contact sensor can also be created using the ``isaacsim.sensors.experimental.physics.ContactSensor`` Python wrapper class. The benefit of using the wrapper class is that it comes with additional helper functions to set the contact sensor properties and retrieve sensor data.
+The contact sensor can also be created by constructing a ``Contact`` authoring object directly and wrapping it with ``ContactSensor`` for runtime data access. The ``Contact`` constructor wraps an existing sensor prim or creates a new one with default attributes; the ``ContactSensor`` runtime exposes ``get_sensor_reading()``, ``get_data()``, and ``get_raw_data()`` for reading sensor output. Property setters (``set_min_threshold`` / ``set_max_threshold`` / ``set_radius`` / corresponding getters) live on the ``Contact`` authoring object, accessible as ``sensor.contact`` after construction.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/contact_sensor.py
     :language: python
@@ -158,34 +163,33 @@ The contact sensor can also be created using the ``isaacsim.sensors.experimental
     :end-before: # [/create-python-wrapper]
 
 .. note::
-    Translation and position cannot both be defined, frequency, and ``dt`` also cannot both be defined.
+    ``translations`` (local-frame) and ``positions`` (world-frame) cannot both be defined — they are mutually exclusive.
 
-Creating a contact sensor can only be done on a prim with a collider API, and it depends on a Contact Report API. Both ``ContactSensor.create()`` and the wrapper class constructor automatically add a Contact Report API to the parent prim. You can also manually add a Contact Report API to a prim through:
+Creating a contact sensor requires an enabled rigid-body ancestor, and the body depends on a Contact Report API. Contact-producing geometry still needs collision APIs. ``Contact.create()`` applies the Contact Report API on the rigid-body ancestor when it creates the sensor prim; when wrapping an existing sensor prim with ``Contact(path)`` the API is not applied by Python, but the C++ runtime ensures contact reporting is enabled when the sensor goes live on **Play**. You can also manually add a Contact Report API to a prim through:
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/contact_sensor.py
     :language: python
     :start-after: # [contact-report-api]
     :end-before: # [/contact-report-api]
 
-To modify sensor parameters, you can use built-in class API calls such as ``set_frequency``, ``set_dt``, or USD attribute API calls.
+To modify sensor parameters at runtime, use the authoring object exposed via ``sensor.contact``: ``sensor.contact.set_min_threshold(value)``, ``sensor.contact.set_max_threshold(value)``, ``sensor.contact.set_radius(value)``. The previous shorthand methods on ``ContactSensor`` itself were removed in 3.0.0 — call them on ``sensor.contact``.
 
-Reading Sensor Output
+Reading sensor output
 ^^^^^^^^^^^^^^^^^^^^^
 
 The contact sensors are created dynamically on **Play**. Moving the sensor prim while the simulation is running invalidates the sensor. If you need to make hierarchical changes to the contact sensor like changing its rigid body parent, stop the simulator, make the changes, and then restart the simulation.
 
-There are also three methods for reading the sensor output:
+There are three methods for reading the sensor output:
 
-* using ``get_sensor_reading()`` in the sensor interface (recommended)
-* ``get_current_frame()`` in the contact sensor Python class
-* the OmniGraph node ``Isaac Read Contact Sensor``
+* ``ContactSensor.get_sensor_reading()`` — returns the cached :class:`ContactSensorReading`
+* ``ContactSensor.get_data()`` — returns a structured dictionary
+* OmniGraph node ``Isaac Read Contact Sensor``
 
 The following snippets assume you have created a ``/World/Cube`` prim and contact sensor prim using one of the two snippets :ref:`above<isaacsim_sensors_physics_contact_standalone_python_create_modify>`.
 
-**get_sensor_reading(sensor_path, use_latest_data = False)**
+**ContactSensor.get_sensor_reading()**
 
-The get sensor reading function takes in two parameters, the ``prim_path`` to any contact sensor prim and it uses the latest data flag (optional) for retrieving the data point from the current physics step if the sensor is running at a slower rate than physics rate.
-The function returns an ``CsSensorReading`` object, which contains ``is_valid``, ``time``, ``value``, and ``in_contact``.
+Returns a :class:`ContactSensorReading` with ``is_valid``, ``time``, ``value`` (force magnitude), and ``in_contact``.
 
 Sample usage to get the reading from the current frame:
 
@@ -194,10 +198,9 @@ Sample usage to get the reading from the current frame:
     :start-after: # [reading-backend]
     :end-before: # [/reading-backend]
 
-**get_current_frame()**
+**ContactSensor.get_data()**
 
-The ``get_current_frame()`` function is a wrapper around ``get_sensor_reading(path_to_current_sensor)`` function and ``get_contact_sensor_raw_data``, and it is also a member function of the ContactSensor class. This function returns a dictionary with ``in_contact``, ``force``, ``number_of_contacts``, ``time``, ``body0``, ``body1``, ``position``, ``normal``, ``impulse``, ``contacts``, and ``physics_step`` as ``keys`` for the IMU measurement.
-The ``get_current_frame()`` function uses the default parameters of ``get_sensor_reading``, so it gives you the sensor measurement at reading time.
+The ``get_data()`` member function on the ``ContactSensor`` runtime class returns a structured dictionary with ``time``, ``physics_step``, ``in_contact``, ``force``, and ``number_of_contacts``. Internally it calls :meth:`get_sensor_reading` for the contact state and :meth:`get_raw_data` to compute ``number_of_contacts``. When ``add_raw_contact_data_to_frame()`` has been called, the dictionary additionally contains a ``contacts`` list whose entries provide ``body0``, ``body1``, ``position``, ``normal``, and ``impulse`` per contact point.
 
 Sample usage:
 
@@ -206,22 +209,17 @@ Sample usage:
     :start-after: # [reading-wrapper]
     :end-before: # [/reading-wrapper]
 
-**get_contact_sensor_raw_data()**
+**ContactSensor.get_raw_data()**
 
-The contact sensor raw data will output a list of raw contact API data ``CsRawData``, which contains ``time``, ``dt``, ``body0``, ``body1``, ``position``, ``normal``, and ``impulse``. The raw data disregards sensor thresholds. Contacts with the parent body below the force threshold appear here even though they are discarded in the processed sensor reading ``CsSensorReading``.
+Returns a list of raw contact records (one per contact event in the current physics step). Each record contains ``time``, ``dt``, ``body0``, ``body1``, ``position``, ``normal``, and ``impulse``. Raw data disregards the sensor's ``min_threshold``/``max_threshold`` filtering: contacts that fall below the threshold are still reported here, even though they would be discarded by the filtered ``ContactSensorReading``. To pass through to a frame call instead, enable the ``contacts`` list with ``ContactSensor.add_raw_contact_data_to_frame()``.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physics_contact/contact_sensor.py
     :language: python
     :start-after: # [reading-raw-data]
     :end-before: # [/reading-raw-data]
 
-.. warning::
-    ``get_contact_sensor_raw_data()`` is deprecated and will be replaced in a future release.
-    Check the `isaacsim.sensors.experimental.physics API Documentation <../py/source/extensions/isaacsim.sensors.experimental.physics/docs/index.html>`_
-    for the latest contact data retrieval methods.
 
-
-API Documentation
+API documentation
 ^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 6.0

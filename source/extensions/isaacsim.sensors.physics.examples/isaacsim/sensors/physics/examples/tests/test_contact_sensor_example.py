@@ -18,9 +18,8 @@
 import omni.kit.test
 import omni.timeline
 import omni.usd
-from isaacsim.sensors.experimental.physics import ContactSensor, ContactSensorBackend
+from isaacsim.sensors.experimental.physics import Contact, ContactSensor
 from isaacsim.storage.native import get_assets_root_path
-from pxr import Gf
 
 
 class TestContactSensorExample(omni.kit.test.AsyncTestCase):
@@ -49,13 +48,15 @@ class TestContactSensorExample(omni.kit.test.AsyncTestCase):
 
         leg_paths = [f"/Ant/Arm_{i + 1:02d}/Lower_Arm" for i in range(4)]
         for leg in leg_paths:
-            sensor = ContactSensor.create(
-                f"{leg}/sensor",
-                min_threshold=0,
-                max_threshold=10000000,
-                color=(1, 0, 0, 1),
-                radius=0.12,
-                translation=Gf.Vec3d(40, 0, 0),
+            sensor = ContactSensor(
+                Contact.create(
+                    f"{leg}/sensor",
+                    min_threshold=0,
+                    max_threshold=10000000,
+                    color=(1, 0, 0, 1),
+                    radius=0.12,
+                    translations=[[40.0, 0.0, 0.0]],
+                )
             )
             self.assertIsNotNone(sensor, f"Failed to create contact sensor at {leg}")
 
@@ -69,6 +70,6 @@ class TestContactSensorExample(omni.kit.test.AsyncTestCase):
 
         for leg in leg_paths:
             path = leg + "/sensor"
-            backend = ContactSensorBackend(path)
-            reading = backend.get_sensor_reading()
+            reader = ContactSensor(path)
+            reading = reader.get_sensor_reading()
             self.assertTrue(reading.is_valid, f"Contact sensor reading not valid at {path}")

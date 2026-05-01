@@ -1,7 +1,6 @@
 import math
 
-from isaacsim.sensors.experimental.physics import RaycastSensor
-from pxr import Gf
+from isaacsim.sensors.experimental.physics import Raycast, RaycastSensor
 
 # Generate a simple grid of ray directions for a solid state physics raycast sensor.
 h_count, v_count = 10, 5
@@ -18,12 +17,14 @@ for vi in range(v_count):
         origins.append([0.0, 0.0, 0.0])
         directions.append([dx, dy, dz])
 
-sensor = RaycastSensor.create(
-    "/World/Sensors/Physics_Raycast_Sensor",
-    min_range=0.4,
-    max_range=100.0,
-    ray_origins=origins,
-    ray_directions=directions,
-    output_frame="WORLD",
-    translation=Gf.Vec3d(0, 0, 1.5),
+sensor = RaycastSensor(
+    Raycast.create(
+        "/World/Sensors/Physics_Raycast_Sensor",
+        min_range=0.4,
+        max_range=100.0,
+        ray_origins=origins,
+        ray_directions=directions,
+        output_frame="WORLD",
+        translations=[[0.0, 0.0, 1.5]],
+    )
 )

@@ -1,4 +1,8 @@
 # Changelog
+## [1.17.7] - 2026-04-30
+### Changed
+- Migrated `create_raycast_lidar_sensor` test helper and physics raycast tests to the new `isaacsim.sensors.experimental.physics` 3.0.0 API: call `Raycast.create(...)` (the authoring class) directly, return the authoring object's `paths[0]` instead of going through the runtime sensor, and use plural `translations=[[x, y, z]]` instead of singular `translation=Gf.Vec3d(...)`. The runtime sensor no longer forwards XformPrim attribute access or exposes a `create()` class method, so callers go through the typed authoring accessor.
+
 ## [1.17.6] - 2026-04-27
 ### Fixed
 - Fix `OgnROS2CameraHelper` using `is None` instead of `.IsValid()` to check render product prim existence
