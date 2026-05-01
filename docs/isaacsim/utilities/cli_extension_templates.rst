@@ -22,6 +22,34 @@ The command-line interface (CLI) extension templates allow you to scaffold new |
 The generator places all extensions in ``source/extensions/``, and the build system discovers them automatically --- no manual registration required.
 
 
+.. _cli_ext_templates_prerequisites:
+
+Prerequisites
+==============
+
+The template generator runs from the |isaac-sim_short| source tree. If you have not already cloned the
+open-source repository, do so first:
+
+.. code-block:: bash
+
+   git clone -b develop https://github.com/isaac-sim/IsaacSim.git isaacsim
+   cd isaacsim
+
+All commands shown in this guide are run from the repository root (the directory that contains
+``repo.sh``, ``build.sh``, and ``templates/``). On Windows, substitute ``./repo.sh`` with ``.\repo.bat``
+and ``./build.sh`` with ``.\build.bat``.
+
+The first invocation of ``./build.sh`` prompts you to accept the **NVIDIA Software License Agreement**.
+After acceptance, a marker file ``.eula_accepted`` is written to the repository root and the prompt does
+not appear again. Similarly, ``./repo.sh template new`` has its own EULA prompt that writes
+``.omniverse_eula_accepted.txt``. Both files must exist for a fully non-interactive workflow.
+See :ref:`cli_ext_templates_ci` below for how to pre-accept the EULA in non-interactive
+(CI) environments.
+
+For the full list of platform requirements (OS, GPU, driver, build tools), see the project
+`README <https://github.com/isaac-sim/IsaacSim#prerequisites-and-environment-setup>`_.
+
+
 .. _cli_ext_templates_getting_started:
 
 Getting started
@@ -229,6 +257,20 @@ Rebuild the project so the new extension is included:
    ./build.sh
 
 The build system discovers the extension automatically --- no manual registration required.
+A successful build ends with a summary similar to:
+
+.. code-block:: text
+
+   BUILD (release) SUCCEEDED (Took NN.NN seconds)
+
+After the build, the extension is staged at:
+
+.. code-block:: text
+
+   _build/linux-x86_64/release/exts/isaacsim.my.hello/
+
+If the build fails, re-run with ``./build.sh -v`` for verbose output and inspect the first error
+message --- subsequent errors are usually cascading consequences of the first.
 
 Step 3: Run the startup test
 ------------------------------
@@ -240,8 +282,21 @@ Every generated extension includes a startup test. Run it from the build directo
    cd _build/linux-x86_64/release
    ./tests/tests-isaacsim.my.hello.sh
 
-This runs two test suites: a startup test (extension loads without errors) and unit tests
-(``test_extension.py``).
+This runs two test suites:
+
+- A **startup test** that loads Kit with the extension enabled and verifies it starts and shuts down cleanly.
+- The **unit tests** in ``isaacsim/my/hello/tests/test_extension.py``.
+
+A successful run ends with the standard ``unittest`` summary lines:
+
+.. code-block:: text
+
+   Ran N tests in N.NNs
+
+   OK
+
+If a test fails, the failing test name and traceback are printed above the summary. Kit log files
+written during the run can be found under ``~/.nvidia-omniverse/logs/`` for deeper inspection.
 
 Step 4: Verify in Isaac Sim
 -----------------------------
@@ -252,10 +307,15 @@ Launch |isaac-sim_short| with your extension enabled:
 
    ./_build/linux-x86_64/release/isaac-sim.sh --enable isaacsim.my.hello
 
-To verify it loaded, open the **Extensions Manager** (**Window > Extensions**) and search for
-``isaacsim.my.hello``. It should appear as enabled.
+**Extension Manager check**
 
-You can also verify from the **Script Editor** (**Window > Script Editor**):
+Open the **Extensions Manager** (**Window > Extensions**) and search for ``isaacsim.my.hello``.
+The extension should appear in the list with its status toggle set to **enabled** (green) and the
+title and description from your ``extension.toml``.
+
+**Script Editor check**
+
+From **Window > Script Editor**, run:
 
 .. code-block:: python
 
@@ -271,10 +331,28 @@ Open ``source/extensions/isaacsim.my.hello/isaacsim/my/hello/extension.py`` and 
 ``on_startup`` and ``on_shutdown`` methods to add your custom logic. Rebuild and re-test.
 
 
-Verifying C++ and OmniGraph extensions
-----------------------------------------
+Verifying UI, C++, and OmniGraph extensions
+---------------------------------------------
 
-For **C++ extensions**, verify the bindings work after building:
+The verification flow is the same for every template (build → run startup test → launch and check
+in the **Extensions Manager**); the additional checks below confirm the template-specific surfaces.
+
+**UI extension**
+
+After enabling the extension, open **Window > Examples Browser**. Your extension should appear under
+the category you selected at generation time (e.g., ``Examples``). Selecting it opens a panel with
+**Load World** and **Reset** buttons:
+
+- Click **Load World** --- the simulation should load the default scene defined in
+  ``scenario.py::setup_scene()`` (a grid ground plane referenced from
+  ``Isaac/Environments/Grid/default_environment.usd``) and physics callbacks become active.
+- Click **Reset** --- the world should return to its initial state and physics callbacks stop.
+
+Replace the body of ``setup_scene()`` and ``on_physics_step()`` to drive your own simulation.
+
+**C++ extension**
+
+Verify the bindings work after building:
 
 .. code-block:: bash
 
@@ -282,8 +360,19 @@ For **C++ extensions**, verify the bindings work after building:
    ./tests/tests-isaacsim.my.extension.sh
 
 The unit tests import the bindings module and call the ``greet()`` method on the Carbonite interface.
+You can repeat the check interactively from the **Script Editor** (substituting your own
+``extension_name`` and ``binding_module``):
 
-For **OmniGraph extensions**, verify both C++ and Python nodes are registered:
+.. code-block:: python
+
+   from isaacsim.my.extension.bindings._my_extension import acquire_example_interface
+   iface = acquire_example_interface()
+   print(iface.greet())
+   # Expected: a non-empty greeting string
+
+**OmniGraph extension**
+
+Verify both C++ and Python nodes are registered:
 
 .. code-block:: bash
 
@@ -302,23 +391,66 @@ You can also verify OGN nodes interactively via the **Script Editor**:
    print([n for n in nodes if "my.nodes" in n])
    # Expected: ['isaacsim.my.nodes.ExampleCpp', 'isaacsim.my.nodes.ExamplePython']
 
+To exercise the nodes graphically, open **Window > Graph Editors > Action Graph**, create a new
+graph, and search the node palette for ``ExampleCpp`` / ``ExamplePython``. Both should appear under
+the category named after the first segment of your extension name (e.g., ``isaacsim``), as defined
+in the generated ``CategoryDefinition.json`` files.
+
 
 .. _cli_ext_templates_ci:
 
 Non-interactive usage (CI)
 ============================
 
-For Continuous Integration (CI) automation, use the replay feature with a pre-defined playback file:
+For Continuous Integration (CI) automation, the full pipeline is:
 
-.. code-block:: bash
+#. **Pre-accept the EULA.** Both ``./build.sh`` and ``./repo.sh template`` prompt on first use;
+   in a non-interactive job the prompt blocks execution. Create **both** marker files in your CI
+   setup step:
 
-   # Generate a playback file interactively (one-time)
-   ./repo.sh template new --generate-playback my_extension.toml
+   .. code-block:: bash
 
-   # Replay without prompts
-   ./repo.sh template replay my_extension.toml
+      touch .eula_accepted
+      touch .omniverse_eula_accepted.txt
 
-Playback files use TOML (Tom's Obvious, Minimal Language) format to specify the template and variable values:
+   - ``.eula_accepted`` is checked by ``tools/eula_check.sh`` (used by ``./build.sh``).
+   - ``.omniverse_eula_accepted.txt`` is checked by the template generator (used by
+     ``./repo.sh template new`` and ``./repo.sh template replay``).
+
+   Both are empty files that persist across builds, so creating them once at the start of the job
+   is sufficient.
+
+   .. note::
+
+      If only ``.eula_accepted`` is present, ``./build.sh`` will work but
+      ``./repo.sh template replay`` will fail with an unhandled exception in the EULA prompt
+      because the playback frontend cannot answer interactive prompts.
+
+#. **Generate a playback file once, interactively.** This step records the template selection and
+   variable values into a TOML file:
+
+   .. code-block:: bash
+
+      ./repo.sh template new --generate-playback my_extension.toml
+
+#. **Replay non-interactively in CI.** The replay command consumes the playback file and produces the
+   extension without prompting:
+
+   .. code-block:: bash
+
+      ./repo.sh template replay my_extension.toml
+
+#. **Build and run the startup tests** as in the tutorial above:
+
+   .. code-block:: bash
+
+      ./build.sh
+      cd _build/linux-x86_64/release
+      ./tests/tests-<extension_name>.sh
+
+Playback files use TOML (Tom's Obvious, Minimal Language) format to specify the template and variable
+values. The section header names the template (one of ``isaacsim-python-extension``,
+``isaacsim-ui-extension``, ``isaacsim-cpp-extension``, ``isaacsim-omnigraph-extension``):
 
 .. code-block:: toml
 
@@ -329,7 +461,10 @@ Playback files use TOML (Tom's Obvious, Minimal Language) format to specify the 
    description = "Provides lidar sensor simulation."
    category = "Sensors"
 
-The ``templates/tests/`` directory contains pre-defined playback files for CI build verification.
+The ``templates/tests/`` directory contains pre-defined playback files
+(``test_python_extension.toml``, ``test_ui_extension.toml``, ``test_cpp_extension.toml``,
+``test_omnigraph_extension.toml``) used for CI build verification --- copy one as a starting point
+when wiring up your own pipeline.
 
 
 .. _cli_ext_templates_variables:
@@ -428,3 +563,15 @@ Troubleshooting
    The stubgen step may fail with ``generic_type: type "X" is already registered`` errors.
    This is a known issue with the pybind11 stub generator when multiple extensions share type names.
    The build itself succeeds --- only the ``.pyi`` stub generation fails, which does not affect runtime.
+
+**Template replay fails with "This should not be encountered"**
+   This means ``.omniverse_eula_accepted.txt`` is missing from the repository root. The template
+   generator's playback frontend cannot answer the EULA prompt interactively, so it raises an
+   exception in its ``select()`` method. Fix by creating the file:
+
+   .. code-block:: bash
+
+      touch .omniverse_eula_accepted.txt
+
+   This is a separate file from ``.eula_accepted`` (which is used by ``./build.sh``). Both must
+   exist for fully non-interactive CI pipelines.
