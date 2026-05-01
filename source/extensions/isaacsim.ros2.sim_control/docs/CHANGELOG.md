@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.3] - 2026-04-28
+### Changed
+- Added simulate until condition functions to tests to reduce test time
+
 ## [1.6.2] - 2026-04-30
 ### Fixed
 - `GetAvailableWorlds`: user-provided `additional_sources` are no longer mangled by Nucleus-relative resolution when `offline_only=True` on Windows

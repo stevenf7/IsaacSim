@@ -15,7 +15,6 @@
 
 """Tests for ROS 2 waypoint follower OmniGraph node."""
 
-import asyncio
 
 import omni.appwindow
 import omni.ext
@@ -28,8 +27,6 @@ from isaacsim.core.experimental.utils import prim as prim_utils
 from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from pxr import Gf, UsdGeom
-
-from .common import simulate_async
 
 WAYPOINT_SCRIPT = """
 import rclpy
@@ -703,12 +700,6 @@ class TestRos2Nav2WaypointFollower(ROS2TestCase):
 
         self.assertFalse(self._create_waypoints(_dummy_waypoint, _prim_path), "Waypoint with same name is created!")
 
-    def spin_thread(self):
-        """Handle spin thread operation."""
-        import rclpy
-
-        rclpy.spin_once(self.__node, timeout_sec=10)
-
     def _get_normalized_quaternion_components(self, qw, qx, qy, qz):
         """Get normalized quaternion components using Gf.Quatf for test comparison.
 
@@ -764,8 +755,6 @@ class TestRos2Nav2WaypointFollower(ROS2TestCase):
 
     async def test_waypoint_mode_action_graph(self):
         """Test waypoint mode action graph."""
-        import threading
-
         from std_msgs.msg import String
 
         # Test to verify waypoint mode action graph
@@ -800,23 +789,22 @@ class TestRos2Nav2WaypointFollower(ROS2TestCase):
         # Create a subscription to the 'topic' topic, listening for String messages
         self.create_subscription(self.__node, String, "topic", listener_callback, 10)
 
-        # Start the spin function in a separate thread
-        thread = threading.Thread(target=self.spin_thread, daemon=True)
-        thread.start()
+        # Continuously spin the subscriber in a background executor so messages are
+        # delivered even when the main thread is blocked inside OmniGraph compute.
+        self.start_async_spinning(self.__node)
 
         self._timeline.play()
-        await simulate_async(0.5)
+        await self.simulate_until_condition(lambda: False, max_frames=30)
         og.Controller.set(og.Controller.attribute(f"{self._og_path}/OnImpulseEvent.state:enableImpulse"), True)
-        await asyncio.sleep(2.0)
+        await self.simulate_until_condition(lambda: self.__result, max_frames=180)
 
+        self.stop_async_spinning(self.__node)
         self.__node.destroy_node()
 
         self.assertTrue(self.__result, "Waypoint Mode Graph is not generated properly.")
 
     async def test_patrolling_mode_action_graph(self):
         """Test patrolling mode action graph."""
-        import threading
-
         from std_msgs.msg import String
 
         # Test to verify patrolling mode action graph
@@ -855,15 +843,16 @@ class TestRos2Nav2WaypointFollower(ROS2TestCase):
         # Create a subscription to the 'topic' topic, listening for String messages
         self.create_subscription(self.__node, String, "topic", listener_callback, 10)
 
-        # Start the spin function in a separate thread
-        thread = threading.Thread(target=self.spin_thread, daemon=True)
-        thread.start()
+        # Continuously spin the subscriber in a background executor so messages are
+        # delivered even when the main thread is blocked inside OmniGraph compute.
+        self.start_async_spinning(self.__node)
 
         self._timeline.play()
-        await simulate_async(0.5)
+        await self.simulate_until_condition(lambda: False, max_frames=30)
         og.Controller.set(og.Controller.attribute(f"{self._og_path}/OnImpulseEvent.state:enableImpulse"), True)
-        await asyncio.sleep(2.0)
+        await self.simulate_until_condition(lambda: self.__result, max_frames=180)
 
+        self.stop_async_spinning(self.__node)
         self.__node.destroy_node()
 
         self.assertTrue(self.__result, "Patrolling Mode Graph is not generated properly.")

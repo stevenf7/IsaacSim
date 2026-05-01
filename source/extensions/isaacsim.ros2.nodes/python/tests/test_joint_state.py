@@ -37,7 +37,6 @@ from .common import (
     fix_reversed_joints,
     get_qos_profile,
     set_joint_drive_parameters,
-    simulate_async,
 )
 
 
@@ -111,7 +110,12 @@ class TestRos2JointStatePublisher(ROS2TestCase):
         art_handle = Articulation("/Articulation")
         art_handle.set_dof_position_targets(default_position)
 
-        await simulate_async(2, 60, spin)
+        await self.simulate_until_condition(
+            lambda: len(self.js_ros.position) > 0
+            and all(abs(self.js_ros.position[i] - default_position[i]) < 1e-3 for i in range(len(default_position))),
+            max_frames=120,
+            per_frame_callback=spin,
+        )
         received_position = self.js_ros.position
 
         print("\n received_position", received_position)
@@ -151,7 +155,9 @@ class TestRos2JointStatePublisher(ROS2TestCase):
         art_handle.set_dof_gains(stiffnesses=[0.0, 0.0, 0.0], dampings=[1e4, 1e4, 1e4])
         art_handle.set_dof_velocity_targets(test_velocities)
 
-        await simulate_async(2, 60, spin)
+        await self.simulate_until_condition(
+            lambda: len(self.js_ros.velocity) > 0, max_frames=60, per_frame_callback=spin
+        )
         received_velocity = self.js_ros.velocity
 
         print("received_velocity", received_velocity)
@@ -234,7 +240,9 @@ class TestRos2JointStatePublisherFromSensor(ROS2TestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(2, 60, spin)
+        await self.simulate_until_condition(
+            lambda: len(self.js_ros.position) > 0, max_frames=60, per_frame_callback=spin
+        )
         received_position = self.js_ros.position
 
         self.assertAlmostEqual(received_position[0], default_position[0], delta=1e-3)
@@ -278,7 +286,9 @@ class TestRos2JointStatePublisherFromSensor(ROS2TestCase):
             )
 
         self._timeline.play()
-        await simulate_async(2, 60, spin)
+        await self.simulate_until_condition(
+            lambda: len(self.js_ros.velocity) > 0, max_frames=60, per_frame_callback=spin
+        )
         received_velocity = self.js_ros.velocity
 
         comp_velocity = [5 * PI / 180.0, 0.1, -2.5 * PI / 180.0]
@@ -362,11 +372,14 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
 
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
-        await simulate_async(0.5)
+        await self.simulate_until_condition(lambda: False, max_frames=30)
 
         # publish value
         ros2_publisher.publish(js_position)
-        await simulate_async(0.5)
+        await self.simulate_until_condition(
+            lambda: len(og.Controller.attribute("outputs:jointNames", self.subscriber_node).get()) > 0,
+            max_frames=60,
+        )
 
         # get the value from the subscriber node
         joint_names = og.Controller.attribute("outputs:jointNames", self.subscriber_node).get()
@@ -402,7 +415,7 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         js_position.position = test_position
 
         self._timeline.play()
-        await simulate_async(0.5)
+        await self.simulate_until_condition(lambda: False, max_frames=30)
 
         art_handle = Articulation("/Articulation")
 
@@ -415,8 +428,14 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
 
         # publish value
         ros2_publisher.publish(js_position)
-        # give it a second to move
-        await simulate_async(1)
+        # wait for joints to reach commanded position
+        await self.simulate_until_condition(
+            lambda: all(
+                abs(art_handle.get_dof_positions().numpy().flatten()[i] - test_position[i]) < 0.001
+                for i in range(len(test_position))
+            ),
+            max_frames=180,
+        )
 
         joint_command_received = art_handle.get_dof_positions().numpy().flatten()
         print("joint_command_received", joint_command_received)
@@ -438,8 +457,15 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
 
         # publish value
         ros2_publisher.publish(js_velocity)
-        # give it a second to move
-        await simulate_async(1)
+        # wait for all joints to reach commanded velocity (coupling forces from joints 0/2
+        # decelerating from their high initial targets can briefly push joint 1 above target)
+        await self.simulate_until_condition(
+            lambda: all(
+                abs(art_handle.get_dof_velocities().numpy().flatten()[i] - test_velocity[i]) < 0.01
+                for i in range(len(test_velocity))
+            ),
+            max_frames=240,
+        )
 
         joint_command_received = art_handle.get_dof_velocities().numpy().flatten()
         print("joint_velocity_received", joint_command_received)
@@ -461,8 +487,12 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         js_mixed.velocity = [0.5, float("nan"), -2.5]
 
         ros2_publisher.publish(js_mixed)
-        # give it a second to move
-        await simulate_async(2)
+        # wait for prismatic joint to reach commanded position and fully settle (velocity → 0)
+        await self.simulate_until_condition(
+            lambda: abs(art_handle.get_dof_positions().numpy().flatten()[1] - 0.4) < 0.001
+            and abs(art_handle.get_dof_velocities().numpy().flatten()[1]) < 0.01,
+            max_frames=180,
+        )
 
         joint_position_received = art_handle.get_dof_positions().numpy().flatten()
         joint_velocity_received = art_handle.get_dof_velocities().numpy().flatten()
@@ -504,7 +534,7 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         js_position.position = test_position
 
         self._timeline.play()
-        await simulate_async(0.5)
+        await self.simulate_until_condition(lambda: False, max_frames=30)
 
         art_handle = Articulation("/Articulation")
 
@@ -517,8 +547,14 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
 
         # publish value
         ros2_publisher.publish(js_position)
-        # give it a second to move
-        await simulate_async(1)
+        # wait for joints to reach commanded position
+        await self.simulate_until_condition(
+            lambda: all(
+                abs(art_handle.get_dof_positions().numpy().flatten()[i] - test_position[i]) < 0.001
+                for i in range(len(test_position))
+            ),
+            max_frames=180,
+        )
 
         joint_command_received = art_handle.get_dof_positions().numpy().flatten()
         print("joint_command_received", joint_command_received)
@@ -540,8 +576,14 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
 
         # publish value
         ros2_publisher.publish(js_velocity)
-        # give it a second to move
-        await simulate_async(1)
+        # wait for all joints to reach commanded velocity
+        await self.simulate_until_condition(
+            lambda: all(
+                abs(art_handle.get_dof_velocities().numpy().flatten()[i] - test_velocity[i]) < 0.01
+                for i in range(len(test_velocity))
+            ),
+            max_frames=240,
+        )
 
         joint_command_received = art_handle.get_dof_velocities().numpy().flatten()
         print("joint_velocity_received", joint_command_received)
@@ -563,8 +605,12 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         js_mixed.velocity = [0.5, float("nan"), -2.5]
 
         ros2_publisher.publish(js_mixed)
-        # give it a second to move
-        await simulate_async(2)
+        # wait for prismatic joint to reach commanded position and fully settle (velocity → 0)
+        await self.simulate_until_condition(
+            lambda: abs(art_handle.get_dof_positions().numpy().flatten()[1] - 0.4) < 0.001
+            and abs(art_handle.get_dof_velocities().numpy().flatten()[1]) < 0.01,
+            max_frames=180,
+        )
 
         joint_position_received = art_handle.get_dof_positions().numpy().flatten()
         joint_velocity_received = art_handle.get_dof_velocities().numpy().flatten()
@@ -644,13 +690,19 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         js.position = test_position
 
         self._timeline.play()
-        await simulate_async(0.5)
+        await self.simulate_until_condition(lambda: False, max_frames=30)
 
         art_handle = Articulation("/Articulation")
-        await simulate_async(0.5)
+        await self.simulate_until_condition(lambda: False, max_frames=30)
 
         ros2_publisher.publish(js)
-        await simulate_async(1)
+        await self.simulate_until_condition(
+            lambda: all(
+                abs(art_handle.get_dof_positions().numpy().flatten()[i] - test_position[i]) < 0.001
+                for i in range(len(test_position))
+            ),
+            max_frames=180,
+        )
 
         joint_positions = art_handle.get_dof_positions().numpy().flatten()
         self.assertAlmostEqual(joint_positions[0], test_position[0], delta=1e-3)

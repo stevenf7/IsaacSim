@@ -27,7 +27,7 @@ import omni.kit.test
 import omni.kit.usd
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 
-from .common import get_qos_profile, simulate_async
+from .common import get_qos_profile
 
 
 class TestRos2NodeCommands(ROS2TestCase):
@@ -77,7 +77,7 @@ class TestRos2NodeCommands(ROS2TestCase):
 
         self._timeline.play()
 
-        await simulate_async(2.1, callback=spin)
+        await self.simulate_until_condition(lambda: self._time_sec > 2.0, max_frames=150, per_frame_callback=spin)
         self._timeline.stop()
         self.assertGreater(self._time_sec, 2.0)
         spin()
@@ -116,18 +116,18 @@ class TestRos2NodeCommands(ROS2TestCase):
         def spin():
             rclpy.spin_once(node, timeout_sec=0.01)
 
-        await simulate_async(0.1, callback=spin)
+        await self.simulate_until_condition(lambda: False, max_frames=10, per_frame_callback=spin)
         self._timeline.play()
 
         await omni.kit.app.get_app().next_update_async()
         self.assertEqual(self._time_sec, 0.0)
         og.Controller.attribute("/controller_graph/Impulse.state:enableImpulse").set(True)
         # after first step we need to wait for ros node to initialize
-        await simulate_async(0.1, callback=spin)
+        await self.simulate_until_condition(lambda: False, max_frames=10, per_frame_callback=spin)
 
         og.Controller.attribute("/controller_graph/Impulse.state:enableImpulse").set(True)
         # wait for message
-        await simulate_async(0.1, callback=spin)
+        await self.simulate_until_condition(lambda: self._time_sec > 0.0, max_frames=30, per_frame_callback=spin)
         self.assertGreater(self._time_sec, 0.0)
 
         self._timeline.stop()
@@ -169,7 +169,7 @@ class TestRos2NodeCommands(ROS2TestCase):
 
         self._timeline.play()
 
-        await simulate_async(0.1, callback=spin)
+        await self.simulate_until_condition(lambda: self._time_sec > 0, max_frames=30, per_frame_callback=spin)
         self.assertAlmostEqual(self._time_sec, time.time(), delta=0.5)
         self._timeline.stop()
         spin()

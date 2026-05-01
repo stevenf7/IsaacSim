@@ -37,8 +37,6 @@ from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from isaacsim.ros2.nodes.impl import ros2_common
 from pxr import UsdGeom
 
-from .common import simulate_async
-
 EXTENSION_ROOT = Path(__file__).resolve().parents[1]
 CAMERA_HELPER_PATH = EXTENSION_ROOT / "nodes" / "OgnROS2CameraHelper.py"
 LIDAR_HELPER_PATH = EXTENSION_ROOT / "nodes" / "OgnROS2RtxLidarHelper.py"
@@ -568,7 +566,7 @@ class TestConfiguredSrtxSensorSetsRealNodes(ROS2TestCase):
             self._timeline.play()
             await omni.kit.app.get_app().next_update_async()
             og.Controller.attribute(graph_path + "/Impulse.state:enableImpulse").set(True)
-            await simulate_async(0.1)
+            await self.simulate_until_condition(lambda: False, max_frames=6)
 
             self.assertEqual(
                 srtx_instance.declare_calls,

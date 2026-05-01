@@ -182,12 +182,13 @@ og.Controller.edit(
         og.Controller.Keys.CREATE_NODES: [
             ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
             ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
+            ("ComputeTF", "isaacsim.core.nodes.IsaacComputeTransformTree"),
             ("TfPublisher", "isaacsim.ros2.bridge.ROS2PublishTransformTree"),
             ("CameraPublisher", "isaacsim.ros2.bridge.ROS2CameraHelper"),
             ("CreateRenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
         ],
         og.Controller.Keys.SET_VALUES: [
-            ("TfPublisher.inputs:targetPrims", [usdrt.Sdf.Path(CUBE_PRIM_PATH)]),
+            ("ComputeTF.inputs:targetPrims", [usdrt.Sdf.Path(CUBE_PRIM_PATH)]),
             ("TfPublisher.inputs:topicName", "/tf_test"),
             ("CameraPublisher.inputs:type", "rgb"),
             ("CameraPublisher.inputs:topicName", "rgb"),
@@ -196,7 +197,12 @@ og.Controller.edit(
             ("CreateRenderProduct.inputs:height", 1080),
         ],
         og.Controller.Keys.CONNECT: [
-            ("OnPlaybackTick.outputs:tick", "TfPublisher.inputs:execIn"),
+            ("OnPlaybackTick.outputs:tick", "ComputeTF.inputs:execIn"),
+            ("ComputeTF.outputs:execOut", "TfPublisher.inputs:execIn"),
+            ("ComputeTF.outputs:parentFrames", "TfPublisher.inputs:parentFrames"),
+            ("ComputeTF.outputs:childFrames", "TfPublisher.inputs:childFrames"),
+            ("ComputeTF.outputs:translations", "TfPublisher.inputs:translations"),
+            ("ComputeTF.outputs:orientations", "TfPublisher.inputs:orientations"),
             ("OnPlaybackTick.outputs:tick", "CreateRenderProduct.inputs:execIn"),
             ("ReadSimTime.outputs:simulationTime", "TfPublisher.inputs:timeStamp"),
             ("CreateRenderProduct.outputs:execOut", "CameraPublisher.inputs:execIn"),

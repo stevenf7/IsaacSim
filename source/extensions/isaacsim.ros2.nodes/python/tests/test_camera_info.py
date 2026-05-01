@@ -43,7 +43,7 @@ from pxr import Gf, Sdf, UsdLux
 from sensor_msgs.msg import CameraInfo, Image, PointCloud2
 from sensor_msgs_py import point_cloud2
 
-from .common import get_qos_profile, simulate_async
+from .common import get_qos_profile
 
 # Debug flags for saving depth images during testing
 SAVE_DEPTH_IMAGES_AS_TEST = False
@@ -480,6 +480,11 @@ class TestRos2CameraInfo(ROS2TestCase):
         image_left_sub = self.create_subscription(node_left, Image, "rgb_left", image_left_callback, cam_info_qos)
         image_right_sub = self.create_subscription(node_right, Image, "rgb_right", image_right_callback, cam_info_qos)
 
+        self._camera_info_left = None
+        self._camera_info_right = None
+        self._image_left = None
+        self._image_right = None
+
         # Start spinning the nodes
         def spin_left():
             rclpy.spin_once(node_left, timeout_sec=0.01)
@@ -487,11 +492,21 @@ class TestRos2CameraInfo(ROS2TestCase):
         def spin_right():
             rclpy.spin_once(node_right, timeout_sec=0.01)
 
-        # Wait for camera info and images to be received
+        # Wait for camera info and images to be received — run a fixed 30 frames
+        # for each camera (matching the original simulate_async(0.5) call at 60 fps)
+        # so the scene is fully settled before we use the captured images.
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(0.5, callback=spin_right)
-        await simulate_async(0.5, callback=spin_left)
+        await self.simulate_until_condition(
+            lambda: False,
+            max_frames=30,
+            per_frame_callback=spin_right,
+        )
+        await self.simulate_until_condition(
+            lambda: False,
+            max_frames=30,
+            per_frame_callback=spin_left,
+        )
 
         self.assertIsNotNone(self._camera_info_left, f"Did not receive left camera_info for {opencv_distortion_model}")
         self.assertIsNotNone(
@@ -668,7 +683,7 @@ class TestRos2CameraInfo(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
         await self.simulate_until_condition(
-            lambda: self._camera_info_system_time is not None, max_frames=300, per_frame_callback=spin_system_time
+            lambda: self._camera_info_system_time is not None, max_frames=120, per_frame_callback=spin_system_time
         )
 
         self.assertIsNotNone(self._camera_info_system_time)
@@ -708,7 +723,7 @@ class TestRos2CameraInfo(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
         await self.simulate_until_condition(
-            lambda: self._camera_info_sim_time is not None, max_frames=300, per_frame_callback=spin_sim_time
+            lambda: self._camera_info_sim_time is not None, max_frames=120, per_frame_callback=spin_sim_time
         )
 
         self.assertIsNotNone(self._camera_info_sim_time)
@@ -722,11 +737,12 @@ class TestRos2CameraInfo(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # Check if sim time reset to Zero
+        self._camera_info_sim_time = None
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
         await self.simulate_until_condition(
-            lambda: self._camera_info_sim_time is not None, max_frames=300, per_frame_callback=spin_sim_time
+            lambda: self._camera_info_sim_time is not None, max_frames=120, per_frame_callback=spin_sim_time
         )
 
         self.assertIsNotNone(self._camera_info_sim_time)
@@ -772,7 +788,7 @@ class TestRos2CameraInfo(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
         await self.simulate_until_condition(
-            lambda: self._camera_info_sim_time is not None, max_frames=300, per_frame_callback=spin_sim_time
+            lambda: self._camera_info_sim_time is not None, max_frames=120, per_frame_callback=spin_sim_time
         )
 
         self.assertIsNotNone(self._camera_info_sim_time)
@@ -787,11 +803,12 @@ class TestRos2CameraInfo(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # Check if current sim time is larger than prev sim time
+        self._camera_info_sim_time = None
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 
         await self.simulate_until_condition(
-            lambda: self._camera_info_sim_time is not None, max_frames=300, per_frame_callback=spin_sim_time
+            lambda: self._camera_info_sim_time is not None, max_frames=120, per_frame_callback=spin_sim_time
         )
 
         self.assertIsNotNone(self._camera_info_sim_time)

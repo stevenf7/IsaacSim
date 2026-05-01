@@ -15,7 +15,6 @@
 
 """Tests for ROS 2 camera helper OmniGraph node."""
 
-import asyncio
 import math
 import os
 import shutil
@@ -50,7 +49,7 @@ from isaacsim.test.utils.image_io import read_image_as_array, save_rgb_image
 from pxr import PhysxSchema, Sdf
 from sensor_msgs.msg import Image
 
-from .common import add_carter_ros, add_cube, get_qos_profile, simulate_async
+from .common import add_carter_ros, add_cube, get_qos_profile
 
 
 def _camera_orientation_at_angle_deg(angle_deg: float):
@@ -607,8 +606,7 @@ class TestRos2Camera(ROS2TestCase):
         # STEP 1: Physics-based rotation - simulate and buffer images
         # ============================================================
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
+        await self.simulate_until_condition(lambda: False, max_frames=2)
 
         # Wait for the first ROS2 image to confirm the pipeline is running
         await self.simulate_until_condition(
@@ -633,10 +631,8 @@ class TestRos2Camera(ROS2TestCase):
         )
 
         print(f"Starting physics-based rotation capture ({rotation_speed_deg_per_sec} deg/s)...")
-        for _ in range(total_frames):
-            await omni.kit.app.get_app().next_update_async()
 
-            # Record angle if near any unrecorded target
+        def _record_angles_step():
             if len(recorded_sim_times) < len(keyframe_angles_deg):
                 sim_time = SimulationManager.get_simulation_time()
                 _, orientations = camera_rigid.get_world_poses()
@@ -652,6 +648,12 @@ class TestRos2Camera(ROS2TestCase):
                         recorded_sim_times[target] = sim_time
                         recorded_angles[target] = actual_angle
                         print(f"Angle {target}° at sim_time={sim_time:.6f}s (actual={actual_angle:.2f}°)")
+
+        await self.simulate_until_condition(
+            lambda: False,
+            max_frames=total_frames,
+            per_frame_callback=_record_angles_step,
+        )
 
         missing_angles = [a for a in keyframe_angles_deg if a not in recorded_sim_times]
         if missing_angles:
@@ -716,9 +718,8 @@ class TestRos2Camera(ROS2TestCase):
         angle_tolerance_1b_deg = 0.2
 
         print("[STEP 1b] Both cameras rotating (same rig)...")
-        for _ in range(total_frames):
-            await omni.kit.app.get_app().next_update_async()
 
+        def _record_angles_1b_step():
             if len(recorded_sim_times_1b) < len(keyframe_angles_deg):
                 sim_time = SimulationManager.get_simulation_time()
                 _, orientations = camera_rigid.get_world_poses()
@@ -734,6 +735,12 @@ class TestRos2Camera(ROS2TestCase):
                         recorded_sim_times_1b[target] = sim_time
                         recorded_angles_1b[target] = actual_angle
                         print(f"  rig {target}° at sim_time={sim_time:.6f}s (actual={actual_angle:.2f}°)")
+
+        await self.simulate_until_condition(
+            lambda: False,
+            max_frames=total_frames,
+            per_frame_callback=_record_angles_1b_step,
+        )
 
         missing_angles_1b = [a for a in keyframe_angles_deg if a not in recorded_sim_times_1b]
         if missing_angles_1b:
@@ -833,8 +840,7 @@ class TestRos2Camera(ROS2TestCase):
             image_buffer.clear()
             image_buffer_2.clear()
 
-            for _ in range(15):
-                await omni.kit.app.get_app().next_update_async()
+            await self.simulate_until_condition(lambda: False, max_frames=15)
 
             # Single pass: teleport rig once per angle, capture both cameras together.
             print("Generating goldens (both cameras, single pass)...")
@@ -846,8 +852,10 @@ class TestRos2Camera(ROS2TestCase):
                 )
                 cam1_pre = len(image_buffer)
                 cam2_pre = len(image_buffer_2)
-                for _ in range(15):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.simulate_until_condition(
+                    lambda: len(image_buffer) > cam1_pre and len(image_buffer_2) > cam2_pre,
+                    max_frames=30,
+                )
                 self.assertGreater(
                     len(image_buffer),
                     cam1_pre,
@@ -1009,8 +1017,7 @@ class TestRos2Camera(ROS2TestCase):
         self.create_subscription(node, Image, "dual_cam_2_rgb", rgb_callback_2, get_qos_profile(depth=num_frames + 40))
 
         self._timeline.play()
-        await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
+        await self.simulate_until_condition(lambda: False, max_frames=2)
 
         # Wait for both render pipelines to start producing images
         await self.simulate_until_condition(
@@ -1031,8 +1038,7 @@ class TestRos2Camera(ROS2TestCase):
 
         # Extra frames so pipeline-delayed images flush through
         pipeline_drain_frames = 30
-        for _ in range(pipeline_drain_frames):
-            await omni.kit.app.get_app().next_update_async()
+        await self.simulate_until_condition(lambda: False, max_frames=pipeline_drain_frames)
 
         self.stop_async_spinning(node)
         self._timeline.stop()
@@ -1340,8 +1346,7 @@ class TestRos2Camera(ROS2TestCase):
         self.create_subscription(node, Image, "rgb_enabled_test", on_image, get_qos_profile(depth=10))
 
         self._timeline.play()
-        for _ in range(60):
-            await omni.kit.app.get_app().next_update_async()
+        await self.simulate_until_condition(lambda: False, max_frames=60)
         self._timeline.stop()
 
         self.assertEqual(msg_count, 0, "Expected no messages when enabled=False")
@@ -1540,7 +1545,9 @@ class TestRos2Camera(ROS2TestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
-        await simulate_async(1, 60, spin)
+        await self.simulate_until_condition(
+            lambda: self._point_cloud_data is not None, max_frames=120, per_frame_callback=spin
+        )
 
         self.assertIsNotNone(self._point_cloud_data)
         self.assertGreater(self._point_cloud_data.width, 1)
