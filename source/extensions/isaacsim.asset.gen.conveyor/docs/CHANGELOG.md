@@ -1,9 +1,24 @@
 # Changelog
+## [1.2.1] - 2026-04-29
+### Fixed
+- Restore conveyor texture animation on stop: the StopPlay handler in `OgnIsaacConveyor::initInstance` now performs the texture-translate restore work synchronously from the event callback (subscribing to `omni::timeline::kGlobalEventStop`, mirroring `BaseResetNode`). The previous flow depended on `requestCompute` re-entering the node after the action-graph evaluator had already paused, which silently dropped the restore on stop. Regression introduced in the Kit 107.3 event-dispatcher migration.
+- Defer clearing `m_onStart` until after `_collectShaderAttributes` returns so any future early-exit during collection does not leave the cache empty with the flag already cleared.
+- Pair USD and USDRT shader-attribute handles in a single `ShaderAttributeBinding` struct so they cannot drift out of lockstep across partial-failure paths.
+- Emit a one-shot `CARB_LOG_WARN` when `IStageReaderWriter` is unavailable so the FSD-mirror fallback to USD-only authoring is observable in logs.
+
+- Gate the texture-animation block in `OgnIsaacConveyor::compute()` on a new `m_isPlaying` flag (set/cleared from the StartPlay/StopPlay callbacks). Prevents a "tail tick" fired by OnPlaybackTick immediately after StopPlay from re-authoring one delta of UV translation on top of the just-restored initial value, which manifested as a visible off-by-one-dt drift on every stop.
+- Move the texture-translate baseline to a path-keyed `m_initialValuesByPath` map that is the single write-once source of truth. `_collectShaderAttributes` only inserts entries for paths it has never seen; `_restoreInitialTextureTranslations` reads from the map. The previous binding-vector-only preservation could be defeated when the bindings vector was rebuilt (for example on Play-after-Pause), causing Stop to restore to the value reached at the most recent Play instead of the original baseline.
+
+### Added
+- `TestConveyorTextureAnimation`: regression coverage for texture-translate advance during play, stop-time restore, post-stop tail-tick non-advance, Play/Pause/Play/Stop baseline preservation, zero-velocity short-circuit, `inputs:animateTexture=false` short-circuit, and FSD/Fabric mirror equality with USD.
+
 ## [1.2.0] - 2026-04-21
 ### Added
 - Add `create_conveyor_belt` public Python API as a direct replacement for the Kit command
+
 ### Deprecated
 - Deprecate `CreateConveyorBelt` Kit command in favor of `create_conveyor_belt()`
+
 ### Changed
 - Clean up `__init__.py` exports to only expose public API
 

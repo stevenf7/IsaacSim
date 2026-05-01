@@ -15,7 +15,7 @@ The Conveyor Builder window (`Tools > Conveyor Track Builder`) provides an inter
 
 - **Track segment library**: Select from straight, curved, ramp, and angled conveyor segments with configurable styles and dimensions
 - **System assembly**: Build connected conveyor systems by chaining track segments, with automatic alignment and placement
-- **Visual preview**: Ghost geometry shows segment placement before committing, using a translucent volumetric material
+- **Visual preview**: Preview geometry shows segment placement before committing, highlighted with a green tint
 - **Conveyor selection widget**: Inspect and modify properties of existing conveyor prims in the stage
 
 ### Preferences

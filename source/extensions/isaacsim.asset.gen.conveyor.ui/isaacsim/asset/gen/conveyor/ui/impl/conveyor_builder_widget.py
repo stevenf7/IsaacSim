@@ -26,12 +26,13 @@ import carb.eventdispatcher
 import omni
 import omni.ui as ui
 import omni.usd
-from pxr import Gf, Sdf, UsdGeom, UsdShade
+from pxr import Gf, UsdGeom
 from pxr.Usd import EditContext, Stage
 
 from .conveyor_builder.conveyor_system import ConveyorBuilder, ConveyorFilter, ConveyorSelector, set_pose_from_transform
 from .conveyor_builder.conveyor_track import Angle, ConveyorTrack, Ramp, Style, Type
 from .preferences import ConveyorBuilderPreferences
+from .preview_highlight import ConveyorPreviewHighlight
 from .selected_conveyor import SelectedConveyorWidget
 
 
@@ -71,16 +72,16 @@ class ConveyorBuilderWidget:
     such as straight sections, T-merges, Y-merges, starts, and ends.
 
     Args:
-        mdl_file: Path to the MDL material file used for conveyor preview visualization.
         style: UI style configuration dictionary for the widget's appearance and layout.
     """
 
     def on_display(self) -> None:
         """Initializes the conveyor builder display and sets up the stage environment.
 
-        Creates necessary USD prims for the conveyor builder system, including temporary geometry
-        and materials for preview visualization. Sets up stage event listeners for selection
-        and stage closure events.
+        Creates necessary USD prims for the conveyor builder system, including the temporary
+        preview geometry. The preview is tinted via a viewport selection group (see
+        ``ConveyorPreviewHighlight``); no MDL material binding is authored on the preview
+        prim. Sets up stage event listeners for selection and stage closure events.
         """
         stage = omni.usd.get_context().get_stage()
         if stage is None:
@@ -97,29 +98,6 @@ class ConveyorBuilderWidget:
             omni.usd.editor.set_hide_in_stage_window(prim, True)
             self.temp_prim = stage.DefinePrim("/ConveyorBuilder/conveyorBuilder_Temp", "Xform")
             omni.usd.get_context().set_pickable("/ConveyorBuilder/conveyorBuilder_Temp", False)
-            # self.temp_mat = stage.DefinePrim(, "Material")
-            # with Sdf.ChangeBlock():
-            material = omni.kit.commands.execute(
-                "CreateMdlMaterialPrim",
-                mtl_url=self.mdl_file,
-                mtl_name="voltest_02",
-                mtl_path=Sdf.Path("/ConveyorBuilder/conveyorBuilder_Temp_mat"),
-            )
-            shader_prim = stage.GetPrimAtPath("/ConveyorBuilder/conveyorBuilder_Temp_mat/Shader")
-            shader_prim.CreateAttribute("inputs:absorption", Sdf.ValueTypeNames.Color3f).Set(Gf.Vec3f(0.8, 0.8, 0.8))
-            shader_prim.CreateAttribute("inputs:scattering", Sdf.ValueTypeNames.Color3f).Set(Gf.Vec3f(0.5, 0.5, 0.5))
-            shader_prim.CreateAttribute("inputs:transmission_color", Sdf.ValueTypeNames.Color3f).Set(
-                Gf.Vec3f(0.1, 1.0, 0.3)
-            )
-            shader_prim.CreateAttribute("inputs:distance_scale", Sdf.ValueTypeNames.Float).Set(1.0)
-            shader_prim.CreateAttribute("inputs:emissive_scale", Sdf.ValueTypeNames.Float).Set(300.0)
-            shader_prim.CreateAttribute("inputs:transmission_color", Sdf.ValueTypeNames.Color3f).Set(
-                Gf.Vec3f(0.3, 1.0, 0.3)
-            )
-            UsdShade.MaterialBindingAPI(self.temp_prim).Bind(
-                UsdShade.Material(stage.GetPrimAtPath(Sdf.Path("/ConveyorBuilder/conveyorBuilder_Temp_mat"))),
-                UsdShade.Tokens.strongerThanDescendants,
-            )
         self._usd_context = omni.usd.get_context()
         self._stage_event_sub_selection = carb.eventdispatcher.get_eventdispatcher().observe_event(
             event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.SELECTION_CHANGED),
@@ -132,7 +110,7 @@ class ConveyorBuilderWidget:
             observer_name="isaacsim.asset.gen.conveyor.ui._on_stage_closed",
         )
 
-    def __init__(self, mdl_file: Any, style: Any) -> None:
+    def __init__(self, style: Any) -> None:
         self._frame = ui.Frame(style=style)
         self.style = style
         self.style_buttons = []
@@ -143,10 +121,10 @@ class ConveyorBuilderWidget:
         self._selection = None
         self.current_track = None
         self.next_track = None
-        self.mdl_file = mdl_file
         self.flip_placement = False
         self.part_usd = None
         self.previous_selection = []
+        self._preview_highlight = ConveyorPreviewHighlight()
         preferences = ConveyorBuilderPreferences()
         with open(preferences.config_file) as f:
             self.config = json.load(f)
@@ -192,11 +170,13 @@ class ConveyorBuilderWidget:
     def shutdown(self) -> None:
         """Cleans up the conveyor builder widget resources.
 
-        Removes event subscriptions, clears the conveyor system from the stage, and removes
-        temporary USD prims created during the conveyor building process.
+        Removes event subscriptions, releases the preview highlight selection group,
+        clears the conveyor system from the stage, and removes the temporary USD prims
+        created during the conveyor building process.
         """
         self._stage_event_sub_selection = None
         self._stage_event_sub_closed = None
+        self._preview_highlight.shutdown()
         stage = omni.usd.get_context().get_stage()
         self.builder.clear_system(stage)
         if stage:
@@ -259,6 +239,9 @@ class ConveyorBuilderWidget:
 
     def _on_kit_selection_changed(self) -> None:
         """The selection in kit is changed."""
+        # Kit's set_selected_prim_paths drops every selected prim back to group 0; if any
+        # preview gprim is touched by selection, re-bind it to our highlight group.
+        self._refresh_preview_highlight()
         selections = self.get_selection()
         if "/ConveyorBuilder" not in selections[1]:
             self.current_track.update_selection(selections[0], self.builder.get_available_connections(selections[1]))
@@ -334,8 +317,9 @@ class ConveyorBuilderWidget:
     def on_track_selection_changed(self, track: ConveyorTrack) -> None:
         """Handles changes to the selected conveyor track.
 
-        Updates the temporary USD prim reference to display the newly selected track
-        and refreshes the next anchor visualization.
+        Updates the temporary USD prim reference to display the newly selected track,
+        refreshes the next anchor visualization, and re-applies the green selection-group
+        tint to the new descendant gprims.
 
         Args:
             track: The newly selected conveyor track object.
@@ -348,6 +332,20 @@ class ConveyorBuilderWidget:
                 temp_prim.GetReferences().AddReference(track.base_usd)
                 self.part_usd = track.base_usd
         self.on_next_anchor_changed("")
+        self._refresh_preview_highlight()
+
+    def _refresh_preview_highlight(self) -> None:
+        """Re-collect Gprims under the preview prim and assign them to the green tint group.
+
+        Called whenever the preview prim's reference target changes so newly composed
+        descendants pick up the highlight. Safe to call repeatedly; the helper diffs
+        against its previously assigned set.
+        """
+        stage = omni.usd.get_context().get_stage()
+        if stage is None:
+            return
+        temp_prim = stage.GetPrimAtPath("/ConveyorBuilder/conveyorBuilder_Temp")
+        self._preview_highlight.apply_to_subtree(stage, temp_prim)
 
     def on_next_anchor_changed(self, anchor: str | None) -> None:
         """Handles the change of the next conveyor anchor point.
