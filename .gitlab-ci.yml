@@ -1542,7 +1542,7 @@ verify-publish-python-packages-linux-x86_64:
       - source env_isaacsim/bin/activate
       # upgrade pip and install Isaac Sim - Python packages
       - pip install --upgrade pip
-      - pip install -r _build/packages/python/requirements.txt --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple
+      - pip install -r _build/packages/python/requirements.txt --extra-index-url "https://${ISAACSIM_ARTIFACTORY_USERNAME}:${ISAACSIM_ARTIFACTORY_PASSWORD}@artifactory.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple"
       # accept EULA
       - export OMNI_KIT_ACCEPT_EULA=YES
       # run tests
@@ -1575,7 +1575,7 @@ verify-publish-python-packages-windows-x86_64:
       - C:\env_isaacsim\Scripts\python.exe -m pip install --upgrade pip
       - C:\env_isaacsim\Scripts\activate.ps1
       # install Isaac Sim - Python packages
-      - pip install -r _build/packages/python/requirements.txt --extra-index-url https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple
+      - pip install -r _build/packages/python/requirements.txt --extra-index-url "https://$($env:ISAACSIM_ARTIFACTORY_USERNAME):$($env:ISAACSIM_ARTIFACTORY_PASSWORD)@artifactory.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple"
       # accept EULA
       - $env:OMNI_KIT_ACCEPT_EULA = "YES"
       # run tests
