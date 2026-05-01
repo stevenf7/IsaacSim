@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.9.1] - 2026-04-30
+### Fixed
+- `path_join` uses forward-slash concatenation for all URL schemes, not just `omniverse://`, fixing backslash-corrupted paths on Windows when the assets root is an `https://` URL
+- `path_join` `../` traversal uses `rsplit` instead of `os.path.dirname` to avoid the same backslash issue
+
 ## [1.9.0] - 2026-04-02
 ### Added
 - Support overriding the default asset root via the `ISAACSIM_ASSET_ROOT` environment variable

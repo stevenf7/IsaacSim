@@ -2024,7 +2024,8 @@ class SimulationControl:
             # 2. Search additional sources with unlimited depth
             if request.additional_sources:
                 for src in request.additional_sources:
-                    resolved = resolve_source_path(src, assets_root_path)
+                    # Skip Nucleus-relative resolution for offline paths to avoid mangling local paths.
+                    resolved = src if request.offline_only else resolve_source_path(src, assets_root_path)
 
                     if request.offline_only and not is_local_path(resolved):
                         continue
