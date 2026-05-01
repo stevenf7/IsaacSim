@@ -116,7 +116,7 @@ class Extension(omni.ext.IExt):
         )
         self._window.visible = False
         self._window.set_visibility_changed_fn(self.on_visibility_changed)
-        self.mdl_file = None
+        self._style_loaded = False
         self._hooks = []
 
         manager = omni.kit.app.get_app().get_extension_manager()
@@ -145,16 +145,15 @@ class Extension(omni.ext.IExt):
         ext_path = omni.kit.app.get_app().get_extension_manager().get_extension_path(self.ext_id)
 
         self.ext_path = ext_path + "/omni/isaac/conveyor"
-        if not self.mdl_file:
-            self.mdl_file = ext_path + "/data/GhostVolumetric.mdl"
+        if not self._style_loaded:
             theme = "NvidiaDark"
-
             self._style = UI_STYLES[theme]
             for i in [a for a in self._style if "{}" in self._style[a].get("image_url", "")]:
                 self._style[i]["image_url"] = self._style[i]["image_url"].format(self.ext_path)
+            self._style_loaded = True
 
         with self._window.frame:
-            self.widget = ConveyorBuilderWidget(mdl_file=self.mdl_file, style=self._style)
+            self.widget = ConveyorBuilderWidget(style=self._style)
             self._window.visible = True
 
     def on_visibility_changed(self, value: bool) -> None:

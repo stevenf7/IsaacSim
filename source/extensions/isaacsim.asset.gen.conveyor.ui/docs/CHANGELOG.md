@@ -1,4 +1,12 @@
 # Changelog
+## [2.3.0] - 2026-04-30
+### Changed
+- Replace the MDL "Ghost" / "GhostVolumetric" preview material with a viewport selection group tinted green. `ConveyorBuilderWidget` no longer authors `/ConveyorBuilder/conveyorBuilder_Temp_mat` or binds a material to the preview prim; instead it owns a `ConveyorPreviewHighlight` that registers a selection group via `omni.usd.UsdContext.register_selection_group`, sets green outline + shade colours, and re-applies the group on every reference-target swap and Kit selection change. Mirrors the pattern used by `isaacsim.robot.poser.ui.utils.fk_helpers` and `isaacsim.robot_setup.collision_detector.widget`.
+
+### Removed
+- `data/Ghost.mdl` and `data/GhostVolumetric.mdl` (no longer referenced)
+- `mdl_file` argument to `ConveyorBuilderWidget.__init__` and the matching `Extension.mdl_file` plumbing
+
 ## [2.2.1] - 2026-04-21
 ### Changed
 - Replace `omni.kit.commands.execute("CreateConveyorBelt")` call sites with direct `create_conveyor_belt()` API
