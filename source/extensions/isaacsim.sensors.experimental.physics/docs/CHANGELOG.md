@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.0.0] - 2026-04-30
+### Changed
+- Aligned `IMUSensor`, `ContactSensor`, and `RaycastSensor` with `isaacsim.sensors.experimental.rtx`:
+  - Split authoring (`IMU`/`Contact`/`Raycast`) from runtime. Runtime constructors take a path or authoring instance; `create()` lives only on the authoring classes — replace `IMUSensor.create(path, ...)` with `IMUSensor(IMU.create(path, ...))` (same for `Contact`/`Raycast`).
+  - Constructors take keyword-only `positions`/`translations`/`orientations`/`scales` arrays (`(N, 3)`/`(N, 4)` wxyz) plus `reset_xform_op_properties` (default `True`), instead of singular `Gf` types. Constructor parameter `prim_path` renamed to `path`.
+  - Multi-prim `path`, conflicting `positions`/`translations`, and wrapping an existing prim whose USD type does not match the sensor's `_PRIM_TYPE` now raise `ValueError`. Dropped unused `name` parameter.
+  - Removed `__getattr__` attribute forwarding from the runtime; go through the typed `sensor.imu` / `sensor.contact` / `sensor.raycast` accessor for `paths`, `prims`, `set_visibilities`, `get_world_poses`, etc.
+- Removed `*Backend` classes (`ImuSensorBackend`, `ContactSensorBackend`, `RaycastSensorBackend`, `EffortSensorBackend`, `JointStateSensorBackend`). The runtime sensors now own the C++ Carbonite interface directly and expose both `get_data()` (dict) and `get_sensor_reading()` (raw struct) — replace `XxxSensorBackend(path)` with `XxxSensor(path)`. Renamed `get_current_frame()` → `get_data()`; removed the `get_current_frame` alias, the `prim_path` property, and the no-op `initialize()` method. Removed `ContactSensor.{get,set}_min_threshold` / `_max_threshold` / `_radius` shims (use `sensor.contact.<method>` instead). Added `get_data()` to `EffortSensor` and `JointStateSensor` so all five sensors expose a consistent `get_data()` + `get_sensor_reading()` pair.
+- Hardened the C++ runtime against prim deletion and recreation. `getSensorReading` (and Contact's `getRawContacts`) now invalidate the cached entry when the underlying USD prim has been removed across all five sensors. The `createSensor` early-out tears down the cached entry when the parent rigid body / articulation root no longer matches and refreshes config so attribute changes on a re-authored prim at the same path are picked up.
+
 ## [2.7.1] - 2026-04-22
 ### Fixed
 - Fix `ContactSensor.__init__` accessing `self._prim` before assignment when applying threshold/radius overrides

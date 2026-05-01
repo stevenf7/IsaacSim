@@ -1,8 +1,8 @@
 [package]
-version = "2.7.1"
+version = "3.0.0"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation"
-description = "Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, IMU Sensor, & Raycast Sensor."
+description = "Isaac Sim Physics Sensor Simulation extension provides APIs for physics-based sensors, including Contact Sensor, Effort Sensor, IMU Sensor, Joint State Sensor, & Raycast Sensor."
 authors = ["hmazhar@nvidia.com", "stevfeng@nvidia.com", "adevalla@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.sensors.experimental.physics"
 keywords = ["isaac", "physics", "robotics"]

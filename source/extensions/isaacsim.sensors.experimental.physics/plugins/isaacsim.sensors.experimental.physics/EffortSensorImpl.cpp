@@ -209,13 +209,30 @@ bool EffortSensorImpl::createSensor(const char* jointPrimPath)
     }
 
     std::string key(jointPrimPath);
-    if (m_impl->sensors.count(key))
-    {
-        return true;
-    }
-
     pxr::SdfPath sdfPath(jointPrimPath);
     pxr::UsdPrim prim = m_impl->usdStage->GetPrimAtPath(sdfPath);
+
+    auto existing = m_impl->sensors.find(key);
+    if (existing != m_impl->sensors.end())
+    {
+        // Reuse the cached entry only when the joint is still valid AND its
+        // articulation root hasn't changed; otherwise tear down and rebuild
+        // so a delete/recreate at the same path refreshes view + DOF index.
+        if (prim.IsValid())
+        {
+            std::string currentArtRoot = findArticulationRoot(m_impl->usdStage, sdfPath.GetParentPath());
+            if (!currentArtRoot.empty() && currentArtRoot == existing->second.articulationRootPath)
+            {
+                return true;
+            }
+        }
+        if (m_impl->reader && !existing->second.viewId.empty())
+        {
+            m_impl->reader->removeView(existing->second.viewId.c_str());
+        }
+        m_impl->sensors.erase(existing);
+    }
+
     if (!prim.IsValid())
     {
         return false;

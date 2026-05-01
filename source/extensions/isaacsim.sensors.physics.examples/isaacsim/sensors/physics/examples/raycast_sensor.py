@@ -29,7 +29,7 @@ import omni.ui as ui
 import omni.usd
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.ui_utils import LABEL_WIDTH, get_style, setup_ui_headers
-from isaacsim.sensors.experimental.physics import RaycastSensor, RaycastSensorBackend
+from isaacsim.sensors.experimental.physics import Raycast, RaycastSensor
 from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
 
 EXTENSION_NAME = "Physics Raycast Sensor Example"
@@ -146,7 +146,7 @@ class Extension(omni.ext.IExt):
         if self._window:
             self.on_closed()
 
-        self._backends: dict[str, RaycastSensorBackend] = {}
+        self._readers: dict[str, RaycastSensor] = {}
         self._timeline = omni.timeline.get_timeline_interface()
         self.sub = omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
             pre_step=False, order=0, on_update=self._on_update
@@ -156,6 +156,12 @@ class Extension(omni.ext.IExt):
             "solid_state": "/World/Sensors/Solid_State_Physics_Raycast_Sensor",
             "rotating": "/World/Sensors/Rotating_Physics_Raycast_Sensor",
             "curtain": "/World/Sensors/Beam_Curtain_Physics_Raycast_Sensor",
+        }
+        # Per-sensor max_range; misses report exactly maxRange so a hit is `d < max_range`.
+        self._sensor_max_ranges = {
+            "solid_state": 100.0,
+            "rotating": 100.0,
+            "curtain": 10.0,
         }
 
         self.sliders = {}
@@ -212,7 +218,7 @@ class Extension(omni.ext.IExt):
             self.sub = None
             self._timeline = None
             self._stage_event_subscription = None
-            self._backends.clear()
+            self._readers.clear()
             self._window.destroy()
             self._window = None
 
@@ -227,12 +233,13 @@ class Extension(omni.ext.IExt):
             return
 
         for key, path in self._sensor_paths.items():
-            if path not in self._backends:
-                self._backends[path] = RaycastSensorBackend(path)
-            reading = self._backends[path].get_sensor_reading()
+            if path not in self._readers:
+                self._readers[path] = RaycastSensor(path)
+            reading = self._readers[path].get_sensor_reading()
             if reading.is_valid and reading.ray_count > 0:
                 depths = reading.depths
-                hit_count = sum(1 for d in depths if d < 100.0)
+                max_range = self._sensor_max_ranges[key]
+                hit_count = sum(1 for d in depths if d < max_range)
                 min_depth = min(depths) if len(depths) > 0 else 0.0
                 self.sliders[f"{key}_hits"].model.set_value(float(hit_count))
                 self.sliders[f"{key}_min"].model.set_value(float(min_depth))
@@ -283,19 +290,19 @@ class Extension(omni.ext.IExt):
 
         # Solid state physics raycast sensor
         ss_origins, ss_dirs, _ = _generate_solid_state_rays()
-        RaycastSensor.create(
+        Raycast.create(
             "/World/Sensors/Solid_State_Physics_Raycast_Sensor",
             min_range=0.4,
             max_range=100.0,
             ray_origins=ss_origins,
             ray_directions=ss_dirs,
             output_frame="WORLD",
-            translation=Gf.Vec3d(0, 0, 1.5),
+            translations=[[0.0, 0.0, 1.5]],
         )
 
         # Rotating physics raycast sensor — rays fire in a sweeping pattern at 1 Hz
         rot_origins, rot_dirs, rot_offsets = _generate_rotating_rays(rotation_rate=1.0)
-        RaycastSensor.create(
+        Raycast.create(
             "/World/Sensors/Rotating_Physics_Raycast_Sensor",
             min_range=0.4,
             max_range=100.0,
@@ -303,19 +310,19 @@ class Extension(omni.ext.IExt):
             ray_directions=rot_dirs,
             ray_time_offsets=rot_offsets,
             output_frame="WORLD",
-            translation=Gf.Vec3d(0, 3, 1.5),
+            translations=[[0.0, 3.0, 1.5]],
         )
 
         # Beam curtain physics raycast sensor
         cur_origins, cur_dirs, _ = _generate_curtain_rays()
-        RaycastSensor.create(
+        Raycast.create(
             "/World/Sensors/Beam_Curtain_Physics_Raycast_Sensor",
             min_range=0.2,
             max_range=10.0,
             ray_origins=cur_origins,
             ray_directions=cur_dirs,
             output_frame="WORLD",
-            translation=Gf.Vec3d(0, -3, 1.0),
+            translations=[[0.0, -3.0, 1.0]],
         )
 
         await omni.kit.app.get_app().next_update_async()

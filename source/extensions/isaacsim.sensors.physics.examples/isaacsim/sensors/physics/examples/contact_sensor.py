@@ -21,15 +21,16 @@ from typing import Any
 
 import carb
 import carb.eventdispatcher
+import numpy as np
 import omni
 import omni.physics.core
 import omni.ui as ui
 import omni.usd
 from isaacsim.examples.browser import get_instance as get_browser_instance
 from isaacsim.gui.components.ui_utils import LABEL_WIDTH, get_style, setup_ui_headers
-from isaacsim.sensors.experimental.physics import ContactSensor, ContactSensorBackend
+from isaacsim.sensors.experimental.physics import Contact, ContactSensor
 from isaacsim.storage.native import get_assets_root_path
-from pxr import Gf, UsdGeom
+from pxr import UsdGeom
 
 EXTENSION_NAME = "Contact Sensor Example"
 
@@ -100,7 +101,7 @@ class Extension(omni.ext.IExt):
             # clear existing window
             self.on_closed()
 
-        self._contact_backends: dict[str, ContactSensorBackend] = {}
+        self._contact_sensors: dict[str, ContactSensor] = {}
 
         self._timeline = omni.timeline.get_timeline_interface()
         self.sub = omni.physics.core.get_physics_simulation_interface().subscribe_physics_on_step_events(
@@ -180,9 +181,9 @@ class Extension(omni.ext.IExt):
         if self._timeline.is_playing() and self.sliders:
             for i in range(4):
                 path = self.leg_paths[i] + "/sensor"
-                if path not in self._contact_backends:
-                    self._contact_backends[path] = ContactSensorBackend(path)
-                reading = self._contact_backends[path].get_sensor_reading()
+                if path not in self._contact_sensors:
+                    self._contact_sensors[path] = ContactSensor(path)
+                reading = self._contact_sensors[path].get_sensor_reading()
                 if reading.is_valid:
                     self.sliders[i].model.set_value(
                         float(reading.value) * self.meters_per_unit
@@ -218,18 +219,18 @@ class Extension(omni.ext.IExt):
 
         self.meters_per_unit = UsdGeom.GetStageMetersPerUnit(omni.usd.get_context().get_stage())
 
-        self.sensor_offsets = [Gf.Vec3d(40, 0, 0), Gf.Vec3d(40, 0, 0), Gf.Vec3d(40, 0, 0), Gf.Vec3d(40, 0, 0)]
+        self.sensor_offsets = [np.array([[40.0, 0.0, 0.0]]) for _ in range(4)]
         self.color = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1), (1, 1, 0, 1)]
         self.sensorGeoms: list[Any] = []
 
         for i in range(4):
-            ContactSensor.create(
+            Contact.create(
                 f"{self.leg_paths[i]}/sensor",
                 min_threshold=0,
                 max_threshold=10000000,
                 color=self.color[i],
                 radius=0.12,
-                translation=self.sensor_offsets[i],
+                translations=self.sensor_offsets[i],
             )
 
         self._usd_context = omni.usd.get_context()

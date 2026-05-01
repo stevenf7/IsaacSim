@@ -1,7 +1,6 @@
 import math
 
-from isaacsim.sensors.experimental.physics import RaycastSensor
-from pxr import Gf
+from isaacsim.sensors.experimental.physics import Raycast, RaycastSensor
 
 # Generate rays for a rotating physics raycast sensor with time offsets.
 # Each azimuthal column is assigned a time offset within the sweep period.
@@ -27,13 +26,15 @@ for ai in range(azimuth_steps):
         directions.append([dx, dy, dz])
         time_offsets.append(t_offset)
 
-sensor = RaycastSensor.create(
-    "/World/Sensors/Rotating_Physics_Raycast_Sensor",
-    min_range=0.4,
-    max_range=100.0,
-    ray_origins=origins,
-    ray_directions=directions,
-    ray_time_offsets=time_offsets,
-    output_frame="WORLD",
-    translation=Gf.Vec3d(0, 0, 1.5),
+sensor = RaycastSensor(
+    Raycast.create(
+        "/World/Sensors/Rotating_Physics_Raycast_Sensor",
+        min_range=0.4,
+        max_range=100.0,
+        ray_origins=origins,
+        ray_directions=directions,
+        ray_time_offsets=time_offsets,
+        output_frame="WORLD",
+        translations=[[0.0, 0.0, 1.5]],
+    )
 )

@@ -60,7 +60,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
             v_count=8,
             min_range=0.4,
             max_range=100.0,
-            translation=Gf.Vec3d(0.0, -0.5, 0.5),
+            translations=[[0.0, -0.5, 0.5]],
         )
 
         graph_path = "/ActionGraph"
@@ -148,7 +148,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
             h_resolution=1.0,
             min_range=0.4,
             max_range=100.0,
-            translation=Gf.Vec3d(0.0, -0.5, 0.5),
+            translations=[[0.0, -0.5, 0.5]],
         )
 
         graph_path = "/ActionGraph"
@@ -230,7 +230,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
             h_resolution=HORIZONTAL_RESOLUTION,
             min_range=0.4,
             max_range=100.0,
-            translation=Gf.Vec3d(0.0, -0.5, 0.5),
+            translations=[[0.0, -0.5, 0.5]],
         )
 
         graph_path = "/ActionGraph"
@@ -317,7 +317,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
             h_resolution=HORIZONTAL_RESOLUTION,
             min_range=0.4,
             max_range=100.0,
-            translation=Gf.Vec3d(0.0, -0.5, 0.5),
+            translations=[[0.0, -0.5, 0.5]],
         )
         await omni.kit.app.get_app().next_update_async()
 
@@ -434,7 +434,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
             h_resolution=HORIZONTAL_RESOLUTION,
             min_range=0.4,
             max_range=100.0,
-            translation=Gf.Vec3d(0.0, -0.5, 0.5),
+            translations=[[0.0, -0.5, 0.5]],
         )
         await omni.kit.app.get_app().next_update_async()
 
@@ -523,7 +523,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
             h_resolution=1.0,
             min_range=min_range,
             max_range=max_range,
-            translation=Gf.Vec3d(0.0, 0.0, 0.5),
+            translations=[[0.0, 0.0, 0.5]],
         )
 
         graph_path = "/ActionGraph"

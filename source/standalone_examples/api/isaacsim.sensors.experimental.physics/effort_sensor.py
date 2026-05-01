@@ -69,7 +69,7 @@ SimulationManager.setup_simulation(dt=1.0 / 60.0, device="cpu")
 app_utils.play()
 app_utils.update_app(steps=2)
 
-effort_sensor = EffortSensor(prim_path=arm_joint)
+effort_sensor = EffortSensor(path=arm_joint)
 reset_needed = False
 frame_count = 0
 while simulation_app.is_running():

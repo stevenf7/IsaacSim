@@ -202,13 +202,26 @@ bool JointStateSensorImpl::createSensor(const char* articulationRootPath)
     }
 
     std::string key(articulationRootPath);
-    if (m_impl->sensors.count(key))
-    {
-        return true;
-    }
-
     const pxr::SdfPath sdfPath(articulationRootPath);
     const pxr::UsdPrim rootPrim = m_impl->usdStage->GetPrimAtPath(sdfPath);
+
+    auto existing = m_impl->sensors.find(key);
+    if (existing != m_impl->sensors.end())
+    {
+        // Reuse the cached entry only when the articulation root prim is still
+        // valid; otherwise tear down and rebuild so a delete/recreate at the
+        // same path picks up the new DOF metadata.
+        if (rootPrim.IsValid())
+        {
+            return true;
+        }
+        if (m_impl->reader && !existing->second.viewId.empty())
+        {
+            m_impl->reader->removeView(existing->second.viewId.c_str());
+        }
+        m_impl->sensors.erase(existing);
+    }
+
     if (!rootPrim.IsValid())
     {
         return false;

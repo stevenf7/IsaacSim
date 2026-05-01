@@ -1,7 +1,7 @@
-from isaacsim.sensors.experimental.physics import RaycastSensorBackend
+from isaacsim.sensors.experimental.physics import RaycastSensor
 
-backend = RaycastSensorBackend("/World/Sensors/Physics_Raycast_Sensor")
-reading = backend.get_sensor_reading()
+sensor = RaycastSensor("/World/Sensors/Physics_Raycast_Sensor")
+reading = sensor.get_sensor_reading()
 
 if reading.is_valid:
     print(f"Ray count: {reading.ray_count}")

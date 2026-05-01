@@ -13,16 +13,18 @@
 .. _isaacsim_sensors_physx_proximity:
 
 ==================
-Proximity Sensor
+Proximity sensor
 ==================
 
 .. deprecated:: 6.0
    The Proximity Sensor (``isaacsim.sensors.physx.ProximitySensor``) is part of the deprecated ``isaacsim.sensors.physx`` extension.
    For collision detection, consider using the :ref:`Contact Sensor <isaacsim_sensors_physics_contact>` or physics contact callbacks directly.
 
-The Proximity Sensor is a wrapper around a physics callback that can be attached to any prim in the scene. During simulation execution,
-the sensor will record collisions between the prim it's attached to and other prims in the scene each frame; that data can be accessed
+The proximity sensor wraps a physics callback that can be attached to any prim in the scene. During simulation execution,
+the sensor records collisions between the prim it is attached to and other prims in the scene each frame; you can access that data
 using a callback function.
+
+.. _isaacsim_sensors_physx_proximity_standalone_python:
 
 Standalone Python
 =================
@@ -30,8 +32,8 @@ Standalone Python
 .. note::
    The code below uses the deprecated ``isaacsim.sensors.physx`` extension. See the deprecation notice above for the replacement API.
 
-Execute the following script using ``python.sh``. This will create a scene with two cubes, attaching a proximity sensor to one of the cubes.
-At the start of the simulation, the two cubes will overlap and then move apart; the callback function in the script will print the proximity
+Execute the following script using ``python.sh``. This creates a scene with two cubes and attaches a proximity sensor to one of the cubes.
+At the start of the simulation, the two cubes overlap and then move apart; the callback function in the script prints the proximity
 sensor's output to the screen.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_physx_proximity/standalone_python.py
@@ -49,7 +51,9 @@ Example proximity sensor output is shown below; there might be small numerical d
     distance: 1.0952874949586842, duration: 0.008539199829101562
     distance: 1.095288806188406, duration: 0.012722015380859375
 
-After the cubes land, the scene will look like below:
+After the cubes land, the scene looks like the following image:
 
 .. figure:: /images/isaac_proximity_sensor_example.png
     :align: center
+    :width: 800
+    :alt: Proximity sensor example scene with two cubes.

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.2] - 2026-04-30
+### Changed
+- Migrated OGN test fixture (`AntConfig`) and OGN tests to the new `isaacsim.sensors.experimental.physics` 3.0.0 API: call `Contact.create()` / `IMU.create()` (the authoring classes) directly instead of the removed runtime `XSensor.create()` class methods, and use plural `translations` numpy arrays.
+
 ## [1.5.1] - 2026-04-21
 ### Changed
 - Replaced `omni.kit.commands` sensor creation in OGN tests with `ContactSensor.create()` class method

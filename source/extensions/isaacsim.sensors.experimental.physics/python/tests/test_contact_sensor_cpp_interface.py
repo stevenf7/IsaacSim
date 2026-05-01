@@ -27,7 +27,7 @@ import omni.timeline
 from isaacsim.core.experimental.objects import Cube, GroundPlane
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.sensors.experimental.physics import ContactSensor
+from isaacsim.sensors.experimental.physics import Contact, ContactSensor
 from isaacsim.sensors.experimental.physics.impl.extension import get_contact_sensor_interface
 from pxr import PhysxSchema
 
@@ -52,7 +52,7 @@ class TestContactSensorCppInterface(omni.kit.test.AsyncTestCase):
         contact_report_api = PhysxSchema.PhysxContactReportAPI.Apply(prim_utils.get_prim_at_path("/World/Cube"))
         contact_report_api.CreateThresholdAttr().Set(0)
 
-        ContactSensor.create(
+        Contact.create(
             "/World/Cube/contact_sensor",
             max_threshold=10000000,
         )
@@ -109,30 +109,30 @@ class TestContactSensorCppInterface(omni.kit.test.AsyncTestCase):
         self.assertIn("dt", contact)
         self.assertGreater(float(contact["dt"]), 0.0)
 
-    async def test_cpp_backend_reading_matches(self):
-        """Verify ContactSensorBackend returns same results as direct C++ call."""
-        from isaacsim.sensors.experimental.physics import ContactSensorBackend
+    async def test_cpp_sensor_reading_matches(self):
+        """Verify ContactSensor returns same results as direct C++ call."""
+        from isaacsim.sensors.experimental.physics import ContactSensor
 
-        backend = ContactSensorBackend("/World/Cube/contact_sensor")
+        sensor = ContactSensor("/World/Cube/contact_sensor")
 
         self._timeline.play()
         await step_simulation(1.0)
 
-        reading = backend.get_sensor_reading()
+        reading = sensor.get_sensor_reading()
         self.assertTrue(reading.is_valid)
         self.assertNotEqual(reading.value, 0.0)
         self.assertTrue(reading.in_contact)
 
-    async def test_cpp_backend_raw_data(self):
-        """Verify ContactSensorBackend.get_raw_data() returns C++ raw contacts."""
-        from isaacsim.sensors.experimental.physics import ContactSensorBackend
+    async def test_cpp_sensor_raw_data(self):
+        """Verify ContactSensor.get_raw_data() returns C++ raw contacts."""
+        from isaacsim.sensors.experimental.physics import ContactSensor
 
-        backend = ContactSensorBackend("/World/Cube/contact_sensor")
+        sensor = ContactSensor("/World/Cube/contact_sensor")
 
         self._timeline.play()
         await step_simulation(1.0)
 
-        raw_data = backend.get_raw_data()
+        raw_data = sensor.get_raw_data()
         self.assertGreater(len(raw_data), 0)
         self.assertIn("impulse", raw_data[0])
 

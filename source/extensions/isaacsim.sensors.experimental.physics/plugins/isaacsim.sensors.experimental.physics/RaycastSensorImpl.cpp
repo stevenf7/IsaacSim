@@ -434,13 +434,37 @@ bool RaycastSensorImpl::createSensor(const char* primPath)
     }
 
     std::string key(primPath);
-    if (m_impl->sensors.count(key))
-    {
-        return true;
-    }
-
     pxr::SdfPath sdfPath(primPath);
     pxr::UsdPrim prim = m_impl->usdStage->GetPrimAtPath(sdfPath);
+
+    auto existing = m_impl->sensors.find(key);
+    if (existing != m_impl->sensors.end())
+    {
+        // Tear down the cached entry when the prim has been deleted, or when
+        // its parent rigid body has changed (delete/recreate at the same path
+        // can land under a different rigid body). Otherwise reuse the view
+        // and re-read config so attribute updates on a recreated prim are
+        // picked up.
+        if (prim.IsValid())
+        {
+            std::string currentParent = findParentRigidBody(m_impl->usdStage, sdfPath);
+            if (currentParent == existing->second.parentRigidBodyPath)
+            {
+                // Re-read attributes so a delete-and-recreate-at-same-path
+                // picks up the new prim's config.
+                existing->second.configCached = false;
+                existing->second.configError = false;
+                existing->second.cacheConfig(m_impl->usdStage);
+                return true;
+            }
+        }
+        if (m_impl->reader && !existing->second.viewId.empty())
+        {
+            m_impl->reader->removeView(existing->second.viewId.c_str());
+        }
+        m_impl->sensors.erase(existing);
+    }
+
     if (!prim.IsValid())
     {
         return false;
@@ -494,6 +518,24 @@ RaycastSensorReading RaycastSensorImpl::getSensorReading(const char* primPath)
     if (it == m_impl->sensors.end())
     {
         return RaycastSensorReading();
+    }
+
+    // Tear down the cached sensor when the underlying USD prim has been removed
+    // since the last update. Without this we'd return the last cached reading
+    // for a deleted prim, and a subsequent createSensor() would early-out on
+    // the stale map entry without rebuilding the rigid-body view.
+    if (m_impl->usdStage)
+    {
+        pxr::UsdPrim prim = m_impl->usdStage->GetPrimAtPath(pxr::SdfPath(primPath));
+        if (!prim.IsValid())
+        {
+            if (m_impl->reader && !it->second.viewId.empty())
+            {
+                m_impl->reader->removeView(it->second.viewId.c_str());
+            }
+            m_impl->sensors.erase(it);
+            return RaycastSensorReading();
+        }
     }
 
     SensorData& sensor = it->second;

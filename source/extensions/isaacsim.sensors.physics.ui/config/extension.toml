@@ -1,5 +1,5 @@
 [package]
-version = "1.2.1"
+version = "1.2.2"
 category = "Simulation"
 title = "Isaac Sim Physics Sensor Simulation UI Components"
 description = "Isaac Sim Physics Sensor Simulation UI Components extension provides UI components for Isaac Sim physics-based sensor simulation, eg. menu options."

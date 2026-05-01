@@ -16,7 +16,7 @@ Sensors
 ==============================
 
 
-|isaac-sim_short| sensor simulation extensions can simulate ground truth perception and physics based sensors and provide a library of realistic sensors models.
+|isaac-sim_short| sensor simulation extensions simulate ground truth perception and physics-based sensors and provide a library of realistic sensor models.
 
 .. toctree::
    :maxdepth: 2

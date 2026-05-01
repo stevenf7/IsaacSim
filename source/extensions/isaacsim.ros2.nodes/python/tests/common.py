@@ -23,7 +23,7 @@ import omni
 from isaacsim.core.experimental.materials import NonVisualMaterial
 from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.utils import stage as stage_utils
-from isaacsim.sensors.experimental.physics import RaycastSensor
+from isaacsim.sensors.experimental.physics import Raycast
 from pxr import Gf, Sdf, UsdPhysics
 
 
@@ -104,14 +104,14 @@ def create_raycast_lidar_sensor(
     v_count: int = 1,
     min_range: float = 0.4,
     max_range: float = 100.0,
-    translation: Gf.Vec3d | None = None,
+    translations: list | None = None,
 ) -> str:
     """Create a physics raycast sensor configured as a horizontal lidar.
 
     Returns the full prim path of the created sensor.
     """
-    if translation is None:
-        translation = Gf.Vec3d(0, 0, 0)
+    if translations is None:
+        translations = [[0.0, 0.0, 0.0]]
     if parent is None:
         parent = str(Sdf.Path(path).GetParentPath())
         path = Sdf.Path(path).name
@@ -131,15 +131,15 @@ def create_raycast_lidar_sensor(
             origins.append([0.0, 0.0, 0.0])
             directions.append([dx, dy, dz])
 
-    sensor = RaycastSensor.create(
+    raycast = Raycast.create(
         f"{parent}/{path}",
         min_range=min_range,
         max_range=max_range,
         ray_origins=origins,
         ray_directions=directions,
-        translation=translation,
+        translations=translations,
     )
-    return sensor.prim_path
+    return raycast.paths[0]
 
 
 async def add_carter(assets_root_path, prim_path="/Carter"):

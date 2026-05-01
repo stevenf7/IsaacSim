@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2018-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2018-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,16 +19,14 @@
 from .common import ContactSensorReading as ContactSensorReading
 from .common import IMURawData as IMURawData
 from .common import IMUSensorReading as IMUSensorReading
+from .contact import Contact as Contact
 from .contact_sensor import ContactSensor as ContactSensor
-from .contact_sensor_backend import ContactSensorBackend as ContactSensorBackend
 from .effort_sensor import EffortSensor as EffortSensor
 from .effort_sensor import EffortSensorReading as EffortSensorReading
-from .effort_sensor_backend import EffortSensorBackend as EffortSensorBackend
 from .extension import *
+from .imu import IMU as IMU
 from .imu_sensor import IMUSensor as IMUSensor
-from .imu_sensor_backend import ImuSensorBackend as ImuSensorBackend
 from .joint_state_sensor import JointStateSensor as JointStateSensor
 from .joint_state_sensor import JointStateSensorReading as JointStateSensorReading
-from .joint_state_sensor_backend import JointStateSensorBackend as JointStateSensorBackend
+from .raycast import Raycast as Raycast
 from .raycast_sensor import RaycastSensor as RaycastSensor
-from .raycast_sensor_backend import RaycastSensorBackend as RaycastSensorBackend

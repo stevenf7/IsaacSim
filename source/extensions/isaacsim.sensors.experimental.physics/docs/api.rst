@@ -5,7 +5,15 @@ Python API
 
 .. currentmodule:: isaacsim.sensors.experimental.physics
 
-.. rubric:: *Sensors*
+.. rubric:: *Authoring (USD prim)*
+.. autosummary::
+    :nosignatures:
+
+    Contact
+    IMU
+    Raycast
+
+.. rubric:: *Sensors (runtime)*
 .. autosummary::
     :nosignatures:
 
@@ -13,12 +21,34 @@ Python API
     EffortSensorReading
     EffortSensor
     IMUSensor
+    JointStateSensorReading
+    JointStateSensor
     RaycastSensor
-    RaycastSensorBackend
 
 |
 
 .. API
+
+Authoring
+^^^^^^^^^
+
+.. autoclass:: isaacsim.sensors.experimental.physics.Contact
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.sensors.experimental.physics.IMU
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.sensors.experimental.physics.Raycast
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 
 Sensors
 ^^^^^^^
@@ -47,13 +77,19 @@ Sensors
     :inherited-members:
     :show-inheritance:
 
-.. autoclass:: isaacsim.sensors.experimental.physics.RaycastSensor
+.. autoclass:: isaacsim.sensors.experimental.physics.JointStateSensorReading
     :members:
     :undoc-members:
     :inherited-members:
     :show-inheritance:
 
-.. autoclass:: isaacsim.sensors.experimental.physics.RaycastSensorBackend
+.. autoclass:: isaacsim.sensors.experimental.physics.JointStateSensor
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.sensors.experimental.physics.RaycastSensor
     :members:
     :undoc-members:
     :inherited-members:

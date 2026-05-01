@@ -18,9 +18,8 @@
 import omni.kit.test
 import omni.timeline
 import omni.usd
-from isaacsim.sensors.experimental.physics import IMUSensor, ImuSensorBackend
+from isaacsim.sensors.experimental.physics import IMU, IMUSensor
 from isaacsim.storage.native import get_assets_root_path
-from pxr import Gf
 
 
 class TestImuSensorExample(omni.kit.test.AsyncTestCase):
@@ -48,10 +47,12 @@ class TestImuSensorExample(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(stage)
 
         body_path = "/Ant/Sphere"
-        sensor = IMUSensor.create(
-            f"{body_path}/sensor",
-            translation=Gf.Vec3d(0, 0, 0),
-            orientation=Gf.Quatd(1, 0, 0, 0),
+        sensor = IMUSensor(
+            IMU.create(
+                f"{body_path}/sensor",
+                translations=[[0.0, 0.0, 0.0]],
+                orientations=[[1.0, 0.0, 0.0, 0.0]],
+            )
         )
         self.assertIsNotNone(sensor, "Failed to create IMU sensor")
 
@@ -62,8 +63,8 @@ class TestImuSensorExample(omni.kit.test.AsyncTestCase):
         for _ in range(20):
             await omni.kit.app.get_app().next_update_async()
 
-        backend = ImuSensorBackend(body_path + "/sensor")
-        reading = backend.get_sensor_reading()
+        reader = IMUSensor(body_path + "/sensor")
+        reading = reader.get_sensor_reading()
         self.assertTrue(reading.is_valid, "IMU sensor reading not valid")
 
         gravity_z = reading.linear_acceleration_z

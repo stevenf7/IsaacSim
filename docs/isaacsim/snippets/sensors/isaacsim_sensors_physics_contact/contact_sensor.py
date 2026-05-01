@@ -12,25 +12,28 @@ UsdPhysics.MassAPI.Apply(cube.GetPrim()).CreateMassAttr(1.0)
 # -- End test setup --
 
 # [create-python-api]
-from isaacsim.sensors.experimental.physics import ContactSensor
-from pxr import Gf
+import numpy as np
+from isaacsim.sensors.experimental.physics import Contact, ContactSensor
 
-sensor = ContactSensor.create(
-    "/World/Cube/Contact_Sensor",
-    min_threshold=0.0001,
-    max_threshold=100000,
-    translation=Gf.Vec3d(0, 0, 0),
+sensor = ContactSensor(
+    Contact.create(
+        "/World/Cube/Contact_Sensor",
+        min_threshold=0.0001,
+        max_threshold=100000,
+        translations=np.array([[0.0, 0.0, 0.0]]),
+    )
 )
 # [/create-python-api]
 
 # [create-python-wrapper]
 import numpy as np
-from isaacsim.sensors.experimental.physics import ContactSensor
+from isaacsim.sensors.experimental.physics import Contact, ContactSensor
 
 sensor = ContactSensor(
-    prim_path="/World/Cube/Contact_Sensor",
-    name="Contact_Sensor",
-    translation=np.array([0, 0, 0]),
+    Contact(
+        "/World/Cube/Contact_Sensor",
+        translations=np.array([[0.0, 0.0, 0.0]]),
+    )
 )
 # [/create-python-wrapper]
 
@@ -43,30 +46,31 @@ contact_report.CreateThresholdAttr(0.0)
 # [/contact-report-api]
 
 # [reading-backend]
-from isaacsim.sensors.experimental.physics import ContactSensorBackend
+from isaacsim.sensors.experimental.physics import ContactSensor
 
-_contact_sensor_backend = ContactSensorBackend("/World/Cube/Contact_Sensor")
-_contact_sensor_backend.get_sensor_reading()
+sensor = ContactSensor("/World/Cube/Contact_Sensor")
+sensor.get_sensor_reading()
 # [/reading-backend]
 
 # [reading-wrapper]
 import numpy as np
-from isaacsim.sensors.experimental.physics import ContactSensor
+from isaacsim.sensors.experimental.physics import Contact, ContactSensor
 
 sensor = ContactSensor(
-    prim_path="/World/Cube/Contact_Sensor",
-    name="Contact_Sensor",
-    translation=np.array([0, 0, 0]),
+    Contact(
+        "/World/Cube/Contact_Sensor",
+        translations=np.array([[0.0, 0.0, 0.0]]),
+    )
 )
 
-value = sensor.get_current_frame()
+value = sensor.get_data()
 print(value)
 # [/reading-wrapper]
 
 # [reading-raw-data]
-from isaacsim.sensors.experimental.physics import ContactSensorBackend
+from isaacsim.sensors.experimental.physics import ContactSensor
 
-_contact_sensor_backend = ContactSensorBackend("/World/Cube/Contact_Sensor")
-raw_data = _contact_sensor_backend.get_raw_data()
+sensor = ContactSensor("/World/Cube/Contact_Sensor")
+raw_data = sensor.get_raw_data()
 print(str(raw_data))
 # [/reading-raw-data]

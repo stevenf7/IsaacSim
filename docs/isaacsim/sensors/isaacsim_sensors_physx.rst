@@ -17,13 +17,13 @@
 .. _isaacsim_sensors_physx:
 
 ===============
-|physx| Sensors
+|physx| sensors
 ===============
 
-|isaac-sim_short|'s |physx| sensors use raycasts provided by  `PhysX SDK <https://nvidia-omniverse.github.io/PhysX/physx/5.3.0/>`_ to measure the range between
+|isaac-sim_short|'s |physx| sensors use raycasts provided by the `PhysX SDK <https://nvidia-omniverse.github.io/PhysX/physx/5.3.0/>`_ to measure the range between
 objects in the simulation.
 
-These sensors will output the exact measurements from |physx|. By default, the highest rate that the sensors can output data is the render rate.
+These sensors output the exact measurements from |physx|. By default, the highest rate that the sensors can output data is the render rate.
 
 The |physx| sensors are organized in the ``isaacsim.sensors.physx`` extension.
 

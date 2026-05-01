@@ -21,11 +21,11 @@ from dataclasses import dataclass, field
 
 import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
+import numpy as np
 import omni.kit.app
 import omni.timeline
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.storage.native import get_assets_root_path_async
-from pxr import Gf
 
 EARTH_GRAVITY = 9.81
 MOON_GRAVITY = 1.62
@@ -63,11 +63,13 @@ class AntConfig:
 
     leg_paths: list[str] = field(default_factory=lambda: ["/Ant/Arm_{:02d}/Lower_Arm".format(i + 1) for i in range(4)])
     sphere_path: str = "/Ant/Sphere"
-    sensor_offsets: list[Gf.Vec3d] = field(default_factory=lambda: [Gf.Vec3d(40, 0, 0) for _ in range(4)])
+    sensor_offsets: list[np.ndarray] = field(default_factory=lambda: [np.array([[40.0, 0.0, 0.0]]) for _ in range(4)])
     # IMU sensor offsets (at origin for each sensor location)
-    imu_sensor_offsets: list[Gf.Vec3d] = field(default_factory=lambda: [Gf.Vec3d(0, 0, 0) for _ in range(5)])
-    # IMU sensor orientations (identity quaternions)
-    sensor_quatd: list[Gf.Quatd] = field(default_factory=lambda: [Gf.Quatd(1, 0, 0, 0) for _ in range(5)])
+    imu_sensor_offsets: list[np.ndarray] = field(
+        default_factory=lambda: [np.array([[0.0, 0.0, 0.0]]) for _ in range(5)]
+    )
+    # IMU sensor orientations (identity quaternions, wxyz)
+    sensor_quatd: list[np.ndarray] = field(default_factory=lambda: [np.array([[1.0, 0.0, 0.0, 0.0]]) for _ in range(5)])
     colors: list[tuple[float, float, float, float]] = field(
         default_factory=lambda: [(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1), (1, 1, 0, 1)]
     )

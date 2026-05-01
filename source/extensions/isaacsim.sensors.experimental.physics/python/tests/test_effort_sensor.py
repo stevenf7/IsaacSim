@@ -336,7 +336,10 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
                 await omni.kit.app.get_app().next_update_async()
 
             reading_after = self.effort_sensor.get_sensor_reading()
-            carb.log_info(f"Post-reinit effort reading valid={reading_after.is_valid}")
+            self.assertTrue(
+                reading_after.is_valid,
+                "Effort reading should remain valid after reader.initialize() rebuilds views",
+            )
         finally:
             _prims_reader.release_prim_data_reader_interface(reader)
 
@@ -364,5 +367,10 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
                 reader.initialize(stage_id, -1)
                 for _ in range(5):
                     await omni.kit.app.get_app().next_update_async()
+
+            self.assertTrue(
+                self.effort_sensor.get_sensor_reading().is_valid,
+                "Effort reading should remain valid after multiple reader.initialize() calls",
+            )
         finally:
             _prims_reader.release_prim_data_reader_interface(reader)

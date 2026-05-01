@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.2] - 2026-04-30
+### Changed
+- Migrated menu callbacks to the new `isaacsim.sensors.experimental.physics` 3.0.0 API: call `Contact.create()` / `IMU.create()` / `Raycast.create()` (the authoring classes) directly instead of the removed runtime `XSensor.create()` class methods, and use plural `translations`/`orientations` arrays. The IMU menu uses the returned authoring object's `set_visibilities([False])`; the runtime sensor no longer forwards XformPrim attribute access (aligns with `isaacsim.sensors.experimental.rtx`).
+
 ## [1.2.1] - 2026-04-21
 ### Changed
 - Replaced `omni.kit.commands` sensor creation with `ContactSensor.create()`, `IMUSensor.create()`, and `RaycastSensor.create()` class methods
