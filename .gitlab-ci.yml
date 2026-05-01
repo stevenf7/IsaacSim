@@ -2467,6 +2467,7 @@ get-isaac-lab-historical-data:
     - .kit-runner-test-linux-x86_64-1x-gpu
   script:
     - ./repo.sh ci test_isaaclab
+  allow_failure: false
   artifacts:
     expire_in: 2 weeks
     when: always
