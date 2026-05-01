@@ -1,5 +1,5 @@
 [package]
-version = "0.3.1"
+version = "0.3.2"
 category = "Simulation"
 title = "Replicator Teleop UI"
 description = "UI for teleoperation utilities and marker management"

@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.2] - 2026-05-01
+### Changed
+- Updated UI tests to use shared menu interaction helpers for more robust CI execution.
+
 ## [1.1.1] - 2026-04-18
 ### Changed
 - Added return type annotations and imperative-mood docstrings

@@ -1,5 +1,5 @@
 [package]
-version = "1.1.1"
+version = "1.1.2"
 category = "Simulation"
 title = "Replicator Grasping Pipeline UI"
 description = "UI for the synthetic data generation workflow for grasping scenarios"
@@ -36,7 +36,9 @@ stdoutFailPatterns.exclude = [
 
 [[test]]
 timeout = 900
-dependencies = []
+dependencies = [
+    "isaacsim.test.utils",
+]
 
 args = [
     "--enable",

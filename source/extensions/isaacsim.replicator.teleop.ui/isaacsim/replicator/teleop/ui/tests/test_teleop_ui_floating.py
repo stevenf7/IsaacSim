@@ -28,15 +28,12 @@ import tempfile
 
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-import omni.kit.app
 import omni.timeline
 import omni.ui as ui
-import omni.usd
 from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 from isaacsim.replicator.teleop.ui.teleop_ui_extension import TeleopUIExtension
-from isaacsim.test.utils.menu_utils import menu_click_with_retry
-from omni.ui.tests.test_base import OmniUiTest
+from isaacsim.test.utils import MenuUITestCase
 from pxr import Gf, UsdPhysics
 
 WINDOW_TITLE = TeleopUIExtension.WINDOW_NAME
@@ -51,20 +48,12 @@ _RIGHT_TARGET = (0.45, -0.3, 1.0)
 _IDENTITY_XYZW = (0.0, 0.0, 0.0, 1.0)
 
 
-class TestTeleopUIFloatingController(OmniUiTest):
+class TestTeleopUIFloatingController(MenuUITestCase):
     """Drive the floating controller from debug markers in the live Teleop window."""
-
-    async def setUp(self) -> None:
-        await omni.kit.app.get_app().next_update_async()
-        omni.usd.get_context().new_stage()
-        await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self) -> None:
         omni.timeline.get_timeline_interface().stop()
-        omni.usd.get_context().close_stage()
-        await omni.kit.app.get_app().next_update_async()
-        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            await omni.kit.app.get_app().next_update_async()
+        await super().tearDown()
 
     def _build_stage(self) -> None:
         """Build a minimal zero-gravity physics scene with two dynamic cube handles."""
@@ -115,14 +104,13 @@ class TestTeleopUIFloatingController(OmniUiTest):
 
         with tempfile.TemporaryDirectory(prefix="teleop_ui_floating_") as tmp_dir:
             try:
-                await menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
+                await self.menu_click_with_retry(MENU_PATH, window_name=WINDOW_TITLE)
                 window = ui.Workspace.get_window(WINDOW_TITLE)
                 self.assertIsNotNone(window, "Teleop window should exist after opening via the menu")
                 window._last_profile_path = os.path.join(tmp_dir, "last_profile.yaml")
                 window.visible = True
                 window.focus()
-                for _ in range(5):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(5)
 
                 session_panel = window._session_panel
                 markers = window._markers_manager
@@ -130,8 +118,7 @@ class TestTeleopUIFloatingController(OmniUiTest):
 
                 self.assertIsNotNone(session_panel._debug_tracking_cb, "Debug tracking checkbox should exist")
                 session_panel._debug_tracking_cb.model.set_value(True)
-                for _ in range(5):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(5)
                 self.assertTrue(window._teleop_manager.debug_tracking_enabled, "Debug tracking should be active")
                 self.assertIsNotNone(markers.get_marker_world_pose("left"), "Left debug marker should exist")
                 self.assertIsNotNone(markers.get_marker_world_pose("right"), "Right debug marker should exist")
@@ -145,20 +132,19 @@ class TestTeleopUIFloatingController(OmniUiTest):
                     if controller.is_running("left") and controller.is_running("right"):
                         running = True
                         break
-                    await omni.kit.app.get_app().next_update_async()
+                    await self.wait_n_frames(1)
                 self.assertTrue(running, "Timeline play should activate both floating sides")
 
                 markers.update_marker_transform("left", _LEFT_TARGET, _IDENTITY_XYZW)
                 markers.update_marker_transform("right", _RIGHT_TARGET, _IDENTITY_XYZW)
-                for _ in range(5):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(5)
 
                 handles_ready = False
                 for _ in range(60):
                     if controller._left_rigid_prim is not None and controller._right_rigid_prim is not None:
                         handles_ready = True
                         break
-                    await omni.kit.app.get_app().next_update_async()
+                    await self.wait_n_frames(1)
                 self.assertTrue(handles_ready, "Floating controller should create runtime rigid handles")
 
                 moved = False
@@ -169,12 +155,11 @@ class TestTeleopUIFloatingController(OmniUiTest):
                     ):
                         moved = True
                         break
-                    await omni.kit.app.get_app().next_update_async()
+                    await self.wait_n_frames(1)
                 self.assertTrue(moved, "Both floating cube handles should move toward their debug markers")
             finally:
                 timeline.stop()
-                for _ in range(2):
-                    await omni.kit.app.get_app().next_update_async()
+                await self.wait_n_frames(2)
                 if window is not None:
                     window._last_profile_path = os.path.join(tmp_dir, "last_profile.yaml")
                     window.destroy()
