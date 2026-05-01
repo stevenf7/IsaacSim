@@ -552,7 +552,7 @@ script = "${root}/tools/ci/check_extension_support_levels/check_extension_suppor
 [[repo_python_package.publish.task]]
 packages_wildcard_path = "${root}/_build/packages/dist/*.whl"
 pypi.password = "${env:ISAACSIM_ARTIFACTORY_PASSWORD}"
-pypi.repository_url = "https://urm.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi-local"
+pypi.repository_url = "https://artifactory.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi-local"
 pypi.user = "${env:ISAACSIM_ARTIFACTORY_USERNAME}"
 
 # validate python packages

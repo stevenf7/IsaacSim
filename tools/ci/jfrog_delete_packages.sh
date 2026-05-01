@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ARTIFACTORY_URL="https://urm.nvidia.com/artifactory/sw-isaacsim-pypi-local"
+ARTIFACTORY_URL="https://artifactory.nvidia.com/artifactory/sw-isaacsim-pypi-local"
 ARTIFACTORY_PYTHON_PACKAGES="
 isaacsim
 isaacsim-app
@@ -54,9 +54,9 @@ for artifactory_package in $ARTIFACTORY_PYTHON_PACKAGES; do
             exit
         fi
         echo $ARTIFACTORY_URL/$artifactory_package
-        curl -u $ISAACSIM_ARTIFACTORY_USERNAME:$ISAACSIM_ARTIFACTORY_PASSWORD -X DELETE "$ARTIFACTORY_URL/$artifactory_package"
+        curl -u "$ISAACSIM_ARTIFACTORY_USERNAME:$ISAACSIM_ARTIFACTORY_PASSWORD" -X DELETE "$ARTIFACTORY_URL/$artifactory_package"
     else
         echo $ARTIFACTORY_URL/$artifactory_package/$1
-        curl -u $ISAACSIM_ARTIFACTORY_USERNAME:$ISAACSIM_ARTIFACTORY_PASSWORD -X DELETE "$ARTIFACTORY_URL/$artifactory_package/$1"
+        curl -u "$ISAACSIM_ARTIFACTORY_USERNAME:$ISAACSIM_ARTIFACTORY_PASSWORD" -X DELETE "$ARTIFACTORY_URL/$artifactory_package/$1"
     fi
 done
