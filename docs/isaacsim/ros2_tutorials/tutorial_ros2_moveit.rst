@@ -14,6 +14,8 @@
 MoveIt 2
 =================================
 
+.. attention:: The MoveIt 2 tutorial may fail intermittently on **ROS 2 Humble** due to performance limitations. If you experience failures or timeouts during planning or execution, consider switching to **ROS 2 Jazzy**, which does not exhibit this issue.
+
 Learning Objectives
 =======================
 
@@ -113,6 +115,8 @@ Running MoveIt 2
 
 Troubleshooting
 ====================
+
+.. note:: On **ROS 2 Humble**, the tutorial may fail intermittently during planning or execution due to performance issues. This is a known limitation with no complete fix available at this time. Switching to **ROS 2 Jazzy** is recommended if you encounter repeated failures.
 
 If your Rviz window is showing a black screen for where the robot should be, you can  update your mesa driver. Run the following commands in a new terminal.
 

@@ -338,6 +338,10 @@ custom search paths using the ``sources`` field.
 * Each result is a ``Spawnable`` with ``uri`` (full asset URI), ``description`` (filename without extension), and empty ``spawn_bounds``
 * Returns ``RESULT_OPERATION_FAILED`` if no asset root path is available and no ``sources`` are provided
 
+.. note::
+
+   **Windows users (including WSL):** When providing paths in ``sources``, use native Windows paths (for example, ``C:/Users/foo/robots``). WSL-style paths such as ``/mnt/c/Users/foo/robots`` are not accessible to the Isaac Sim Windows process and will return no results.
+
 SpawnEntity Service
 -----------------------
 
@@ -660,6 +664,10 @@ The GetAvailableWorlds service returns a list of available world files that can 
 * Set ``continue_on_error: true`` to continue searching even if some paths fail
 * Returns ``RESULT_OK`` with list of available worlds
 * Returns ``DEFAULT_SOURCES_FAILED`` if default asset paths are not accessible and no additional sources are provided
+
+.. note::
+
+   **Windows users (including WSL):** When providing paths in ``additional_sources``, use native Windows paths (for example, ``C:/Users/foo/worlds``). WSL-style paths such as ``/mnt/c/Users/foo/worlds`` are not accessible to the Isaac Sim Windows process and will return no results.
 
 Using the ROS 2 Simulation Control Actions
 ============================================

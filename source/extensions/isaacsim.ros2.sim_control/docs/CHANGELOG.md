@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.2] - 2026-04-30
+### Fixed
+- `GetAvailableWorlds`: user-provided `additional_sources` are no longer mangled by Nucleus-relative resolution when `offline_only=True` on Windows
+
 ## [1.6.1] - 2026-04-27
 ### Removed
 - Remove the `omni.isaac.ml_archive` dependency

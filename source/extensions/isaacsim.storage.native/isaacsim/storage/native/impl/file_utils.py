@@ -25,12 +25,14 @@ from pxr import Sdf, UsdUtils
 
 from ..nucleus import get_assets_root_path, get_assets_root_path_async
 
+_URL_SCHEMES = ("omniverse://", "https://", "http://", "ftp://", "sftp://")
+
 
 def path_join(base: str, name: str) -> str:
-    """Join two path components intelligently handling Omniverse URLs.
+    """Join two path components intelligently handling Omniverse URLs and remote URLs.
 
     Args:
-        base: Base path, can be local or Omniverse URL.
+        base: Base path, can be local or a URL (omniverse://, https://, etc.).
         name: Path component to append to the base.
 
     Returns:
@@ -42,14 +44,16 @@ def path_join(base: str, name: str) -> str:
 
         >>> path_join("omniverse://server/folder", "file.usd")
         'omniverse://server/folder/file.usd'
+        >>> path_join("https://cdn.example.com/assets", "file.usd")
+        'https://cdn.example.com/assets/file.usd'
         >>> path_join("/local/path", "file.usd")
         '/local/path/file.usd'
     """
-    if base.startswith("omniverse://"):
+    if any(base.startswith(scheme) for scheme in _URL_SCHEMES):
         if name.startswith("./"):
             name = name[2:]
         while name.startswith("../"):
-            base = os.path.dirname(base)
+            base = base.rsplit("/", 1)[0]
             name = name[3:]
         if base.endswith("/"):
             base = base[:-1]
@@ -84,12 +88,8 @@ def is_local_path(path: str) -> bool:
 
     path = path.strip()
 
-    # Check for online URL schemes
-    online_schemes = ["omniverse://", "http://", "https://", "ftp://", "sftp://"]
-
-    for scheme in online_schemes:
-        if path.startswith(scheme):
-            return False
+    if any(path.startswith(scheme) for scheme in _URL_SCHEMES):
+        return False
 
     # Local paths (absolute or relative) are considered local
     return True
@@ -211,30 +211,32 @@ def find_filtered_files(
         current_path, current_depth = remaining_folders.pop()
 
         result, entries = omni.client.list(current_path)
-        if result == Result.OK:
-            for entry in entries:
-                entry_path = path_join(current_path, entry.relative_path)
+        if result != Result.OK:
+            carb.log_warn(f"Could not list path '{current_path}': {result}")
+            continue
+        for entry in entries:
+            entry_path = path_join(current_path, entry.relative_path)
 
-                # Check if it's a file (not a directory)
-                if (entry.flags & 4) == 0:  # 4 is the directory flag
-                    # Apply USD file validation and filtering
-                    if is_valid_usd_file(entry_path, filepath_excludes):
-                        # Apply pattern filters if provided
-                        if filter_patterns:
-                            if match_all:  # ALL patterns must match
-                                if all(pattern.search(entry_path) for pattern in compiled_patterns):
-                                    usd_files.add(entry_path)
-                            else:  # ANY pattern can match (default)
-                                if any(pattern.search(entry_path) for pattern in compiled_patterns):
-                                    usd_files.add(entry_path)
-                        else:
-                            # No pattern filters, just add valid USD file
-                            usd_files.add(entry_path)
+            # Check if it's a file (not a directory)
+            if (entry.flags & 4) == 0:  # 4 is the directory flag
+                # Apply USD file validation and filtering
+                if is_valid_usd_file(entry_path, filepath_excludes):
+                    # Apply pattern filters if provided
+                    if filter_patterns:
+                        if match_all:  # ALL patterns must match
+                            if all(pattern.search(entry_path) for pattern in compiled_patterns):
+                                usd_files.add(entry_path)
+                        else:  # ANY pattern can match (default)
+                            if any(pattern.search(entry_path) for pattern in compiled_patterns):
+                                usd_files.add(entry_path)
+                    else:
+                        # No pattern filters, just add valid USD file
+                        usd_files.add(entry_path)
 
-                # If it's a directory and we haven't exceeded max depth, add to queue
-                elif (entry.flags & 4) > 0:
-                    if max_depth is None or current_depth < max_depth:
-                        remaining_folders.append((entry_path, current_depth + 1))
+            # If it's a directory and we haven't exceeded max depth, add to queue
+            elif (entry.flags & 4) > 0:
+                if max_depth is None or current_depth < max_depth:
+                    remaining_folders.append((entry_path, current_depth + 1))
 
     return usd_files
 
