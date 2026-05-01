@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.1] - 2026-04-28
+### Fixed
+- Preserve mesh scale when exporting instanceable geometry containers (e.g. `<link>/geometry` Xform with `instanceable=true` and a non-unit `xformOp:scale`, as in collected Isaac Sim assets like `franka.usd`); the scale is now emitted on the URDF `<mesh scale=...>` attribute instead of being silently dropped
+- Replace `Usd.Prim.GetAncestorsRange` (C++-only API) with a `GetParent` walk in mesh prototype path resolution; the previous code raised `AttributeError` whenever a non-instanced mesh was exported
+
+### Changed
+- `matrix4_to_origin` now decomposes the matrix via `Gf.Transform` so RPY is computed from the unscaled rotation; `ExtractRotation` on a scaled matrix produced incorrect angles
+
 ## [2.0.0] - 2026-04-09
 ### Changed
 - Rewrite as physics-graph-driven converter (UsdToUrdfConverter)

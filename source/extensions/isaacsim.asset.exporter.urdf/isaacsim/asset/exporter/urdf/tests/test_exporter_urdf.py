@@ -1058,3 +1058,209 @@ class TestUrdfExporter(omni.kit.test.AsyncTestCase):
             link_names = {link.get("name") for link in root.findall("link")}
             self.assertIn("suction_cup", link_names)
             self.assertNotIn("gripper_link", link_names)
+
+    # ------------------------------------------------------------------
+    # Mesh scale on instanceable geometry (regression)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _build_instanced_mesh_scale_stage(geometry_scale: tuple[float, float, float]) -> Usd.Stage:
+        """Create a single-link articulation with an instance-proxy scaled geometry.
+
+        Layout mirrors Isaac Sim collected assets (e.g. the franka.usd
+        delivered with collected props), where each rigid-body link
+        contains an ``Xform "geometry"`` child marked ``instanceable=true``
+        that references a prototype ``Xform`` containing the Mesh. The
+        scale is authored on the link-side Xform (so it is unique per
+        instance) while the Mesh in the prototype has no local scale.
+
+        The reference target lives in the same stage as a hidden class
+        ``/_Proto/geom`` so the test stays self-contained.
+        """
+        from pxr import Gf, Sdf, UsdGeom
+
+        stage = Usd.Stage.CreateInMemory()
+        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
+        UsdGeom.SetStageMetersPerUnit(stage, 1.0)
+
+        # Hidden prototype that holds the actual mesh data. Defined as a
+        # class so it does not appear as a renderable scene root.
+        proto_root = stage.CreateClassPrim("/_Proto")
+        proto_geom = UsdGeom.Xform.Define(stage, "/_Proto/geom")
+        proto_mesh = UsdGeom.Mesh.Define(stage, "/_Proto/geom/mesh")
+        # 1m unit cube around origin; the per-instance scale shrinks it.
+        proto_mesh.CreatePointsAttr().Set(
+            [
+                Gf.Vec3f(-0.5, -0.5, -0.5),
+                Gf.Vec3f(0.5, -0.5, -0.5),
+                Gf.Vec3f(0.5, 0.5, -0.5),
+                Gf.Vec3f(-0.5, 0.5, -0.5),
+                Gf.Vec3f(-0.5, -0.5, 0.5),
+                Gf.Vec3f(0.5, -0.5, 0.5),
+                Gf.Vec3f(0.5, 0.5, 0.5),
+                Gf.Vec3f(-0.5, 0.5, 0.5),
+            ]
+        )
+        proto_mesh.CreateFaceVertexCountsAttr().Set([4, 4, 4, 4, 4, 4])
+        proto_mesh.CreateFaceVertexIndicesAttr().Set(
+            [0, 3, 2, 1, 4, 5, 6, 7, 0, 1, 5, 4, 2, 3, 7, 6, 1, 2, 6, 5, 0, 4, 7, 3]
+        )
+
+        robot = UsdGeom.Xform.Define(stage, "/robot")
+        stage.SetDefaultPrim(robot.GetPrim())
+        UsdPhysics.ArticulationRootAPI.Apply(robot.GetPrim())
+
+        base = UsdGeom.Xform.Define(stage, "/robot/base")
+        UsdPhysics.RigidBodyAPI.Apply(base.GetPrim())
+        UsdPhysics.MassAPI.Apply(base.GetPrim()).CreateMassAttr().Set(1.0)
+
+        world_joint = UsdPhysics.FixedJoint.Define(stage, "/robot/world_joint")
+        world_joint.GetBody1Rel().SetTargets([Sdf.Path("/robot/base")])
+
+        # Per-link geometry container: references the prototype, carries
+        # the per-instance scale, and is flagged instanceable so USD
+        # promotes the Mesh to an instance proxy at composition time.
+        geom_xf = UsdGeom.Xform.Define(stage, "/robot/base/geometry")
+        geom_xf.GetPrim().GetReferences().AddInternalReference(proto_geom.GetPath())
+        geom_xf.AddScaleOp().Set(Gf.Vec3f(*geometry_scale))
+        geom_xf.GetPrim().SetInstanceable(True)
+
+        UsdGeom.Scope.Define(stage, "/robot/Physics")
+        return stage
+
+    async def test_instanced_geometry_scale_emitted_on_mesh(self) -> None:
+        """Scale on an instanceable parent xform must reach <mesh scale=...>.
+
+        Regression test for the franka.usd case where ``/robot/<link>/geometry``
+        is an instanceable Xform with a 0.01 scale and the Mesh inside it has
+        none. Without the fix, ``mesh_scale`` was always set to ``None`` for
+        instance-proxy meshes, silently dropping the asset's scale.
+        """
+        stage = self._build_instanced_mesh_scale_stage((0.01, 0.01, 0.01))
+
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
+            _, root = await self._export_to_urdf(stage, temp_dir)
+            mesh_elems = list(root.iter("mesh"))
+            self.assertEqual(len(mesh_elems), 1, "Expected exactly one <mesh> element in URDF")
+
+            scale_attr = mesh_elems[0].get("scale")
+            self.assertIsNotNone(
+                scale_attr,
+                "Mesh scale attribute is missing; instanced scale was dropped during export",
+            )
+            scale_vals = self._parse_xyz(scale_attr)
+            self.assertEqual(len(scale_vals), 3)
+            for axis_idx, axis_name in enumerate("xyz"):
+                self.assertAlmostEqual(
+                    scale_vals[axis_idx],
+                    0.01,
+                    places=5,
+                    msg=f"Mesh scale {axis_name} expected 0.01, got {scale_vals[axis_idx]}",
+                )
+
+    async def test_instanced_geometry_unit_scale_omits_attribute(self) -> None:
+        """Unit scale must not produce a redundant ``scale="1 1 1"`` attribute."""
+        stage = self._build_instanced_mesh_scale_stage((1.0, 1.0, 1.0))
+
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
+            _, root = await self._export_to_urdf(stage, temp_dir)
+            mesh_elems = list(root.iter("mesh"))
+            self.assertEqual(len(mesh_elems), 1)
+            self.assertIsNone(
+                mesh_elems[0].get("scale"),
+                "Mesh element should not carry a scale attribute when scale is unit",
+            )
+
+    async def test_instanced_geometry_non_uniform_scale(self) -> None:
+        """Non-uniform scale on an instanceable xform must round-trip per-axis."""
+        stage = self._build_instanced_mesh_scale_stage((0.01, 0.02, 0.03))
+
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
+            _, root = await self._export_to_urdf(stage, temp_dir)
+            mesh_elems = list(root.iter("mesh"))
+            self.assertEqual(len(mesh_elems), 1)
+
+            scale_attr = mesh_elems[0].get("scale")
+            self.assertIsNotNone(scale_attr)
+            scale_vals = self._parse_xyz(scale_attr)
+            self.assertAlmostEqual(scale_vals[0], 0.01, places=5)
+            self.assertAlmostEqual(scale_vals[1], 0.02, places=5)
+            self.assertAlmostEqual(scale_vals[2], 0.03, places=5)
+
+    async def test_non_instanced_scaled_geometry_bakes_into_vertices(self) -> None:
+        """Scale on a non-instanced Xform between link and Mesh must bake into OBJ vertices.
+
+        This is the alternative to the instance-proxy path. Vertices in
+        the OBJ should reflect ``original_extent * scale`` and the URDF
+        ``<mesh>`` element should carry no ``scale`` attribute.
+        """
+        from pxr import Gf, Sdf, UsdGeom
+
+        scale = 0.01
+        stage = Usd.Stage.CreateInMemory()
+        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
+        UsdGeom.SetStageMetersPerUnit(stage, 1.0)
+
+        robot = UsdGeom.Xform.Define(stage, "/robot")
+        stage.SetDefaultPrim(robot.GetPrim())
+        UsdPhysics.ArticulationRootAPI.Apply(robot.GetPrim())
+
+        base = UsdGeom.Xform.Define(stage, "/robot/base")
+        UsdPhysics.RigidBodyAPI.Apply(base.GetPrim())
+        UsdPhysics.MassAPI.Apply(base.GetPrim()).CreateMassAttr().Set(1.0)
+
+        world_joint = UsdPhysics.FixedJoint.Define(stage, "/robot/world_joint")
+        world_joint.GetBody1Rel().SetTargets([Sdf.Path("/robot/base")])
+
+        geom_xf = UsdGeom.Xform.Define(stage, "/robot/base/geometry")
+        geom_xf.AddScaleOp().Set(Gf.Vec3f(scale, scale, scale))
+
+        mesh = UsdGeom.Mesh.Define(stage, "/robot/base/geometry/mesh")
+        mesh.CreatePointsAttr().Set(
+            [
+                Gf.Vec3f(-0.5, -0.5, -0.5),
+                Gf.Vec3f(0.5, -0.5, -0.5),
+                Gf.Vec3f(0.5, 0.5, -0.5),
+                Gf.Vec3f(-0.5, 0.5, -0.5),
+                Gf.Vec3f(-0.5, -0.5, 0.5),
+                Gf.Vec3f(0.5, -0.5, 0.5),
+                Gf.Vec3f(0.5, 0.5, 0.5),
+                Gf.Vec3f(-0.5, 0.5, 0.5),
+            ]
+        )
+        mesh.CreateFaceVertexCountsAttr().Set([4, 4, 4, 4, 4, 4])
+        mesh.CreateFaceVertexIndicesAttr().Set([0, 3, 2, 1, 4, 5, 6, 7, 0, 1, 5, 4, 2, 3, 7, 6, 1, 2, 6, 5, 0, 4, 7, 3])
+
+        UsdGeom.Scope.Define(stage, "/robot/Physics")
+
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
+            output_path, root = await self._export_to_urdf(stage, temp_dir)
+
+            mesh_elems = list(root.iter("mesh"))
+            self.assertEqual(len(mesh_elems), 1)
+            self.assertIsNone(
+                mesh_elems[0].get("scale"),
+                "Non-instanced scaled mesh should bake into vertices, not emit <mesh scale>",
+            )
+
+            # Read the OBJ and verify vertex coordinates are within
+            # the scaled bound (|coord| <= 0.5 * scale + slack).
+            obj_filename = mesh_elems[0].get("filename", "").lstrip("./")
+            obj_path = os.path.join(os.path.dirname(output_path), obj_filename)
+            self.assertTrue(os.path.exists(obj_path), f"Expected OBJ at {obj_path}")
+
+            max_abs = 0.0
+            with open(obj_path) as f:
+                for line in f:
+                    if not line.startswith("v "):
+                        continue
+                    parts = line.split()
+                    for s in parts[1:4]:
+                        max_abs = max(max_abs, abs(float(s)))
+
+            expected = 0.5 * scale
+            self.assertLess(
+                abs(max_abs - expected),
+                1e-5,
+                f"OBJ max |vertex| = {max_abs}, expected ~{expected} (vertices not baked with scale)",
+            )
