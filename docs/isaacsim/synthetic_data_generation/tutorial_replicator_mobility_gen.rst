@@ -95,7 +95,7 @@ This tutorial uses an example warehouse scene.
    #. Enter "map" in the **Image File Name** field and click **Update YAML**.
 
    #. Click **Save YAML**.
-   
+
    #. In the tree explorer, open the folder ``~/MobilityGenData/maps/warehouse_multiple_shelves``.
 
       On Windows replace ~ with the directory of your choice.
@@ -334,6 +334,61 @@ When defining your robot, you may find the following list of common parameters a
      - The angle threshold at which point the robot will move forward. Applies to the path following scenario.
    * - ``path_following_target_point_offset_meters``
      - The offset distance used to generate the 'target point' that the robot will follow in the path following scenario. A larger offset results in smoother motion, but too large may cause the robot to cut corners during turns.
+
+
+Use NuRec Assets in MobilityGen
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+MobilityGen operates on USD environments, including 3D reconstructed scenes produced with the NVIDIA NuRec pipeline.
+The `NVIDIA PhysicalAI-Robotics NuRec dataset <https://huggingface.co/datasets/nvidia/PhysicalAI-Robotics-NuRec>`_
+provides ready-to-use indoor scenes that can be used directly as MobilityGen stages.
+
+Overview
+~~~~~~~~
+
+NuRec scenes are published in two USD formats: **Particle USD**, a particle-based representation, and **Volume USD**,
+a volumetric representation. Either format can be used as the MobilityGen stage, and many scenes also include a
+pre-computed occupancy map that can replace manual map generation.
+
+This workflow follows the same core MobilityGen pipeline described above: select or generate an occupancy map,
+record a trajectory, and replay that trajectory to render sensor data. Only the source of the stage and occupancy
+map changes when working with NuRec assets.
+
+Use a NuRec Scene
+~~~~~~~~~~~~~~~~~
+
+#. Download a scene USD file in either particle or volume format from the
+   `NVIDIA PhysicalAI-Robotics NuRec dataset <https://huggingface.co/datasets/nvidia/PhysicalAI-Robotics-NuRec>`_.
+
+#. If the dataset provides an occupancy map for the selected scene, use that file directly and skip
+   occupancy-map generation.
+
+#. If no occupancy map is available, load the reconstructed USD in Isaac Sim and follow the same
+   occupancy-map procedure used for other MobilityGen environments.
+
+#. In the MobilityGen window, set **Stage** to the path of the NuRec scene USD, for example:
+
+   .. code::
+
+      /path/to/nurec_scene.usd
+
+#. Set **Occupancy Map** to the corresponding ``map.yaml`` file, either from the dataset or from
+   the generated output.
+
+#. Continue with the standard MobilityGen flow: record a trajectory, then run ``replay_directory.py``
+   to replay and render sensor data.
+
+.. note::
+
+   RGB rendering is fully supported for trajectories recorded in reconstructed environments.
+   Depth rendering can be enabled, but accuracy is not guaranteed because reconstructed geometry
+   may be incomplete or noisy. Semantic segmentation is not supported for reconstructed scenes
+   in this workflow.
+
+   Occupancy-map quality depends on the collision geometry available in the USD stage. When
+   generating a map for a reconstructed scene, review the occupancy-map visualization and adjust
+   bounds as needed before recording trajectories.
+
 
 Migrate Older Recordings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
