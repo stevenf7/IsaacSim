@@ -1,4 +1,11 @@
 import omni.graph.core as og
+import omni.kit.app
+
+# Test setup: enable extensions that register the OmniGraph node types used below.
+extension_manager = omni.kit.app.get_app().get_extension_manager()
+extension_manager.set_extension_enabled_immediate("isaacsim.core.nodes", True)
+extension_manager.set_extension_enabled_immediate("isaacsim.ros2.nodes", True)
+# End test setup
 
 # Create a new graph with the path /ActionGraph
 og.Controller.edit(

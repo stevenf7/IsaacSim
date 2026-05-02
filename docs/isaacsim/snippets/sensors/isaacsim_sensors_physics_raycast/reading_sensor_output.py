@@ -1,6 +1,12 @@
-from isaacsim.sensors.experimental.physics import RaycastSensor
+from isaacsim.sensors.experimental.physics import Raycast, RaycastSensor
 
-sensor = RaycastSensor("/World/Sensors/Physics_Raycast_Sensor")
+sensor = RaycastSensor(
+    Raycast.create(
+        "/World/Sensors/Physics_Raycast_Sensor",
+        ray_origins=[[0.0, 0.0, 0.0]],
+        ray_directions=[[1.0, 0.0, 0.0]],
+    )
+)
 reading = sensor.get_sensor_reading()
 
 if reading.is_valid:

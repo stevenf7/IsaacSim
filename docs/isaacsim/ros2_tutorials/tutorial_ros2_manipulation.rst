@@ -98,6 +98,7 @@ The same action done using the UI can also be done using a Python script. More d
 
     .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_manipulation/add_joint_states_in_extension.py
         :language: python
+        :start-after: # End test setup
 
 3. Press **Run** in the **Script Editor** and the Action Graph with all required nodes is added. You can find the corresponding ActionGraph in the Stage Tree.
 

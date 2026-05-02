@@ -1065,9 +1065,6 @@ local function get_ros_tests()
 end
 
 local function get_doc_snippets_tests()
-    -- PYTHONPATH directories for robot_setup_tutorials/tutorial_pickplace_example tests
-    local pickplace_pythonpath = { "../../../source/standalone_examples/deprecated/api/isaacsim.robot.manipulators/ur10e" }
-
     return {
         -- assets
         {
@@ -1149,31 +1146,6 @@ local function get_doc_snippets_tests()
             "doc_snippets/tests-nativepython-testing-doc_snippets.robot_setup.merge_mesh",
             "../../../docs/isaacsim/snippets/robot_setup/merge_mesh.py",
             "--test",
-        },
-        -- robot_setup_tutorials/tutorial_pickplace_example (with PYTHONPATH)
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.robot_setup_tutorials.tutorial_pickplace_example.define_the_manipulator",
-            "../../../docs/isaacsim/snippets/robot_setup_tutorials/tutorial_pickplace_example/define_the_manipulator.py",
-            "--test",
-            pickplace_pythonpath,
-        },
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.robot_setup_tutorials.tutorial_pickplace_example.define_the_manipulator_1",
-            "../../../docs/isaacsim/snippets/robot_setup_tutorials/tutorial_pickplace_example/define_the_manipulator_1.py",
-            "--test",
-            pickplace_pythonpath,
-        },
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.robot_setup_tutorials.tutorial_pickplace_example.follow_target_example_using_rmp_flow_1",
-            "../../../docs/isaacsim/snippets/robot_setup_tutorials/tutorial_pickplace_example/follow_target_example_using_rmp_flow_1.py",
-            "--test",
-            pickplace_pythonpath,
-        },
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.robot_setup_tutorials.tutorial_pickplace_example.gripper_control_example",
-            "../../../docs/isaacsim/snippets/robot_setup_tutorials/tutorial_pickplace_example/gripper_control_example.py",
-            "--test",
-            pickplace_pythonpath,
         },
         -- ros2_tutorials
         {
@@ -1357,11 +1329,36 @@ local function get_testing_misc_tests()
         -- Tutorials
         {
             "tests-nativepython-testing-tutorials-getting_started",
-            "standalone_examples/tutorials/getting_started.py",
+            "standalone_examples/tutorials/getting_started/getting_started.py",
         },
         {
             "tests-nativepython-testing-tutorials-getting_started_robot",
-            "standalone_examples/tutorials/getting_started_robot.py",
+            "standalone_examples/tutorials/getting_started/getting_started_robot.py",
+        },
+        {
+            "tests-nativepython-testing-tutorials.manipulation.tutorial_9_gripper_control",
+            "standalone_examples/tutorials/manipulation/tutorial_9_gripper_control.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-testing-tutorials.manipulation.tutorial_9_arm_trajectory",
+            "standalone_examples/tutorials/manipulation/tutorial_9_arm_trajectory.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-testing-tutorials.manipulation.tutorial_9_follow_target",
+            "standalone_examples/tutorials/manipulation/tutorial_9_follow_target.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-testing-tutorials.manipulation.tutorial_9_pick_place_cumotion",
+            "standalone_examples/tutorials/manipulation/tutorial_9_pick_place_cumotion.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-testing-tutorials.manipulation.tutorial_9_pick_place_pink",
+            "standalone_examples/tutorials/manipulation/tutorial_9_pick_place_pink.py",
+            "--test",
         },
     }
 end

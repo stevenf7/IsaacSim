@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.2] - 2026-05-01
+### Changed
+- Robot Inspector UI tests now open the window through the menu and use shared menu UI retry helpers for more robust CI behavior.
+
 ## [0.3.1] - 2026-03-06
 ### Changed
 - Robot Inspector performance and stability improvements.

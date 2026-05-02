@@ -330,6 +330,66 @@ def _task_belongs_to_snippets(task, snippets_root):
         return False
 
 
+def _exception_belongs_to_snippets(exception, snippets_root):
+    """Return True if any traceback frame for *exception* is from snippets tree."""
+    try:
+        tb = exception.__traceback__
+        while tb is not None:
+            source_file = tb.tb_frame.f_code.co_filename
+            if source_file and _is_path_within(source_file, snippets_root):
+                return True
+            tb = tb.tb_next
+    except Exception:
+        return False
+    return False
+
+
+def _loop_context_belongs_to_snippets(context, snippets_root):
+    """Return True if an asyncio loop exception context belongs to the snippet under test."""
+    exception = context.get("exception")
+    if exception is not None and _exception_belongs_to_snippets(exception, snippets_root):
+        return True
+
+    task = context.get("task") or context.get("future")
+    if task is not None and _task_belongs_to_snippets(task, snippets_root):
+        return True
+
+    return False
+
+
+def _patch_simulation_context_render_for_fabric_bootstrap():
+    """Avoid cached-core Fabric updates before SimulationContext has a PhysicsContext."""
+    import omni.kit.app
+    from isaacsim.core.api.simulation_context import SimulationContext
+    from isaacsim.core.utils.carb import set_carb_setting
+
+    if getattr(SimulationContext, "_doc_snippets_fabric_bootstrap_patch", False):
+        return
+
+    original_render = SimulationContext.render
+    original_render_async = SimulationContext.render_async
+
+    def render(self):
+        if getattr(self, "_physics_context", None) is not None:
+            return original_render(self)
+        set_carb_setting(self._settings, "/app/player/playSimulations", False)
+        self._app.update()
+        set_carb_setting(self._settings, "/app/player/playSimulations", True)
+        return None
+
+    async def render_async(self):
+        if getattr(self, "_physics_context", None) is not None:
+            return await original_render_async(self)
+        set_carb_setting(self._settings, "/app/player/playSimulations", False)
+        await omni.kit.app.get_app().next_update_async()
+        set_carb_setting(self._settings, "/app/player/playSimulations", True)
+        return None
+
+    SimulationContext.render = render
+    SimulationContext.render_async = render_async
+    SimulationContext._doc_snippets_fabric_bootstrap_patch = True
+
+
 class JUnitTestResult(unittest.TextTestResult):
     """TextTestResult subclass that records per-test timing for JUnit XML output.
 
@@ -593,7 +653,11 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app, snippet
                 signal.alarm(prev_alarm_remaining)
 
         # Promote unhandled loop-level async exceptions to snippet failures.
+        # Kit can emit unrelated loop-level exceptions during stage churn; keep
+        # the failure attribution scoped to the snippet under test.
         for context in captured_loop_exceptions:
+            if not _loop_context_belongs_to_snippets(context, snippets_root):
+                continue
             loop_exception = context.get("exception")
             if loop_exception is not None:
                 exceptions.append(loop_exception)
@@ -776,6 +840,8 @@ for _exp_idx, _experience in enumerate(experience_names):
 
                     carb.settings.get_settings().set("/persistent/isaac/asset_root/default", args.asset_root)
                     print(f"Asset root overridden to: {args.asset_root}")
+
+                _patch_simulation_context_render_for_fabric_bootstrap()
 
             cls._simulation_app = _simulation_app
 
