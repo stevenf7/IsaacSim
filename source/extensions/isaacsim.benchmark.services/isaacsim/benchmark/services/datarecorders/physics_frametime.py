@@ -143,7 +143,7 @@ class PhysicsFrametimeRecorder(MeasurementDataRecorder):
             logger.info("PhysicsFrametimeRecorder: No samples collected (physics may not be running)")
             return MeasurementData()
 
-        stats = Stats.from_samples(self._samples)
+        stats = Stats.from_samples(self._samples, trim_outliers=False)
 
         return MeasurementData(
             measurements=[

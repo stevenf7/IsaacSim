@@ -102,7 +102,7 @@ benchmark = BaseIsaacBenchmark(
     benchmark_name="benchmark_nucleus_kpis",
     backend_type=args.backend_type,
 )
-benchmark.set_phase("benchmark", start_recording_frametime=False, start_recording_runtime=False)
+benchmark.set_phase("benchmark", start_recording_frametime=False, start_recording_runtime=False, warmup_frames=15)
 benchmark.recorders.append(IsaacSimNucleusKPIRecorder())
 benchmark.store_measurements()
 

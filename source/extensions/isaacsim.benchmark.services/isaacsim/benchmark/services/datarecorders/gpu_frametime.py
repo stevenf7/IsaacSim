@@ -207,7 +207,7 @@ class GPUFrametimeRecorder(MeasurementDataRecorder):
             logger.warning("GPUFrametimeRecorder: No samples collected")
             return MeasurementData()
 
-        stats = Stats.from_samples(self._samples)
+        stats = Stats.from_samples(self._samples, trim_outliers=False)
         measurements_out = [
             measurements.SingleMeasurement(name="Mean GPU Frametime", value=stats.mean, unit="ms"),
             measurements.SingleMeasurement(name="Stdev GPU Frametime", value=stats.stdev, unit="ms"),
@@ -219,7 +219,7 @@ class GPUFrametimeRecorder(MeasurementDataRecorder):
         if self.enable_multi_gpu and len(self._per_gpu_samples) > 1:
             for gpu_idx, gpu_samples in enumerate(self._per_gpu_samples):
                 if gpu_samples:
-                    gpu_stats = Stats.from_samples(gpu_samples)
+                    gpu_stats = Stats.from_samples(gpu_samples, trim_outliers=False)
                     measurements_out.extend(
                         [
                             measurements.SingleMeasurement(

@@ -16,6 +16,11 @@
 """Validate Nova Carter ROS2 benchmark results against golden data."""
 
 import argparse
+import os
+
+_VALIDATION_DIR = os.path.dirname(os.path.realpath(__file__))
+_DEFAULT_GOLDEN_DIR = os.path.join(_VALIDATION_DIR, "golden_data")
+_DEFAULT_CAPTURES_DIR = os.path.join(_VALIDATION_DIR, "captures")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--num-robots", type=int, default=1, help="Number of robots")
@@ -45,13 +50,13 @@ parser.add_argument(
 
 parser.add_argument(
     "--golden-dir",
-    default="standalone_examples/benchmarks/validation/golden_data",
-    help="Directory holding golden images - relative to the current working directory",
+    default=_DEFAULT_GOLDEN_DIR,
+    help="Directory holding golden images (default: validation/golden_data next to this script)",
 )
 parser.add_argument(
     "--output-dir",
-    default="standalone_examples/benchmarks/validation/captures",
-    help="Directory holding output images from current run - relative to the current working directory",
+    default=_DEFAULT_CAPTURES_DIR,
+    help="Directory for captured images (default: validation/captures next to this script)",
 )
 parser.add_argument("--tolerance", type=int, default=10, help="Tolerance for mean difference in image comparison")
 parser.add_argument(
@@ -124,7 +129,6 @@ if multitick or tick_rate > 0 or enable_lidar_multitick:
     extra_args.extend(multitick_args)
 
 
-import os
 import shutil
 from datetime import datetime
 
@@ -297,7 +301,7 @@ PHYSICS_DT = 1.0 / 60.0
 
 benchmark.store_measurements()
 # perform benchmark
-benchmark.set_phase("benchmark")
+benchmark.set_phase("benchmark", warmup_frames=15)
 
 # Setup image validator
 validator = Validator.from_cli_args(args, auto_cleanup=False)

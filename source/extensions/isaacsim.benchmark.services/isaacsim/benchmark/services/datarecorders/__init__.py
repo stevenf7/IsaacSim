@@ -25,6 +25,7 @@ from .hardware import HardwareSpecRecorder
 from .interface import InputContext, MeasurementData, MeasurementDataRecorder, MeasurementDataRecorderRegistry
 from .memory import MemoryRecorder
 from .physics_frametime import PhysicsFrametimeRecorder
+from .physics_step_interval import PhysicsStepIntervalRecorder
 from .render_frametime import RenderFrametimeRecorder
 from .runtime import RuntimeRecorder
 from .stats_utils import Stats
@@ -38,6 +39,7 @@ __all__ = [
     # Frametime recorders
     "AppFrametimeRecorder",
     "PhysicsFrametimeRecorder",
+    "PhysicsStepIntervalRecorder",
     "GPUFrametimeRecorder",
     "RenderFrametimeRecorder",
     # System recorders

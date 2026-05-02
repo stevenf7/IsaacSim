@@ -124,7 +124,7 @@ for i in range(n_sensor):
     omni.kit.app.get_app().update()
 
 benchmark.store_measurements()
-benchmark.set_phase("benchmark")
+benchmark.set_phase("benchmark", warmup_frames=15)
 
 timeline = omni.timeline.get_timeline_interface()
 timeline.play()

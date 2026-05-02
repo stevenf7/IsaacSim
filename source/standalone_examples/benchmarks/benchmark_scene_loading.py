@@ -88,7 +88,7 @@ benchmark.store_measurements()
 timeline = omni.timeline.get_timeline_interface()
 timeline.play()
 
-benchmark.set_phase("benchmark")
+benchmark.set_phase("benchmark", warmup_frames=15)
 
 if cam_pos is not None:
     set_camera_view(eye=cam_pos, target=cam_target, camera_prim_path="/OmniverseKit_Persp")
