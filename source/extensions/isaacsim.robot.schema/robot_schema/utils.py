@@ -22,7 +22,7 @@ from collections.abc import Callable
 from typing import Any
 
 import pxr
-from pxr import UsdGeom
+from pxr import UsdGeom, UsdPhysics  # noqa: F401 — UsdPhysics used via pxr.UsdPhysics
 from usd.schema.isaac.robot_schema import *
 
 logger = logging.getLogger(__name__)

@@ -13,26 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Re-export for extension loader convenience
-
-"""Framework for defining and executing transformation rules on USD stages."""
-
-
-try:
-    from .extension import Extension  # noqa: F401
-except ImportError:
-    pass
-from .manager import AssetTransformerManager, RuleRegistry  # noqa: F401
-from .models import ExecutionReport, RuleConfigurationParam, RuleExecutionResult, RuleProfile, RuleSpec  # noqa: F401
-from .rule_interface import RuleInterface  # noqa: F401
-
-__all__ = [
-    "RuleInterface",
-    "RuleSpec",
-    "RuleProfile",
-    "RuleExecutionResult",
-    "ExecutionReport",
-    "RuleRegistry",
-    "AssetTransformerManager",
-    "RuleConfigurationParam",
+[project]
+name = "isaacsim-asset-transformer"
+version = "1.0.0"
+description = "USD asset transformation framework from NVIDIA Isaac Sim"
+requires-python = ">=3.12"
+dependencies = [
+    "usd-exchange>=2.2.2",
 ]
+readme = "docs/Overview.md"
+license = "Apache-2.0"
+keywords = ["nvidia", "isaac", "sim", "usd", "asset", "transformer"]
+authors = [
+    {name = "NVIDIA Corporation"},
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["isaacsim.asset.transformer"]
+exclude = ["isaacsim.asset.transformer.tests"]

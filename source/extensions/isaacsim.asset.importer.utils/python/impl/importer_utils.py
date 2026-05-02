@@ -290,6 +290,11 @@ def run_asset_transformer_profile(
         ... )  # doctest: +SKIP
     """
     from isaacsim.asset.transformer import AssetTransformerManager, RuleProfile
+    from isaacsim.asset.transformer.rules import register_all_rules
+
+    # In Kit, rules are registered by the extension on_startup. Standalone
+    # callers need this explicit call (idempotent — safe to call twice).
+    register_all_rules()
 
     with open(profile_json_path, encoding="utf-8") as handle:
         profile = RuleProfile.from_json(handle.read())
