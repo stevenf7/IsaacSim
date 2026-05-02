@@ -43,7 +43,6 @@ public:
     const char* getUsdPrimPath(uint32_t rbIdx) const override;
 
     // Stubs — unsupported by Newton
-    bool getAccelerations(const TensorDesc* dstTensor) const override;
     bool setKinematicTargets(const TensorDesc* srcTensor, const TensorDesc* indexTensor) override;
     bool setKinematicTargetsMasked(const TensorDesc* srcTensor, const TensorDesc* maskTensor) override;
     bool getDisableGravities(const TensorDesc* dstTensor) const override;
@@ -131,6 +130,7 @@ protected:
     mutable float* m_cachedJointQ = nullptr;
     mutable float* m_cachedBodyQ = nullptr;
     mutable float* m_cachedBodyQd = nullptr;
+    mutable float* m_cachedBodyQdd = nullptr; ///< Nullable; only available when body_qdd is requested.
     mutable float* m_cachedBodyF = nullptr;
     float* m_cachedBodyMass = nullptr;
     float* m_cachedBodyInverseMass = nullptr;

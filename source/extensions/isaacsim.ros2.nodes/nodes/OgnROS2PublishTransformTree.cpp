@@ -102,6 +102,11 @@ public:
 
                 state.m_simView = state.m_tensorInterface->createSimulationView(
                     state.m_stageId, isaacsim::core::includes::getActivePhysicsEngineName());
+                if (!state.m_simView)
+                {
+                    db.logError("Failed to create simulation view - physics backend may not be initialized");
+                    return false;
+                }
 
                 //  Finding target prims
                 const auto& targetPrims = db.inputs.targetPrims();

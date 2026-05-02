@@ -68,6 +68,11 @@ public:
             }
             state.m_simView = state.m_tensorInterface->createSimulationView(
                 stageId, isaacsim::core::includes::getActivePhysicsEngineName());
+            if (!state.m_simView)
+            {
+                db.logError("Failed to create simulation view - physics backend may not be initialized");
+                return false;
+            }
             if (!state.initializeNodeHandle(
                     std::string(nodeObj.iNode->getPrimPath(nodeObj)),
                     collectNamespace(db.inputs.nodeNamespace(),

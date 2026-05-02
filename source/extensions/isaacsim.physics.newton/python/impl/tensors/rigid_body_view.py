@@ -200,25 +200,30 @@ class NewtonRigidBodyView:
     def get_accelerations(self, copy: bool = copy_data) -> Any:
         """Get body accelerations [linear(3) + angular(3)].
 
+        Requires ``body_qdd`` to be allocated on the state via
+        ``model.request_state_attributes("body_qdd")`` before state creation.
+
         Args:
             copy: Whether to return a copy.
 
         Returns:
-            Tensor of shape (count, 6). Currently returns velocities
-            (Newton doesn't expose accelerations directly).
+            Tensor of shape (count, 6), or None if body_qdd is not available.
         """
         state = self._newton_stage.state_0
+        if state.body_qdd is None:
+            carb.log_warn("body_qdd not allocated; call model.request_state_attributes('body_qdd') before play")
+            return None
         if copy:
             wp.launch(
                 get_body_velocity,
                 dim=self._backend.count,
-                inputs=[state.body_qd, self._backend.body_indices],
+                inputs=[state.body_qdd, self._backend.body_indices],
                 outputs=[self._convert_to_warp(self._accelerations)],
                 device=str(self._frontend.device),
             )
             return self._accelerations
         else:
-            return wp.indexedarray(state.body_qd, self._backend.body_indices)
+            return wp.indexedarray(state.body_qdd, self._backend.body_indices)
 
     def get_masses(self, copy: bool = copy_data) -> Any:
         """Get body masses.

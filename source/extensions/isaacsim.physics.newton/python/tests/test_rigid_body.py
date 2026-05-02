@@ -191,19 +191,12 @@ class TestNewtonRigidBodyView(omni.kit.test.AsyncTestCase):
                 immediate_vel[i, 5], target_angular_z, places=4, msg=f"Body {i} wz should be {target_angular_z}"
             )
 
-    async def test_accelerations(self):
-        """Test getting rigid body accelerations."""
+    async def test_accelerations_without_body_qdd(self):
+        """get_accelerations returns None when body_qdd is not allocated."""
         bodies = self.sim.create_rigid_body_view("/World/Cube_*")
 
         accelerations = bodies.get_accelerations()
-        self.assertIsNotNone(accelerations, "Accelerations should not be None")
-
-        accelerations_np = accelerations.numpy() if hasattr(accelerations, "numpy") else np.array(accelerations)
-        self.assertEqual(
-            accelerations_np.shape,
-            (bodies.count, 6),
-            f"Accelerations shape should be ({bodies.count}, 6)",
-        )
+        self.assertIsNone(accelerations, "Accelerations should be None when body_qdd is not requested")
 
     async def test_masses(self):
         """Test masses match scene setup and can be modified."""

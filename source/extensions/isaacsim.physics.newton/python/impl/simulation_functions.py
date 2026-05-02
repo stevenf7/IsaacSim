@@ -40,8 +40,10 @@ class NewtonSimulationFunctions:
 
     def __init__(self, newton_stage: NewtonStage):
         self.newton_stage = newton_stage
-        self.contact_callbacks = []
-        self.step_callbacks = []  # List of tuples: (pre_step: bool, order: int, callback)
+        self.contact_callbacks: dict[int, Callable] = {}
+        self._next_contact_cb_id = 0
+        self.step_callbacks: dict[int, tuple[bool, int, Callable]] = {}
+        self._next_step_cb_id = 0
         self.change_tracking_paused = False
         self.simulation_id = 0  # Will be set after registration with physics interface
 
@@ -103,10 +105,9 @@ class NewtonSimulationFunctions:
             context.scene_path = self.get_attached_stage()
             context.simulation_id = self.simulation_id
 
-            # Sort callbacks by order (lower order = higher priority, called first)
             sorted_callbacks = sorted(
-                [item for item in self.step_callbacks if item is not None],
-                key=lambda x: x[1],  # Sort by order (index 1)
+                self.step_callbacks.values(),
+                key=lambda x: x[1],
             )
 
             # Call pre-step callbacks (sorted by order)
@@ -154,13 +155,11 @@ class NewtonSimulationFunctions:
             contacts = ContactDataVector()
             friction = FrictionAnchorsDataVector()
 
-            # Call all registered contact callbacks
-            for callback in self.contact_callbacks:
-                if callback is not None:
-                    try:
-                        callback(headers, contacts, friction)
-                    except Exception as e:
-                        carb.log_error(f"[Newton] Contact callback error: {e}")
+            for callback in self.contact_callbacks.values():
+                try:
+                    callback(headers, contacts, friction)
+                except Exception as e:
+                    carb.log_error(f"[Newton] Contact callback error: {e}")
         except Exception as e:
             carb.log_error(f"[Newton] Fetch results error: {e}")
 
@@ -210,8 +209,9 @@ class NewtonSimulationFunctions:
         Returns:
             Subscription Id for release.
         """
-        self.contact_callbacks.append(on_event)
-        return len(self.contact_callbacks)
+        self._next_contact_cb_id += 1
+        self.contact_callbacks[self._next_contact_cb_id] = on_event
+        return self._next_contact_cb_id
 
     def unsubscribe_physics_contact_report_events(self, subscription_id: int):
         """Unsubscribe from physics contact report events.
@@ -219,9 +219,7 @@ class NewtonSimulationFunctions:
         Args:
             subscription_id: Subscription ID returned from subscribe.
         """
-        if subscription_id > 0 and subscription_id <= len(self.contact_callbacks):
-            # Use None instead of removing to preserve indices
-            self.contact_callbacks[subscription_id - 1] = None
+        self.contact_callbacks.pop(subscription_id, None)
 
     def get_simulation_time_steps_per_second(self, stage_id: int, scene_path: int) -> int:
         """Get physics simulation time steps per second.
@@ -276,8 +274,9 @@ class NewtonSimulationFunctions:
         Returns:
             Subscription Id for release, returns kInvalidSubscriptionId if failed.
         """
-        self.step_callbacks.append((pre_step, order, on_update))
-        return len(self.step_callbacks)
+        self._next_step_cb_id += 1
+        self.step_callbacks[self._next_step_cb_id] = (pre_step, order, on_update)
+        return self._next_step_cb_id
 
     def unsubscribe_physics_on_step_events(self, subscription_id: int):
         """Unsubscribe from physics step events.
@@ -285,9 +284,7 @@ class NewtonSimulationFunctions:
         Args:
             subscription_id: Subscription ID returned from subscribe.
         """
-        if subscription_id > 0 and subscription_id <= len(self.step_callbacks):
-            # Use None instead of removing to preserve indices
-            self.step_callbacks[subscription_id - 1] = None
+        self.step_callbacks.pop(subscription_id, None)
 
     def is_capable_of_simulating(self, schema_names: list[str]) -> tuple[bool, list[bool]]:
         """Check if simulation is capable of simulating given schema types.

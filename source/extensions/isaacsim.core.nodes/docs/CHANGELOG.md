@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.8.0] - 2026-04-30
+### Changed
+- `OgnOnPhysicsStep` uses the generic `IPhysicsSimulation` API instead of the PhysX-specific `IPhysx` API for physics step event subscriptions, enabling OmniGraph execution with any physics backend
+
 ## [5.7.5] - 2026-04-24
 ### Changed
 - `OgnIsaacComputeOdometry` and `OgnIsaacComputeTransformTree` use `getActivePhysicsEngineName()` to select the simulation backend dynamically instead of hardcoding `"physx"`
