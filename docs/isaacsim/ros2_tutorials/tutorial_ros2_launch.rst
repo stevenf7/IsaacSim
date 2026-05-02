@@ -49,9 +49,9 @@ The launch parameters are defined below:
 
     - **install_path**: If Isaac Sim is installed in a non-default location, provide a specific path to Isaac Sim installation root folder. (If defined, "version" parameter will be ignored). [**default_value** = ""]
 
-    - **use_internal_libs**: Set to true if you wish to use internal ROS libraries shipped with Isaac Sim. [**default_value** = "true"]
+    - **use_internal_libs**: Set to true if you wish to use internal ROS libraries shipped with Isaac Sim. [**default_value** = "true" for Humble, "false" for Jazzy]
 
-        .. note:: As of Isaac Sim 6.0 only Python 3.12 is supported. Therefore ``use_internal_libs`` (compiled with Python 3.12) are now set to true by default. If your own ROS installation is built with Python 3.12, you can set ``use_internal_libs`` to false.
+        .. note:: For Humble, ``use_internal_libs`` defaults to ``true`` because the system ROS libraries are built with Python 3.10, which is incompatible with Isaac Sim's Python 3.12. For Jazzy, ``use_internal_libs`` defaults to ``false`` since Jazzy ships with Python 3.12-compatible libraries.
 
     - **dds_type**: Set to "fastdds" or "cyclonedds" to run Isaac Sim with a specific dds type. [**default_value** = "fastdds"]
 
