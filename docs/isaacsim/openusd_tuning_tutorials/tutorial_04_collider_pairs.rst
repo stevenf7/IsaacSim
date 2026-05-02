@@ -63,7 +63,7 @@ Step 1: Reproduce the problem
    :align: center
    :alt: The Layer panel with the Insert Sublayer icon highlighted.
 
-#. In the file dialog, navigate to your asset's folder and select ``IsaacSim/Samples/Rigging/Inspire/module_1_start/payloads/Physics/physx.usda``. Click **Open** to insert it as a sublayer.
+#. In the file dialog, navigate to ``/path/to/Inspire/module_1_start/payloads/Physics/``, select ``physx.usda``, and click **Open** to insert it as a sublayer.
 
 .. figure:: ../images/isim_6.0_full_tut_gui_file_dialog_physx_usda_sublayer.png
    :align: center
@@ -233,7 +233,7 @@ Verify and save
    :align: center
    :alt: Layer panel for saving to physics.usda.
 
-.. note:: Open the checkpoint at ``IsaacSim/Samples/Rigging/Inspire/module_3_end-checkpoint_1/inspire_hand.usda`` before starting Tutorial 5. It includes all collision filters for stability, plus additional filtered pairs (e.g. finger tips and pads) for computational performance.
+.. note:: Before starting Tutorial 5, open ``/path/to/Inspire/module_3_end-checkpoint_1/inspire_hand.usda``. It includes all collision filters for stability, plus additional filtered pairs (e.g. finger tips and pads) for computational performance.
 
 *Property* panel: **Filtered Pairs** on each prim
 -------------------------------------------------

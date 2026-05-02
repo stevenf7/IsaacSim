@@ -28,7 +28,7 @@ Prerequisites
 =============
 
 - Complete :ref:`isaac_sim_tutorial_tuning_openusd_module_4`.
-- Open the **module_4_end-checkpoint_2** checkpoint (``IsaacSim/Samples/Rigging/Inspire/module_4_end-checkpoint_2/inspire_hand.usda``) in Isaac Sim.
+- Open ``/path/to/Inspire/module_4_end-checkpoint_2/inspire_hand.usda`` in Isaac Sim if not already open.
 
 Module 5.1: Understanding Joint Drive Stiffness and Damping
 ============================================================
@@ -82,7 +82,7 @@ In the Gain Tuner, if you see **oscillation or overshoot** in the position chart
 Module 5.2: Using Gain Tuner to Tune Joint Drive Stiffness and Damping
 =========================================================================
 
-#. Open ``IsaacSim/Samples/Rigging/Inspire/module_4_end-checkpoint_2/inspire_hand.usda`` in Isaac Sim if not already open.
+#. Open ``/path/to/Inspire/module_4_end-checkpoint_2/inspire_hand.usda`` in Isaac Sim if not already open.
 #. Go to **Tools > Robotics > Asset Editors > Gain Tuner**.
 
 .. figure:: ../images/isim_6.0_full_tut_gui_menu_gain_tuner.png
@@ -265,7 +265,7 @@ Click **Run Test**. The resulting charts will reveal how well your current **Sti
      - 2.0 s
      - 0.0 s
 
-.. note:: Open the checkpoint at ``IsaacSim/Samples/Rigging/Inspire/module_5_end-checkpoint_3/inspire_hand.usda`` in the Gain Tuner to review the final tuned stiffness and damping values.
+.. note:: In the Gain Tuner, open ``/path/to/Inspire/module_5_end-checkpoint_3/inspire_hand.usda`` to review the final tuned stiffness and damping values.
 
 Summary
 =======
