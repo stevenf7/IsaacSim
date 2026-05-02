@@ -20,6 +20,10 @@ to URDF format. UI components are in ``isaacsim.asset.exporter.urdf.ui``.
 """
 
 from .converter import UsdToUrdfConverter
-from .extension import *
+
+try:
+    from .extension import *
+except ImportError:
+    pass
 
 __all__ = ["UsdToUrdfConverter"]

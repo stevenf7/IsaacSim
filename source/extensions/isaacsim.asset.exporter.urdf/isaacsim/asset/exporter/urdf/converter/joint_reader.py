@@ -21,7 +21,8 @@ import math
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from pxr import Gf, PhysxSchema, Usd, UsdPhysics
+from isaacsim.asset.importer.utils.impl.physx_types import PhysxAttr, PhysxMimicAttr, PhysxMimicRel
+from pxr import Gf, Usd, UsdPhysics
 
 from .robot_finder import RobotDescription
 from .transform_utils import compute_joint_origin, get_prim_name
@@ -456,16 +457,15 @@ def _read_mimic(joint_prim: Usd.Prim, jd: JointData) -> None:
     if instance_name is None:
         return
 
-    mimic_api = PhysxSchema.PhysxMimicJointAPI(joint_prim, instance_name)
-    ref_rel = mimic_api.GetReferenceJointRel()
+    ref_rel = joint_prim.GetRelationship(PhysxMimicRel.REFERENCE_JOINT.format(instance_name))
     if not ref_rel or not ref_rel.IsValid():
         return
     targets = ref_rel.GetTargets()
     if not targets:
         return
     jd.mimic_joint = str(targets[0])
-    gearing_attr = mimic_api.GetGearingAttr()
-    offset_attr = mimic_api.GetOffsetAttr()
+    gearing_attr = joint_prim.GetAttribute(PhysxMimicAttr.GEARING.format(instance_name))
+    offset_attr = joint_prim.GetAttribute(PhysxMimicAttr.OFFSET.format(instance_name))
     jd.mimic_multiplier = float(gearing_attr.Get()) if gearing_attr and gearing_attr.Get() is not None else 1.0
     jd.mimic_offset = float(offset_attr.Get()) if offset_attr and offset_attr.Get() is not None else 0.0
 
@@ -730,21 +730,17 @@ def _read_drive_target_position(prim: Usd.Prim) -> float | None:
 
 def _read_physx_max_velocity(prim: Usd.Prim) -> float | None:
     """Read maxJointVelocity from PhysxJointAPI (deg/s -> rad/s)."""
-    if prim.HasAPI(PhysxSchema.PhysxJointAPI):
-        physx = PhysxSchema.PhysxJointAPI(prim)
-        attr = physx.GetMaxJointVelocityAttr()
-        if attr and attr.Get() is not None:
-            return float(attr.Get()) * math.pi / 180.0
+    attr = prim.GetAttribute(PhysxAttr.JOINT_MAX_VELOCITY.name)
+    if attr and attr.Get() is not None:
+        return float(attr.Get()) * math.pi / 180.0
     return None
 
 
 def _read_physx_friction(prim: Usd.Prim) -> float | None:
     """Read jointFriction from PhysxJointAPI."""
-    if prim.HasAPI(PhysxSchema.PhysxJointAPI):
-        physx = PhysxSchema.PhysxJointAPI(prim)
-        attr = physx.GetJointFrictionAttr()
-        if attr and attr.Get() is not None:
-            return float(attr.Get())
+    attr = prim.GetAttribute(PhysxAttr.JOINT_FRICTION.name)
+    if attr and attr.Get() is not None:
+        return float(attr.Get())
     return None
 
 
@@ -856,11 +852,9 @@ def _get_token_attr(prim: Usd.Prim, attr_name: str) -> str | None:
 
 def _read_armature(joint_prim: Usd.Prim) -> float | None:
     """Read armature (reflected rotor inertia) from PhysxJointAPI or mjc: attr."""
-    if joint_prim.HasAPI(PhysxSchema.PhysxJointAPI):
-        physx = PhysxSchema.PhysxJointAPI(joint_prim)
-        attr = physx.GetArmatureAttr()
-        if attr and attr.Get() is not None:
-            return float(attr.Get())
+    attr = joint_prim.GetAttribute(PhysxAttr.JOINT_ARMATURE.name)
+    if attr and attr.Get() is not None:
+        return float(attr.Get())
     return _get_float_attr(joint_prim, "mjc:armature")
 
 

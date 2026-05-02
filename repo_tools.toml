@@ -197,4 +197,12 @@ entry_point = "${config_root}/tools/isaac/pre_merge/run_python_linting.py:setup_
 command = "copy_pyi_stubs"
 entry_point = "${config_root}/tools/isaac/copy_pyi_stubs.py:setup_repo_tool"
 
+########################################################################################################################
+# Build standalone pip wheels from extensions with in-source pyproject.toml
+########################################################################################################################
+
+[build_standalone_wheels]
+command = "build_standalone_wheels"
+entry_point = "${config_root}/tools/isaac_build/build_standalone_wheels.py:setup_repo_tool"
+
 # AUTOREMOVE: END

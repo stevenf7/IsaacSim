@@ -15,13 +15,22 @@
 
 """Provides access to the Extension class for transformer rules functionality."""
 
-import os as _os
+from pathlib import Path as _Path
 
 from .extension import Extension, register_all_rules  # noqa: F401
 
-_EXTENSION_ROOT = _os.path.normpath(_os.path.join(_os.path.dirname(__file__), "..", "..", "..", ".."))
 
-DEFAULT_PROFILE_PATH = _os.path.join(_EXTENSION_ROOT, "data", "isaacsim_structure.json")
+def _resolve_default_profile_path() -> str:
+    """Locate the profile JSON, preferring the wheel layout over Kit's."""
+    here = _Path(__file__).parent
+    name = "isaacsim_structure.json"
+    # Wheel layout: <package>/data/  (symlink to ../../../../data at wheel-build).
+    # Kit layout:   <extension>/data/  (parents[3] from this file = extension root).
+    candidates = (here / "data" / name, here.parents[3] / "data" / name)
+    return str(next((p for p in candidates if p.is_file()), candidates[-1]))
+
+
+DEFAULT_PROFILE_PATH = _resolve_default_profile_path()
 """Absolute path to the default Isaac Sim asset-structure profile shipped with this extension."""
 
 __all__ = ["DEFAULT_PROFILE_PATH", "register_all_rules"]

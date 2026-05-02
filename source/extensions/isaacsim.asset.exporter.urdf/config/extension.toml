@@ -1,5 +1,5 @@
 [package]
-version = "2.0.0"
+version = "2.0.1"
 category = "Simulation"
 title = "Isaac Sim USD to URDF exporter"
 description = "Extension that exports USD articulated robots to URDF. UI is in isaacsim.asset.exporter.urdf.ui."
@@ -13,6 +13,7 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
+"isaacsim.asset.importer.utils" = {}
 "isaacsim.robot.schema" = {}
 "omni.physics.physx" = {}
 
@@ -31,7 +32,6 @@ dependencies = [
 timeout = 400
 dependencies = [
     "isaacsim.asset.importer.urdf",
-    "isaacsim.asset.importer.utils",
     "isaacsim.core.experimental.utils",
     "isaacsim.storage.native",
     "isaacsim.test.utils"
