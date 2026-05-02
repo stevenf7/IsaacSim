@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.2] - 2026-05-01
+### Added
+- Implement `getAccelerations` for CPU and GPU rigid body views using Newton's `body_qdd` extended state attribute
+
 ## [0.1.1] - 2026-04-22
 ### Fixed
 - Fix contact point positions for MuJoCo backend: detect world-space contact positions from `mjw_data.contact.pos` and skip body-local-to-world rotation in CPU and GPU contact data kernels

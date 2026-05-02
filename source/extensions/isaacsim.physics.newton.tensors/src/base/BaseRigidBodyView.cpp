@@ -105,6 +105,9 @@ void BaseRigidBodyView::_cacheWarpPointers()
     m_cachedBodyQd = ptr(state0.attr("body_qd"));
     m_cachedBodyF = ptr(state0.attr("body_f"));
 
+    py::object bodyQdd = state0.attr("body_qdd");
+    m_cachedBodyQdd = bodyQdd.is_none() ? nullptr : ptr(bodyQdd);
+
     py::object bodyMassArr = m_model.attr("body_mass");
     m_cachedBodyMass = ptr(bodyMassArr);
     m_cachedBodyInverseMass = ptr(m_model.attr("body_inv_mass"));
@@ -189,10 +192,6 @@ void BaseRigidBodyView::_updateInverseInertias()
 
 // ---- Stubs ----
 
-bool BaseRigidBodyView::getAccelerations(const TensorDesc* dstTensor) const
-{
-    return false;
-}
 bool BaseRigidBodyView::setKinematicTargets(const TensorDesc* srcTensor, const TensorDesc* indexTensor)
 {
     return false;

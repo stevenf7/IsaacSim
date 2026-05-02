@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.6] - 2026-04-27
+### Fixed
+- Fix unbounded growth of `contact_callbacks` and `step_callbacks` lists when repeatedly subscribing and unsubscribing callbacks. Replace tombstone-based lists with dict-based storage so unsubscribed slots are reclaimed and iteration cost is O(active callbacks)
+
 ## [0.7.5] - 2026-04-23
 ### Fixed
 - Try to load USD with flattened stage when composition cycles are present 

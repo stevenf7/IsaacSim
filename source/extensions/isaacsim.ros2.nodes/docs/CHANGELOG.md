@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.10] - 2026-04-30
+### Fixed
+- Add null check for simulation view in `OgnROS2PublishJointState` and `OgnROS2PublishTransformTree` to prevent crash when physics backend initialization fails
+
+### Added
+- Add `test_sim_clock_physics_step` test that validates ROS 2 clock publishing from an `OnPhysicsStep`-driven on-demand graph
+
 ## [1.17.9] - 2026-05-01
 ### Fixed
 - Fix flaky waypoint follower tests by using `asyncio.sleep` instead of `simulate_until_condition` to wait for message publication

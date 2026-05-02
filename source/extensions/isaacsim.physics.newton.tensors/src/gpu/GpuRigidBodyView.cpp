@@ -146,6 +146,21 @@ bool GpuRigidBodyView::getVelocities(const TensorDesc* dstTensor) const
         dstTensor, static_cast<int>(m_bodyIndices.size()), 6, m_stagingBuffer);
 }
 
+bool GpuRigidBodyView::getAccelerations(const TensorDesc* dstTensor) const
+{
+    if (!m_cacheValid || !m_cachedBodyQdd)
+        return false;
+    if (!validateFloat32TensorAnyDevice(dstTensor, size_t(m_count) * 6u, "acceleration", __FUNCTION__))
+        return false;
+    return gpuGather(
+        [this](float* dst, int n)
+        {
+            return launchGatherSpatialVector(
+                reinterpret_cast<const wp::spatial_vector*>(m_cachedBodyQdd), dst, m_deviceBodyIndices, n);
+        },
+        dstTensor, static_cast<int>(m_bodyIndices.size()), 6, m_stagingBuffer);
+}
+
 bool GpuRigidBodyView::getMasses(const TensorDesc* dstTensor) const
 {
     if (!m_cacheValid)

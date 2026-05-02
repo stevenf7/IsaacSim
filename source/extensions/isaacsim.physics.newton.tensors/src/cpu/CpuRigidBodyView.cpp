@@ -43,6 +43,17 @@ bool CpuRigidBodyView::getVelocities(const TensorDesc* dstTensor) const
     return true;
 }
 
+bool CpuRigidBodyView::getAccelerations(const TensorDesc* dstTensor) const
+{
+    if (!m_cacheValid || !m_cachedBodyQdd)
+        return false;
+    if (!validateFloat32Tensor(dstTensor, -1, size_t(m_count) * 6u, "acceleration", __FUNCTION__))
+        return false;
+    gatherSpatialVector(reinterpret_cast<const wp::spatial_vector*>(m_cachedBodyQdd),
+                        static_cast<float*>(dstTensor->data), m_bodyIndices.data(), m_bodyIndices.size());
+    return true;
+}
+
 bool CpuRigidBodyView::getMasses(const TensorDesc* dstTensor) const
 {
     if (!m_cacheValid)

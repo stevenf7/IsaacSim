@@ -27,7 +27,7 @@ import omni.kit.test
 import omni.kit.usd
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 
-from .common import get_qos_profile
+from .common import get_qos_profile, simulate_async
 
 
 class TestRos2NodeCommands(ROS2TestCase):
@@ -82,6 +82,48 @@ class TestRos2NodeCommands(ROS2TestCase):
         self.assertGreater(self._time_sec, 2.0)
         spin()
         pass
+
+    async def test_sim_clock_physics_step(self):
+        """Test sim clock published from an OnPhysicsStep-driven on-demand graph."""
+        import rclpy
+        from rosgraph_msgs.msg import Clock
+
+        keys = og.Controller.Keys
+        (graph, nodes, _, _) = og.Controller.edit(
+            {
+                "graph_path": "/physics_step_clock_graph",
+                "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND,
+            },
+            {
+                keys.CREATE_NODES: [
+                    ("OnPhysicsStep", "isaacsim.core.nodes.OnPhysicsStep"),
+                    ("IsaacClock", "isaacsim.core.nodes.IsaacReadSimulationTime"),
+                    ("RosPublisher", "isaacsim.ros2.bridge.ROS2PublishClock"),
+                ],
+                keys.CONNECT: [
+                    ("OnPhysicsStep.outputs:step", "RosPublisher.inputs:execIn"),
+                    ("IsaacClock.outputs:simulationTime", "RosPublisher.inputs:timeStamp"),
+                ],
+            },
+        )
+
+        self._time_sec = 0
+
+        def clock_callback(data):
+            self._time_sec = data.clock.sec + data.clock.nanosec / 1.0e9
+
+        node = self.create_node("test_sim_clock_physics_step")
+        clock_sub = self.create_subscription(node, Clock, "clock", clock_callback, get_qos_profile())
+
+        def spin():
+            rclpy.spin_once(node, timeout_sec=0.01)
+
+        self._timeline.play()
+
+        await simulate_async(2.1, callback=spin)
+        self._timeline.stop()
+        self.assertGreater(self._time_sec, 2.0)
+        spin()
 
     async def test_sim_clock_manual(self):
         """Test sim clock manual."""

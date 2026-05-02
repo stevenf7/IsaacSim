@@ -20,6 +20,8 @@
 #include "Pose.h"
 #include "UsdUtilities.h"
 
+#include <carb/logging/Log.h>
+
 #include <foundation/PxTransform.h>
 #include <isaacsim/robot/schema/sensor_tokens.h>
 #include <omni/physics/tensors/IArticulationMetatype.h>
@@ -31,6 +33,7 @@
 #include <physx/include/foundation/PxTransform.h>
 #include <usdrt/scenegraph/usd/rt/xformable.h>
 
+#include <cmath>
 #include <unordered_map>
 
 using namespace omni::physics::tensors;
@@ -178,6 +181,10 @@ public:
         if (!m_parentPath.IsEmpty())
         {
             ObjectType objectType = m_simulationView->getObjectType(m_parentPath.GetString().c_str());
+            if (objectType == ObjectType::eInvalid)
+            {
+                CARB_LOG_WARN("[PoseTree] parent getObjectType eInvalid for '%s'", m_parentPath.GetText());
+            }
             if (objectType == ObjectType::eArticulationLink || objectType == ObjectType::eArticulationRootLink ||
                 objectType == ObjectType::eRigidBody)
             {
@@ -207,6 +214,10 @@ public:
         for (pxr::SdfPath primPath : m_targets)
         {
             ObjectType objectType = m_simulationView->getObjectType(primPath.GetString().c_str());
+            if (objectType == ObjectType::eInvalid)
+            {
+                CARB_LOG_WARN("[PoseTree] target getObjectType eInvalid for '%s'", primPath.GetText());
+            }
             if (objectType == ObjectType::eArticulation || objectType == ObjectType::eArticulationRootLink)
             {
                 std::string primPathStr = primPath.GetString();
@@ -220,8 +231,18 @@ public:
                     articulation = m_simulationView->createArticulationView(primPathStr.c_str());
                     m_articulationViewCache[primPathStr] = articulation;
                 }
+                if (!articulation)
+                {
+                    CARB_LOG_WARN("[PoseTree] createArticulationView returned null for '%s'", primPathStr.c_str());
+                    continue;
+                }
                 const IArticulationMetatype* mt = articulation->getSharedMetatype();
                 uint32_t linkCount = articulation->getMaxLinks();
+                if (linkCount == 0)
+                {
+                    CARB_LOG_WARN("[PoseTree] articulation has zero links for '%s'", primPathStr.c_str());
+                    continue;
+                }
                 std::vector<std::string> linkPaths(linkCount);
                 std::vector<std::vector<int>> childLinks(linkCount);
                 for (uint32_t j = 0; j < linkCount; ++j)

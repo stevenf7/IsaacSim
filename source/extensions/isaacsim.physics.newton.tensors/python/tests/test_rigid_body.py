@@ -9,6 +9,8 @@ Ported from omni.physics.tensors.tests for the Newton backend.
 from __future__ import annotations
 
 import numpy as np
+import omni.kit.app
+import omni.physics.tensors as tensors
 import warp as wp
 from pxr import Gf
 
@@ -220,6 +222,60 @@ class TestRigidBodyVelocities(NewtonTensorTestBase):
         result = balls.get_velocities().numpy().reshape(balls.count, 6)
         self.assertTrue(np.allclose(result[:n_subset], modified[:n_subset], atol=1e-3))
         self.assertTrue(np.allclose(result[n_subset:], original[n_subset:], atol=1e-3))
+
+
+# ---------------------------------------------------------------------------
+# TestRigidBodyAccelerations
+#   Verify that get_accelerations returns body_qdd data when the extended
+#   state attribute is requested. Requires MuJoCo solver (the only solver
+#   that currently populates body_qdd).
+# ---------------------------------------------------------------------------
+
+
+@run_on_device_configs()
+class TestRigidBodyAccelerations(NewtonTensorTestBase):
+    """get_accelerations reads from body_qdd when allocated."""
+
+    DT = 1.0 / 60.0
+
+    async def _create_sim_with_body_qdd(self) -> "tensors.SimulationView":
+        """Create a simulation view with body_qdd allocated on the state."""
+        await omni.kit.app.get_app().next_update_async()
+
+        from isaacsim.physics.newton.impl.extension import acquire_stage as acquire_newton_stage
+
+        newton_stage = acquire_newton_stage()
+        self.assertIsNotNone(newton_stage)
+        newton_stage.initialize_newton(self.SIM_DEVICE)
+
+        newton_stage.model.request_state_attributes("body_qdd")
+        newton_stage.state_0 = newton_stage.model.state()
+        newton_stage.state_1 = newton_stage.model.state()
+        if newton_stage.cfg.use_cuda_graph:
+            newton_stage.state_temp = newton_stage.model.state()
+
+        import newton as nw
+
+        nw.eval_fk(
+            newton_stage.model, newton_stage.state_0.joint_q, newton_stage.state_0.joint_qd, newton_stage.state_0
+        )
+
+        self._sim = tensors.create_simulation_view("warp", backend="newton", stage_id=self._stage_id)
+        self.assertIsNotNone(self._sim)
+        return self._sim
+
+    async def test_freefall_acceleration_is_gravity(self):
+        """Free-falling bodies should have linear z acceleration close to -9.81."""
+        num_envs = self.setup_ball_grid(num_envs=4, position=Gf.Vec3f(0, 0, 5.0))
+        sim = await self._create_sim_with_body_qdd()
+        self.start_playing()
+
+        balls = sim.create_rigid_body_view("/envs/*/ball")
+        self.step(n=5, dt=self.DT)
+
+        accel = balls.get_accelerations().numpy().reshape(balls.count, 6)
+        np.testing.assert_allclose(accel[:, 2], -9.81, rtol=0.1, atol=0.5)
+        np.testing.assert_allclose(accel[:, 0:2], 0.0, atol=0.5)
 
 
 # ---------------------------------------------------------------------------

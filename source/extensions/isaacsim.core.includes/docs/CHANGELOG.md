@@ -1,4 +1,8 @@
 # Changelog
+## [2.9.1] - 2026-04-28
+### Fixed
+- Added warning logs for clarity when rigid body APIs fail
+
 ## [2.9.0] - 2026-04-24
 ### Added
 - Add `PhysicsEngine.h` header with `getActivePhysicsEngineName()` to query the active physics simulation backend

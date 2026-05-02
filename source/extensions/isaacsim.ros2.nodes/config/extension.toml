@@ -1,5 +1,5 @@
 [package]
-version = "1.17.9"
+version = "1.17.10"
 category = "Simulation"
 title = "ROS 2 Nodes"
 description = "The ROS 2 Nodes extension provides OmniGraph nodes for ROS 2 communication. It contains publisher, subscriber, and service nodes that can be used in Action graphs to interface with ROS 2 systems. This extension depends on the isaacsim.ros2.core extension for underlying ROS 2 functionality."
@@ -63,6 +63,7 @@ args = [
 
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
+    "*Failed to create simulation view - physics backend may not be initialized*",
 ]
 
 [[test]]
@@ -92,6 +93,7 @@ stdoutFailPatterns.exclude = [
     "*[Error] [omni.graph.core.plugin] Failed to create ComputeGraph \"/Graph/ROS_Nav2_Waypoint_Follower\". A graph already exists at this path*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros2_bridge_ROS2PublishTransformTree: [/TestGraph] Please specify at least one valid target prim for the ROS pose tree component*",
     "*[Error] [omni.physx.tensors.plugin] Failed to create simulation view: no active physics scene found*",
+    "*Failed to create simulation view - physics backend may not be initialized*",
     "*[Error] [omni.graph.core.plugin] /Graph/ROS_Odometry/ComputeOdometry: [/Graph/ROS_Odometry] The prim  is not valid. Please specify at least one valid chassis prim*",
     "*[Error] [omni.graph.core.plugin] /Graph/ROS_Odometry/TFRobot: [/Graph/ROS_Odometry] The prim  is not valid. Please specify at least one valid target prim for the ROS pose tree component*",
     "*[Error] [omni.graph.core.plugin] /Graph/ROS_TF/PublisherTF: [/Graph/ROS_TF] The prim  is not valid. Please specify at least one valid target prim for the ROS pose tree component*",
@@ -260,6 +262,7 @@ stdoutFailPatterns.exclude = [
     "*[Error] [omni.graph.core.plugin] Failed to create ComputeGraph \"/Graph/ROS_Nav2_Waypoint_Follower\". A graph already exists at this path*",
     "*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_ros2_bridge_ROS2PublishTransformTree: [/TestGraph] Please specify at least one valid target prim for the ROS pose tree component*",
     "*[Error] [omni.physx.tensors.plugin] Failed to create simulation view: no active physics scene found*",
+    "*Failed to create simulation view - physics backend may not be initialized*",
     "*[Error] [omni.graph.core.plugin] /Graph/ROS_Odometry/ComputeOdometry: [/Graph/ROS_Odometry] The prim  is not valid. Please specify at least one valid chassis prim*",
     "*[Error] [omni.graph.core.plugin] /Graph/ROS_Odometry/TFRobot: [/Graph/ROS_Odometry] The prim  is not valid. Please specify at least one valid target prim for the ROS pose tree component*",
     "*[Error] [omni.graph.core.plugin] /Graph/ROS_TF/PublisherTF: [/Graph/ROS_TF] The prim  is not valid. Please specify at least one valid target prim for the ROS pose tree component*",

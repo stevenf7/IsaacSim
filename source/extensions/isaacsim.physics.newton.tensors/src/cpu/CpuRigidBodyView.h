@@ -23,6 +23,7 @@ public:
 
     bool getTransforms(const TensorDesc* dstTensor) const override;
     bool getVelocities(const TensorDesc* dstTensor) const override;
+    bool getAccelerations(const TensorDesc* dstTensor) const override;
     bool getMasses(const TensorDesc* dstTensor) const override;
     bool getInvMasses(const TensorDesc* dstTensor) const override;
     bool getCOMs(const TensorDesc* dstTensor) const override;
