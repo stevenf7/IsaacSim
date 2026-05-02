@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.7.1] - 2026-04-24
+### Added
+- `JointStateAPIRule` applies `PhysxSchema.JointStateAPI` (`linear` on prismatic, `angular` on revolute) to non-fixed joints missing it. Wired into the Isaac Sim profile between `Fix Physics Joint Poses` and `Route Materials`.
+- `MakeListsNonExplicitRule` now normalizes the `isaac:physics:robotLinks` and `isaac:physics:robotJoints` relationships to `prepend` list ops, walking each prim's `GetPrimStack()` so sublayered PrimSpecs are also rewritten. A second profile entry is added to `isaacsim_structure.json` targeting these relationships.
+
 ## [1.7.0] - 2026-04-22
 ### Added
 - MergeMeshRule to merge visual mesh prims grouped under rigid bodies via Scene Optimizer

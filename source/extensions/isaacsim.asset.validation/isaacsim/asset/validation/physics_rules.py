@@ -41,58 +41,91 @@ class RigidBodyHasMassAPI(av_core.BaseRuleChecker):
     def check_rigid_body_prim(self, prim: Usd.Prim) -> None:
         """Check if a rigid body prim has proper mass configuration.
 
+        Validation uses layered precondition guards: missing ``MassAPI`` triggers
+        an early return so downstream ``.Get()`` calls cannot raise
+        ``'NoneType' object is not subscriptable``; missing per-attribute authored
+        values are collected up front and reported all at once; value-based checks
+        (triangle inequality, principalAxes normalization) run only after every
+        authorship precondition has passed.
+
+        ``physics:principalAxes`` is special-cased: the engine treats an unauthored
+        attribute as identity, so the validator only enforces normalization when the
+        attribute has an authored value with non-trivial length.
+
         Args:
             prim: The rigid body prim to validate.
         """
-        # Has Rigid body API, now check if it has MassAPI
+        path = prim.GetPath()
+
+        # MassAPI must be applied before any value-based check.
         if not prim.HasAPI(UsdPhysics.MassAPI):
-            self._AddError(message=f"Rigid body {prim.GetPath()} has rigid body api but no mass api", at=prim)
+            self._AddError(message=f"Rigid body {path} has rigid body api but no mass api", at=prim)
+            return
 
-        # check if mass attr is authored
-        if not prim.HasAttribute("physics:mass"):
-            self._AddError(message=f"Rigid body {prim.GetPath()} has mass api but no mass attr", at=prim)
+        # MassAPI predeclares ``physics:mass`` / ``physics:diagonalInertia`` /
+        # ``physics:principalAxes`` as schema attributes, so ``prim.HasAttribute(...)``
+        # returns True even when the attribute has no authored opinion. ``Get()``
+        # would then return ``None`` and raise ``'NoneType' object is not
+        # subscriptable``. Check ``HasAuthoredValue()`` to catch the authorship gap.
+        mass_attr = prim.GetAttribute("physics:mass")
+        inertia_attr = prim.GetAttribute("physics:diagonalInertia")
+        pa_attr = prim.GetAttribute("physics:principalAxes")
 
-        # check if mass attr is not 0
-        if prim.GetAttribute("physics:mass").Get() == 0:
-            self._AddInfo(message=f"Rigid body {prim.GetPath()} has mass of 0", at=prim)
+        missing_any = False
+        if not (mass_attr and mass_attr.HasAuthoredValue()):
+            self._AddError(message=f"Rigid body {path} has mass api but no mass attr", at=prim)
+            missing_any = True
+        if not (inertia_attr and inertia_attr.HasAuthoredValue()):
+            self._AddError(message=f"Rigid body {path} has mass api but no diagonal inertia attr", at=prim)
+            missing_any = True
+        # principalAxes authored-vs-unauthored handling lives in the value-based
+        # check below. Here we only flag the case where the schema attribute itself
+        # has been removed (manual RemoveProperty on a MassAPI-applied prim).
+        if not prim.HasAttribute("physics:principalAxes"):
+            self._AddError(message=f"Rigid body {path} has mass api but no principal axes attr", at=prim)
+            missing_any = True
+        if missing_any:
+            return
 
-        # check if diagonal inertia is authored
-        if not prim.HasAttribute("physics:diagonalInertia"):
-            self._AddError(message=f"Rigid body {prim.GetPath()} has mass api but no diagonal inertia attr", at=prim)
+        # Value-based checks (only reached when every precondition passes).
+        mass_value = mass_attr.Get()
+        if mass_value == 0:
+            self._AddInfo(message=f"Rigid body {path} has mass of 0", at=prim)
 
-        # check if diagonal inertia is non-zero
-        diagonal_inertia = prim.GetAttribute("physics:diagonalInertia").Get()
+        diagonal_inertia = inertia_attr.Get()
         if diagonal_inertia == Gf.Vec3f(0, 0, 0):
-            self._AddInfo(message=f"Rigid body {prim.GetPath()} has diagonal inertia of [0, 0, 0]", at=prim)
+            self._AddInfo(message=f"Rigid body {path} has diagonal inertia of [0, 0, 0]", at=prim)
         else:
             # check triangle inequality: I1 + I2 >= I3, I1 + I3 >= I2, I2 + I3 >= I1
             i1, i2, i3 = diagonal_inertia[0], diagonal_inertia[1], diagonal_inertia[2]
             if i1 + i2 < i3:
                 self._AddError(
-                    message=f"Rigid body {prim.GetPath()} violates inertia triangle inequality: I1 + I2 ({i1 + i2}) < I3 ({i3})",
+                    message=f"Rigid body {path} violates inertia triangle inequality: I1 + I2 ({i1 + i2}) < I3 ({i3})",
                     at=prim,
                 )
             if i1 + i3 < i2:
                 self._AddError(
-                    message=f"Rigid body {prim.GetPath()} violates inertia triangle inequality: I1 + I3 ({i1 + i3}) < I2 ({i2})",
+                    message=f"Rigid body {path} violates inertia triangle inequality: I1 + I3 ({i1 + i3}) < I2 ({i2})",
                     at=prim,
                 )
             if i2 + i3 < i1:
                 self._AddError(
-                    message=f"Rigid body {prim.GetPath()} violates inertia triangle inequality: I2 + I3 ({i2 + i3}) < I1 ({i1})",
+                    message=f"Rigid body {path} violates inertia triangle inequality: I2 + I3 ({i2 + i3}) < I1 ({i1})",
                     at=prim,
                 )
 
-        # check if principal axes is authored
-        if not prim.HasAttribute("physics:principalAxes"):
-            self._AddError(message=f"Rigid body {prim.GetPath()} has mass api but no principal axes attr", at=prim)
-
-        # check if principal axes == quatf(1, 0, 0, 0)
-        if abs(prim.GetAttribute("physics:principalAxes").Get().GetLength() - 1.0) > 1e-4:
-            self._AddError(
-                message=f"Rigid body {prim.GetPath()}'s principal axes is not normalized, but: {prim.GetAttribute('physics:principalAxes').Get().GetLength()}",
-                at=prim,
-            )
+        # principalAxes normalization: enforce ONLY when the value is authored AND
+        # its length is meaningfully non-zero. Unauthored principalAxes means the
+        # engine treats it as identity, so the validator must not flag the engine
+        # default as "not normalized". The length > 1e-4 floor defends against
+        # all-zero quaternions that would otherwise report a false normalization error.
+        if pa_attr.HasAuthoredValue():
+            length = pa_attr.Get().GetLength()
+            if length > 1e-4 and abs(length - 1.0) > 1e-4:
+                self._AddError(
+                    message=f"Rigid body {path}'s principal axes is not normalized, but: {length}",
+                    at=prim,
+                )
 
     def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
         """Check all rigid bodies in the stage for proper mass configuration.
@@ -130,6 +163,30 @@ class RigidBodyHasCollider(av_core.BaseRuleChecker):
                 if p.HasAPI(UsdPhysics.CollisionAPI):
                     return
             self._AddError(message=f"Rigid body {prim.GetPath()} has rigid body api but no collision api", at=prim)
+
+
+def _find_rigid_body_ancestor(prim: Usd.Prim) -> Sdf.Path:
+    """Walk up to the nearest ancestor (inclusive) carrying UsdPhysics.RigidBodyAPI.
+
+    Returns ``Sdf.Path.emptyPath`` if no such ancestor exists. Used by
+    :class:`NonAdjacentCollisionMeshesDoNotClash` to key adjacency-dict lookups
+    on the rigid body that owns each collider, rather than the collider's
+    direct parent — which fails whenever collision meshes live nested under a
+    link (e.g. ``/Robot/link0/collisions/mesh_0``).
+
+    Args:
+        prim: The prim (typically a collider) to search upward from.
+
+    Returns:
+        Path of the nearest ancestor (or ``prim`` itself) with
+        ``UsdPhysics.RigidBodyAPI`` applied, or ``Sdf.Path.emptyPath`` if none.
+    """
+    current = prim
+    while current and current.IsValid() and not current.IsPseudoRoot():
+        if current.HasAPI(UsdPhysics.RigidBodyAPI):
+            return current.GetPath()
+        current = current.GetParent()
+    return Sdf.Path.emptyPath
 
 
 def compute_adjacent_mesh_dict(stage: Usd.Stage) -> dict:
@@ -274,29 +331,71 @@ class NonAdjacentCollisionMeshesDoNotClash(av_core.BaseRuleChecker):
     def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
         """Check for intersecting non-adjacent collision meshes.
 
+        Populates ``self.adjacent_mesh_matrix`` and ``self.collisions_pairs``
+        from the stage, then delegates to :meth:`_check_pairs`. The
+        ``_check_pairs`` helper is public-to-the-class so tests can inject
+        pre-computed pair/adjacency state without running a live PhysX step.
+
         Args:
             stage: The USD stage to validate.
         """
-        self.adjacent_mesh_matrix = compute_adjacent_mesh_dict(stage)  # Sdf Path of all joints
-        self.collisions_pairs = get_initial_collider_pairs(
-            stage
-        )  # Set of tuples of collider pairs in contact (Sdf Paths)
+        self.adjacent_mesh_matrix = compute_adjacent_mesh_dict(stage)  # keyed on rigid-body paths
+        self.collisions_pairs = get_initial_collider_pairs(stage)  # tuples of collider Sdf paths
+        self._check_pairs(stage)
+
+    def _check_pairs(self, stage: Usd.Stage) -> None:
+        """Inner pair-filter loop. Factored out of :meth:`CheckStage` so tests
+        can inject collision pairs without running a live PhysX simulation step.
+
+        Two filters:
+
+        - Pairs outside the ``stage.GetDefaultPrim()`` subtree are skipped.
+          Ground planes and other environment scaffolding shipped alongside
+          the robot in the source USD are not the robot's non-adjacency
+          problem to report.
+        - Adjacency is looked up on the rigid body that *owns* each collider
+          (via :func:`_find_rigid_body_ancestor`), not on the collider's
+          immediate parent. Collision meshes nested deeper than one level
+          under a link (e.g. ``/link/collisions/mesh_N``) would otherwise
+          never match the adjacency dict's rigid-body keys.
+
+        The adjacency dict (:func:`compute_adjacent_mesh_dict`) already keys
+        on rigid-body paths, so lookup keys align with dict keys here.
+
+        Args:
+            stage: The USD stage being validated. Used for path->prim lookups.
+        """
+        default_prim = stage.GetDefaultPrim()
+        if not default_prim or not default_prim.IsValid():
+            return
+        default_prim_path = default_prim.GetPath()
 
         for collision_pair in self.collisions_pairs:
             body0_prim = stage.GetPrimAtPath(collision_pair[0])
             body1_prim = stage.GetPrimAtPath(collision_pair[1])
-
-            body0_parent_path = body0_prim.GetParent().GetPath()
-            body1_parent_path = body1_prim.GetParent().GetPath()
-
-            # check if the two bodies are adjacent
-            if body1_parent_path in self.adjacent_mesh_matrix.get(body0_parent_path, []):
+            if not body0_prim or not body1_prim:
                 continue
-            else:
-                self._AddError(
-                    message=f"Colliding meshes {body0_prim.GetPath()} and {body1_prim.GetPath()} are not adjacent",
-                    at=body0_prim,
-                )
+
+            # Both prims must live under defaultPrim.
+            if not (
+                body0_prim.GetPath().HasPrefix(default_prim_path) and body1_prim.GetPath().HasPrefix(default_prim_path)
+            ):
+                continue
+
+            # Walk to the rigid-body ancestor for adjacency lookup.
+            body0_rb = _find_rigid_body_ancestor(body0_prim)
+            body1_rb = _find_rigid_body_ancestor(body1_prim)
+            if body0_rb.isEmpty or body1_rb.isEmpty:
+                # Orphan collider without a rigid-body ancestor. Not this validator's job.
+                continue
+
+            if body1_rb in self.adjacent_mesh_matrix.get(body0_rb, []):
+                continue
+
+            self._AddError(
+                message=(f"Colliding meshes {body0_prim.GetPath()} and " f"{body1_prim.GetPath()} are not adjacent"),
+                at=body0_prim,
+            )
 
 
 @registerRule("IsaacSim.PhysicsRules")
@@ -345,15 +444,19 @@ class HasArticulationRoot(av_core.BaseRuleChecker):
     def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
         """Check if the stage has at least one articulation root.
 
+        Skipped on rigid-body-only stages (vehicles, non-articulated props)
+        which are not expected to carry ``ArticulationRootAPI``. Only fires
+        when the stage has joints but no articulation root.
+
         Args:
             stage: The USD stage to validate.
         """
-        roots = []
+        if not any(prim.IsA(UsdPhysics.Joint) for prim in stage.Traverse()):
+            return
         for prim in stage.Traverse():
             if prim.HasAPI(UsdPhysics.ArticulationRootAPI):
-                roots.append(prim)
-        if len(roots) == 0:
-            self._AddError(
-                message=f"Articulation Root API is not set on any prim in the stage",
-                at=stage,
-            )
+                return
+        self._AddError(
+            message=f"Articulation Root API is not set on any prim in the stage",
+            at=stage,
+        )

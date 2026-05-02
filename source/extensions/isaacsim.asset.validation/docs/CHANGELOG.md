@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.2] - 2026-04-24
+### Fixed
+- RigidBodyHasMassAPI no longer flags unauthored principalAxes on assets where the attribute falls back to the schema default.
+- RigidBodyHasMassAPI no longer crashes on rigid bodies missing MassAPI or required mass attributes; missing-attr errors are collected up front.
+- NonAdjacentCollisionMeshesDoNotClash skips pairs where either collider is outside the defaultPrim subtree, filtering out environment ground planes.
+- NonAdjacentCollisionMeshesDoNotClash walks to the nearest RigidBodyAPI ancestor for adjacency lookup, fixing false positives on nested collision layouts.
+- HasArticulationRoot, JointsExist, and LinksExist only fire on stages that actually contain joints.
+
 ## [1.3.1] - 2026-04-14
 ### Fixed
 - Fixed bug in JointHasCorrectTransformAndState where antipodal quaternions were not matching correctly

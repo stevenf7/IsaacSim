@@ -905,3 +905,133 @@ class TestDetectAndApplySites(omni.kit.test.AsyncTestCase):
         self.assertEqual(eef2_idx, link2_idx + 1)
         # Link2 appears after EEF1 (interleaved, not grouped)
         self.assertLess(eef1_idx, link2_idx)
+
+
+class TestPopulateRobotSchemaFallback(omni.kit.test.AsyncTestCase):
+    """Regression tests for the robot_prim-fallback + PrimRange-sweep behavior.
+
+    When ``_find_articulation_root`` returns None, the populate function must
+    fall back to ``robot_prim`` as a synthetic articulation root. When BFS
+    yields empty joint/link sets, a ``Usd.PrimRange`` sweep must apply
+    ``JointAPI`` / ``LinkAPI`` to every joint / rigid body so downstream
+    relationships are populated on rigid-body-only and instanceable assets.
+    """
+
+    async def setUp(self) -> None:
+        """Set up a fresh USD stage for each test."""
+        await omni.usd.get_context().new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        self._stage = omni.usd.get_context().get_stage()
+
+    async def test_populate_falls_back_to_robot_prim_when_no_articulation_root(self) -> None:
+        """Missing articulation root → robot_prim fallback; BFS + PrimRange find the joint."""
+        # Stage with `/Robot` + rigid-body links + a RevoluteJoint, but NO ArticulationRootAPI anywhere.
+        robot_xform = UsdGeom.Xform.Define(self._stage, "/World/Robot")
+        robot_prim = robot_xform.GetPrim()
+
+        link0 = UsdGeom.Xform.Define(self._stage, "/World/Robot/link0")
+        UsdPhysics.RigidBodyAPI.Apply(link0.GetPrim())
+        link1 = UsdGeom.Xform.Define(self._stage, "/World/Robot/link1")
+        UsdPhysics.RigidBodyAPI.Apply(link1.GetPrim())
+
+        joint = UsdPhysics.RevoluteJoint.Define(self._stage, "/World/Robot/joints/j0")
+        joint.CreateBody0Rel().SetTargets([link0.GetPrim().GetPath()])
+        joint.CreateBody1Rel().SetTargets([link1.GetPrim().GetPath()])
+        joint.CreateLocalPos0Attr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
+        joint.CreateLocalRot0Attr().Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
+        joint.CreateLocalPos1Attr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
+        joint.CreateLocalRot1Attr().Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
+        # IMPORTANT: no ArticulationRootAPI.Apply anywhere — exercises the robot_prim fallback.
+
+        result_root, _ = robot_utils.PopulateRobotSchemaFromArticulation(self._stage, robot_prim)
+
+        self.assertIsNotNone(
+            result_root,
+            "Expected fallback to robot_prim, got early-return (None, None).",
+        )
+        # Verify JointAPI was applied via the PrimRange sweep.
+        self.assertTrue(
+            joint.GetPrim().HasAPI(robot_schema.Classes.JOINT_API.value),
+            "Expected sweep to apply JointAPI to the RevoluteJoint.",
+        )
+        # Verify the `isaac:physics:robotJoints` relationship was populated.
+        rel = robot_prim.GetRelationship(robot_schema.Relations.ROBOT_JOINTS.name)
+        self.assertTrue(rel and rel.IsValid())
+        targets = rel.GetTargets()
+        self.assertGreaterEqual(
+            len(targets),
+            1,
+            f"Expected robotJoints to have >= 1 target, got {list(targets)}.",
+        )
+
+    async def test_populate_sweeps_links_for_rigid_body_only_robot(self) -> None:
+        """ordered_links empty → sweep RigidBodyAPI prims, populate robotLinks."""
+        # Vehicle-style stage: rigid-body links only, no joints, no ArticulationRootAPI.
+        vehicle_xform = UsdGeom.Xform.Define(self._stage, "/World/Vehicle")
+        robot_prim = vehicle_xform.GetPrim()
+        for i in range(3):
+            link = UsdGeom.Xform.Define(self._stage, f"/World/Vehicle/link_{i}")
+            UsdPhysics.RigidBodyAPI.Apply(link.GetPrim())
+        # No joints, no ArticulationRootAPI — pure rigid-body-only robot.
+
+        result_root, _ = robot_utils.PopulateRobotSchemaFromArticulation(self._stage, robot_prim)
+        self.assertIsNotNone(result_root)
+
+        for i in range(3):
+            link_prim = self._stage.GetPrimAtPath(f"/World/Vehicle/link_{i}")
+            self.assertTrue(
+                link_prim.HasAPI(robot_schema.Classes.LINK_API.value),
+                f"Expected link_{i} to have LinkAPI via sweep.",
+            )
+        rel = robot_prim.GetRelationship(robot_schema.Relations.ROBOT_LINKS.name)
+        self.assertTrue(rel and rel.IsValid())
+        # BFS unconditionally applies LinkAPI to the synthetic root (`/World/Vehicle`)
+        # in addition to the 3 child rigid bodies picked up by the sweep; total >= 3.
+        targets = [str(p) for p in rel.GetTargets()]
+        self.assertGreaterEqual(
+            len(targets),
+            3,
+            f"Expected robotLinks to have >= 3 targets, got {targets}.",
+        )
+        for i in range(3):
+            self.assertIn(
+                f"/World/Vehicle/link_{i}",
+                targets,
+                f"Expected /World/Vehicle/link_{i} to appear in robotLinks, got {targets}.",
+            )
+
+    async def test_populate_unchanged_when_articulation_root_present(self) -> None:
+        """Regression: well-formed articulated robots still get normal BFS treatment."""
+        robot_xform = UsdGeom.Xform.Define(self._stage, "/World/Robot")
+        robot_prim = robot_xform.GetPrim()
+        UsdPhysics.RigidBodyAPI.Apply(robot_prim)
+        UsdPhysics.ArticulationRootAPI.Apply(robot_prim)
+
+        link1 = UsdGeom.Xform.Define(self._stage, "/World/Robot/link1")
+        UsdPhysics.RigidBodyAPI.Apply(link1.GetPrim())
+
+        joint = UsdPhysics.Joint.Define(self._stage, "/World/Robot/joint1")
+        joint.CreateBody0Rel().SetTargets([robot_prim.GetPath()])
+        joint.CreateBody1Rel().SetTargets([link1.GetPrim().GetPath()])
+        joint.CreateLocalPos0Attr().Set(Gf.Vec3f(1.0, 0.0, 0.0))
+        joint.CreateLocalRot0Attr().Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
+        joint.CreateLocalPos1Attr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
+        joint.CreateLocalRot1Attr().Set(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
+
+        result_root, _ = robot_utils.PopulateRobotSchemaFromArticulation(self._stage, robot_prim)
+        self.assertIsNotNone(result_root)
+
+        rel_links = robot_prim.GetRelationship(robot_schema.Relations.ROBOT_LINKS.name)
+        self.assertTrue(rel_links and rel_links.IsValid())
+        self.assertGreaterEqual(
+            len(rel_links.GetTargets()),
+            1,
+            "Well-formed articulated stage should still yield at least one robotLinks target via BFS.",
+        )
+        rel_joints = robot_prim.GetRelationship(robot_schema.Relations.ROBOT_JOINTS.name)
+        self.assertTrue(rel_joints and rel_joints.IsValid())
+        self.assertGreaterEqual(
+            len(rel_joints.GetTargets()),
+            1,
+            "Well-formed articulated stage should still yield at least one robotJoints target via BFS.",
+        )
