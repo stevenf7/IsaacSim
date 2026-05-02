@@ -30,7 +30,7 @@ Prerequisites
 =============
 
 - Complete :ref:`isaac_sim_tutorial_tuning_openusd_module_3`.
-- Open the checkpoint at ``IsaacSim/Samples/Rigging/Inspire/module_3_end-checkpoint_1/inspire_hand.usda`` in Isaac Sim (or have your own filtered-pairs version open).
+- Open ``/path/to/Inspire/module_3_end-checkpoint_1/inspire_hand.usda`` in Isaac Sim (or have your own filtered-pairs version open).
 
 Module 4.1: Mimic Joints
 =========================
@@ -41,14 +41,14 @@ A mimic joint links two degrees of freedom, establishing a relationship (via gea
 
 Follow these steps to configure the mimic joints:
 
-#. Open the checkpoint file ``IsaacSim/Samples/Rigging/Inspire/module_3_end-checkpoint_1/inspire_hand.usda`` in Isaac Sim if you haven't already.
+#. Open ``/path/to/Inspire/module_3_end-checkpoint_1/inspire_hand.usda`` in Isaac Sim if you haven't already.
 #. Mimic joints are a PhysX-specific feature, so set your authoring layer to **physx.usda**. In the **Layer** tab, click the **Insert Sublayer** icon if the sublayer is not already there.
 
 .. figure:: ../images/isim_6.0_full_tut_gui_layer_panel_insert_sublayer_icon.png
    :align: center
    :alt: The Layer panel with the Insert Sublayer icon highlighted.
 
-#. In the file dialog, navigate to ``IsaacSim/Samples/Rigging/Inspire/module_3_end-checkpoint_1/payloads/Physics/``, select ``physx.usda``, and click **Open**.
+#. In the file dialog, navigate to ``/path/to/Inspire/module_3_end-checkpoint_1/payloads/Physics/``, select ``physx.usda``, and click **Open**.
 
 .. figure:: ../images/isim_6.0_full_tut_gui_file_dialog_physx_usda_sublayer.png
    :align: center
@@ -174,7 +174,7 @@ You should now see the **physx.usda** layer highlighted green, indicating it is 
    :align: center
    :alt: Layer panel for saving to physx.usda.
 
-.. note:: A checkpoint with all mimic joints and all joint drive maximums configured can be found at ``IsaacSim/Samples/Rigging/Inspire/module_4_end-checkpoint_2/inspire_hand.usda``. Open this file before starting Tutorial 6.
+.. note:: A checkpoint with all mimic joints and all joint drive maximums configured is ``/path/to/Inspire/module_4_end-checkpoint_2/inspire_hand.usda``. Open this file before starting Tutorial 6.
 
 Summary
 =======

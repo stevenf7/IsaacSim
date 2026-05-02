@@ -30,7 +30,6 @@ Prerequisites
 - Complete :ref:`isaac_sim_tutorial_tuning_openusd_module_1`.
 - Have the Inspire Hand scene open in Isaac Sim with the PhysX variant selected.
 
-
 Module 2.1: Enable Joint Visualizer
 ====================================
 
@@ -46,7 +45,7 @@ Because we're tuning for the PhysX backend, load the hand with the PhysX variant
 
 Use these controls to efficiently explore and inspect the Inspire Hand model as you follow the instructions below.
 
-#. In ``IsaacSim/Samples/Rigging/Inspire/module_1_start/``, open ``inspire_hand.usda`` in Isaac Sim.
+#. Open ``/path/to/Inspire/module_1_start/inspire_hand.usda`` in Isaac Sim.
 #. Select the top-level ``inspire_hand`` prim.
 #. In the *Property* panel, scroll to **Variants** and select **PhysX**.
 
