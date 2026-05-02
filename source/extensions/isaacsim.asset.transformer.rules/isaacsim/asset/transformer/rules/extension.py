@@ -34,6 +34,7 @@ from .core.prims import PrimRoutingRule
 from .core.properties import PropertyRoutingRule
 from .core.remove_schema import RemoveSchemaRule
 from .core.schemas import SchemaRoutingRule
+from .isaac_sim.joint_state_api import JointStateAPIRule
 from .isaac_sim.make_lists_non_explicit import MakeListsNonExplicitRule
 from .isaac_sim.physics_joint_pose_fix import PhysicsJointPoseFixRule
 from .isaac_sim.robot_schema import RobotSchemaRule
@@ -50,6 +51,7 @@ _ALL_RULES = [
     GeometriesRoutingRule,
     MaterialsRoutingRule,
     PhysicsJointPoseFixRule,
+    JointStateAPIRule,
     MakeListsNonExplicitRule,
     RemoveSchemaRule,
     PrimRoutingRule,

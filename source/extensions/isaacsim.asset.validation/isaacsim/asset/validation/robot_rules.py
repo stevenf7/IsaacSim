@@ -232,12 +232,14 @@ class JointsExist(av_core.BaseRuleChecker):
     def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
         """Check if the robot asset contains at least one joint prim.
 
-        Traverses the stage to find prims with the JointAPI applied. If no joints are found,
-        adds a warning since articulated robots typically require at least one joint.
+        Skipped on rigid-body-only assets (vehicles, non-articulated props)
+        which are not expected to carry any ``isaac:physics:JointAPI``.
 
         Args:
             stage: The USD stage to validate for joint prims.
         """
+        if not any(prim.IsA(UsdPhysics.Joint) for prim in stage.Traverse()):
+            return
         for prim in stage.Traverse():
             if prim.HasAPI(robot_schema.Classes.JOINT_API.value):
                 return
@@ -258,9 +260,14 @@ class LinksExist(av_core.BaseRuleChecker):
     def CheckStage(self, stage: Usd.Stage) -> None:  # noqa: N802
         """Check if the robot asset contains at least one link.
 
+        Skipped on rigid-body-only assets (vehicles, non-articulated props)
+        which are not expected to carry any ``isaac:physics:LinkAPI``.
+
         Args:
             stage: The USD stage to validate for link existence.
         """
+        if not any(prim.IsA(UsdPhysics.Joint) for prim in stage.Traverse()):
+            return
         for prim in stage.Traverse():
             if prim.HasAPI(robot_schema.Classes.LINK_API.value):
                 return

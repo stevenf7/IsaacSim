@@ -268,62 +268,82 @@ class MakeListsNonExplicitRule(RuleInterface):
         for prim in Usd.PrimRange(root_prim):
             if not prim or not prim.IsValid():
                 continue
-            prim_path = prim.GetPath()
-            spec = root_layer.GetPrimAtPath(prim_path)
-            if not spec:
-                continue
 
-            # Convert prim metadata list ops (root layer only)
+            # Metadata branch stays root-layer-only. `apiSchemas` and similar
+            # composed-metadata list-ops must be authored on the root layer to
+            # stick across references/payloads, so do not widen scope here.
             if metadata_names:
-                for key in spec.ListInfoKeys():
-                    if not _matches_any(key, metadata_names):
-                        continue
-                    list_op = spec.GetInfo(key)
-                    new_list_op, explicit_items = _convert_list_op(list_op, list_op_type)
-                    if new_list_op is None:
-                        continue
-                    spec.SetInfo(key, new_list_op)
-                    modified_layers.add(root_layer)
-                    metadata_converted += 1
-                    self.log_operation(f"Converted metadata '{key}' on {spec.path} ({len(explicit_items)} item(s))")
+                metadata_spec = root_layer.GetPrimAtPath(prim.GetPath())
+                if metadata_spec:
+                    for key in metadata_spec.ListInfoKeys():
+                        if not _matches_any(key, metadata_names):
+                            continue
+                        list_op = metadata_spec.GetInfo(key)
+                        new_list_op, explicit_items = _convert_list_op(list_op, list_op_type)
+                        if new_list_op is None:
+                            continue
+                        metadata_spec.SetInfo(key, new_list_op)
+                        modified_layers.add(root_layer)
+                        metadata_converted += 1
+                        self.log_operation(
+                            f"Converted metadata '{key}' on {metadata_spec.path} ({len(explicit_items)} item(s))"
+                        )
 
-            # Convert property list ops (relationships and attribute connections)
+            # Property branch walks every contributing `PrimSpec` returned by
+            # `prim.GetPrimStack()` (root layer, sublayers, payloads, etc.) and
+            # converts matching relationship / attribute-connection list-ops on
+            # each. Each touched layer is added to `modified_layers` so the Save
+            # loop at the end of `process_rule` persists all edits. This closes
+            # the gap where relationships authored in sublayers (e.g. a payload
+            # authoring `isaac:physics:robotJoints`) were never converted because
+            # the earlier implementation inspected only the root-layer `PrimSpec`.
             if property_names:
-                for prop_name, prop_spec in spec.properties.items():
-                    if not _matches_any(prop_name, property_names):
+                for prim_spec in prim.GetPrimStack():
+                    if not prim_spec:
                         continue
+                    spec_layer = prim_spec.layer
+                    if spec_layer is None:
+                        continue
+                    for prop_name, prop_spec in prim_spec.properties.items():
+                        if not _matches_any(prop_name, property_names):
+                            continue
 
-                    if isinstance(prop_spec, Sdf.RelationshipSpec):
-                        list_op = prop_spec.targetPathList
-                        new_list_op, explicit_items = _convert_list_op(list_op, list_op_type)
-                        if not explicit_items or new_list_op is None:
-                            continue
-                        recreated_rel = _recreate_relationship_with_targets(
-                            spec,
-                            prop_name,
-                            list(explicit_items),
-                            list_op_type,
-                        )
-                        if not recreated_rel:
-                            continue
-                        modified_layers.add(root_layer)
-                        property_converted += 1
-                        self.log_operation(
-                            f"Converted relationship '{prop_name}' on {spec.path} ({len(explicit_items)} item(s))"
-                        )
-                    elif isinstance(prop_spec, Sdf.AttributeSpec):
-                        list_op = prop_spec.connectionPathList
-                        new_list_op, explicit_items = _convert_list_op(list_op, list_op_type)
-                        if not explicit_items or new_list_op is None:
-                            continue
-                        if not _apply_list_op_items(prop_spec.connectionPathList, list(explicit_items), list_op_type):
-                            continue
-                        modified_layers.add(root_layer)
-                        property_converted += 1
-                        self.log_operation(
-                            f"Converted attribute connections '{prop_name}' on {spec.path} "
-                            f"({len(explicit_items)} item(s))"
-                        )
+                        if isinstance(prop_spec, Sdf.RelationshipSpec):
+                            list_op = prop_spec.targetPathList
+                            new_list_op, explicit_items = _convert_list_op(list_op, list_op_type)
+                            if not explicit_items or new_list_op is None:
+                                continue
+                            recreated_rel = _recreate_relationship_with_targets(
+                                prim_spec,
+                                prop_name,
+                                list(explicit_items),
+                                list_op_type,
+                            )
+                            if not recreated_rel:
+                                continue
+                            modified_layers.add(spec_layer)
+                            property_converted += 1
+                            self.log_operation(
+                                f"Converted relationship '{prop_name}' on {prim_spec.path} "
+                                f"in {spec_layer.identifier} ({len(explicit_items)} item(s))"
+                            )
+                        elif isinstance(prop_spec, Sdf.AttributeSpec):
+                            list_op = prop_spec.connectionPathList
+                            new_list_op, explicit_items = _convert_list_op(list_op, list_op_type)
+                            if not explicit_items or new_list_op is None:
+                                continue
+                            if not _apply_list_op_items(
+                                prop_spec.connectionPathList,
+                                list(explicit_items),
+                                list_op_type,
+                            ):
+                                continue
+                            modified_layers.add(spec_layer)
+                            property_converted += 1
+                            self.log_operation(
+                                f"Converted attribute connections '{prop_name}' on {prim_spec.path} "
+                                f"in {spec_layer.identifier} ({len(explicit_items)} item(s))"
+                            )
 
         for layer in modified_layers:
             layer.Save()

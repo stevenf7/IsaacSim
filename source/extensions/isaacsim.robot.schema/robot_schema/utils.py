@@ -1151,7 +1151,14 @@ def _discover_articulation_graph(
     if articulation_root is not None and _under_sub_robot(str(articulation_root.GetPath())):
         articulation_root = articulation_prim if (articulation_prim and articulation_prim.IsValid()) else robot_prim
     if articulation_root is None:
-        return None, None, [], [], {}, sub_robot_paths
+        # Fallback: assets without an explicit ArticulationRootAPI (rigid-body-only
+        # vehicles/drones, instanceable/class composition, or authoring mistakes)
+        # get `robot_prim` as a synthetic articulation root. BFS still yields an
+        # empty chain when no joints connect, but the `Usd.PrimRange` sweep in
+        # `PopulateRobotSchemaFromArticulation` / `RecalculateRobotSchema` picks up
+        # joints and rigid bodies from the raw USD state so `robotLinks` /
+        # `robotJoints` are populated.
+        articulation_root = robot_prim
 
     # Joints whose two bodies are both fully inside (the same or different)
     # sub-robots are not part of the parent robot's articulation. Every other
@@ -1382,8 +1389,41 @@ def PopulateRobotSchemaFromArticulation(
         detect_sites=detect_sites,
         traversal=traversal,
     )
-    if root_link is None:
-        return None, None
+
+    # Fallback sweep for assets where articulation-graph traversal yields no
+    # joints (rigid-body-only drones/vehicles with `PhysxVehicleAPI`, or
+    # instanceable / class-prim composition cases where BFS can't walk the
+    # kinematic chain). Enumerate `robot_prim`'s PrimRange and apply
+    # `JointAPI` / `LinkAPI` directly so the relationships are populated from
+    # the raw USD state. `IsaacRobotAPI` is applied unconditionally elsewhere:
+    # it is a catalog-entry marker (`collision_detector`,
+    # `robot_setup.assembler`, `robot.poser` identify robot prims via
+    # `HasAPI(ROBOT_API)`), not an articulation marker.
+    if not ordered_joints:
+        visited_joints = {str(p.GetPath()) for p in ordered_joints}
+        for prim in pxr.Usd.PrimRange(robot_prim):
+            if prim.IsA(pxr.UsdPhysics.Joint):
+                ApplyJointAPI(prim)
+                # Defensive: `Apply` is ordinarily idempotent, but guard
+                # against composition cases where it silently no-ops (e.g.
+                # instance masters where schemas do not propagate to proxies).
+                if not prim.HasAPI(Classes.JOINT_API.value):
+                    continue
+                key = str(prim.GetPath())
+                if key in visited_joints:
+                    continue
+                ordered_joints.append(prim)
+                visited_joints.add(key)
+    if not ordered_links or not ordered_joints:
+        visited_links = {str(p.GetPath()) for p in ordered_links}
+        for prim in pxr.Usd.PrimRange(robot_prim):
+            if prim.HasAPI(pxr.UsdPhysics.RigidBodyAPI):
+                ApplyLinkAPI(prim)
+                key = str(prim.GetPath())
+                if key in visited_links:
+                    continue
+                ordered_links.append(prim)
+                visited_links.add(key)
 
     # Merge sites into the link list according to sites_last policy
     final_ordered_links: list[pxr.Usd.Prim] = []
@@ -2157,8 +2197,40 @@ def RecalculateRobotSchema(
             traversal=traversal,
         )
     )
-    if root_link is None:
-        return None, None
+
+    # Fallback sweep (mirrors `PopulateRobotSchemaFromArticulation`). When the
+    # articulation graph yields no joints — rigid-body-only drones/vehicles
+    # without joints, or composition cases where the kinematic chain is not
+    # linked through the articulation root — enumerate `robot_prim`'s
+    # PrimRange directly and apply `JointAPI` / `LinkAPI`. Preserves the
+    # `isaac:physics:robotLinks` / `robotJoints` relationships on
+    # re-transform passes where the transformer rule branches into
+    # `RecalculateRobotSchema` because the asset already carries
+    # `IsaacRobotAPI` from a prior run.
+    if not discovered_joints:
+        visited_joints = {str(p.GetPath()) for p in discovered_joints}
+        for prim in pxr.Usd.PrimRange(robot_prim):
+            if prim.IsA(pxr.UsdPhysics.Joint):
+                ApplyJointAPI(prim)
+                # Defensive: guard against composition cases where `Apply`
+                # silently no-ops (e.g. instance masters).
+                if not prim.HasAPI(Classes.JOINT_API.value):
+                    continue
+                key = str(prim.GetPath())
+                if key in visited_joints:
+                    continue
+                discovered_joints.append(prim)
+                visited_joints.add(key)
+    if not discovered_links or not discovered_joints:
+        visited_links = {str(p.GetPath()) for p in discovered_links}
+        for prim in pxr.Usd.PrimRange(robot_prim):
+            if prim.HasAPI(pxr.UsdPhysics.RigidBodyAPI):
+                ApplyLinkAPI(prim)
+                key = str(prim.GetPath())
+                if key in visited_links:
+                    continue
+                discovered_links.append(prim)
+                visited_links.add(key)
 
     # Flatten discovered sites
     all_discovered_sites: list[pxr.Usd.Prim] = []

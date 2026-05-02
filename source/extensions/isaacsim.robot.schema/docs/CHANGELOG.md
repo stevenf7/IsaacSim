@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.3.2] - 2026-04-24
+### Fixed
+- `PopulateRobotSchemaFromArticulation` and `RecalculateRobotSchema` fall back to `robot_prim` as a synthetic articulation root and sweep `Usd.PrimRange` to apply `JointAPI`/`LinkAPI` when BFS yields no chain, ensuring `robotLinks`/`robotJoints` relationships are populated on vehicle and drone assets.
+
 ## [6.3.1] - 2026-04-22
 ### Added
 - `get_allowed_tokens(attribute)` helper that reads `allowedTokens` directly from the bundled `RobotSchema.usda` so Python consumers can populate UI choice lists without duplicating the schema's token lists.
