@@ -17,6 +17,7 @@
 
 import os
 import tempfile
+import warnings
 
 import isaacsim.robot_motion.experimental.motion_generation as mg
 import numpy as np
@@ -25,6 +26,7 @@ import pink
 import pink.tasks
 import warp as wp
 from isaacsim.robot_motion.pink import PinkIKController, load_pink_robot
+from qpsolvers.warnings import SparseConversionWarning
 
 _TEST_URDF = """\
 <?xml version="1.0"?>
@@ -449,6 +451,26 @@ class TestPinkIKController(omni.kit.test.AsyncTestCase):
         controller.reset(state, None, 0.0)
         result = controller.forward(estimated_state=state, setpoint_state=None, t=0.1)
         self.assertIsNotNone(result)
+
+    async def test_osqp_solver_does_not_emit_sparse_conversion_warning(self) -> None:
+        """OSQP receives sparse matrices directly to keep stderr clean."""
+        controller = PinkIKController(
+            pink_robot=self.pink_robot,
+            robot_joint_space=_JOINT_NAMES,
+            robot_site_space=[_TOOL_FRAME],
+            tool_frame=_TOOL_FRAME,
+            solver="osqp",
+            dt=1.0 / 60.0,
+        )
+        state = _make_estimated_state(_JOINT_NAMES, np.zeros(3))
+        controller.reset(state, None, 0.0)
+
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            result = controller.forward(estimated_state=state, setpoint_state=None, t=0.1)
+
+        self.assertIsNotNone(result)
+        self.assertFalse(any(isinstance(item.message, SparseConversionWarning) for item in caught))
 
     # ========================================================================
     # Task accessor
