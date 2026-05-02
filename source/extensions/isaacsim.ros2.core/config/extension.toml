@@ -138,9 +138,9 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    ### Extension specific args
     "--/rtx/hydra/supportMultiTickRate=true",
     "--/rtx/rendering/perSensorTickTlas=true",
-    ### Extension specific args
     '--/exts/isaacsim.ros2.bridge/ros_distro = "system_default"',
     "--/exts/isaacsim.ros2.bridge/publish_without_verification=1",
 

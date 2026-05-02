@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.5] - 2026-05-01
+### Fixed
+- Fix test failures caused by timeline stopping and playing in the robot helpers
+
 ## [2.6.4] - 2026-04-03
 ### Changed
 - Adapt rotation test helpers to new `[roll, pitch, yaw]` euler angle input convention

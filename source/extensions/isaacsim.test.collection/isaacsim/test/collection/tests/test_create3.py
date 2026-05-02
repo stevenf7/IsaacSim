@@ -70,7 +70,7 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
     # After running each test
     async def tearDown(self):
         """Clean up test environment and stop timeline."""
-        self._timeline.stop()
+        app_utils.stop()
         await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
@@ -81,7 +81,7 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
         """Test that the Create3 robot loads and can move forward."""
         stage_utils.delete_prim("/ActionGraph")
         # Start Simulation and wait
-        self._timeline.play()
+        app_utils.play()
         await omni.kit.app.get_app().next_update_async()
 
         # get the create3
@@ -110,7 +110,7 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
         odom_ang_vel = og.Controller.attribute("outputs:angularVelocity", self.odom_node)
 
         # Start sim and wait
-        self._timeline.play()
+        app_utils.play()
         await omni.kit.app.get_app().next_update_async()
 
         await init_robot_sim("/create3")
@@ -124,12 +124,12 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
                 await omni.kit.app.get_app().next_update_async()
             if og.DataView.get(odom_ang_vel)[2] > 0.8:
                 print("spinning out of control, linear velocity: " + str(forward_velocity))
-                self._timeline.stop()
+                app_utils.stop()
             else:
                 self.assertAlmostEqual(og.DataView.get(odom_velocity)[0], forward_velocity, delta=1e-1)
             await omni.kit.app.get_app().next_update_async()
 
-        self._timeline.stop()
+        app_utils.stop()
 
     # braking from different init speeds
     async def test_brake(self):
@@ -138,12 +138,12 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
         odom_ang_vel = og.Controller.attribute("outputs:angularVelocity", self.odom_node)
 
         # Start Simulation and wait
-        self._timeline.play()
+        app_utils.play()
         await omni.kit.app.get_app().next_update_async()
 
         await init_robot_sim("/create3")
         for x in range(1, 5):
-            self._timeline.play()
+            app_utils.play()
             await omni.kit.app.get_app().next_update_async()
             forward_velocity = x * 0.15
             angular_velocity = x * 0.15
@@ -162,7 +162,7 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
             self.assertAlmostEqual(og.DataView.get(odom_velocity)[0], 0.0, delta=5e-1)
             self.assertAlmostEqual(og.DataView.get(odom_ang_vel)[2], 0.0, delta=5e-1)
 
-            self._timeline.stop()
+            app_utils.stop()
             await omni.kit.app.get_app().next_update_async()
 
     async def test_spin(self):
@@ -171,7 +171,7 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
 
         for x in range(1, 6):
             # Start Simulation and wait
-            self._timeline.play()
+            app_utils.play()
             await omni.kit.app.get_app().next_update_async()
 
             await init_robot_sim("/create3")
@@ -188,7 +188,7 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
             curr_ang_vel = float(og.DataView.get(odom_ang_vel)[2])
             self.assertAlmostEqual(curr_ang_vel, angular_velocity, delta=2e-1)
 
-            self._timeline.stop()
+            app_utils.stop()
 
     # go in circle
     async def test_circle(self):
@@ -198,7 +198,7 @@ class TestCreate3(omni.kit.test.AsyncTestCase):
         odom_position = og.Controller.attribute("outputs:position", self.odom_node)
 
         # Start Simulation and wait
-        self._timeline.play()
+        app_utils.play()
         await omni.kit.app.get_app().next_update_async()
 
         await init_robot_sim("/create3")

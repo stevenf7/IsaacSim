@@ -91,6 +91,7 @@ def main(args: argparse.Namespace, app: SimulationApp) -> None:
 
     # <start-gripper-control-snippet>
     finger_idx = robot.dof_names.index("finger_joint")
+    frame_count = 0
 
     while app.is_running():
         for target_pos, label in [(_CLOSED_POS, "closing"), (_OPEN_POS, "opening")]:
@@ -98,6 +99,9 @@ def main(args: argparse.Namespace, app: SimulationApp) -> None:
             for _ in range(_HOLD_STEPS):
                 robot.set_dof_position_targets(target_pos, dof_indices=finger_idx)
                 app.update()
+                frame_count += 1
+                if args.test and frame_count >= _HOLD_STEPS * 2:
+                    return
     # <end-gripper-control-snippet>
 
 

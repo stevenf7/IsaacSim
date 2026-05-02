@@ -781,7 +781,7 @@ class SimulationContext:
                 from omni.physxfabric import get_physx_fabric_interface
 
                 self._physx_fabric_interface = get_physx_fabric_interface()
-        if self._physx_fabric_interface:
+        if self._physx_fabric_interface and self._physics_context is not None:
             self._physx_fabric_interface.force_update(self._physics_context.get_physics_dt(), self.current_time)
         set_carb_setting(self._settings, "/app/player/playSimulations", False)
         self._app.update()
@@ -821,7 +821,7 @@ class SimulationContext:
                 from omni.physxfabric import get_physx_fabric_interface
 
                 self._physx_fabric_interface = get_physx_fabric_interface()
-        if self._physx_fabric_interface:
+        if self._physx_fabric_interface and self._physics_context is not None:
             self._physx_fabric_interface.force_update(self._physics_context.get_physics_dt(), self.current_time)
         set_carb_setting(self._settings, "/app/player/playSimulations", False)
         await omni.kit.app.get_app().next_update_async()

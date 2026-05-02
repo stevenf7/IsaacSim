@@ -110,9 +110,9 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    ### Extension specific args
     "--/rtx/hydra/supportMultiTickRate=true",
     "--/rtx/rendering/perSensorTickTlas=true",
-    ### Extension specific args
     "--/rtx-transient/stableIds/enabled=true",
     "--/renderer/raytracingMotion/enabled=true",
     "--/renderer/raytracingMotion/enableHydraEngineMasking=true",

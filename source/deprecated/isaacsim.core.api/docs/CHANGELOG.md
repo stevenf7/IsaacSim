@@ -1,4 +1,7 @@
 # Changelog
+## [5.2.6] - 2026-05-01
+### Fixed
+- Patch the SimulationContext.render* guard that caused multiple World() snippets to fail once PhysX Fabric was enabled
 
 ## [5.2.5] - 2026-04-22
 ### Fixed

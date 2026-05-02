@@ -21,11 +21,12 @@ import carb
 import carb.settings
 import omni.kit.app
 import omni.kit.test
-import omni.kit.ui_test as ui_test
 import omni.ui as ui
 import omni.usd
 from isaacsim.robot.schema.ui import masking_state as ms
 from isaacsim.robot.schema.ui import utils as ui_utils
+from isaacsim.robot.schema.ui.extension import SchemaUIExtension
+from isaacsim.test.utils import MenuUITestCase
 from omni.ui.tests.test_base import OmniUiTest
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
 from usd.schema.isaac import robot_schema
@@ -1104,26 +1105,35 @@ class TestMaskingOperationsMask(omni.kit.test.AsyncTestCase):
         self.assertIsNone(ops.get_masking_layer_id())
 
 
-class TestRobotInspectorUI(OmniUiTest):
+class TestRobotInspectorUI(MenuUITestCase):
     """UI tests verifying Robot Inspector widget identifiers and click interactions."""
 
-    WINDOW_NAME = "Robot Inspector"
+    WINDOW_NAME = SchemaUIExtension.WINDOW_NAME
+    MENU_PATH = f"{SchemaUIExtension.MENU_GROUP}/{SchemaUIExtension.WINDOW_NAME}"
     SETTING_KEY = "/persistent/exts/isaacsim.robot.schema.ui/hierarchyMode"
 
     async def setUp(self) -> None:
-        """Create a fresh stage and ensure the Robot Inspector window is visible."""
-        await omni.usd.get_context().new_stage_async()
-        await omni.kit.app.get_app().next_update_async()
-        self._stage = omni.usd.get_context().get_stage()
-        ui.Workspace.show_window(self.WINDOW_NAME)
-        for _ in range(5):
-            await omni.kit.app.get_app().next_update_async()
+        """Create a fresh stage and open the Robot Inspector through the menu."""
+        await super().setUp()
+        window = ui.Workspace.get_window(self.WINDOW_NAME)
+        if window is not None:
+            window.visible = False
+            await self.wait_n_frames(2)
+
+        await self.menu_click_with_retry(self.MENU_PATH, window_name=self.WINDOW_NAME)
+        window = ui.Workspace.get_window(self.WINDOW_NAME)
+        self.assertIsNotNone(window, "Robot Inspector window should exist after opening via the menu")
+        self.assertTrue(window.visible, "Robot Inspector window should be visible after opening via the menu")
+        await self.find_widget_with_retry(self.WINDOW_NAME)
+        await self.wait_n_frames(5)
 
     async def tearDown(self) -> None:
-        """Wait for pending asset loads."""
-        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            await omni.kit.app.get_app().next_update_async()
-        await omni.kit.app.get_app().next_update_async()
+        """Hide the Robot Inspector and wait for pending asset loads."""
+        window = ui.Workspace.get_window(self.WINDOW_NAME)
+        if window is not None:
+            window.visible = False
+            await self.wait_n_frames(2)
+        await super().tearDown()
 
     def _build_simple_robot(self) -> tuple[Usd.Prim, Usd.Prim, Usd.Prim]:
         """Build a minimal robot for inspector tests.
@@ -1151,7 +1161,9 @@ class TestRobotInspectorUI(OmniUiTest):
         self._build_simple_robot()
         await omni.kit.app.get_app().next_update_async()
 
-        label = ui_test.find(f"{self.WINDOW_NAME}//Frame/**/Label[*].identifier=='robot_inspector_view_label'")
+        label = await self.find_widget_with_retry(
+            f"{self.WINDOW_NAME}//Frame/**/Label[*].identifier=='robot_inspector_view_label'"
+        )
         self.assertIsNotNone(label, "View label not found by identifier")
 
         for mode_id in (
@@ -1159,7 +1171,7 @@ class TestRobotInspectorUI(OmniUiTest):
             "robot_inspector_mode_tree",
             "robot_inspector_mode_mujoco",
         ):
-            frame = ui_test.find(f"{self.WINDOW_NAME}//Frame/**/Frame[*].identifier=='{mode_id}'")
+            frame = await self.find_widget_with_retry(f"{self.WINDOW_NAME}//Frame/**/Frame[*].identifier=='{mode_id}'")
             self.assertIsNotNone(frame, f"Frame '{mode_id}' not found")
 
     async def test_view_mode_label_identifiers(self) -> None:
@@ -1173,7 +1185,7 @@ class TestRobotInspectorUI(OmniUiTest):
             "robot_inspector_mode_mujoco_label": "MuJoCo",
         }
         for label_id, expected_text in expected.items():
-            label = ui_test.find(f"{self.WINDOW_NAME}//Frame/**/Label[*].identifier=='{label_id}'")
+            label = await self.find_widget_with_retry(f"{self.WINDOW_NAME}//Frame/**/Label[*].identifier=='{label_id}'")
             self.assertIsNotNone(label, f"Label '{label_id}' not found")
             self.assertEqual(label.widget.text, expected_text)
 
@@ -1189,10 +1201,12 @@ class TestRobotInspectorUI(OmniUiTest):
             "robot_inspector_mode_mujoco": "MUJOCO",
         }
         for mode_id, expected_mode in mode_map.items():
-            frame = ui_test.find(f"{self.WINDOW_NAME}//Frame/**/Frame[*].identifier=='{mode_id}'")
+            frame = await self.find_enabled_widget_with_retry(
+                f"{self.WINDOW_NAME}//Frame/**/Frame[*].identifier=='{mode_id}'"
+            )
             self.assertIsNotNone(frame, f"Frame '{mode_id}' not found")
             await frame.click()
-            await ui_test.human_delay()
+            await self.wait_n_frames(2)
             stored = settings.get(self.SETTING_KEY)
             self.assertEqual(
                 stored,

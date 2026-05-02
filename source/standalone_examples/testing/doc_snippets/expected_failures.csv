@@ -23,7 +23,6 @@ replicator_tutorials/tutorial_replicator_isaac_snippets/motion_blur_script_edito
 replicator_tutorials/tutorial_replicator_custom_og_randomizer/replicator_wrapper.py
 replicator_tutorials/tutorial_replicator_ur10_palletizing/sdg_ur10_palletizing_script_editor.py
 replicator_tutorials/tutorial_replicator_cosmos/cosmos_writer_warehouse_script_editor.py
-replicator_tutorials/tutorial_replicator_scene_based_sdg/scene_based_sdg_script_editor.py
 replicator_tutorials/tutorial_replicator_augmentation/writer_augmentation_script_editor.py
 replicator_tutorials/tutorial_replicator_augmentation/annotator_augmentation_script_editor.py
 synthetic_data_generation/tutorial_replicator_grasping_sdg/grasping_workflow_sdg_script_editor.py,ModuleNotFoundError.*isaacsim\.replicator\.grasping
@@ -103,11 +102,9 @@ ros2_tutorials/tutorial_ros2_multi_navigation/finally_at_the_end_of_the_launch_f
 # Code fragment referencing JointState from rclpy (not installed)
 ros2_tutorials/tutorial_ros2_manipulation/spin_in_a_separate_thread.py
 # OmniGraph with ROS2 bridge nodes (not available in default experience)
-ros2_tutorials/tutorial_ros2_manipulation/add_joint_states_in_extension.py
 # Infinite loop with rclpy (not installed)
 ros2_tutorials/tutorial_ros2_manipulation/position_and_velocity_control_modes.py
 # OmniGraph with ROS2 bridge nodes
-ros2_tutorials/tutorial_ros2_python/manually_stepping_ros2_components.py
 # Code fragment referencing prior snippet's graph path
 ros2_tutorials/tutorial_ros2_python/disable_usedomainidenvvar_to_ensure_we_use_the_abo.py
 #
@@ -115,8 +112,6 @@ ros2_tutorials/tutorial_ros2_python/disable_usedomainidenvvar_to_ensure_we_use_t
 # RTX lidar config requires Nucleus assets
 sensors/isaacsim_sensors_rtx_lidar/create_lidar_from_config.py
 # RTX lidar — Lidar.create config requires Nucleus
-# RTX radar — similar API issue
-sensors/isaacsim_sensors_rtx_radar/create_an_rtx_radar.py
 # RTX lidar annotators — Lidar.create needs Nucleus config
 # Pseudocode snippet — RtxCamera constructor fails (prim path /rig/camera_color doesn't resolve)
 sensors/isaacsim_sensors_camera/extrinsic_calibration.py

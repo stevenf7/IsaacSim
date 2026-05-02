@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.17.9] - 2026-05-01
+### Fixed
+- Fix flaky waypoint follower tests by using `asyncio.sleep` instead of `simulate_until_condition` to wait for message publication
+
 ## [1.17.8] - 2026-04-29
 ### Fixed
 - Fixed `OgnROS2PublishLaserScan` to call `generateBuffers` before `writeData` so output buffers are correctly sized before being populated

@@ -16,6 +16,8 @@
 """Tests for ROS 2 waypoint follower OmniGraph node."""
 
 
+import asyncio
+
 import omni.appwindow
 import omni.ext
 import omni.graph.core as og
@@ -774,6 +776,7 @@ class TestRos2Nav2WaypointFollower(ROS2TestCase):
 
         # Create a node named 'waypoint_subscriber'
         self.__node = self.create_node("waypoint_subscriber")
+        self.start_async_spinning(self.__node)
 
         print(f"Expected Result: {self.__expected_result}")
 
@@ -789,14 +792,12 @@ class TestRos2Nav2WaypointFollower(ROS2TestCase):
         # Create a subscription to the 'topic' topic, listening for String messages
         self.create_subscription(self.__node, String, "topic", listener_callback, 10)
 
-        # Continuously spin the subscriber in a background executor so messages are
-        # delivered even when the main thread is blocked inside OmniGraph compute.
-        self.start_async_spinning(self.__node)
-
         self._timeline.play()
         await self.simulate_until_condition(lambda: False, max_frames=30)
         og.Controller.set(og.Controller.attribute(f"{self._og_path}/OnImpulseEvent.state:enableImpulse"), True)
-        await self.simulate_until_condition(lambda: self.__result, max_frames=180)
+        # The ScriptNode publisher uses a wall-clock loop with time.sleep().
+        # Keep this as a wall-clock wait so the async ROS executor can process the published messages.
+        await asyncio.sleep(2.0)
 
         self.stop_async_spinning(self.__node)
         self.__node.destroy_node()
@@ -827,6 +828,7 @@ class TestRos2Nav2WaypointFollower(ROS2TestCase):
 
         # Create a node named 'patrolling_subscriber'
         self.__node = self.create_node("patrolling_subscriber")
+        self.start_async_spinning(self.__node)
 
         print(f"Expected Result: {self.__expected_result}")
 
@@ -843,14 +845,12 @@ class TestRos2Nav2WaypointFollower(ROS2TestCase):
         # Create a subscription to the 'topic' topic, listening for String messages
         self.create_subscription(self.__node, String, "topic", listener_callback, 10)
 
-        # Continuously spin the subscriber in a background executor so messages are
-        # delivered even when the main thread is blocked inside OmniGraph compute.
-        self.start_async_spinning(self.__node)
-
         self._timeline.play()
         await self.simulate_until_condition(lambda: False, max_frames=30)
         og.Controller.set(og.Controller.attribute(f"{self._og_path}/OnImpulseEvent.state:enableImpulse"), True)
-        await self.simulate_until_condition(lambda: self.__result, max_frames=180)
+        # The ScriptNode publisher uses a wall-clock loop with time.sleep().
+        # Keep this as a wall-clock wait so the async ROS executor can process the published messages.
+        await asyncio.sleep(2.0)
 
         self.stop_async_spinning(self.__node)
         self.__node.destroy_node()

@@ -82,6 +82,7 @@ An example of how a new action graph with a `ROS2 Publish Clock` node can be set
 
 .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_python/manually_stepping_ros2_components.py
     :language: python
+    :start-after: # End test setup
 
 On any frame, run the following to set an impulse event, which will tick the clock publisher once:
 

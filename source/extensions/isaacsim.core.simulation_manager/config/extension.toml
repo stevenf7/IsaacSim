@@ -92,6 +92,7 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+    ### Extension specific args
     # Multi-tick rendering must be enabled at startup: the rtx.hydra plugin
     # routes render calls through multiTickRate_* interfaces only when this
     # setting is true at initialization time.
