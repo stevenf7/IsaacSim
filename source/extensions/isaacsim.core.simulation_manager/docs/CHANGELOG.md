@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.14.9] - 2026-05-01
+### Changed
+- Removed redundant `fetch_results()` after `simulate()` in warmup, simulation-view creation, and `SimulationManager.step()`.
+
 ## [1.14.8] - 2026-04-27
 ### Changed
 - Remove USD-attribute workaround in `onPhysicsStep`; `IPhysicsSimulation::getSimulationTimeStepsPerSecond()` now returns the authoritative value, so read it directly.

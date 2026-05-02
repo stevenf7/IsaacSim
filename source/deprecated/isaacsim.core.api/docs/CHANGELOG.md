@@ -3,6 +3,10 @@
 ### Fixed
 - Patch the SimulationContext.render* guard that caused multiple World() snippets to fail once PhysX Fabric was enabled
 
+## [5.2.6] - 2026-05-01
+### Changed
+- Removed redundant `fetch_results()` after `simulate()` in `PhysicsContext` forward simulation.
+
 ## [5.2.5] - 2026-04-22
 ### Fixed
 - Fix `SimulationContext.get_physics_context()` returning `None` before `reset_async()` — raise `RuntimeError` with actionable message instead

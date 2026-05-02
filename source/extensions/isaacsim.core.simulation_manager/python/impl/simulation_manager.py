@@ -651,7 +651,6 @@ class SimulationManager:
         cls._physics_stage_update_interface.start_simulation()
 
         cls._physics_sim_interface.simulate(cls.get_physics_dt(), 0.0)
-        cls._physics_sim_interface.fetch_results()
         # create simulation view
         stage_id = stage_utils.get_stage_id(stage_utils.get_current_stage(backend="usd"))
         # - deprecated simulation view
@@ -704,7 +703,6 @@ class SimulationManager:
         carb.log_info(f"Created simulation views (engine: {cls._engine}, backend: {cls.get_backend()})")
 
         cls._physics_sim_interface.simulate(cls.get_physics_dt(), 0.0)
-        cls._physics_sim_interface.fetch_results()
         # set internal states
         cls._warmup_needed = False
         cls._simulation_view_created = True
@@ -920,7 +918,6 @@ class SimulationManager:
             simulation_time = cls.get_simulation_time()
             # step physics simulation
             cls._physics_sim_interface.simulate(dt, simulation_time)
-            cls._physics_sim_interface.fetch_results()
             # update fabric (PhysX only - Newton handles fabric updates differently)
             if update_fabric and cls._engine == "physx":
                 if not cls.is_fabric_enabled():

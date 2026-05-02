@@ -609,7 +609,6 @@ class PhysicsContext(object):
 
         """
         self._physics_sim_interface.simulate(self.get_physics_dt(), current_time)
-        self._physics_sim_interface.fetch_results()
         if update_fabric:
             if self._physx_fabric_interface is None:
                 if omni.kit.app.get_app().get_extension_manager().is_extension_enabled("omni.physx.fabric"):

@@ -647,7 +647,6 @@ def run_simulation(num_frames: int, render: bool = True) -> None:
         # Run physics simulation for each frame
         for _ in range(num_frames):
             physics_sim_interface.simulate(physx_dt, 0)
-            physics_sim_interface.fetch_results()
 
 
 def register_dome_light_randomizer() -> None:
