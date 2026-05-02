@@ -235,7 +235,7 @@ print(f"Created {n_sensor} sensors with metadata: {metadata_fields}")
 benchmark.store_measurements()
 
 # Perform benchmark
-benchmark.set_phase("benchmark")
+benchmark.set_phase("benchmark", warmup_frames=15)
 timeline.play()
 
 for _ in range(1, n_frames):

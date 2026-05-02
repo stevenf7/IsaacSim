@@ -209,7 +209,7 @@ omni.kit.app.get_app().update()
 
 benchmark.store_measurements()
 # perform benchmark
-benchmark.set_phase("benchmark")
+benchmark.set_phase("benchmark", warmup_frames=15)
 
 for _ in range(0, n_frames):
     omni.kit.app.get_app().update()

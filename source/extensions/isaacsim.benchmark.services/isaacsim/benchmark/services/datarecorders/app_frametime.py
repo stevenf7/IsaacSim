@@ -155,7 +155,7 @@ class AppFrametimeRecorder(MeasurementDataRecorder):
             logger.warning("AppFrametimeRecorder: No samples collected")
             return MeasurementData()
 
-        stats = Stats.from_samples(self._samples)
+        stats = Stats.from_samples(self._samples, trim_outliers=False)
         measurements_out = [
             measurements.SingleMeasurement(name="Mean App_Update Frametime", value=stats.mean, unit="ms"),
             measurements.SingleMeasurement(name="Stdev App_Update Frametime", value=stats.stdev, unit="ms"),

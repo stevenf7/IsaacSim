@@ -114,7 +114,7 @@ for i in range(n_sensor):
 
 benchmark.store_measurements()
 
-benchmark.set_phase("benchmark")
+benchmark.set_phase("benchmark", warmup_frames=15)
 timeline.play()
 
 for _ in range(1, n_frames):

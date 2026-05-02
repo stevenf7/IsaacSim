@@ -32,7 +32,9 @@ from isaacsim.benchmark.services.datarecorders import gpu_frametime  # noqa: F40
 from isaacsim.benchmark.services.datarecorders import hardware  # noqa: F401
 from isaacsim.benchmark.services.datarecorders import memory  # noqa: F401
 from isaacsim.benchmark.services.datarecorders import physics_frametime  # noqa: F401
+from isaacsim.benchmark.services.datarecorders import physics_step_interval  # noqa: F401
 from isaacsim.benchmark.services.datarecorders import render_frametime  # noqa: F401
+from isaacsim.benchmark.services.datarecorders import rtf_stability  # noqa: F401
 from isaacsim.benchmark.services.datarecorders import runtime  # noqa: F401
 from isaacsim.benchmark.services.datarecorders import (
     InputContext,
@@ -161,13 +163,44 @@ class _BaseIsaacBenchmarkCore:
         self.test_mode = os.getenv("ISAAC_TEST_MODE") == "1"
         logger.info("Test mode = %s", self.test_mode)
 
-    def set_phase(self, phase: str, start_recording_frametime: bool = True, start_recording_runtime: bool = True):
+    def _run_warmup_sync(self, n_frames: int):
+        """Run warmup frames synchronously without recording.
+
+        Args:
+            n_frames: Number of app update frames to run.
+        """
+        logger.info("Running %d warmup frames", n_frames)
+        app = omni.kit.app.get_app()
+        for _ in range(n_frames):
+            app.update()
+
+    async def _run_warmup_async(self, n_frames: int):
+        """Run warmup frames asynchronously without recording.
+
+        Args:
+            n_frames: Number of app update frames to run.
+        """
+        logger.info("Running %d warmup frames (async)", n_frames)
+        app = omni.kit.app.get_app()
+        for _ in range(n_frames):
+            await app.next_update_async()
+
+    def set_phase(
+        self,
+        phase: str,
+        start_recording_frametime: bool = True,
+        start_recording_runtime: bool = True,
+        warmup_frames: int = 0,
+    ):
         """Set the active benchmarking phase and start recorders.
 
         Args:
             phase: Name of the phase, used in output.
             start_recording_frametime: False to skip frametime recorders.
             start_recording_runtime: False to skip runtime recorder.
+            warmup_frames: Number of app update frames to run before starting
+                recorders. Use this instead of statistical outlier trimming to
+                exclude startup transients from measurements.
 
         Raises:
             RuntimeError: If the benchmark context or recorders are not initialized.
@@ -177,6 +210,7 @@ class _BaseIsaacBenchmarkCore:
         .. code-block:: python
 
             benchmark.set_phase("loading", start_recording_frametime=False)
+            benchmark.set_phase("benchmark", warmup_frames=30)
         """
         context = self.context
         if context is None:
@@ -188,12 +222,25 @@ class _BaseIsaacBenchmarkCore:
         logger.info("Starting phase: %s", phase)
         context.phase = phase
 
+        if warmup_frames > 0:
+            self._run_warmup_sync(warmup_frames)
+
+        self._start_recorders(start_recording_frametime, start_recording_runtime, phase)
+
+    def _start_recorders(self, start_recording_frametime: bool, start_recording_runtime: bool, phase: str):
+        """Activate and start the appropriate recorders for the current phase."""
+        recorders = self.recorders
+        if recorders is None:
+            raise RuntimeError("Recorders are not initialized")
+
         # Frametime recorders - only start if requested
         frametime_recorders = {
             "AppFrametimeRecorder",
             "PhysicsFrametimeRecorder",
+            "PhysicsStepIntervalRecorder",
             "GPUFrametimeRecorder",
             "RenderFrametimeRecorder",
+            "RtfStabilityRecorder",
         }
 
         # Always-on recorders - collect in every phase
@@ -391,6 +438,25 @@ class BaseIsaacBenchmark(_BaseIsaacBenchmarkCore):
             recorders=recorders,
         )
 
+    def run_warmup(self, n_frames: int):
+        """Run warmup frames without recording any metrics.
+
+        Call before ``set_phase`` to let the renderer, physics, and JIT
+        pipelines stabilise so that the subsequent phase captures only
+        steady-state behaviour.
+
+        Args:
+            n_frames: Number of app update frames to run.
+
+        Example:
+
+        .. code-block:: python
+
+            benchmark.run_warmup(30)
+            benchmark.set_phase("benchmark")
+        """
+        self._run_warmup_sync(n_frames)
+
     def stop(self):
         """Stop benchmarking and write accumulated metrics to file.
 
@@ -456,11 +522,11 @@ class BaseIsaacBenchmarkAsync(_BaseIsaacBenchmarkCore, omni.kit.test.AsyncTestCa
                 await super().setUp()
 
             async def test_my_benchmark(self):
-                self.set_phase("loading")
+                await self.set_phase("loading")
                 await self.fully_load_stage("path/to/stage.usd")
                 await self.store_measurements()
 
-                self.set_phase("benchmark")
+                await self.set_phase("benchmark", warmup_frames=30)
                 # ... run benchmark ...
                 await self.store_measurements()
 
@@ -503,6 +569,58 @@ class BaseIsaacBenchmarkAsync(_BaseIsaacBenchmarkCore, omni.kit.test.AsyncTestCa
             workflow_metadata=workflow_metadata or {},
             recorders=recorders,
         )
+
+    async def run_warmup(self, n_frames: int):
+        """Run warmup frames asynchronously without recording any metrics.
+
+        Args:
+            n_frames: Number of app update frames to run.
+
+        Example:
+
+        .. code-block:: python
+
+            await benchmark.run_warmup(30)
+        """
+        await self._run_warmup_async(n_frames)
+
+    async def set_phase(
+        self,
+        phase: str,
+        start_recording_frametime: bool = True,
+        start_recording_runtime: bool = True,
+        warmup_frames: int = 0,
+    ):
+        """Set the active benchmarking phase and start recorders (async).
+
+        Args:
+            phase: Name of the phase, used in output.
+            start_recording_frametime: False to skip frametime recorders.
+            start_recording_runtime: False to skip runtime recorder.
+            warmup_frames: Number of app update frames to run before starting
+                recorders.
+
+        Example:
+
+        .. code-block:: python
+
+            await benchmark.set_phase("benchmark", warmup_frames=30)
+        """
+        context = self.context
+        if context is None:
+            raise RuntimeError("Benchmark context is not initialized")
+        recorders = self.recorders
+        if recorders is None:
+            raise RuntimeError("Recorders are not initialized")
+
+        logger.info("Starting phase: %s", phase)
+        context.phase = phase
+
+        if warmup_frames > 0:
+            await self._run_warmup_async(warmup_frames)
+
+        # Delegate to the shared recorder-start logic (skip the sync warmup path)
+        self._start_recorders(start_recording_frametime, start_recording_runtime, phase)
 
     async def tearDown(self):
         """Tear down the benchmark and finalize metrics."""

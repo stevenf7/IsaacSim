@@ -143,7 +143,7 @@ class RenderFrametimeRecorder(MeasurementDataRecorder):
             logger.info("RenderFrametimeRecorder: No samples collected (async rendering may not be enabled)")
             return MeasurementData()
 
-        stats = Stats.from_samples(self._samples)
+        stats = Stats.from_samples(self._samples, trim_outliers=False)
 
         measurements_out = [
             measurements.SingleMeasurement(name="Mean Render Frametime", value=stats.mean, unit="ms"),
