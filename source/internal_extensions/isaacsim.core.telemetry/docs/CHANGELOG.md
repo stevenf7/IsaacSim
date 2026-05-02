@@ -4,6 +4,7 @@
 ### Changed
 - Refactored TelemetryManager to use Carbonite structured logging with generated schema headers
 - Telemetry events are now emitted automatically by the extension rather than requiring direct calls from `isaacsim.app.setup` and `isaacsim.simulation_app`
+
 ### Added
 - Structured telemetry schema with generated C header (`IsaacsimTelemetryCommon.gen.h`)
 - JSON schema definitions for telemetry events (`isaacsim.telemetry.common.1.0.json`)

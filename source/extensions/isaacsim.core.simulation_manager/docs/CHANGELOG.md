@@ -8,7 +8,7 @@
 ### Changed
 - Remove USD-attribute workaround in `onPhysicsStep`; `IPhysicsSimulation::getSimulationTimeStepsPerSecond()` now returns the authoritative value, so read it directly.
 
-## [1.14.7] - 2026-04-14
+## [1.14.7] - 2026-04-21
 ### Changed
 - Route Newton simulation view creation through `omni.physics.tensors.create_simulation_view` with `backend="newton"` instead of the Python `isaacsim.physics.newton.tensors` implementation.
 

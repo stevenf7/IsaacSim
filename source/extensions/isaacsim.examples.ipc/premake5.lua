@@ -108,6 +108,7 @@ if os.target() == "linux" then
 
     repo_build.prebuild_link {
         { "docs", ext.target_dir .. "/docs" },
+        { "data", ext.target_dir .. "/data" },
         { "nodes", ext.target_dir .. "/nodes" },
         { "python/nodes", ogn.python_target_path .. "/nodes" },
         { "python/tests", ogn.python_target_path .. "/tests" },

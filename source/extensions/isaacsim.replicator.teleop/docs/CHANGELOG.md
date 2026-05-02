@@ -10,13 +10,10 @@
 
 ## [0.3.0] - 2026-04-22
 ### Added
-- Teleop-side `Recordable` plugins, a `build_teleop_recorder(...)` factory,
-  and a `VRRecordingButton` that toggles recording from a VR button — all
-  built on `isaacsim.replicator.episode_recorder`.
+- Teleop-side `Recordable` plugins, a `build_teleop_recorder(...)` factory, and a `VRRecordingButton` that toggles recording from a VR button — all built on `isaacsim.replicator.episode_recorder`.
 
 ### Changed
-- Recorder / replayer code moved out to `isaacsim.replicator.episode_recorder`;
-  the teleop extension now only contributes teleop-specific channels.
+- Recorder / replayer code moved out to `isaacsim.replicator.episode_recorder`; the teleop extension now only contributes teleop-specific channels.
 
 ## [0.2.1] - 2026-04-18
 ### Changed

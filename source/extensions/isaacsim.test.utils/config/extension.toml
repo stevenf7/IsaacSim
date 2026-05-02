@@ -19,9 +19,9 @@ writeTarget.kit = true
 "omni.kit.material.library" = {}
 "omni.kit.test" = {}
 "omni.kit.ui_test" = {}
+"omni.kit.viewport.window" = {}
 "omni.replicator.core" = {} # needed for image capture utils
 "omni.ui" = {}
-"omni.kit.viewport.window" = {}
 
 [[python.module]]
 name = "isaacsim.test.utils"

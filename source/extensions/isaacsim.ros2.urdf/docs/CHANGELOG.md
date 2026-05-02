@@ -8,6 +8,7 @@
 ### Fixed
 - Handled RCLError when ROS 2 context is shut down during background service call in RobotDefinitionReader
 - Intermediate URDF file now written to a system temp directory instead of the extension build directory. When no explicit USD output folder is set, the USD is also written to the temp directory; set the **USD Output** folder in the UI to control the final location.
+
 ### Changed
 - Tests preserve temp output on failure for debugging, matching the pattern used in isaacsim.asset.importer.urdf
 
@@ -18,13 +19,15 @@
 ## [2.3.1] - 2026-04-23
 ### Changed
 - Updated the UI status language on failed/successful imports to be clearer.
-- Added error message when package can't be resolved in urdf  
+- Added error message when package can't be resolved in urdf
 
 ## [2.3.0] - 2026-04-21
 ### Deprecated
 - Deprecate `URDFImportFromROS2Node` Kit command in favor of using `RobotDefinitionReader` and `URDFImporter` directly
+
 ### Removed
 - Remove dead root-level `__init__.py` and `extension.py` (not deployed to build output)
+
 ### Changed
 - Clean up `__init__.py` exports to only expose public API
 

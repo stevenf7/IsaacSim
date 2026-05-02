@@ -2,9 +2,7 @@
 
 ## [0.14.3] - 2026-04-28
 ### Fixed
-- `menu_click_with_retry` waits for the requested menu path to resolve before
-  clicking, absorbing the async menubar rebuild that ran after a prior test's
-  window destruction (fixes flaky `ui.Menu item failed to become show`).
+- `menu_click_with_retry` waits for the requested menu path to resolve before clicking, absorbing the async menubar rebuild that ran after a prior test's window destruction (fixes flaky `ui.Menu item failed to become show`).
 
 ## [0.14.2] - 2026-04-13
 ### Added

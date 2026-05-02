@@ -6,17 +6,10 @@
 
 ## [1.5.0] - 2026-04-22
 ### Changed
-- Dropped the `omni.kit.window.property` dependency. The property window refresh is now dispatched via
-  the `isaacsim.replicator.behavior.EXPOSED_VARS_CHANGED` carb event, which `isaacsim.replicator.behavior.ui`
-  subscribes to, so the core behaviors can run headless.
+- Dropped the `omni.kit.window.property` dependency. The property window refresh is now dispatched via the `isaacsim.replicator.behavior.EXPOSED_VARS_CHANGED` carb event, which `isaacsim.replicator.behavior.ui` subscribes to, so the core behaviors can run headless.
 
 ### Fixed
-- Made `_setup` idempotent in `TextureRandomizer`, `RotationRandomizer`, `LocationRandomizer`,
-  `LightRandomizer`, and `LookAtBehavior`. A play/pause/play loop (as used by the SDG capture pipeline)
-  previously re-cached the already-randomized state as "initial", so `on_stop` restored stale values
-  (e.g. pallets left bound to a removed randomizer material and rendered gray). Exposed variables are
-  still re-read on every call; prim resolution, initial-state caching, and material creation run only
-  on the first entry of a play session.
+- Made `_setup` idempotent in `TextureRandomizer`, `RotationRandomizer`, `LocationRandomizer`, `LightRandomizer`, and `LookAtBehavior`. A play/pause/play loop (as used by the SDG capture pipeline) previously re-cached the already-randomized state as "initial", so `on_stop` restored stale values (e.g. pallets left bound to a removed randomizer material and rendered gray). Exposed variables are still re-read on every call; prim resolution, initial-state caching, and material creation run only on the first entry of a play session.
 
 ## [1.4.2] - 2026-04-18
 ### Changed

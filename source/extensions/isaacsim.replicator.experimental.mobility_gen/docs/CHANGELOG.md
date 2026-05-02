@@ -13,6 +13,7 @@
 - Camera calibration overrides (intrinsics, distortion, extrinsics) made in the UI are persisted to `sensor_overrides.usda` at recording time and re-applied during replay
 - `generate_sensor_rigs.py` script to discover sensor prims in a robot USD and scaffold `sensor_rig:` YAML blocks
 - Added Overview, sensor_rig, module, and adding_a_robot documentation
+
 ### Changed
 - `state/common/` steps now saved as `.npz` (named arrays) instead of `.npy` (pickled dict); use `migrate_recordings.py` to convert older recordings
 

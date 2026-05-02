@@ -3,8 +3,10 @@
 ## [3.6.0] - 2026-04-21
 ### Added
 - Add `create_surface_gripper` public Python API as a direct replacement for the Kit command
+
 ### Deprecated
 - Deprecate `CreateSurfaceGripper` Kit command in favor of `create_surface_gripper()`
+
 ### Changed
 - Clean up `__init__.py` exports to only expose public API
 

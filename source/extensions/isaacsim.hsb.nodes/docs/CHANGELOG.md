@@ -1,7 +1,6 @@
 # Changelog
 
 ## [1.0.0] - 2026-04-03
-
 ### Added
 - Initial release. OmniGraph nodes extracted from `isaacsim.hsb.bridge`.
 - `HSBSend`: Send DLTensor data buffers via HSB emulator.

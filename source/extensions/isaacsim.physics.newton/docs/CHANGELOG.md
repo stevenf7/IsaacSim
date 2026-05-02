@@ -1,12 +1,12 @@
 # Changelog
 
-## [0.7.6] - 2026-04-27
+## [0.7.7] - 2026-04-27
 ### Fixed
 - Fix unbounded growth of `contact_callbacks` and `step_callbacks` lists when repeatedly subscribing and unsubscribing callbacks. Replace tombstone-based lists with dict-based storage so unsubscribed slots are reclaimed and iteration cost is O(active callbacks)
 
 ## [0.7.5] - 2026-04-23
 ### Fixed
-- Try to load USD with flattened stage when composition cycles are present 
+- Try to load USD with flattened stage when composition cycles are present
 
 ## [0.7.4] - 2026-04-22
 ### Fixed
@@ -66,9 +66,6 @@
 ## [0.5.0] - 2026-03-04
 ### Changed
 - Add Overview.md, python_api.md, SETTINGS.md and update docstrings
-
-## [0.5.0] - 2026-03-03
-### Changed
 - Upgraded Newton pip package from 1.0.0rc1 to 1.0.0rc2.
 - Enabled a set of Newton unit tests that are implemented and pass
 

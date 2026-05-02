@@ -2,18 +2,13 @@
 
 ## [1.8.5] - 2026-05-01
 ### Fixed
-- Switch to the `remotesim` physics engine when other physics engines are still active, even if
-  `remotesim` is already marked active.
+- Switch to the `remotesim` physics engine when other physics engines are still active, even if `remotesim` is already marked active.
 
 ## [1.8.4] - 2026-04-28
 ### Changed
-- `Articulation.get_world_poses`, `get_velocities`: skip Warp row-axis fancy-indexing when
-  `indices=None`; column reorder for quaternion xyzw→wxyz still uses the cached index array.
-- `Articulation.get_dof_positions`, `get_dof_velocities`, `get_dof_position_targets`,
-  `get_dof_velocity_targets`: skip Warp fancy-indexing when `indices=None` and
-  `dof_indices=None` (guarded by `data.shape[1] == num_dofs` for heterogeneous safety).
-- Quaternion reorder index array `[6, 3, 4, 5]` cached per device at module level to avoid
-  repeated allocation on `get_world_poses` / `get_coms` / `set_world_poses` / `set_coms`.
+- `Articulation.get_world_poses`, `get_velocities`: skip Warp row-axis fancy-indexing when `indices=None`; column reorder for quaternion xyzw→wxyz still uses the cached index array.
+- `Articulation.get_dof_positions`, `get_dof_velocities`, `get_dof_position_targets`, `get_dof_velocity_targets`: skip Warp fancy-indexing when `indices=None` and `dof_indices=None` (guarded by `data.shape[1] == num_dofs` for heterogeneous safety).
+- Quaternion reorder index array `[6, 3, 4, 5]` cached per device at module level to avoid repeated allocation on `get_world_poses` / `get_coms` / `set_world_poses` / `set_coms`.
 
 ## [1.8.3] - 2026-04-24
 ### Changed
