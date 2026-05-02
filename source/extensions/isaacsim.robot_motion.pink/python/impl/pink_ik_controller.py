@@ -27,7 +27,10 @@ import numpy as np
 import pink
 import pink.tasks
 import pinocchio as pin
+import qpsolvers
+import scipy.sparse as sp
 import warp as wp
+from pink.exceptions import NoSolutionFound
 
 from .configuration_loader import PinkRobot
 from .utils import (
@@ -248,7 +251,7 @@ class PinkIKController(mg.BaseController):
 
         # Solve IK
         try:
-            velocity = pink.solve_ik(
+            velocity = _solve_ik(
                 self._configuration,
                 tasks,
                 dt=self._dt,
@@ -416,3 +419,40 @@ def _to_numpy_flat(arr: np.ndarray | wp.array | list[float]) -> np.ndarray:
     if isinstance(arr, wp.array):
         return arr.numpy().flatten()
     return np.asarray(arr, dtype=np.float64).flatten()
+
+
+def _solve_ik(
+    configuration: pink.Configuration,
+    tasks: list[Any],
+    *,
+    dt: float,
+    solver: str,
+    damping: float,
+    limits: list[Any] | None,
+    barriers: list[Any] | None,
+) -> np.ndarray:
+    """Solve PINK IK, pre-sparsifying OSQP matrices to avoid stderr warnings."""
+    if solver != "osqp":
+        return pink.solve_ik(
+            configuration,
+            tasks,
+            dt=dt,
+            solver=solver,
+            damping=damping,
+            limits=limits,
+            barriers=barriers,
+        )
+
+    configuration.check_limits()
+    problem = pink.build_ik(configuration, tasks, dt=dt, damping=damping, limits=limits, barriers=barriers)
+    problem.P = sp.csc_matrix(problem.P)
+    if problem.G is not None:
+        problem.G = sp.csc_matrix(problem.G)
+    if problem.A is not None:
+        problem.A = sp.csc_matrix(problem.A)
+
+    result = qpsolvers.solve_problem(problem, solver=solver)
+    delta_q = result.x
+    if not result.found or delta_q is None:
+        raise NoSolutionFound(problem, result)
+    return delta_q / dt
