@@ -301,7 +301,6 @@ def get_initial_collider_pairs(stage: Usd.Stage) -> set[tuple[str, str]]:
     contact_report_sub = get_physics_simulation_interface().subscribe_physics_contact_report_events(on_contact_event)
 
     get_physics_simulation_interface().simulate(1.0 / 60.0, 0.0)
-    get_physics_simulation_interface().fetch_results()
 
     if contact_report_sub:
         contact_report_sub = None

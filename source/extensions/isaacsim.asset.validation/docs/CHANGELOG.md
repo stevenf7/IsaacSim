@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.3] - 2026-05-01
+### Changed
+- Removed redundant `fetch_results()` after `simulate()` when collecting initial collider pairs in physics validation rules.
+
 ## [1.3.2] - 2026-04-24
 ### Fixed
 - RigidBodyHasMassAPI no longer flags unauthored principalAxes on assets where the attribute falls back to the schema default.
