@@ -216,13 +216,23 @@ class Module:
         (in number of bytes), so it can be efficiently saved with a single call
         to np.save(...).
 
+        The buffer list is cached after the first call because the module tree
+        and tag assignments are fixed at build time.  Subsequent calls only
+        iterate the cached list and read current buffer values, avoiding the
+        repeated ``__dict__`` traversal.
+
         Args:
             prefix: A prefix for state value names. Defaults to "".
 
         Returns:
             The module's state dictionary, including only common types.
         """
-        return self.state_dict(prefix, exclude_tags=["rgb", "segmentation", "depth", "normals"])
+        cache_attr = f"_state_dict_common_cache_{prefix}"
+        cached = self.__dict__.get(cache_attr)
+        if cached is None:
+            cached = list(self.named_buffers(prefix, exclude_tags=["rgb", "segmentation", "depth", "normals"]).items())
+            self.__dict__[cache_attr] = cached
+        return {name: buf.value for name, buf in cached}
 
     def state_dict_rgb(self, prefix: str = "") -> dict[str, object]:
         """Get the state dictionary, including only values tagged "rgb".

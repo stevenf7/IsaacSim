@@ -16,8 +16,11 @@
 """Writer for saving MobilityGen recorded data to disk."""
 
 
+import io
 import os
+import queue
 import shutil
+import threading
 
 import numpy as np
 import PIL.Image
@@ -25,16 +28,61 @@ import PIL.Image
 from .config import Config
 from .occupancy_map import OccupancyMap
 
+_SENTINEL = object()
+
 
 class MobilityGenWriter:
     """Writer for saving MobilityGen recordings to a directory.
 
     Args:
         path: The output directory path for the recording.
+        async_write: If True (default), common state dicts are serialized to an
+            in-memory buffer on the hot path and flushed to disk by a background
+            thread.  This removes ~0.7 ms of blocking disk I/O from the physics
+            callback.  Call ``flush()`` or ``close()`` before shutting down to
+            ensure all writes complete.
+        max_pending: Maximum number of serialized buffers that may be queued
+            before the hot path blocks (backpressure).  Default 8.
     """
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str, async_write: bool = True, max_pending: int = 8) -> None:
         self.path = path
+        self._async_write = async_write
+        if async_write:
+            self._write_queue: queue.Queue = queue.Queue(maxsize=max_pending)
+            self._writer_thread = threading.Thread(target=self._writer_worker, daemon=True, name="MobilityGenWriter")
+            self._writer_thread.start()
+
+    def _writer_worker(self) -> None:
+        while True:
+            item = self._write_queue.get()
+            if item is _SENTINEL:
+                self._write_queue.task_done()
+                return
+            path, buf = item
+            try:
+                with open(path, "wb") as f:
+                    f.write(buf.getvalue())
+            finally:
+                self._write_queue.task_done()
+
+    def flush(self) -> None:
+        """Block until all pending async writes have been flushed to disk."""
+        if self._async_write:
+            self._write_queue.join()
+
+    def close(self) -> None:
+        """Flush all pending writes and shut down the background writer thread."""
+        if self._async_write:
+            self._write_queue.put(_SENTINEL)
+            self._writer_thread.join()
+            self._async_write = False
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except Exception:
+            pass
 
     def write_state_dict_common(self, state_dict: dict, step: int) -> None:
         """Write the common (non-image) state dictionary to disk.
@@ -47,7 +95,13 @@ class MobilityGenWriter:
         if not os.path.exists(dict_folder):
             os.makedirs(dict_folder)
         state_dict_path = os.path.join(dict_folder, f"{step:08d}.npz")
-        np.savez(state_dict_path, **{k: v for k, v in state_dict.items() if v is not None})
+        arrays = {k: v for k, v in state_dict.items() if v is not None}
+        if self._async_write:
+            buf = io.BytesIO()
+            np.savez(buf, **arrays)
+            self._write_queue.put((state_dict_path, buf))
+        else:
+            np.savez(state_dict_path, **arrays)
 
     def write_state_dict_rgb(self, state_rgb: dict, step: int) -> None:
         """Write RGB image frames to disk.

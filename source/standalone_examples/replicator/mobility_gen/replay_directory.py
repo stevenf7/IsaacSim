@@ -235,6 +235,7 @@ if __name__ == "__main__":
 
         rep.orchestrator.wait_until_complete()
         scenario.disable_rendering()
+        writer.close()
 
     # Stop the timeline so Kit's shutdown sequence receives the stop event and
     # can clean up physics properly.  Without this, the timeline is left paused

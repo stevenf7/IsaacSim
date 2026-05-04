@@ -1466,6 +1466,11 @@ local function get_benchmark_tests()
         {
             "tests-standalone_benchmarks-benchmark_robots_nova_carter_ros2_validation",
             "standalone_examples/benchmarks/validation/benchmark_robots_nova_carter_ros2_validation.py",
+	},
+        {
+            "tests-standalone_benchmarks-benchmark_mobility_gen_recording",
+            "standalone_examples/benchmarks/benchmark_mobility_gen_recording.py",
+            "--num-steps 10 --warmup-steps 5",
         },
     }
 end

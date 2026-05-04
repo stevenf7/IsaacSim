@@ -352,6 +352,8 @@ class MobilityGenExtension(omni.ext.IExt):
 
         Resets the writer and clears recording display labels.
         """
+        if self.writer is not None:
+            self.writer.close()
         self.writer = None
         self.recording_name_label.text = "Current recording name: "
         self.recording_step_label.text = "Current recording duration: "
@@ -400,6 +402,8 @@ class MobilityGenExtension(omni.ext.IExt):
 
         Clears the current recording writer, resets the scenario, and starts a new recording if recording is enabled.
         """
+        if self.writer is not None:
+            self.writer.close()
         self.writer = None
         self.scenario.reset()
         if self.recording_enabled:

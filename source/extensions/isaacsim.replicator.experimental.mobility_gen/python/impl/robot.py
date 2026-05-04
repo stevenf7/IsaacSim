@@ -264,24 +264,24 @@ class MobilityGenRobot(Module, ABC):
         """
         if self.is_physics_ready():
             self.articulation.set_velocities(linear_velocities=np.zeros((1, 3)), angular_velocities=np.zeros((1, 3)))
-        positions, orientations = self.articulation.get_world_poses()
-        position = positions.numpy()[0]
-        position[0] = pose.x
-        position[1] = pose.y
-        position[2] = self.z_offset
+        position = np.array([pose.x, pose.y, self.z_offset], dtype=np.float32)
         orientation = transform_utils.euler_angles_to_quaternion([0.0, 0.0, pose.theta]).numpy()
         self.articulation.set_world_poses(position[np.newaxis], orientation[np.newaxis])
 
     def get_pose_2d(self) -> Pose2d:
-        """Get the robot's current 2D pose from the physics simulation.
+        """Get the robot's current 2D pose from the cached state buffers.
+
+        The pose is read from ``self.position`` / ``self.orientation``, which
+        are populated by :meth:`update_state` from the physics simulation.
+        Callers must ensure :meth:`update_state` has run since the last pose
+        change (e.g. :meth:`set_pose_2d`) so the cache reflects current state.
 
         Returns:
             The current 2D pose (x, y, theta) of the robot.
         """
-        positions, orientations = self.articulation.get_world_poses()
-        position = positions.numpy()[0]
-        # extrinsic=True (default): output order [X,Y,Z] = [roll, pitch, yaw], so [2] is yaw
-        theta = transform_utils.quaternion_to_euler_angles(orientations.numpy()[0]).numpy()[2]
+        position = self.position.get_value()
+        qw, qx, qy, qz = self.orientation.get_value()
+        theta = np.arctan2(2.0 * (qw * qz + qx * qy), 1.0 - 2.0 * (qy * qy + qz * qz))
         return Pose2d(x=position[0], y=position[1], theta=theta)
 
 

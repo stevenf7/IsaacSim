@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.2] - 2026-04-28
+### Fixed
+- `RandomAccelerationScenario.step`: remove redundant `update_state()` call after `write_action()`; pose is unchanged until the next physics step.
+
 ## [0.3.1] - 2026-04-23
 ### Removed
 - Remove the `omni.isaac.ml_archive` test dependency
