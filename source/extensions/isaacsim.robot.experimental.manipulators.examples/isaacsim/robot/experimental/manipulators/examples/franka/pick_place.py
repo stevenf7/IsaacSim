@@ -97,7 +97,7 @@ class FrankaPickPlace:
         if self.cube_initial_orientation is None:
             self.cube_initial_orientation = np.array([1, 0, 0, 0])
         if self.target_position is None:
-            self.target_position = np.array([-0.3, -0.3, 0.12])
+            self.target_position = np.array([0.0, 0.5, 0.14])
         if self.offset is None:
             self.offset = np.array([0.0, 0.0, 0.0])
         self.cube_initial_position = self.cube_initial_position + self.offset

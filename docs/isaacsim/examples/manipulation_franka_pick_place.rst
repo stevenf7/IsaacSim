@@ -33,12 +33,12 @@ The Franka pick-and-place example follows a simple, direct code structure:
     # Interactive Example
     isaacsim.examples.interactive/franka_pick_place_interactive.py
     ↓
-    isaacsim.robot.manipulators.examples/franka/pick_place.py (single script)
-    
-    # Standalone Example  
-    isaacsim.standalone_examples/franka_pick_place.py
+    isaacsim.robot.experimental.manipulators.examples/franka/pick_place.py (single script)
+
+    # Standalone Example
+    standalone_examples/api/isaacsim.robot.experimental.manipulators/franka/pick_place.py
     ↓
-    isaacsim.robot.manipulators.examples/franka/pick_place.py (single script)
+    isaacsim.robot.experimental.manipulators.examples/franka/pick_place.py (single script)
 
 
 How to Run the Examples
