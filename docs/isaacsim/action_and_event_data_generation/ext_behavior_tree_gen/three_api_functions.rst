@@ -86,7 +86,7 @@ when using custom planner data.
     )
 
 Step 1: setup_workspace(...)
----------------------------
+----------------------------
 
 Use this function to create a reusable ``PlannerSession`` and load input data into the workspace.
 
@@ -129,7 +129,7 @@ Example:
     print(session.actors_loaded, session.objects_loaded, session.nodes_loaded)
 
 Step 2: prepare_runtime(...)
----------------------------
+----------------------------
 
 Use this function after workspace setup to configure model access, retrievers, and Action IR for
 the session.
@@ -182,7 +182,7 @@ Example:
     print(runtime_result.retriever_ready, runtime_result.action_ir_ready)
 
 Step 3: generate_behavior_tree(...)
-----------------------------------
+-----------------------------------
 
 Use this function only after the session has a ready workspace and a prepared runtime.
 

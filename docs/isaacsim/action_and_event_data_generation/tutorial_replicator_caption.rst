@@ -443,7 +443,7 @@ To enable IRC in IRA:
    .. code:: yaml
 
       isaacsim.replicator.agent:
-         version: 1.2.0
+         version: 1.6.0
          simulation_duration: 5
          environment:
             base_stage_asset_path: "Isaac/Samples/Replicator/Captioning/test_caption.usda"

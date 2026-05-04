@@ -81,7 +81,7 @@ Save as ``agent_config.yaml``. The trigger's ``event:`` string must match what S
 .. code-block:: yaml
 
     isaacsim.replicator.agent:
-      version: 1.5.0
+      version: 1.6.0
       seed: 42
       simulation_duration: 25.0
       environment:

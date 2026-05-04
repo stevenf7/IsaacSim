@@ -13,7 +13,7 @@
 Example: RTSP Streaming with CustomWriter
 ===========================================
 
-This walkthrough demonstrates how to use the :ref:`CustomWriter <ira_configuration_file>` to stream live RTSP video from IRA cameras. The ``RTSPStreamWriter`` provided by the ``isaacsim.streaming.rtsp`` extension serves as the target writer.
+This walkthrough demonstrates how to use the :ref:`CustomWriter <ira_configuration_file>` to stream live RTSP video from IRA cameras. The ``RTSPStreamWriter`` provided by the ``isaacsim.streaming.rtsp`` extension serves as the target writer. This page covers only the minimal working example; for full details on encoding modes, frame metadata, server lifecycle, and troubleshooting, refer to :ref:`isaac_sim_rtsp_camera_streaming`.
 
 ``RTSPStreamWriter`` streams LdrColor frames over RTSP and supports two encoding modes: 
 
@@ -48,21 +48,32 @@ Step 2: Add a CustomWriter and Select the Writer
 3.  Select **CustomWriter** from the writer type list and click **Next**.
 4.  In the **Configure CustomWriter** dialog, open the **Writer Name** dropdown and look for ``RTSPStreamWriter``.
 
-    -   If ``RTSPStreamWriter`` appears in the list, select it and proceed to step 5.
+    -   If ``RTSPStreamWriter`` appears in the list, select it, click **OK** to confirm, and proceed to step 4.
     -   If it does not appear, follow step 3 below to register it manually.
 
-Step 3: Manual Registration 
+.. important::
+    Always click **OK** to confirm after selecting or registering a writer. The CustomWriter is not added until you confirm the dialog.
+
+Step 3: Manual Registration
 =========================================
 
-If ``RTSPStreamWriter`` is not listed in the **Writer Name** dropdown, the extension may not have been enabled or its self-registration may not have run yet. You can register the writer class manually:
+If ``RTSPStreamWriter`` is not listed in the **Writer Name** dropdown, the extension may not have been enabled or its self-registration may not have run yet. You can register the writer class manually using the **Writer Scope** field, which accepts three input modes:
 
-1.  In the **Class Path** field, enter:
+-   A dotted class path to a single writer class.
+-   A package or module path to scan for all ``Writer`` subclasses.
+-   A filesystem path to a ``.py`` file containing writer classes.
+
+The system auto-detects the mode. To register ``RTSPStreamWriter``:
+
+1.  In the **Writer Scope** field, enter the class path:
 
     .. code-block:: text
 
         isaacsim.streaming.rtsp.impl.rtsp_writer.RTSPStreamWriter
 
-2.  Click **Register**. The system imports the class, validates that it is a subclass of ``omni.replicator.core.Writer``, and registers it in the ``WriterRegistry``.
+    Alternatively, enter the package path ``isaacsim.streaming.rtsp`` to discover all writers in the extension.
+
+2.  Click **Register**. The system imports the class (or scans the package), validates that each discovered class is a subclass of ``omni.replicator.core.Writer``, and registers it in the ``WriterRegistry``.
 3.  The **Writer Name** dropdown refreshes and ``RTSPStreamWriter`` appears. Select it.
 4.  Click **OK** to confirm.
 
@@ -103,10 +114,27 @@ Step 6: Optional Encoding Settings
 
 When using ``"h264"`` encoding, you can also configure ``width`` and ``height`` (default 1920x1080) to set the RTSP server resolution.
 
+.. note::
+    The ``width`` and ``height`` parameters on ``RTSPStreamWriter`` do **not** change the RenderProduct resolution --- they only configure the RTSP stream to match the existing input dimensions. To change the actual rendered resolution, first adjust the **RenderProduct Resolution** in the CustomWriter UI panel, then set the writer's ``width`` and ``height`` to match. Mismatched values result in stretched or cropped frames.
+
+.. _ira_custom_writer_parameter_naming:
+
+Parameter Naming in the UI
+--------------------------
+
+The CustomWriter UI generates its parameter fields automatically from the
+``__init__`` signature of the selected writer class (for example,
+``sensorSetName`` in ``RTSPStreamWriter``). Because you can import custom or
+third-party writers, no specific parameter naming format is enforced. The UI
+capitalizes the first letter of each parameter name purely for visual
+consistency (for example, ``sensorSetName`` appears as **SensorSetName** in the
+panel), but the underlying value is passed to the writer using its original
+name.
+
 Multi-camera YAML Example
 ===========================
 
-The following config streams from two cameras on separate ports:
+The following config streams from two cameras on separate ports. Each ``CustomWriter`` instance must use a **unique** ``port`` to avoid conflicts:
 
 .. code-block:: yaml
 
@@ -114,23 +142,23 @@ The following config streams from two cameras on separate ports:
       writers:
         CustomWriter:
           writer_name: "RTSPStreamWriter"
-          writer_class_path: "isaacsim.streaming.rtsp.impl.rtsp_writer.RTSPStreamWriter"
+          writer_scope: "isaacsim.streaming.rtsp"
           sensor_prim_list:
-            - "/World/Cameras/Camera_01"
-          port: 8554
-          mountPath: "/camera_01"
+            - "<your_camera_prim_path>"
+          port: <your_unique_port>
+          mountPath: "<your_mount_path>"
           encoding: "h264"
         CustomWriter_1:
           writer_name: "RTSPStreamWriter"
-          writer_class_path: "isaacsim.streaming.rtsp.impl.rtsp_writer.RTSPStreamWriter"
+          writer_scope: "isaacsim.streaming.rtsp"
           sensor_prim_list:
-            - "/World/Cameras/Camera_02"
-          port: 8555
-          mountPath: "/camera_02"
+            - "<your_camera_prim_path>"
+          port: <your_unique_port>  # Must differ from the port above
+          mountPath: "<your_mount_path>"
           encoding: "h264"
 
 .. tip::
-    If the ``isaacsim.streaming.rtsp`` extension is enabled and ``RTSPStreamWriter`` is already registered, ``writer_class_path`` can be omitted. It is included here for robustness so the config works even when the extension has not been loaded yet.
+    If the ``isaacsim.streaming.rtsp`` extension is enabled and ``RTSPStreamWriter`` is already registered, ``writer_scope`` can be omitted. It is included here for robustness so the config works even when the extension has not been loaded yet. You can also use a full class path (for example, ``"isaacsim.streaming.rtsp.impl.rtsp_writer.RTSPStreamWriter"``) instead of a package path if you prefer to register only one specific writer.
 
 Verify the Stream
 ==================
@@ -141,4 +169,10 @@ After clicking **Start Data Generation**, open an RTSP client and connect to the
 
     ffplay rtsp://localhost:8554/camera_01
 
-You should recieve live rendered frames from the corresponding camera. Repeat for each port and mount-path pair to verify all streams.
+You should receive live rendered frames from the corresponding camera. Repeat for each port and mount-path pair to verify all streams.
+
+.. seealso::
+
+    :ref:`isaac_sim_rtsp_camera_streaming` for a full reference for the RTSP
+    streaming pipeline, including encoding modes, frame metadata, server
+    lifecycle, and troubleshooting.
