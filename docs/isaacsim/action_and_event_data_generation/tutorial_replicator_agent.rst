@@ -70,7 +70,7 @@ For first-time users, it is recommended that you use the UI. Refer to the :ref:`
     * The minimal config file does not have actors and cameras. For a more comprehensive example, use ``warehouse.yaml`` in the above folder. This example can take up more loading time.
 
 .. image:: /images/isim_6.0_full_tut_external_actor_sim_getting_started_config_panel.png
-    :width: 600
+    :width: 680
     :align: center
     :alt: Load a config file.
 
