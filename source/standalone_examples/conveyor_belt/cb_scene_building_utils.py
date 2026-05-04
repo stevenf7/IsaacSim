@@ -170,7 +170,7 @@ def _create_conveyor_belt_front_or_back_mesh_data(
     offset: tuple[float, float, float] = (0.0, 0.0, 0.0),
     rotation: tuple[float, float, float, float] = (1.0, 0.0, 0.0, 0.0),
     index_offset: int = 0,
-    border_vertex_index_list: [tuple[int, int, int, int] | None] = None,
+    border_vertex_index_list: tuple[int, int, int, int] | None = None,
 ) -> tuple[list[tuple[float, float, float]], list[int]]:
     """Generate triangle mesh data for the front or back rounded edge of a conveyor belt component.
 
@@ -903,7 +903,7 @@ def create_conveyor_belt_box(
         CONVEYOR_BELT_BORDER_SEGMENT_COUNT,
     )
 
-    mesh = UsdGeom.Mesh.Define(stage, path)
+    mesh = UsdGeom.Mesh.Define(stage, coll_geom_path)
     mesh.GetPointsAttr().Set(Vt.Vec3fArray(vertices))
     mesh.GetFaceVertexIndicesAttr().Set(face_vertex_indices)
     mesh.GetFaceVertexCountsAttr().Set([3] * (len(face_vertex_indices) // 3))
@@ -1047,7 +1047,7 @@ def create_conveyor_belt_turn(
         CONVEYOR_BELT_BORDER_SEGMENT_COUNT,
     )
 
-    mesh = UsdGeom.Mesh.Define(stage, path)
+    mesh = UsdGeom.Mesh.Define(stage, coll_geom_path)
     mesh.GetPointsAttr().Set(Vt.Vec3fArray(vertices))
     mesh.GetFaceVertexIndicesAttr().Set(face_vertex_indices)
     mesh.GetFaceVertexCountsAttr().Set([3] * (len(face_vertex_indices) // 3))

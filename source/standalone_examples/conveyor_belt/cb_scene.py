@@ -45,7 +45,7 @@ def create_scene(
     conveyor_belt_manager: ConveyorBeltManager,
     body_manager: BodyManager,
     material_pair_manager: MaterialPairManager,
-    velocity_field_visualizer: [VelocityFieldVisualizer | None] = None,
+    velocity_field_visualizer: VelocityFieldVisualizer | None = None,
 ) -> None:
     """Create the main conveyor belt circuit scene with straight sections, 90-degree turns, and transported bodies.
 
