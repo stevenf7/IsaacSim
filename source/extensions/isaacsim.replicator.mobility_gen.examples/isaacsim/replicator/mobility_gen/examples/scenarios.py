@@ -276,9 +276,9 @@ class RandomAccelerationScenario(MobilityGenScenario):
         self.robot.action.set_value(np.array([linear_velocity, angular_velocity]))
         self.robot.write_action(step_size)
 
-        self.update_state()
-
         # Check out of bounds or collision
+        # No update_state() needed here: write_action() does not advance physics,
+        # so the robot pose is unchanged from the update_state() call above.
         pose = self.robot.get_pose_2d()
         if not self.collision_occupancy_map.check_world_point_in_bounds(pose):
             self.is_alive = False
@@ -364,9 +364,13 @@ class RandomPathFollowingScenario(MobilityGenScenario):
         self.robot.action.set_value(np.zeros(2))
         pose = self.pose_sampler.sample(self.buffered_occupancy_map)
         self.robot.set_pose_2d(pose)
+        # update_state() must run before set_random_target_path() so that
+        # get_pose_2d() (invoked from set_random_target_path) reads the
+        # freshly-set spawn pose from the physics-populated cache rather than
+        # stale data from the previous episode.
+        self.update_state()
         self.set_random_target_path()
         self.is_alive = True
-        self.update_state()
 
     def step(self, step_size: float) -> bool:
         """Execute one simulation step by updating robot controls to follow the target path.

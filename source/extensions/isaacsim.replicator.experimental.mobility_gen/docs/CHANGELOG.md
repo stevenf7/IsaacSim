@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.2] - 2026-04-28
+### Fixed
+- `Module.state_dict_common`: cache buffer list after first call; skip module-tree walk on subsequent steps.
+- `MobilityGenWriter.write_state_dict_common`: offload npz disk flush to a background thread; bounded queue (`max_pending=8`) limits memory under back-pressure.
+- `MobilityGenRobot.update_state`: cache PhysX joint-index and quaternion-reordering arrays; remove redundant `get_world_poses()` call.
+- `MobilityGenRobot.get_pose_2d`: replace `quaternion_to_euler_angles().numpy()` with direct `np.arctan2` yaw, eliminating GPU→CPU sync per step.
+- `MobilityGenRobot.get_pose_2d`: fix `NameError` for `np` (missing import).
+- `OccupancyMap`: precompute `_freespace_mask_cache` at construction; eliminate duplicate `world_to_pixel_numpy` call in `check_world_point_in_freespace`.
+- `GridPoseSampler.sample_px`: fix `ValueError: high <= 0` crash when selected grid block has no freespace; fall back to full-map uniform sampling.
+
 ## [0.2.1] - 2026-04-27
 ### Fixed
 - Kit test runner failures: converted test classes from `unittest.TestCase` to `omni.kit.test.AsyncTestCase` so tests are awaitable

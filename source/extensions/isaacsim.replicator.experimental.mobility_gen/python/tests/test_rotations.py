@@ -199,3 +199,44 @@ class TestRotationFixes(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(robot.joint_velocities.get_value(), joint_vel[0]))
         self.assertTrue(np.allclose(robot.linear_velocity.get_value(), lin_vel[0]))
         self.assertTrue(np.allclose(robot.angular_velocity.get_value(), ang_vel[0]))
+
+    async def test_get_pose_2d_reads_cached_buffers(self):
+        """get_pose_2d reads position/orientation buffers set by update_state and recovers yaw correctly."""
+
+        class _ConcreteRobot(MobilityGenRobot):
+            z_offset = 0.0
+
+            @classmethod
+            def build(cls, prim_path):
+                pass
+
+            def write_action(self, step_size):
+                pass
+
+        mock_articulation = MagicMock()
+        mock_articulation.is_physics_tensor_entity_valid.return_value = True
+
+        # Round-trip: pick a known 2D pose, encode the orientation as a yaw quaternion,
+        # populate the cached buffers via update_state, then verify get_pose_2d returns
+        # the original pose values.
+        x, y, theta = 1.5, -2.25, math.pi / 4  # 45 degrees
+        pos = np.array([[x, y, 0.0]], dtype=np.float32)
+        ori = transform_utils.euler_angles_to_quaternion([0.0, 0.0, theta]).numpy()[np.newaxis]
+        zero3 = np.zeros((1, 3), dtype=np.float32)
+        zero2 = np.zeros((1, 2), dtype=np.float32)
+
+        mock_articulation.get_world_poses.return_value = (MagicMock(numpy=lambda: pos), MagicMock(numpy=lambda: ori))
+        mock_articulation.get_dof_positions.return_value = MagicMock(numpy=lambda: zero2)
+        mock_articulation.get_dof_velocities.return_value = MagicMock(numpy=lambda: zero2)
+        mock_articulation.get_velocities.return_value = (
+            MagicMock(numpy=lambda: zero3),
+            MagicMock(numpy=lambda: zero3),
+        )
+
+        robot = _ConcreteRobot(prim_path="/test", articulation=mock_articulation, front_camera=None)
+        robot.update_state()
+
+        pose = robot.get_pose_2d()
+        self.assertAlmostEqual(pose.x, x, places=5)
+        self.assertAlmostEqual(pose.y, y, places=5)
+        self.assertAlmostEqual(pose.theta, theta, places=5)

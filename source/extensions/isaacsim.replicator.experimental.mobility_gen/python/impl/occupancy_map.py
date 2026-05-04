@@ -89,6 +89,7 @@ free_thresh: {free_thresh}
         self.origin = origin  # x, y, yaw.  where (x, y) is the bottom-left of image
         self._width_pixels = data.shape[1]
         self._height_pixels = data.shape[0]
+        self._freespace_mask_cache = data == OccupancyMapDataValue.FREESPACE
 
     def freespace_mask(self) -> np.ndarray:
         """Get a binary mask representing the freespace of the occupancy map.
@@ -96,7 +97,7 @@ free_thresh: {free_thresh}
         Returns:
             The binary mask representing freespace of the occupancy map.
         """
-        return self.data == OccupancyMapDataValue.FREESPACE
+        return self._freespace_mask_cache.copy()
 
     def unknown_mask(self) -> np.ndarray:
         """Get a binary mask representing the unknown area of the occupancy map.
@@ -465,10 +466,9 @@ free_thresh: {free_thresh}
             True if the world coordinate is inside the freespace region of the occupancy map.
                 False otherwise.
         """
-        if not self.check_world_point_in_bounds(point):
-            return False
         pixel = self.world_to_pixel_numpy(np.array([[point.x, point.y]]))
         x_px = int(pixel[0, 0])
         y_px = int(pixel[0, 1])
-        freespace = self.freespace_mask()
-        return bool(freespace[y_px, x_px])
+        if x_px < 0 or x_px >= self._width_pixels or y_px < 0 or y_px >= self._height_pixels:
+            return False
+        return bool(self._freespace_mask_cache[y_px, x_px])

@@ -131,9 +131,12 @@ class GridPoseSampler(PoseSampler):
 
         net_mask = block_mask & mask
 
-        # TODO: check no unoccupied
-
         coords = np.argwhere(net_mask)
+        if len(coords) == 0:
+            # Selected grid block is fully occupied/unknown; fall back to global freespace.
+            coords = np.argwhere(mask)
+        if len(coords) == 0:
+            raise RuntimeError("OccupancyMap has no freespace cells to sample from.")
         random_index = np.random.randint(0, len(coords))
         pixel = coords[random_index]
         pixel = Point2d(x=pixel[1], y=pixel[0])
