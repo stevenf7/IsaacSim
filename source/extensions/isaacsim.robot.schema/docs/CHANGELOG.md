@@ -27,12 +27,12 @@
 ## [6.1.0] - 2026-04-17
 ### Added
 - Add `IsaacRaycastSensor` USD schema type, plugInfo entry, sensor tokens, and Python compatibility wrapper
+
 ### Changed
 - `PopulateRobotSchemaFromArticulation` and `RecalculateRobotSchema` now traverse DFS by default, with a `traversal` kwarg (`"dfs"` | `"bfs"`).
 - `PopulateRobotSchemaFromArticulation` only registers `RigidBodyAPI` prims as `robotLinks` and `JointAPI` prims as `robotJoints`; grouping Xforms skipped.
 - Targets now written as prepend list ops via `_set_targets_as_prepend`, preserving additive composition with downstream layers.
 - `_apply_api` is a no-op when the schema is already applied, preventing `apiSchemas` churn on recalc.
-
 
 ## [6.0.0] - 2026-04-15
 ### Changed

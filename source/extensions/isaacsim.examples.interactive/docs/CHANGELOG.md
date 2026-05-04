@@ -15,7 +15,7 @@
 
 ## [4.15.6] - 2026-04-10
 ### Added
-- docstring deprecation + runtime warnings; use `isaacsim.examples.base` instead.
+- Docstring deprecation + runtime warnings; use `isaacsim.examples.base` instead.
 
 ## [4.15.5] - 2026-04-06
 ### Changed

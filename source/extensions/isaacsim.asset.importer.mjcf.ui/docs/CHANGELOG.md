@@ -23,8 +23,8 @@
 
 ## [1.2.0] - 2026-03-31
 ### Changed
-- use shared ui library from isaacsim.gui.components
-- updated import for compare usd function
+- Use shared ui library from isaacsim.gui.components
+- Updated import for compare usd function
 
 ## [1.1.1] - 2026-03-21
 ### Fixed

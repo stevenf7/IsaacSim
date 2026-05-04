@@ -16,8 +16,8 @@ writeTarget.kit = true
 "isaacsim.core.experimental.prims" = {}
 "isaacsim.core.experimental.utils" = {}
 "isaacsim.replicator.experimental.mobility_gen" = {}
-"isaacsim.robot.policy.examples" = {}
 "isaacsim.robot.experimental.wheeled_robots" = {}
+"isaacsim.robot.policy.examples" = {}
 "omni.kit.pip_archive" = {}
 "omni.kit.uiapp" = {}
 

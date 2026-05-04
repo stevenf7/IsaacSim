@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.17.10] - 2026-04-30
+## [1.17.10] - 2026-05-01
 ### Fixed
 - Add null check for simulation view in `OgnROS2PublishJointState` and `OgnROS2PublishTransformTree` to prevent crash when physics backend initialization fails
 
@@ -11,7 +11,7 @@
 ### Fixed
 - Fix flaky waypoint follower tests by using `asyncio.sleep` instead of `simulate_until_condition` to wait for message publication
 
-## [1.17.8] - 2026-04-29
+## [1.17.8] - 2026-04-30
 ### Fixed
 - Fixed `OgnROS2PublishLaserScan` to call `generateBuffers` before `writeData` so output buffers are correctly sized before being populated
 - Updated joint state subscriber tests to use `get_dof_positions`/`get_dof_velocities`; extended velocity convergence timeout and broadened multi-joint condition check
@@ -21,6 +21,7 @@
 
 ### Changed
 - Added simulate until condition functions to tests to reduce test time
+
 ## [1.17.7] - 2026-04-30
 ### Changed
 - Migrated `create_raycast_lidar_sensor` test helper and physics raycast tests to the new `isaacsim.sensors.experimental.physics` 3.0.0 API: call `Raycast.create(...)` (the authoring class) directly, return the authoring object's `paths[0]` instead of going through the runtime sensor, and use plural `translations=[[x, y, z]]` instead of singular `translation=Gf.Vec3d(...)`. The runtime sensor no longer forwards XformPrim attribute access or exposes a `create()` class method, so callers go through the typed authoring accessor.
@@ -28,9 +29,6 @@
 ## [1.17.6] - 2026-04-27
 ### Fixed
 - Fix `OgnROS2CameraHelper` using `is None` instead of `.IsValid()` to check render product prim existence
-
-## [1.17.6] - 2026-04-27
-### Fixed
 - Fixed flaky `test_*_subscriber_queue` tests on Windows by splitting each four-subscriber test into `_small` and `_large` variants. Removing the stop/play cycle inside a single test method avoids DDS discovery stale-match on re-play, which `wait_for_subscribers_on_topic` alone cannot work around.
 - Fixed race at iteration 0 of `test_transform_tree_subscriber` and `test_transform_tree_subscriber_nova_carter` by waiting for DDS discovery after `timeline.play()` before publishing the first TF.
 - Fixed `test_camera_info_sim_time` float-precision flake (`0.1 > 0.0999999996`) by replacing the 1.2x ratio tolerance with an absolute upper bound (≤ 1.0s) after stop/play reset, matching the intent of the assertion.
@@ -69,7 +67,8 @@
 
 ### Changed
 - Updated extension dependency from `isaacsim.sensors.rtx` to `isaacsim.sensors.experimental.rtx`
-## [1.16.3] - 2026-04-21
+
+## [1.16.3] - 2026-04-22
 ### Fixed
 - Removed duplicate `destroy_publisher`/`destroy_node` calls in joint state subscriber test teardown
 

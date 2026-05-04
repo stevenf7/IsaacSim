@@ -13,8 +13,8 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
-"isaacsim.core.experimental.prims" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.core.experimental.prims" = {}
 "isaacsim.gui.components" = {}
 "omni.kit.uiapp" = {}
 "omni.physics" = {}

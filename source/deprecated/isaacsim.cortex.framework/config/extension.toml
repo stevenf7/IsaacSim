@@ -18,9 +18,9 @@ warning = "Extension deprecated since Isaac Sim 6.0.0. Will be replaced in 7.0 w
 [dependencies]
 "isaacsim.core.api" = {}
 "isaacsim.core.deprecation_manager" = {}
+"isaacsim.robot.manipulators" = {}
 "isaacsim.robot_motion.motion_generation" = {}
 "isaacsim.storage.native" = {}
-"isaacsim.robot.manipulators" = {}
 
 [[python.module]]
 name = "isaacsim.cortex.framework"

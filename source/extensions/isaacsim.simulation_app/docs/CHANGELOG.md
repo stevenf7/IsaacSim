@@ -12,14 +12,14 @@
 ### Fixed
 - Replaced `shutdown_and_release_framework()` with `app.shutdown()` in close() to avoid a GIL deadlock where the main thread held the GIL while `carb.tasking` worker threads waited for it during plugin teardown (NVBug 5948099)
 - Replaced deprecated `isaacsim.core.utils.carb.get_carb_setting` import with direct `carb.settings` API
+
 ### Removed
 - Removed shutdown watchdog (no longer needed now that close() avoids the deadlock-prone framework release path)
 
-## [2.17.1] - 2026-03-30
+## [2.17.1] - 2026-04-02
 ### Added
 - Add optional multitick support. When enabled, loop runner resets simulation time to 0.0 on SimulationApp.__init__.
 
-## [2.17.1] - 2026-04-02
 ### Changed
 - Atexit handler now calls close(wait_for_replicator=False) to avoid hanging during interpreter shutdown
 - Added forked watchdog process in close() that sends SIGKILL on timeout to prevent indefinite hangs from native thread deadlocks
@@ -28,6 +28,7 @@
 ## [2.17.0] - 2026-03-23
 ### Added
 - Emit telemetry event for app startup duration via isaacsim.core.telemetry
+
 ### Changed
 - Updated return types
 

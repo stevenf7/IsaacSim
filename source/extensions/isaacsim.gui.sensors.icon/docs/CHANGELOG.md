@@ -2,6 +2,7 @@
 ## [2.2.0] - 2026-04-21
 ### Added
 - Add `IsaacRaycastSensor` to recognized sensor types for icon display
+
 ### Changed
 - Mark `Lidar`, `IsaacLightBeamSensor`, and `Generic` as deprecated in `SENSOR_TYPES` list (kept for backward compatibility)
 - Update test default prim type from deprecated `Generic` to `IsaacContactSensor`

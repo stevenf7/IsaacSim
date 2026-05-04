@@ -22,8 +22,8 @@ writeTarget.platform = true
 "isaacsim.core.rendering_manager" = {}
 "isaacsim.core.simulation_manager" = {}
 "omni.kit.pip_archive" = {}
-"omni.replicator.core" = {}
 "omni.kit.usdz_export" = {}
+"omni.replicator.core" = {}
 
 [[python.module]]
 name = "isaacsim.replicator.experimental.mobility_gen"

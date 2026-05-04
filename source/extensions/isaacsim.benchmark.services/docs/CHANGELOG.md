@@ -5,6 +5,7 @@
 - `rtf_stability` derived metrics: percent of windows within ±0.01/±0.10 of the phase mean windowed RTF
 - Add support for running warmup frames when starting a benchmarking phase
 - Add physics-step-interval recorder, track duration between physics update steps
+
 ### Changed
 - Frametime metric sample trimming disabled by default
 

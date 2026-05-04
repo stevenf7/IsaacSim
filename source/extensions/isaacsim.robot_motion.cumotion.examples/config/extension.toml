@@ -25,10 +25,10 @@ icon = "data/icon.png"
 "isaacsim.robot_motion.cumotion" = {}
 "isaacsim.robot_motion.experimental.motion_generation" = {}
 "isaacsim.storage.native" = {}
+"omni.kit.context_menu" = {}
 "omni.timeline" = {}
 "omni.ui" = {}
 "omni.usd" = {}
-"omni.kit.context_menu" = {}
 
 [[python.module]]
 name = "isaacsim.robot_motion.cumotion.examples.rmp_flow"
