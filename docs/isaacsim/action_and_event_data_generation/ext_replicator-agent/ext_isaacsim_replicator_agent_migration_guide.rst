@@ -82,6 +82,7 @@ changed:
      - 0.x supported GoTo, Idle, and Patrol-like commands through text files. 1.x formalizes these as typed behaviors (``wander``, ``patrol``, ``stop``, ``halt``) with rich inline parameters.
    * - **Behavior Tree Groups**
      - --
+     - New
      - A character or robot group can use ``behavior_tree`` + ``overrides`` instead of ``routines``/``triggers``, delegating all logic to the referenced JSON tree. Review the Configuration File Guide sections "Behavior Tree Character Group" and "Behavior Tree Robot Group".
    * - **Event and Time Triggers**
      - Yes
@@ -272,7 +273,7 @@ The ``version`` field now tracks the extension version and must have a
 
    # 1.x
    isaacsim.replicator.agent:
-     version: 1.5.0
+     version: 1.6.0
 
 Top-Level Structure
 --------------------
@@ -325,7 +326,7 @@ Top-Level Structure
 
    # NEW (1.x)
    isaacsim.replicator.agent:
-     version: 1.5.0
+     version: 1.6.0
      seed: 123456789           # optional, auto-generated if omitted
      simulation_duration: 60.0  # 1800 frames / 30 FPS = 60 seconds
      environment:
@@ -678,7 +679,7 @@ Quick Config Conversion Example
 .. code-block:: yaml
 
    isaacsim.replicator.agent:
-     version: 1.5.0
+     version: 1.6.0
      seed: 123456789
      simulation_duration: 60.0
      environment:
