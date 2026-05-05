@@ -952,6 +952,14 @@ local function get_replicator_tests()
             "standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_05.py",
         },
         {
+            "tests-nativepython-isaacsim.replicator.examples.sdg_workflow_01",
+            "standalone_examples/api/isaacsim.replicator.examples/sdg_workflow_01.py",
+        },
+        {
+            "tests-nativepython-isaacsim.replicator.examples.sdg_workflow_02",
+            "standalone_examples/api/isaacsim.replicator.examples/sdg_workflow_02.py",
+        },
+        {
             "tests-nativepython-isaacsim.replicator.examples.simready_assets_sdg",
             "standalone_examples/api/isaacsim.replicator.examples/simready_assets_sdg.py",
             "--num_scenarios 2",

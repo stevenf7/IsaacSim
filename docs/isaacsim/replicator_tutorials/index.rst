@@ -35,6 +35,7 @@ Tutorials
 .. toctree::
     :maxdepth: 1
 
+    ./tutorial_replicator_sdg_workflows
     ./tutorial_replicator_scene_based_sdg
     ./tutorial_replicator_object_based_sdg
     ./tutorial_replicator_infinigen_sdg
