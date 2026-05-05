@@ -17,7 +17,6 @@ import asyncio
 
 import omni.graph.core as og
 import omni.graph.core.tests as ogts
-import omni.kit.test
 import omni.usd
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 from pxr import UsdGeom

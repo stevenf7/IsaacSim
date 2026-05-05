@@ -116,14 +116,15 @@ public:
 
                     for (size_t i = 0; i < targetPrims.size(); i++)
                     {
-                        if (!state.m_usdStage->GetPrimAtPath(omni::fabric::toSdfPath(targetPrims[i])))
+                        pxr::SdfPath primPath = omni::fabric::toSdfPath(targetPrims[i]);
+                        if (primPath.IsEmpty() || !state.m_usdStage->GetPrimAtPath(primPath))
                         {
                             db.logError(
                                 "The prim %s is not valid. Please specify at least one valid target prim for the ROS pose tree component",
-                                omni::fabric::toSdfPath(targetPrims[i]).GetText());
+                                primPath.GetText());
                             return false;
                         }
-                        state.m_targets[i] = omni::fabric::toSdfPath(targetPrims[i]);
+                        state.m_targets[i] = primPath;
                     }
                 }
                 else
