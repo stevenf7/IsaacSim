@@ -24,7 +24,6 @@
 #include <isaacsim/core/includes/BaseResetNode.h>
 #include <isaacsim/core/includes/PhysicsEngine.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
-#include <isaacsim/robot/schema/sensor_tokens.h>
 #include <omni/fabric/FabricUSD.h>
 #include <pxr/base/gf/vec3d.h>
 #include <pxr/base/gf/vec4d.h>
@@ -261,20 +260,36 @@ private:
         // Obtain the stage to guard articulation discovery with a cheap API check, avoiding
         // spurious PhysX tensor errors for sensor/camera/Xform-only prims.
         pxr::UsdStageRefPtr stage = pxr::UsdUtilsStageCache::Get().Find(pxr::UsdStageCache::Id::FromLongInt(stageId));
+        if (!stage)
+        {
+            db.logError("Could not find USD stage %ld", stageId);
+            return false;
+        }
 
         for (size_t i = 0; i < targetPrims.size(); i++)
         {
             std::string primPathStr = omni::fabric::toSdfPath(targetPrims[i]).GetString();
 
+            // Guard against empty or non-absolute paths from disconnected/deleted target prim definitions.
+            if (primPathStr.empty() || primPathStr[0] != '/')
+            {
+                CARB_LOG_WARN("IsaacComputeTransformTree: skipping target prim at index %zu with invalid path '%s'", i,
+                              primPathStr.c_str());
+                continue;
+            }
+
+            // Look up prim once for both articulation check and camera detection below.
+            pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(primPathStr));
+            if (!prim)
+            {
+                CARB_LOG_WARN("IsaacComputeTransformTree: prim '%s' not found on stage, skipping", primPathStr.c_str());
+                continue;
+            }
+
             // Only attempt articulation discovery for prims that have UsdPhysicsArticulationRootAPI.
             // Without this guard, createArticulationView triggers PhysX tensor errors for every
             // non-physics prim (sensors, cameras, IMUs, etc.).
-            bool hasArticulationApi = false;
-            if (stage)
-            {
-                pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(primPathStr));
-                hasArticulationApi = prim && prim.HasAPI<pxr::UsdPhysicsArticulationRootAPI>();
-            }
+            bool hasArticulationApi = prim.HasAPI<pxr::UsdPhysicsArticulationRootAPI>();
 
             bool isArticulation = false;
             if (hasArticulationApi)
@@ -317,20 +332,9 @@ private:
                 m_viewPaths.push_back(primPathStr);
                 linkParents[primPathStr] = "";
 
-                // Cameras (excluding RTX Lidar sensors that share the Camera schema) need a
-                // 180° x-axis rotation to match the ROS optical frame convention.
-                if (stage)
-                {
-                    pxr::UsdPrim prim = stage->GetPrimAtPath(pxr::SdfPath(primPathStr));
-                    if (prim && prim.IsA<pxr::UsdGeomCamera>())
-                    {
-                        using namespace isaacsim::robot::schema::sensors;
-                        if (!prim.HasAPI(kIsaacRtxLidarSensorAPI))
-                        {
-                            m_cameraViewIndices.insert(viewIdx);
-                        }
-                    }
-                }
+                // Cameras need a 180° x-axis rotation to match the ROS optical frame convention.
+                if (prim.IsA<pxr::UsdGeomCamera>())
+                    m_cameraViewIndices.insert(viewIdx);
             }
         }
 

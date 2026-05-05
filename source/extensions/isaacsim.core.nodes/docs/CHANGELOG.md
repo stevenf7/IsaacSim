@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.8.1] - 2026-05-04
+### Fixed
+- `OgnIsaacComputeTransformTree`: skip invalid/non-existent target prim definitions instead of crashing in the xform view layer
+
 ## [5.8.0] - 2026-04-30
 ### Changed
 - `OgnOnPhysicsStep` uses the generic `IPhysicsSimulation` API instead of the PhysX-specific `IPhysx` API for physics step event subscriptions, enabling OmniGraph execution with any physics backend

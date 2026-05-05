@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.17.12] - 2026-05-04
+### Fixed
+- `OgnROS2PublishTransformTree`: guard against empty/invalid target prim paths before `GetPrimAtPath`; resolve `toSdfPath` once per entry instead of three times
+
 ## [1.17.11] - 2026-05-04
 ### Fixed
 - Properly passthrough arguments for RTX Radar PCL metadata.
