@@ -354,6 +354,8 @@ This workflow follows the same core MobilityGen pipeline described above: select
 record a trajectory, and replay that trajectory to render sensor data. Only the source of the stage and occupancy
 map changes when working with NuRec assets.
 
+.. image:: /images/isim_6.0_replicator_tut_gui_mobility_gen_nurec_example.gif
+
 Use a NuRec Scene
 ~~~~~~~~~~~~~~~~~
 
