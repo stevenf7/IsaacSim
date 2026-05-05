@@ -39,7 +39,6 @@ regardless of local frame tilt.  Vertical movement is always along world Z.
 from __future__ import annotations
 
 import math
-import time
 from contextlib import AbstractContextManager, nullcontext
 from typing import Any
 
@@ -75,6 +74,8 @@ class LocomotionController:
     """
 
     DEADZONE = 0.1
+    DEFAULT_LINEAR_STEP = 0.2 / 60.0
+    DEFAULT_ANGULAR_STEP = 0.2 / 60.0
 
     def __init__(self) -> None:
         self._prim_path: str = ""
@@ -90,10 +91,9 @@ class LocomotionController:
 
         self._edit_layer: Sdf.Layer | None = None
 
-        self._linear_speed: float = 0.2
-        self._angular_speed: float = 0.2
+        self._linear_step: float = self.DEFAULT_LINEAR_STEP
+        self._angular_step: float = self.DEFAULT_ANGULAR_STEP
         self._running = False
-        self._last_update_time: float = 0.0
         self._carry_tracking_space: bool = False
         self._prev_left_primary_click: bool = False
 
@@ -116,14 +116,14 @@ class LocomotionController:
         return self._tracking_space_prim_path
 
     @property
-    def linear_speed(self) -> float:
-        """Linear movement speed in metres per second."""
-        return self._linear_speed
+    def linear_step(self) -> float:
+        """Linear movement distance in metres per app update."""
+        return self._linear_step
 
     @property
-    def angular_speed(self) -> float:
-        """Yaw rotation speed in radians per second."""
-        return self._angular_speed
+    def angular_step(self) -> float:
+        """Yaw rotation angle in radians per app update."""
+        return self._angular_step
 
     @property
     def is_running(self) -> bool:
@@ -140,13 +140,13 @@ class LocomotionController:
         self._tracking_space_prim_path = path
         self._refresh_tracking_space_xform()
 
-    def set_linear_speed(self, speed: float) -> None:
-        """Set the linear movement speed in metres per second."""
-        self._linear_speed = max(0.0, speed)
+    def set_linear_step(self, step: float) -> None:
+        """Set the linear movement distance per app update."""
+        self._linear_step = max(0.0, step)
 
-    def set_angular_speed(self, speed: float) -> None:
-        """Set the yaw rotation speed in radians per second."""
-        self._angular_speed = max(0.0, speed)
+    def set_angular_step(self, step: float) -> None:
+        """Set the yaw rotation angle per app update."""
+        self._angular_step = max(0.0, step)
 
     def set_edit_layer(self, layer: Sdf.Layer | None) -> None:
         """Set the USD layer for prim writes.
@@ -210,7 +210,6 @@ class LocomotionController:
 
         self._cache_initial_poses()
         self._running = True
-        self._last_update_time = 0.0
         if self.carries_tracking_space_implicitly:
             print(f"[Teleop][Locomotion] Enabled on VR origin '{self._prim_path}' (carry is implicit).")
         else:
@@ -221,7 +220,6 @@ class LocomotionController:
         """Disable the controller and restores prims to their initial poses."""
         self._restore_initial_poses()
         self._running = False
-        self._last_update_time = 0.0
         self._carry_tracking_space = False
         self._prev_left_primary_click = False
 
@@ -238,11 +236,6 @@ class LocomotionController:
         """
         if not self._running or self._base_xform is None:
             return
-
-        now = time.monotonic()
-        dt = now - self._last_update_time if self._last_update_time > 0 else 1.0 / 60.0
-        dt = min(dt, 0.1)
-        self._last_update_time = now
 
         left_stick_x = self._get_input(left_ctrl, "thumbstick_x")
         left_stick_y = self._get_input(left_ctrl, "thumbstick_y")
@@ -277,10 +270,10 @@ class LocomotionController:
         ):
             return
 
-        delta_yaw = -right_stick_x * self._angular_speed * dt
-        delta_forward = left_stick_y * self._linear_speed * dt
-        delta_lateral = left_stick_x * self._linear_speed * dt
-        delta_up = (float(right_secondary) - float(right_primary)) * self._linear_speed * dt
+        delta_yaw = -right_stick_x * self._angular_step
+        delta_forward = left_stick_y * self._linear_step
+        delta_lateral = left_stick_x * self._linear_step
+        delta_up = (float(right_secondary) - float(right_primary)) * self._linear_step
 
         self._apply_movement(delta_forward, delta_lateral, delta_up, delta_yaw, self._carry_tracking_space)
 

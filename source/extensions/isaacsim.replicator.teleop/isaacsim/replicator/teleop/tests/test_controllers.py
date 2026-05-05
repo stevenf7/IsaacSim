@@ -57,3 +57,5 @@ class TestControllerInstantiation(omni.kit.test.AsyncTestCase):
         """Verify LocomotionController can be created without a stage."""
         ctrl = LocomotionController()
         self.assertIsNotNone(ctrl)
+        self.assertAlmostEqual(ctrl.linear_step, LocomotionController.DEFAULT_LINEAR_STEP)
+        self.assertAlmostEqual(ctrl.angular_step, LocomotionController.DEFAULT_ANGULAR_STEP)

@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.2] - 2026-05-05
+### Added
+- `floating_xarm.yaml` built-in profile for the solo floating-xArm scenario (VR-origin locomotion).
+- `LocomotionController.DEFAULT_LINEAR_STEP` / `DEFAULT_ANGULAR_STEP` class constants.
+- End-to-end `test_teleop_sdg_pick_and_place.py` covering all four built-in scenarios with SDG capture and episode replay; adds `isaacsim.test.utils`, `omni.kit.viewport.window`, and `omni.replicator.core` test dependencies.
+
+### Changed
+- **Breaking:** `LocomotionController` API renamed `linear_speed` / `angular_speed` (and `set_*`) to `linear_step` / `angular_step`; locomotion now applies per-app-update step sizes instead of wall-clock speeds. Built-in profiles use the new keys.
+- `ik_solo_ur3_xarm.yaml` simplified to a right-only solo configuration (left-side floating / IK / grasp blocks removed).
+
 ## [0.3.1] - 2026-04-28
 ### Added
 - `pose_backend` arg on `build_teleop_recorder` (forwarded to `EpisodeRecorder`).

@@ -85,5 +85,5 @@ locomotion:
   enabled: true
   settings:
     prim_path: /Teleop/Markers/TrackingOrigin
-    linear_speed: 0.2
-    angular_speed: 0.2
+    linear_step: 0.003333333333333333
+    angular_step: 0.003333333333333333

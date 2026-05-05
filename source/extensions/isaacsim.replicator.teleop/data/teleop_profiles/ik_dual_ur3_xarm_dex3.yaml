@@ -93,5 +93,5 @@ locomotion:
   enabled: true
   settings:
     prim_path: /World/teleop_dual_ur3_xarm_dex3
-    linear_speed: 0.2
-    angular_speed: 0.2
+    linear_step: 0.003333333333333333
+    angular_step: 0.003333333333333333

@@ -1,0 +1,34 @@
+session:
+  coordinate_system: isaac_sim
+  tracking_space_enabled: false
+  tracking_space_path: ''
+  marker_scale: 0.05
+  anchor_x: 0.0
+  anchor_y: 0.0
+  anchor_z: 0.0
+  anchor_rotation_mode: fixed
+  anchor_smoothing: 1.0
+  anchor_fixed_height: true
+floating:
+  right:
+    enabled: true
+    settings:
+      prim_path: /World/teleop_xarm/gripper_origin_xform/xarm_gripper_root_xform/xarm_gripper_rigid_root
+      pos_kp: 20.0
+      pos_kd: 0.5
+      orient_kp: 20.0
+      orient_kd: 0.2
+      target_rot_x_deg: 180
+      target_rot_y_deg: 0
+      target_rot_z_deg: 90
+grasp:
+  right:
+    enabled: true
+    prim_path: /World/teleop_xarm/gripper_origin_xform/xarm_gripper_root_xform/xarm_gripper
+    config_path: builtin://xarm_grasp
+locomotion:
+  enabled: true
+  settings:
+    prim_path: /Teleop/Markers/TrackingOrigin
+    linear_step: 0.003333333333333333
+    angular_step: 0.003333333333333333
