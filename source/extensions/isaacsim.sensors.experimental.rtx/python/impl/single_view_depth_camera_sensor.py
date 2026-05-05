@@ -22,6 +22,8 @@ from typing import Literal, get_args
 
 import carb
 import isaacsim.core.experimental.utils.prim as prim_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
+from pxr import Sdf, Usd
 
 from ._camera_common import CAMERA_ANNOTATOR_SPEC as ANNOTATOR_SPEC
 from .camera_sensor import CameraSensor
@@ -104,10 +106,60 @@ class SingleViewDepthCameraSensor(CameraSensor):
         settings.set("/exts/omni.usd.schema.render_settings/rtx/renderSettings/apiSchemas/autoApply", None)
         settings.set("/exts/omni.usd.schema.render_settings/rtx/camera/apiSchemas/autoApply", None)
         settings.set("/exts/omni.usd.schema.render_settings/rtx/renderProduct/apiSchemas/autoApply", None)
+        # copy depth sensor attributes from any pre-existing template render product in a loaded USD asset
+        self._populate_from_asset_template()
 
     """
     Methods.
     """
+
+    def _populate_from_asset_template(self) -> None:
+        """Copy depth sensor attributes from a template render product embedded in a loaded USD asset.
+
+        When the :class:`RtxCamera` was created via :meth:`RtxCamera.create` with a ``usd_path``,
+        the referenced asset may contain ``RenderProduct`` prims with the
+        ``OmniSensorDepthSensorSingleViewAPI`` schema applied and pre-configured depth sensor
+        attributes (baseline, focal length, noise, etc.). This method discovers those template
+        prims by searching the asset subtree for render products whose ``camera`` relationship
+        targets the wrapped camera prim, then copies their ``omni:rtx:post:depthSensor:*``
+        attributes to the render product created by this sensor instance.
+
+        If the :class:`RtxCamera` was not loaded from a USD asset (``_asset_root_path`` is
+        ``None``) or no matching template render product is found, this method is a no-op.
+        """
+        asset_root_path = getattr(self.authoring_object, "_asset_root_path", None)
+        if asset_root_path is None:
+            return
+
+        stage = stage_utils.get_current_stage(backend="usd")
+        camera_prim_path = self.authoring_object.paths[0]
+        root_prim = stage.GetPrimAtPath(asset_root_path)
+        if not root_prim.IsValid():
+            carb.log_warn(
+                f"Asset root prim at '{asset_root_path}' is not valid. "
+                "Cannot copy depth sensor attributes from template render product."
+            )
+            return
+
+        for child in Usd.PrimRange(root_prim):
+            if (
+                child.GetTypeName() == "RenderProduct"
+                and child.HasAPI("OmniSensorDepthSensorSingleViewAPI")
+                and child.HasRelationship("camera")
+            ):
+                targets = child.GetRelationship("camera").GetTargets()
+                if len(targets) == 1 and str(targets[0]) == camera_prim_path:
+                    for attr in child.GetAttributes():
+                        attr_name = attr.GetName()
+                        if attr_name.startswith("omni:rtx:post:depthSensor:"):
+                            if self._render_product_prim.HasAttribute(attr_name):
+                                self._render_product_prim.GetAttribute(attr_name).Set(attr.Get())
+                            else:
+                                carb.log_warn(
+                                    f"Render product at '{self._render_product_prim.GetPath()}' "
+                                    f"does not have attribute '{attr_name}'."
+                                )
+                    break
 
     def set_sensor_baseline(self, baseline: float) -> None:
         """Set the distance between the simulated depth camera sensor, in millimeters.
@@ -520,3 +572,74 @@ class SingleViewDepthCameraSensor(CameraSensor):
             1280.0
         """
         return self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:sensorSizePixel").Get()
+
+    @staticmethod
+    def add_template_render_product(parent_prim_path: str, camera_prim_path: str, **kwargs) -> Usd.Prim:
+        """Add a template render product for a depth sensor to the USD stage.
+
+        Creates a ``RenderProduct`` prim with ``OmniSensorDepthSensorSingleViewAPI`` applied and a
+        ``camera`` relationship pointing to the given camera prim. The render product is created as
+        a child of ``parent_prim_path`` and is named ``<camera_name>_render_product``.
+
+        This is used when building a depth camera USD asset for later use with
+        :class:`SingleViewDepthCameraSensor`. When the asset is loaded via
+        :meth:`RtxCamera.create`, ``SingleViewDepthCameraSensor`` automatically detects the
+        embedded render product and copies its depth sensor attributes onto the dynamically
+        created render product.
+
+        Args:
+            parent_prim_path: USD path to the parent prim under which the ``RenderProduct`` will
+                be created (trailing slash is stripped automatically).
+            camera_prim_path: USD path to the ``Camera`` prim to associate with the
+                ``RenderProduct``.
+            **kwargs: Depth sensor attribute names and values to set on the ``RenderProduct``
+                (e.g. ``omni:rtx:post:depthSensor:baselineMM=42``). A warning is logged for
+                any key that does not correspond to an existing attribute on the prim.
+
+        Returns:
+            The created ``RenderProduct`` prim, or an invalid :class:`pxr.Usd.Prim` if
+            creation failed.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> SingleViewDepthCameraSensor.add_template_render_product(
+            ...     parent_prim_path="/root/TemplateRenderProduct",
+            ...     camera_prim_path="/root/Camera",
+            ...     **{"omni:rtx:post:depthSensor:baselineMM": 42},
+            ... )
+        """
+        stage = stage_utils.get_current_stage(backend="usd")
+        parent_prim_path = parent_prim_path.rstrip("/")
+        render_product_prim_path = parent_prim_path + "/" + camera_prim_path.split("/")[-1] + "_render_product"
+        camera_prim = stage.GetPrimAtPath(camera_prim_path)
+        if not camera_prim.IsValid():
+            carb.log_warn(
+                f"SingleViewDepthCameraSensor.add_template_render_product: " f"no valid prim at '{camera_prim_path}'."
+            )
+            return Usd.Prim()
+        if camera_prim.GetTypeName() != "Camera":
+            carb.log_warn(
+                f"SingleViewDepthCameraSensor.add_template_render_product: "
+                f"prim at '{camera_prim_path}' is not a Camera (got '{camera_prim.GetTypeName()}')."
+            )
+            return Usd.Prim()
+        render_product_prim = stage.DefinePrim(render_product_prim_path, "RenderProduct")
+        if not render_product_prim.IsValid():
+            carb.log_warn(
+                f"SingleViewDepthCameraSensor.add_template_render_product: "
+                f"failed to create RenderProduct at '{render_product_prim_path}'."
+            )
+            return Usd.Prim()
+        render_product_prim.ApplyAPI("OmniSensorDepthSensorSingleViewAPI")
+        render_product_prim.CreateRelationship("camera").SetTargets([Sdf.Path(camera_prim_path)])
+        for key, value in kwargs.items():
+            if render_product_prim.HasAttribute(key):
+                render_product_prim.GetAttribute(key).Set(value)
+            else:
+                carb.log_warn(
+                    f"SingleViewDepthCameraSensor.add_template_render_product: "
+                    f"RenderProduct at '{render_product_prim_path}' has no attribute '{key}'."
+                )
+        return render_product_prim

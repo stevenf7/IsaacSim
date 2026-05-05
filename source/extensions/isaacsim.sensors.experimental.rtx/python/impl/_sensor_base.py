@@ -76,6 +76,7 @@ class _SensorAuthoring(XformPrim):
                 f"Valid values: {self._VALID_AUX_OUTPUT_LEVELS}"
             )
         self._aux_output_level = aux_output_level
+        self._asset_root_path: str | None = None
         existent_paths, nonexistent_paths = XformPrim.resolve_paths(path)
         if len(existent_paths) > 1 or len(nonexistent_paths) > 1:
             raise ValueError(
@@ -91,7 +92,7 @@ class _SensorAuthoring(XformPrim):
                 type_name = prim.GetPrimTypeInfo().GetTypeName()
                 if type_name != self._PRIM_TYPE:
                     raise ValueError(f"Prim at {path} is not an '{self._PRIM_TYPE}' prim but a '{type_name}' prim")
-                if not prim.HasAPI(self._SCHEMA):
+                if self._SCHEMA not in prim.GetAppliedSchemas():
                     raise ValueError(f"Prim at {path} does not have the '{self._SCHEMA}' schema")
             # apply additional schemas before setting attributes
             if schemas is not None:

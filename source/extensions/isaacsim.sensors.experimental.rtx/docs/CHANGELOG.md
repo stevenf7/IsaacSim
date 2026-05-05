@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.0] - 2026-05-04
+### Added
+- Add _asset_root_path attribute to _SensorAuthoring to handle assets which have multiple sensor prims.
+- RtxCamera.create method allows loading USD assets like the other authoring classes
+- New APIs in SingleViewDepthCameraSensor for functionality like deprecated isaacsim.sensors.rtx.SingleViewDepthSensorAsset
+### Changed
+- Radar.__init__ mBVH warning made clearer
+### Fixed
+- Lidar.create uses same config resolution logic as deprecated isaacsim.sensors.rtx.commands
+
 ## [1.1.2] - 2026-04-29
 ### Fixed
 - `Radar` and `Lidar` authoring classes now auto-materialize a missing parent prim on the pxr USD stage before invoking `rep.functional.create.omni_radar` / `omni_lidar`. Replicator's parent-valid check runs strictly against pxr, so newly opened large scenes (where the parent exists on the Fabric/USDRT side but not yet on pxr) would previously raise `ValueError: Parent /World is not a valid prim`. Callers no longer need the `stage_utils.define_prim("/World", "Xform")` workaround.

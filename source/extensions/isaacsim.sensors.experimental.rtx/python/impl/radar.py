@@ -107,7 +107,8 @@ class Radar(_SensorAuthoring):
         settings = carb.settings.get_settings()
         if not settings.get("/renderer/raytracingMotion/enabled"):
             raise RuntimeError(
-                "RTX Radar requires Motion BVH to be enabled. " "Set '/renderer/raytracingMotion/enabled' to true."
+                "RTX Radar requires Motion BVH to be enabled. "
+                "Set '--/renderer/raytracingMotion/enabled=true' when launching Isaac Sim."
             )
         path_parts = path.rsplit("/", 1)
         parent = path_parts[0] if len(path_parts) > 1 and path_parts[0] else None

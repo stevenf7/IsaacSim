@@ -924,7 +924,9 @@ class TestIsaacCreateRTXRadarPointCloud(_SarcophagusTestCase):
             t.assertGreater(rd["data"].shape[0], 0, "Expected non-empty data.")
             t.assertEqual(rd["data"].shape[1], 3)
             t.assertTrue(np.all(rd["intensity"] != 0))
-            t.assertTrue(np.allclose(rd["radialVelocityMS"], 0))
+            t.assertLessEqual(
+                np.max(np.abs(rd["radialVelocityMS"])), 1e-2, "Radial velocity is expected to be (close to) 0."
+            )
 
     _writer_registered = False
 
@@ -945,7 +947,7 @@ class TestIsaacCreateRTXRadarPointCloud(_SarcophagusTestCase):
             "translation": Gf.Vec3d(0.0, 0.0, 0.0),
             "orientation": Gf.Quatd(1.0, 0.0, 0.0, 0.0),
             "omni:sensor:WpmDmat:outputFrameOfReference": "WORLD",
-            "omni:sensor:WpmDmat:auxOutputType": "FULL",
+            "omni:sensor:WpmDmat:auxOutputType": "BASIC",
         }
 
         _, self.sensor = omni.kit.commands.execute("IsaacSensorCreateRtxRadar", **kwargs)

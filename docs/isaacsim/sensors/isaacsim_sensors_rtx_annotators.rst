@@ -19,6 +19,10 @@ The ``isaacsim.sensors.experimental.rtx`` and ``isaacsim.sensors.rtx.nodes`` ext
 
 The recommended approach is to use the ``LidarSensor`` or ``RadarSensor`` classes, which manage annotators and render products automatically:
 
+.. note::
+
+    This snippet will not run in the script editor window.
+
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_annotators/collect_data_with_lidar_sensor.py
     :language: python
 

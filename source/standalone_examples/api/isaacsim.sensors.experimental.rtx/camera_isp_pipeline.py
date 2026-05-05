@@ -33,6 +33,8 @@ Key ISP stages:
 
 import argparse
 import os
+import platform
+import sys
 
 from isaacsim import SimulationApp
 
@@ -45,6 +47,17 @@ parser.add_argument(
 )
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode.")
 args, _ = parser.parse_known_args()
+
+if not (platform.system() == "Linux" and platform.machine() == "x86_64"):
+    print(
+        f"This example requires Linux x86_64 "
+        f"(detected {platform.system()} {platform.machine()}).  "
+        "The sample ISP program bundled with omni.sensors.nv.camera is only "
+        "available on that platform.  To run on a different platform, supply "
+        "your own ISP program, comment-out this check, and update the "
+        "_isp_program_path variable in this script."
+    )
+    sys.exit(1)
 
 NUM_FRAMES = 20
 

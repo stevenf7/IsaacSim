@@ -109,9 +109,8 @@ ros2_tutorials/tutorial_ros2_manipulation/position_and_velocity_control_modes.py
 ros2_tutorials/tutorial_ros2_python/disable_usedomainidenvvar_to_ensure_we_use_the_abo.py
 #
 # ---- WG9: sensors/ ----
-# RTX lidar config requires Nucleus assets
+# RTX lidar — Lidar.create requires Nucleus to fetch the sensor USD asset
 sensors/isaacsim_sensors_rtx_lidar/create_lidar_from_config.py
-# RTX lidar — Lidar.create config requires Nucleus
 # RTX lidar annotators — Lidar.create needs Nucleus config
 # Pseudocode snippet — RtxCamera constructor fails (prim path /rig/camera_color doesn't resolve)
 sensors/isaacsim_sensors_camera/extrinsic_calibration.py

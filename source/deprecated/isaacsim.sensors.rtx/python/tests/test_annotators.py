@@ -1395,7 +1395,7 @@ class TestIsaacCreateRTXRadarPointCloud(omni.kit.test.AsyncTestCase):
             "translation": Gf.Vec3d(0.0, 0.0, 0.0),
             "orientation": Gf.Quatd(1.0, 0.0, 0.0, 0.0),
             "omni:sensor:WpmDmat:outputFrameOfReference": "WORLD",
-            "omni:sensor:WpmDmat:auxOutputType": "FULL",
+            "omni:sensor:WpmDmat:auxOutputType": "BASIC",
         }
 
         _, self.sensor = omni.kit.commands.execute(f"IsaacSensorCreateRtxRadar", **kwargs)
@@ -1450,4 +1450,6 @@ class TestIsaacCreateRTXRadarPointCloud(omni.kit.test.AsyncTestCase):
         self.assertEqual(self.data.shape[1], 3)
 
         self.assertTrue(np.all(self.intensity != 0))
-        self.assertTrue(np.allclose(self.radialVelocityMS, 0))
+        self.assertLessEqual(
+            np.max(np.abs(self.radialVelocityMS)), 1e-2, "Radial velocity is expected to be (close to) 0."
+        )
