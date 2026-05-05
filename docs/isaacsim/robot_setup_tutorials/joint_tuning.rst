@@ -10,204 +10,160 @@
 .. _isaac_sim_app_tutorial_advanced_joint_tuning:
 
 ==========================================
-Tutorial 11: Tuning Joint Drive Gains
+Tutorial: Tuning joint drive gains
 ==========================================
 
 Learning Objectives
 ===================
 
-In this tutorial, you learn how to use the Gain Tuner to tune joints on a robot so that it behaves as expected, and how to validate the tuned gains with the Stress Test. For a more detailed explanation of how the Gain Tuner works and the physics behind it, see :ref:`isaac_gain_tuner`.
+In this tutorial, you use the Gain Tuner to bring an un-tuned UR10 manipulator from zero gains to a working set of stiffness and damping values. Along the way you learn how to:
 
-.. figure:: /images/isim_5.0_full_ref_gui_gains_tuner_ui.png
+- Diagnose missing or insufficient gains with the **Snap-to-Limits** test.
+- Distinguish **Fail** from **Blocked** results using the **Disable Self-Collisions** toggle.
+- Validate tuned gains with the **Stress Test** and observe how velocity limits contribute to solver stability.
+
+For a full explanation of how the Gain Tuner works, the physics behind joint drives, and the complete parameter reference for each test, see :ref:`isaac_gain_tuner`.
+
+*10-15 Minute Tutorial*
+
+
+Prerequisites
+=============
+
+- Complete the :ref:`isaac_sim_app_tutorial_advanced_import_urdf` tutorial to import the UR10 onto the stage. The URDF importer sets all joint stiffness and damping to zero by default, so the robot has no active drives.
+- Read the :ref:`isaac_gain_tuner` reference for background on the parameters, physics, and detailed result interpretation guide.
+
+
+Step 1: Open the Gain Tuner and observe zero gains
+====================================================
+
+#. Go to **Tools** > **Robotics** > **Asset Editors** > **Gain Tuner**.
+#. Select the UR10 from the **Select Robot** dropdown.
+#. Ensure that **Mode** is set to **Position** for each joint.
+#. Observe that all six joints --- ``shoulder_pan_joint``, ``shoulder_lift_joint``, ``elbow_joint``, ``wrist_1_joint``, ``wrist_2_joint``, ``wrist_3_joint`` --- have **Stiffness** and **Damping** set to ``0``. With zero gains the robot has no active drives and will collapse under gravity when the simulation is played.
+
+.. image:: /images/isim_6.0_full_tut_gui_gain_tuner_ur10_zero_gains.png
     :align: center
-    :alt: Gain Tuner Overview
+    :alt: Gain Tuner with the UR10 selected and all gains at zero
 
 
-Prerequisite
-------------------
+Step 2: Snap-to-Limits with weak gains
+========================================
 
-- If the robot is in URDF format, follow :ref:`isaac_sim_app_tutorial_advanced_import_urdf` to import a URDF file into Isaac Sim.
-- The Gain Tuner extension is designed to be used on Robot assets, which are USD assets that contain the :ref:`Robot Schema <isaac_sim_robot_schema>` applied.
-- We also encourage you to setup your robot based on recommended :ref:`isaac_sim_app_reference_asset_structure`.
-- This extension is enabled by default. If it is ever disabled, it can be re-enabled from the :doc:`Extension Manager <extensions:ext_core/ext_extension-manager>` by searching for ``isaacsim.robot_setup.gain_tuner``.
-- To access this Extension, go to the top menu bar and click **Tools** > **Robotics** > **Asset Editors** > **Gain Tuner**. The robots that are available for tuning will automatically populate under the Gain Tuner **Select Robot** Dropdown menu.
+Set initial gains to see how the robot responds with deliberately low stiffness and no damping:
 
+#. In the **Stiffness** column, set all six joints to ``10``. Leave **Damping** at ``0``.
+#. Select the **Snap-to-Limits** test mode (the default).
+#. Enable the **Test** checkbox for all joints.
+#. Press **Play**, then press **Run Test**.
 
-You can import any robot on the library and work on the joint drive parameters. For a more isolated test, you can also author a simple prismatic joint connected to a fixed base and model gains based on a rigid body with a given mass that moves along this prismatic joint. Remember you need to apply :ref:`Robot Schema <isaac_sim_robot_schema>` to the robot before the Gain Tuner can recognize the relevant joints and links.
+With stiffness at only 10 Nm/rad and no damping, expect:
 
+- ``shoulder_lift_joint`` and ``elbow_joint`` are likely to **Fail**. These joints bear the full weight of the arm and 10 Nm/rad of stiffness is far too low to drive them to their limits.
+- Wrist joints may also **Fail** or show long settling times with oscillation, since there is no damping to absorb overshoot.
+- Some joints may report **Blocked** if the collision geometry prevents them from reaching a limit.
 
-Overview of the Tuning Workflow
-================================
-
-Gain tuning is an iterative process. The recommended workflow moves through two stages:
-
-#. **Set initial gains** using the position or velocity drive heuristics below.
-#. **Tune and evaluate** using the three built-in test modes, each targeting a different aspect of joint behavior:
-
-   - **Snap-to-Limits** *(default)* --- commands joints to their lower and upper limits. Use this to verify that gains are strong enough to reach the full range of motion and that limits, gains, and collision geometry are mutually consistent.
-   - **Sinusoidal** --- drives joints with a continuous repeating waveform. Use this to evaluate how well gains track smooth motion and to identify underdamping or overdamping from the shape of the tracking curve.
-   - **Step Function** --- drives joints with sudden position changes. Use this to evaluate how quickly and accurately gains respond to discrete commands, as a closer approximation of how a policy issues targets during training.
-
-Once gains are satisfactory across all three test modes, run the **Stress Test** to confirm they are robust under the extreme commands typical of reinforcement learning training before moving to Isaac Lab.
-
-
-Gain Tuning
-===========
-
-Tuning the joint drive gains is a process of finding the optimal values that balance the trade-off between stability and responsiveness. For example, low damping and stiffness may not be able to overcome the robot's inertia, causing the measured value to be offset from the target, while too high a stiffness may cause the robot to overshoot and oscillate around the target. Here we provide some tips for tuning position and velocity driven robots.
-
-.. note:: The specific tuning process may vary based on the characteristics of the robot and its control system.
-
-
-Position Drive
---------------
-
-For each joint of the robot:
-
-#. Start by setting the damping to zero and only tuning the stiffness. This will help you establish a stable response without the influence of the derivative term.
-#. Increase the stiffness until the joint is able to converge near the target position.
-#. Reduce the stiffness by one order of magnitude.
-#. After setting the stiffness, add damping with one order of magnitude lower than stiffness. This will be your baseline for the parameters and in general should not overshoot. If you want a faster response, reduce damping further.
-#. Fine-tune both gains around this established baseline to achieve the desired performance, considering factors such as stability, response time, and overshoot.
-#. If you want to emulate a control that includes gravity compensation, select all rigid bodies of the robot and check **Disable Gravity** in the properties panel.
-
-
-Velocity Limit and Industrial Robots
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Many robots, including the majority of industrial robots, come with pre-tuned PD control for their joint drives and can be set up to have a perfect position control response, always driving at the given joint velocity limit. To reproduce this behavior, increase the joint stiffness from the previous tuning heuristic by a factor of two and define the maximum joint velocity in **Joint** > **Advanced** > **Maximum Joint Velocity** in the **Properties** panel. Run the simulation to verify the joint velocity is meeting the specification and fine-tune the stiffness until the joint max velocity limit is within tolerance. If stiffness is too high, the max velocity may still be violated, so it is not advised to add infinite stiffness to the joint --- instead operate with stiffness similar to the values calibrated without a max joint velocity.
-
-
-Velocity Drive
---------------
-
-For each joint of the robot:
-
-#. Start by setting the **Stiffness** to zero and only tuning the damping.
-#. Increase the damping until the joint is able to converge near the target velocity.
-#. If the robot may carry additional load, slightly increase the damping (for example, add 10% extra) to account for the extra load.
-#. You can limit the joint's output by either setting the max joint velocity, or restricting the max joint force to impose a maximum joint load effort.
-
-
-Saving Gains to the Asset
-==========================
-
-Following the |isaac-sim| :ref:`Asset Structure <isaac_sim_app_reference_asset_structure>`, joint gains are a physics configuration and ideally should be saved on the physics layer. To facilitate this, the **Save Gains to Physics Layer** button on the UI searches for the asset's physics layer where the joint is defined and applies the updated gains to that layer.
-
-
-Tuning with the Gains Tests
-============================
-
-The three tuning test modes share the same setup steps:
-
-#. Enable the **Test** checkbox for the joints you want to evaluate in the joint table.
-#. Assign joints to sequences. Joints in the same sequence are tested simultaneously; joints in different sequences are tested one group at a time, with the robot resetting to its home configuration between sequences. Group joints that are expected to move together.
-#. Select the desired test mode in the test mode selector, configure parameters, and press **Play**, then **Run Test**.
-
-Repeat --- adjust gains, re-run, observe --- until results are satisfactory. Each test mode surfaces different information, so it is useful to work across all three rather than treating any one as definitive.
-
-
-Snap-to-Limits
----------------
-
-The default test when the Gain Tuner is opened. Commands each joint to its lower limit, holds until stabilized, commands it to its upper limit, holds, then returns to home. Unlike the sinusoidal and step function tests, Snap-to-Limits requires no manual per-joint amplitude or period configuration --- it reads limits directly from USD and automatically classifies each joint's result.
-
-Use Snap-to-Limits to answer: *can my gains drive every joint to its full range of motion, and are limits, gains, and collision geometry all consistent with each other?*
-
-Each joint is classified as **Pass**, **Fail**, or **Blocked**. If any joints report **Fail** or **Blocked**, use the **Disable Self-Collisions** and **Disable Velocity Limits** toggles to isolate the cause before adjusting gains. For a full explanation of what each classification means, the settling time and hold error metrics, and the recommended diagnostic steps for each outcome, see :ref:`isaac_gain_tuner_snap_to_limits`.
-
-
-Sinusoidal
------------
-
-Drives joints with a continuous repeating sinusoidal waveform. Use this to evaluate how well gains track smooth motion and to identify underdamping or overdamping from the shape of the tracking curve.
-
-Use Sinusoidal to answer: *do my gains track smooth, continuous motion accurately, and is the system over- or underdamped?*
-
-Use the result plots to guide adjustments:
-
-- **Measured position closely tracks commanded position**: gains are well-tuned for this waveform. Consider tightening the period or increasing amplitude to stress the joint further.
-- **Measured position lags the command or undershoots**: stiffness is likely too low. Increase stiffness and re-run.
-- **Measured position oscillates or overshoots**: damping is likely too low. Increase damping and re-run.
-- **Measured position is offset from the command at steady state**: the joint drive may be saturating at its max force limit. Check the joint max force setting in the Properties panel.
-
-
-Step Function
---------------
-
-Drives joints with sudden alternating position changes between a configurable minimum and maximum. Use this to evaluate how quickly and accurately gains respond to discrete commands --- a closer approximation of how a policy issues targets during training than a smooth waveform.
-
-Use Step Function to answer: *do my gains respond quickly and accurately to sudden position changes, without excessive overshoot or settling delay?*
-
-Use the result plots to guide adjustments:
-
-- **Measured position reaches the step target and holds cleanly**: gains are well-tuned for this step size and period.
-- **Measured position overshoots and oscillates before settling**: damping is too low. Increase damping.
-- **Measured position approaches the target slowly or does not reach it within the period**: stiffness is too low, or the period is shorter than the joint's velocity limit allows. Try increasing stiffness or lengthening the period.
-- **Measured position reaches the step target but with a consistent steady-state offset**: the joint drive may be saturating. Check the joint max force setting.
+.. image:: /images/isim_6.0_full_tut_gui_gain_tuner_ur10_snap_to_limits_weak_gains.png
+    :align: center
+    :alt: Gain Tuner with the UR10 selected and stiffness set to 10 Nm/rad
 
 .. note::
-    A reasonable goal across all three test modes is to find gains that reach the commanded position with overshoot within 1% of the target. The specific tolerance depends on your application.
+   If a joint reports **Blocked**, re-run with **Disable Self-Collisions** enabled. If the joint then passes, the joint limit extends beyond what the collision geometry allows --- tighten the joint limit in USD rather than adjusting gains.
 
 
-Stress Testing Gains for Reinforcement Learning
-==================================================
+.. _tuned_ur10_gains_table:
 
-Once gains are satisfactory across all three tuning test modes, run the **Stress Test** before moving to Isaac Lab. Gains that appear well-tuned in the GUI can produce instabilities during reinforcement learning training, where neural-net policies issue rapid, extreme commands across many parallel environments simultaneously. Finding these instabilities in the GUI --- where iteration time is fast and the Robot Inspector is available --- is significantly easier than diagnosing them during a training run.
-
-#. Select **Stress Test** in the test mode selector.
-#. Choose a sub-mode:
-
-   - **Random Walk** --- adds a Gaussian-distributed delta to each joint's position target every physics step, simulating unconstrained neural-net exploration. Start with the default sigma (1% of joint range) and increase gradually to assess your safety margin.
-   - **Adversarial** --- snaps all active joints simultaneously to randomly chosen lower or upper limits every *N* steps, targeting the worst-case correlated configurations that arise when many parallel training environments drive a robot to opposing extremes.
-
-#. Configure duration, velocity threshold, and seed. Press **Run Test**.
-
-Each joint is classified as **Stable** or **Unstable**. The RNG seed is logged so any destabilizing run can be reproduced exactly. For a full explanation of how to interpret each result combination and which part of the system each failure mode implicates, see :ref:`isaac_gain_tuner_stress_test`.
-
-
-Isolating the Responsible Joints
-----------------------------------
-
-When an instability is found, use the sequencer to narrow down which joints are responsible rather than trying to diagnose the full-robot result directly:
-
-#. Note the logged RNG seed from the result.
-#. Re-run the stress test on a subset of the articulation using the sequencer --- for example, proximal joints only.
-#. If the subset is stable, expand to include more joints. If still unstable, reduce further.
-#. Binary search toward the minimal set of joints that reproduces the instability.
-#. Tune the responsible joints and re-run the full-body test to confirm the fix.
-
-The **Robot Inspector** can assist in examining the isolated subsystem in detail between iterations.
-
-
-Visualizing Results
+Step 3: Tuned parameters
 ==========================
 
-The results of the tests are visualized as plots, where tracked joint positions and velocities are compared against the commanded trajectory. Select the desired joint in the left panel to display its results in the plots. Results are color-coded by joint, with measured values shown as a faded version of the commanded trajectory's color.
+Before adjusting gains, check the joint force limits. The UR10's URDF defines max effort values (330 Nm for the shoulder joints, 150 Nm for the elbow, 56 Nm for the wrist joints) that are imported as the joint **Max Force** in USD. With high stiffness, the PD controller may need to apply forces that exceed these limits to drive the heavy shoulder and elbow links to their targets. If a joint still fails Snap-to-Limits after increasing stiffness, select the joint in the **Properties** panel and set **Max Force** to a higher value or to ``inf`` (infinite) under **Joint** > **Advanced** > **Maximum Force**. For the UR10, ``shoulder_pan_joint`` and ``shoulder_lift_joint`` require infinite max force to pass.
 
-Even if a joint is not listed in the Robot Schema, it is still visualized in the plots if it is part of the physical robot.
+The following gains produce a UR10 that passes Snap-to-Limits. They were found using the position-drive tuning heuristic described in the :ref:`Tuning Workflow <isaac_gain_tuner_tuning_workflow>` section of the Gain Tuner reference:
 
-To select more than one joint, hold **Ctrl** and click on the desired joints, or select the first joint and hold **Shift** and click the last joint to select all joints between them.
+.. list-table::
+   :header-rows: 1
+   :widths: 30 20 20
 
-.. image:: /images/isim_5.0_full_ref_gui_gains_tuner_plots.png
-    :align: center
-    :alt: Gain Tuner results for a poorly tuned UR10e robot.
+   * - Joint
+     - Stiffness
+     - Damping
+   * - ``shoulder_pan_joint``
+     - 500000
+     - 50
+   * - ``shoulder_lift_joint``
+     - 500000
+     - 50
+   * - ``elbow_joint``
+     - 50000
+     - 50
+   * - ``wrist_1_joint``
+     - 500
+     - 0.5
+   * - ``wrist_2_joint``
+     - 500
+     - 0.5
+   * - ``wrist_3_joint``
+     - 50
+     - 0.0
 
 .. note::
-    Visualization results are only available after tests have finished running. Depending on test configuration, this may take some time.
+   These values are starting-point examples. Fine-tune them for your specific application by iterating with the Gain Tuner tests. The shoulder and elbow joints require higher gains because they bear the weight of the full arm, while the lighter wrist joints respond well at lower values.
+
+Enter these values, re-run the Snap-to-Limits test, and confirm that all joints now **Pass**.
+
+.. image:: /images/isim_6.0_full_tut_gui_gain_tuner_ur10_snap_to_limits_tuned_gains.png
+    :align: center
+    :alt: Gain Tuner with the UR10 selected and gains set to the values in the table
+
+You can further validate tracking quality with the **Sinusoidal** and **Step Function** test modes. For configuration details and result interpretation, see :ref:`isaac_gain_tuner_sinusoidal` and :ref:`isaac_gain_tuner_step_function`.
 
 
-Tips
-======
+Step 4: Stress Test with tuned gains
+======================================
 
-- Disable gravity if your robot has built-in gravity compensation or a separate gravity compensation controller.
-- Group joints that are expected to move together and tune each group individually first, then combine them for a final test. For a humanoid robot, for example, you may want to separate the legs and arms.
-- Reduce the maximum speed of a joint that you are tuning if it is not expected to be commanded to move that fast in practice. Most default maximum velocities in USD are likely impractically high.
-- When running the Stress Test, document the highest sigma at which all joints are Stable --- this is a practical safety margin for your Isaac Lab training configuration.
-- If a joint is Blocked in Snap-to-Limits, use **Disable Self-Collisions** to confirm the cause before adjusting gains.
+With the tuned gains from :ref:`tuned_ur10_gains_table` applied, run the Stress Test to verify the robot is stable under the extreme commands typical of reinforcement learning training:
+
+#. Select the **Stress Test** mode and choose the **Random Walk** sub-mode.
+#. Set **Sequence** for all joints to ``1`` so that the joints are tested in parallel.
+#. Leave **Disable Velocity Limits** off (the default).
+#. Press **Play**, then press **Run Test**.
+#. All joints should report **Stable**.
+
+.. image:: /images/isim_6.0_full_tut_gui_gain_tuner_ur10_stress_test_stable.png
+    :align: center
+    :alt: Stress Test results showing Stable joints
+
+Now observe what happens without velocity limits:
+
+#. Enable **Disable Velocity Limits**.
+#. Press **Run Test** again.
+#. Some joints now report **Unstable**.
+
+.. image:: /images/isim_6.0_full_tut_gui_gain_tuner_ur10_stress_test_unstable.png
+    :align: center
+    :alt: Stress Test results showing Unstable joints
+
+Without velocity limits, the PD controller responds to the stress test's large position errors by generating forces that accelerate joints to extreme speeds within a single simulation timestep. At these speeds the discrete-time solver can fail to converge, leading to energy blowup or NaN values.
+
+Velocity limits serve two purposes:
+
+- **Physical fidelity** --- real actuators have maximum speeds defined by the manufacturer. The UR10's URDF specifies velocity limits of approximately 2--3 rad/s per joint. Setting these in simulation reproduces the real robot's motion envelope.
+- **Solver stability** --- by capping joint speed, velocity limits keep per-step displacements within the range where the PhysX implicit integrator remains numerically stable.
+
+If your application requires higher velocity limits than the manufacturer specification, increase them incrementally and re-run the Stress Test after each change to confirm the solver remains stable at the new limits.
+
+Repeat the comparison in **Adversarial** sub-mode to confirm the same behavior under worst-case correlated configurations.
+
+.. note::
+   A **Stable** result is meaningful only at the sigma and snap interval values used. When assessing readiness for Isaac Lab training, record these parameters alongside results. See :ref:`isaac_gain_tuner_stress_test` for a full explanation of how to interpret each result combination.
 
 
-Further Learning
-=================
+Summary
+=======
 
-- Read :ref:`isaac_gain_tuner` for more details on the physical mechanics relating joint gains to derived motions, the full parameter reference for each test, and guidance on interpreting test results.
+This tutorial covered:
+
+#. Starting from an un-tuned UR10 imported from URDF with zero gains.
+#. Using Snap-to-Limits to identify joints with insufficient stiffness and distinguishing Fail from Blocked results.
+#. Applying tuned gains and confirming all joints pass Snap-to-Limits.
+#. Using the Stress Test to demonstrate why velocity limits are important for solver stability.
