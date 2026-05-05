@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1] - 2026-05-05
+### Removed
+- Remove the check for deprecated lidar schema on USD Camera prims
+
 ## [1.2.0] - 2026-04-28
 ### Changed
 - Migrate extension implementation to core experimental API
