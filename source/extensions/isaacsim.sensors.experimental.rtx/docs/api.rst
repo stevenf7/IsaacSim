@@ -19,6 +19,8 @@ The following table summarizes the available classes.
     Lidar
     Radar
     Acoustic
+    RtxCamera
+    StructuredLightCamera
 
 .. rubric:: sensors (runtime)
 .. autosummary::
@@ -27,6 +29,9 @@ The following table summarizes the available classes.
     LidarSensor
     RadarSensor
     AcousticSensor
+    CameraSensor
+    SingleViewDepthCameraSensor
+    TiledCameraSensor
 
 .. rubric:: utils
 .. autosummary::
@@ -61,6 +66,18 @@ Authoring
     :inherited-members:
     :show-inheritance:
 
+.. autoclass:: isaacsim.sensors.experimental.rtx.RtxCamera
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.sensors.experimental.rtx.StructuredLightCamera
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
 Sensors
 -------
 
@@ -75,6 +92,21 @@ Sensors
     :show-inheritance:
 
 .. autoclass:: isaacsim.sensors.experimental.rtx.AcousticSensor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.sensors.experimental.rtx.CameraSensor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.sensors.experimental.rtx.SingleViewDepthCameraSensor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. autoclass:: isaacsim.sensors.experimental.rtx.TiledCameraSensor
     :members:
     :undoc-members:
     :show-inheritance:

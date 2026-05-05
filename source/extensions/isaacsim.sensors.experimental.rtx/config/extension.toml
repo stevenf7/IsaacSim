@@ -1,5 +1,5 @@
 [package]
-version = "1.2.0"
+version = "1.3.0"
 category = "Simulation"
 title = "Isaac Sim RTX Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar, RTX Radar & RTX Acoustic."
@@ -119,5 +119,14 @@ args = [
     "--/renderer/raytracingMotion/enabledForHydraEngines=0,1,2,3",
 ]
 stdoutFailPatterns.exclude = [
+    '*Failed to read texture file*direction.exr*',
+    '*Failed to read texture file*pattern_??.png*',
+    '*Failed to request UJITSO build result for: *direction.exr*',
+    '*Failed to request UJITSO build result for: *pattern_??.png*',
+    '*Failed to request UJITSO build result for: *sl_direction.exr*',
+    '*Failed to request UJITSO build result for: /nonexistent/*',
+    '*Failed to request UJITSO build result for: omniverse://server.example/*',
+    '*TextureProcessor : Failed to process texture *direction.exr*',
+    '*TextureProcessor : Failed to process texture *pattern_??.png*',
     '*The NumPy module was reloaded*',
 ]
