@@ -87,17 +87,25 @@ For RViz2 visualization:
 #. Set the **Fixed Frame** to ``base_scan`` to match the radar's frame ID.
 #. Add a **PointCloud2** visualization and set the topic to ``/radar_point_cloud``.
 #. If radial velocity is enabled, you can color the point cloud by the ``radial_velocity_ms`` field to visualize Doppler data.
+#. To observe the RViz image below, make sure the simulation is playing. In a ROS2-sourced terminal, open with the configuration provided using the command:
 
-..
-    TODO: Replace the placeholder below with a screenshot of the expected RViz2
-    visualization (radar PointCloud2 on the turtlebot scene), styled to match the
-    figure in the RTX Lidar tutorial. See NVBug 6116050.
+     ``ros2 run rviz2 rviz2 -d <ros2_ws>/src/isaac_tutorials/rviz2/camera_lidar.rviz``
 
-.. .. figure:: /images/TODO_rtx_radar_rviz2_expected.png
-..    :align: center
-..    :width: 800
-..    :alt: Expected RViz2 visualization of the RTX Radar PointCloud2 output on the turtlebot scene.
+ After the RViz window finishes loading, you can enable and disable the sensor streams inside the **Display** panel on the left hand side.
+ Modify the PointCloud2 visualization topic to ``/radar_point_cloud`` to show the Radar point cloud, rather than the Lidar point cloud.
 
+.. figure:: /images/isim_6.0_ros_tut_external_rtx_radar_multisensor_rviz2.png
+    :align: center
+    :width: 800
+    :alt: Example Multisensor RViz2 configuration
+
+.. important:: Ensure that the ``use_sim_time`` ROS2 param is set to true after running the RViz2 node.
+               This ensures that the RViz2 node is synchronized with the simulation data especially when RViz2 interpolates position of Lidar data points.
+               Set the parameter using the following command in a new ROS2-sourced terminal:
+
+               .. code-block:: bash
+
+	                ros2 param set /rviz use_sim_time true
 
 Programmatic Setup (Script Editor)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
