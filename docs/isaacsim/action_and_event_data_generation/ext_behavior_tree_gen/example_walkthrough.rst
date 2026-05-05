@@ -9,7 +9,7 @@
 .. _behavior_tree_gen_example_walkthrough:
 
 ===================
-Example walkthrough
+Example Walkthrough
 ===================
 
 This walkthrough uses the bundled **Basic Scene** scene and the **Behavior Tree Gen**
@@ -52,7 +52,7 @@ Steps
 
 6. Click **Run Pipeline**.
 
-What happens internally
+What Happens Internally
 -----------------------
 
 When you click **Run Pipeline**, the **Behavior Tree Gen** UI performs the same three public API steps that scripted
@@ -63,7 +63,7 @@ callers use:
 2. It prepares the runtime by configuring the LLM, embedding setup, RAG retrievers, and Action IR.
 3. It generates the behavior tree from the natural-language scenario.
 
-Expected result
+Expected Result
 ---------------
 
 If the run succeeds:
@@ -73,7 +73,18 @@ If the run succeeds:
 * planner cache data is stored under a workspace cache directory
 * RAG and vectorstore data is stored under the derived cache directory
 
-Useful behavior to know
+Known limitations of Example Actions
+-------------------------------------
+
+.. note::
+
+   The custom actions bundled with the examples (such as ``MoveTo``) are provided to demonstrate that
+   the system supports action node imports and is fully extensible. At this stage, some actions may
+   exhibit imperfect behavior. For example, ``MoveTo`` can produce paths that overlap with the target
+   object. These examples serve as a transitional reference, a more comprehensive and refined set of
+   actions is planned.
+
+Useful Behavior to Know
 -----------------------
 
 * If you run the same scenario again without changing the tracked input files, the extension can

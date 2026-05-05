@@ -127,7 +127,8 @@ changed:
    * - **Additional Writers**
      - --
      - New
-     - ``CosmosIRAWriter``, ``BasicWriter``, ``SceneGraphWriter``, ``CustomWriter``.
+     - ``CosmosIRAWriter``, ``SceneGraphWriter``, ``CustomWriter``. (``BasicWriter`` is accessible via ``CustomWriter`` with ``writer_name: "BasicWriter"``.)
+
    * - **Semantic Labels on Actors**
      - --
      - New
@@ -530,7 +531,7 @@ Key differences:
 * Per-writer ``start_frame`` and ``end_frame`` or ``start_time`` and ``end_time`` for timing control.
 * Per-writer ``sensor_prim_list`` for selecting specific cameras.
 * Default ``start_frame`` is ``30`` (skips initial settling frames).
-* New writers: ``CosmosIRAWriter``, ``BasicWriter``, ``SceneGraphWriter``, ``CustomWriter``.
+* New writers: ``CosmosIRAWriter``, ``SceneGraphWriter``, ``CustomWriter``. The stock Replicator ``BasicWriter`` can be used via ``CustomWriter`` with ``writer_name: "BasicWriter"``.
 * ``IRABasicWriter`` defaults changed: ``object_info_bounding_box_2d_tight``, ``object_info_bounding_box_2d_loose``, and ``object_info_bounding_box_3d`` now default to ``true``.
 
 Behavior System Architecture Changes
