@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2026-05-05
+### Added
+- StructuredLightCamera authoring API, allowing users to specify time-sequenced projection patterns with the camera.
+
 ## [1.2.0] - 2026-05-04
 ### Added
 - Add _asset_root_path attribute to _SensorAuthoring to handle assets which have multiple sensor prims.

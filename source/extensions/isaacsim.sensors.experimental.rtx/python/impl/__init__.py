@@ -30,6 +30,7 @@ from .rtx_camera import RtxCamera as RtxCamera
 from .rtx_lidar_configs import SUPPORTED_LIDAR_CONFIGS as SUPPORTED_LIDAR_CONFIGS
 from .rtx_lidar_configs import SUPPORTED_LIDAR_VARIANT_SET_NAME as SUPPORTED_LIDAR_VARIANT_SET_NAME
 from .single_view_depth_camera_sensor import SingleViewDepthCameraSensor as SingleViewDepthCameraSensor
+from .structured_light_camera import StructuredLightCamera as StructuredLightCamera
 from .tiled_camera_sensor import TiledCameraSensor as TiledCameraSensor
 from .utils import parse_generic_model_output_data as parse_generic_model_output_data
 from .utils import parse_object_ids as parse_object_ids
