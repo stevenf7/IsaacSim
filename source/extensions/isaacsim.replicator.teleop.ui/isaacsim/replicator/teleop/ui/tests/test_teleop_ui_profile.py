@@ -34,7 +34,7 @@ MENU_PATH = f"{TeleopUIExtension.MENU_GROUP}/{TeleopUIExtension.WINDOW_NAME}"
 class TestTeleopUIProfile(MenuUITestCase):
     """Round-trip a unified teleop profile through the live Profiles panel."""
 
-    async def test_load_profile_applies_to_session_panel(self):
+    async def test_load_profile_applies_to_session_panel(self) -> None:
         """A YAML profile loaded through the Profiles panel must update session state."""
         profile_name = "ui_test_profile"
         window = None
@@ -94,7 +94,7 @@ class TestTeleopUIProfile(MenuUITestCase):
                     window._last_profile_path = os.path.join(tmp_dir, "last_profile.yaml")
                     window.destroy()
 
-    async def test_save_then_reload_round_trip(self):
+    async def test_save_then_reload_round_trip(self) -> None:
         """Saving via the Save row and then loading must restore the saved values."""
         profile_name = "ui_test_profile"
         window = None
@@ -147,7 +147,7 @@ class TestTeleopUIProfile(MenuUITestCase):
                     window._last_profile_path = os.path.join(tmp_dir, "last_profile.yaml")
                     window.destroy()
 
-    async def test_save_existing_profile_shows_overwrite_dialog(self):
+    async def test_save_existing_profile_shows_overwrite_dialog(self) -> None:
         """Saving over an existing profile must open a confirm dialog before writing."""
         profile_name = "existing_profile"
         window = None
@@ -226,7 +226,7 @@ class TestTeleopUIProfile(MenuUITestCase):
                     window._last_profile_path = os.path.join(tmp_dir, "last_profile.yaml")
                     window.destroy()
 
-    async def test_delete_removes_file_and_clears_last_profile_setting(self):
+    async def test_delete_removes_file_and_clears_last_profile_setting(self) -> None:
         """Delete must remove the file from disk, rescan the list, and clear the last_profile setting."""
         import carb.settings
 
@@ -295,7 +295,7 @@ class TestTeleopUIProfile(MenuUITestCase):
                     window._last_profile_path = os.path.join(tmp_dir, "last_profile.yaml")
                     window.destroy()
 
-    async def test_filename_normalization_appends_yaml(self):
+    async def test_filename_normalization_appends_yaml(self) -> None:
         """Save with a name that lacks .yaml extension must write `<name>.yaml`."""
         window = None
 

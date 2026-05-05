@@ -80,6 +80,23 @@ class ArticulationRecordableTests(omni.kit.test.AsyncTestCase):
         self.assertEqual(manifest["link_paths"], rec.link_paths)
         self.assertTrue(manifest["include_root"])
 
+    async def test_include_root_preserved_when_rigid_links_exist(self) -> None:
+        stage = omni.usd.get_context().get_stage()
+        stage_utils.define_prim("/World", "Xform")
+        robot = stage_utils.define_prim("/World/Robot", "Xform")
+        UsdPhysics.ArticulationRootAPI.Apply(robot)
+        rigid_link = stage_utils.define_prim("/World/Robot/rigid_link", "Xform")
+        stage_utils.define_prim("/World/Robot/visual_link", "Xform")
+        UsdPhysics.RigidBodyAPI.Apply(rigid_link)
+
+        rec = ArticulationRecordable(group="state/robot", prim_path="/World/Robot")
+        rec.on_session_open(stage)
+
+        self.assertEqual(rec.link_paths[0], "/World/Robot")
+        self.assertIn("/World/Robot/rigid_link", rec.link_paths)
+        self.assertNotIn("/World/Robot/visual_link", rec.link_paths)
+        self.assertEqual(len(rec.link_paths), len(set(rec.link_paths)))
+
     async def test_joint_as_root_falls_back_to_xformable_ancestor(self) -> None:
         """PhysX fixed-base convention: ArticulationRootAPI on a UsdPhysicsJoint whose
         parent is the link-Xform subtree. Discovery must walk up one level."""

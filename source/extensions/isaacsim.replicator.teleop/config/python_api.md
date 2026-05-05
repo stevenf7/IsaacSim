@@ -94,16 +94,18 @@
 
 - class LocomotionController
   - DEADZONE: float
+  - DEFAULT_LINEAR_STEP: Unknown
+  - DEFAULT_ANGULAR_STEP: Unknown
   - def __init__(self)
   - [property] def prim_path(self) -> str
   - [property] def tracking_space_prim_path(self) -> str
-  - [property] def linear_speed(self) -> float
-  - [property] def angular_speed(self) -> float
+  - [property] def linear_step(self) -> float
+  - [property] def angular_step(self) -> float
   - [property] def is_running(self) -> bool
   - def set_prim_path(self, path: str)
   - def set_tracking_space_prim_path(self, path: str)
-  - def set_linear_speed(self, speed: float)
-  - def set_angular_speed(self, speed: float)
+  - def set_linear_step(self, step: float)
+  - def set_angular_step(self, step: float)
   - def set_edit_layer(self, layer: Sdf.Layer | None)
   - def validate(self) -> tuple[bool, str]
   - def enable(self) -> tuple[bool, str]

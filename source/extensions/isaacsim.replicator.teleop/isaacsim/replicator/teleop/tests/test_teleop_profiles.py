@@ -96,8 +96,8 @@ class TestTeleopProfiles(omni.kit.test.AsyncTestCase):
                 enabled=True,
                 settings={
                     "prim_path": "/World/Base",
-                    "linear_speed": 1.25,
-                    "angular_speed": 0.75,
+                    "linear_step": 0.01,
+                    "angular_step": 0.02,
                 },
             ),
         )

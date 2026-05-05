@@ -24,45 +24,7 @@ session:
   anchor_rotation_mode: fixed
   anchor_smoothing: 1.0
   anchor_fixed_height: true
-floating:
-  left:
-    enabled: false
-    settings:
-      prim_path: ''
-      pos_kp: 20.0
-      pos_kd: 0.5
-      orient_kp: 20.0
-      orient_kd: 0.2
-      target_rot_x_deg: 180
-      target_rot_y_deg: 0
-      target_rot_z_deg: 90
-  right:
-    enabled: false
-    settings:
-      prim_path: ''
-      pos_kp: 20.0
-      pos_kd: 0.5
-      orient_kp: 20.0
-      orient_kd: 0.2
-      target_rot_x_deg: -90
-      target_rot_y_deg: 0
-      target_rot_z_deg: 90
 ik:
-  left:
-    enabled: false
-    settings:
-      robot_path: ''
-      solver: pink
-      gain: 5.0
-      vr_target_filter: 0.0
-      max_joint_step: 0.0
-      pink_qp_solver: osqp
-      pink_task_gain: 0.5
-      pink_posture_cost: 0.001
-      pink_lm_damping: 1.0
-      ee_rot_x_deg: 180
-      ee_rot_y_deg: 0
-      ee_rot_z_deg: -90
   right:
     enabled: true
     settings:
@@ -78,12 +40,8 @@ ik:
       pink_lm_damping: 1.0
       ee_rot_x_deg: 180
       ee_rot_y_deg: 0
-      ee_rot_z_deg: -90
+      ee_rot_z_deg: 90
 grasp:
-  left:
-    enabled: false
-    prim_path: ''
-    config_path: builtin://xarm_grasp
   right:
     enabled: true
     prim_path: /World/teleop_solo_ur3_xarm/solo_arm/xarm_gripper
@@ -92,5 +50,5 @@ locomotion:
   enabled: true
   settings:
     prim_path: /World/teleop_solo_ur3_xarm/solo_arm
-    linear_speed: 0.2
-    angular_speed: 0.2
+    linear_step: 0.003333333333333333
+    angular_step: 0.003333333333333333

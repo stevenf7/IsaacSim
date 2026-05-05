@@ -1,5 +1,5 @@
 [package]
-version = "0.3.1"
+version = "0.3.2"
 category = "Simulation"
 title = "Replicator Teleop"
 description = "Teleoperation utilities and marker management for replicator workflows"
@@ -42,7 +42,11 @@ stdoutFailPatterns.exclude = [
 
 [[test]]
 timeout = 300
-dependencies = []
+dependencies = [
+    "isaacsim.test.utils",
+    "omni.kit.viewport.window",
+    "omni.replicator.core",
+]
 
 args = [
     "--enable",

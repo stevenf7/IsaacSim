@@ -17,8 +17,8 @@
 
 Controls:
 - Base prim path for the kinematic base/root prim to move
-- Slide speed multiplier for left-thumbstick translation and right-button vertical motion
-- Turn speed multiplier for right-thumbstick yaw
+- Slide step for left-thumbstick translation and right-button vertical motion
+- Turn step for right-thumbstick yaw
 - Enable / Disable toggle (becomes active on Play)
 """
 
@@ -78,8 +78,8 @@ class LocomotionPanel:
         self._enable_btn: ui.Button | None = None
         self._clear_btn: ui.Button | None = None
         self._status_label: ui.Label | None = None
-        self._linear_speed_slider: ui.FloatSlider | None = None
-        self._angular_speed_slider: ui.FloatSlider | None = None
+        self._linear_step_slider: ui.FloatSlider | None = None
+        self._angular_step_slider: ui.FloatSlider | None = None
         self._configured: bool = False
         self._desired_enabled: bool = False
         self._is_playing: bool = False
@@ -105,11 +105,12 @@ class LocomotionPanel:
             "Base prim moved kinematically by locomotion. Use the robot root or mobile base that should carry "
             "the attached teleop content."
         )
-        linear_speed_tooltip = (
-            "Slide speed scale for locomotion input. Affects forward/backward and left/right slide on the left thumbstick, "
-            "plus vertical motion from the right face buttons (`A` = down, `B` = up on Meta-style controllers)."
+        linear_step_tooltip = (
+            "Slide distance per app update at full input. Affects forward/backward and left/right slide on the "
+            "left thumbstick, plus vertical motion from the right face buttons (`A` = down, `B` = up on "
+            "Meta-style controllers)."
         )
-        angular_speed_tooltip = "Turn speed scale for the right-thumbstick left/right yaw input."
+        angular_step_tooltip = "Turn angle per app update at full right-thumbstick left/right yaw input."
         enable_tooltip = (
             "Enable or disable slide locomotion for the next Play session. During Play, enabled locomotion reads "
             "the left thumbstick for slide motion, the right thumbstick for turn, and the right face buttons for "
@@ -144,32 +145,32 @@ class LocomotionPanel:
 
                 with ui.HStack(spacing=ROW_SPACING, height=ROW_HEIGHT):
                     ui.Spacer(width=INDENT)
-                    ui.Label("Slide Speed:", width=85, tooltip=linear_speed_tooltip)
-                    self._linear_speed_slider = ui.FloatSlider(
+                    ui.Label("Slide Step:", width=85, tooltip=linear_step_tooltip)
+                    self._linear_step_slider = ui.FloatSlider(
                         min=0.0,
-                        max=10.0,
-                        step=0.1,
+                        max=0.1,
+                        step=0.001,
                         width=ui.Fraction(1),
-                        tooltip=linear_speed_tooltip,
+                        tooltip=linear_step_tooltip,
                     )
-                    self._linear_speed_slider.model.set_value(self._loco.linear_speed)
-                    self._linear_speed_slider.model.add_value_changed_fn(
-                        lambda m: self._loco.set_linear_speed(m.get_value_as_float())
+                    self._linear_step_slider.model.set_value(self._loco.linear_step)
+                    self._linear_step_slider.model.add_value_changed_fn(
+                        lambda m: self._loco.set_linear_step(m.get_value_as_float())
                     )
 
                 with ui.HStack(spacing=ROW_SPACING, height=ROW_HEIGHT):
                     ui.Spacer(width=INDENT)
-                    ui.Label("Turn Speed:", width=85, tooltip=angular_speed_tooltip)
-                    self._angular_speed_slider = ui.FloatSlider(
+                    ui.Label("Turn Step:", width=85, tooltip=angular_step_tooltip)
+                    self._angular_step_slider = ui.FloatSlider(
                         min=0.0,
-                        max=10.0,
-                        step=0.1,
+                        max=0.1,
+                        step=0.001,
                         width=ui.Fraction(1),
-                        tooltip=angular_speed_tooltip,
+                        tooltip=angular_step_tooltip,
                     )
-                    self._angular_speed_slider.model.set_value(self._loco.angular_speed)
-                    self._angular_speed_slider.model.add_value_changed_fn(
-                        lambda m: self._loco.set_angular_speed(m.get_value_as_float())
+                    self._angular_step_slider.model.set_value(self._loco.angular_step)
+                    self._angular_step_slider.model.add_value_changed_fn(
+                        lambda m: self._loco.set_angular_step(m.get_value_as_float())
                     )
 
                 with ui.HStack(spacing=ROW_SPACING, height=ROW_HEIGHT):
@@ -298,8 +299,8 @@ class LocomotionPanel:
         path = self._path_field.model.get_value_as_string() if self._path_field else ""
         settings = {
             "prim_path": path,
-            "linear_speed": self._loco.linear_speed,
-            "angular_speed": self._loco.angular_speed,
+            "linear_step": self._loco.linear_step,
+            "angular_step": self._loco.angular_step,
         }
         return LocomotionProfile(
             enabled=self._desired_enabled,
@@ -320,16 +321,16 @@ class LocomotionPanel:
         self._save("path", path)
         self._loco.set_prim_path(path)
 
-        linear_speed = float(profile.settings.get("linear_speed", self._loco.linear_speed))
-        angular_speed = float(profile.settings.get("angular_speed", self._loco.angular_speed))
-        if self._linear_speed_slider:
-            self._linear_speed_slider.model.set_value(linear_speed)
+        linear_step = float(profile.settings.get("linear_step", self._loco.linear_step))
+        angular_step = float(profile.settings.get("angular_step", self._loco.angular_step))
+        if self._linear_step_slider:
+            self._linear_step_slider.model.set_value(linear_step)
         else:
-            self._loco.set_linear_speed(linear_speed)
-        if self._angular_speed_slider:
-            self._angular_speed_slider.model.set_value(angular_speed)
+            self._loco.set_linear_step(linear_step)
+        if self._angular_step_slider:
+            self._angular_step_slider.model.set_value(angular_step)
         else:
-            self._loco.set_angular_speed(angular_speed)
+            self._loco.set_angular_step(angular_step)
 
         if not path:
             self._sync_controls()

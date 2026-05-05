@@ -116,11 +116,11 @@ class ArticulationRecordable(Recordable):
         self._xform_ops_reset = False
 
     def _discover_link_paths(self, stage: Any) -> list[str]:
-        """Walk the articulation subtree and return every Xformable prim path.
+        """Walk the articulation subtree and return rigid link prim paths.
 
-        Children are visited in deterministic DFS order (``prim.GetChildren()`` order)
-        and joint prims (``UsdPhysics.Joint``) are skipped — they carry relationship
-        metadata rather than a transformable visual.
+        Children are visited in deterministic DFS order (``prim.GetChildren()`` order).
+        Joint prims are skipped because they carry relationship metadata, and visual /
+        collision containers are left to inherit from their rigid link parents.
 
         Fixed-base PhysX articulations apply ``ArticulationRootAPI`` to a
         ``UsdPhysicsJoint`` rather than to the link-Xform subtree; the joint is not
@@ -148,12 +148,23 @@ class ArticulationRecordable(Recordable):
             else:
                 return []
 
-        paths: list[str] = []
+        xform_paths: list[str] = []
+        rigid_link_paths: list[str] = []
         seen: set[str] = set()
-        if self.include_root and walk_root.IsA(UsdGeom.Xformable):
-            p = str(walk_root.GetPath())
-            paths.append(p)
+
+        def add_xformable(prim: Any) -> None:
+            if not prim.IsA(UsdGeom.Xformable):
+                return
+            p = str(prim.GetPath())
+            if p in seen:
+                return
+            xform_paths.append(p)
             seen.add(p)
+            if prim.HasAPI(UsdPhysics.RigidBodyAPI):
+                rigid_link_paths.append(p)
+
+        if self.include_root:
+            add_xformable(walk_root)
 
         stack = deque(walk_root.GetChildren())
         while stack:
@@ -162,13 +173,17 @@ class ArticulationRecordable(Recordable):
                 continue
             if child.IsA(UsdPhysics.Joint):
                 continue
-            if child.IsA(UsdGeom.Xformable):
-                p = str(child.GetPath())
-                if p not in seen:
-                    paths.append(p)
-                    seen.add(p)
+            add_xformable(child)
             stack.extend(child.GetChildren())
-        return paths
+
+        selected_paths = rigid_link_paths or xform_paths
+        if not self.include_root or not walk_root.IsA(UsdGeom.Xformable):
+            return selected_paths
+
+        root_path = str(walk_root.GetPath())
+        if root_path in selected_paths:
+            return selected_paths
+        return [root_path, *selected_paths]
 
     @staticmethod
     def _has_xformable_descendant(prim: Any, *, exclude_path: str | None = None) -> bool:

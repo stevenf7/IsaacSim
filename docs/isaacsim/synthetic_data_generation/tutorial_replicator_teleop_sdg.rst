@@ -211,20 +211,22 @@ Anchor > Custom USD Anchor**.
     *   **Raw (no conversion)** --- passes poses through unchanged.
 
 *   **Custom Anchor** --- scene prim that the VR headset and controllers
-    are anchored to. The row's toggle button flips between **Set** and
-    **Clear** depending on whether the field's path matches the currently
-    active anchor. **Set** validates the path and activates anchoring
-    immediately (live, every-frame following of the prim from its world
-    transform). **Clear** reverts the active anchor to the built-in
-    origin marker under ``/Teleop/Markers/`` and resets the marker to
-    world (0, 0, 0); the typed path is preserved in the field so the user
-    can re-Set it. Use the bin glyph in the row to clear the field text.
-    Paths under the reserved ``/Teleop/Markers/`` namespace fall back to
-    the built-in origin on Set.
+    are anchored to. Click **Set** to validate the path and activate
+    anchoring immediately (live, every-frame following of the prim from
+    its world transform). After a custom path is active, the same row
+    button changes to **Clear**. **Clear** reverts the active anchor to
+    the built-in origin marker under ``/Teleop/Markers/`` and resets the
+    marker to world (0, 0, 0); the typed path is preserved in the field.
+    To retarget the active anchor, click **Clear**, edit the path if
+    needed, and click **Set** again. Use the bin glyph in the row to clear
+    the field text. Paths under the reserved ``/Teleop/Markers/``
+    namespace fall back to the built-in origin on **Set**.
 
-*   **Offset X / Y / Z** --- position offset in metres for the VR headset
-    camera. Without a Custom Anchor this is an absolute world position;
-    with one it is relative to that prim.
+*   **Offset** --- position offset in metres for the VR headset camera.
+    The UI shows one **Offset** row with **X**, **Y**, and **Z** fields;
+    there is no separate **XR Headset** row label. Without a Custom Anchor
+    this is an absolute world position; with one it is relative to that
+    prim.
 *   **Rotation** --- how the headset camera yaw tracks the Custom Anchor
     prim:
 
@@ -244,12 +246,12 @@ Anchor > Custom USD Anchor**.
     the duration of a session. On Connect it switches Kit to
     ``custom anchor`` mode pointing at ``/World/XRAnchor`` and drives that
     prim every frame from the **Custom Anchor** prim plus the offset,
-    rotation, smoothing, and coordinate-frame controls above. Re-clicking
-    **Set** after editing the prim path retargets the headset and
-    controllers immediately. Kit's profile-level **Adjust for User
-    Height** setting (under **Navigation Settings**) is unrelated --- it
-    shifts the camera at scene-entry time, while **Fixed Height** here
-    locks Z to its first-frame value during the teleop session.
+    rotation, smoothing, and coordinate-frame controls above. To retarget
+    an active custom anchor, clear it first and then set the new path.
+    Kit's profile-level **Adjust for User Height** setting (under
+    **Navigation Settings**) is unrelated --- it shifts the camera at
+    scene-entry time, while **Fixed Height** here locks Z to its
+    first-frame value during the teleop session.
 
 Debug
 ######
@@ -778,11 +780,35 @@ folder to manage your own profiles alongside the built-in ones.
 Built-in profiles
 ^^^^^^^^^^^^^^^^^^
 
-The extension ships two built-in profiles that demonstrate both locomotion
-workflows.
+The extension ships four built-in profiles that pair each locomotion workflow
+(VR-origin or robot-base) with a solo and a bimanual robot configuration:
 
-Floating grippers (VR origin locomotion)
-#########################################
+.. list-table::
+   :header-rows: 1
+   :widths: 30 30 40
+
+   * - Profile
+     - Matching stage
+     - Configuration
+   * - ``floating_xarm.yaml``
+     - ``teleop_scenario_floating_xarm.usd``
+     - Solo floating xArm gripper (right side); VR-origin locomotion.
+   * - ``floating_xarm_dex3.yaml``
+     - ``teleop_scenario_floating_xarm_dex3.usd``
+     - Bimanual floating grippers (xArm left + Dex3 right); VR-origin locomotion.
+   * - ``ik_solo_ur3_xarm.yaml``
+     - ``teleop_scenario_solo_ur3_xarm.usd``
+     - Single UR3e arm with xArm gripper (right side); robot-base locomotion.
+   * - ``ik_dual_ur3_xarm_dex3.yaml``
+     - ``teleop_scenario_dual_ur3_xarm_dex3.usd``
+     - Bimanual UR3e arms (xArm gripper left + Dex3 right); robot-base locomotion.
+
+The two bimanual profiles are described in detail below; the solo variants
+share the same structure with one side disabled and the locomotion target
+adjusted for the simpler robot.
+
+Bimanual floating grippers (VR origin locomotion)
+###################################################
 
 ``floating_xarm_dex3.yaml`` configures a dual floating-gripper setup. The
 Floating controller drives each gripper as a free rigid body, and Locomotion
@@ -870,7 +896,7 @@ input moves the entire teleop workspace (VR origin workflow):
 Dual-arm IK (robot-base locomotion)
 #####################################
 
-``dual_ur3_xarm_dex3.yaml`` configures a dual UR3e arm setup where each arm
+``ik_dual_ur3_xarm_dex3.yaml`` configures a dual UR3e arm setup where each arm
 is driven by the PINK IK solver. Locomotion targets the robot's root prim so
 that thumbstick input moves the entire robot base.
 
@@ -947,6 +973,35 @@ Teleop window. Refer to the
 :ref:`UI reference <isaac_sim_app_tutorial_replicator_teleop_ui>` above for
 detailed descriptions of each control.
 
+.. _isaac_sim_app_tutorial_replicator_teleop_test_stages:
+
+Built-in scenario stages
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The four built-in profiles described in
+:ref:`Built-in profiles <isaac_sim_app_tutorial_replicator_teleop_profiles>`
+each ship with a matching stage on the Isaac Sim assets server. Substitute
+any of these URLs when a step below calls for a stage URL --- the panel-level
+behaviour is the same:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 65
+
+   * - Scenario
+     - Stage URL
+   * - Floating, solo (right xArm)
+     - ``http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Replicator/Teleop/teleop_scenario_floating_xarm.usd``
+   * - Floating, bimanual (xArm left + Dex3 right)
+     - ``http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Replicator/Teleop/teleop_scenario_floating_xarm_dex3.usd``
+   * - IK, solo (xArm on UR3e, right side)
+     - ``http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Replicator/Teleop/teleop_scenario_solo_ur3_xarm.usd``
+   * - IK, bimanual (xArm left + Dex3 right on dual UR3e)
+     - ``http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Replicator/Teleop/teleop_scenario_dual_ur3_xarm_dex3.usd``
+
+The Floating Controller steps below assume one of the two floating stages;
+the IK Controller steps assume one of the two IK stages.
+
 1. Extension loading
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -959,7 +1014,8 @@ detailed descriptions of each control.
 2. Session --- connect and frame markers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-#. Open a stage with a robot (e.g. ``http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Replicator/Teleop/teleop_scenario_floating_xarm_dex3.usd``).
+#. Open one of the
+   :ref:`built-in scenario stages <isaac_sim_app_tutorial_replicator_teleop_test_stages>`.
 #. Expand **Session** and click **Connect**. Verify:
 
    *   Status turns green (**Connected**).
@@ -972,21 +1028,21 @@ detailed descriptions of each control.
 #. Move the VR controllers. Verify the **Left** and **Right** markers track in real time.
 #. In the **Frame Markers** sub-section, adjust the **Scale** drag field. Verify marker axis length changes in the viewport.
 
-3. Session --- tracking space and XR anchor
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3. Session --- XR anchor
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Expand the **XR Anchor** sub-panel.
 #. Change the **Coordinate Frame** dropdown to **Raw (no conversion)** and
    back to **Isaac Sim (Z-up)**. Verify the marker orientations update.
 #. Enter a scene prim path in the **Custom Anchor** field (e.g. the robot
    base) and click **Set**. Verify VR poses are now relative to that prim.
-#. Adjust the **Offset X / Y / Z** fields. Verify the headset camera
-   position shifts accordingly.
-#. Change the **Rotation** dropdown to **Follow Prim**. Rotate the Tracking
-   Space prim in the viewport; verify the headset camera yaw follows.
+#. Adjust the **Offset** row's **X**, **Y**, and **Z** fields. Verify the
+   headset camera position shifts accordingly.
+#. Change the **Rotation** dropdown to **Follow Prim**. Rotate the Custom
+   Anchor prim in the viewport; verify the headset camera yaw follows.
 #. Change **Rotation** to **Follow (Smoothed)** and adjust the **Smooth**
    slider. Verify the headset camera yaw follows with damping.
-#. Check **Fixed Height**; move the Tracking Space prim vertically. Verify the
+#. Check **Fixed Height**; move the Custom Anchor prim vertically. Verify the
    headset camera height stays locked.
 
 4. Floating rigid body controller
@@ -1011,7 +1067,9 @@ detailed descriptions of each control.
 5. IK controller
 ^^^^^^^^^^^^^^^^^
 
-#. Open a stage with an articulated robot arm (e.g. ``http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Replicator/Teleop/teleop_scenario_dual_ur3_xarm_dex3.usd``).
+#. Open one of the IK
+   :ref:`built-in scenario stages <isaac_sim_app_tutorial_replicator_teleop_test_stages>`
+   (solo or bimanual UR3e).
 #. Expand **IK Controller**. In the **Left** or **Right** sub-panel, enter the
    articulation prim path and click **Apply**.
 #. Verify the **EE Link** dropdown populates with the kinematic chain links.
@@ -1246,7 +1304,9 @@ The standalone Episode Recorder window can be tested independently of the Teleop
 1. Record a session
 ^^^^^^^^^^^^^^^^^^^
 
-#. Open a stage with some articulations or rigid bodies (e.g. ``http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Replicator/Teleop/teleop_scenario_floating_xarm_dex3.usd``).
+#. Open a stage with some articulations or rigid bodies (any of the
+   :ref:`built-in scenario stages <isaac_sim_app_tutorial_replicator_teleop_test_stages>`
+   works).
 #. Open **Tools** > **Replicator** > **Episode Recorder**.
 #. Set **USD Root** to ``/World`` and click **Discover**.
 #. Verify the **Discovered Targets** list populates with the articulations and prims found under the root.
@@ -1286,6 +1346,11 @@ inputs. This makes it possible to manually move the markers to mimic the tracked
 VR controllers, and use the UI sliders to mimic thumbstick and analog-button
 inputs.
 
+Pick any of the four
+:ref:`built-in scenario stages <isaac_sim_app_tutorial_replicator_teleop_test_stages>`
+when a step below calls for a stage URL --- the floating stages exercise
+the Floating Controller, and the UR3e stages exercise the IK Controller.
+
 The markers form a parent--child hierarchy under
 ``/Teleop/Markers/TrackingOrigin``:
 
@@ -1303,7 +1368,8 @@ The markers form a parent--child hierarchy under
 1. Enable debug tracking
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-#. Launch |isaac-sim_short| and open a stage with a robot (e.g. ``http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Replicator/Teleop/teleop_scenario_floating_xarm_dex3.usd``).
+#. Launch |isaac-sim_short| and open one of the
+   :ref:`built-in scenario stages <isaac_sim_app_tutorial_replicator_teleop_test_stages>`.
 #. Open **Tools** > **Replicator** > **Teleop**.
 #. Expand the **Session** panel and then the **Debug** sub-section.
 #. Check the **Debug Tracking** checkbox. Verify:
@@ -1353,7 +1419,9 @@ The markers form a parent--child hierarchy under
 3. IK controller (debug)
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-#. Open a stage with an articulated robot arm (e.g. ``http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Replicator/Teleop/teleop_scenario_dual_ur3_xarm_dex3.usd``).
+#. Open one of the IK
+   :ref:`built-in scenario stages <isaac_sim_app_tutorial_replicator_teleop_test_stages>`
+   (solo or bimanual UR3e).
 #. Expand **IK Controller**. In the **Left** or **Right** sub-panel, enter the
    articulation prim path and click **Apply**.
 #. Verify the **EE Link** dropdown populates with the kinematic chain links.
@@ -1439,23 +1507,24 @@ The markers form a parent--child hierarchy under
 #. Click **Carry Origin**. Verify the console reports carry is implicit.
 
 
-7. Custom origin (debug)
-##########################
+7. Custom anchor (debug)
+########################
 
 #. Expand the **XR Anchor** sub-panel, enter a valid scene prim path
    (e.g. the robot base link) in the **Custom Anchor** field, and click
    **Set**. Verify the status reports the custom prim as the active anchor.
 #. Enable a controller (e.g. Floating or Locomotion), press **Play**, and drag
-   markers. Verify controller behavior uses the custom prim as origin.
+   markers. Verify controller behavior uses the custom prim as the VR
+   origin anchor.
+#. Click **Clear**. Verify the anchor reverts to the built-in origin marker
+   at world (0, 0, 0), while the typed path stays in the field.
 #. Enter a path under the reserved ``/Teleop/Markers/`` namespace (e.g.
    ``/Teleop/Markers/TrackingOrigin``) and click **Set**. Verify the path
    falls back to the built-in origin marker (status notes the substitution).
-#. Click **Clear** (the same button now reads **Clear** because the
-   field's path matches the active tracking space). Verify the tracking
-   space reverts to the built-in origin marker at world (0, 0, 0), with
-   the headset and controllers staying anchored. The typed path stays in
-   the field so it can be re-applied with **Set**; click the bin glyph
-   in the row if you want to clear the text as well.
+#. Click **Clear** again. Verify the headset and controllers stay anchored to
+   the built-in origin marker. The typed path stays in the field so it can be
+   re-applied with **Set**; click the bin glyph in the row if you want to
+   clear the text as well.
 
 
 8. Cleanup and re-activation
