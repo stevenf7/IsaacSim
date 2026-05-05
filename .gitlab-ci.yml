@@ -1656,6 +1656,7 @@ rebase-kit-integration-branches:
           - kit-integration/feature/110.1
           - kit-integration/production/110.1
           - kit-integration/major/111
+          - kit-integration/feature/main
     extends:
       - .ipp_lnx_x86_64_cpu_small
     variables:
@@ -2363,6 +2364,7 @@ generate-public-extension-mr:
             kit-integration/feature/110.1
             kit-integration/production/110.1
             kit-integration/major/111
+            kit-integration/feature/main
 
 # ==============================================================================================================
 # Shared rules for IsaacLab test/agent jobs.
@@ -2677,6 +2679,7 @@ post-to-isaac-lab-slack:
             develop
             develop-kit-tot
             kit-integration/master
+            kit-integration/feature/main
 
 # ==============================================================================================================
 # Fetch historical IsaacSim test data from GitLab CI + GitHub mirror.
