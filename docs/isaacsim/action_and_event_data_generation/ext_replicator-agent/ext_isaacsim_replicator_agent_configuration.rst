@@ -570,7 +570,10 @@ Controls the generation of synthetic data (images, annotations) using Omniverse 
 Writer Configuration
 ^^^^^^^^^^^^^^^^^^^^
 
-Supported writers: ``BasicWriter``, ``IRABasicWriter``, ``CosmosIRAWriter``, ``CustomWriter``.
+Supported writers: ``IRABasicWriter``, ``CosmosIRAWriter``, ``SceneGraphWriter``, ``CustomWriter``.
+
+.. note::
+    In previous releases, the stock Replicator ``BasicWriter`` appeared as its own entry in the **Add Writer** dropdown and could be used directly as a writer key (for example, ``BasicWriter:``). Starting with version 1.6.1 of ``isaacsim.replicator.agent.core``, ``BasicWriter`` has been removed from the UI dropdown and is no longer accepted as a top-level writer key in the configuration. If you need the stock ``BasicWriter``, use a ``CustomWriter`` entry with ``writer_name: "BasicWriter"`` instead. Refer to the :ref:`CustomWriter <ira_configuration_file>` section below for details.
 
 **Common Settings per Writer:**
 
@@ -675,7 +678,7 @@ Specialized Writers
 
     -   **Required parameters**:
 
-        -   ``writer_name`` (string, required): The registry name of the target writer (for example, ``"BasicWriter"``, ``"KittiWriter"``, or a user-defined name). Any class registered using ``WriterRegistry.register()`` can be referenced here.
+        -   ``writer_name`` (string, required): The registry name of the target writer (for example, ``"BasicWriter"``, ``"KittiWriter"``, or a user-defined name). Any writer registered in ``WriterRegistry`` can be referenced here, including the stock Replicator ``BasicWriter``.
 
     -   **Optional parameters**:
 
