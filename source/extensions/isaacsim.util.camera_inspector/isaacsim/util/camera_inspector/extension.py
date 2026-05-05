@@ -560,14 +560,7 @@ class Extension(omni.ext.IExt):
         Returns:
             A list of Camera objects
         """
-
-        def predicate(prim, path):
-            if prim.GetPrimTypeInfo().GetTypeName() == "Camera":
-                # Filter LiDAR sensors
-                if not prim.HasAPI("IsaacRtxLidarSensorAPI"):
-                    return True
-            return False
-
+        predicate = lambda prim, _: prim.GetPrimTypeInfo().GetTypeName() == "Camera"
         camera_prims = prim_utils.get_all_matching_child_prims(root_prim, predicate=predicate)
         return [Camera(prim_utils.get_prim_path(prim)) for prim in camera_prims]
 
