@@ -124,6 +124,7 @@ ISAAC_LAB_CI_REPORT_BRANCHES: |
     kit-integration/feature/110.0
     kit-integration/feature/110.1
     kit-integration/production/110.0
+    kit-integration/feature/main
 ```
 
 Override at runtime by setting `ISAAC_LAB_CI_REPORT_BRANCHES` in the GitLab pipeline

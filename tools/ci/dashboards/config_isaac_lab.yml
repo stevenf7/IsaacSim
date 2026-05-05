@@ -47,6 +47,7 @@ branches:
     - develop-kit-tot
     - kit-integration/master
     - kit-integration/feature/110.1
+    - kit-integration/feature/main
   default_label_branch: develop
 
 # ── Baseline comparison ───────────────────────────────────────────────────────
