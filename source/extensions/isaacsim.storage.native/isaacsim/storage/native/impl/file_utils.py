@@ -32,7 +32,7 @@ def path_join(base: str, name: str) -> str:
     """Join two path components intelligently handling Omniverse URLs and remote URLs.
 
     Args:
-        base: Base path, can be local or a URL (omniverse://, https://, etc.).
+        base: Base path, can be local or a URL (omniverse://, https://, file://, etc.).
         name: Path component to append to the base.
 
     Returns:
@@ -49,7 +49,8 @@ def path_join(base: str, name: str) -> str:
         >>> path_join("/local/path", "file.usd")
         '/local/path/file.usd'
     """
-    if any(base.startswith(scheme) for scheme in _URL_SCHEMES):
+    if "://" in base:
+        name = name.replace("\\", "/")
         if name.startswith("./"):
             name = name[2:]
         while name.startswith("../"):

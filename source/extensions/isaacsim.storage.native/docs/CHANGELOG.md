@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.9.2] - 2026-05-04
+### Fixed
+- `path_join`: treat any URL-scheme path (including `file://`) as forward-slash on Windows
+- `path_join`: normalize backslashes in relative path components to forward slashes, fixing traversal failures when `omni.client.list` returns Windows-style paths on Nucleus/remote URLs
+
 ## [1.9.1] - 2026-04-30
 ### Fixed
 - `path_join` uses forward-slash concatenation for all URL schemes, not just `omniverse://`, fixing backslash-corrupted paths on Windows when the assets root is an `https://` URL
