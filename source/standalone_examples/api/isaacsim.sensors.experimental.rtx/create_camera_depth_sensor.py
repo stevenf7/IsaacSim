@@ -13,30 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Create a depth camera sensor with multiple depth annotators.
+"""Create a depth camera sensor asset with an embedded template render product.
 
 This example demonstrates how to:
-- Create a ``SingleViewDepthCameraSensor`` with depth-specific annotators
-- Compare different depth outputs: distance, imager, point cloud
-- Access depth sensor parameters
+- Create an ``RtxCamera`` prim and embed a template ``RenderProduct`` prim with
+  ``OmniSensorDepthSensorSingleViewAPI`` applied
+- Export the resulting USD asset for later use with ``SingleViewDepthCameraSensor``
+
+The exported asset can be loaded as a USD reference (e.g. via ``RtxCamera.create``)
+and ``SingleViewDepthCameraSensor`` will automatically detect the embedded render
+product and copy its depth sensor attributes.
 """
 
 import argparse
+import os
 
 from isaacsim import SimulationApp
 
-parser = argparse.ArgumentParser(description="Create camera depth sensor example.")
+parser = argparse.ArgumentParser(description="Create camera depth sensor asset example.")
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode.")
 args, _ = parser.parse_known_args()
 
 simulation_app = SimulationApp()
 
-import os
-
-import numpy as np
-import omni
-import omni.usd
-from isaacsim.core.experimental.objects import Cube
+from isaacsim.core.experimental.utils.stage import define_prim, get_current_stage
 from isaacsim.sensors.experimental.rtx import RtxCamera, SingleViewDepthCameraSensor
 
 output_dir = os.path.join(
@@ -44,64 +44,32 @@ output_dir = os.path.join(
 )
 os.makedirs(output_dir, exist_ok=True)
 
-# =============================================================================
-# CREATE SCENE
-# =============================================================================
+# Create a root XForm on the stage
+root = define_prim("/root", "Xform")
 
-for i, (x, y) in enumerate([(3, 0), (5, 2), (4, -2), (8, 1)]):
-    Cube(f"/World/cube_{i}", sizes=1.0, positions=np.array([float(x), float(y), 0.5]))
+# Create a new RtxCamera prim on the stage
+cam = RtxCamera("/root/Camera")
 
-# =============================================================================
-# CREATE DEPTH CAMERA SENSOR
-# =============================================================================
+# Create a Scope to hold the template render product for the depth sensor
+define_prim("/root/TemplateRenderProduct", "Scope")
 
-cam = RtxCamera("/World/depth_cam", translations=np.array([0.0, 0.0, 0.5]))
-
-sensor = SingleViewDepthCameraSensor(
-    cam,
-    resolution=(480, 640),
-    annotators=[
-        "depth_sensor_distance",
-        "depth_sensor_imager",
-        "depth_sensor_point_cloud_position",
-    ],
+# Create the template render product with OmniSensorDepthSensorSingleViewAPI applied
+# and custom depth sensor attributes
+depth_sensor_attributes = {
+    "omni:rtx:post:depthSensor:baselineMM": 42,
+}
+SingleViewDepthCameraSensor.add_template_render_product(
+    parent_prim_path="/root/TemplateRenderProduct",
+    camera_prim_path="/root/Camera",
+    **depth_sensor_attributes,
 )
-sensor.set_enabled_post_processing(True)
 
-print(f"Created depth camera with annotators: {sensor.annotators}")
-
-# =============================================================================
-# RUN SIMULATION
-# =============================================================================
-
-timeline = omni.timeline.get_timeline_interface()
+# Set default prim and export
+stage = get_current_stage(backend="usd")
+stage.SetDefaultPrim(root)
+stage.Export(os.path.join(output_dir, "example_camera_with_depth_sensor.usd"))
 
 if args.test:
-    stage = omni.usd.get_context().get_stage()
     stage.Export(os.path.join(output_dir, "stage.usda"))
 
-timeline.play()
-
-frame_count = 0
-printed = False
-
-while simulation_app.is_running():
-    simulation_app.update()
-    frame_count += 1
-
-    distance, _ = sensor.get_data("depth_sensor_distance")
-    imager, _ = sensor.get_data("depth_sensor_imager")
-    point_cloud, _ = sensor.get_data("depth_sensor_point_cloud_position")
-
-    if distance is not None and not printed:
-        printed = True
-        print(f"\nFrame {frame_count}:")
-        print(f"  depth_sensor_distance shape: {distance.shape}")
-        print(f"  depth_sensor_imager shape:   {imager.shape if imager is not None else 'N/A'}")
-        print(f"  point_cloud shape:           {point_cloud.shape if point_cloud is not None else 'N/A'}")
-
-    if args.test and frame_count >= 20:
-        break
-
-timeline.stop()
 simulation_app.close()

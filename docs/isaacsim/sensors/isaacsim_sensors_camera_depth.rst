@@ -87,22 +87,18 @@ second image is output from the ``DistanceToImagePlane`` Annotator (``distance_t
 Depth Camera Asset Wrapper
 --------------------------
 
-.. warning::
-
-    The ``SingleViewDepthSensorAsset`` class from ``isaacsim.sensors.camera`` is deprecated. For new projects, use ``RtxCamera`` and ``SingleViewDepthCameraSensor`` from ``isaacsim.sensors.experimental.rtx`` to configure depth cameras directly.
-
-|isaac-sim_short| supports several official :ref:`isaac_assets_camera_depth_sensors_depth_sensors`. These can be automatically loaded as references on a stage
-using the ``SingleViewDepthSensorAsset`` class from the deprecated ``isaacsim.sensors.camera`` extension. This API will search the asset for ``RenderProduct`` prims specifying single-view depth
-sensor characteristics, tailored for a specific camera in the asset, then wrap those ``Camera`` prims as depth sensor instances. By loading the
-asset in this manner, you will have full control over the post-processing pipeline for each depth sensor in the asset, and can attach any number of Annotators
-to the depth sensor instances through its API.
+|isaac-sim_short| supports several official :ref:`isaac_assets_camera_depth_sensors_depth_sensors`. These can be loaded as USD references on a stage
+using ``RtxCamera.create()`` from ``isaacsim.sensors.experimental.rtx``. When ``SingleViewDepthCameraSensor`` subsequently wraps the resulting ``RtxCamera``,
+it automatically detects any ``RenderProduct`` prims embedded in the asset that have ``OmniSensorDepthSensorSingleViewAPI`` applied and are linked to the
+loaded camera, then copies their depth sensor attributes onto the dynamically created render product. This gives you full control over the post-processing
+pipeline for each depth sensor in the asset and allows any number of annotators to be attached through the ``SingleViewDepthCameraSensor`` API.
 
 .. note:: Attribute specification for ``Camera`` prims in the official assets linked above are tentative, and can change in future asset updates or releases.
 
 Script Editor
 ^^^^^^^^^^^^^
 
-As an example, you can load the Intel Realsense D455 depth camera asset and attach an annotator to the depth sensor by running the
+As an example, you can load the Realsense D455 depth camera asset and attach an annotator to the depth sensor by running the
 following snippet in the Script Editor:
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_camera_depth/script_editor.py
@@ -131,15 +127,20 @@ Building a Depth Sensor Model in Isaac Sim
 Updating Existing Assets to Use Depth Sensors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-|isaac-sim_short| provides a convenient API to create a depth camera sensor using the ``SingleViewDepthCameraSensor`` class from ``isaacsim.sensors.experimental.rtx``. The following example demonstrates how to create an ``RtxCamera`` prim
-configured as a depth sensor with multiple depth annotators.
+|isaac-sim_short| provides a convenient API to build a depth camera USD asset using ``RtxCamera`` and
+``SingleViewDepthCameraSensor.add_template_render_product`` from ``isaacsim.sensors.experimental.rtx``.
+The following example creates an ``RtxCamera`` prim, embeds a template ``RenderProduct`` with
+``OmniSensorDepthSensorSingleViewAPI`` applied, and exports the result as a USD asset:
 
 .. code-block:: bash
 
    ./python.sh standalone_examples/api/isaacsim.sensors.experimental.rtx/create_camera_depth_sensor.py
 
-Running the example will create a new ``example_camera_with_depth_sensor.usd`` asset in the local directory.
-After opening the new asset in |isaac-sim_short|, observe the following in the **Stage** window:
+Running the example will create a new ``example_camera_with_depth_sensor.usd`` asset under
+``_example_output_isaacsim.sensors.experimental.rtx/create_camera_depth_sensor/`` in the working directory.
+
+
+Then, open the new asset in |isaac-sim_short|, and observe the following in the **Stage** window:
 
 .. image:: /images/isim_5.0_full_ext-isaacsim.sensors.camera-1.3.0_gui_new_depth_sensor_asset_stage.png
    :width: 800
@@ -148,14 +149,17 @@ After opening the new asset in |isaac-sim_short|, observe the following in the *
 Observe the new render product prim has been created and associated to the ``Camera`` prim, with the custom
 value set for the ``omni:rtx:post:depthSensor:baselineMM`` attribute.
 
-Open a new stage, and run the following snippet in the **Script Editor** to load the new asset as a reference:
+Open a new stage, and run the following snippet in the **Script Editor** to load the exported asset as a
+reference using ``RtxCamera.create``. ``SingleViewDepthCameraSensor`` will automatically detect the embedded
+template render product and copy its depth sensor attributes onto the dynamically created render product:
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_camera_depth/updating_existing_assets_to_use_depth_sensors.py
     :language: python
 
-Observe in the Layer window the new render product is appropriately created, with the custom value set for the ``omni:rtx:post:depthSensor:baselineMM`` attribute.
+Observe in the Layer window the new render product is appropriately created and named ``camera_sensor_[random number]``,
+with the custom value set for the ``omni:rtx:post:depthSensor:baselineMM`` attribute.
 
-.. image:: /images/isim_5.0_full_ext-isaacsim.sensors.camera-1.3.0_gui_new_depth_sensor_asset_layer.png
+.. image:: /images/isim_6.0_full_ext-isaacsim.sensors.experimental.rtx-1.1.2_gui_new_depth_sensor_asset_layer.png
    :width: 800
    :alt: New depth sensor asset layer
 

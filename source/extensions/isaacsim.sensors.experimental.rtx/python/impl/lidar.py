@@ -214,8 +214,19 @@ class Lidar(_SensorAuthoring):
             raise ValueError("Both 'config' and 'usd_path' cannot be provided")
         if config is not None:
             for config_path in SUPPORTED_LIDAR_CONFIGS:
-                config_name = pathlib.Path(config_path).stem
-                if config in [config_path, config_name]:
+                _p = pathlib.Path(config_path)
+                # parts: ('/', 'Isaac', 'Sensors', '<Vendor>', ...)
+                _vendor = _p.parts[3] if len(_p.parts) > 3 else ""
+                _stem = _p.stem
+                # Strip vendor prefix so "picoScan150" matches "SICK_picoScan150"
+                _stem_no_vendor = _stem[len(_vendor) + 1 :] if _vendor and _stem.startswith(_vendor + "_") else _stem
+                if config in (
+                    config_path,
+                    _stem,
+                    _stem.replace("_", " "),
+                    _stem_no_vendor,
+                    _stem_no_vendor.replace("_", " "),
+                ):
                     usd_path = get_assets_root_path() + config_path
                     break
             if usd_path is None:

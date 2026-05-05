@@ -139,7 +139,7 @@ Creating Camera Sensor Rigs
 
 The camera sensor rig is a collection of camera sensors that are attached to a single prim. It can be assembled from the individual sensors, that are either created manually or derived from the calibration parameters.
 
-This will be a short discussion on how we created a digital twin of the Intel® RealSense™ Depth Camera D455.  The USD for the camera can be found in the content folder as: ```/Isaac/Sensors/Intel/RealSense/rsd455.usd``.
+This will be a short discussion on how we created a digital twin of the RealSense™ Depth Camera D455.  The USD for the camera can be found in the content folder as: ```/Isaac/Sensors/RealSense/D455/rsd455.usd``.
 
 There are three visual sensors, and one IMU sensor on the RealSense.  Their placement relative to the camera origin was taken from the layout diagram in
 the `TechSpec document <https://www.intelrealsense.com/wp-content/uploads/2023/07/Intel-RealSense-D400-Series-Datasheet-July-2023.pdf>`_ from `Intel's web site <https://www.intelrealsense.com/depth-camera-d455/>`_.
@@ -165,6 +165,12 @@ The ``omni.sensors.nv.camera`` extension `simulates the camera sensor and Image 
 You can use these outputs to test your own ISP against images rendered in RTX, or compare them with the Omniverse-simulated ISP output.
 
 Refer to the `extension documentation <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/cameras.html#omni-sensors-nv-camera-extension>`_ for details on individual pipeline stages and schema attributes.
+
+.. note::
+    The sample ISP program bundled with ``omni.sensors.nv.camera`` is only available on Linux x86_64.
+    Running the example on any other platform will print an informative message and exit early.
+    If you have your own ISP program for a different platform, update the ``_isp_program_path``
+    variable in the script to point to it, and comment-out the platform check.
 
 Run the example:
 

@@ -262,12 +262,12 @@ class ROS2NodesExtension(omni.ext.IExt):
                         category=BRIDGE_NAME,
                     )
 
-                    register_node_writer_with_telemetry(
-                        name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloudBuffer",
-                        node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
-                        annotators=gmo_pcl_annotators,
-                        category=BRIDGE_NAME,
-                    )
+                register_node_writer_with_telemetry(
+                    name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloudBuffer",
+                    node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
+                    annotators=gmo_pcl_annotators,
+                    category=BRIDGE_NAME,
+                )
 
                 # RTX lidar LaserScan publisher (direct from GMO)
                 register_node_writer_with_telemetry(

@@ -25,6 +25,7 @@ import omni.replicator.core as rep
 from isaacsim.core.nodes import BaseWriterNode
 from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.ros2.core import collect_namespace
+from isaacsim.ros2.nodes import build_rtx_sensor_pointcloud_writer
 from pxr import Usd
 
 
@@ -104,17 +105,35 @@ class OgnROS2RtxRadarHelper:
             qosProfile=db.inputs.qosProfile,
         )
 
-        # Map metadata boolean inputs to writer init parameters
+        # Collect enabled metadata field names.
+        metadata = []
         if db.inputs.outputRadialVelocityMS:
-            init_params["outputRadialVelocityMS"] = True
+            metadata.append("radialVelocityMS")
         if db.inputs.outputIntensity:
-            init_params["outputIntensity"] = True
+            metadata.append("intensity")
         if db.inputs.outputTimestamp:
-            init_params["outputTimestamp"] = True
+            metadata.append("timestamp")
+
+        is_multitick_enabled = carb.settings.get_settings().get("/rtx/hydra/supportMultiTickRate")
 
         try:
             with Usd.EditContext(stage, stage.GetSessionLayer()):
-                writer = rep.writers.get(f"RtxRadarROS2{time_type}PublishPointCloud")
+                if is_multitick_enabled:
+                    # The multitick annotator (IsaacExtractRTXSensorPointCloud) exposes all
+                    # radar auxiliary data unconditionally; pass flags to the publisher for
+                    # forward-compat with the GMO path.
+                    for item in metadata:
+                        init_params[f"output{item[0].upper()}{item[1:]}"] = True
+                    writer = rep.writers.get(f"RtxRadarROS2{time_type}PublishPointCloud")
+                else:
+                    # Non-multitick path: metadata flags must be baked into the
+                    # IsaacCreateRTXLidarScanBuffer annotator's init_params at registration
+                    # time. build_rtx_sensor_pointcloud_writer handles this correctly.
+                    writer = build_rtx_sensor_pointcloud_writer(
+                        metadata=metadata,
+                        enable_full_scan=False,
+                        use_system_time=db.inputs.useSystemTime,
+                    )
                 writer.initialize(**init_params)
                 state.append_writer(writer)
 

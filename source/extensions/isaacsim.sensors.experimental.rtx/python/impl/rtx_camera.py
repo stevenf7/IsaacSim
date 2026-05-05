@@ -134,6 +134,68 @@ class RtxCamera(_SensorAuthoring):
         # have been applied.
         return path
 
+    @staticmethod
+    def create(
+        path: str,
+        *,
+        tick_rate: float = 0,
+        schemas: list[str] | None = None,
+        attributes: dict[str, Any] | None = None,
+        positions: list | np.ndarray | wp.array | None = None,
+        translations: list | np.ndarray | wp.array | None = None,
+        orientations: list | np.ndarray | wp.array | None = None,
+        scales: list | np.ndarray | wp.array | None = None,
+        reset_xform_op_properties: bool = True,
+        usd_path: str | None = None,
+        variant: str | None = None,
+    ) -> "RtxCamera":
+        """Create an RtxCamera instance, optionally from a USD file.
+
+        Args:
+            path: Single path to existing or non-existing (one of both) USD Camera prim.
+            tick_rate: Sensor tick rate in Hz. A value of ``0`` (the default) enables autotrigger mode.
+            schemas: Additional API schemas to apply to the prim (e.g. ``["OmniLensDistortionOpenCvFisheyeAPI"]``).
+                Supports multi-instance schemas via ``"SchemaName:instanceName"`` syntax.
+            attributes: Attributes to set on the Camera prim (applied after schemas, so schema-specific
+                attributes can be set in the same call).
+            positions: Positions in the world frame (shape ``(N, 3)``).
+            translations: Translations in the local frame (shape ``(N, 3)``).
+            orientations: Orientations in the world frame (shape ``(N, 4)``, quaternion ``wxyz``).
+            scales: Scales to be applied to the prims (shape ``(N, 3)``).
+            reset_xform_op_properties: Whether to reset the transformation operation attributes of the prims.
+            usd_path: Path to a USD file containing the camera asset.
+            variant: Variant name for the camera configuration.
+
+        Returns:
+            RtxCamera instance.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> from isaacsim.sensors.experimental.rtx import RtxCamera
+            >>>
+            >>> cam = RtxCamera.create(path="/World/cam", tick_rate=30.0)
+            >>> cam.camera.set_focal_lengths(24.0)
+        """
+        asset_root_path = path
+        if usd_path is not None:
+            path = RtxCamera._create_from_usd(path=path, usd_path=usd_path, variant=variant)
+        cam = RtxCamera(
+            path=path,
+            tick_rate=tick_rate,
+            schemas=schemas,
+            attributes=attributes,
+            positions=positions,
+            translations=translations,
+            orientations=orientations,
+            scales=scales,
+            reset_xform_op_properties=reset_xform_op_properties,
+        )
+        if usd_path is not None:
+            cam._asset_root_path = asset_root_path
+        return cam
+
     @property
     def camera(self) -> Camera:
         """Camera object for accessing optical parameters.

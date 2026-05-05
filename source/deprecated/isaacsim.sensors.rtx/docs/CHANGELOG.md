@@ -1,5 +1,9 @@
 # Changelog
 
+## [15.16.3] - 2026-05-04
+### Fixed
+- Annotator tests correctly set RTX Radar output level to BASIC instead of FULL.
+
 ## [15.16.2] - 2026-04-28
 ### Fixed
 - Restored the deprecated `outputNormal` input on `IsaacCreateRTXLidarScanBufferNew` as an alias for `outputHitNormal`, emitting a deprecation warning when used. Previously the "New" node rejected `outputNormal=True` with a `SyntheticDataException` even though the non-`New` node still accepted it (NVBug 5985827).

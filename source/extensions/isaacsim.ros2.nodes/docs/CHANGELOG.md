@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.17.11] - 2026-05-04
+### Fixed
+- Properly passthrough arguments for RTX Radar PCL metadata.
+
 ## [1.17.10] - 2026-05-01
 ### Fixed
 - Add null check for simulation view in `OgnROS2PublishJointState` and `OgnROS2PublishTransformTree` to prevent crash when physics backend initialization fails
