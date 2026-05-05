@@ -16,9 +16,11 @@
 Gain Tuner Extension
 ===============================
 
-The :ref:`isaac_gain_tuner` is used to tune the stiffness and damping gains of a selected Articulation. This extension is useful when importing any new robot or when needing to fine tune the gains of an existing robot.
+The Gain Tuner tunes the stiffness and damping gains of a selected Articulation. Use it when importing a new robot or when fine-tuning the gains of an existing one.
 
-This page provides the explanation of the function behind the Gain Tuner. For more detail about the step-by-step usage of the Gain Tuner, refer to :ref:`isaac_sim_app_tutorial_advanced_joint_tuning` tutorial page.
+This extension is enabled by default. If it is ever disabled, re-enable it from the :doc:`Extension Manager <extensions:ext_core/ext_extension-manager>` by searching for ``isaacsim.robot_setup.gain_tuner``. To open it, go to **Tools** > **Robotics** > **Asset Editors** > **Gain Tuner**. Robots on the stage that have the :ref:`Robot Schema <isaac_sim_robot_schema>` applied automatically appear in the **Select Robot** dropdown.
+
+For a hands-on walkthrough that uses the UR10 manipulator, see the :ref:`isaac_sim_app_tutorial_advanced_joint_tuning` tutorial.
 
 
 .. _isaac_gain_tuner_overview:
@@ -123,6 +125,61 @@ In the Tuning Options, you can select the tuning mode between Stiffness and Natu
 The configurable Degrees of Freedom (DOF) of the robot are displayed in accordance with what is defined in the Robot's Joints list.
 
 
+.. _isaac_gain_tuner_tuning_workflow:
+
+Tuning Workflow
+==================
+
+Gain tuning is an iterative process. The recommended workflow moves through two stages:
+
+#. **Set initial gains** using the position or velocity drive heuristics below.
+#. **Tune and evaluate** using the built-in test modes, each targeting a different aspect of joint behavior:
+
+   - **Snap-to-Limits** *(default)* --- commands joints to their lower and upper limits. Use this to verify that gains are strong enough to reach the full range of motion and that limits, gains, and collision geometry are mutually consistent.
+   - **Sinusoidal** --- drives joints with a continuous repeating waveform. Use this to evaluate how well gains track smooth motion and to identify underdamping or overdamping from the shape of the tracking curve.
+   - **Step Function** --- drives joints with sudden position changes. Use this to evaluate how quickly and accurately gains respond to discrete commands, as a closer approximation of how a policy issues targets during training.
+
+Once gains are satisfactory across all three test modes, run the **Stress Test** to confirm they are robust under the extreme commands typical of reinforcement learning training before moving to Isaac Lab.
+
+.. note:: The specific tuning process may vary based on the characteristics of the robot and its control system.
+
+
+Position Drive
+--------------
+
+For each joint of the robot:
+
+#. Start by setting the damping to zero and only tuning the stiffness. This will help you establish a stable response without the influence of the derivative term.
+#. Increase the stiffness until the joint is able to converge near the target position.
+#. Reduce the stiffness by one order of magnitude.
+#. After setting the stiffness, add damping with one order of magnitude lower than stiffness. This will be your baseline for the parameters and in general should not overshoot. If you want a faster response, reduce damping further.
+#. Fine-tune both gains around this established baseline to achieve the desired performance, considering factors such as stability, response time, and overshoot.
+#. If you want to emulate a control that includes gravity compensation, select all rigid bodies of the robot and check **Disable Gravity** in the properties panel.
+
+
+Velocity Limit and Industrial Robots
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Many robots, including the majority of industrial robots, come with pre-tuned PD control for their joint drives and can be set up to have a perfect position control response, always driving at the given joint velocity limit. To reproduce this behavior, increase the joint stiffness from the previous tuning heuristic by a factor of two and define the maximum joint velocity in **Joint** > **Advanced** > **Maximum Joint Velocity** in the **Properties** panel. Run the simulation to verify the joint velocity is meeting the specification and fine-tune the stiffness until the joint max velocity limit is within tolerance. If stiffness is too high, the max velocity may still be violated, so it is not advised to add infinite stiffness to the joint --- instead operate with stiffness similar to the values calibrated without a max joint velocity.
+
+
+Velocity Drive
+--------------
+
+For each joint of the robot:
+
+#. Start by setting the **Stiffness** to zero and only tuning the damping.
+#. Increase the damping until the joint is able to converge near the target velocity.
+#. If the robot may carry additional load, slightly increase the damping (for example, add 10% extra) to account for the extra load.
+#. You can limit the joint's output by either setting the max joint velocity, or restricting the max joint force to impose a maximum joint load effort.
+
+
+Saving Gains to the Asset
+---------------------------
+
+Following the |isaac-sim| :ref:`Asset Structure <isaac_sim_app_reference_asset_structure>`, joint gains are a physics configuration and ideally should be saved on the physics layer. To facilitate this, the **Save Gains to Physics Layer** button on the UI searches for the asset's physics layer where the joint is defined and applies the updated gains to that layer.
+
+
 Gains Tests
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -130,7 +187,13 @@ The Gains Tests are a suite of tests that allow you to quickly assess the qualit
 
 All tests send position commands for position drives and velocity commands for velocity drives. In position commands the target velocities are always zero, so that joint damping is properly evaluated. In a real control scenario a proper trajectory command should be sent, where the velocity command is equivalent to the integrated positions of the designated trajectory.
 
-.. image:: /images/isim_5.0_full_ref_gui_gains_tuner_test_settings.png
+The three tuning test modes share the same setup steps:
+
+#. Enable the **Test** checkbox for the joints you want to evaluate in the joint table.
+#. Assign joints to sequences. Joints in the same sequence are tested simultaneously; joints in different sequences are tested one group at a time, with the robot resetting to its home configuration between sequences. Group joints that are expected to move together.
+#. Select the desired test mode in the test mode selector, configure parameters, and press **Play**, then **Run Test**.
+
+Repeat --- adjust gains, re-run, observe --- until results are satisfactory. Each test mode surfaces different information, so it is useful to work across all three rather than treating any one as definitive.
 
 .. note::
 
@@ -210,6 +273,15 @@ Drives joints with a continuous sinusoidal trajectory for the test duration. Use
 - **Amplitude**: The amplitude of the waveform, from 0 to 100%.
 - **Offset**: The offset of the waveform, from 0 to 100%.
 
+**Interpreting Results:**
+
+Use the result plots to guide adjustments:
+
+- **Measured position closely tracks commanded position**: gains are well-tuned for this waveform. Consider tightening the period or increasing amplitude to stress the joint further.
+- **Measured position lags the command or undershoots**: stiffness is likely too low. Increase stiffness and re-run.
+- **Measured position oscillates or overshoots**: damping is likely too low. Increase damping and re-run.
+- **Measured position is offset from the command at steady state**: the joint drive may be saturating at its max force limit. Check the joint max force setting in the Properties panel.
+
 
 .. _isaac_gain_tuner_step_function:
 
@@ -225,6 +297,18 @@ Drives joints with a repeating step-function trajectory, alternating between a m
 - **Phase**: The phase of the waveform.
 - **Step Minimum**: The minimum value of the waveform, in the joint value units of measurement.
 - **Step Maximum**: The maximum value of the waveform, in the joint value units of measurement.
+
+**Interpreting Results:**
+
+Use the result plots to guide adjustments:
+
+- **Measured position reaches the step target and holds cleanly**: gains are well-tuned for this step size and period.
+- **Measured position overshoots and oscillates before settling**: damping is too low. Increase damping.
+- **Measured position approaches the target slowly or does not reach it within the period**: stiffness is too low, or the period is shorter than the joint's velocity limit allows. Try increasing stiffness or lengthening the period.
+- **Measured position reaches the step target but with a consistent steady-state offset**: the joint drive may be saturating. Check the joint max force setting.
+
+.. note::
+    A reasonable goal across all three test modes is to find gains that reach the commanded position with overshoot within 1% of the target. The specific tolerance depends on your application.
 
 
 .. _isaac_gain_tuner_stress_test:
@@ -301,6 +385,29 @@ When an instability is found, use the logged RNG seed to reproduce the run exact
     A Stable result is meaningful only at the sigma and snap interval values used. Record these parameters alongside results when assessing readiness for Isaac Lab training.
 
 
+Visualizing Results
+====================
+
+The results of the tests are visualized as plots, where tracked joint positions and velocities are compared against the commanded trajectory. Select the desired joint in the left panel to display its results in the plots. Results are color-coded by joint, with measured values shown as a faded version of the commanded trajectory's color.
+
+Even if a joint is not listed in the Robot Schema, it is still visualized in the plots if it is part of the physical robot.
+
+To select more than one joint, hold **Ctrl** and click on the desired joints, or select the first joint and hold **Shift** and click the last joint to select all joints between them.
+
+.. note::
+    Visualization results are only available after tests have finished running. Depending on test configuration, this may take some time.
+
+
+Tips
+======
+
+- Disable gravity if your robot has built-in gravity compensation or a separate gravity compensation controller.
+- Group joints that are expected to move together and tune each group individually first, then combine them for a final test. For a humanoid robot, for example, you may want to separate the legs and arms.
+- Reduce the maximum speed of a joint that you are tuning if it is not expected to be commanded to move that fast in practice. Most default maximum velocities in USD are likely impractically high.
+- When running the Stress Test, document the highest sigma at which all joints are Stable --- this is a practical safety margin for your Isaac Lab training configuration.
+- If a joint is Blocked in Snap-to-Limits, use **Disable Self-Collisions** to confirm the cause before adjusting gains.
+
+
 Further Learning
 =================
-- The :ref:`isaac_sim_app_tutorial_advanced_joint_tuning` tutorial for detailed instructions on how to use the Gain Tuner.
+- The :ref:`isaac_sim_app_tutorial_advanced_joint_tuning` tutorial for a hands-on walkthrough using the UR10 manipulator.

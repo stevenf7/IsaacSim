@@ -72,7 +72,7 @@ Getting Started
                 :align: center
                 :width: 660
 
-        ..  Note:: See the :ref:`isaac_gain_tuner` tutorial to tune the gains for your robot.
+        ..  Note:: See the :ref:`isaac_sim_app_tutorial_advanced_joint_tuning` tutorial to tune the gains for your robot.
 
             - Set the joint drive type to **Velocity** drive for the velocity controlled joints (that is, wheels), and **Position** for the position controlled joints (that is, steering joint).
             - Set the **Joint Drive Strength** to the desired level. This will be imported as the joint's damping parameter. Joint stiffness are always set to zero in velocity drive mode.
