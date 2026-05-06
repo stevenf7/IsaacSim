@@ -16,6 +16,7 @@
 """Test for articulation."""
 
 from typing import Literal
+from unittest.mock import patch
 
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -23,8 +24,14 @@ import numpy as np
 import omni.kit.test
 import warp as wp
 from isaacsim.core.experimental.prims import Articulation
+from isaacsim.core.experimental.prims.impl._usd_articulation import (
+    _find_containing_articulation_root_path,
+    _get_dof_type,
+    _query_articulation_metadata_from_usd,
+)
 from isaacsim.core.experimental.utils.backend import use_backend
 from isaacsim.storage.native import get_assets_root_path
+from pxr import Sdf, UsdGeom, UsdPhysics
 
 from .common import (
     check_allclose,
@@ -80,6 +87,73 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             self.assertFalse(prim.is_physics_tensor_entity_valid(), f"Tensor API should be disabled ({backend})")
         else:
             raise ValueError(f"Invalid backend: {backend}")
+
+    # --------------------------------------------------------------------
+
+    async def test_usd_articulation_query_resolves_descendant_joint_target(self):
+        await stage_utils.create_new_stage_async()
+        stage = stage_utils.get_current_stage(backend="usd")
+
+        def define_rigid_body(path: str):
+            prim = UsdGeom.Xform.Define(stage, path).GetPrim()
+            UsdPhysics.RigidBodyAPI.Apply(prim)
+            return prim
+
+        UsdGeom.Xform.Define(stage, "/World")
+        UsdGeom.Xform.Define(stage, "/World/Robot")
+        define_rigid_body("/World/Robot/base")
+        define_rigid_body("/World/Robot/tool")
+        define_rigid_body("/World/Robot/ee_link/robotiq_base_link")
+        define_rigid_body("/World/Robot/ee_link/finger")
+
+        root_joint = UsdPhysics.FixedJoint.Define(stage, "/World/Robot/root_joint")
+        root_joint.CreateBody1Rel().SetTargets([Sdf.Path("/World/Robot/base")])
+        UsdPhysics.ArticulationRootAPI.Apply(root_joint.GetPrim())
+
+        wrist_joint = UsdPhysics.RevoluteJoint.Define(stage, "/World/Robot/wrist_joint")
+        wrist_joint.CreateBody0Rel().SetTargets([Sdf.Path("/World/Robot/base")])
+        wrist_joint.CreateBody1Rel().SetTargets([Sdf.Path("/World/Robot/tool")])
+        UsdPhysics.DriveAPI.Apply(wrist_joint.GetPrim(), "angular").CreateTargetPositionAttr(0.0)
+
+        fixed_joint = UsdPhysics.FixedJoint.Define(stage, "/World/Robot/ee_fixed_joint")
+        fixed_joint.CreateBody0Rel().SetTargets([Sdf.Path("/World/Robot/tool")])
+        fixed_joint.CreateBody1Rel().SetTargets([Sdf.Path("/World/Robot/ee_link/robotiq_base_link")])
+
+        finger_joint = UsdPhysics.RevoluteJoint.Define(stage, "/World/Robot/ee_link/finger_joint")
+        finger_joint.CreateBody0Rel().SetTargets([Sdf.Path("/World/Robot/ee_link/robotiq_base_link")])
+        finger_joint.CreateBody1Rel().SetTargets([Sdf.Path("/World/Robot/ee_link/finger")])
+        UsdPhysics.DriveAPI.Apply(finger_joint.GetPrim(), "angular").CreateTargetPositionAttr(0.0)
+
+        target_path = "/World/Robot/ee_link/finger_joint"
+        link_paths, joint_paths, dof_paths, dof_types = _query_articulation_metadata_from_usd(stage, target_path)
+
+        self.assertEqual(_find_containing_articulation_root_path(stage, target_path), "/World/Robot/root_joint")
+        self.assertIn("/World/Robot/ee_link/finger", link_paths)
+        self.assertIn("/World/Robot/ee_link/finger_joint", joint_paths)
+        self.assertIn("/World/Robot/ee_link/finger_joint", dof_paths)
+        self.assertEqual(
+            dof_types[dof_paths.index("/World/Robot/ee_link/finger_joint")], omni.physics.tensors.DofType.Rotation
+        )
+
+    async def test_usd_dof_type_query_matches_physx_generic_drive_order(self):
+        class FakeAttribute:
+            def __init__(self, name: str) -> None:
+                self._name = name
+
+            def GetName(self) -> str:
+                return self._name
+
+        class FakeJoint:
+            def IsA(self, _schema: object) -> bool:
+                return False
+
+            def GetAttributes(self) -> list[FakeAttribute]:
+                return [
+                    FakeAttribute("drive:custom:targetPosition"),
+                    FakeAttribute("drive:angular:targetPosition"),
+                ]
+
+        self.assertEqual(_get_dof_type(FakeJoint()), omni.physics.tensors.DofType.Invalid)
 
     # --------------------------------------------------------------------
 
@@ -950,3 +1024,12 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
                     Articulation.fetch_articulation_root_api_prim_paths(["/", "/World/.*1", "/World/A_2/Arm"]),
                     ["/World/A_0", "/World/A_1", None],
                 )
+                if backend == "usd":
+                    with patch(
+                        "isaacsim.core.experimental.prims.impl.articulation.SimulationManager.get_active_physics_engine",
+                        return_value="remotesim",
+                    ):
+                        self.assertListEqual(
+                            Articulation.fetch_articulation_root_api_prim_paths(["/World/A_2/Arm"]),
+                            ["/World/A_2"],
+                        )

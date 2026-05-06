@@ -40,6 +40,10 @@ from isaacsim.core.simulation_manager import SimulationManager
 from pxr import PhysicsSchemaTools, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
 
 from . import _transform
+from ._usd_articulation import (
+    _find_containing_articulation_root_path,
+    _query_articulation_metadata_from_usd,
+)
 from .prim import _MSG_PHYSICS_TENSOR_ENTITY_NOT_INITIALIZED, _MSG_PHYSICS_TENSOR_ENTITY_NOT_VALID, _MSG_PRIM_NOT_VALID
 from .xform_prim import XformPrim
 
@@ -573,6 +577,11 @@ class Articulation(XformPrim):
     def fetch_articulation_root_api_prim_paths(paths: str | list[str]) -> list[str | None]:
         """Fetch the prim paths that have the Articulation Root API applied.
 
+        For physics engines other than remotesim, each input path searches only that prim and its descendants
+        for an articulation root. Remotesim additionally resolves a USD path inside an articulation to the
+        containing articulation root because it synthesizes articulation metadata directly from the USD stage
+        instead of querying a runtime physics backend.
+
         Args:
             paths: Single path or list of paths to USD prims. Can include regular expressions for matching multiple prims.
 
@@ -601,10 +610,23 @@ class Articulation(XformPrim):
             if backend == "usd"
             else usdrt.UsdPhysics.ArticulationRootAPI.GetSchemaTypeName()
         )
+        active_engine = SimulationManager.get_active_physics_engine()
         articulation_root_api_prim_paths = []
         for path in existent_paths:
             prim = prim_utils.get_first_matching_child_prim(path, predicate=predicate, include_self=True)
-            articulation_root_api_prim_paths.append(prim_utils.get_prim_path(prim) if prim is not None else None)
+            if prim is not None:
+                articulation_root_api_prim_paths.append(prim_utils.get_prim_path(prim))
+                continue
+            if backend == "usd" and active_engine == "remotesim":
+                # PhysX/Newton can recover articulation metadata from their property-query interfaces once the root is
+                # selected. Remotesim has no runtime property-query backend, so USD must resolve descendant targets
+                # back to the containing ArticulationRootAPI before metadata is synthesized from the stage.
+                stage = stage_utils.get_current_stage(backend="usd")
+                articulation_root_api_prim_paths.append(
+                    _find_containing_articulation_root_path(stage, path) if stage is not None else None
+                )
+            else:
+                articulation_root_api_prim_paths.append(None)
         return articulation_root_api_prim_paths
 
     """
@@ -4723,7 +4745,18 @@ class Articulation(XformPrim):
         # query articulation metadata for each prim
         stage = stage_utils.get_current_stage(backend="usd")
         active_engine = SimulationManager.get_active_physics_engine()
-        if active_engine == "physx":
+        if active_engine == "remotesim":
+            self._link_names, self._joint_names, self._dof_names, self._dof_types = [], [], [], []
+            for path in self.paths:
+                link_paths, joint_paths, dof_paths, dof_types = _query_articulation_metadata_from_usd(stage, path)
+                self._link_paths.append(link_paths)
+                self._joint_paths.append(joint_paths)
+                self._dof_paths.append(dof_paths)
+                self._link_names = [Sdf.Path(link_path).name for link_path in link_paths]
+                self._joint_names = [Sdf.Path(joint_path).name for joint_path in joint_paths]
+                self._dof_names = [Sdf.Path(dof_path).name for dof_path in dof_paths]
+                self._dof_types = dof_types
+        elif active_engine == "physx":
             for path in self.paths:
                 omni.physx.get_physx_property_query_interface().query_prim(
                     stage_id=stage_utils.get_stage_id(stage),
