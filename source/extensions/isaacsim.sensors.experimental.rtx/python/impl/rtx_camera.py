@@ -50,7 +50,10 @@ class RtxCamera(_SensorAuthoring):
     Args:
         path: Single path to existing or non-existing (one of both) USD Camera prim.
             Can include regular expression for matching a prim.
-        tick_rate: Sensor tick rate in Hz. A value of ``0`` (the default) enables autotrigger mode.
+        tick_rate: Sensor tick rate in Hz. When ``None`` (the default), the prim's
+            ``omni:sensor:tickRate`` attribute is left untouched, so any value already authored on
+            the prim (e.g. from a USD asset) is preserved. For newly-created prims, the
+            ``OmniSensorAPI`` schema default of ``0`` Hz applies (autotrigger mode).
         schemas: Additional API schemas to apply to the prim (e.g. ``["OmniLensDistortionOpenCvFisheyeAPI"]``).
             Supports multi-instance schemas via ``"SchemaName:instanceName"`` syntax.
         attributes: Attributes to set on the Camera prim (applied after schemas, so schema-specific
@@ -88,7 +91,7 @@ class RtxCamera(_SensorAuthoring):
         self,
         path: str,
         *,
-        tick_rate: float = 0,
+        tick_rate: float | None = None,
         schemas: list[str] | None = None,
         attributes: dict[str, Any] | None = None,
         positions: list | np.ndarray | wp.array | None = None,
@@ -138,7 +141,7 @@ class RtxCamera(_SensorAuthoring):
     def create(
         path: str,
         *,
-        tick_rate: float = 0,
+        tick_rate: float | None = None,
         schemas: list[str] | None = None,
         attributes: dict[str, Any] | None = None,
         positions: list | np.ndarray | wp.array | None = None,
@@ -153,7 +156,8 @@ class RtxCamera(_SensorAuthoring):
 
         Args:
             path: Single path to existing or non-existing (one of both) USD Camera prim.
-            tick_rate: Sensor tick rate in Hz. A value of ``0`` (the default) enables autotrigger mode.
+            tick_rate: Sensor tick rate in Hz. When ``None`` (the default), the asset's
+                ``omni:sensor:tickRate`` attribute is preserved. Pass an explicit value to override.
             schemas: Additional API schemas to apply to the prim (e.g. ``["OmniLensDistortionOpenCvFisheyeAPI"]``).
                 Supports multi-instance schemas via ``"SchemaName:instanceName"`` syntax.
             attributes: Attributes to set on the Camera prim (applied after schemas, so schema-specific

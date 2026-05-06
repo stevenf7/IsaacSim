@@ -59,7 +59,7 @@ class _SensorAuthoring(XformPrim):
         path: str,
         *,
         aux_output_level: str = "NONE",
-        tick_rate: float = 0,
+        tick_rate: float | None = None,
         schemas: list[str] | None = None,
         attributes: dict[str, Any] | None = None,
         # XformPrim
@@ -115,18 +115,21 @@ class _SensorAuthoring(XformPrim):
             if attributes is not None:
                 for p in paths:
                     self._apply_attributes(p, attributes)
-        # resolve tick rate: attributes dict takes precedence over tick_rate parameter
+        # resolve tick rate: attributes dict takes precedence over tick_rate parameter.
+        # ``tick_rate=None`` (the default) means "do not modify the prim attribute",
+        # so any value already authored on the prim (e.g. from a USD asset) is preserved.
         if attributes is not None and "omni:sensor:tickRate" in attributes:
-            if tick_rate != 0:
+            if tick_rate is not None:
                 carb.log_warn(
                     "Both 'tick_rate' parameter and 'omni:sensor:tickRate' attribute were provided. "
                     "Using the value from 'attributes'."
                 )
             tick_rate = attributes["omni:sensor:tickRate"]
-        for p in paths:
-            prim = prim_utils.get_prim_at_path(p)
-            if prim.HasAttribute("omni:sensor:tickRate"):
-                prim.GetAttribute("omni:sensor:tickRate").Set(tick_rate)
+        if tick_rate is not None:
+            for p in paths:
+                prim = prim_utils.get_prim_at_path(p)
+                if prim.HasAttribute("omni:sensor:tickRate"):
+                    prim.GetAttribute("omni:sensor:tickRate").Set(tick_rate)
         # set aux_output_level as channels attribute on the sensor prim so the
         # Replicator pipeline propagates it to the GenericModelOutput RenderVar
         for p in paths:

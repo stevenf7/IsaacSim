@@ -15,9 +15,11 @@
 
 """Tests for the Lidar authoring class."""
 
+import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
 from isaacsim.sensors.experimental.rtx import Lidar
+from isaacsim.storage.native import get_assets_root_path
 
 
 class TestLidar(omni.kit.test.AsyncTestCase):
@@ -120,6 +122,40 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         prim.ApplyAPI("OmniSensorGenericLidarCoreAPI")
         lidar = Lidar("/World/lidar", accumulate_outputs=True, attributes={"omni:sensor:Core:accumulateOutputs": False})
         self.assertFalse(lidar.prims[0].GetAttribute("omni:sensor:Core:accumulateOutputs").Get())
+
+    async def test_create_existing_config_maintains_attributes(self):
+        stage_utils.add_reference_to_stage(
+            usd_path=get_assets_root_path() + "/Isaac/Sensors/NVIDIA/Example_Rotary.usda", path="/World/reference"
+        )
+        reference_prim = prim_utils.get_prim_at_path("/World/reference")
+        lidar = Lidar.create(path="/World/lidar", config="Example_Rotary")
+        lidar_prim = prim_utils.get_prim_at_path("/World/lidar")
+
+        def get_attributes_as_dict(prim):
+            attr_dict = {}
+            for attr in prim.GetAttributes():
+                # Get attribute name and its value at the default time
+                attr_dict[attr.GetName()] = attr.Get()
+            return attr_dict
+
+        self.maxDiff = None
+        reference_prim_attributes_dict = get_attributes_as_dict(reference_prim)
+        lidar_prim_attributes_dict = get_attributes_as_dict(lidar_prim)
+
+        keys_to_remove = ["_replicator:rendervar:GenericModelOutput:channels"]
+        for key in lidar_prim_attributes_dict:
+            if key.startswith("xformOp"):
+                keys_to_remove.append(key)
+        for key in keys_to_remove:
+            lidar_prim_attributes_dict.pop(key, None)
+        keys_to_remove = []
+        for key in reference_prim_attributes_dict:
+            if key.startswith("xformOp"):
+                keys_to_remove.append(key)
+        for key in keys_to_remove:
+            reference_prim_attributes_dict.pop(key, None)
+
+        self.assertDictEqual(reference_prim_attributes_dict, lidar_prim_attributes_dict)
 
     # -- schemas --
 

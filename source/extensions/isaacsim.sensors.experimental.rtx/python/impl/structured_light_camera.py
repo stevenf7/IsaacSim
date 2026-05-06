@@ -185,7 +185,7 @@ class StructuredLightCamera(RtxCamera):
         projector_intensity: float = 150000.0,
         projector_width: float = 1.0,
         projector_height: float = 1.0,
-        tick_rate: float = 0,
+        tick_rate: float | None = None,
         schemas: list[str] | None = None,
         attributes: dict[str, Any] | None = None,
         positions: list | np.ndarray | wp.array | None = None,
