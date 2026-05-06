@@ -122,7 +122,7 @@ class Acoustic(_SensorAuthoring):
         path: str,
         *,
         aux_output_level: str = "NONE",
-        tick_rate: float = 0,
+        tick_rate: float | None = None,
         attributes: dict[str, Any] | None = None,
         positions: list | np.ndarray | wp.array | None = None,
         translations: list | np.ndarray | wp.array | None = None,
@@ -138,7 +138,8 @@ class Acoustic(_SensorAuthoring):
             path: Single path to existing or non-existing (one of both) USD OmniAcoustic prim.
             aux_output_level: Auxiliary data level for GenericModelOutput. Valid values:
                 ``"NONE"`` (default), ``"BASIC"``.
-            tick_rate: Sensor tick rate in Hz. A value of ``0`` (the default) enables autotrigger mode.
+            tick_rate: Sensor tick rate in Hz. When ``None`` (the default), the asset's
+                ``omni:sensor:tickRate`` attribute is preserved. Pass an explicit value to override.
             attributes: Attributes to set on the OmniAcoustic prim.
             positions: Positions in the world frame (shape ``(N, 3)``).
             translations: Translations in the local frame (shape ``(N, 3)``).

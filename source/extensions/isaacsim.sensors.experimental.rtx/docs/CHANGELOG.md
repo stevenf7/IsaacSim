@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.1] - 2026-05-05
+### Fixed
+- authoring APIs no longer clobber tickRate and other attributes if already set on wrapped prim or loaded USD
+
 ## [1.3.0] - 2026-05-05
 ### Added
 - StructuredLightCamera authoring API, allowing users to specify time-sequenced projection patterns with the camera.

@@ -53,9 +53,14 @@ class Lidar(_SensorAuthoring):
             Can include regular expression for matching a prim.
         accumulate_outputs: Set the ``omni:sensor:Core:accumulateOutputs`` attribute on the OmniLidar prim.
             When ``True`` (the default), the lidar model accumulates a full scan before generating an output.
+            When ``None``, the attribute is left untouched on the prim (useful for preserving values
+            authored on a USD asset that is being wrapped).
         aux_output_level: Auxiliary data level for GenericModelOutput. Valid values:
             ``"NONE"`` (default), ``"BASIC"``, ``"EXTRA"``, ``"FULL"``.
-        tick_rate: Sensor tick rate in Hz. A value of ``0`` (the default) enables autotrigger mode.
+        tick_rate: Sensor tick rate in Hz. When ``None`` (the default), the prim's
+            ``omni:sensor:tickRate`` attribute is left untouched, so any value already authored on
+            the prim (e.g. from a USD asset) is preserved. For newly-created prims, the
+            ``OmniSensorGenericLidarCoreAPI`` schema default of ``10`` Hz applies.
         schemas: Additional API schemas to apply to the prim.
         attributes: Attributes to set on the OmniLidar prim.
         positions: Positions in the world frame (shape ``(N, 3)``).
@@ -91,9 +96,9 @@ class Lidar(_SensorAuthoring):
         self,
         path: str,
         *,
-        accumulate_outputs: bool = True,
+        accumulate_outputs: bool | None = True,
         aux_output_level: str = "NONE",
-        tick_rate: float = 10,
+        tick_rate: float | None = None,
         schemas: list[str] | None = None,
         attributes: dict[str, Any] | None = None,
         positions: list | np.ndarray | wp.array | None = None,
@@ -102,6 +107,10 @@ class Lidar(_SensorAuthoring):
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
     ) -> None:
+        # Capture wrap-vs-create state up front: ``resolve_paths`` returns
+        # ``(existent, nonexistent)``; a non-empty ``existent`` list means the prim
+        # already exists on stage and we are wrapping rather than creating it.
+        is_wrap = bool(self.resolve_paths(path)[0])
         super().__init__(
             path,
             aux_output_level=aux_output_level,
@@ -114,18 +123,41 @@ class Lidar(_SensorAuthoring):
             scales=scales,
             reset_xform_op_properties=reset_xform_op_properties,
         )
-        # resolve accumulate_outputs: attributes dict takes precedence over parameter
+        # resolve accumulate_outputs: attributes dict takes precedence over parameter.
+        # ``accumulate_outputs=None`` means "leave the prim's existing value alone".
         _ATTR = "omni:sensor:Core:accumulateOutputs"
         if attributes is not None and _ATTR in attributes:
-            if accumulate_outputs is not True:
+            if accumulate_outputs is not None and accumulate_outputs is not True:
                 carb.log_warn(
                     "Both 'accumulate_outputs' parameter and 'omni:sensor:Core:accumulateOutputs' attribute "
                     "were provided. Using the value from 'attributes'."
                 )
             accumulate_outputs = attributes[_ATTR]
-        for prim in self.prims:
-            if prim.HasAttribute(_ATTR):
-                prim.GetAttribute(_ATTR).Set(accumulate_outputs)
+        if accumulate_outputs is not None:
+            for prim in self.prims:
+                if prim.HasAttribute(_ATTR):
+                    prim.GetAttribute(_ATTR).Set(accumulate_outputs)
+        # When wrapping an existing prim without an explicit tick_rate, sanity-check that
+        # the prim's tick rate matches its rotary scan rate base. A mismatch typically
+        # indicates a misconfiguration (e.g. tickRate was authored independently of the
+        # scan rate base in the asset) and is worth surfacing to the user.
+        if is_wrap and tick_rate is None:
+            for prim in self.prims:
+                tick_attr = prim.GetAttribute("omni:sensor:tickRate")
+                scan_attr = prim.GetAttribute("omni:sensor:Core:scanRateBaseHz")
+                if not tick_attr.IsValid() or not scan_attr.IsValid():
+                    continue
+                tick_value = tick_attr.Get()
+                scan_value = scan_attr.Get()
+                if tick_value is None or scan_value is None:
+                    continue
+                if float(tick_value) != float(scan_value):
+                    carb.log_warn(
+                        f"Lidar at '{prim.GetPath()}': 'omni:sensor:tickRate' ({tick_value}) does not "
+                        f"match 'omni:sensor:Core:scanRateBaseHz' ({scan_value}). This may indicate a "
+                        "misconfigured asset; pass an explicit 'tick_rate' or update the prim attributes "
+                        "to silence this warning."
+                    )
 
     def _create_prim(self, path: str, attributes: dict[str, Any] | None) -> str:
         """Create an OmniLidar prim via the Replicator functional API.
@@ -160,9 +192,9 @@ class Lidar(_SensorAuthoring):
     def create(
         path: str,
         *,
-        accumulate_outputs: bool = True,
+        accumulate_outputs: bool | None = None,
         aux_output_level: str = "NONE",
-        tick_rate: float = 0,
+        tick_rate: float | None = None,
         schemas: list[str] | None = None,
         attributes: dict[str, Any] | None = None,
         positions: list | np.ndarray | wp.array | None = None,
@@ -179,8 +211,10 @@ class Lidar(_SensorAuthoring):
         Args:
             path: Single path to existing or non-existing (one of both) USD OmniLidar prim.
             accumulate_outputs: Set the ``omni:sensor:Core:accumulateOutputs`` attribute on the OmniLidar prim.
-                When ``True`` (the default), the lidar model accumulates a full scan before generating an output.
-            tick_rate: Sensor tick rate in Hz. A value of ``0`` (the default) enables autotrigger mode.
+                When ``None`` (the default), the attribute authored on the loaded asset is preserved.
+                Pass ``True``/``False`` to override.
+            tick_rate: Sensor tick rate in Hz. When ``None`` (the default), the asset's
+                ``omni:sensor:tickRate`` attribute is preserved. Pass an explicit value to override.
             attributes: Attributes to set on the OmniLidar prim.
             positions: Positions in the world frame (shape ``(N, 3)``).
             translations: Translations in the local frame (shape ``(N, 3)``).
