@@ -135,7 +135,7 @@ class MuJoCoSolverConfig(NewtonSolverConfig):
     ls_parallel: bool = True
     """Whether to use parallel line search."""
 
-    use_mujoco_contacts: bool = True
+    use_mujoco_contacts: bool = False
     """Whether to use MuJoCo's contact computation."""
 
     tolerance: float = 1e-6

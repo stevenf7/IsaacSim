@@ -46,7 +46,7 @@ def set_fabric_transforms(
     idx = int(newton_indices[i])
     if idx < body_count:
         transform = newton_body_q[idx]
-        fabric_transforms[i] = wp.transpose(wp.mat44d(wp.math.transform_to_matrix(transform)))
+        fabric_transforms[i] = wp.transpose(wp.mat44d(wp.transform_to_matrix(transform)))
 
 
 class FabricManager:

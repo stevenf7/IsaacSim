@@ -662,8 +662,8 @@ __global__ void contactDataKernel(const int* contactCount, const int* shape0, co
             if (writeIdx < maxContactDataCount) {
                 outForces[writeIdx] = -forceMag;
                 outPoints[writeIdx * 3 + 0] = cpx; outPoints[writeIdx * 3 + 1] = cpy; outPoints[writeIdx * 3 + 2] = cpz;
-                outNormals[writeIdx * 3 + 0] = nx; outNormals[writeIdx * 3 + 1] = ny; outNormals[writeIdx * 3 + 2] = nz;
-                outSeparations[writeIdx] = d;
+                outNormals[writeIdx * 3 + 0] = -nx; outNormals[writeIdx * 3 + 1] = -ny; outNormals[writeIdx * 3 + 2] = -nz;
+                outSeparations[writeIdx] = -d;
             }
         }
     }
@@ -675,8 +675,8 @@ __global__ void contactDataKernel(const int* contactCount, const int* shape0, co
             if (writeIdx < maxContactDataCount) {
                 outForces[writeIdx] = forceMag;
                 outPoints[writeIdx * 3 + 0] = cpx; outPoints[writeIdx * 3 + 1] = cpy; outPoints[writeIdx * 3 + 2] = cpz;
-                outNormals[writeIdx * 3 + 0] = -nx; outNormals[writeIdx * 3 + 1] = -ny; outNormals[writeIdx * 3 + 2] = -nz;
-                outSeparations[writeIdx] = -d;
+                outNormals[writeIdx * 3 + 0] = nx; outNormals[writeIdx * 3 + 1] = ny; outNormals[writeIdx * 3 + 2] = nz;
+                outSeparations[writeIdx] = d;
             }
         }
     }
@@ -757,8 +757,8 @@ __global__ void rawContactDataKernel(const int* contactCount, const int* shape0,
         if (writeIdx < maxContactDataCount) {
             outForces[writeIdx] = -forceMag;
             outPoints[writeIdx * 3 + 0] = cpx; outPoints[writeIdx * 3 + 1] = cpy; outPoints[writeIdx * 3 + 2] = cpz;
-            outNormals[writeIdx * 3 + 0] = nx; outNormals[writeIdx * 3 + 1] = ny; outNormals[writeIdx * 3 + 2] = nz;
-            outSeparations[writeIdx] = d;
+            outNormals[writeIdx * 3 + 0] = -nx; outNormals[writeIdx * 3 + 1] = -ny; outNormals[writeIdx * 3 + 2] = -nz;
+            outSeparations[writeIdx] = -d;
             otherActorIds[writeIdx] = (uint64_t)mappedB;
         }
     }
@@ -768,8 +768,8 @@ __global__ void rawContactDataKernel(const int* contactCount, const int* shape0,
         if (writeIdx < maxContactDataCount) {
             outForces[writeIdx] = forceMag;
             outPoints[writeIdx * 3 + 0] = cpx; outPoints[writeIdx * 3 + 1] = cpy; outPoints[writeIdx * 3 + 2] = cpz;
-            outNormals[writeIdx * 3 + 0] = -nx; outNormals[writeIdx * 3 + 1] = -ny; outNormals[writeIdx * 3 + 2] = -nz;
-            outSeparations[writeIdx] = -d;
+            outNormals[writeIdx * 3 + 0] = nx; outNormals[writeIdx * 3 + 1] = ny; outNormals[writeIdx * 3 + 2] = nz;
+            outSeparations[writeIdx] = d;
             otherActorIds[writeIdx] = (uint64_t)mappedA;
         }
     }

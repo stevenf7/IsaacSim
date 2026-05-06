@@ -353,10 +353,10 @@ void cpuContactData(const int* contactCount,
                     outPoints[wi * 3] = cpx;
                     outPoints[wi * 3 + 1] = cpy;
                     outPoints[wi * 3 + 2] = cpz;
-                    outNormals[wi * 3] = nx;
-                    outNormals[wi * 3 + 1] = ny;
-                    outNormals[wi * 3 + 2] = nz;
-                    outSeparations[wi] = d;
+                    outNormals[wi * 3] = -nx;
+                    outNormals[wi * 3 + 1] = -ny;
+                    outNormals[wi * 3 + 2] = -nz;
+                    outSeparations[wi] = -d;
                 }
             }
         }
@@ -373,10 +373,10 @@ void cpuContactData(const int* contactCount,
                     outPoints[wi * 3] = cpx;
                     outPoints[wi * 3 + 1] = cpy;
                     outPoints[wi * 3 + 2] = cpz;
-                    outNormals[wi * 3] = -nx;
-                    outNormals[wi * 3 + 1] = -ny;
-                    outNormals[wi * 3 + 2] = -nz;
-                    outSeparations[wi] = -d;
+                    outNormals[wi * 3] = nx;
+                    outNormals[wi * 3 + 1] = ny;
+                    outNormals[wi * 3 + 2] = nz;
+                    outSeparations[wi] = d;
                 }
             }
         }
@@ -473,10 +473,10 @@ void cpuRawContactData(const int* contactCount,
                 outPoints[wi * 3] = cpx;
                 outPoints[wi * 3 + 1] = cpy;
                 outPoints[wi * 3 + 2] = cpz;
-                outNormals[wi * 3] = nx;
-                outNormals[wi * 3 + 1] = ny;
-                outNormals[wi * 3 + 2] = nz;
-                outSeparations[wi] = d;
+                outNormals[wi * 3] = -nx;
+                outNormals[wi * 3 + 1] = -ny;
+                outNormals[wi * 3 + 2] = -nz;
+                outSeparations[wi] = -d;
                 otherActorIds[wi] = (uint64_t)mB;
             }
         }
@@ -490,10 +490,10 @@ void cpuRawContactData(const int* contactCount,
                 outPoints[wi * 3] = cpx;
                 outPoints[wi * 3 + 1] = cpy;
                 outPoints[wi * 3 + 2] = cpz;
-                outNormals[wi * 3] = -nx;
-                outNormals[wi * 3 + 1] = -ny;
-                outNormals[wi * 3 + 2] = -nz;
-                outSeparations[wi] = -d;
+                outNormals[wi * 3] = nx;
+                outNormals[wi * 3 + 1] = ny;
+                outNormals[wi * 3 + 2] = nz;
+                outSeparations[wi] = d;
                 otherActorIds[wi] = (uint64_t)mA;
             }
         }
