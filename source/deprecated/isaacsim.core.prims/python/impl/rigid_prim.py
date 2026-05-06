@@ -1052,7 +1052,7 @@ class RigidPrim(XFormPrim):
 
     def get_inv_masses(
         self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
-    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray | None:
         """Get rigid body inverse masses of prims in the view.
 
         Args:
@@ -1095,7 +1095,7 @@ class RigidPrim(XFormPrim):
 
     def get_coms(
         self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
-    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray | None:
         """Get rigid body center of mass (COM) of bodies in the view.
 
         Args:
@@ -1161,7 +1161,7 @@ class RigidPrim(XFormPrim):
 
     def get_inertias(
         self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
-    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray | None:
         """Get rigid body inertias of prims in the view.
 
         Args:
@@ -1206,7 +1206,7 @@ class RigidPrim(XFormPrim):
 
     def get_inv_inertias(
         self, indices: np.ndarray | list | torch.Tensor | wp.array | None = None, clone: bool = True
-    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray | None:
         """Get rigid body inverse inertias of prims in the view.
 
         Args:
@@ -1920,7 +1920,7 @@ class RigidPrim(XFormPrim):
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
-    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray | None:
         """Return the net contact forces on prims.
 
         .. note::
@@ -1973,7 +1973,7 @@ class RigidPrim(XFormPrim):
         indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
         clone: bool = True,
         dt: float = 1.0,
-    ) -> np.ndarray | torch.Tensor | wp.indexedarray:
+    ) -> np.ndarray | torch.Tensor | wp.indexedarray | None:
         """Return the contact forces between the prims in the view and the filter prims.
 
         E.g., a matrix of dimension ``(self.count, _contact_view.num_filters, 3)`` where ``_contact_view.num_filters``

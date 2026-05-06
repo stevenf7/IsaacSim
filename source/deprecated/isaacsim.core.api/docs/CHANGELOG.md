@@ -1,4 +1,10 @@
 # Changelog
+
+## [5.2.8] - 2026-05-05
+### Fixed
+- Raise a RuntimeError when the omni.kit.material.library dependency is not available
+- Raise a ValueError if the visual material ID is already set to a different value to the expected one
+
 ## [5.2.7] - 2026-05-01
 ### Fixed
 - Patch the SimulationContext.render* guard that caused multiple World() snippets to fail once PhysX Fabric was enabled

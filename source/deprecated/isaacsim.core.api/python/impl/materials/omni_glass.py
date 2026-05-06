@@ -38,8 +38,9 @@ class OmniGlass(VisualMaterial):
         thin_walled: Whether to use thin-walled mode.
 
     Raises:
-        Exception: If omni.kit.material.library extension is not enabled.
-
+        RuntimeError: If omni.kit.material.library extension is not enabled.
+        Exception: If the shader is not defined.
+        ValueError: If the material's shader is not of type OmniGlass.
     """
 
     def __init__(
@@ -61,6 +62,9 @@ class OmniGlass(VisualMaterial):
             except Exception as e:
                 carb.log_error(e)
                 carb.log_error("Enable the omni.kit.material.library extension before using OmniGlass")
+                raise RuntimeError(
+                    "omni.kit.material.library extension is not enabled. Enable it before using OmniGlass."
+                ) from e
 
             mtl_created_list = []
             CreateAndBindMdlMaterialFromLibrary(
@@ -87,6 +91,11 @@ class OmniGlass(VisualMaterial):
             material=material,
             name=name,
         )
+        shader_id = shader.GetIdAttr().Get()
+        if shader_id and shader_id != "OmniGlass":
+            raise ValueError(
+                f"The material's shader at path {prim_path} (with id {shader_id}) is not of type OmniGlass"
+            )
         shader.CreateIdAttr("OmniGlass")
         if color is not None:
             shader.CreateInput("glass_color", Sdf.ValueTypeNames.Color3f).Set(Gf.Vec3f(*color.tolist()))
