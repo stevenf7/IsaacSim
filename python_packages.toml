@@ -314,17 +314,17 @@ pyproject.dependencies.all = [
     "python-dateutil==2.9.0.post0",
     "six==1.17.0",
     # archives (isaacsim.pip.newton)
-    "mujoco==3.5.0",
-    "mujoco-warp==3.5.0.2",
-    "newton[sim]==1.0.0",
+    "mujoco==3.8.0",
+    "mujoco-warp==3.8.0.1",
+    "newton[sim]==1.2.0rc1",
     "newton-actuators==0.1.0",
-    "newton-usd-schemas==0.1.0",
-    "mujoco-usd-converter==0.1.0",
-    "cbor2==5.8.0",
-    "imgui-bundle==1.92.4",
+    "newton-usd-schemas==0.2.0rc1",
+    "mujoco-usd-converter==0.2.0",
+    "cbor2==5.9.0",
+    "imgui-bundle==1.92.601",
     "PyOpenGL-accelerate==3.1.10",
     "glfw==2.10.0",
-    "absl-py==2.3.1",
+    "absl-py==2.4.0",
     "etils[epath]==1.13.0",
     "numpy-stl",
     "python-utils",
@@ -763,9 +763,7 @@ inventory.includes.all = [
     "exts/isaacsim.util.camera_inspector",
     "extsDeprecated/isaacsim.util.merge_mesh",
     "exts/isaacsim.util.physics",
-# AUTOREMOVE: BEGIN
     # internal extensions (not included in extscache)
     [ "extsInternal/isaacsim.kit.xr.teleop.bridge", "exts" ],
     [ "extsInternal/isaacsim.util.clash_detection", "exts" ],
-# AUTOREMOVE: END
 ]

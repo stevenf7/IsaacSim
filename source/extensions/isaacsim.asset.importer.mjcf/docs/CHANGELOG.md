@@ -1,4 +1,8 @@
 # Changelog
+## [3.8.0] - 2026-04-29
+### Changed
+- Updated mujoco-usd-converter to 0.2.0
+
 ## [3.7.0] - 2026-04-22
 ### Changed
 - `MJCFImporter.import_mjcf()` now writes all intermediate artifacts (usdex layers, temp stage) to a system temp directory via `tempfile.mkdtemp()` in non-debug mode, instead of the source MJCF directory. This avoids `PermissionError` when importing MJCF assets from read-only locations (packman cache, mounted volumes, installed extension data). In `debug_mode`, intermediates are still written next to the final USD output for inspection.

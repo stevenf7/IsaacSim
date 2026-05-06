@@ -523,22 +523,17 @@ class NewtonStage:
 
         solver_type = self.cfg.solver_cfg.solver_type
 
-        if solver_type != "mujoco":
-            contacts = self.model.collide(self.state_0)
-        else:
-            contacts = None
-
         if solver_type == "mujoco":
-            if self.contacts is None or not hasattr(self.contacts, "rigid_contact_max"):
-                self.contacts = self.model.collide(self.state_0)
+            use_mujoco_native_contacts = getattr(self.cfg.solver_cfg, "use_mujoco_contacts", False)
+            if not use_mujoco_native_contacts:
+                self.contacts = self.model.collide(self.state_0, self.contacts)
+            contacts = self.contacts
         else:
+            contacts = self.model.collide(self.state_0)
             self.contacts = contacts
 
         for i in range(num_substeps):
             self.solver.step(self.state_0, self.state_1, self.control, contacts, step_dt / float(num_substeps))
-
-            if solver_type == "mujoco" and self.contacts is not None and i == num_substeps - 1:
-                self.solver.update_contacts(self.contacts)
 
             if i == num_substeps - 1 and self.cfg.use_cuda_graph and state_0_dict is not None:
                 for key, value in state_0_dict.items():
@@ -550,6 +545,9 @@ class NewtonStage:
                 self.state_0, self.state_1 = self.state_1, self.state_0
 
             self.state_0.clear_forces()
+
+        if solver_type == "mujoco" and self.contacts is not None and not getattr(self.solver, "use_mujoco_cpu", False):
+            self.solver.update_contacts(self.contacts, self.state_0)
 
         self.q_ik = self.model.joint_q
         self.qd_ik = self.model.joint_qd

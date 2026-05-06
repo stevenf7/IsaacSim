@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.3] - 2026-05-04
+### Fixed
+- Swap contact normal and separation sign convention between sensorA/sensorB in CPU and GPU contact data kernels to match MuJoCo 3.7 output
+
 ## [0.1.2] - 2026-05-01
 ### Added
 - Implement `getAccelerations` for CPU and GPU rigid body views using Newton's `body_qdd` extended state attribute

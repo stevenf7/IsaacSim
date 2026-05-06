@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.7.8] - 2026-05-04
+### Fixed
+- Use the newton collision pipeline as default instead of mujoco
+
+- MuJoCo solver: run `Model.collide` once per `simulate()` when `use_mujoco_contacts` is false (Newton collision); skip Newton collide when `use_mujoco_contacts` is true; call `SolverMuJoCo.update_contacts` after every `simulate()` so `contacts.force` and related fields match the solved MuJoCo state (required for tensor contact APIs, not only when MuJoCo runs collision)
+
 ## [0.7.7] - 2026-04-27
 ### Fixed
 - Fix unbounded growth of `contact_callbacks` and `step_callbacks` lists when repeatedly subscribing and unsubscribing callbacks. Replace tombstone-based lists with dict-based storage so unsubscribed slots are reclaimed and iteration cost is O(active callbacks)
