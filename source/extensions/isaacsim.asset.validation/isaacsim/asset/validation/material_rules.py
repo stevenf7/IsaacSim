@@ -22,6 +22,8 @@ import omni.asset_validator.core as av_core
 from omni.asset_validator.core import registerRule
 from pxr import Usd, UsdShade
 
+from .util import DedupBaseRuleChecker
+
 
 def traverse_without_references_payloads(prim: "Usd.Prim") -> Iterator:
     """Recursively traverse prim hierarchy excluding references and payloads.
@@ -48,7 +50,7 @@ def traverse_without_references_payloads(prim: "Usd.Prim") -> Iterator:
 
 
 @registerRule("IsaacSim.SimReadyAssetRules")
-class NoNestedMaterials(av_core.BaseRuleChecker):
+class NoNestedMaterials(DedupBaseRuleChecker):
     """Validates that materials don't contain nested materials.
 
     This rule checks that UsdShade.Material prims don't have child prims that are also
@@ -73,7 +75,7 @@ class NoNestedMaterials(av_core.BaseRuleChecker):
 
 
 @registerRule("IsaacSim.SimReadyAssetRules")
-class MaterialsOnTopLevelOnly(av_core.BaseRuleChecker):
+class MaterialsOnTopLevelOnly(DedupBaseRuleChecker):
     """Validates that materials are only defined in the top-level Looks prim.
 
     This rule checks that all UsdShade.Material prims are direct children of the

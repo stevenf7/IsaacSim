@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.4] - 2026-05-02
+### Changed
+- Added DedupBaseRuleChecker to filter duplicate errors and warnings caused by multiple variants.
+
 ## [1.3.3] - 2026-05-01
 ### Changed
 - Removed redundant `fetch_results()` after `simulate()` when collecting initial collider pairs in physics validation rules.

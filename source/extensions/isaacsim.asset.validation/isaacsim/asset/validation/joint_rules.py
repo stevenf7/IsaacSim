@@ -20,6 +20,8 @@ import omni.asset_validator.core as av_core
 from omni.asset_validator.core import registerRule
 from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
 
+from .util import DedupBaseRuleChecker
+
 
 # utils functions
 def get_world_translation(prim: Usd.Prim) -> Gf.Vec3d:
@@ -57,7 +59,7 @@ def _rotation_error_magnitude(qa: Gf.Quatd, qb: Gf.Quatd) -> float:
 
 
 @registerRule("IsaacSim.PhysicsRules")
-class JointHasCorrectTransformAndState(av_core.BaseRuleChecker):
+class JointHasCorrectTransformAndState(DedupBaseRuleChecker):
     """Validates that joint transforms and states are consistent with the connected bodies.
 
     This rule checks that the joint's transform and state values correctly define the
@@ -211,7 +213,7 @@ def gf_rotation_to_vec4d(rot: Gf.Rotation) -> Gf.Vec4d:
 
 
 @registerRule("IsaacSim.PhysicsRules")
-class JointHasJointStateAPI(av_core.BaseRuleChecker):
+class JointHasJointStateAPI(DedupBaseRuleChecker):
     """Validates that joints have the JointStateAPI applied.
 
     This rule checks that all joints (except fixed joints) have the PhysxSchema.JointStateAPI
@@ -290,7 +292,7 @@ def get_prismatic_or_revolute_limits(joint_prim: Usd.Prim) -> tuple[float, float
 
 
 @registerRule("IsaacSim.PhysicsRules")
-class MimicAPICheck(av_core.BaseRuleChecker):
+class MimicAPICheck(DedupBaseRuleChecker):
     """Validates proper configuration of mimic joint APIs.
 
     This rule checks that mimic joints have proper reference joints, gear ratios,
