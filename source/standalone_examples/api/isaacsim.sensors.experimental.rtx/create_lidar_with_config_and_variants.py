@@ -17,7 +17,7 @@
 
 This example demonstrates how to:
 - List all supported lidar configurations and their variants using ``SUPPORTED_LIDAR_CONFIGS``
-- Create RTX Lidar sensors using vendor-specific configurations (Ouster OS1, SICK picoScan150, etc.)
+- Create RTX Lidar sensors using vendor-specific configurations (Ouster OS1, SICK picoScan100, etc.)
 - Select sensor variants (e.g., different channel counts, scan rates)
 - Attach the ``RtxSensorDebugDrawPointCloud`` writer with per-sensor colors
 - Modify sensor attributes on an existing prim
@@ -146,12 +146,12 @@ if prim.HasAttribute("omni:sensor:Core:scanRateBaseHz"):
 # =============================================================================
 # SICK lidars support different operational profiles.
 
-print("\n--- Creating SICK picoScan150 lidar with profile variant ---")
+print("\n--- Creating SICK picoScan100 lidar with profile variant ---")
 
 lidar3 = Lidar.create(
     "/World/Lidar_SICK",
-    config="SICK_picoScan150",
-    variant="Profile_1",
+    config="SICK_picoScan100",
+    variant="picoScan150Pro_Profile01_15Hz_0p5deg",
     translations=np.array([5, 0, 1.0]),
 )
 
@@ -191,7 +191,7 @@ sensor3 = LidarSensor(lidar3, annotators=[], writers=["draw-point-cloud"])
 print("\nCreated LidarSensors with debug draw writers:")
 print("  Lidar 1 (Example_Rotary): Cyan, large points")
 print("  Lidar 2 (Ouster OS1): Magenta, small points")
-print("  Lidar 3 (SICK picoScan150): Yellow, medium points")
+print("  Lidar 3 (SICK picoScan100): Yellow, medium points")
 
 if args.test:
     stage = omni.usd.get_context().get_stage()

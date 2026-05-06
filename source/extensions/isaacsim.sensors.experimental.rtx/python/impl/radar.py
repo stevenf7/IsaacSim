@@ -20,6 +20,7 @@ This module provides the Radar class for creating/wrapping USD OmniRadar prims.
 
 from __future__ import annotations
 
+import pathlib
 from typing import Any
 
 import carb
@@ -28,8 +29,10 @@ import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni.replicator.core as rep
 import warp as wp
+from isaacsim.storage.native import get_assets_root_path
 
 from ._sensor_base import _SensorAuthoring
+from .rtx_radar_configs import SUPPORTED_RADAR_CONFIGS
 
 
 class Radar(_SensorAuthoring):
@@ -140,10 +143,11 @@ class Radar(_SensorAuthoring):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
+        config: str | None = None,
         usd_path: str | None = None,
-        variant: str | None = None,
+        variant: str | dict[str, str] | None = None,
     ) -> Radar:
-        """Create a Radar instance from a USD file path.
+        """Create a Radar instance from a config name or USD file path.
 
         Args:
             path: Single path to existing or non-existing (one of both) USD OmniRadar prim.
@@ -157,13 +161,18 @@ class Radar(_SensorAuthoring):
             orientations: Orientations in the world frame (shape ``(N, 4)``, quaternion ``wxyz``).
             scales: Scales to be applied to the prims (shape ``(N, 3)``).
             reset_xform_op_properties: Whether to reset the transformation operation attributes of the prims.
+            config: Configuration name for the sensor (from ``SUPPORTED_RADAR_CONFIGS``).
             usd_path: Path to a USD file containing the sensor asset.
-            variant: Variant name for the sensor configuration.
+            variant: Variant name for the sensor configuration. Nested variants
+                supported via dictionary; pairs applied in dict insertion order,
+                so outer variant sets must come first.
 
         Returns:
             Radar instance.
 
         Raises:
+            ValueError: If both 'config' and 'usd_path' are provided.
+            ValueError: If the specified config is not found.
             RuntimeError: If Motion BVH is not enabled.
 
         Example:
@@ -172,8 +181,20 @@ class Radar(_SensorAuthoring):
 
             >>> from isaacsim.sensors.experimental.rtx import Radar
             >>>
-            >>> radar = Radar.create(path="/World/radar")
+            >>> radar = Radar.create(path="/World/radar", config="IWRL6432AOP")
         """
+        if config is not None and usd_path is not None:
+            raise ValueError("Both 'config' and 'usd_path' cannot be provided")
+        if config is not None:
+            for config_path in SUPPORTED_RADAR_CONFIGS:
+                config_name = pathlib.Path(config_path).stem
+                if config in [config_path, config_name]:
+                    usd_path = get_assets_root_path() + config_path
+                    break
+            if usd_path is None:
+                raise ValueError(
+                    f"Config '{config}' not found. Supported configs: {list(SUPPORTED_RADAR_CONFIGS.keys())}"
+                )
         if usd_path is not None:
             path = Radar._create_from_usd(path=path, usd_path=usd_path, variant=variant)
         return Radar(

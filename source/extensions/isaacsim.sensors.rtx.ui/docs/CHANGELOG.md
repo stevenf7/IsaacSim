@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.0] - 2026-05-04
+### Added
+- RTX Radar menu reorganized into vendor submenus driven by `SUPPORTED_RADAR_CONFIGS`; Generic RTX Radar moved under `NVIDIA`; Texas Instruments IWRL6432AOP added
+- RTX Acoustic menu (`Create > Sensors > RTX Acoustic`) with a generic NVIDIA entry; auto-populates per-vendor entries from `SUPPORTED_ACOUSTIC_CONFIGS`
+
+### Changed
+- Lidar/Radar/Acoustic menu actions now pass a default variant from `SUPPORTED_*_CONFIGS` so multi-variant-set USDs (e.g. SICK `Product` × `Profile`) materialize a valid prim from a single click
+
 ## [1.4.1] - 2026-04-24
 ### Removed
 - Remove the `omni.isaac.ml_archive` test dependency

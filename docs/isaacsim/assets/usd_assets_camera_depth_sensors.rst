@@ -379,7 +379,7 @@ Inspector83x (Certified by SICK)
 
 .. mdinclude:: SICK/Inspector83x/readme.md
 
-.. figure:: /images/usd_assets_sensors/isim_5.0_full_ref_viewport_Isaac_Sensors_Inspector83x.png
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_Inspector83x.png
     :align: center
     :alt: SICK Inspector83x
     :width: 50%
@@ -387,6 +387,32 @@ Inspector83x (Certified by SICK)
     To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>SICK>Inspector83x*
 
 To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>Inspector83x>SICK_Inspector83x.usd*
+
+.. dropdown:: Features and Specification
+    :animate: fade-in
+    :color: light
+
+    .. mdinclude:: SICK/Inspector83x/features.md
+
+InspectorP61x (Certified by SICK)
+##################################
+
+.. mdinclude:: SICK/InspectorP61x/readme.md
+
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_InspectorP61x.png
+    :align: center
+    :alt: SICK InspectorP61x
+    :width: 50%
+
+    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>SICK>InspectorP61x*
+
+To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>InspectorP61x>SICK_InspectorP61x.usd*
+
+.. dropdown:: Features and Specification
+    :animate: fade-in
+    :color: light
+
+    .. mdinclude:: SICK/InspectorP61x/features.md
 
 .. _isaac_assets_camera_depth_sensors_depth_sensors:
 
@@ -653,6 +679,146 @@ To create the sensor from the Content Browser: *Isaac Sim>Sensors>Orbbec>Gemini3
         :align: center
         :widths: 22 26 26 26
         :header-rows: 1
+
+Luxonis
+-------
+
+OAK4-D (Certified by Luxonis)
+##############################
+
+.. mdinclude:: Luxonis/OAK4-D/OAK4-D.md
+
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_OAK4-D.png
+    :align: center
+    :alt: Luxonis OAK4-D
+    :width: 50%
+
+    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>Luxonis>Luxonis OAK4-D*
+
+To create the sensor from the Content Browser: *Isaac Sim>Sensors>Luxonis>OAK4-D>oak4_d.usd*
+
+.. dropdown:: Features and Specification
+    :animate: fade-in
+    :color: light
+
+    .. mdinclude:: Luxonis/OAK4-D/features.md
+
+OAK4-D Wide (Certified by Luxonis)
+###################################
+
+.. mdinclude:: Luxonis/OAK4-D_Wide/OAK4-D_Wide.md
+
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_OAK4-D_Wide.png
+    :align: center
+    :alt: Luxonis OAK4-D Wide
+    :width: 50%
+
+    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>Luxonis>Luxonis OAK4-D Wide*
+
+To create the sensor from the Content Browser: *Isaac Sim>Sensors>Luxonis>OAK4-D_Wide>oak4_d_wide.usd*
+
+.. dropdown:: Features and Specification
+    :animate: fade-in
+    :color: light
+
+    .. mdinclude:: Luxonis/OAK4-D_Wide/features.md
+
+OAK-D Pro PoE (Certified by Luxonis)
+#####################################
+
+.. mdinclude:: Luxonis/OAK-D_Pro_PoE/OAK-D_Pro_PoE.md
+
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_OAK-D_Pro_PoE.png
+    :align: center
+    :alt: Luxonis OAK-D Pro PoE
+    :width: 50%
+
+    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>Luxonis>Luxonis OAK-D Pro PoE*
+
+To create the sensor from the Content Browser: *Isaac Sim>Sensors>Luxonis>OAK-D_Pro_PoE>oak_d_pro_poe.usd*
+
+.. dropdown:: Features and Specification
+    :animate: fade-in
+    :color: light
+
+    .. mdinclude:: Luxonis/OAK-D_Pro_PoE/features.md
+
+OAK-D Pro W PoE (Certified by Luxonis)
+#######################################
+
+.. mdinclude:: Luxonis/OAK-D_Pro_W_PoE/OAK-D_Pro_W_PoE.md
+
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_OAK-D_Pro_W_PoE.png
+    :align: center
+    :alt: Luxonis OAK-D Pro W PoE
+    :width: 50%
+
+    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>Luxonis>Luxonis OAK-D Pro W PoE*
+
+To create the sensor from the Content Browser: *Isaac Sim>Sensors>Luxonis>OAK-D_Pro_W_PoE>oak_d_pro_w_poe.usd*
+
+.. dropdown:: Features and Specification
+    :animate: fade-in
+    :color: light
+
+    .. mdinclude:: Luxonis/OAK-D_Pro_W_PoE/features.md
+
+OAK-D ToF (Certified by Luxonis)
+#################################
+
+.. mdinclude:: Luxonis/OAK-D_ToF/OAK-D_ToF.md
+
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_OAK-D_ToF.png
+    :align: center
+    :alt: Luxonis OAK-D ToF
+    :width: 50%
+
+    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>Luxonis>Luxonis OAK-D ToF*
+
+To create the sensor from the Content Browser: *Isaac Sim>Sensors>Luxonis>OAK-D_ToF>oak_d_tof.usd*
+
+.. dropdown:: Features and Specification
+    :animate: fade-in
+    :color: light
+
+    .. mdinclude:: Luxonis/OAK-D_ToF/features.md
+
+SICK
+----
+
+safeVisionary2 (Certified by SICK)
+###################################
+
+.. mdinclude:: SICK/safeVisionary2/readme.md
+
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_safeVisionary2.png
+    :align: center
+    :alt: SICK safeVisionary2
+    :width: 50%
+
+    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>SICK>safeVisionary2*
+
+To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>safeVisionary2>SICK_safeVisionary2.usd*
+
+.. dropdown:: Features and Specification
+    :animate: fade-in
+    :color: light
+
+    .. mdinclude:: SICK/safeVisionary2/features.md
+
+Visionary-T Mini (Certified by SICK)
+#####################################
+
+.. mdinclude:: SICK/Visionary-T_Mini/readme.md
+
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_Visionary-T_Mini.png
+    :align: center
+    :alt: SICK Visionary-T Mini
+    :width: 50%
+
+    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>SICK>Visionary-T Mini*
+
+To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>Visionary-T_Mini>SICK_Visionary-T_Mini.usd*
 
 Stereolabs
 ----------

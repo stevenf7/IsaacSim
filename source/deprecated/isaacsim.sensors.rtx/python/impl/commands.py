@@ -83,7 +83,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         translation: Gf.Vec3d | None = Gf.Vec3d(0, 0, 0),
         orientation: Gf.Quatd | None = Gf.Quatd(1, 0, 0, 0),
         visibility: bool = False,
-        variant: str | None = None,
+        variant: str | dict[str, str] | None = None,
         force_camera_prim: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -176,16 +176,21 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
                             f"Variant '{self._variant}' not found for Omni{self._sensor_type.capitalize()} at {self._prim_path}. Allowed variants: {allowed_variants}."
                         )
 
-            # Apply variant selection to the prim
-            variant_set = prim.GetVariantSet(SUPPORTED_LIDAR_VARIANT_SET_NAME)
-            if len(variant_set.GetVariantNames()) == 0:
-                carb.log_warn(
-                    f"Variant set {SUPPORTED_LIDAR_VARIANT_SET_NAME} for Omni{self._sensor_type.capitalize()} at {self._prim_path} does not contain any variants."
-                )
-            elif not variant_set.SetVariantSelection(self._variant):
-                carb.log_warn(
-                    f"Variant '{self._variant}' not found for Omni{self._sensor_type.capitalize()} at {self._prim_path}. Available variants: {variant_set.GetVariantNames()}."
-                )
+            pairs = (
+                list(self._variant.items())
+                if isinstance(self._variant, dict)
+                else [(SUPPORTED_LIDAR_VARIANT_SET_NAME, self._variant)]
+            )
+            for set_name, selection in pairs:
+                variant_set = prim.GetVariantSet(set_name)
+                if len(variant_set.GetVariantNames()) == 0:
+                    carb.log_warn(
+                        f"Variant set {set_name} for Omni{self._sensor_type.capitalize()} at {self._prim_path} does not contain any variants."
+                    )
+                elif not variant_set.SetVariantSelection(selection):
+                    carb.log_warn(
+                        f"Variant '{selection}' not found in set '{set_name}' for Omni{self._sensor_type.capitalize()} at {self._prim_path}. Available variants: {variant_set.GetVariantNames()}."
+                    )
 
         # If necessary, traverse children of referenced asset to find OmniSensor prim
         # Note: if multiple children of the referenced asset are OmniSensor types, this will select the first one

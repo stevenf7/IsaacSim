@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0] - 2026-05-05
+### Added
+- `SUPPORTED_RADAR_CONFIGS` / `SUPPORTED_RADAR_VARIANT_SET_NAME` and `config` parameter on `Radar.create()`, with Texas Instruments IWRL6432AOP as the first entry
+- `SUPPORTED_ACOUSTIC_CONFIGS` / `SUPPORTED_ACOUSTIC_VARIANT_SET_NAME` and `config` parameter on `Acoustic.create()` (empty for now; OEM acoustic assets slot in here)
+- `test_rtx_radar_configs.py` and `test_rtx_acoustic_configs.py` validating each config via `SensorCheckerUtil`
+- `SICK_LMS4000` (3 variants) and `SICK_LMS5xx` (61 variants) lidar configs
+- `variant=` parameter on `Lidar.create()` / `Radar.create()` / `Acoustic.create()` now accepts `dict[str, str]` for USDs with multiple variant sets (e.g. SICK `Product` × `Profile`)
+
+### Changed
+- `SUPPORTED_LIDAR_CONFIGS` value type widened to `dict[str, set[str] | list[dict[str, str]]]`; flat `set[str]` entries still work via the `"sensor"` default
+- SICK lidar entries restructured to match the new SICK family-USD bundle and converted to dict form (Product/Profile pairs); `SICK/{LRS4581R,MRS1104C,multiScan136,multiScan165,picoScan150}` replaced by `SICK/{LRS4000,MRS1000,multiScan100,multiScan100,picoScan100}`; `SICK_nanoScan3` corrected from `{"Lidar"}` to `set()`
+
 ## [1.3.1] - 2026-05-05
 ### Fixed
 - authoring APIs no longer clobber tickRate and other attributes if already set on wrapped prim or loaded USD

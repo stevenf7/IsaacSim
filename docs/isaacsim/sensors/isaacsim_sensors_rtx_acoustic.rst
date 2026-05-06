@@ -61,7 +61,29 @@ How to Create an RTX Acoustic Sensor
 -------------------------------------
 
 The ``isaacsim.sensors.experimental.rtx`` extension provides the ``Acoustic`` class for creating RTX
-Acoustic sensors.
+Acoustic sensors. An equivalent menu entry is also registered by the ``isaacsim.sensors.rtx.ui``
+extension for UI-driven creation.
+
+Create an RTX Acoustic Sensor From the Create Menu
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To create a generic RTX Acoustic sensor from the |isaac-sim_short| UI:
+
+* **Main menu**: *Create > Sensors > RTX Acoustic > NVIDIA > Generic RTX Acoustic*
+* **Viewport context menu** (right-click in the viewport): *Create > Isaac > Sensors > RTX Acoustic > NVIDIA > Generic RTX Acoustic*
+
+Both entries create an ``OmniAcoustic`` prim with the ``OmniSensorGenericAcousticWpmAPI`` schema applied,
+at the next available path. If a prim is selected at creation time, the new sensor is parented under
+the selected prim; otherwise it is created at the stage root.
+
+The menu entry creates a bare prim with no sensor mounts or receiver groups configured. To author the
+multi-apply schemas (``OmniSensorWpmAcousticSensorMountAPI``, ``OmniSensorWpmAcousticRxGroupAPI``)
+and tune attributes such as ``omni:sensor:WpmAcoustic:centerFrequency``, either edit the prim in the
+property panel after creation, or use the ``Acoustic`` class for programmatic setup as shown below.
+
+The RTX Acoustic submenu also auto-populates additional vendor entries from the
+``SUPPORTED_ACOUSTIC_CONFIGS`` dict in ``isaacsim.sensors.experimental.rtx``, so OEM acoustic asset
+USDs registered there appear in the menu automatically.
 
 Create an RTX Acoustic Sensor Using the ``Acoustic`` Class
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -32,7 +32,7 @@ import warp as wp
 from isaacsim.storage.native import get_assets_root_path
 
 from ._sensor_base import _SensorAuthoring
-from .rtx_lidar_configs import SUPPORTED_LIDAR_CONFIGS, SUPPORTED_LIDAR_VARIANT_SET_NAME
+from .rtx_lidar_configs import SUPPORTED_LIDAR_CONFIGS
 
 
 class Lidar(_SensorAuthoring):
@@ -204,7 +204,7 @@ class Lidar(_SensorAuthoring):
         reset_xform_op_properties: bool = True,
         config: str | None = None,
         usd_path: str | None = None,
-        variant: str | None = None,
+        variant: str | dict[str, str] | None = None,
     ) -> Lidar:
         """Create a Lidar instance from a config name or USD file path.
 
@@ -223,7 +223,9 @@ class Lidar(_SensorAuthoring):
             reset_xform_op_properties: Whether to reset the transformation operation attributes of the prims.
             config: Configuration name for the sensor (from ``SUPPORTED_LIDAR_CONFIGS``).
             usd_path: Path to a USD file containing the sensor asset.
-            variant: Variant name for the sensor configuration.
+            variant: Variant name for the sensor configuration. Nested variants
+                supported via dictionary; pairs applied in dict insertion order,
+                so outer variant sets must come first.
 
         Returns:
             Lidar instance.
@@ -268,12 +270,7 @@ class Lidar(_SensorAuthoring):
                     f"Config '{config}' not found. Supported configs: {list(SUPPORTED_LIDAR_CONFIGS.keys())}"
                 )
         if usd_path is not None:
-            path = Lidar._create_from_usd(
-                path=path,
-                usd_path=usd_path,
-                variant=variant,
-                variant_set_name=SUPPORTED_LIDAR_VARIANT_SET_NAME,
-            )
+            path = Lidar._create_from_usd(path=path, usd_path=usd_path, variant=variant)
         return Lidar(
             path=path,
             accumulate_outputs=accumulate_outputs,

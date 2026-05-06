@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.6.0] - 2026-05-04
+### Added
+- Luxonis depth cameras: OAK4-D, OAK4-D Wide, OAK-D Pro PoE, OAK-D Pro W PoE, OAK-D ToF
+- SICK Inspector83x and InspectorP61x 2D cameras
+- SICK safeVisionary2 and Visionary-T Mini, registered as depth sensors
+
+### Changed
+- `test_camera_context_menu_count` derives the expected count from `Extension.SENSORS` instead of a hardcoded sum
+
 ## [0.5.1] - 2026-04-21
 ### Changed
 - Added multitick rendering test arguments (`supportMultiTickRate`, `perSensorTickTlas`)

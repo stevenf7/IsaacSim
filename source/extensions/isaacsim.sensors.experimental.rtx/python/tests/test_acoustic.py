@@ -140,3 +140,13 @@ class TestAcoustic(omni.kit.test.AsyncTestCase):
         prim.ApplyAPI("OmniSensorGenericAcousticWpmAPI")
         with self.assertRaises(ValueError):
             Acoustic("/World/acoustic_.*")
+
+    # -- create from config --
+
+    async def test_create_with_invalid_config_raises(self):
+        with self.assertRaises(ValueError):
+            Acoustic.create("/World/acoustic", config="NotARealAcousticConfig")
+
+    async def test_create_with_both_config_and_usd_path_raises(self):
+        with self.assertRaises(ValueError):
+            Acoustic.create("/World/acoustic", config="some_config", usd_path="/some/path.usd")
