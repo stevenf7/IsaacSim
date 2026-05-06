@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.11.5] - 2026-05-05
+### Changed
+- Update the return types of the RigidPrim annotations
+
 ## [0.11.4] - 2026-04-22
 ### Fixed
 - Fix `ParticleSystem` setter methods crashing when a prim is missing the required property; now logs an error and skips the prim

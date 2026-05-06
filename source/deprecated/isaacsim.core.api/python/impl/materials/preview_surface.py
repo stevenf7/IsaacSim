@@ -35,6 +35,8 @@ class PreviewSurface(VisualMaterial):
         roughness: Surface roughness (0-1).
         metallic: Metallic value (0-1).
 
+    Raises:
+        ValueError: If the material's shader is not of type USD Preview Surface.
     """
 
     def __init__(
@@ -70,6 +72,11 @@ class PreviewSurface(VisualMaterial):
             material=material,
             name=name,
         )
+        shader_id = shader.GetIdAttr().Get()
+        if shader_id and shader_id != "UsdPreviewSurface":
+            raise ValueError(
+                f"The material's shader at path {prim_path} (with id {shader_id}) is not of type USD Preview Surface"
+            )
         shader.CreateIdAttr("UsdPreviewSurface")
         if color is not None:
             shader.CreateInput("diffuseColor", Sdf.ValueTypeNames.Float3).Set(Gf.Vec3f(*color.tolist()))
