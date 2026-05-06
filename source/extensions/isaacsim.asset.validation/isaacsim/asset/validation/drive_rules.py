@@ -21,6 +21,8 @@ import omni.asset_validator.core as av_core
 from omni.asset_validator.core import registerRule
 from pxr import PhysxSchema, Usd, UsdPhysics
 
+from .util import DedupBaseRuleChecker
+
 
 def get_joint_drives_and_joint_states(
     joint: Usd.Prim,
@@ -52,7 +54,7 @@ def get_joint_drives_and_joint_states(
 
 
 @registerRule("IsaacSim.PhysicsRules")
-class PhysicsJointHasDriveOrMimicAPI(av_core.BaseRuleChecker):
+class PhysicsJointHasDriveOrMimicAPI(DedupBaseRuleChecker):
     """Validates that joints have a drive or mimic API.
 
     This rule ensures that all joints (except fixed joints) have either a drive API
@@ -83,7 +85,7 @@ class PhysicsJointHasDriveOrMimicAPI(av_core.BaseRuleChecker):
 
 
 @registerRule("IsaacSim.PhysicsRules")
-class PhysicsJointMaxVelocity(av_core.BaseRuleChecker):
+class PhysicsJointMaxVelocity(DedupBaseRuleChecker):
     """Validates that joints have a positive max velocity set.
 
     This rule checks that joints with the PhysxJointAPI have a defined and positive
@@ -114,7 +116,7 @@ class PhysicsJointMaxVelocity(av_core.BaseRuleChecker):
 
 
 @registerRule("IsaacSim.PhysicsRules")
-class PhysicsDriveAndJointState(av_core.BaseRuleChecker):
+class PhysicsDriveAndJointState(DedupBaseRuleChecker):
     """Validates that joint drives have proper force limits and matching state values.
 
     This rule checks that joint drives have defined and reasonable max force values,
@@ -187,7 +189,7 @@ class PhysicsDriveAndJointState(av_core.BaseRuleChecker):
 
 
 @registerRule("IsaacSim.PhysicsRules")
-class DriveJointValueReasonable(av_core.BaseRuleChecker):
+class DriveJointValueReasonable(DedupBaseRuleChecker):
     """Validates that joint drive stiffness values are within reasonable ranges.
 
     This rule checks that joint drive stiffness values are within defined minimum and

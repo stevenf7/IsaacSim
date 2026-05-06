@@ -15,6 +15,75 @@
 
 """Utility functions for asset validation."""
 
+import omni.asset_validator.core as _av_core
+
+
+def _resolve_at(at) -> str:
+    """Resolve a USD object reference to a stable string key for dedup purposes.
+
+    Uses duck-typing so this module never imports pxr, keeping the companion
+    unit test suite pure stdlib.
+    """
+    if at is None:
+        return ""
+    if hasattr(at, "GetRootLayer"):  # Usd.Stage
+        return at.GetRootLayer().identifier
+    if hasattr(at, "GetPath"):  # Usd.Prim, Usd.Attribute, Usd.Relationship
+        return str(at.GetPath())
+    return str(at)
+
+
+class DedupMixin:
+    """Mixin that suppresses duplicate checker messages within a single rule instance.
+
+    Prefer ``DedupBaseRuleChecker`` as the direct base class for new rules. This
+    mixin is exposed for callers that need custom MRO.
+
+    MRO guarantees DedupMixin._AddError/Warning/Info run before the base class
+    methods, so the first occurrence is forwarded and subsequent identical calls
+    are dropped.  Each rule instance gets its own ``_seen`` set, so dedup state
+    never leaks across consecutive validation runs in batch mode.
+
+    Dedup key: ``(rule_class_name, resolved_at, severity, message)``
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._seen: set = set()
+
+    def _AddError(self, message: str, **kwargs):
+        key = (type(self).__name__, _resolve_at(kwargs.get("at")), "error", message)
+        if key not in self._seen:
+            self._seen.add(key)
+            super()._AddError(message, **kwargs)
+
+    def _AddWarning(self, message: str, **kwargs):
+        key = (type(self).__name__, _resolve_at(kwargs.get("at")), "warning", message)
+        if key not in self._seen:
+            self._seen.add(key)
+            super()._AddWarning(message, **kwargs)
+
+    def _AddInfo(self, message: str, **kwargs):
+        key = (type(self).__name__, _resolve_at(kwargs.get("at")), "info", message)
+        if key not in self._seen:
+            self._seen.add(key)
+            super()._AddInfo(message, **kwargs)
+
+
+class DedupBaseRuleChecker(DedupMixin, _av_core.BaseRuleChecker):
+    """BaseRuleChecker with automatic per-instance event deduplication.
+
+    Use this as the direct base class for any rule that may fan out across
+    variantSet combinations (CheckPrim-based rules) so identical events on the
+    same prim from different variant passes collapse to a single emission.
+
+    Equivalent to ``class Foo(DedupMixin, BaseRuleChecker):`` but makes the
+    intent explicit and avoids repeating the multi-inheritance boilerplate in
+    every rule module.
+    """
+
+    pass
+
 
 def is_relationship_prepended(relationship: object) -> bool:
     """Check if a relationship is prepended in the layer stack.

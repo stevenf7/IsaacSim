@@ -27,11 +27,13 @@ from omni.physics.core import ContactEventType, get_physics_simulation_interface
 from omni.physx.bindings._physx import SETTING_UPDATE_TO_USD
 from pxr import Gf, PhysicsSchemaTools, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics, UsdUtils
 
+from .util import DedupBaseRuleChecker
+
 # from omni.physx.scripts.physicsUtils import get_initial_collider_pairs # ideally, import Ales's code here, blocked atm
 
 
 @registerRule("IsaacSim.PhysicsRules")
-class RigidBodyHasMassAPI(av_core.BaseRuleChecker):
+class RigidBodyHasMassAPI(DedupBaseRuleChecker):
     """Validates that rigid bodies have properly configured mass properties.
 
     This rule checks that prims with the RigidBodyAPI also have the MassAPI applied
@@ -139,7 +141,7 @@ class RigidBodyHasMassAPI(av_core.BaseRuleChecker):
 
 
 @registerRule("IsaacSim.PhysicsRules")
-class RigidBodyHasCollider(av_core.BaseRuleChecker):
+class RigidBodyHasCollider(DedupBaseRuleChecker):
     """Validates that enabled rigid bodies have collision geometry.
 
     This rule checks that prims with an enabled RigidBodyAPI also have the CollisionAPI
@@ -320,7 +322,7 @@ def get_initial_collider_pairs(stage: Usd.Stage) -> set[tuple[str, str]]:
 
 
 @registerRule("IsaacSim.PhysicsRules")
-class NonAdjacentCollisionMeshesDoNotClash(av_core.BaseRuleChecker):
+class NonAdjacentCollisionMeshesDoNotClash(DedupBaseRuleChecker):
     """Validates that non-adjacent collision meshes don't intersect.
 
     This rule checks that collision meshes that aren't connected by joints don't
@@ -398,7 +400,7 @@ class NonAdjacentCollisionMeshesDoNotClash(av_core.BaseRuleChecker):
 
 
 @registerRule("IsaacSim.PhysicsRules")
-class InvisibleCollisionMeshHasPurposeGuide(av_core.BaseRuleChecker):
+class InvisibleCollisionMeshHasPurposeGuide(DedupBaseRuleChecker):
     """Validates that invisible collision meshes have purpose set to 'guide'.
 
     This rule checks that collision meshes with visibility set to 'invisible'
@@ -432,7 +434,7 @@ class InvisibleCollisionMeshHasPurposeGuide(av_core.BaseRuleChecker):
 
 
 @registerRule("IsaacSim.PhysicsRules")
-class HasArticulationRoot(av_core.BaseRuleChecker):
+class HasArticulationRoot(DedupBaseRuleChecker):
     """Validates that at least one prim in the stage has the ArticulationRootAPI.
 
     This rule checks that the USD stage contains at least one prim with the

@@ -25,7 +25,7 @@ from omni.asset_validator.core import AuthoringLayers, registerRule
 from pxr import Usd, UsdPhysics
 from usd.schema.isaac import robot_schema
 
-from .util import is_relationship_prepended, make_relationship_prepended
+from .util import DedupBaseRuleChecker, is_relationship_prepended, make_relationship_prepended
 
 # Compiled once at module level for efficiency.
 _PHYSICS_LAYER_RE = re.compile(r"_?physics\.usda?$")
@@ -47,7 +47,7 @@ def _is_physics_layer(identifier: str) -> bool:
 
 
 @registerRule("IsaacSim.RobotRules")
-class RobotNaming(av_core.BaseRuleChecker):
+class RobotNaming(DedupBaseRuleChecker):
     """Validates that robot assets follow the standard naming convention.
 
     This rule checks that robot assets follow the naming convention of
@@ -82,7 +82,7 @@ class RobotNaming(av_core.BaseRuleChecker):
 
 
 @registerRule("IsaacSim.RobotRules")
-class CleanFolder(av_core.BaseRuleChecker):
+class CleanFolder(DedupBaseRuleChecker):
     """Validates that robot asset folders don't contain unexpected files.
 
     This rule checks that the folder containing a robot asset doesn't contain
@@ -135,7 +135,7 @@ def get_overridden_attributes(prim: Usd.Prim) -> list[str]:
 
 
 @registerRule("IsaacSim.RobotRules")
-class NoOverrides(av_core.BaseRuleChecker):
+class NoOverrides(DedupBaseRuleChecker):
     """Validates that prims don't have overridden attributes.
 
     This rule checks that prims don't have attributes with the SpecifierOver specifier,
@@ -163,7 +163,7 @@ class NoOverrides(av_core.BaseRuleChecker):
 
 
 @registerRule("IsaacSim.RobotRules")
-class RobotSchema(av_core.BaseRuleChecker):
+class RobotSchema(DedupBaseRuleChecker):
     """Validates that robot assets have the required RobotAPI and relationships.
 
     This rule checks that robot assets have a default prim with the RobotAPI applied
@@ -222,7 +222,7 @@ class RobotSchema(av_core.BaseRuleChecker):
 
 
 @registerRule("IsaacSim.RobotRules")
-class JointsExist(av_core.BaseRuleChecker):
+class JointsExist(DedupBaseRuleChecker):
     """Validates that robot assets contain at least one joint.
 
     This rule checks that robot assets have at least one prim with the JointAPI
@@ -250,7 +250,7 @@ class JointsExist(av_core.BaseRuleChecker):
 
 
 @registerRule("IsaacSim.RobotRules")
-class LinksExist(av_core.BaseRuleChecker):
+class LinksExist(DedupBaseRuleChecker):
     """Validates that robot assets contain at least one link.
 
     This rule checks that robot assets have at least one prim with the LinkAPI
@@ -278,7 +278,7 @@ class LinksExist(av_core.BaseRuleChecker):
 
 
 @registerRule("IsaacSim.RobotRules")
-class ThumbnailExists(av_core.BaseRuleChecker):
+class ThumbnailExists(DedupBaseRuleChecker):
     """Validates that robot assets have a thumbnail image.
 
     This rule checks that robot assets have a thumbnail image at the expected
@@ -305,7 +305,7 @@ class ThumbnailExists(av_core.BaseRuleChecker):
 
 
 @registerRule("IsaacSim.RobotRules")
-class CheckRobotRelationships(av_core.BaseRuleChecker):
+class CheckRobotRelationships(DedupBaseRuleChecker):
     """Validates that robot relationships are properly defined and prepended.
 
     This rule checks that robot assets have the required robotLinks and robotJoints
@@ -395,7 +395,7 @@ class CheckRobotRelationships(av_core.BaseRuleChecker):
 
 
 @registerRule("IsaacSim.RobotRules")
-class VerifyRobotPhysicsAttributesSourceLayer(av_core.BaseRuleChecker):
+class VerifyRobotPhysicsAttributesSourceLayer(DedupBaseRuleChecker):
     """Validates that physics attributes are authored in the physics layer.
 
     This rule checks that physics attributes in robot assets are authored in
@@ -433,7 +433,7 @@ class VerifyRobotPhysicsAttributesSourceLayer(av_core.BaseRuleChecker):
 
 
 @registerRule("IsaacSim.RobotRules")
-class VerifyRobotPhysicsSchemaSourceLayer(av_core.BaseRuleChecker):
+class VerifyRobotPhysicsSchemaSourceLayer(DedupBaseRuleChecker):
     """Validates that physics schemas are applied in the physics layer.
 
     This rule checks that physics schemas in robot assets are applied in
