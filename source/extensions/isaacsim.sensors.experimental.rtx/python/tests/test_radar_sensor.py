@@ -79,7 +79,8 @@ class TestRadarSensor(omni.kit.test.AsyncTestCase):
             self.num_elements_zero_count = 0
             self.valid_frame_count = 0
             self._sensor_prim = sensor_prim
-            self._expected_advance_ns = round(1.0 / _RADAR_TICK_RATE_HZ * 1e9)
+            tick_rate = sensor_prim.GetAttribute("omni:sensor:tickRate").Get()
+            self._expected_advance_ns = round(1.0 / tick_rate * 1e9) if tick_rate and tick_rate > 0 else 0
 
         # -- frame callback ------------------------------------------
 

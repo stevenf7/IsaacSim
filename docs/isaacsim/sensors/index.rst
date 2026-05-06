@@ -27,5 +27,4 @@ Sensors
    ./isaacsim_sensors_rtx
    ./isaacsim_sensors_physics
    ./isaacsim_sensors_physx
-   ../assets/usd_assets_camera_depth_sensors
-   ../assets/usd_assets_nonvisual_sensors
+   ../assets/usd_assets_sensors

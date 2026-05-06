@@ -26,9 +26,13 @@ from .lidar import Lidar as Lidar
 from .lidar_sensor import LidarSensor as LidarSensor
 from .radar import Radar as Radar
 from .radar_sensor import RadarSensor as RadarSensor
+from .rtx_acoustic_configs import SUPPORTED_ACOUSTIC_CONFIGS as SUPPORTED_ACOUSTIC_CONFIGS
+from .rtx_acoustic_configs import SUPPORTED_ACOUSTIC_VARIANT_SET_NAME as SUPPORTED_ACOUSTIC_VARIANT_SET_NAME
 from .rtx_camera import RtxCamera as RtxCamera
 from .rtx_lidar_configs import SUPPORTED_LIDAR_CONFIGS as SUPPORTED_LIDAR_CONFIGS
 from .rtx_lidar_configs import SUPPORTED_LIDAR_VARIANT_SET_NAME as SUPPORTED_LIDAR_VARIANT_SET_NAME
+from .rtx_radar_configs import SUPPORTED_RADAR_CONFIGS as SUPPORTED_RADAR_CONFIGS
+from .rtx_radar_configs import SUPPORTED_RADAR_VARIANT_SET_NAME as SUPPORTED_RADAR_VARIANT_SET_NAME
 from .single_view_depth_camera_sensor import SingleViewDepthCameraSensor as SingleViewDepthCameraSensor
 from .structured_light_camera import StructuredLightCamera as StructuredLightCamera
 from .tiled_camera_sensor import TiledCameraSensor as TiledCameraSensor

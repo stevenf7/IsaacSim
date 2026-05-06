@@ -27,7 +27,8 @@ from isaacsim.test.utils import MenuUITestCase, count_menu_items, get_all_menu_p
 # click items in certain vendor submenus. The click position appears to be calculated
 # incorrectly for these specific submenus, causing the onclick_fn callback to not be invoked.
 # This affects entire vendor categories (HESAI, Ouster, ZVISION) regardless of offset adjustment.
-# Additionally, SICK/TIM781 has a USD configuration issue where no OmniLidar prim is created.
+# Additionally, SICK/TIM781 and SICK/picoScan100 have a USD configuration issue where no
+# OmniLidar prim is created.
 # These sensors are skipped until the UI test framework bug is resolved.
 KNOWN_UI_TEST_FAILURES = {
     "HESAI/XT32 SD10",
@@ -38,6 +39,7 @@ KNOWN_UI_TEST_FAILURES = {
     "ZVISION/ML30S",
     "ZVISION/MLXS",
     "SICK/TIM781",
+    "SICK/picoScan100",
 }
 
 

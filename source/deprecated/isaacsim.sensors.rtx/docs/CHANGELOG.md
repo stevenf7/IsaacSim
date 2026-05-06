@@ -1,5 +1,9 @@
 # Changelog
 
+## [15.16.4] - 2026-05-06
+### Added
+- `IsaacSensorCreateRtxLidar`: `variant` parameter now accepts `dict[str, str]` for USDs with multiple variant sets (e.g. SICK family `Product` × `Profile`), matching `Lidar.create()` in `isaacsim.sensors.experimental.rtx`.
+
 ## [15.16.3] - 2026-05-04
 ### Fixed
 - Annotator tests correctly set RTX Radar output level to BASIC instead of FULL.

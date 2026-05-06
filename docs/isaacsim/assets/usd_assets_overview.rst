@@ -42,8 +42,7 @@ Categories
    :maxdepth: 1
 
    usd_assets_robots
-   usd_assets_camera_depth_sensors
-   usd_assets_nonvisual_sensors
+   usd_assets_sensors
    usd_assets_props
    usd_assets_environments
    usd_assets_featured

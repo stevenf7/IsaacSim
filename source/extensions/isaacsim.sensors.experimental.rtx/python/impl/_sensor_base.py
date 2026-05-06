@@ -204,7 +204,7 @@ class _SensorAuthoring(XformPrim):
         *,
         path: str,
         usd_path: str,
-        variant: str | None = None,
+        variant: str | dict[str, str] | None = None,
         variant_set_name: str = "sensor",
     ) -> str:
         """Add a USD reference to the stage and find the sensor prim within it.
@@ -212,14 +212,23 @@ class _SensorAuthoring(XformPrim):
         Args:
             path: Target prim path on stage.
             usd_path: Path to the USD file.
-            variant: Optional variant name.
-            variant_set_name: Variant set name.
+            variant: Variant selection. Either a flat string (applied against
+                ``variant_set_name``), or a dict of ``{set_name: variant_name}``
+                pairs for USDs with multiple variant sets, or ``None``. Nested
+                variants supported via dictionary; pairs applied in dict
+                insertion order, so outer variant sets must come first.
+            variant_set_name: Variant set name used when ``variant`` is a string.
 
         Returns:
             Path to the sensor prim found within the reference.
         """
         prim_type = cls._PRIM_TYPE if usd_path.endswith(".usda") else "Xform"
-        variants = [(variant_set_name, variant)] if variant is not None else []
+        if variant is None:
+            variants = []
+        elif isinstance(variant, str):
+            variants = [(variant_set_name, variant)]
+        else:
+            variants = list(variant.items())
         stage_utils.add_reference_to_stage(usd_path=usd_path, path=path, prim_type=prim_type, variants=variants)
         predicate = lambda prim, path: prim.GetTypeName() == cls._PRIM_TYPE
         sensor_prim = prim_utils.get_first_matching_child_prim(path, predicate=predicate, include_self=True)

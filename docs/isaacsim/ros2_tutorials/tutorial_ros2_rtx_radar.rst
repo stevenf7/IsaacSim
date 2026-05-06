@@ -50,7 +50,7 @@ Adding a RTX Radar ROS 2 Bridge
 ===================================================
 
 #. Start with the turtlebot scene from the :ref:`isaac_sim_app_tutorial_ros2_turtlebot` tutorial.
-#. Add a Radar sensor by going to **Create > Sensors > RTX Radar**.
+#. Add a Radar sensor by going to **Create > Sensors > RTX Radar > NVIDIA > Generic RTX Radar**.
 #. To place the radar sensor on the robot, drag the Radar prim under ``/World/turtlebot3_burger/base_scan``. Zero out any displacement in the **Transform** fields inside the **Property** tab.
 #. Connect the ROS 2 bridge with the sensor output using OmniGraph nodes. Open the visual scripting editor by going to **Window > Graph Editors > Action Graph**. Add the following nodes to the graph:
 

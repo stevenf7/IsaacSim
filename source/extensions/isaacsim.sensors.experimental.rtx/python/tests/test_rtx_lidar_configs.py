@@ -131,10 +131,18 @@ def _create_lidar_parameters_test(config_path, config_name, variant):
     return test_function
 
 
+def _variant_label(v):
+    if v is None:
+        return "default"
+    if isinstance(v, str):
+        return v
+    return "__".join(f"{k}_{val}" for k, val in v.items())
+
+
 for config_path in SUPPORTED_LIDAR_CONFIGS:
     config_name = Path(config_path).stem
     for variant in SUPPORTED_LIDAR_CONFIGS[config_path] or [None]:
-        test_name = f"test_lidar_parameters__{config_name}__{variant}"
+        test_name = f"test_lidar_parameters__{config_name}__{_variant_label(variant)}"
         test_func = _create_lidar_parameters_test(config_path, config_name, variant)
         test_func.__name__ = test_name
         test_func.__doc__ = (

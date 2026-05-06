@@ -32,6 +32,14 @@ from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf, Sdf, UsdGeom
 
 
+def _variant_label(v):
+    if v is None:
+        return "default"
+    if isinstance(v, str):
+        return v
+    return "__".join(f"{k}_{val}" for k, val in v.items())
+
+
 class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
     """Test cases for RTX sensor creation commands."""
 
@@ -70,7 +78,7 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
             for i, allowed_config in enumerate(allowed_configs):
 
                 for variant in SUPPORTED_LIDAR_CONFIGS[config_path] or [None]:
-                    path = f"/RtxLidar_{config}_{i}_{variant}"
+                    path = f"/RtxLidar_{config}_{i}_{_variant_label(variant)}"
                     _, prim = omni.kit.commands.execute(
                         "IsaacSensorCreateRtxLidar",
                         path=path,
@@ -87,18 +95,23 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
 
                     if variant is not None:
                         prim = get_prim_at_path(path)
-                        variant_set = prim.GetVariantSet(SUPPORTED_LIDAR_VARIANT_SET_NAME)
-                        self.assertGreater(
-                            len(variant_set.GetVariantNames()),
-                            0,
-                            f"Variant set '{SUPPORTED_LIDAR_VARIANT_SET_NAME}' on prim {path} does not contain any variants.",
+                        pairs = (
+                            list(variant.items())
+                            if isinstance(variant, dict)
+                            else [(SUPPORTED_LIDAR_VARIANT_SET_NAME, variant)]
                         )
-                        current_variant = variant_set.GetVariantSelection()
-                        self.assertEqual(
-                            current_variant,
-                            variant,
-                            f"Incorrect variant selection {current_variant} for config {allowed_config} and variant {variant}",
-                        )
+                        for set_name, expected in pairs:
+                            variant_set = prim.GetVariantSet(set_name)
+                            self.assertGreater(
+                                len(variant_set.GetVariantNames()),
+                                0,
+                                f"Variant set '{set_name}' on prim {path} does not contain any variants.",
+                            )
+                            self.assertEqual(
+                                variant_set.GetVariantSelection(),
+                                expected,
+                                f"Incorrect variant selection for set '{set_name}' (config {allowed_config}, variant {variant})",
+                            )
 
     async def test_create_rtx_lidar_invalid_config(self) -> None:
         """Test creating an RTX Lidar sensor with an invalid configuration."""

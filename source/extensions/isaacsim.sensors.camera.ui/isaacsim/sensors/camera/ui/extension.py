@@ -33,16 +33,17 @@ from omni.kit.menu.utils import add_menu_items, remove_menu_items
 class Extension(omni.ext.IExt):
     """Extension for the isaacsim.sensors.camera.ui extension that provides UI integration for camera and depth sensor creation.
 
-    This extension adds menu items to the Create menu and context menus that allow users to create various camera and depth sensor prims in the USD stage. It supports sensors from multiple vendors including Orbbec, Leopard Imaging, RealSense, Sensing, SICK, and Stereolabs.
+    This extension adds menu items to the Create menu and context menus that allow users to create various camera and depth sensor prims in the USD stage. It supports sensors from multiple vendors including Orbbec, Leopard Imaging, Luxonis, RealSense, Sensing, SICK, and Stereolabs.
 
     The extension automatically registers actions for each supported sensor type and creates a hierarchical menu structure organized by vendor. For depth sensors, it creates specialized SingleViewDepthSensorAsset instances with proper initialization. For regular camera sensors, it creates standard Xform prims with the appropriate USD reference.
 
     Supported sensor vendors and models include:
     - Orbbec: Gemini 2, FemtoMega, Gemini 335, Gemini 335L (all depth sensors)
     - Leopard Imaging: Hawk, Owl
+    - Luxonis: OAK4-D, OAK4-D Wide, OAK-D Pro PoE, OAK-D Pro W PoE, OAK-D ToF (all depth sensors)
     - RealSense: D455, D457, D555 (all depth sensors)
     - Sensing: Multiple SG series models with various configurations
-    - SICK: Inspector83x
+    - SICK: Inspector83x, InspectorP61x, safeVisionary2 (depth sensor), Visionary-T Mini (depth sensor)
     - Stereolabs: ZED_X (depth sensor)
 
     The extension provides both main menu integration under Create > Sensors > Camera and Depth Sensors and context menu integration accessible via right-click in the viewport under Isaac > Sensors.
@@ -75,6 +76,33 @@ class Extension(omni.ext.IExt):
         "Leopard Imaging": {
             "Hawk": {"prim_prefix": "/Hawk", "usd_path": "/Isaac/Sensors/LeopardImaging/Hawk/hawk_v1.1_nominal.usd"},
             "Owl": {"prim_prefix": "/Owl", "usd_path": "/Isaac/Sensors/LeopardImaging/Owl/owl.usd"},
+        },
+        "Luxonis": {
+            "Luxonis OAK4-D": {
+                "prim_prefix": "/OAK4D",
+                "usd_path": "/Isaac/Sensors/Luxonis/OAK4-D/oak4_d.usd",
+                "is_depth_sensor": True,
+            },
+            "Luxonis OAK4-D Wide": {
+                "prim_prefix": "/OAK4D_Wide",
+                "usd_path": "/Isaac/Sensors/Luxonis/OAK4-D_Wide/oak4_d_wide.usd",
+                "is_depth_sensor": True,
+            },
+            "Luxonis OAK-D Pro PoE": {
+                "prim_prefix": "/OAK_D_Pro_PoE",
+                "usd_path": "/Isaac/Sensors/Luxonis/OAK-D_Pro_PoE/oak_d_pro_poe.usd",
+                "is_depth_sensor": True,
+            },
+            "Luxonis OAK-D Pro W PoE": {
+                "prim_prefix": "/OAK_D_Pro_W_PoE",
+                "usd_path": "/Isaac/Sensors/Luxonis/OAK-D_Pro_W_PoE/oak_d_pro_w_poe.usd",
+                "is_depth_sensor": True,
+            },
+            "Luxonis OAK-D ToF": {
+                "prim_prefix": "/OAK_D_ToF",
+                "usd_path": "/Isaac/Sensors/Luxonis/OAK-D_ToF/oak_d_tof.usd",
+                "is_depth_sensor": True,
+            },
         },
         "RealSense": {
             "Realsense D455": {
@@ -127,6 +155,20 @@ class Extension(omni.ext.IExt):
             "Inspector83x": {
                 "prim_prefix": "/Inspector83x",
                 "usd_path": "/Isaac/Sensors/SICK/Inspector83x/SICK_Inspector83x.usd",
+            },
+            "InspectorP61x": {
+                "prim_prefix": "/InspectorP61x",
+                "usd_path": "/Isaac/Sensors/SICK/InspectorP61x/SICK_InspectorP61x.usd",
+            },
+            "safeVisionary2": {
+                "prim_prefix": "/safeVisionary2",
+                "usd_path": "/Isaac/Sensors/SICK/safeVisionary2/SICK_safeVisionary2.usd",
+                "is_depth_sensor": True,
+            },
+            "Visionary-T Mini": {
+                "prim_prefix": "/Visionary_T_Mini",
+                "usd_path": "/Isaac/Sensors/SICK/Visionary-T_Mini/SICK_Visionary-T_Mini.usd",
+                "is_depth_sensor": True,
             },
         },
         "Stereolabs": {
@@ -193,6 +235,7 @@ Used to dynamically generate menu items and actions for creating sensor prims in
                 "Camera and Depth Sensors": [
                     vendor_dicts.get("Orbbec", {}),
                     vendor_dicts.get("Leopard Imaging", {}),
+                    vendor_dicts.get("Luxonis", {}),
                     vendor_dicts.get("RealSense", {}),
                     vendor_dicts.get("Sensing", {}),
                     vendor_dicts.get("SICK", {}),

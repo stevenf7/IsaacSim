@@ -586,6 +586,94 @@ To create the sensor from the Content Browser: *Isaac Sim>Sensors>Ouster>VLS_128
 SICK
 ----
 
+.. note::
+
+    **SICK lidar asset reorganization (Isaac Sim 6.0)**
+
+    Several SICK lidar assets have been consolidated into family-level USDs that group related
+    sub-models as variants of a single parent asset. The standalone single-sensor USDs below have
+    been removed from ``SUPPORTED_LIDAR_CONFIGS``; their scan profiles remain available through the
+    corresponding family asset's variant set.
+
+    .. list-table::
+        :header-rows: 1
+        :widths: 30 30 40
+
+        * - Removed standalone asset
+          - Replaced by family asset
+          - Variants providing the equivalent profiles
+        * - ``SICK/LRS4581R/SICK_LRS4581R.usd``
+          - ``SICK/LRS4000/SICK_LRS4000.usd``
+          - ``Profile01..Profile95`` (subsumes LRS4581R's profiles)
+        * - ``SICK/MRS1104C/SICK_MRS1104C.usd``
+          - ``SICK/MRS1000/SICK_MRS1000.usd``
+          - ``Profile01_12p5Hz_0p25deg``, ``Profile02_6p25Hz_0p125deg``, ``Profile03_3p125Hz_0p0625deg``
+        * - ``SICK/multiScan136/SICK_multiScan136.usd``
+          - ``SICK/multiScan100/SICK_multiScan100.usd``
+          - ``multiScan136_*`` variants
+        * - ``SICK/multiScan165/SICK_multiScan165.usd``
+          - ``SICK/multiScan100/SICK_multiScan100.usd``
+          - ``multiScan165_*`` and ``multiScan165S_*`` variants
+        * - ``SICK/picoScan150/SICK_picoScan150.usd``
+          - ``SICK/picoScan100/SICK_picoScan100.usd``
+          - ``picoScan150Core_*``, ``picoScan150Prime_*``, ``picoScan150Pro_*`` variants
+
+    The standalone USD files remain browsable in the Content Browser under their original paths,
+    but ``Lidar.create(config="SICK_LRS4581R")`` (and the equivalent for the other four) no longer
+    resolves. Use the family config name with the corresponding sub-model variant instead, for
+    example ``Lidar.create(config="SICK_picoScan100", variant="picoScan150Pro_Profile01_15Hz_0p5deg")``.
+
+.. mdinclude:: SICK/LMS4000/readme.md
+
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_LMS4000.png
+    :align: center
+    :alt: SICK LMS4000
+    :width: 50%
+
+    To create the sensor from the menu: *Create>Sensors>RTX Lidar>SICK>LMS4000*, then select the desired sensor configuration.
+
+To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>LMS4000>SICK_LMS4000.usd*
+
+.. dropdown:: Features and Specification
+    :animate: fade-in
+    :color: light
+
+    .. mdinclude:: SICK/LMS4000/features.md
+
+.. mdinclude:: SICK/LMS5xx/readme.md
+
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_LMS5xx.png
+    :align: center
+    :alt: SICK LMS5xx
+    :width: 50%
+
+    To create the sensor from the menu: *Create>Sensors>RTX Lidar>SICK>LMS5xx*, then select the desired sensor configuration.
+
+To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>LMS5xx>SICK_LMS5xx.usd*
+
+.. dropdown:: Features and Specification
+    :animate: fade-in
+    :color: light
+
+    .. mdinclude:: SICK/LMS5xx/features.md
+
+.. mdinclude:: SICK/LRS4000/readme.md
+
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_LRS4000.png
+    :align: center
+    :alt: SICK LRS4000
+    :width: 50%
+
+    To create the sensor from the menu: *Create>Sensors>RTX Lidar>SICK>LRS4000*, then select the desired sensor configuration.
+
+To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>LRS4000>SICK_LRS4000.usd*
+
+.. dropdown:: Features and Specification
+    :animate: fade-in
+    :color: light
+
+    .. mdinclude:: SICK/LRS4000/features.md
+
 .. mdinclude:: SICK/LRS4581R/readme.md
 
 .. figure:: /images/usd_assets_sensors/isim_5.0_full_ref_viewport_Isaac_Sensors_LRS4581R.png
@@ -599,14 +687,37 @@ To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>LRS4581R>
 
 .. mdinclude:: SICK/microScan3/readme.md
 
-.. figure:: /images/usd_assets_sensors/isim_4.5_full_ref_viewport_Isaac_Sensors_microScan3.png
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_microScan3.png
     :align: center
-    :alt: SICK microScan 3
+    :alt: SICK microScan3
     :width: 50%
 
-    To create the sensor from the menu: *Create>Sensors>RTX Lidar>SICK>microScan3*
+    To create the sensor from the menu: *Create>Sensors>RTX Lidar>SICK>microScan3*, then select the desired sensor configuration.
 
 To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>microScan3>SICK_microScan3.usd*
+
+.. dropdown:: Features and Specification
+    :animate: fade-in
+    :color: light
+
+    .. mdinclude:: SICK/microScan3/features.md
+
+.. mdinclude:: SICK/MRS1000/readme.md
+
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_MRS1000.png
+    :align: center
+    :alt: SICK MRS1000
+    :width: 50%
+
+    To create the sensor from the menu: *Create>Sensors>RTX Lidar>SICK>MRS1000*, then select the desired sensor configuration.
+
+To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>MRS1000>SICK_MRS1000.usd*
+
+.. dropdown:: Features and Specification
+    :animate: fade-in
+    :color: light
+
+    .. mdinclude:: SICK/MRS1000/features.md
 
 .. mdinclude:: SICK/MRS1104C/readme.md
 
@@ -618,6 +729,23 @@ To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>microScan
     To create the sensor from the menu: *Create>Sensors>RTX Lidar>SICK>MRS1104C*
 
 To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>MRS1104C>SICK_MRS1104C.usd*
+
+.. mdinclude:: SICK/multiScan100/readme.md
+
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_multiScan100.png
+    :align: center
+    :alt: SICK multiScan100
+    :width: 50%
+
+    To create the sensor from the menu: *Create>Sensors>RTX Lidar>SICK>multiScan100*, then select the desired sensor configuration.
+
+To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>multiScan100>SICK_multiScan100.usd*
+
+.. dropdown:: Features and Specification
+    :animate: fade-in
+    :color: light
+
+    .. mdinclude:: SICK/multiScan100/features.md
 
 .. mdinclude:: SICK/multiScan136/readme.md
 
@@ -643,7 +771,7 @@ To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>multiScan
 
 .. mdinclude:: SICK/nanoScan3/readme.md
 
-.. figure:: /images/usd_assets_sensors/isim_5.0_full_ref_viewport_Isaac_Sensors_nanoScan3.png
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_nanoScan3.png
     :align: center
     :alt: SICK nanoScan3
     :width: 50%
@@ -651,6 +779,23 @@ To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>multiScan
     To create the sensor from the menu: *Create>Sensors>RTX Lidar>SICK>nanoScan3*
 
 To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>nanoScan3>SICK_nanoScan3.usd*
+
+.. mdinclude:: SICK/picoScan100/readme.md
+
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_picoScan100.png
+    :align: center
+    :alt: SICK picoScan100
+    :width: 50%
+
+    To create the sensor from the menu: *Create>Sensors>RTX Lidar>SICK>picoScan100*, then select the desired sensor configuration.
+
+To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>picoScan100>SICK_picoScan100.usd*
+
+.. dropdown:: Features and Specification
+    :animate: fade-in
+    :color: light
+
+    .. mdinclude:: SICK/picoScan100/features.md
 
 .. mdinclude:: SICK/picoScan150/readme.md
 
@@ -754,6 +899,84 @@ To create the sensor from the Content Browser: *Isaac Sim>Sensors>ZVISION>ZVISIO
 
 .. Note::
     For the datasheet and full list of specifications, visit the `ML-Xs product page. <http://zvision.xyz/en/h-col-279.html>`_
+
+.. _isaac_assets_nonvisual_sensors_rtx_radar:
+
+RTX Radars
+==========
+
+Texas Instruments
+-----------------
+
+.. mdinclude:: Texas_Instruments/IWRL6432AOP/IWRL6432AOP.md
+
+.. figure:: /images/usd_assets_sensors/isim_6.0_full_ref_viewport_Isaac_Sensors_IWRL6432AOP.png
+    :align: center
+    :alt: Texas Instruments IWRL6432AOP
+    :width: 50%
+
+    To create the sensor from the menu: *Create>Sensors>RTX Radar>TexasInstruments>IWRL6432AOP*
+
+To create the sensor from the Content Browser: *Isaac Sim>Sensors>TexasInstruments>IWRL6432AOP>IWRL6432AOP.usd*
+
+.. dropdown:: Features and Specification
+    :animate: fade-in
+    :color: light
+
+    .. list-table:: IWRL6432AOP Features
+        :widths: 30 50
+        :header-rows: 1
+
+        * - Parameter
+          - Value
+        * - Frequency Range
+          - 57 – 63.5 GHz
+        * - Bandwidth
+          - 6.5 GHz (continuous)
+        * - Number of TX Channels
+          - 2 (integrated AOP)
+        * - Number of RX Channels
+          - 3 (integrated AOP)
+        * - TX Output Power
+          - 11 dBm
+        * - Maximum Range
+          - ~20 m (typical)
+        * - ADC Sampling Rate
+          - 12,500 ksps
+        * - IF Bandwidth
+          - 5 MHz (real-only Rx)
+        * - Application Processor
+          - ARM Cortex-M4F @ 160 MHz
+        * - Hardware Accelerator
+          - TI Radar HWA 1.2 (FFT, CFAR, log magnitude) @ 80 MHz
+        * - On-Chip RAM
+          - 1 MB
+        * - Host Interfaces
+          - UART, CAN-FD, SPI
+        * - Additional Interfaces
+          - QSPI, I2C, JTAG, GPIO, PWM
+        * - Supply Voltage (IO)
+          - 1.8 V or 3.3 V
+        * - Operating Temperature
+          - –40°C to 105°C
+        * - Package
+          - 101-ball FCCSP (AMY), 10.9 mm × 6.7 mm, 0.5 mm pitch
+        * - Edge AI Support
+          - Edge AI Studio enabled
+
+    **Key Features**
+
+    - **Antenna-On-Package (AOP):** Integrates 2 TX and 3 RX antennas directly on-package, significantly simplifying PCB design and reducing BOM cost.
+    - **Ultra-accurate chirp engine:** Fractional-N PLL-based FMCW chirp generation for precise ranging.
+    - **Multiple low-power modes:** Idle mode, sleep mode, and deep sleep mode with clock gating and selective IP power-down; application image and RF profiles can be retained across low-power transitions.
+    - **Power flexibility:** Supports BOM-Optimized and Power-Optimized power rail configurations; compatible with the TPS628502-Q1 power supply solution.
+    - **Built-in self-calibration:** On-chip calibration system with ROM-based firmware requires no external calibration hardware.
+    - **Edge AI ready:** Supported by TI Edge AI Studio for on-device model training and deployment (surface classification, point cloud classification, and more).
+    - **Radar Data Interface (RDIF):** Enables raw ADC sample capture for external signal processing development.
+
+.. Note::
+    For the datasheet and full list of specifications, visit the `IWRL6432AOP product page. <https://www.ti.com/product/IWRL6432AOP>`_
+
 
 Tactile Sensors
 ===============
