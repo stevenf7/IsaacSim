@@ -45,23 +45,99 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
             self.joint_indices = None
         self.joint_picked = True
 
-    def apply_action(self, joint_positions, joint_velocities, joint_efforts):
-        if self.initialized:
-            if np.size(joint_positions) > 0:
-                if np.isnan(joint_positions).any():
-                    target = self.articulation.get_dof_position_targets(dof_indices=self.joint_indices).numpy()[0]
-                    joint_positions = np.where(np.isnan(joint_positions), target, joint_positions)
-                self.articulation.set_dof_position_targets(joint_positions, dof_indices=self.joint_indices)
-            if np.size(joint_velocities) > 0:
-                if np.isnan(joint_velocities).any():
-                    target = self.articulation.get_dof_velocity_targets(dof_indices=self.joint_indices).numpy()[0]
-                    joint_velocities = np.where(np.isnan(joint_velocities), target, joint_velocities)
-                self.articulation.set_dof_velocity_targets(joint_velocities, dof_indices=self.joint_indices)
-            if np.size(joint_efforts) > 0:
-                if np.isnan(joint_efforts).any():
-                    target = self.articulation.get_dof_efforts(dof_indices=self.joint_indices).numpy()[0]
-                    joint_efforts = np.where(np.isnan(joint_efforts), target, joint_efforts)
-                self.articulation.set_dof_efforts(joint_efforts, dof_indices=self.joint_indices)
+    def apply_action(
+        self,
+        joint_positions: np.ndarray | list | tuple,
+        joint_velocities: np.ndarray | list | tuple,
+        joint_efforts: np.ndarray | list | tuple,
+    ) -> bool:
+        """Apply position, velocity, and effort commands to the articulation.
+
+        All commands are validated and filtered before any targets are written, so an invalid command prevents partial
+        application of the remaining valid commands.
+
+        Args:
+            joint_positions: Position targets for the selected joints.
+            joint_velocities: Velocity targets for the selected joints.
+            joint_efforts: Effort targets for the selected joints.
+
+        Returns:
+            True when all provided commands were valid and applied; False when the controller is not initialized or any
+            command is invalid.
+        """
+        if not self.initialized:
+            return False
+
+        position_command = self._prepare_command(joint_positions)
+        velocity_command = self._prepare_command(joint_velocities)
+        effort_command = self._prepare_command(joint_efforts)
+        if position_command is None or velocity_command is None or effort_command is None:
+            return False
+
+        joint_positions, position_indices = position_command
+        joint_velocities, velocity_indices = velocity_command
+        joint_efforts, effort_indices = effort_command
+        if np.size(joint_positions) > 0:
+            self.articulation.set_dof_position_targets(joint_positions, dof_indices=position_indices)
+        if np.size(joint_velocities) > 0:
+            self.articulation.set_dof_velocity_targets(joint_velocities, dof_indices=velocity_indices)
+        if np.size(joint_efforts) > 0:
+            self.articulation.set_dof_efforts(joint_efforts, dof_indices=effort_indices)
+        return True
+
+    def _prepare_command(
+        self, command: np.ndarray | list | tuple
+    ) -> tuple[np.ndarray | list | tuple, np.ndarray | list | None] | None:
+        """Validate and filter a command before any articulation targets are written.
+
+        Args:
+            command: Joint command values for the currently selected joints.
+
+        Returns:
+            A tuple of filtered command values and matching DOF indices. Returns None if the command width does not
+            match the explicit joint selection or if the command shape cannot be resolved.
+        """
+        if np.size(command) == 0:
+            return command, self.joint_indices
+        command_valid, dof_indices = self._resolve_command_indices(command)
+        if not command_valid:
+            return None
+        command, dof_indices = self._filter_finite_command(command, dof_indices)
+        if command is None:
+            return None
+        return command, dof_indices
+
+    def _resolve_command_indices(self, command: np.ndarray | list | tuple) -> tuple[bool, np.ndarray | list | None]:
+        """Validate that a command width matches the explicitly selected joints."""
+        if self.joint_indices is None:
+            return True, self.joint_indices
+        command_size = np.size(command)
+        joint_indices = np.asarray(self.joint_indices).reshape(-1)
+        if command_size == joint_indices.size:
+            return True, self.joint_indices
+        return False, self.joint_indices
+
+    def _filter_finite_command(
+        self, command: np.ndarray | list | tuple, dof_indices: np.ndarray | list | None
+    ) -> tuple[np.ndarray | list | tuple | None, np.ndarray | list | None]:
+        """Drop NaN entries so omitted targets are left unchanged by the backend."""
+        command_array = np.asarray(command)
+        if not np.isnan(command_array).any():
+            return command, dof_indices
+
+        command_values = command_array.reshape(-1)
+        # NaN command entries mean "leave the current target unchanged".  Write
+        # only the finite entries so backends without local tensor state do not
+        # need to read the previous target value.
+        finite_mask = ~np.isnan(command_values)
+        if dof_indices is None:
+            selected_dof_indices = np.arange(command_values.size, dtype=np.int64)
+        else:
+            selected_dof_indices = np.asarray(dof_indices).reshape(-1)
+            if selected_dof_indices.size != command_values.size:
+                return None, dof_indices
+
+        return command_values[finite_mask], selected_dof_indices[finite_mask]
 
     def custom_reset(self):
         self.articulation = None
@@ -114,7 +190,11 @@ class OgnIsaacArticulationController:
             if not state.joint_picked:
                 state.joint_indicator()
 
-            state.apply_action(db.inputs.positionCommand, db.inputs.velocityCommand, db.inputs.effortCommand)
+            if not state.apply_action(db.inputs.positionCommand, db.inputs.velocityCommand, db.inputs.effortCommand):
+                db.log_warn(
+                    "Articulation controller command length does not match the selected joint count; ignoring command."
+                )
+                return False
 
         except Exception as error:
             db.log_warn(str(error))

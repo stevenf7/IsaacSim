@@ -1,5 +1,10 @@
 # Changelog
 
+## [5.9.0] - 2026-05-05
+### Fixed
+- Make `IsaacArticulationController` reject command arrays whose length does not match an explicit joint selection.
+- Make `IsaacArticulationController` skip `NaN` command entries instead of reading previous targets from local tensor state.
+
 ## [5.8.1] - 2026-05-04
 ### Fixed
 - `OgnIsaacComputeTransformTree`: skip invalid/non-existent target prim definitions instead of crashing in the xform view layer

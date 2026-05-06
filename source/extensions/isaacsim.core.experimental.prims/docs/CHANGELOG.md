@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.8.6] - 2026-05-03
+### Fixed
+- Resolve descendant articulation targets to their containing articulation root.
+- Populate `Articulation` metadata from USD when running with the `remotesim` physics backend.
+
 ## [1.8.5] - 2026-05-01
 ### Fixed
 - Switch to the `remotesim` physics engine when other physics engines are still active, even if `remotesim` is already marked active.
