@@ -103,9 +103,19 @@ workflow:
             RUN_TESTS: "false"
             RUN_NIGHTLY_TESTS: "false"
             RUN_DEPLOY: "false"
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release\/6\.0(_oss)?$/'
+        auto_cancel:
+            on_new_commit: conservative
+        variables:
+            ISAACSIM_ASSET_ROOT: "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0"
       - if: $CI_PIPELINE_SOURCE == "merge_request_event"
         auto_cancel:
             on_new_commit: conservative
+      - if: '$CI_PIPELINE_SOURCE != "merge_request_event" && $CI_COMMIT_BRANCH =~ /^release\/6\.0(_oss)?$/'
+        auto_cancel:
+            on_new_commit: none
+        variables:
+            ISAACSIM_ASSET_ROOT: "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0"
       - if: $CI_COMMIT_BRANCH == "develop"
         auto_cancel:
             on_new_commit: conservative
@@ -200,6 +210,7 @@ variables:
     RUN_DEPLOY:
         value: "true"
         description: "Set to true to run deploy stage."
+    ISAACSIM_ASSET_ROOT: "omniverse://isaac-dev.ov.nvidia.com"
 
 # ==============================================================================================================
 # overrides for compliance/osec job
