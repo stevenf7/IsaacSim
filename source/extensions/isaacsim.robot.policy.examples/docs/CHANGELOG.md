@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.2.5] - 2026-04-23
+### Changed
+- Decreased test tolerance to pass with newton backend.
+
 ## [5.2.4] - 2026-04-23
 ### Fixed
 - Added isaacsim.physics.newton.tensors as extension dep

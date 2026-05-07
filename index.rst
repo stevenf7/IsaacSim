@@ -79,6 +79,7 @@ Extensions
    isaacsim.core.api <source/deprecated/isaacsim.core.api/docs/index>
    isaacsim.core.cloner <source/extensions/isaacsim.core.cloner/docs/index>
    isaacsim.core.deprecation_manager <source/extensions/isaacsim.core.deprecation_manager/docs/index>
+   isaacsim.core.experimental.actuators <source/extensions/isaacsim.core.experimental.actuators/docs/index>
    isaacsim.core.experimental.materials <source/extensions/isaacsim.core.experimental.materials/docs/index>
    isaacsim.core.experimental.objects <source/extensions/isaacsim.core.experimental.objects/docs/index>
    isaacsim.core.experimental.primdata <source/extensions/isaacsim.core.experimental.primdata/docs/index>

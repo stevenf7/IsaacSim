@@ -81,6 +81,7 @@
    robot_simulation/index
    robot_motion_experimental/index
    sensors/index
+   newton_actuators_tutorials/index
    physics/index
 
 

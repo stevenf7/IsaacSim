@@ -1268,6 +1268,30 @@ local function get_doc_snippets_tests()
             "../../../docs/isaacsim/snippets/cumotion/world_interface_example.py",
             "--test",
         },
+        -- actuators/newton_actuators_python_example
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.newton_actuators.newton_actuators_python_example",
+            "../../../docs/isaacsim/snippets/newton_actuators/newton_actuators_python_example.py",
+            "--test",
+        },
+        -- actuators/newton_actuators_python_example (delayed PD flag)
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.newton_actuators.newton_actuators_python_example.non_ideal",
+            "../../../docs/isaacsim/snippets/newton_actuators/newton_actuators_python_example.py",
+            "--non-ideal --test",
+        },
+        -- actuators/newton_actuators_usd_example
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.newton_actuators.newton_actuators_usd_example",
+            "../../../docs/isaacsim/snippets/newton_actuators/newton_actuators_usd_example.py",
+            "--test",
+        },
+        -- actuators/newton_actuators_omnigraph_example
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.newton_actuators.newton_actuators_omnigraph_example",
+            "../../../docs/isaacsim/snippets/newton_actuators/newton_actuators_omnigraph_example.py",
+            "--test",
+        },
         -- utilities/debugging/profiling_performance
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.utilities.debugging.profiling_performance.standalone_workflow",

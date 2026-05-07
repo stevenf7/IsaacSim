@@ -382,6 +382,7 @@ inventory.includes.all = [
     "extsDeprecated/isaacsim.core.utils",
     "exts/isaacsim.core.cloner",
     "exts/isaacsim.core.deprecation_manager",
+    "exts/isaacsim.core.experimental.actuators",
     "exts/isaacsim.core.experimental.materials",
     "exts/isaacsim.core.experimental.objects",
     "exts/isaacsim.core.experimental.primdata",
