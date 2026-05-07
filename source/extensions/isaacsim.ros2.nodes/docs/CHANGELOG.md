@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.17.13] - 2026-05-07
+### Fixed
+- `OgnROS2PublishJointState` no longer creates a tensor simulation view when publishing from connected joint-state inputs; the tensor view is created only for the deprecated `targetPrim` path.
+
 ## [1.17.12] - 2026-05-04
 ### Fixed
 - `OgnROS2PublishTransformTree`: guard against empty/invalid target prim paths before `GetPrimAtPath`; resolve `toSdfPath` once per entry instead of three times
