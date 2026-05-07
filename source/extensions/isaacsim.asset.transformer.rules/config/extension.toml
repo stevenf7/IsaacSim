@@ -1,5 +1,5 @@
 [package]
-version = "1.7.1"
+version = "1.7.2"
 category = "Simulation"
 title = "Isaac Sim Asset Transformer Rules"
 description = "Rule implementations for the Asset Transformer"
@@ -14,6 +14,7 @@ icon = "data/icon.png"
 "isaacsim.asset.importer.utils" = {}
 "isaacsim.asset.transformer" = {}
 "isaacsim.robot.schema" = {}
+"omni.kit.material.library" = {optional = true} # used by MaterialsRoutingRule to discover Kit-shipped built-in MDLs; falls back to a hardcoded list when unavailable
 "omni.kit.pip_archive" = {} # provides numpy, used by GeometriesRoutingRule._quantize_value
 "omni.usdphysics" = {}
 

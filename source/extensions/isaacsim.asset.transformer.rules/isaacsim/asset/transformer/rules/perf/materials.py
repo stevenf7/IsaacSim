@@ -359,7 +359,7 @@ class MaterialsRoutingRule(RuleInterface):
                 entry.asset_paths = source_asset_paths.get(source.prim_path, [])
 
                 # Copy material to materials layer with updated asset paths
-                self._copy_material_to_layer(prim, entry, mat_stage, asset_path_mapping)
+                self._copy_material_to_layer(prim, entry, mat_stage, asset_path_mapping, materials_layer_dir)
                 new_count += 1
 
         # Calculate duplicates: materials that share the same hash
@@ -922,12 +922,10 @@ class MaterialsRoutingRule(RuleInterface):
             if filename in used_filenames:
                 existing_src = used_filenames[filename]
                 if existing_src == src_path:
-                    rel_path = utils.make_explicit_relative(os.path.relpath(dst_path, materials_layer_dir))
-                    path_mapping[src_path] = rel_path
+                    path_mapping[src_path] = self._make_relative_asset_path(dst_path, materials_layer_dir)
                     continue
                 elif not is_remote and os.path.exists(dst_path) and utils.files_are_identical(src_path, dst_path):
-                    rel_path = utils.make_explicit_relative(os.path.relpath(dst_path, materials_layer_dir))
-                    path_mapping[src_path] = rel_path
+                    path_mapping[src_path] = self._make_relative_asset_path(dst_path, materials_layer_dir)
                     continue
                 else:
                     base, ext = os.path.splitext(filename)
@@ -958,10 +956,27 @@ class MaterialsRoutingRule(RuleInterface):
                         continue
 
             used_filenames[filename] = src_path
-            rel_path = utils.make_explicit_relative(os.path.relpath(dst_path, materials_layer_dir))
-            path_mapping[src_path] = rel_path
+            path_mapping[src_path] = self._make_relative_asset_path(dst_path, materials_layer_dir)
 
         return path_mapping
+
+    @staticmethod
+    def _make_relative_asset_path(dst_path: str, materials_layer_dir: str) -> str:
+        """Build an explicit, forward-slash relative path for an asset reference.
+
+        Material references must always be relative to the materials layer so
+        that the produced package is portable. ``make_explicit_relative``
+        normalizes separators to forward slashes for us.
+
+        Args:
+            dst_path: Absolute destination path of the transferred asset.
+            materials_layer_dir: Directory containing the materials layer.
+
+        Returns:
+            Explicit relative path with forward-slash separators (e.g. ``./Textures/foo.png``).
+
+        """
+        return utils.make_explicit_relative(os.path.relpath(dst_path, materials_layer_dir))
 
     def _update_mdl_texture_paths(
         self,
@@ -1052,8 +1067,7 @@ class MaterialsRoutingRule(RuleInterface):
             if not mapped_rel:
                 return match.group(0)
             mapped_abs = os.path.normpath(os.path.join(materials_layer_dir, mapped_rel))
-            new_rel = utils.make_explicit_relative(os.path.relpath(mapped_abs, mdl_dst_dir))
-            new_rel = new_rel.replace(os.sep, "/")
+            new_rel = self._make_relative_asset_path(mapped_abs, mdl_dst_dir)
             return f'"{new_rel}"'
 
         return _MDL_TEXTURE_PATH_PATTERN.subn(replacer, mdl_text)
@@ -1064,6 +1078,7 @@ class MaterialsRoutingRule(RuleInterface):
         entry: MaterialEntry,
         mat_stage: Usd.Stage,
         asset_path_mapping: dict[str, str],
+        materials_layer_dir: str,
     ) -> None:
         """Copy a material prim to the materials layer.
 
@@ -1076,6 +1091,8 @@ class MaterialsRoutingRule(RuleInterface):
             entry: The MaterialEntry describing where to store it.
             mat_stage: The materials stage to copy to.
             asset_path_mapping: Mapping from original resolved path to new relative path.
+            materials_layer_dir: Directory of the materials layer used to relativize
+                any absolute asset paths that survive the copy.
 
         """
         dst_layer = mat_stage.GetRootLayer()
@@ -1115,9 +1132,12 @@ class MaterialsRoutingRule(RuleInterface):
         if copied_spec:
             utils.clear_instanceable_recursive(copied_spec)
 
-        # Update asset paths to point to transferred files
-        if asset_path_mapping:
-            self._update_asset_paths_in_material(entry.material_layer_path, dst_layer, asset_path_mapping)
+        # Always normalize asset paths in the copied material so the materials layer never
+        # contains absolute paths or backslash separators, even when an asset was not
+        # transferred (and therefore is not present in ``asset_path_mapping``).
+        self._update_asset_paths_in_material(
+            entry.material_layer_path, dst_layer, asset_path_mapping, materials_layer_dir
+        )
 
         self.log_operation(f"Copied material {prim.GetPath()} to {entry.material_layer_path}")
 
@@ -1126,13 +1146,22 @@ class MaterialsRoutingRule(RuleInterface):
         material_path: str,
         layer: Sdf.Layer,
         path_mapping: dict[str, str],
+        materials_layer_dir: str,
     ) -> None:
         """Update asset paths in a material spec.
+
+        Asset paths in the materials layer must be portable: they must use
+        forward-slash separators and must never be absolute. This method
+        rewrites known transferred assets via ``path_mapping`` and normalizes
+        any remaining asset paths so absolute paths are converted to relative
+        paths against the materials layer directory.
 
         Args:
             material_path: Path to the material in the layer.
             layer: The layer containing the material.
             path_mapping: Dictionary mapping old resolved paths to new relative paths.
+            materials_layer_dir: Directory of the materials layer, used to relativize
+                absolute asset paths that are not present in ``path_mapping``.
 
         """
         # Build lookup tables for fast matching
@@ -1141,6 +1170,33 @@ class MaterialsRoutingRule(RuleInterface):
         for src_path, new_rel_path in path_mapping.items():
             filename = os.path.basename(src_path)
             by_filename[filename] = new_rel_path
+
+        def normalize_unmapped(asset_path: str) -> str | None:
+            """Normalize an asset path that is not in ``path_mapping``.
+
+            Returns a forward-slash, relative path, or ``None`` if the path
+            does not need to be rewritten (already relative + forward slashes,
+            remote, or a built-in MDL).
+            """
+            if not asset_path:
+                return None
+            # Leave remote paths alone -- they are already URL-form.
+            if utils.is_remote_path(asset_path):
+                return None
+            normalized = asset_path.replace("\\", "/")
+            if os.path.isabs(asset_path) or os.path.isabs(normalized):
+                try:
+                    rel = os.path.relpath(asset_path, materials_layer_dir)
+                except ValueError:
+                    # Different drives on Windows: cannot make relative.
+                    return None
+                return self._make_relative_asset_path(
+                    os.path.normpath(os.path.join(materials_layer_dir, rel)),
+                    materials_layer_dir,
+                )
+            if normalized != asset_path:
+                return normalized
+            return None
 
         def update_spec_recursive(prim_spec: Sdf.PrimSpec) -> None:
             if prim_spec is None:
@@ -1158,8 +1214,17 @@ class MaterialsRoutingRule(RuleInterface):
                     old_resolved = value.resolvedPath
                     new_rel_path = None
 
-                    # Never rewrite paths to built-in MDL files
+                    # Built-in MDLs are resolved by Kit's MDL search paths and
+                    # cannot safely be relocated (the MDL system ties module
+                    # identity to filesystem location). If a project-local
+                    # copy was authored as an absolute or explicit-relative
+                    # path, rewrite it to the canonical bare/suffix form so
+                    # the package is portable; if it is already canonical,
+                    # leave it untouched.
                     if utils.is_builtin_mdl(old_path or old_resolved or ""):
+                        canonical = utils.canonical_builtin_mdl_path(old_path or old_resolved or "")
+                        if canonical and canonical != old_path:
+                            attr_spec.default = Sdf.AssetPath(canonical)
                         continue
 
                     # Try matching by resolved path first
@@ -1168,10 +1233,12 @@ class MaterialsRoutingRule(RuleInterface):
                     elif old_path and old_path in by_resolved:
                         new_rel_path = by_resolved[old_path]
                     else:
-                        # Fall back to filename matching
+                        # Fall back to filename matching, then to absolute->relative normalization
                         filename = os.path.basename(old_path) if old_path else None
                         if filename and filename in by_filename:
                             new_rel_path = by_filename[filename]
+                        else:
+                            new_rel_path = normalize_unmapped(old_path)
 
                     if new_rel_path:
                         attr_spec.default = Sdf.AssetPath(new_rel_path)

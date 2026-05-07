@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.1] - 2026-05-05
+### Fixed
+- `make_explicit_relative` now normalizes backslash separators to forward slashes so USD asset paths, sublayer identifiers, and references emitted by the asset transformer are portable across platforms (e.g. avoids `./payloads\base.usda` on Windows).
+- `AssetTransformerManager.run` writes the flattened `payloads/<base>.usd` path with forward slashes so the layer identifier and any downstream relative-path computation are platform-independent.
+
 ## [1.2.0] - 2026-04-09
 ### Changed
 - Remove direct Omni / carb dependencies

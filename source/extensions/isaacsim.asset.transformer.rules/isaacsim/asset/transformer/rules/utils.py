@@ -17,6 +17,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import re
 import shutil
@@ -26,14 +27,25 @@ from isaacsim.asset.transformer import RuleConfigurationParam
 from isaacsim.asset.transformer.utils import make_explicit_relative
 from pxr import Sdf, Usd
 
+_LOGGER = logging.getLogger(__name__)
+
 # USD file extensions (including zipped)
 USD_EXTENSIONS: frozenset[str] = frozenset({".usd", ".usda", ".usdc", ".usdz"})
 
-# Built-in MDL files that ship with the runtime and should never be
-# collected, extracted, or have their paths rewritten.  Compared
-# case-insensitively (all entries are lowercase).
-BUILTIN_MDL_FILES: frozenset[str] = frozenset(
-    (
+# Token prefixes that mark a Kit-shipped MDL in the form returned by
+# ``omni.kit.material.library.get_mdl_list_async(expand_paths=False)``. MDLs
+# from custom ``lib_paths`` come back as plain absolute paths and are
+# excluded; only entries living under the Kit install (or active app) tree
+# are considered "built-in".
+_KIT_TOKEN_PREFIXES: tuple[str, ...] = ("${kit}", "${app}")
+
+# Hardcoded fallback set of Kit-shipped MDL basenames (lowercase). Used
+# whenever live discovery via ``omni.kit.material.library`` is unavailable
+# (e.g. when the asset transformer rules are imported in a non-Kit Python
+# environment, when the extension is not enabled, or when the API call
+# fails). Keep this in sync with the names the runtime actually ships.
+_FALLBACK_BUILTIN_MDL_BASENAMES: frozenset[str] = frozenset(
+    {
         "omnipbr.mdl",
         "omnipbr_base.mdl",
         "omnipbr_clearcoat.mdl",
@@ -49,32 +61,206 @@ BUILTIN_MDL_FILES: frozenset[str] = frozenset(
         "usdpreviewsurface.mdl",
         "omnisurfacepresets.mdl",
         "core_definitions.mdl",
-    )
+    }
 )
 
-# MDL paths that are built-in even when the full relative path is used
-# (e.g. "nvidia/core_definitions.mdl" should be treated as built-in)
-BUILTIN_MDL_PATH_SUFFIXES: frozenset[str] = frozenset(("nvidia/core_definitions.mdl",))
+# Hardcoded fallback set of multi-component MDL reference suffixes
+# (lowercase, forward-slash). USD authors sometimes use these prefixed
+# forms instead of the bare filename when the MDL package's directory
+# disambiguates same-named modules.
+_FALLBACK_BUILTIN_MDL_SUFFIXES: frozenset[str] = frozenset({"nvidia/core_definitions.mdl"})
+
+# Live cache of Kit-shipped MDL basenames (lowercase). Initialized to the
+# hardcoded fallback at import time and upgraded by
+# :func:`refresh_builtin_mdl_cache_async` when ``omni.kit.material.library``
+# is available.
+_BUILTIN_MDL_BASENAMES: frozenset[str] = _FALLBACK_BUILTIN_MDL_BASENAMES
+
+# Live cache of multi-component MDL reference suffixes. Same lifecycle as
+# ``_BUILTIN_MDL_BASENAMES``.
+_BUILTIN_MDL_SUFFIXES: frozenset[str] = _FALLBACK_BUILTIN_MDL_SUFFIXES
+
+
+async def refresh_builtin_mdl_cache_async() -> bool:
+    """Best-effort upgrade of the built-in MDL cache from the live Kit runtime.
+
+    Queries :func:`omni.kit.material.library.get_mdl_list_async` with
+    ``expand_paths=False`` so Kit-shipped entries are returned in their token
+    form (``${kit}/...`` or ``${app}/...``); entries from custom user
+    ``lib_paths`` come back as plain absolute paths and are filtered out --
+    only the token-prefixed entries are recorded. For every kept entry the
+    basename and (when present) the last-two-component suffix are added to
+    the cache, so authored references like ``OmniPBR.mdl`` and
+    ``nvidia/core_definitions.mdl`` both classify as built-in.
+
+    If ``omni.kit.material.library`` is not importable, the API call fails,
+    or the filtered list is empty, the cache is left at the hardcoded
+    fallback (see ``_FALLBACK_BUILTIN_MDL_BASENAMES`` /
+    ``_FALLBACK_BUILTIN_MDL_SUFFIXES``) and a warning is logged. The function
+    never raises.
+
+    The hardcoded fallback is also what the cache contains immediately after
+    module import, so callers can use :func:`is_builtin_mdl` and
+    :func:`canonical_builtin_mdl_path` without awaiting this refresh first.
+
+    Returns:
+        ``True`` if the live runtime data was successfully merged into the
+        cache, ``False`` if the fallback is in effect.
+
+    Example:
+
+    .. code-block:: python
+
+        from isaacsim.asset.transformer.rules import utils
+
+        await utils.refresh_builtin_mdl_cache_async()
+
+    """
+    global _BUILTIN_MDL_BASENAMES, _BUILTIN_MDL_SUFFIXES
+
+    try:
+        import omni.kit.material.library as material_library
+    except ImportError:
+        _LOGGER.warning(
+            "omni.kit.material.library is not available; " "using hardcoded built-in MDL list (%d basename(s)).",
+            len(_FALLBACK_BUILTIN_MDL_BASENAMES),
+        )
+        return False
+
+    try:
+        mdl_list = await material_library.get_mdl_list_async(
+            use_hidden=True,
+            wait_for_ready=True,
+            get_private=True,
+            expand_paths=False,
+        )
+    except Exception:
+        _LOGGER.exception(
+            "omni.kit.material.library.get_mdl_list_async failed; "
+            "using hardcoded built-in MDL list (%d basename(s)).",
+            len(_FALLBACK_BUILTIN_MDL_BASENAMES),
+        )
+        return False
+
+    basenames: set[str] = set()
+    suffixes: set[str] = set()
+
+    for entry in mdl_list:
+        # Kit's API returns either a string path or a tuple/dataclass; the
+        # path is always the last element when iterable, but a string is the
+        # documented common form. Normalize defensively.
+        token_path: str | None
+        if isinstance(entry, str):
+            token_path = entry
+        else:
+            token_path = next((str(part) for part in reversed(entry) if isinstance(part, str)), None)
+        if not token_path:
+            continue
+        if not token_path.startswith(_KIT_TOKEN_PREFIXES):
+            continue
+
+        normalized = token_path.replace("\\", "/").lower()
+        parts = [p for p in normalized.split("/") if p]
+        if not parts:
+            continue
+
+        basenames.add(parts[-1])
+        if len(parts) >= 2:
+            suffixes.add(f"{parts[-2]}/{parts[-1]}")
+
+    if not basenames:
+        _LOGGER.warning(
+            "omni.kit.material.library.get_mdl_list_async returned no ${kit}/${app} entries; "
+            "using hardcoded built-in MDL list (%d basename(s)).",
+            len(_FALLBACK_BUILTIN_MDL_BASENAMES),
+        )
+        return False
+
+    # Union the discovered set with the hardcoded fallback so any MDL the
+    # team has historically shipped continues to classify as built-in even
+    # if a future Kit removes it from the live enumeration.
+    _BUILTIN_MDL_BASENAMES = frozenset(basenames | _FALLBACK_BUILTIN_MDL_BASENAMES)
+    _BUILTIN_MDL_SUFFIXES = frozenset(suffixes | _FALLBACK_BUILTIN_MDL_SUFFIXES)
+    _LOGGER.info(
+        "Discovered %d Kit-shipped MDL basename(s) and %d suffix form(s) "
+        "(merged with %d hardcoded fallback basename(s)).",
+        len(basenames),
+        len(suffixes),
+        len(_FALLBACK_BUILTIN_MDL_BASENAMES),
+    )
+    return True
 
 
 def is_builtin_mdl(path: str) -> bool:
-    """Check whether *path* refers to a built-in MDL file.
+    """Check whether *path* refers to a built-in MDL file shipped with the runtime.
 
-    The check is purely name-based and case-insensitive so that it works
-    regardless of how the path was resolved.
+    The classification consults a cache populated from
+    :func:`omni.kit.material.library.get_mdl_list_async` (filtered to entries
+    living under Kit's install via ``${kit}`` / ``${app}`` token paths) when
+    that extension is available, and from a hardcoded fallback list otherwise.
+    The check itself is name-based and case-insensitive: any path whose
+    basename matches a known Kit MDL, or whose tail matches a known
+    multi-component reference form (e.g. ``nvidia/core_definitions.mdl``), is
+    considered built-in. This catches bare authored references
+    (``OmniPBR.mdl``) and project-local copies (``C:/Dev/.../OmniPBR.mdl``)
+    alike -- copies cannot safely be relocated because Kit's MDL system ties
+    module identity to filesystem location and relies on its built-in search
+    paths to find these modules.
+
+    See :func:`canonical_builtin_mdl_path` for converting a built-in match to
+    the canonical Kit-resolvable form, and
+    :func:`refresh_builtin_mdl_cache_async` for upgrading the cache from the
+    live Kit runtime.
 
     Args:
         path: File-system or asset path (absolute or relative).
 
     Returns:
-        ``True`` when the basename matches a known built-in MDL.
+        ``True`` when the basename matches a known built-in MDL, or when the
+        path ends with a known built-in suffix form.
 
     """
+    if not path:
+        return False
     path_lower = path.lower().replace("\\", "/")
-    if os.path.basename(path_lower) in BUILTIN_MDL_FILES:
+    if os.path.basename(path_lower) in _BUILTIN_MDL_BASENAMES:
         return True
-    # Also check full-path suffixes (e.g. "nvidia/core_definitions.mdl")
-    return any(path_lower.endswith(suffix) for suffix in BUILTIN_MDL_PATH_SUFFIXES)
+    return any(path_lower.endswith(suffix) for suffix in _BUILTIN_MDL_SUFFIXES)
+
+
+def canonical_builtin_mdl_path(path: str) -> str | None:
+    """Return the canonical Kit-resolvable form for a built-in MDL path.
+
+    Kit resolves built-in MDLs through its MDL search paths using either the
+    bare filename (``OmniPBR.mdl``) or a known prefix form
+    (``nvidia/core_definitions.mdl``). When a USD authors an absolute or
+    explicit-relative path to a project-local copy of a built-in (e.g.
+    ``C:/Dev/.../OmniPBR.mdl``), the path must be rewritten to its canonical
+    form so the resulting package is portable: the file itself must NOT be
+    transferred because Kit's MDL system ties module identity to filesystem
+    location and the built-in search paths are the only safe resolver.
+
+    Args:
+        path: File-system or asset path (absolute or relative).
+
+    Returns:
+        The canonical asset-path string Kit will resolve from its built-in
+        search paths, with original casing preserved. ``None`` if *path* is
+        not a known built-in.
+
+    """
+    if not is_builtin_mdl(path):
+        return None
+    normalized = path.replace("\\", "/")
+    normalized_lower = normalized.lower()
+    # Suffix-prefixed form (e.g. "nvidia/core_definitions.mdl") takes
+    # precedence: preserve the prefix so Kit's resolver finds the right module.
+    for suffix in _BUILTIN_MDL_SUFFIXES:
+        if normalized_lower.endswith(suffix):
+            return normalized[-len(suffix) :]
+    # Basename form -- the file is reachable purely by name from Kit's
+    # built-in MDL search paths.
+    return os.path.basename(normalized)
 
 
 def norm_path(path: str) -> str:
