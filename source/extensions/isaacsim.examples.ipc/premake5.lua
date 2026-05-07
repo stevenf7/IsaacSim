@@ -63,6 +63,7 @@ if os.target() == "linux" then
     add_files("bindings", "bindings/*.*")
     add_files("python", "python/*.py")
     add_files("python/nodes", "python/nodes/*.py")
+    add_files("python/scripts", "python/scripts/*.py")
     add_files("python/tests", "python/tests/*.py")
 
     includedirs {
@@ -111,6 +112,7 @@ if os.target() == "linux" then
         { "data", ext.target_dir .. "/data" },
         { "nodes", ext.target_dir .. "/nodes" },
         { "python/nodes", ogn.python_target_path .. "/nodes" },
+        { "python/scripts", ogn.python_target_path .. "/scripts" },
         { "python/tests", ogn.python_target_path .. "/tests" },
     }
 else
