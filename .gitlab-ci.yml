@@ -254,7 +254,8 @@ osec:sonarqube:
 # ==============================================================================================================
 .check-common:
     stage: check
-    timeout: 20 minutes
+    variables: 
+      IPP_RUNNER_EXECUTION_DURATION: 1800 # 30 minutes
     interruptible: true
     rules:
       - if: $RUN_BUMP_VERSION == "true"
@@ -453,7 +454,8 @@ check-python-packages:
 # ==============================================================================================================
 .build-common:
     stage: build
-    timeout: 3 hours
+    variables:
+      IPP_RUNNER_EXECUTION_DURATION: 10800 # 3 hours
     interruptible: true
     extends:
       - .build-artifacts
@@ -660,7 +662,8 @@ build-windows-x86_64-debug:
 # ==============================================================================================================
 .test-common:
     stage: test
-    timeout: 3 hour
+    variables:
+      IPP_RUNNER_EXECUTION_DURATION: 10800 # 3 hours
     interruptible: true
     extends:
       - .test-artifacts
@@ -672,7 +675,8 @@ build-windows-x86_64-debug:
 
 .test-nightly:
     stage: nightly-test
-    timeout: 3 hour
+    variables:
+      IPP_RUNNER_EXECUTION_DURATION: 10800 # 3 hours
     interruptible: true
     extends:
       - .test-artifacts
@@ -686,7 +690,8 @@ build-windows-x86_64-debug:
 
 .test-external:
     stage: external-test
-    timeout: 3 hour
+    variables:
+      IPP_RUNNER_EXECUTION_DURATION: 10800 # 3 hours
     interruptible: true
     extends:
       - .test-artifacts
@@ -881,13 +886,13 @@ test-linux-x86_64-omniperf-benchmarks-1-gpu:
       - if: $CI_PIPELINE_SOURCE == "pipeline" && ( $CI_COMMIT_BRANCH =~ /^kit-integration\// || $CI_COMMIT_BRANCH =~ /^release\// )
       - !reference [.rules-run-omniperf-mr, rules]
     stage: test
-    timeout: 3 hour
     interruptible: true
     allow_failure: true
     tags:
       - omni-perf-only/linux
       - instance/gitlab-gtl-performance
     variables:
+      IPP_RUNNER_EXECUTION_DURATION: 10800 # 3 hours
       OMNIPERF_INDEX_URL: "https://urm.nvidia.com/artifactory/api/pypi/ct-omniverse-pypi/simple"
       OMNIPERF_EXTRA_INDEX_URL: "https://urm.nvidia.com/artifactory/api/pypi/nv-shared-pypi/simple"
       MACHINE_OS: "ubuntu22-04-5"
@@ -1024,7 +1029,8 @@ gather-coverage:
     extends:
       - .test-common
       - .ipp_lnx_x86_64_cpu_small
-    timeout: 2h
+    variables: 
+      IPP_RUNNER_EXECUTION_DURATION: 7200 # 2 hours
     needs:
       - job: test-linux-x86_64
         artifacts: true
@@ -1114,7 +1120,8 @@ test-linux-x86_64-external-ar:
       - .ipp_lnx_x86_64_cpu_small
       - .osec:vault:v3:prod_token_job
     stage: docs
-    timeout: 3 hours
+    variables:
+      IPP_RUNNER_EXECUTION_DURATION: 10800 # 3 hours
     before_script:
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     script:
@@ -1192,7 +1199,8 @@ build-docs-only-mr:
       - .ipp_lnx_x86_64_cpu_small
       - .osec:vault:v3:prod_token_job
     stage: docs
-    timeout: 1 hour
+    variables:
+      IPP_RUNNER_EXECUTION_DURATION: 3600 # 1 hour
     before_script:
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
     script:
@@ -1327,12 +1335,12 @@ pages:
 # ==============================================================================================================
 .benchmark-common:
     stage: test
-    timeout: 1 hour
     interruptible: true
     extends:
       - .benchmark-artifacts
     variables:
         MAX_RETRIES: 2
+        IPP_RUNNER_EXECUTION_DURATION: 3600 # 1 hour
     retry: 2
     rules:
       - if: $RUN_EXTENSION_BENCHMARKS != "true"
@@ -1382,9 +1390,9 @@ benchmark-windows-x86_64:
     extends:
       - .deploy-artifacts
       - .osec:vault:v3:prod_token_job
-    timeout: 3 hour
     interruptible: false
     variables:
+        IPP_RUNNER_EXECUTION_DURATION: 10800 # 3 hours
         KUBERNETES_EPHEMERAL_STORAGE_REQUEST: "200Gi"
         KUBERNETES_EPHEMERAL_STORAGE_LIMIT: "200Gi"
     before_script:
@@ -1452,7 +1460,8 @@ verify-publish-extensions:
 
 publish-extensions:
     extends: .publish-extensions-common
-    timeout: 6 hour
+    variables:
+      IPP_RUNNER_EXECUTION_DURATION: 21600 # 6 hours
     script:
       - ./repo.sh build --fetch-only -r
       - ./repo.sh publish_exts -a --from-package
@@ -1692,7 +1701,6 @@ rebase-kit-integration-branches:
 
 # ==============================================================================================================
 sign-windows-x86_64-release:
-    timeout: 3 hour
     extends:
       - .build-common
       - .runner-build-windows-x86_64
@@ -1723,6 +1731,8 @@ sign-windows-x86_64-release:
         allow_failure: true
       - !reference [.rules-version-changed, rules]
       - !reference [.rules-push-manual, rules]
+    variables:
+      IPP_RUNNER_EXECUTION_DURATION: 10800 # 3 hours
 
 # ==============================================================================================================
 .container-rules:
@@ -1899,7 +1909,8 @@ assets-publish-to-packman:
           - _build/packages/*.zip
     before_script:
       - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
-    timeout: 6 hour
+    variables:
+      IPP_RUNNER_EXECUTION_DURATION: 21600 # 6 hours
     script:
       - ./tools/ci/build-and-packaging/publish-assets-step.sh $ASSET_NUM
       - ./repo.sh publish_assets_package --num $ASSET_NUM
@@ -1967,7 +1978,8 @@ publish-etm-list:
     - .deploy-common
     - .ipp_lnx_x86_64_cpu_small
   # image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-builder:1.0.11-1cf1ab9a
-  timeout: 1 hour
+  variables:
+    IPP_RUNNER_EXECUTION_DURATION: 3600 # 1 hour
   script:
     - ./repo.sh build --fetch-only -r
     - ./repo.sh ci generate_etm_list
@@ -2124,12 +2136,12 @@ stage-to-github:
       - .deploy-artifacts
       - .osec:vault:v3:prod_token_job
       - .ipp_lnx_x86_64_cpu_small
-    timeout: 1 hour
     interruptible: false
     allow_failure: true
     needs: []
     variables:
         GITHUB_REPO_URL: "https://oauth2:${ISAACSIM_GITHUB_INTERNAL_PUSH}@github.com/isaac-sim/IsaacSim-Internal.git"
+        IPP_RUNNER_EXECUTION_DURATION: 3600 # 1 hour
     before_script:
       - set -eu
       - !reference [.osec:vault:v3:linux, codesign:perform_vault_requests]
@@ -2160,12 +2172,12 @@ stage-to-gitlab:
       - .deploy-artifacts
       - .osec:vault:v3:prod_token_job
       - .ipp_lnx_x86_64_cpu_small
-    timeout: 1 hour
     interruptible: false
     allow_failure: true
     needs: []
     variables:
         GITHUB_REPO_URL: "https://oauth2:${GITLAB_PUSH_TOKEN}@gitlab-master.nvidia.com/omniverse/isaac/isaacsim_staging.git"
+        IPP_RUNNER_EXECUTION_DURATION: 3600 # 1 hour
     before_script:
       - set -eu
       - !reference [.osec:vault:v3:linux, codesign:perform_vault_requests]
@@ -2191,11 +2203,12 @@ stage-to-gitlab:
 # ==============================================================================================================
 verify-stage-to-gitlab:
     stage: verify-github-staging
-    timeout: 1 hour
     interruptible: true
     allow_failure: true
     extends:
       - .ipp_lnx_x86_64_cpu_small
+    variables:
+      IPP_RUNNER_EXECUTION_DURATION: 3600 # 1 hour
     script:
       - ./tools/ci/check_github_staging/check_github_staging.sh _git/isaacsim_staging
     needs:
@@ -2215,11 +2228,12 @@ verify-stage-to-gitlab:
 # ==============================================================================================================
 scan-packages-internal-urls:
     stage: security
-    timeout: 2 hours
     interruptible: true
     allow_failure: true
     extends:
       - .ipp_lnx_x86_64_cpu_medium
+    variables:
+      IPP_RUNNER_EXECUTION_DURATION: 7200 # 2 hours
     needs:
       - job: build-linux-x86_64-release
         artifacts: true
@@ -2499,9 +2513,11 @@ test-linux-x86_64-isaac-lab-integration:
   # allow_failure has been disabled to enforce the contract that IsaacLab tests are gating to pipeline success.
   variables:
     ISAACSIM_CI_SHORT: "true"
+    IPP_RUNNER_EXECUTION_DURATION: 21600 # 6 hours
 
 test-linux-x86_64-isaac-lab-integration-nightly:
-  timeout: 12 hours
+  variables:
+    IPP_RUNNER_EXECUTION_DURATION: 43200 # 12 hours
   extends:
     - .test-nightly
     - .test-linux-x86_64-isaac-lab-integration-base
@@ -2595,6 +2611,7 @@ post-to-isaac-lab-slack:
     - .ipp_lnx_x86_64_cpu_small
     - .isaac-test-rules
   variables:
+    IPP_RUNNER_EXECUTION_DURATION: 7200 # 2 hours
     NVIDIA_API_KEY: $INFERENCE_API_KEY
     AGENT_MODEL: "nvidia-hub/azure/anthropic/claude-sonnet-4-6"
     AGENT_RESULT_DIR: "${CI_PROJECT_DIR}/agent-results"
@@ -2664,7 +2681,6 @@ post-to-isaac-lab-slack:
     paths:
       - agent-results/
   allow_failure: true
-  timeout: 2 hours
 
 # ==============================================================================================================
 # ── IsaacSim Dashboard Jobs ───────────────────────────────────────────────────────────────────────────────────
