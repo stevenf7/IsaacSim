@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.7.2] - 2026-05-05
+### Added
+- `canonical_builtin_mdl_path` helper that returns the Kit-resolvable bare/suffix form of a built-in MDL path.
+- `refresh_builtin_mdl_cache_async` helper that does a best-effort upgrade of the built-in MDL cache from `omni.kit.material.library.get_mdl_list_async` (filtered to `${kit}` / `${app}` token paths). The Kit extension awaits this on startup; standalone callers can ignore it.
+- `omni.kit.material.library` declared as an `optional = true` dependency so the rules extension is usable in environments where the material library is not present.
+
+### Changed
+- `is_builtin_mdl` and `canonical_builtin_mdl_path` now consult an in-memory cache that is initialized at import time from a hardcoded fallback (the same Kit MDL names previously published as `BUILTIN_MDL_FILES` / `BUILTIN_MDL_PATH_SUFFIXES`) and upgraded by `refresh_builtin_mdl_cache_async` when `omni.kit.material.library` is available. Callers no longer have to await any setup before classification works, and the previously public `BUILTIN_MDL_FILES` / `BUILTIN_MDL_PATH_SUFFIXES` constants have been replaced by private fallback constants (`_FALLBACK_BUILTIN_MDL_BASENAMES`, `_FALLBACK_BUILTIN_MDL_SUFFIXES`).
+
+### Fixed
+- `MaterialsRoutingRule` writing material asset paths with backslash separators on Windows; all transferred-asset paths are now normalized to forward slashes via `make_explicit_relative`.
+- `MaterialsRoutingRule` leaving absolute asset paths in the materials layer when an asset was not transferred; `_update_asset_paths_in_material` now relativizes any remaining absolute filesystem path against the materials layer directory.
+- `MaterialsRoutingRule` now rewrites absolute or explicit-relative paths to project-local copies of Kit built-in MDLs (e.g. `C:/Dev/.../OmniPBR.mdl`) into their canonical bare form (`OmniPBR.mdl`) so Kit's MDL search paths resolve them. Previously these paths were left absolute, leaking host-specific paths into the package; relocating the file is unsafe because Kit's MDL system ties module identity to filesystem location.
+- MDL texture path rewriting in `_remap_mdl_texture_paths` consolidated through the same forward-slash, relative helper for consistency.
+
 ## [1.7.1] - 2026-04-24
 ### Added
 - `JointStateAPIRule` applies `PhysxSchema.JointStateAPI` (`linear` on prismatic, `angular` on revolute) to non-fixed joints missing it. Wired into the Isaac Sim profile between `Fix Physics Joint Poses` and `Route Materials`.

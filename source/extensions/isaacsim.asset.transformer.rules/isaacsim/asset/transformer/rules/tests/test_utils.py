@@ -28,6 +28,7 @@ ones fail.
 import os
 import shutil
 import tempfile
+from typing import NoReturn
 
 import omni.kit.test
 from isaacsim.asset.transformer.rules import utils
@@ -68,17 +69,53 @@ class TestPureStringUtilities(omni.kit.test.AsyncTestCase):
         self.assertEqual(failures, [], "\n".join(failures))
 
     async def test_is_builtin_mdl_and_path_classifiers(self) -> None:
-        """is_builtin_mdl, is_remote_path, is_usd_file across true/false cases."""
+        """is_builtin_mdl, canonical_builtin_mdl_path, is_remote_path, is_usd_file across true/false cases."""
         failures = []
 
-        # is_builtin_mdl: positive
-        for p in ("OmniPBR.mdl", "OMNIPBR.MDL", "/some/dir/OmniPBR.mdl", "omniglass.mdl"):
+        # Kick off a best-effort refresh from the live Kit runtime. Whether
+        # this succeeds or falls back to the hardcoded list, the asserted
+        # cases below must hold because well-known Kit MDL names are present
+        # in the hardcoded fallback too.
+        await utils.refresh_builtin_mdl_cache_async()
+
+        # is_builtin_mdl: positive -- bare authored references, upper-case
+        # variants, and project-local copies of Kit-shipped MDLs all match.
+        for p in (
+            "OmniPBR.mdl",
+            "OMNIPBR.MDL",
+            "omniglass.mdl",
+            "/some/dir/OmniPBR.mdl",
+            "C:/Dev/project/materials/OmniPBR.mdl",
+            "C:\\Dev\\project\\materials\\OmniPBR.mdl",
+            "./materials/OmniPBR.mdl",
+            "nvidia/core_definitions.mdl",
+            "./mdl/nvidia/core_definitions.mdl",
+        ):
             if not utils.is_builtin_mdl(p):
                 failures.append(f"is_builtin_mdl({p!r}) should be True")
-        # is_builtin_mdl: negative
+        # is_builtin_mdl: negative -- names Kit cannot ship and empty path.
         for p in ("CustomMaterial.mdl", "OmniPBR.usda", ""):
             if utils.is_builtin_mdl(p):
                 failures.append(f"is_builtin_mdl({p!r}) should be False")
+
+        # canonical_builtin_mdl_path: rewrites project-local copies of
+        # built-in MDLs to the bare Kit-resolvable form so Kit's MDL search
+        # paths handle resolution. Built-in MDLs are never relocated because
+        # the MDL system ties module identity to filesystem location.
+        canonical_cases: tuple[tuple[str, str | None], ...] = (
+            ("OmniPBR.mdl", "OmniPBR.mdl"),
+            ("C:/Dev/project/materials/OmniPBR.mdl", "OmniPBR.mdl"),
+            ("C:\\Dev\\project\\materials\\OmniPBR.mdl", "OmniPBR.mdl"),
+            ("./materials/OmniPBR.mdl", "OmniPBR.mdl"),
+            ("nvidia/core_definitions.mdl", "nvidia/core_definitions.mdl"),
+            ("./mdl/nvidia/core_definitions.mdl", "nvidia/core_definitions.mdl"),
+            ("CustomMaterial.mdl", None),
+            ("", None),
+        )
+        for path, expected in canonical_cases:
+            actual = utils.canonical_builtin_mdl_path(path)
+            if actual != expected:
+                failures.append(f"canonical_builtin_mdl_path({path!r}) -> {actual!r}, expected {expected!r}")
 
         # is_remote_path: positive
         for p in ("omniverse://server/a.usd", "http://x.com/a.usd", "https://x.com/a.usd"):
@@ -99,6 +136,64 @@ class TestPureStringUtilities(omni.kit.test.AsyncTestCase):
                 failures.append(f"is_usd_file({p!r}) should be False")
 
         self.assertEqual(failures, [], "\n".join(failures))
+
+    async def test_builtin_mdl_cache_falls_back_when_kit_unavailable(self) -> None:
+        """refresh_builtin_mdl_cache_async returns False and uses the hardcoded fallback when Kit is missing."""
+        # Save current cache state so the rest of the suite is unaffected.
+        saved_basenames = utils._BUILTIN_MDL_BASENAMES
+        saved_suffixes = utils._BUILTIN_MDL_SUFFIXES
+        try:
+            # Reset cache to fallback; this models the state right after a
+            # cold module import.
+            utils._BUILTIN_MDL_BASENAMES = utils._FALLBACK_BUILTIN_MDL_BASENAMES
+            utils._BUILTIN_MDL_SUFFIXES = utils._FALLBACK_BUILTIN_MDL_SUFFIXES
+
+            # Even with no live discovery, classifiers still work because the
+            # fallback ships the well-known names.
+            self.assertTrue(utils.is_builtin_mdl("OmniPBR.mdl"))
+            self.assertEqual(
+                utils.canonical_builtin_mdl_path("nvidia/core_definitions.mdl"), "nvidia/core_definitions.mdl"
+            )
+            self.assertFalse(utils.is_builtin_mdl("CustomMaterial.mdl"))
+
+            # Simulate Kit absence by hiding omni.kit.material.library from
+            # the import system. The refresh must complete without raising
+            # and report the fallback was used.
+            import sys
+
+            removed = {}
+            for mod_name in [
+                m
+                for m in list(sys.modules)
+                if m == "omni.kit.material.library" or m.startswith("omni.kit.material.library.")
+            ]:
+                removed[mod_name] = sys.modules.pop(mod_name)
+
+            class _BlockMaterialLibrary:
+                def find_module(self, fullname: str, path: list | None = None) -> "_BlockMaterialLibrary | None":
+                    if fullname == "omni.kit.material.library" or fullname.startswith("omni.kit.material.library."):
+                        return self
+                    return None
+
+                def load_module(self, fullname: str) -> NoReturn:
+                    raise ImportError(f"blocked by test: {fullname}")
+
+            blocker = _BlockMaterialLibrary()
+            sys.meta_path.insert(0, blocker)
+            try:
+                upgraded = await utils.refresh_builtin_mdl_cache_async()
+            finally:
+                if blocker in sys.meta_path:
+                    sys.meta_path.remove(blocker)
+                sys.modules.update(removed)
+
+            self.assertFalse(upgraded, "refresh_builtin_mdl_cache_async should return False without Kit")
+            # Cache must still cover the fallback names.
+            self.assertTrue(utils.is_builtin_mdl("OmniPBR.mdl"))
+            self.assertTrue(utils.is_builtin_mdl("nvidia/core_definitions.mdl"))
+        finally:
+            utils._BUILTIN_MDL_BASENAMES = saved_basenames
+            utils._BUILTIN_MDL_SUFFIXES = saved_suffixes
 
     async def test_norm_path_and_matches_prim_filter(self) -> None:
         """norm_path dot-collapse; matches_prim_filter include/exclude combinations."""

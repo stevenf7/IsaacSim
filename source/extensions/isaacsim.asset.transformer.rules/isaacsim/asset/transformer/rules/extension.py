@@ -15,6 +15,7 @@
 
 """Register transformer rules with the global registry."""
 
+import asyncio
 import logging
 
 try:
@@ -43,6 +44,7 @@ from .perf.materials import MaterialsRoutingRule
 from .structure.flatten import FlattenRule
 from .structure.interface import InterfaceConnectionRule
 from .structure.variants import VariantRoutingRule
+from .utils import refresh_builtin_mdl_cache_async
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +82,7 @@ class Extension(_ExtBase):
     """Extension that registers transformation rules."""
 
     def on_startup(self, ext_id: str) -> None:
-        """Register rule implementations with the global registry.
+        """Register rule implementations and kick off built-in MDL discovery.
 
         Args:
             ext_id: Fully qualified extension identifier.
@@ -89,7 +91,16 @@ class Extension(_ExtBase):
         self._ext_id = ext_id
         logger.info(f"[isaacsim.asset.transformer.rules] Startup: {ext_id}")
         register_all_rules()
+        # Best-effort upgrade of the built-in MDL cache from
+        # omni.kit.material.library. The cache is already initialized to a
+        # hardcoded fallback at module import; refresh swaps in the live Kit
+        # data when the optional dependency is loaded. Failures are logged
+        # by refresh itself, so we do not need to wrap it.
+        self._mdl_cache_task = asyncio.ensure_future(refresh_builtin_mdl_cache_async())
 
     def on_shutdown(self) -> None:
         """Log shutdown for the rules extension."""
+        task = getattr(self, "_mdl_cache_task", None)
+        if task is not None and not task.done():
+            task.cancel()
         logger.info(f"[isaacsim.asset.transformer.rules] Shutdown: {getattr(self, '_ext_id', '')}")

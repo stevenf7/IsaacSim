@@ -349,8 +349,9 @@ class AssetTransformerManager:
             report.close()
             raise RuntimeError(f"Failed to open source stage: {input_stage_path}")
         base_name = profile.base_name or "base.usd"
-        # Create flattened copy at destination as base.usda
-        base_usda_path = os.path.join(package_root_final, "payloads", base_name)
+        # Create flattened copy at destination as base.usda. Use forward slashes so the layer
+        # identifier and any downstream relative-path computations are platform-independent.
+        base_usda_path = os.path.join(package_root_final, "payloads", base_name).replace(os.sep, "/")
         os.makedirs(package_root_final, exist_ok=True)
         if profile.flatten_source:
             flattened_layer = source_stage.Flatten()
