@@ -1,7 +1,7 @@
 .. _isaac_sim_app_tutorial_gui_omnigraph:
 
 =============================
-Isaac Sim Omnigraph Tutorial
+Isaac Sim OmniGraph Tutorial
 =============================
 
 This tutorial introduces you to the world of visual programming via |omnigraph_short|.
@@ -14,7 +14,7 @@ Learning Objectives
 This tutorial aims to
 
 - walk you through building an action graph to control a robot in |isaac-sim_short|, specifically, the Jetbot.
-- show you how to use the Omnigraph shortcuts to generate a differential controller graph for the Jetbot.
+- show you how to use the OmniGraph shortcuts to generate a differential controller graph for the Jetbot.
 
 
 
@@ -121,15 +121,15 @@ The last node is the event node.
         Keyboard control Action graph for the JetBot
 
 
-Omnigraph Shortcuts
+OmniGraph Shortcuts
 ===================
 
-Putting the graph from scratch can be tedious, especially when you have to iterate. We made some shortcuts for frequently used graphs, so that within a couple clicks, you can generate a complex graph with multiple nodes and connections. They can be found under ``Tools -> Robotics -> Omnigraph Controllers``, and the instructions for them are in :ref:`isaac_sim_app_tutorial_advanced_omnigraph_shortcuts`.
+Putting the graph from scratch can be tedious, especially when you have to iterate. We made some shortcuts for frequently used graphs, so that within a couple clicks, you can generate a complex graph with multiple nodes and connections. They can be found under ``Tools -> Robotics -> OmniGraph Controllers``, and the instructions for them are in :ref:`isaac_sim_app_tutorial_advanced_omnigraph_shortcuts`.
 
 To use the Differential Controller graph from the menu shortcut:
 
 #. Delete (or Disable if that is an option) any previous OmniGraphs that controls the Jetbot.
-#. Go to the Menu bar and click on **Tools -> Robotics -> Omnigraph Controllers -> Differential Controller**.
+#. Go to the Menu bar and click on **Tools -> Robotics -> OmniGraph Controllers -> Differential Controller**.
 #. You are prompted for the necessary parameters.
 #. Add "/World/jetbot" to ``Articulation Root``, set the **distance between wheels** to 0.1125, and the **wheel radius** to 0.03.
 #. Given JetBot only has two controllable joints, you can leave the rest of the fields empty.
@@ -149,7 +149,7 @@ This tutorial covered:
 * Basic concepts of |omnigraph_short|
 * Setting up a stage with a robot
 * Using |omnigraph_short| to construct interfaces to a robot
-* Using the Omnigraph shortcuts to generate differential controller graph
+* Using the OmniGraph shortcuts to generate differential controller graph
 
 Further Learning
 -------------------

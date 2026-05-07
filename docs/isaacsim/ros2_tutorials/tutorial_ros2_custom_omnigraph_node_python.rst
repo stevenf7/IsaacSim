@@ -43,7 +43,7 @@ Creating the ROS 2 Custom |omnigraph_short| Python Node Template
     * **Ext. title:** Set to ``ROS 2 Python Custom OmniGraph Node``
 
     * **Ready-to-use extension:** Check it to create a ready-to-use extension in Python.
-    * **Omnigraph node:** Check it to generate OmniGraph-specific files/folders when creating the extension.
+    * **OmniGraph node:** Check it to generate OmniGraph-specific files/folders when creating the extension.
 
     .. figure:: /images/tutorial_ros2_custom_omnigraph_node_python_vscode_extension_template.png
         :align: center

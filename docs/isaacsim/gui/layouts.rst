@@ -26,7 +26,7 @@ As you explore and use |isaac-sim_short| tools, you may find yourself having pre
 The predefined layouts in the **Layouts** menu both opens up the frequently used tools for a specific usecase and arranges them in a way that is most convenient.
 
 #. **Default**: for general use
-#. **Visual Scripting**: for usecases that frequently opens Omnigraph Editors (e.g. ROS)
+#. **Visual Scripting**: for usecases that frequently opens OmniGraph Editors (e.g. ROS)
 #. **Replicator**: opens and arranges the frequently used Replicator tools, such as the Semantic Schema Editor, Synthetic Data Recorder, and Script Editor
 #. **Occupancy Map Generation**: opens the Occupancy Map window, as well as an additional viewport with the top-down view of the scene
 #. **Action and Event Data Generation** [#f1]_: opens and arranges the frequently used Action and Event Data Generation tools, such as Actor SDG, Object SDG, and Camera Placement.

@@ -15,7 +15,7 @@
 Custom Python Nodes
 ================================
 
-There already exist a large number of default nodes that comes with |isaac-sim_short|. You can find the definitions and descriptions for them in either the :doc:`Omnigraph Node Library<extensions:ext_omnigraph/node-library/node-library>` or :ref:`isaac_sim_python_manual`. If those prove to be insufficient, you can write your own and integrate them into |isaac-sim_short|. 
+There already exist a large number of default nodes that comes with |isaac-sim_short|. You can find the definitions and descriptions for them in either the :doc:`OmniGraph Node Library<extensions:ext_omnigraph/node-library/node-library>` or :ref:`isaac_sim_python_manual`. If those prove to be insufficient, you can write your own and integrate them into |isaac-sim_short|. 
 
 A node is defined by two files, an .ogn file, which is a JSON file that defines the structure of the node, including its inputs, outputs, and parameters. Either a Python file or a C++ file can be used to define its function. Here we will focus on Python nodes.
 

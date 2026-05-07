@@ -76,7 +76,7 @@ The following topics and message types being published to Nav2 in this scenario 
 .. 1. Open the main `ActionGraph` by expanding ``Carter_ROS``. Right click on ``ActionGraph`` and press `Open Graph`. The following ROS |omnigraph_short| nodes are setup to do the following:
 
 ..     =============================== ================
-..     Omnigraph Node                 Function
+..     OmniGraph Node                 Function
 ..     =============================== ================
 ..     ros2_subscribe_twist            Subscribes to the `/cmd_vel` topic and triggers the differential and articulation controllers to move the robot
 ..     ros2_publish_odometry           Publishes odometry received from the ``isaac_compute_odometry_node``
@@ -90,7 +90,7 @@ The following topics and message types being published to Nav2 in this scenario 
 .. 2. Open the `ROS_Cameras` graph by expanding ``Carter_ROS``. Right click on ``ROS_Cameras`` and press `Open Graph`. The following ROS Camera |omnigraph_short| nodes are setup to do the following:
 
 ..     =============================== ================
-..     Omnigraph Node                 Function
+..     OmniGraph Node                 Function
 ..     =============================== ================
 ..     ros2_create_camera_left_info    Auto-generates the CameraInfo publisher for the `/camera_info_left` topic. It automatically publishes since the ``enable_camera_left`` branch node is enabled by default
 ..     ros2_create_camera_left_rgb     Auto-generates the RGB Image publisher for the `/rgb_left` topic. It automatically publishes since the ``enable_camera_left`` and ``enable_camera_left_rgb`` branch nodes are enabled by default

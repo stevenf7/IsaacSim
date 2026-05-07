@@ -1,7 +1,7 @@
 .. _isaac_sim_omnigraph_overview_page:
 
 =========================================================
-Omnigraph
+OmniGraph
 =========================================================
 
 |omnigraph_short| is Omniverse's visual programming framework. It provides a graph framework that connects functions from multiple systems inside Omniverse. It is also a compute framework that allows for highly customized nodes so that you can integrate your own functionality into Omniverse and automatically harness the efficient computation backend.

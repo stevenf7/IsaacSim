@@ -49,7 +49,7 @@ Tutorial
 
         The GUI-based robot controllers are inside the |omni| visual programming tool, OmniGraphs. There are more involved tutorials about OmniGraph in the :ref:`isaac_sim_omnigraph_overview_page` section. For the purpose of this tutorial, we will generate the graph using a shortcut tool, and then examine the graph in the OmniGraph editor.
 
-        #. Open the graph generator by going to **Tools > Robotics > Omnigraph Controllers > Joint Position**.
+        #. Open the graph generator by going to **Tools > Robotics > OmniGraph Controllers > Joint Position**.
         #. In the newly appeared **Articulation Position Controller Inputs** popup window, click **Add** for the **Robot Prim** field.
         #. Select **Franka** as the Target.
         #. Click **OK** to generate the graph.

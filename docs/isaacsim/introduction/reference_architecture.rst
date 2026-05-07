@@ -45,7 +45,7 @@ Regardless of your product components, most |isaac-sim_short| use cases involve 
     - :ref:`Robot Simulation and Controllers <isaac_sim_robot_simulation>`
     - :ref:`Robot Articulation and Physics Tools <isaac_sim_physics>`
     - :ref:`Motion Generation <isaac_sim_motion_generation>`
-    - :ref:`Omnigraph <isaac_sim_omnigraph_overview_page>`
+    - :ref:`OmniGraph <isaac_sim_omnigraph_overview_page>`
 
 .. dropdown:: 5. Use Cases
     :animate: fade-in

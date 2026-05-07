@@ -12,7 +12,7 @@ Learning Objectives
 
 This tutorial will
 
-- walk you through examples of scripting an Omnigraph using purely Python APIs
+- walk you through examples of scripting an OmniGraph using purely Python APIs
 - introduce the basic concepts and frequently used parameters in OmniGraphs and showcase them using scripted examples
 
 
