@@ -66,13 +66,6 @@ public:
                 db.logError("Could not find USD stage %ld", stageId);
                 return false;
             }
-            state.m_simView = state.m_tensorInterface->createSimulationView(
-                stageId, isaacsim::core::includes::getActivePhysicsEngineName());
-            if (!state.m_simView)
-            {
-                db.logError("Failed to create simulation view - physics backend may not be initialized");
-                return false;
-            }
             if (!state.initializeNodeHandle(
                     std::string(nodeObj.iNode->getPrimPath(nodeObj)),
                     collectNamespace(db.inputs.nodeNamespace(),
@@ -235,6 +228,16 @@ public:
         }
         const char* primPath = omni::fabric::toSdfPath(prim[0]).GetText();
         state.m_unitScale = UsdGeomGetStageMetersPerUnit(stage);
+        if (!state.m_simView)
+        {
+            state.m_simView = state.m_tensorInterface->createSimulationView(
+                stageId, isaacsim::core::includes::getActivePhysicsEngineName());
+            if (!state.m_simView)
+            {
+                db.logError("Failed to create simulation view - physics backend may not be initialized");
+                return false;
+            }
+        }
         if (state.m_articulation)
         {
             state.m_articulation->release();
