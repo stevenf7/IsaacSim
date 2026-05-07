@@ -763,7 +763,9 @@ inventory.includes.all = [
     "exts/isaacsim.util.camera_inspector",
     "extsDeprecated/isaacsim.util.merge_mesh",
     "exts/isaacsim.util.physics",
+# AUTOREMOVE: BEGIN
     # internal extensions (not included in extscache)
     [ "extsInternal/isaacsim.kit.xr.teleop.bridge", "exts" ],
     [ "extsInternal/isaacsim.util.clash_detection", "exts" ],
+# AUTOREMOVE: END
 ]

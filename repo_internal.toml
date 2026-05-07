@@ -830,11 +830,17 @@ exclude = [
 
 [[repo_stage_for_github.trim]]
 files = [
-    "python_packages.toml",
     "repo.toml",
     "repo_tools.toml",
     "tools/docker/prep_docker_build.sh",
     "package.toml",
+]
+begin_marker = "# AUTOREMOVE: BEGIN"
+end_marker = "# AUTOREMOVE: END"
+
+[[repo_stage_for_github.trim]]
+files = [
+    "python_packages.toml",
 ]
 begin_marker = "# AUTOREMOVE: BEGIN"
 end_marker = "# AUTOREMOVE: END"
