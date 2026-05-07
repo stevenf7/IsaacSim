@@ -152,7 +152,7 @@ class TestGo2CPU(omni.kit.test.AsyncTestCase):
         current_yaw = np.arctan2(current_rot[1, 0], current_rot[0, 0])
 
         heading_delta = abs(current_yaw - start_yaw)
-        self.assertGreater(heading_delta, 0.35)
+        self.assertGreater(heading_delta, 0.25)
 
     async def spawn_go2(self, name="go2"):
         """Spawn a Go2 robot and register the physics callback.

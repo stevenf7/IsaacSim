@@ -34,6 +34,13 @@ isaacsim.core.cloner
 
 * ``clone_ants.py``
 
+isaacsim.core.experimental.actuators
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``newton_actuators_omnigraph_example.py``
+* ``newton_actuators_python_example.py``
+* ``newton_actuators_usd_example.py``
+
 isaacsim.core.experimental.api
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -138,19 +145,6 @@ isaacsim.ros2.bridge
 * ``rtx_lidar.py``
 * ``subscriber.py``
 
-isaacsim.sensors.camera
-~~~~~~~~~~~~~~~~~~~~~~~
-
-* ``camera.py``
-* ``camera_add_depth_sensor.py``
-* ``camera_annotator_device.py``
-* ``camera_opencv_fisheye.py``
-* ``camera_opencv_pinhole.py``
-* ``camera_pre_isp_pipeline.py``
-* ``camera_ros.py``
-* ``camera_stereoscopic_depth.py``
-* ``camera_view.py``
-
 isaacsim.sensors.experimental.physics
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -176,23 +170,6 @@ isaacsim.sensors.experimental.rtx
 * ``create_lidar_with_config_and_variants.py``
 * ``create_radar_basic.py``
 * ``inspect_acoustic_gmo.py``
-* ``inspect_lidar_gmo.py``
-* ``inspect_radar_gmo.py``
-* ``lidar_robot_integration.py``
-* ``resolve_lidar_object_ids.py``
-
-isaacsim.sensors.physx
-~~~~~~~~~~~~~~~~~~~~~~
-
-* ``rotating_lidar_physX.py``
-
-isaacsim.sensors.rtx
-~~~~~~~~~~~~~~~~~~~~
-
-* ``apply_nonvisual_materials.py``
-* ``create_lidar_basic.py``
-* ``create_lidar_with_config_and_variants.py``
-* ``create_radar_basic.py``
 * ``inspect_lidar_gmo.py``
 * ``inspect_radar_gmo.py``
 * ``lidar_robot_integration.py``
@@ -258,7 +235,6 @@ isaacsim.core.api
 * ``isaacsim.core.api/add_frankas.py``
 * ``isaacsim.core.api/control_robot.py``
 * ``isaacsim.core.api/data_logging.py``
-* ``isaacsim.core.api/deformable.py``
 * ``isaacsim.core.api/detailed_contact_data.py``
 * ``isaacsim.core.api/omnigraph_triggers.py``
 * ``isaacsim.core.api/rigid_contact_view.py``
@@ -359,12 +335,42 @@ isaacsim.robot.manipulators/ur10e/tasks
 * ``isaacsim.robot.manipulators/ur10e/tasks/follow_target.py``
 * ``isaacsim.robot.manipulators/ur10e/tasks/pick_place.py``
 
+isaacsim.sensors.camera
+^^^^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.sensors.camera/camera.py``
+* ``isaacsim.sensors.camera/camera_add_depth_sensor.py``
+* ``isaacsim.sensors.camera/camera_annotator_device.py``
+* ``isaacsim.sensors.camera/camera_opencv_fisheye.py``
+* ``isaacsim.sensors.camera/camera_opencv_pinhole.py``
+* ``isaacsim.sensors.camera/camera_pre_isp_pipeline.py``
+* ``isaacsim.sensors.camera/camera_ros.py``
+* ``isaacsim.sensors.camera/camera_stereoscopic_depth.py``
+* ``isaacsim.sensors.camera/camera_view.py``
+
 isaacsim.sensors.physics
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 * ``isaacsim.sensors.physics/contact_sensor.py``
 * ``isaacsim.sensors.physics/effort_sensor.py``
 * ``isaacsim.sensors.physics/imu_sensor.py``
+
+isaacsim.sensors.physx
+^^^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.sensors.physx/rotating_lidar_physX.py``
+
+isaacsim.sensors.rtx
+^^^^^^^^^^^^^^^^^^^^
+
+* ``isaacsim.sensors.rtx/apply_nonvisual_materials.py``
+* ``isaacsim.sensors.rtx/create_lidar_basic.py``
+* ``isaacsim.sensors.rtx/create_lidar_with_config_and_variants.py``
+* ``isaacsim.sensors.rtx/create_radar_basic.py``
+* ``isaacsim.sensors.rtx/inspect_lidar_gmo.py``
+* ``isaacsim.sensors.rtx/inspect_radar_gmo.py``
+* ``isaacsim.sensors.rtx/lidar_robot_integration.py``
+* ``isaacsim.sensors.rtx/resolve_lidar_object_ids.py``
 
 standalone_examples/replicator
 ------------------------------
@@ -440,11 +446,6 @@ isaacsim.replicator.examples
 
 * ``ar_capture_pipeline.py``
 
-isaacsim.robot.manipulators.examples.franka
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* ``torque_control.py``
-
 isaacsim.ros2.bridge
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -452,11 +453,6 @@ isaacsim.ros2.bridge
 * ``test_camera_tf_delay.py``
 * ``test_carter_camera_multi_robot_nav.py``
 * ``test_publish_camera_data.py``
-
-isaacsim.sensors.experimental.physics
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* ``contact_sensor_test.py``
 
 isaacsim.sensors.physics
 ~~~~~~~~~~~~~~~~~~~~~~~~
