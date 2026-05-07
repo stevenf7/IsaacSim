@@ -1,4 +1,8 @@
 # Changelog
+## [2.0.3] - 2026-05-05
+### Updated
+- Preview image
+
 ## [2.0.2] - 2026-04-30
 ### Changed
 - Use codeless physx schema
