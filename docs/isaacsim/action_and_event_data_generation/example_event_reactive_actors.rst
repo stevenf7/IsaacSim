@@ -168,15 +168,14 @@ Do **not** start the timeline yet. Avoid both **Start Data Generation** and the 
 Step 5 - Set Up Event Generation
 ================================
 
-In the **Event Config File** window:
+Open the **Event Config File** window from **Tools > Action and Event Data Generation > Event Config File** if it is not already open. The menu entry only appears when the ``isaacsim.replicator.incident.ui`` extension is enabled, which the ``action_and_event_data_generation`` app launched in Step 3 does automatically. Then:
 
 1. Use the **Config File Path** picker to select ``incident_config.yaml``.
 2. In the **Stage** window, select any box prim on a shelf (for example, ``/Root/Box_21069`` from the Simple Warehouse stage).
-3. Right-click in the viewport. Expand the **Incident Scene Tags** submenu.
-4. Choose **Apply Flammable Item Tag** > **Box**.
-5. Click **Set Up Incident**.
+3. In the **Property** panel for the selected prim, click **+ Add > IncidentTagging > FlammableItem > Box**.
+4. Click **Set Up Incident**.
 
-If you adapt this example to use ``SpillEvent`` or ``ToppleEvent``, apply the corresponding **Leakable Item Tag** or **Loose Item Tag** in this same step before clicking **Set Up Incident**. The selected prim's property panel exposes checkboxes for the same actions.
+If you adapt this example to use ``SpillEvent`` or ``ToppleEvent``, choose **LeakableItem** or **LooseItem** under **+ Add > IncidentTagging** instead, before clicking **Set Up Incident**.
 
 Internally, Event Generation reads the YAML, waits for navmesh baking, picks the tagged prim as the flammable target, and arms a time trigger that will fire at ``t = 4 s`` after the timeline plays. Nothing has fired yet.
 
