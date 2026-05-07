@@ -16,7 +16,7 @@ In this tutorial, you will:
 - Break a closed loop articulation chain
 - Add joint drives, including mimic joints
 - Adjust collision shapes
-- Test grippers by building a test setup and using a gripper controller Omnigraph
+- Test grippers by building a test setup and using a gripper controller OmniGraph
 
 *30 Minutes Tutorial*
 
@@ -257,10 +257,10 @@ You can see in the video below that the gripper will move forward and lift up.
 .. image:: /images/isim_6.0_full_tut_viewport_rig_closed_loop_struct_grasp.webp
     :width: 800
 
-Control the Gripper with Omnigraph
+Control the Gripper with OmniGraph
 =====================================
 
-We can also use an Omnigraph to control the gripper, by writting the target position of the finger joints directly in the graph.
+We can also use an OmniGraph to control the gripper, by writting the target position of the finger joints directly in the graph.
 
 We have already prepared the graph in the ``Samples/Rigging/Gripper/Robotiq 2F-85/Robotiq_2F_85_complete/Robotiq_2F_75_controller.usd`` file, insert it as a layer to your Robotiq_2F_85_config.usd layer.
 

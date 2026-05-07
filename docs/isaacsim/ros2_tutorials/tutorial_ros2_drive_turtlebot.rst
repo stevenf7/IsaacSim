@@ -23,7 +23,7 @@ The steps to connect |isaac-sim| to ROS can be done:
 * scripting inside the extension workflow
 * scripting inside the standalone Python workflow
  
-Refer to :ref:`isaac_sim_app_tutorial_intro_workflows` for details of different workflows. The UI method using existing Omnigraph nodes is demonstrated. Introductions to other methods are listed in the :ref:`isaac_sim_app_tutorial_ros2_drive_turtlebot_further_reading` section.
+Refer to :ref:`isaac_sim_app_tutorial_intro_workflows` for details of different workflows. The UI method using existing OmniGraph nodes is demonstrated. Introductions to other methods are listed in the :ref:`isaac_sim_app_tutorial_ros2_drive_turtlebot_further_reading` section.
 
 
 Learning Objectives
@@ -199,6 +199,6 @@ Further Learning
 - Scripting inside the extension workflow is introduced in :ref:`isaac_sim_app_tutorial_ros2_manipulation`.
 - Scripting using the standalone Python workflow is introduced in :ref:`isaac_sim_app_tutorial_ros2_python`
 - Scripting |omnigraph_short| nodes is introduced in :ref:`isaac_sim_app_tutorial_advanced_omnigraph_scripting`.
-- Building custom Omnigraph Python nodes is introduced in :ref:`isaac_sim_app_omnigraph_custom_python_nodes`
-- Building custom Omnigraph C++ nodes is introduced in :ref:`isaac_sim_app_tutorial_advanced_omnigraph_custom_cpp_nodes`
+- Building custom OmniGraph Python nodes is introduced in :ref:`isaac_sim_app_omnigraph_custom_python_nodes`
+- Building custom OmniGraph C++ nodes is introduced in :ref:`isaac_sim_app_tutorial_advanced_omnigraph_custom_cpp_nodes`
 

@@ -60,7 +60,7 @@ Examples of such features are:
 
 #. **End Effectors Stacks (** ``gripper.usda`` **)**: Adds end effector such as grippers or suction cups for simulations.
 #. **Control Stack (** ``control.usd`` **)**: Adds specific control parameters for connecting controllers to the robot.
-#. **ROS Integration Stack (** ``ros.usd`` **)**: Configures ROS Omnigraph for the robot for publishing and subscribing to ROS topics.
+#. **ROS Integration Stack (** ``ros.usd`` **)**: Configures ROS OmniGraph for the robot for publishing and subscribing to ROS topics.
 
 Guidelines
 -----------
@@ -114,7 +114,7 @@ Example Features
 - **Physics (** ``physics.usd`` **)**: Adds rigid bodies, joints, and articulations.
 - **MuJoCo (** ``mujoco.usda`` **)**: Adds MuJoCo physics specific setup.
 - **Control Graphs (** ``asset_control.usd`` **)**: Adds control features for simulations.
-- **ROS Integration (** ``asset_ros.usd`` **)**: Configures ROS Omnigraph functionalities.
+- **ROS Integration (** ``asset_ros.usd`` **)**: Configures ROS OmniGraph functionalities.
 - **Gripper (** ``robotiq_2f_140.usda`` **)**: Adds gripper features for simulations.
 
 

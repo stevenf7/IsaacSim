@@ -1,12 +1,12 @@
 .. _isaac_sim_app_tutorial_advanced_omnigraph_shortcuts:
 
 ==========================================
-Commonly Used Omnigraph Shortcuts
+Commonly Used OmniGraph Shortcuts
 ==========================================
 
 
 
-|isaac-sim_short| has shortcuts for populating some of the most commonly used Omnigraphs. They can be found under **Tools > Robotics > Omnigraph Controllers**. After selecting the graph you want to create, you are prompted to provide a minimal set of parameters to populate the graph. 
+|isaac-sim_short| has shortcuts for populating some of the most commonly used OmniGraphs. They can be found under **Tools > Robotics > OmniGraph Controllers**. After selecting the graph you want to create, you are prompted to provide a minimal set of parameters to populate the graph. 
 
 The shortcuts are:
 

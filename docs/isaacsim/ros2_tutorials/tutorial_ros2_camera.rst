@@ -19,7 +19,7 @@ Learning Objectives
 In this example, you learn how to:
 
 - Add additional cameras to the scene and onto the robot
-- Add camera publishers in Omnigraph
+- Add camera publishers in OmniGraph
 - Add camera publishers using the menu shortcut
 - Send ground truth synthetic perception data through rostopics
 

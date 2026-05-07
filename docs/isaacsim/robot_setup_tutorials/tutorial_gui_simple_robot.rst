@@ -112,7 +112,7 @@ After the joints are part of an articulation, you can use tools to test the robo
 
 #. Create another scope by right clicking **Create > Scope**, rename it to **Graphs**. This will be used to store the ActionGraphs.
 #. Drag the **Graphs** scope under the ``mock_robot`` Xform in the stage tree.
-#. Go to **Tools > Robotics > Omnigraph Controllers > Joint Velocity** to add a velocity controller graph to the stage. This graph will allow you to control the robot's movement by setting the target velocity for each joint. 
+#. Go to **Tools > Robotics > OmniGraph Controllers > Joint Velocity** to add a velocity controller graph to the stage. This graph will allow you to control the robot's movement by setting the target velocity for each joint. 
 #. Click the **Add** button for "Robot Prim" and select the prim with the Articulation Root API, in this case, it's ``/mock_robot``. 
 #. For Graph Path, write ``mock_robot/Graphs/Velocity_Controller`` to place the ActionGraph in the **Graphs** scope above.
 #. Click **OK** to create the graph. 
@@ -120,7 +120,7 @@ After the joints are part of an articulation, you can use tools to test the robo
 
 .. NOTE:: The articulation controllers use **radians**, the default USD properties you find under Drive API when you select the individual joints on the stage tree are in **degrees**.
 
-For this particular robot, it can also be controlled using a Differential Controller. For more information about Omnigraph Controller shortcuts, go to :ref:`isaac_sim_app_tutorial_advanced_omnigraph_shortcuts`.
+For this particular robot, it can also be controlled using a Differential Controller. For more information about OmniGraph Controller shortcuts, go to :ref:`isaac_sim_app_tutorial_advanced_omnigraph_shortcuts`.
 
 .. figure:: /images/isim_4.5_base_ref_gui_rigging_mockrobot_controller.png
     :align: center

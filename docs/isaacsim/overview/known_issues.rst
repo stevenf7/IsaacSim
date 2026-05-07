@@ -425,5 +425,5 @@ Hang
 Crash
 ####################################
 
-#. Using compound nodes in Omnigraph may lead to a crash, we do not recommend using compound nodes in Omnigraph.
+#. Using compound nodes in OmniGraph may lead to a crash, we do not recommend using compound nodes in OmniGraph.
 #. Shutting down the physics.tensors extension before the Python garbage collector cleans up the related objects can lead to a crash. To prevent this, manually set the related tensor API objects in Python to None before unloading the extension.

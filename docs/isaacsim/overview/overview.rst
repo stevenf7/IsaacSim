@@ -36,7 +36,7 @@ The core functionality of |isaac-sim_short| is the simulation itself: a high-fid
 supporting :ref:`multi-sensor RTX rendering <isaac_sim_sensor_simulation>` at an industrial scale. |isaac-sim_short|'s direct access to the GPU enables the platform to support the simulation of various
 kinds of sensors including :ref:`cameras <isaacsim_sensors_camera>`, :ref:`Lidars <isaacsim_sensors_rtx_lidar>`, and :ref:`contact sensors <isaacsim_sensors_physics_contact>`. This
 in turn facilitates the simulation of digital twins, allowing your end-to-end pipelines to run before ever needing to turn on a real robot. |isaac-sim_short| provides a suite of tools for collecting synthetic
-data with `Replicator`_, orchestrating simulated environments through `Omnigraph`_, tuning `PhysX simulation`_ parameters to match reality, and finally training control agents
+data with `Replicator`_, orchestrating simulated environments through `OmniGraph`_, tuning `PhysX simulation`_ parameters to match reality, and finally training control agents
 through various methods like Reinforcement Learning (RL) with :ref:`Isaac Lab<isaac_lab_tutorials_page>`.
 
 Deploy
@@ -100,7 +100,7 @@ Development Workflows
 .. _Universal Scene Description (USD): https://openusd.org/release/index.html
 .. _NVIDIA USD API: https://docs.omniverse.nvidia.com/kit/docs/pxr-usd-api/latest/pxr.html
 .. _Replicator: https://docs.omniverse.nvidia.com/extensions/latest/ext_replicator.html
-.. _Omnigraph: https://docs.omniverse.nvidia.com/extensions/latest/ext_omnigraph.html
+.. _OmniGraph: https://docs.omniverse.nvidia.com/extensions/latest/ext_omnigraph.html
 .. _PhysX simulation: https://docs.omniverse.nvidia.com/extensions/latest/ext_simulation.html
 .. _PhysX engine: https://developer.nvidia.com/physx-sdk
 .. _contact sensors: https://docs.omniverse.nvidia.com/isaacsim/latest/features/sensor_simulation/isaacsim_sensors_physics_contact.html#contact-sensor

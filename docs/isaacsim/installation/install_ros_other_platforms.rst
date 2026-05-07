@@ -1292,7 +1292,7 @@ Running ROS in Docker Containers
          docker exec -it ros_ws_docker /bin/bash -c 'source /opt/ros/$ROS_DISTRO/setup.bash; exec bash'
 
 
-   #. Optionally, to test your installation you can setup a basic publisher of clocks inside |isaac-sim_short| using the Omnigraph node :ref:`isaac_sim_app_tutorial_gui_omnigraph`:
+   #. Optionally, to test your installation you can setup a basic publisher of clocks inside |isaac-sim_short| using the OmniGraph node :ref:`isaac_sim_app_tutorial_gui_omnigraph`:
 
       #. Press **play** in the simulator. 
       #. Open a separate terminal, open the Docker, set the ``FASTRTPS_DEFAULT_PROFILES_FILE`` environment variable.

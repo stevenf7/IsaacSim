@@ -43,7 +43,7 @@ where :math:`\omega` is the desired angular velocity, :math:`V` is the desired l
 OmniGraph Node
 ----------------
 
-.. list-table:: Differential Controller Omnigraph Inputs
+.. list-table:: Differential Controller OmniGraph Inputs
    :widths: 30 70
    :header-rows: 1
 
@@ -74,7 +74,7 @@ OmniGraph Node
    * - Desired Angular Velocity
      - Desired angular velocity in rad/s
 
-.. list-table:: Differential Controller Omnigraph Outputs
+.. list-table:: Differential Controller OmniGraph Outputs
    :widths: 30 70
    :header-rows: 1
 
@@ -137,7 +137,7 @@ The equality constrains are set by the linear and angular target velocity Inputs
 OmniGraph Node
 ----------------
 
-.. list-table:: Holonomic Controller Omnigraph Inputs
+.. list-table:: Holonomic Controller OmniGraph Inputs
    :widths: 30 70
    :header-rows: 1
 
@@ -171,7 +171,7 @@ OmniGraph Node
      - Gain for the angular input
 
 
-.. list-table:: Holonomic Controller Omnigraph Outputs
+.. list-table:: Holonomic Controller OmniGraph Outputs
    :widths: 30 70
    :header-rows: 1
 
@@ -246,7 +246,7 @@ Where :math:`V_{desired}` is the desired linear velocity, :math:`r_{front}` is t
 OmniGraph Node
 ----------------
 
-.. list-table:: Ackermann Controller Omnigraph Inputs
+.. list-table:: Ackermann Controller OmniGraph Inputs
    :widths: 30 70
    :header-rows: 1
 
@@ -279,7 +279,7 @@ OmniGraph Node
    * - dt
      - Delta time for the simulation step
 
-.. list-table:: Ackermann Controller Omnigraph Outputs
+.. list-table:: Ackermann Controller OmniGraph Outputs
    :widths: 30 70
    :header-rows: 1
 

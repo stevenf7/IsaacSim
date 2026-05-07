@@ -50,6 +50,6 @@ The following tutorial series are available in Isaac Sim:
    * - :ref:`Motion Generation Tutorial Series<isaac_sim_advanced_tutorials_motion_generation>`
      - Tutorials for using motion generation in Isaac Sim
 
-   * - :ref:`Omnigraph Tutorials<isaac_sim_omnigraph_overview_page>`
-     - Tutorials for using the Omnigraph to create and edit graphs in Isaac Sim
+   * - :ref:`OmniGraph Tutorials<isaac_sim_omnigraph_overview_page>`
+     - Tutorials for using the OmniGraph to create and edit graphs in Isaac Sim
 

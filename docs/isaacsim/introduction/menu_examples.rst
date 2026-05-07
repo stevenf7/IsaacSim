@@ -25,7 +25,7 @@ Sensors                        | Examples showing different ways of sensing the 
 - Contact                      | See :ref:`isaacsim_sensors_physics_contact` docs for more details.
 Input Devices                  | Examples using different HIDs.
 - Kaya Gamepad                 | Connect to Gamepad using OmniGraph to control a Kaya robot.
-- Omnigraph Keyboard           | Connect to Keyboard using OmniGraph.
+- OmniGraph Keyboard           | Connect to Keyboard using OmniGraph.
 Manipulation                   | Examples showing different manipulation tools in Isaac Sim.
 - Follow Target                | Example showing a UR10 robot arm following a target and avoiding obstacles using RMPflow controllers.
 - Path Planning                | Franka robot planning collision-free paths using cuMotion's graph-based motion planner with wall obstacles.

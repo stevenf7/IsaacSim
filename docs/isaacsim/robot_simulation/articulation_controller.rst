@@ -17,7 +17,7 @@ Overview
 =================
 
 
-Articulation controller is the low level controller that controls joint position, joint velocity, and joint effort in |isaac-sim_short|. The articulation controller can be interfaced using Python and Omnigraph.
+Articulation controller is the low level controller that controls joint position, joint velocity, and joint effort in |isaac-sim_short|. The articulation controller can be interfaced using Python and OmniGraph.
 
 .. Note:: Angular units are expressed in radians while angles in USD are expressed in degrees and will be adjusted accordingly by the articulation controller.
 
@@ -130,17 +130,17 @@ You can try out basic articulation controller examples by running the following 
             .. literalinclude:: ../snippets/robot_simulation/articulation_controller/run_the_example.py
                 :language: python
 
-Omnigraph Interface
+OmniGraph Interface
 ====================
 
-The articulation controller can also be accessed through Omnigraph nodes, providing a visual, node-based approach to robot control.
+The articulation controller can also be accessed through OmniGraph nodes, providing a visual, node-based approach to robot control.
 
 Input Parameters
 -----------------
 
-The articulation controller Omnigraph node accepts the following input parameters:
+The articulation controller OmniGraph node accepts the following input parameters:
 
-.. list-table:: Articulation Controller Omnigraph Inputs
+.. list-table:: Articulation Controller OmniGraph Inputs
    :widths: 25 75
    :header-rows: 1
 
@@ -173,10 +173,10 @@ Usage Guidelines
 Example Usage
 --------------
 
-For a complete example of the articulation controller Omnigraph node in action, see the ``mock_robot_rigged`` asset in the Content Browser at **Isaac Sim > Samples > Rigging > MockRobot > mock_robot_rigged.usd**.
+For a complete example of the articulation controller OmniGraph node in action, see the ``mock_robot_rigged`` asset in the Content Browser at **Isaac Sim > Samples > Rigging > MockRobot > mock_robot_rigged.usd**.
 
 .. figure:: /images/isim_4.5_base_ref_gui_rigging_mockrobot_controller.png
     :align: center
     :width: 100%
-    :alt: Articulation Controller Omnigraph Node Example
+    :alt: Articulation Controller OmniGraph Node Example
 

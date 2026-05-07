@@ -22,7 +22,7 @@ Learning Objectives
 
 In this tutorial, you interact with a manipulator, the Franka Emika Panda Robot. You:
 
-- Add a ROS2 Joint State publisher and subscriber in Omnigraph
+- Add a ROS2 Joint State publisher and subscriber in OmniGraph
 - Add a ROS2 Joint State publisher and subscriber using menu shortcut
 - Add a ROS2 Joint State publisher and subscriber using the |omnigraph_short| Python API using the script editor
 - Learn about the ``isaac:nameOverride`` prim attribute
