@@ -45,42 +45,119 @@ Generate the Robot Description
 
 #. In a ROS-sourced terminal, install the Clearpath Robotics packages and other necessary dependencies.
 
-   .. code-block:: bash
+   .. tab-set::
 
-       sudo apt install ros-$ROS_DISTRO-clearpath-common ros-$ROS_DISTRO-xacro
+      .. tab-item:: Linux
+         :sync: linux
+
+         .. code-block:: bash
+
+             sudo apt install ros-$ROS_DISTRO-clearpath-common ros-$ROS_DISTRO-xacro
+
+      .. tab-item:: Windows
+         :sync: windows
+
+         All Windows commands in this tutorial use PowerShell syntax. Run them from a PowerShell terminal with the ROS 2 workspace sourced.
+
+         These packages are included with your sourced ROS 2 workspace; no additional install step is required.
 
 #. Set a convenience variable pointing to the ``isaacsim_clearpath_nav2`` package's params directory. All generated files will be stored here. Any Clearpath robot configuration will work; this tutorial uses the Dingo-D (``dd100``).
 
-   .. code-block:: bash
+   .. tab-set::
 
-       export ROBOT_PARAMS=$(ros2 pkg prefix isaacsim_clearpath_nav2)/share/isaacsim_clearpath_nav2/params/dd100
+      .. tab-item:: Linux
+         :sync: linux
+
+         .. code-block:: bash
+
+             export ROBOT_PARAMS=$(ros2 pkg prefix isaacsim_clearpath_nav2)/share/isaacsim_clearpath_nav2/params/dd100
+
+      .. tab-item:: Windows
+         :sync: windows
+
+         .. code-block:: powershell
+
+             $env:ROBOT_PARAMS = "$(ros2 pkg prefix isaacsim_clearpath_nav2)\share\isaacsim_clearpath_nav2\params\dd100"
 
 #. Copy the sample Dingo-D configuration as ``robot.yaml``.
 
-   .. code-block:: bash
+   .. tab-set::
 
-       cp $(ros2 pkg prefix clearpath_config)/share/clearpath_config/sample/dd100_default.yaml $ROBOT_PARAMS/robot.yaml
+      .. tab-item:: Linux
+         :sync: linux
+
+         .. code-block:: bash
+
+             cp $(ros2 pkg prefix clearpath_config)/share/clearpath_config/sample/dd100_default.yaml $ROBOT_PARAMS/robot.yaml
+
+      .. tab-item:: Windows
+         :sync: windows
+
+         .. code-block:: powershell
+
+             Copy-Item "$(ros2 pkg prefix clearpath_config)\share\clearpath_config\sample\dd100_default.yaml" `
+                       "$env:ROBOT_PARAMS\robot.yaml"
 
 #. Generate the robot description with the Clearpath generator.
 
-   .. code-block:: bash
+   .. tab-set::
 
-       ros2 run clearpath_generator_common generate_description -s $ROBOT_PARAMS
+      .. tab-item:: Linux
+         :sync: linux
+
+         .. code-block:: bash
+
+             ros2 run clearpath_generator_common generate_description -s $ROBOT_PARAMS
+
+      .. tab-item:: Windows
+         :sync: windows
+
+         .. code-block:: powershell
+
+             python "$(ros2 pkg prefix clearpath_generator_common)\lib\clearpath_generator_common\generate_description" -s $env:ROBOT_PARAMS
 
 #. Launch the robot description node to publish the URDF on the ``/robot_description`` topic. Keep this terminal open.
 
-   .. code-block:: bash
+   .. tab-set::
 
-        ros2 launch clearpath_platform_description description.launch.py -- setup_path:=$ROBOT_PARAMS
+      .. tab-item:: Linux
+         :sync: linux
+
+         .. code-block:: bash
+
+             ros2 launch clearpath_platform_description description.launch.py -- setup_path:=$ROBOT_PARAMS
+
+      .. tab-item:: Windows
+         :sync: windows
+
+         .. code-block:: powershell
+
+             ros2 launch clearpath_platform_description description.launch.py -- setup_path:=$env:ROBOT_PARAMS
 
 .. dropdown:: Full copy-paste command
 
-    .. code-block:: bash
+    .. tab-set::
 
-        export ROBOT_PARAMS=$(ros2 pkg prefix isaacsim_clearpath_nav2)/share/isaacsim_clearpath_nav2/params/dd100
-        cp /opt/ros/$ROS_DISTRO/share/clearpath_config/sample/dd100_default.yaml $ROBOT_PARAMS/robot.yaml
-        ros2 run clearpath_generator_common generate_description -s $ROBOT_PARAMS
-        ros2 launch clearpath_platform_description description.launch.py -- setup_path:=$ROBOT_PARAMS
+       .. tab-item:: Linux
+          :sync: linux
+
+          .. code-block:: bash
+
+              export ROBOT_PARAMS=$(ros2 pkg prefix isaacsim_clearpath_nav2)/share/isaacsim_clearpath_nav2/params/dd100
+              cp /opt/ros/$ROS_DISTRO/share/clearpath_config/sample/dd100_default.yaml $ROBOT_PARAMS/robot.yaml
+              ros2 run clearpath_generator_common generate_description -s $ROBOT_PARAMS
+              ros2 launch clearpath_platform_description description.launch.py -- setup_path:=$ROBOT_PARAMS
+
+       .. tab-item:: Windows
+          :sync: windows
+
+          .. code-block:: powershell
+
+              $env:ROBOT_PARAMS = "$(ros2 pkg prefix isaacsim_clearpath_nav2)\share\isaacsim_clearpath_nav2\params\dd100"
+              Copy-Item "$(ros2 pkg prefix clearpath_config)\share\clearpath_config\sample\dd100_default.yaml" `
+                        "$env:ROBOT_PARAMS\robot.yaml"
+              python "$(ros2 pkg prefix clearpath_generator_common)\lib\clearpath_generator_common\generate_description" -s $env:ROBOT_PARAMS
+              ros2 launch clearpath_platform_description description.launch.py -- setup_path:=$env:ROBOT_PARAMS
 
 Import into Isaac Sim
 -----------------------------
@@ -146,27 +223,22 @@ As a quick test, for both wheel joints, set the **Target Velocity** to ``100``. 
 Adding Sensors
 ===============
 
-.. note::
-
-    The URDF importer supports importing sensors directly from URDF using the `<sensor> element <https://wiki.ros.org/urdf/XML/sensor>`_. However, for the Clearpath Dingo-D model, ``<gazebo>`` tags wrap the sensors, which Isaac Sim does *not* support. You can rewrite the URDF to use the supported ``<sensor>`` element, or add sensors manually using the following steps.
-
 To allow the robot to perceive the environment, create a few sensors.
 
-#. Create a new stage with ``CTRL+N`` and open the robot USD you created earlier using **File > Open** or by double-clicking it in the Content browser.
+#. Open the robot USD you created earlier using **File > Open** or by double-clicking it in the Content browser.
 #. Save the stage as ``dd100_with_sensors.usd``.
+#. Start by adding a common off-the-shelf camera, the `RealSense D455 <https://www.realsenseai.com/products/stereo-depth-camera-d455f/>`_.
 
-    #. Start by adding a common off-the-shelf camera, the `RealSense D455 <https://www.realsenseai.com/products/stereo-depth-camera-d455f/>`_.
+    - Create the sensor by clicking **Create > Sensors > Camera and Depth Sensors > RealSense > Realsense D455**.
+    - Drag the sensor to ``/dd100/Geometry/base_link/chassis_link`` and rename it to ``sim_camera``.
+    - Set **Translate** components to ``(0.3, 0, 0.05)`` to position it at the front of the chassis.
+    - By default, the RealSense is a Rigid Body affected by gravity. To fix it to the robot, click ``/dd100/Geometry/base_link/chassis_link/sim_camera/RSD455`` and uncheck **Rigid Body Enabled** under **Physics** in the **Property** tab.
 
-        - Create the sensor by clicking **Create > Sensors > Camera and Depth Sensors > RealSense > Realsense D455**.
-        - Drag the sensor to ``/dd100/Geometry/base_link/chassis_link`` and rename it to ``sim_camera``.
-        - Set **Translate** components to ``(0.3, 0, 0.05)`` to position it at the front of the chassis.
-        - By default, the RealSense is a Rigid Body affected by gravity. To fix it to the robot, click ``/dd100/Geometry/base_link/chassis_link/sim_camera/RSD455`` and uncheck **Rigid Body Enabled** under **Physics** in the **Property** tab.
+#. Next add a LiDAR. 
 
-    #. Next add a LiDAR. 
-
-        - Create the sensor by clicking **Create > Sensors > RTX Lidar > SICK > microScan3**.
-        - Drag the sensor to ``/dd100/Geometry/base_link/chassis_link`` and rename it to ``sim_lidar``.
-        - Set **Translate** components to ``(0.0, 0.0, 0.15)`` to position it above the chassis.
+    - Create the sensor by clicking **Create > Sensors > RTX Lidar > SICK > microScan3**.
+    - Drag the sensor to ``/dd100/Geometry/base_link/chassis_link`` and rename it to ``sim_lidar``.
+    - Set **Translate** components to ``(0.0, 0.0, 0.15)`` to position it above the chassis.
 
 #. Save the stage.
 
@@ -256,7 +328,7 @@ Create separate ActionGraphs for each topic system:
         Use the **ROS2 RTX Lidar Helper** to publish ``LaserScan`` data.
 
         #. Create an **On Playback Tick** node and connect ``Tick`` to an **Isaac Run One Simulation Frame** node.
-        #. Connect the output of **Isaac Run One Simulation Frame** to an **Isaac Create Render Product** node. Set its ``cameraPrim`` property to the ``.../sim_lidar/sensor`` prim from the sensor you created earlier.
+        #. Connect the output of **Isaac Run One Simulation Frame** to an **Isaac Create Render Product** node. Set its ``cameraPrim`` property to the ``.../sim_lidar/Lidar`` prim from the sensor you created earlier.
         #. Create a **ROS2 RTX Lidar Helper** node. Set ``frameId`` to ``sim_lidar``, ``topicName`` to ``scan``, and ``type`` to ``laser_scan``.
         #. Connect the outputs of **Isaac Create Render Product** to the input of **ROS2 RTX Lidar Helper**.
         #. Create a **ROS2 Context** node and connect it to the **ROS2 RTX Lidar Helper** node.
@@ -275,7 +347,7 @@ Create separate ActionGraphs for each topic system:
 
                 ROBOT_PRIM = "/dd100"
                 CHASSIS_LINK = f"{ROBOT_PRIM}/Geometry/base_link/chassis_link"
-                LIDAR_SENSOR_PRIM = f"{CHASSIS_LINK}/sim_lidar/sensor"
+                LIDAR_SENSOR_PRIM = f"{CHASSIS_LINK}/sim_lidar/Lidar"
                 GRAPH_PATH = f"{CHASSIS_LINK}/sim_lidar/scan"
 
                 stage = omni.usd.get_context().get_stage()
@@ -489,7 +561,12 @@ With the ActionGraphs created, you can validate in a ROS 2 sourced terminal that
 
     .. code-block:: bash
 
-        $ ros2 topic list
+        ros2 topic list
+
+    Expected output:
+
+    .. code-block:: text
+
         /cmd_vel
         /joint_states
         /odom
@@ -501,24 +578,35 @@ With the ActionGraphs created, you can validate in a ROS 2 sourced terminal that
 
 To visualize the full TF tree:
 
-#. Launch the ``robot_state_publisher`` which will take the joint states published by Isaac Sim and publish the transforms to the ``/tf`` and ``/tf_static`` topics.
+#. Make sure the robot description launch file from the **Generate the Robot Description** step is still running. If it was closed, relaunch it:
 
-    .. code-block:: bash
+    .. tab-set::
 
-        ros2 run robot_state_publisher robot_state_publisher --ros-args \
-            -p robot_description:="$(xacro $(ros2 pkg prefix isaacsim_clearpath_nav2)/share/isaacsim_clearpath_nav2/params/dd100/robot.urdf.xacro)"
+       .. tab-item:: Linux
+          :sync: linux
 
-#. Use ``view_frames`` from the ``tf2_tools`` package. 
+          .. code-block:: bash
+
+              ros2 launch clearpath_platform_description description.launch.py -- setup_path:=$ROBOT_PARAMS
+
+       .. tab-item:: Windows
+          :sync: windows
+
+          .. code-block:: powershell
+
+              ros2 launch clearpath_platform_description description.launch.py -- setup_path:=$env:ROBOT_PARAMS
+
+#. Use ``view_frames`` from the ``tf2_tools`` package to generate the TF tree PDF.
 
     .. code-block:: bash
 
         ros2 run tf2_tools view_frames
 
-This should generate the following PDF:
+    .. figure:: /images/tutorial_ros2_putting_it_all_together_tf_tree_view.png
+        :align: center
+        :alt: TF tree view generated from view_frames
 
-.. figure:: /images/tutorial_ros2_putting_it_all_together_tf_tree_view.png
-    :align: center
-    :alt: TF tree view generated from view_frames
+#. Once the TF tree PDF has been generated, you can close the robot description launch terminal.
 
 To run a test to verify that the ``cmd_vel`` ActionGraph is working properly:
 
@@ -537,27 +625,32 @@ Add Automatic Namespace Attributes
 
 Adding ``isaac:namespace`` attributes ensures topic names are descriptive and scales cleanly when multiple robots share a scene. For full details, see the :ref:`Automatic ROS 2 Namespace Generation <isaac_sim_app_tutorial_ros2_auto_namespace>` tutorial.
 
-For each prim listed below, add the ``isaac:namespace`` attribute:
+For each prim listed in the table below, add the ``isaac:namespace`` attribute:
 
 #. Select the prim.
-
-    ========================================================== ================
-    Prim                                                       Namespace Value
-    ========================================================== ================
-    ``/dd100/Geometry/base_link``                              ``dd100_0000``
-    ``/dd100/Geometry/base_link/chassis_link/sim_lidar``       ``sim_lidar``
-    ``/dd100/Geometry/base_link/chassis_link/sim_camera``      ``sim_camera``
-    ========================================================== ================
-
 #. Click **Add** in the Property panel.
 #. Navigate to **Isaac > Namespace**.
+#. Set the value to the corresponding **Namespace Value** from the table.
+
+========================================================== ================
+Prim                                                       Namespace Value
+========================================================== ================
+``/dd100/Geometry/base_link``                              ``dd100_0000``
+``/dd100/Geometry/base_link/chassis_link/sim_lidar``       ``sim_lidar``
+``/dd100/Geometry/base_link/chassis_link/sim_camera``      ``sim_camera``
+========================================================== ================
 
 
-Now, after selecting **Play**, the ``ros2 topic list`` should show the namespaced topics:
+Now, after selecting **Play**, run:
 
 .. code-block:: bash
 
-    $ ros2 topic list
+    ros2 topic list
+
+Expected output, with the namespaced topics:
+
+.. code-block:: text
+
     /dd100_0000/cmd_vel
     /dd100_0000/joint_states
     /dd100_0000/odom
@@ -662,11 +755,25 @@ Control the robot using the Nav2 stack. `Nav2 <https://docs.nav2.org/>`_ is a RO
 
 #. In a ROS-sourced terminal, launch the full navigation stack. This starts ``robot_state_publisher``, Nav2, and RViz in a single command. The Nav2 parameters are pre-configured in the ``isaacsim_clearpath_nav2`` package.
 
-    .. code-block:: bash
+    .. tab-set::
 
-        ros2 launch isaacsim_clearpath_nav2 clearpath_navigation.launch.py \
-            map:=/path/to/dd100_warehouse_navigation.yaml \
-            namespace:=dd100_0000
+       .. tab-item:: Linux
+          :sync: linux
+
+          .. code-block:: bash
+
+              ros2 launch isaacsim_clearpath_nav2 clearpath_navigation.launch.py \
+                  map:=/path/to/dd100_warehouse_navigation.yaml \
+                  namespace:=dd100_0000
+
+       .. tab-item:: Windows
+          :sync: windows
+
+          .. code-block:: powershell
+
+              ros2 launch isaacsim_clearpath_nav2 clearpath_navigation.launch.py `
+                  map:=C:\path\to\dd100_warehouse_navigation.yaml `
+                  namespace:=dd100_0000
 
 
 #. When ``rviz`` opens, set the robot's initial pose by clicking the **2D Pose Estimate** button at the top of the window and clicking to place the pose estimate at the robot's current location on the map.
