@@ -161,7 +161,11 @@ def save_sensor_overrides(
         composed_prim = stage.GetPrimAtPath(src_spec.path)
         is_camera = composed_prim.IsValid() and composed_prim.GetTypeName() == "Camera"
 
-        attr_names = [name for name in src_spec.properties if name in _CAMERA_CALIBRATION_ATTRS] if is_camera else []
+        # Sdf.PrimSpec.properties iterates PropertySpec objects, not name strings —
+        # use prop.name to compare against the calibration-attr name set.
+        attr_names = (
+            [prop.name for prop in src_spec.properties if prop.name in _CAMERA_CALIBRATION_ATTRS] if is_camera else []
+        )
 
         child_had_content = False
         for child in src_spec.nameChildren.values():
@@ -252,7 +256,7 @@ def apply_sensor_overrides(robot_prim_path: str, recording_path: str, stage: "Us
                 if attr.IsValid():
                     attr.Set(value)
                     carb.log_info(f"[sensor_overrides] set {spec_path}.{attr_name} = {value}")
-        for child_name in spec.nameChildren:
+        for child_name in spec.nameChildren.keys():
             _apply(spec_path.AppendChild(child_name))
 
     with Sdf.ChangeBlock():
