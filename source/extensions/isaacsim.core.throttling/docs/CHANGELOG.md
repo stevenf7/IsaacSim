@@ -1,4 +1,8 @@
 # Changelog
+## [2.3.2] - 2026-05-07
+### Fixed
+- Async rendering no longer re-enables on timeline pause/stop while Replicator is capturing with attached annotators, preventing skipped writer frames.
+
 ## [2.3.1] - 2026-03-26
 ### Changed
 - Updated Python bindings import paths for consistency
