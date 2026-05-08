@@ -17,6 +17,8 @@
 """Extension for optimizing Isaac Sim performance through automatic rendering and loop management based on timeline state."""
 
 
+import sys
+
 import carb
 import carb.eventdispatcher
 import omni.ext
@@ -75,6 +77,8 @@ class Extension(omni.ext.IExt):
         # Enable the developer throttling settings when extension starts
         carb.settings.get_settings().set("/app/show_developer_preference_section", True)
 
+        self._replicator_capture_warning_logged = False
+
         self.timeline_event_sub_play = carb.eventdispatcher.get_eventdispatcher().observe_event(
             event_name=omni.timeline.GLOBAL_EVENT_PLAY,
             on_event=self._on_play,
@@ -129,7 +133,7 @@ class Extension(omni.ext.IExt):
             if not timeline.is_playing():
                 # toggle async rendering
                 _settings = carb.settings.get_settings()
-                if _settings.get(ASYNC_TOGGLE_SETTING):
+                if _settings.get(ASYNC_TOGGLE_SETTING) and not self._is_replicator_capturing():
                     _settings.set("/app/asyncRendering", True)
                     _settings.set("/app/asyncRenderingLowLatency", True)
 
@@ -154,6 +158,34 @@ class Extension(omni.ext.IExt):
             on_event=self._on_frame_update,
             observer_name="IsaacSimThrottling._on_frame_update",
         )
+
+    def _is_replicator_capturing(self) -> bool:
+        """Return whether Replicator is active with attached annotators.
+
+        Replicator disables async rendering for synchronous captures. If the timeline is paused while Replicator stays
+        started, re-enabling async rendering here can cause writer frames to be skipped.
+        """
+        rep = sys.modules.get("omni.replicator.core")
+        if rep is None:
+            return False
+
+        try:
+            status = rep.orchestrator.get_status()
+            inactive_statuses = (rep.orchestrator.Status.STOPPED, rep.orchestrator.Status.STOPPING)
+            annotator_registry = getattr(rep, "AnnotatorRegistry", None)
+            if annotator_registry is None:
+                annotators_module = sys.modules.get("omni.replicator.core.scripts.annotators")
+                annotator_registry = getattr(annotators_module, "AnnotatorRegistry", None)
+            return (
+                status not in inactive_statuses
+                and annotator_registry is not None
+                and annotator_registry.has_attached_annotators()
+            )
+        except Exception as exc:
+            if not self._replicator_capture_warning_logged:
+                carb.log_warn(f"Unable to query Replicator capture status for async rendering throttling: {exc}")
+                self._replicator_capture_warning_logged = True
+            return False
 
     def _on_play(self, event: carb.eventdispatcher.Event) -> None:
         """Timeline play event callback - disable eco mode and gizmos during runtime.

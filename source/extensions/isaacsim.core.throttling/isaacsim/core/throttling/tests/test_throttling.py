@@ -15,10 +15,76 @@
 
 """Test for throttling."""
 
+import contextlib
+import sys
+import types
+
 import carb
 import carb.settings
 import omni.ext
 import omni.kit.test
+
+
+@contextlib.contextmanager
+def _fake_replicator_capture(status: str = "STARTED", has_attached_annotators: bool = True):
+    module_names = [
+        "omni.replicator",
+        "omni.replicator.core",
+        "omni.replicator.core.scripts",
+        "omni.replicator.core.scripts.annotators",
+    ]
+    missing = object()
+    previous_modules = {name: sys.modules.get(name, missing) for name in module_names}
+    previous_replicator_attr = getattr(omni, "replicator", missing)
+
+    class FakeStatus:
+        STOPPED = "STOPPED"
+        STOPPING = "STOPPING"
+        STARTED = "STARTED"
+
+    class FakeOrchestrator:
+        Status = FakeStatus
+
+        @staticmethod
+        def get_status():
+            return status
+
+    class FakeAnnotatorRegistry:
+        @staticmethod
+        def has_attached_annotators():
+            return has_attached_annotators
+
+    replicator_module = types.ModuleType("omni.replicator")
+    core_module = types.ModuleType("omni.replicator.core")
+    scripts_module = types.ModuleType("omni.replicator.core.scripts")
+    annotators_module = types.ModuleType("omni.replicator.core.scripts.annotators")
+
+    core_module.orchestrator = FakeOrchestrator()
+    core_module.AnnotatorRegistry = FakeAnnotatorRegistry
+    annotators_module.AnnotatorRegistry = FakeAnnotatorRegistry
+    replicator_module.core = core_module
+    core_module.scripts = scripts_module
+    scripts_module.annotators = annotators_module
+
+    sys.modules["omni.replicator"] = replicator_module
+    sys.modules["omni.replicator.core"] = core_module
+    sys.modules["omni.replicator.core.scripts"] = scripts_module
+    sys.modules["omni.replicator.core.scripts.annotators"] = annotators_module
+    setattr(omni, "replicator", replicator_module)
+
+    try:
+        yield
+    finally:
+        for name, module in previous_modules.items():
+            if module is missing:
+                sys.modules.pop(name, None)
+            else:
+                sys.modules[name] = module
+        if previous_replicator_attr is missing:
+            if hasattr(omni, "replicator"):
+                delattr(omni, "replicator")
+        else:
+            setattr(omni, "replicator", previous_replicator_attr)
 
 
 class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
@@ -125,3 +191,25 @@ class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
 
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(self._settings.get("/app/asyncRendering"))
+
+    async def test_async_rendering_stays_disabled_while_replicator_is_capturing(self) -> None:
+        """Test that timeline pause/stop does not re-enable async rendering during Replicator captures."""
+        for action_name in ("pause", "stop"):
+            with self.subTest(timeline_action=action_name):
+                self._settings.set("/exts/isaacsim.core.throttling/enable_async", True)
+                self._settings.set("/app/asyncRendering", False)
+                self._settings.set("/app/asyncRenderingLowLatency", False)
+
+                with _fake_replicator_capture(status="STARTED", has_attached_annotators=True):
+                    self._timeline.play()
+                    await omni.kit.app.get_app().next_update_async()
+                    self.assertFalse(self._settings.get("/app/asyncRendering"))
+
+                    getattr(self._timeline, action_name)()
+                    await omni.kit.app.get_app().next_update_async()
+
+                    for _ in range(12):
+                        await omni.kit.app.get_app().next_update_async()
+
+                self.assertFalse(self._settings.get("/app/asyncRendering"))
+                self.assertFalse(self._settings.get("/app/asyncRenderingLowLatency"))
