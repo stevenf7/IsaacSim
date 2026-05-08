@@ -1,4 +1,11 @@
 # Changelog
+## [1.5.2] - 2026-05-08
+### Fixed
+- `TextureRandomizer._apply_behavior` now skips the tick (with a warning) when no texture URLs are configured, instead of letting `numpy.random.Generator.choice` raise on an empty list.
+
+### Added
+- Test covering `TextureRandomizer._apply_behavior` with an empty `_texture_urls` list.
+
 ## [1.5.1] - 2026-04-28
 ### Fixed
 - `LightRandomizer._reset` now skips cached `inputs:intensity`/`inputs:color` values that were unauthored at setup time and logs a warning instead of writing `None` back to the prim.

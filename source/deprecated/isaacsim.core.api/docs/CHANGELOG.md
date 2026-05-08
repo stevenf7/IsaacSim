@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.2.9] - 2026-05-08
+### Fixed
+- Fix `Stacking.set_params` annotating `cube_position`, `cube_orientation`, and `stack_target_position` as `str | None` instead of `np.ndarray | None` (copy-paste from preceding `cube_name: str | None`)
+
 ## [5.2.8] - 2026-05-05
 ### Fixed
 - Raise a RuntimeError when the omni.kit.material.library dependency is not available

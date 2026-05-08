@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.3] - 2026-05-08
+### Fixed
+- Set explicit checkbox/label widths so checkboxes are reliably toggled via the Omniverse Kit API.
+
 ## [1.1.2] - 2026-05-01
 ### Changed
 - Updated UI tests to use shared menu interaction helpers for more robust CI execution.

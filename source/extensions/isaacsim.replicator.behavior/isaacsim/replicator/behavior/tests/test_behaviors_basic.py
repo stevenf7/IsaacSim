@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import importlib
 import os
+from unittest.mock import patch
 
 import carb
 import isaacsim.replicator.behavior.behaviors as behaviors_module
@@ -27,7 +28,7 @@ import omni.kit.commands
 import omni.kit.test
 import omni.timeline
 import omni.usd
-from isaacsim.replicator.behavior.behaviors import LightRandomizer
+from isaacsim.replicator.behavior.behaviors import LightRandomizer, TextureRandomizer
 from isaacsim.replicator.behavior.global_variables import EXPOSED_ATTR_NS
 from omni.behavior.scripting.core import BehaviorScript
 from pxr import Gf, Sdf
@@ -219,4 +220,29 @@ class TestBehaviorsBasic(omni.kit.test.AsyncTestCase):
         self.assertEqual(randomizer._valid_prims, [])
         self.assertEqual(randomizer._initial_attributes, {})
         self.assertEqual(randomizer._update_counter, 0)
+        self.assertIsNone(randomizer._rng)
+
+    async def test_texture_randomizer_apply_skips_when_no_textures_configured(self) -> None:
+        """Test that ``_apply_behavior`` is a no-op when no texture URLs are configured.
+
+        Regression test for the empty-list crash where ``numpy.random.Generator.choice``
+        raised on an empty texture list. The guard must log a warning and return early
+        without iterating ``_texture_materials`` or touching ``_rng``.
+        """
+        randomizer = TextureRandomizer.__new__(TextureRandomizer)
+        randomizer._texture_urls = []
+
+        # If the guard regresses, the loop below would iterate ``_texture_materials`` and
+        # call ``self._rng.choice(...)``; ``_rng = None`` would surface that as AttributeError.
+        sentinel_material = object()
+        randomizer._texture_materials = [sentinel_material]
+        randomizer._rng = None
+
+        # ``prim_path`` is provided by the ``BehaviorScript`` base class at runtime;
+        # patch it at the class level so the warning's f-string is well-formed.
+        with patch.object(TextureRandomizer, "prim_path", "/World/UnusedRandomizerPrim", create=True):
+            randomizer._apply_behavior()
+
+        self.assertEqual(randomizer._texture_urls, [])
+        self.assertEqual(randomizer._texture_materials, [sentinel_material])
         self.assertIsNone(randomizer._rng)

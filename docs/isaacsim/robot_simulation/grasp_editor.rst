@@ -39,8 +39,8 @@ file stores a list of grasps for a specific gripper/object pair.  The file follo
     format: isaac_grasp
     format_version: 1.0
 
-    object_frame_link: /World/mug
-    gripper_frame_link: /World/panda_hand
+    object_frame: /World/mug
+    gripper_frame: /World/panda_hand
 
     grasps:
       grasp_0:
@@ -59,9 +59,9 @@ elsewhere for visualization and validation.
 A grasp is defined by the relative position of the gripper and object.  In order for this relative
 position to have meaning, a representative frame must be chosen for the gripper and object positions.
 The `Grasp Editor` writes the USD paths of these representative frames to an `isaac_grasp` file
-under the `object_frame_link` and `gripper_frame_link` fields.  Because `isaac_grasp` files may be
+under the `object_frame` and `gripper_frame` fields.  Because `isaac_grasp` files may be
 authored externally (possibly without going through USD at all), the `Grasp Editor` ignores the
-`object_frame_link` and `gripper_frame_link` fields when importing grasps.  This makes it the user's
+`object_frame` and `gripper_frame` fields when importing grasps.  This makes it the user's
 responsibility to identify the correct USD frames when using the `Grasp Editor` for importing.
 
 Each grasp in an `isaac_grasp` file has a unique name (e.g. `grasp_0`).  The fields for a named

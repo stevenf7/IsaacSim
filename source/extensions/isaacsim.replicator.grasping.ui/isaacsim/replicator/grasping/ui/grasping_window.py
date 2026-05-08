@@ -415,9 +415,12 @@ class GraspingWindow(ui.Window):
                                     ui.Spacer(width=15)
                                     ui.Label(
                                         "Include/Exclude",
+                                        width=200,
                                         tooltip="Include/exclude the joint in the grasp phases (non-drive or mimic joints cannot be included)",
                                     )
-                                    include_joint = ui.CheckBox(enabled=joint_data["is_valid_grasp_joint"])
+                                    include_joint = ui.CheckBox(
+                                        width=10, height=0, enabled=joint_data["is_valid_grasp_joint"]
+                                    )
                                     include_joint.model.set_value(joint_data["include"])
                                     include_joint.model.add_value_changed_fn(
                                         lambda model, jd=joint_data: self._on_include_joint_in_grasp_changed(model, jd)
@@ -941,8 +944,8 @@ class GraspingWindow(ui.Window):
                 # Verbose checkbox
                 with ui.HStack(spacing=5):
                     ui.Spacer(width=10)
-                    ui.Label("Verbose Logging:", tooltip="Enable detailed logging during grasp generation.")
-                    verbose_check = ui.CheckBox()
+                    ui.Label("Verbose Logging:", width=200, tooltip="Enable detailed logging during grasp generation.")
+                    verbose_check = ui.CheckBox(width=10, height=0)
                     verbose_check.model.set_value(self._grasping_manager.sampler_config.get("verbose", False))
                     verbose_check.model.add_value_changed_fn(self._on_sampler_verbose_changed)
 
@@ -965,8 +968,10 @@ class GraspingWindow(ui.Window):
             with ui.VStack(spacing=5):
                 with ui.HStack(spacing=5):
                     ui.Spacer(width=10)
-                    ui.Label("World Frame:")
-                    vis_checkbox = ui.CheckBox(tooltip="Visualize grasp poses in world or local frame")
+                    ui.Label("World Frame:", width=200)
+                    vis_checkbox = ui.CheckBox(
+                        width=10, height=0, tooltip="Visualize grasp poses in world or local frame"
+                    )
                     vis_checkbox.model.set_value(self._draw_poses_in_world_frame)
                     vis_checkbox.model.add_value_changed_fn(self._on_visualize_frame_checkbox_changed)
                 with ui.HStack(spacing=5):
@@ -1012,8 +1017,8 @@ class GraspingWindow(ui.Window):
             with ui.VStack(spacing=5):
                 with ui.HStack(spacing=5):
                     ui.Spacer(width=10)
-                    ui.Label("World Frame", tooltip="Draw trimesh in world or local frame")
-                    world_frame_checkbox = ui.CheckBox()
+                    ui.Label("World Frame", width=200, tooltip="Draw trimesh in world or local frame")
+                    world_frame_checkbox = ui.CheckBox(width=10, height=0)
                     world_frame_checkbox.model.set_value(self._draw_trimesh_world_frame)
 
                     def on_world_frame_checkbox_changed(model: object) -> None:
@@ -1042,10 +1047,11 @@ class GraspingWindow(ui.Window):
                     ui.Spacer(width=10)
                     ui.Label(
                         "Render / Update Kit",
+                        width=200,
                         tooltip="If checked, render/update kit after each simulation step."
                         "If unchecked, the simulation will run in the background, rendering/updating after each simulation phase",
                     )
-                    render_simulation = ui.CheckBox()
+                    render_simulation = ui.CheckBox(width=10, height=0)
                     render_simulation.model.set_value(self._render_simulation)
                     render_simulation.model.add_value_changed_fn(self._on_render_simulation_changed)
 
@@ -1054,6 +1060,7 @@ class GraspingWindow(ui.Window):
 
                     ui.Label(
                         "Simulate Using Timeline:",
+                        width=200,
                         tooltip=(
                             "Check to simulate by advancing the timeline instead of direct physics scene simulation steps.\\n\\n"
                             "If checked:\\n"
@@ -1066,7 +1073,7 @@ class GraspingWindow(ui.Window):
                             "- The 'Isolate Simulation' setting is ignored."
                         ),
                     )
-                    timeline_checkbox = ui.CheckBox()
+                    timeline_checkbox = ui.CheckBox(width=10, height=0)
                     timeline_checkbox.model.set_value(self._simulate_using_timeline)
                     timeline_checkbox.model.add_value_changed_fn(self._on_simulate_using_timeline_changed)
 
@@ -1126,10 +1133,11 @@ class GraspingWindow(ui.Window):
                     ui.Spacer(width=15)
                     ui.Label(
                         "Overwrite Results",
+                        width=200,
                         tooltip="If checked, existing result files (capture_N.yaml) in the output path will be overwritten during the workflow."
                         " If unchecked, the workflow will start numbering from the next available index.",
                     )
-                    overwrite_results_checkbox = ui.CheckBox()
+                    overwrite_results_checkbox = ui.CheckBox(width=10, height=0)
                     overwrite_results_checkbox.model.set_value(self._overwrite_results)
                     overwrite_results_checkbox.model.add_value_changed_fn(self._on_overwrite_results_changed)
 
@@ -1180,9 +1188,10 @@ class GraspingWindow(ui.Window):
                     ui.Spacer(width=15)
                     ui.Label(
                         "Overwrite Existing File",
+                        width=200,
                         tooltip="If checked, saving will overwrite the file if it already exists at the specified path.",
                     )
-                    overwrite_checkbox = ui.CheckBox()
+                    overwrite_checkbox = ui.CheckBox(width=10, height=0)
                     overwrite_checkbox.model.set_value(self._overwrite_config)
                     overwrite_checkbox.model.add_value_changed_fn(self._on_overwrite_config_changed)
 
@@ -1203,8 +1212,8 @@ class GraspingWindow(ui.Window):
                 for field_key, label in self._config_fields_labels.items():
                     with ui.HStack(spacing=5):
                         ui.Spacer(width=10)
-                        ui.Label(label)
-                        checkbox = ui.CheckBox()
+                        ui.Label(label, width=200)
+                        checkbox = ui.CheckBox(width=10, height=0)
                         # Use the field_key (e.g., "gripper") to get the current state
                         checkbox.model.set_value(self._config_fields[field_key])
                         checkbox.model.add_value_changed_fn(
