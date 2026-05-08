@@ -65,7 +65,7 @@ Building the Graph in the Editor
 The recommended way to author the pipeline is the |omnigraph_short| editor.
 To build the graph:
 
-1. Open **Window > Visual Scripting > Action Graph** and click **New Action
+1. Open **Window > Graph Editors > Action Graph** and click **New Action
    Graph**.
 2. Add the three nodes listed above. To find them, search for ``RTSP``,
    ``Isaac Create Render Product``, and ``On Playback Tick``.
