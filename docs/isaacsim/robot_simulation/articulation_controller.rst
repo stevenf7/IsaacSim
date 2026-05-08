@@ -13,6 +13,17 @@
 Articulation Controller
 ==================================
 
+.. |link_Articulation| raw:: html
+
+   <a href="../py/source/extensions/isaacsim.core.experimental.prims/docs/index.html#isaacsim.core.experimental.prims.Articulation" target="_blank">Articulation</a>
+
+.. admonition:: Deprecated
+   :class: warning
+
+   This page documents the legacy ``ArticulationController`` / ``SingleArticulation`` / ``ArticulationAction`` Python API, which has been deprecated. For new development, use the :py:class:`Articulation <isaacsim.core.experimental.prims.Articulation>` class from ``isaacsim.core.experimental.prims``. See :ref:`Robot Simulation Snippets <isaac_robot_simulation_how_to>` for end-to-end examples covering DOF position, velocity, and effort control, and the |link_Articulation| API reference for the full method list.
+
+   **The OmniGraph node at the end of this page is still fully supported**, and wraps the updated |link_Articulation| class.
+
 Overview
 =================
 
