@@ -11,8 +11,10 @@
 Lula RRT
 =========
 
-.. note::
-   For new development, consider using the newer :doc:`cuMotion Integration <../../cumotion/index>`, which is built on the new experimental motion generation API and provides improved interfaces and additional features over Lula.
+.. admonition:: Deprecated
+   :class: warning
+
+   For new development, consider using the newer :doc:`Robot Motion (Experimental) <../../robot_motion_experimental/index>` API, which provides improved interfaces and additional features over Lula.
 
 We provide a **Lula** implementation of the classic Randomly-Exploring Random Tree (RRT) algorithm to fulfill the `PathPlanner` interface.  Specifically, the c-space RRT is using RRT-Connect based on [2]_, and the task-space RRT is using Jacobian transpose RRT based on [3]_.  The RRT implementation does not  support orientation targets.
 

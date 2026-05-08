@@ -13,8 +13,10 @@
 Motion Generation Extension API Documentation
 ==============================================
 
-.. note::
-   For new development, consider using the newer experimental motion generation API in :doc:`Motion Generation (Experimental) <../../motion_generation/index>`, which provides improved interfaces and additional features.
+.. admonition:: Deprecated
+   :class: warning
+
+   For new development, consider using the newer :doc:`Robot Motion (Experimental) <../../robot_motion_experimental/index>` API, which provides improved interfaces and additional features.
 
 .. _isaac_sim_motion_generation_about_rmp:
 

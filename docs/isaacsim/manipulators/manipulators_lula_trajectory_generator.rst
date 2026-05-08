@@ -4,8 +4,10 @@
 Lula Trajectory Generator
 ============================================
 
-.. note::
-   For new development, consider using the newer :doc:`cuMotion Integration <../../cumotion/index>`, which is built on the new experimental motion generation API and provides improved interfaces and additional features over Lula.
+.. admonition:: Deprecated
+   :class: warning
+
+   For new development, consider using the newer :doc:`Robot Motion (Experimental) <../../robot_motion_experimental/index>` API, which provides improved interfaces and additional features over Lula.
 
 This tutorial explores how the :ref:`isaac_sim_lula_trajectory_generator` in the :ref:`isaac_sim_motion_generation` extension can be used to create both task-space and c-space trajectories that can be easily applied to a simulated robot ``Articulation``.
 
