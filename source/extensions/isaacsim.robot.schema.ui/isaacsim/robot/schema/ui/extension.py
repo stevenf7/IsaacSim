@@ -53,7 +53,7 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
     MENU_GROUP = "Window"
     """The menu group where the Robot Hierarchy window option is located."""
 
-    def on_startup(self, extension_id: str):
+    def on_startup(self, extension_id: str) -> None:
         """Initialize the extension when loaded.
 
         Registers the window, menu entry, viewport scene, deactivate column,
@@ -113,7 +113,7 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
             for event in (omni.usd.StageEventType.OPENED, omni.usd.StageEventType.CLOSING)
         ]
 
-    def _on_stage_cleared(self):
+    def _on_stage_cleared(self) -> None:
         """Clear the masking layer when a new stage is opened or the current one closes."""
         if self._masking_ops:
             self._masking_ops.clear_all()
@@ -141,7 +141,7 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
             return ""
         return str(Path(ext_path) / "data" / "icons")
 
-    def _register_icon_override(self):
+    def _register_icon_override(self) -> None:
         """Register a per-prim icon override callback with StageIcons.
 
         The callback checks the ``isaacsim:deactivated`` customData key on
@@ -179,7 +179,7 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
             return self._xform_disabled_icon
         return None
 
-    def _register_deactivate_column(self):
+    def _register_deactivate_column(self) -> None:
         """Register the Deactivate and Bypass column delegates.
 
         The subscription objects must be held alive; dropping them unregisters
@@ -197,7 +197,7 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
             "Anchor", partial(AnchorColumnDelegate, icons_dir=icons_dir)
         )
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up when the extension is unloaded.
 
         Cleans up the window, menu entry, viewport scene, connection singleton
@@ -234,7 +234,7 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
         self._bypass_column_delegate_sub = None
         self._anchor_column_delegate_sub = None
 
-    def _on_visibility_changed(self, visible: bool):
+    def _on_visibility_changed(self, visible: bool) -> None:
         """Handle window visibility changes.
 
         Keeps the window instance when hidden so it can be reused with cached
@@ -245,7 +245,7 @@ class SchemaUIExtension(omni.ext.IExt, MenuHelperExtension):
         """
         self.menu_refresh()
 
-    def show_window(self, value: bool):
+    def show_window(self, value: bool) -> None:
         """Show or hide the Robot Inspector window.
 
         Reuses the existing window when showing again so cached hierarchy

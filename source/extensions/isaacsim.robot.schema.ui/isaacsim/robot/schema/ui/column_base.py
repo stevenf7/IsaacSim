@@ -141,7 +141,7 @@ class MaskingToggleColumnDelegate(AbstractStageColumnDelegate):
                 ui.Spacer()
             ui.Spacer()
 
-    async def build_widget(self, item: StageColumnItem | None, **kwargs) -> None:
+    async def build_widget(self, item: StageColumnItem | None, **kwargs: Any) -> None:
         """Build the cell widget (icon with toggle) for a stage item.
 
         Args:
