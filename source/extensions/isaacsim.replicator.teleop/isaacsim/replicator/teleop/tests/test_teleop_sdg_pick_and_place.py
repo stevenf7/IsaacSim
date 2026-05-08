@@ -701,19 +701,12 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
     # Capture (BasicWriter on disabled-by-default render products)
     # -----------------------------------------------------------------------
 
-    def setup_sdg_capture(
+    def setup_sdg_render_products(
         stage,
-        output_dir: Path,
         camera_paths: list[str],
         resolution: tuple[int, int],
     ):
-        """Build a single BasicWriter + per-camera render products for SDG captures.
-
-        The same writer is reused across the live and replay phases via
-        ``retarget_sdg_capture_output``; keeping the orchestrator in
-        ``Status.STARTED`` between phases avoids the multi-second asset-load
-        wait that ``rep.orchestrator._initialize_async`` pays on its first run.
-        """
+        """Build per-camera render products for SDG captures."""
         valid_camera_paths: list[str] = []
         for camera_path in camera_paths:
             camera_prim = stage.GetPrimAtPath(camera_path)
@@ -727,12 +720,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
 
         if not valid_camera_paths:
             print("[TeleopDemo][SDG]   No valid capture cameras, SDG capture disabled")
-            return None, []
-
-        backend = rep.backends.get("DiskBackend")
-        backend.initialize(output_dir=str(output_dir))
-        writer = rep.writers.get("BasicWriter")
-        writer.initialize(backend=backend, rgb=True)
+            return []
 
         render_products = []
         for camera_path in valid_camera_paths:
@@ -745,31 +733,8 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
             )
             render_product.hydra_texture.set_updates_enabled(False)
             render_products.append(render_product)
-        writer.attach(render_products)
-        print(f"[TeleopDemo][SDG]   Output: {output_dir}")
         print(f"[TeleopDemo][SDG]   Render products: {len(render_products)} at {resolution}")
-        return writer, render_products
-
-    async def retarget_sdg_capture_output(
-        writer,
-        new_output_dir: Path,
-        reset_frame_counter: bool = True,
-    ) -> None:
-        """Retarget the writer's backend so subsequent captures land in ``new_output_dir``.
-
-        Pending writes are drained first so live frames cannot leak into the
-        replay folder. Render-product / writer attachments stay intact, which
-        keeps the Replicator orchestrator in ``Status.STARTED``: the first
-        replay capture skips ``_initialize_async`` and renders immediately.
-        """
-        await rep.orchestrator.wait_until_complete_async()
-        new_backend = rep.backends.get("DiskBackend")
-        new_backend.initialize(output_dir=str(new_output_dir))
-        writer._backend = new_backend
-        writer.backend = new_backend
-        if reset_frame_counter:
-            writer._frame_id = 0
-        print(f"[TeleopDemo][SDG]   Output retargeted: {new_output_dir}")
+        return render_products
 
     async def capture_live_sdg_action_image(
         action_name: str,
@@ -953,11 +918,11 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
     teleop_manager: TeleopManager | None = None
     recorder = None
     episode_active = False
-    # The same writer + render products are reused for both the live and the
-    # replay phases; only the backend output directory is swapped between them
-    # via retarget_sdg_capture_output. sdg_capture_index resets between phases
-    # so live and replay images share the same 1..N numbering scheme.
-    sdg_capture_writer = None
+    # Live and replay phases use separate writers attached to the same render
+    # products. sdg_capture_index resets between phases so live and replay
+    # images share the same 1..N numbering scheme.
+    writer_live = None
+    writer_replay = None
     sdg_capture_render_products: list = []
     sdg_capture_index = 0
     replayer = None
@@ -969,9 +934,6 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
     print(f"[TeleopDemo]   Stage: {stage_url}")
     print(f"[TeleopDemo]   Profile: {profile_name}")
     print(f"[TeleopDemo]   Output folder: {scenario_output_dir}")
-    if capture_sdg:
-        rep.orchestrator.set_capture_on_play(False)
-        print("[TeleopDemo][SDG]   Replicator capture-on-play disabled")
 
     try:
         print("[TeleopDemo][Setup] Open stage")
@@ -985,6 +947,9 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
         if not opened or stage is None:
             print(f"[TeleopDemo][Setup]   Failed to open stage: {stage_path}, exiting")
             return
+        if capture_sdg:
+            rep.orchestrator.set_capture_on_play(False)
+            print("[TeleopDemo][SDG]   Replicator capture-on-play disabled")
 
         print("[TeleopDemo][Setup] Create teleop controllers")
         markers_manager = MarkersManager()
@@ -1031,12 +996,18 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
             return
 
         if capture_sdg:
-            sdg_capture_writer, sdg_capture_render_products = setup_sdg_capture(
+            sdg_capture_render_products = setup_sdg_render_products(
                 stage,
-                scenario_output_dir / "sdg_live",
                 camera_paths,
                 capture_resolution,
             )
+            if sdg_capture_render_products:
+                live_backend = rep.backends.get("DiskBackend")
+                live_backend.initialize(output_dir=str(scenario_output_dir / "sdg_live"))
+                writer_live = rep.writers.get("BasicWriter")
+                writer_live.initialize(backend=live_backend, rgb=True)
+                writer_live.attach(sdg_capture_render_products)
+                print(f"[TeleopDemo][SDG]   Output: {scenario_output_dir / 'sdg_live'}")
 
         episode_session_path = None
         episode_index = None
@@ -1103,7 +1074,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
         sdg_capture_index = await capture_live_sdg_action_image(
             "reach",
             recorder,
-            sdg_capture_writer,
+            writer_live,
             sdg_capture_render_products,
             sdg_capture_index,
             capture_rt_subframes,
@@ -1128,7 +1099,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
             sdg_capture_index = await capture_live_sdg_action_image(
                 "locomotion",
                 recorder,
-                sdg_capture_writer,
+                writer_live,
                 sdg_capture_render_products,
                 sdg_capture_index,
                 capture_rt_subframes,
@@ -1142,7 +1113,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
         sdg_capture_index = await capture_live_sdg_action_image(
             "grasp",
             recorder,
-            sdg_capture_writer,
+            writer_live,
             sdg_capture_render_products,
             sdg_capture_index,
             capture_rt_subframes,
@@ -1165,7 +1136,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
         sdg_capture_index = await capture_live_sdg_action_image(
             "lift",
             recorder,
-            sdg_capture_writer,
+            writer_live,
             sdg_capture_render_products,
             sdg_capture_index,
             capture_rt_subframes,
@@ -1189,18 +1160,20 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
         sdg_capture_index = await capture_live_sdg_action_image(
             "drop",
             recorder,
-            sdg_capture_writer,
+            writer_live,
             sdg_capture_render_products,
             sdg_capture_index,
             capture_rt_subframes,
             replay_sdg_capture_points,
         )
+        if writer_live is not None:
+            await rep.orchestrator.wait_until_complete_async()
+            writer_live.detach()
+            print("[TeleopDemo][SDG]   Live writer detached")
+            writer_live = None
 
         # End the live phase explicitly so the recorder / timeline / teleop
-        # session are released before the replay phase. The SDG writer and
-        # render products stay alive: we only retarget the backend to the
-        # replay folder, which keeps Replicator's orchestrator in
-        # Status.STARTED so the first replay capture skips _initialize_async.
+        # session are released before the replay phase.
         if recorder is not None:
             recorder.end_episode(success=True, metadata={"scenario": scenario_name})
             episode_active = False
@@ -1233,8 +1206,13 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
             # Replay revisits live SDG action endpoints; it does not produce
             # one image per replay frame.
             replay_sdg_captures_by_frame: dict[int, list[SdgReplayCapture]] = {}
-            if capture_sdg and replay_sdg_capture_points and sdg_capture_writer is not None:
-                await retarget_sdg_capture_output(sdg_capture_writer, scenario_output_dir / "sdg_replay")
+            if capture_sdg and replay_sdg_capture_points and sdg_capture_render_products:
+                replay_backend = rep.backends.get("DiskBackend")
+                replay_backend.initialize(output_dir=str(scenario_output_dir / "sdg_replay"))
+                writer_replay = rep.writers.get("BasicWriter")
+                writer_replay.initialize(backend=replay_backend, rgb=True)
+                writer_replay.attach(sdg_capture_render_products)
+                print(f"[TeleopDemo][SDG]   Output: {scenario_output_dir / 'sdg_replay'}")
                 sdg_capture_index = 0
                 for capture in replay_sdg_capture_points:
                     replay_sdg_captures_by_frame.setdefault(capture.recorded_frame_index, []).append(capture)
@@ -1258,7 +1236,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
                     for capture_point in replay_sdg_captures_by_frame.get(replay_frame_index, []):
                         sdg_capture_index = await capture_replayed_sdg_action_image(
                             capture_point,
-                            sdg_capture_writer,
+                            writer_replay,
                             sdg_capture_render_products,
                             sdg_capture_index,
                             capture_rt_subframes,
@@ -1273,6 +1251,14 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
                 print("[TeleopDemo][Replay]   Reverted to first recorded frame")
             except Exception as exc:
                 print(f"[TeleopDemo][Replay]   Skipped: {exc}")
+        if writer_replay is not None:
+            await rep.orchestrator.wait_until_complete_async()
+            writer_replay.detach()
+            print("[TeleopDemo][SDG]   Replay writer detached")
+            writer_replay = None
+        for render_product in sdg_capture_render_products:
+            render_product.destroy()
+        sdg_capture_render_products = []
     except Exception as exc:
         print(f"[TeleopDemo][Cleanup]   Aborting scenario '{scenario_name}': {exc}")
     finally:
@@ -1285,7 +1271,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
             episode_active=episode_active,
             timeline=timeline,
             timeline_started=timeline_started,
-            sdg_capture_writer=sdg_capture_writer,
+            sdg_capture_writer=writer_replay or writer_live,
             sdg_capture_render_products=sdg_capture_render_products,
             replayer=replayer,
         )
@@ -1398,7 +1384,7 @@ class TestTeleopSDGPickAndPlace(omni.kit.test.AsyncTestCase):
                     "drop_target_path": "/World/teleop_env/teleop_tables/TableMain/SM_Crate_A07_Yellow_01_physics",
                     "tcp_offset_world": (-0.15, 0.0, 0.0),
                     "start_offset": (0.0, 0.0, 0.5),
-                    "reach_offset": (0.0, 0.0, 0.0),
+                    "reach_offset": (-0.5, 0.0, 0.0),
                     "pre_grasp_offset": (0.0, 0.0, 0.0),
                     "lift_offset": (0.0, 0.0, 0.5),
                     "drop_offset": (0.0, 0.0, 0.5),

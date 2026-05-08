@@ -63,7 +63,7 @@ ik:
       pink_lm_damping: 1.0
       ee_rot_x_deg: 180
       ee_rot_y_deg: 0
-      ee_rot_z_deg: -90
+      ee_rot_z_deg: 90
   right:
     enabled: true
     settings:
