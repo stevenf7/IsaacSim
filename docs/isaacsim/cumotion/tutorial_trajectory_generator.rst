@@ -18,7 +18,7 @@ By the end of this tutorial, you'll understand:
 - Review the :ref:`Robot Configuration tutorial <isaac_sim_cumotion_tutorial_robot_configuration>` to understand how to load robot configurations.
 - Review the :doc:`Trajectory Planning and Execution <../motion_generation/trajectory_planning>` tutorial to understand the Trajectory interface.
 
-To follow along with the tutorial, you can search and enable the **cuMotion Examples** extension within your running |isaac-sim_short| instance.
+To follow along with the tutorial, run your |isaac-sim_short| instance. Then open **Window > Extensions**, search for **cuMotion Examples** (``isaacsim.robot_motion.cumotion.examples``), and enable it. If you cannot find it, remove ``@feature`` from the Extensions search bar and search again.
 Within the ``isaacsim.robot_motion.cumotion.examples`` extension, there is an example of the :class:`TrajectoryGenerator` being used to generate trajectories
 from C-space waypoints and path specifications.
 
