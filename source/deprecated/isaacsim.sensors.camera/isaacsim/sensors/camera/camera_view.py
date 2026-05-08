@@ -138,10 +138,10 @@ class CameraView(XFormPrim):
             - ``uint32``
         * - ``"instance_segmentation_fast"``
             - 1
-            - ``int32``
+            - ``uint32``
         * - ``"instance_id_segmentation_fast"``
             - 1
-            - ``int32``
+            - ``uint32``
 
     Args:
         prim_paths_expr: Prim paths regex to encapsulate all prims that match it.

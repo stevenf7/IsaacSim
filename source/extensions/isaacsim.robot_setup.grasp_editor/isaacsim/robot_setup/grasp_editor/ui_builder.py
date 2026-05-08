@@ -101,6 +101,11 @@ class UIBuilder:
         self._test_state_btn = None
 
         self._last_grasp_test_results = None
+        # When True, on_simulation_stop_play() ignores the timeline stop event.
+        # Used by extension-internal stops (e.g. Skip Simulation export) so
+        # _last_grasp_test_results and _data_writer survive long enough to be
+        # written to disk by export_to_file().
+        self._suppress_stop_reset = False
 
     ###################################################################################
     #           The Functions Below Are Called Automatically By extension.py
@@ -135,8 +140,14 @@ class UIBuilder:
         self._gripper_selection_dropdown.repopulate()
 
     def on_simulation_stop_play(self):
-        """Callback for when simulation is stopped or paused."""
-        if self._timeline.is_stopped():
+        """Callback for when simulation is stopped or paused.
+
+        When ``_suppress_stop_reset`` is set, the stop event is ignored so that
+        extension-internal timeline stops (e.g. the Skip Simulation export path)
+        do not clobber export state such as ``_last_grasp_test_results`` and
+        ``_data_writer``.
+        """
+        if self._timeline.is_stopped() and not self._suppress_stop_reset:
             self.reset_extension()
 
     def cleanup(self):
@@ -904,6 +915,7 @@ class UIBuilder:
         self._data_writer = None
         self._last_grasp_test_results = None
         self._joint_settings_ui_state = None
+        self._suppress_stop_reset = False
 
         self._gripper_selection_dropdown.enabled = True
         self._rb_conversion_stringfield.enabled = True
@@ -1057,36 +1069,50 @@ class UIBuilder:
         """Export the current gripper state as a grasp without running physics simulation.
 
         Sets up the grasp test results using the current joint positions as both open and closed
-        positions, then prepares the grasp for export with maximum confidence.
+        positions, then prepares the grasp for export with maximum confidence. Any internal
+        failure is reported in the status text instead of failing silently, and export state
+        is preserved across timeline stop events triggered while preparing the grasp.
         """
-        x = self.get_current_grasp_test_settings()
-        rel_trans, rel_quat = self._grasp_tester.compute_relative_pose(
-            x.rigid_body_pose_frame, x.articulation_pose_frame
-        )
+        # Preserve _last_grasp_test_results / _data_writer if a timeline stop fires
+        # as a side effect of preparing the export (e.g. articulation queries).
+        self._suppress_stop_reset = True
+        try:
+            x = self.get_current_grasp_test_settings()
+            rel_trans, rel_quat = self._grasp_tester.compute_relative_pose(
+                x.rigid_body_pose_frame, x.articulation_pose_frame
+            )
 
-        # Take the current position of the gripper joints on the stage to be the grasp under export
-        dof_indices = self._articulation.get_dof_indices(x.active_joints)
-        stable_positions = self._articulation.get_dof_positions(dof_indices=dof_indices).numpy()[0]
+            # Take the current position of the gripper joints on the stage to be the grasp under export
+            dof_indices = self._articulation.get_dof_indices(x.active_joints)
+            stable_positions = self._articulation.get_dof_positions(dof_indices=dof_indices).numpy()[0]
 
-        # Set the pre_grasp position to be the same as stable_positions.  I.e. this grasp has no opinion
-        # on which way the gripper closes because there is not enough information.
-        x.active_joint_open_positions = stable_positions
+            # Set the pre_grasp position to be the same as stable_positions.  I.e. this grasp has no opinion
+            # on which way the gripper closes because there is not enough information.
+            x.active_joint_open_positions = stable_positions
 
-        # Assume that anybody doing this is confident in what they are doing.
-        suggested_confidence = 1.0
+            # Assume that anybody doing this is confident in what they are doing.
+            suggested_confidence = 1.0
 
-        self._last_grasp_test_results = GraspTestResults(
-            x, rel_trans, rel_quat, stable_positions, suggested_confidence, True
-        )
+            self._last_grasp_test_results = GraspTestResults(
+                x, rel_trans, rel_quat, stable_positions, suggested_confidence, True
+            )
 
-        self.ready_to_export_grasp(
-            suggested_confidence,
-            "Ready To Export Grasp.  Because you have opted to skip simulation, it is not "
-            + "known which way the gripper closes.  The current state of the gripper "
-            + "will be used as the value of cspace_position and pregrasp_cspace_position "
-            + "in the exported file.  To use this with a motion generation algorithm, it will "
-            + "be necessary to change one of these fields for this grasp in the export file.",
-        )
+            self.ready_to_export_grasp(
+                suggested_confidence,
+                "Ready To Export Grasp.  Because you have opted to skip simulation, it is not "
+                + "known which way the gripper closes.  The current state of the gripper "
+                + "will be used as the value of cspace_position and pregrasp_cspace_position "
+                + "in the exported file.  To use this with a motion generation algorithm, it will "
+                + "be necessary to change one of these fields for this grasp in the export file.",
+            )
+        except Exception as e:
+            carb.log_error(f"Skip Simulation export preparation failed: {e}")
+            self._last_grasp_test_results = None
+            if self._status_text_block is not None:
+                self._status_text_block.set_text(f"Failed to prepare grasp for export: {e}")
+                adjust_text_block_num_lines(self._status_text_block)
+        finally:
+            self._suppress_stop_reset = False
 
     #################################### Export To File ###########################################
 
@@ -1112,13 +1138,33 @@ class UIBuilder:
         """Export the last grasp test results to the specified file path.
 
         Writes the grasp data with the configured confidence value to the YAML file and
-        updates the export status message.
+        updates the export status message. Reports a user-visible error in the export
+        text block if either the prepared grasp or the data writer is missing, or if the
+        write itself fails, instead of failing silently.
         """
-        # Export self._last_grasp_test_results
         export_path = self._export_path.get_value()
-        self._data_writer.write_grasp_to_file(
-            self._last_grasp_test_results, self._confidence_field.get_value(), export_path
-        )
+
+        if self._data_writer is None or self._last_grasp_test_results is None:
+            msg = (
+                "Cannot export: grasp state was reset before export completed. "
+                "Re-run FINALIZE and Skip Simulation (or Simulate Grasp), then click Export again."
+            )
+            carb.log_error(msg)
+            self._export_txt.set_text(msg)
+            adjust_text_block_num_lines(self._export_txt)
+            return
+
+        try:
+            self._data_writer.write_grasp_to_file(
+                self._last_grasp_test_results, self._confidence_field.get_value(), export_path
+            )
+        except Exception as e:
+            msg = f"Failed to export grasp to '{export_path}': {e}"
+            carb.log_error(msg)
+            self._export_txt.set_text(msg)
+            adjust_text_block_num_lines(self._export_txt)
+            return
+
         self._export_btn.enabled = False
         self._export_txt.set_text(f"Successfully exported grasp to file {export_path}")
         self._export_txt.set_num_lines(2)

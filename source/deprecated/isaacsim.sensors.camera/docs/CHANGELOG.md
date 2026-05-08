@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.6] - 2026-05-08
+### Fixed
+- Fix `CameraView` docstring listing `int32` for `instance_segmentation_fast` and `instance_id_segmentation_fast`; runtime dtype is `uint32` (matches `ANNOTATOR_SPEC` and `semantic_segmentation`)
+
 ## [1.7.5] - 2026-04-21
 ### Changed
 - Updated deprecation warning and Overview.md to reference `isaacsim.sensors.experimental.rtx` (was `isaacsim.sensors.experimental.camera`)

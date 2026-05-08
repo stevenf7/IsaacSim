@@ -224,6 +224,11 @@ class TextureRandomizer(BehaviorScript):
         self._rng = None
 
     def _apply_behavior(self) -> None:
+        # Skip the tick if no textures are configured to avoid numpy.random.Generator.choice raising on an empty list
+        if not self._texture_urls:
+            carb.log_warn(f"[{self.prim_path}] No texture URLs configured; skipping randomization tick.")
+            return
+
         # Randomize the textures and parameters for each material
         for mat in self._texture_materials:
             shader = UsdShade.Shader(omni.usd.get_shader_from_material(mat.GetPrim(), get_prim=True))

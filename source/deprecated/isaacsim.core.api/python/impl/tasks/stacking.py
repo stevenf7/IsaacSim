@@ -117,9 +117,9 @@ class Stacking(ABC, BaseTask):
     def set_params(
         self,
         cube_name: str | None = None,
-        cube_position: str | None = None,
-        cube_orientation: str | None = None,
-        stack_target_position: str | None = None,
+        cube_position: np.ndarray | None = None,
+        cube_orientation: np.ndarray | None = None,
+        stack_target_position: np.ndarray | None = None,
     ) -> None:
         """Set task parameters.
 

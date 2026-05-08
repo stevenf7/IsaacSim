@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.1] - 2026-05-08
+### Fixed
+- Fixed silent failure of Skip Simulation -> Export Grasp; export state is preserved across internal timeline stops and errors are surfaced in the UI.
+- Updated user guide to use `object_frame` / `gripper_frame` field names, matching the actual `isaac_grasp` schema written by `DataWriter`.
+
+
 ## [2.3.0] - 2026-03-16
 ### Changed
 - Migrate extension implementation to core experimental API
