@@ -1419,13 +1419,19 @@ class JointWidget(TableWidget):
             self.model,
             delegate=self.delegate,
             alignment=ui.Alignment.CENTER_TOP,
-            column_widths=[ui.Fraction(1), ui.Pixel(65), ui.Pixel(65), ui.Pixel(100), ui.Pixel(100)],
-            # TODO: uncomment this when we could set the default option width
+            column_widths=[
+                ui.Fraction(1),
+                ui.Pixel(65),
+                ui.Pixel(65),
+                ui.Pixel(100),
+                ui.Pixel(100),
+            ],
             min_column_widths=[80, 65, 65, 100, 70],
             columns_resizable=True,
             header_visible=True,
             resizeable_on_columns_resized=True,
-            # height=ui.Fraction(1),
+            width=ui.Fraction(1),
+            height=ui.Fraction(1),
         )
 
     def switch_mode(self, switch: JointSettingMode) -> None:

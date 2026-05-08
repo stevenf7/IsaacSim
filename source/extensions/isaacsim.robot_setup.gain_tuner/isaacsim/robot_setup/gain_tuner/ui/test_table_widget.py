@@ -911,6 +911,7 @@ class TestJointWidget(TableWidget):
             min_column_widths=[50, 30, 30, 80, 80, 80, 80, 80, 80, 310],
             columns_resizable=True,
             header_visible=True,
+            width=ui.Fraction(1),
             height=ui.Fraction(1),
         )
         self.list.set_selection_changed_fn(self._on_tree_selection_changed)
