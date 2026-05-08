@@ -38,15 +38,9 @@ n_frames = args.num_frames
 n_gpus = args.num_gpus
 tick_rate = args.tick_rate
 
-extra_args = []
-if tick_rate > 0:
-    extra_args.append("--/rtx/hydra/supportMultiTickRate=true")
-
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp(
-    {"headless": True, "enable_motion_bvh": True, "max_gpu_count": n_gpus, "extra_args": extra_args}
-)
+simulation_app = SimulationApp({"headless": True, "enable_motion_bvh": True, "max_gpu_count": n_gpus})
 
 import carb
 import omni.kit.test

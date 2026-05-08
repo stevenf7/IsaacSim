@@ -1,5 +1,15 @@
 # Changelog
 
+## [15.17.0] - 2026-05-07
+### Changed
+- Multitick now enabled by default. Scan accumulation controlled by omni:sensor:Core:accumulateOutputs on OmniLidar prim.
+- OmniLidar omni:sensor:Core:skipDroppingInvalidPoints set to False by default when using command
+- OmniLidar omni:Sensor:Core:accumulateOutputs set to True by default when using command
+### Removed
+- Remove CUDA-based post-processing paths for lidar scan accumulation
+- Multitick nodes replace non-multitick nodes
+- Multitick annotator tests replace non-multitick annotator tests
+
 ## [15.16.4] - 2026-05-06
 ### Added
 - `IsaacSensorCreateRtxLidar`: `variant` parameter now accepts `dict[str, str]` for USDs with multiple variant sets (e.g. SICK family `Product` × `Profile`), matching `Lidar.create()` in `isaacsim.sensors.experimental.rtx`.

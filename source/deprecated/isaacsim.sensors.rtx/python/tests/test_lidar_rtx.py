@@ -60,8 +60,6 @@ class TestLidarRtx(omni.kit.test.AsyncTestCase):
         await self.world.initialize_simulation_context_async()
         await update_stage_async()
 
-        self._is_multitick_enabled = carb.settings.get_settings().get("/rtx/hydra/supportMultiTickRate")
-
         # Get stage reference
         self.stage = omni.usd.get_context().get_stage()
 
@@ -105,10 +103,7 @@ class TestLidarRtx(omni.kit.test.AsyncTestCase):
             num_frames: Number of frames to advance.
         """
         for _ in range(num_frames):
-            if self._is_multitick_enabled:
-                await omni.kit.app.get_app().next_update_async()
-            else:
-                await omni.syntheticdata.sensors.next_render_simulation_async(render_product_path)
+            await omni.kit.app.get_app().next_update_async()
 
     def verify_annotators_added(self, lidar: Any, annotator_names: Any) -> None:
         """Helper method to verify annotators are correctly added.

@@ -64,6 +64,7 @@ Advanced Topics
 .. toctree::
     :maxdepth: 1
 
+    ./isaacsim_sensors_multitick_rendering
     ./isaacsim_sensors_rtx_custom
 
 Extension Architecture
@@ -161,6 +162,14 @@ Common Issues
     The ``GenericModelOutput`` AOV timestamp is independent of the animation timeline and continues to increase even when paused.
     This is expected behavior.
 
+**Lidar emits truncated or partial scans every frame**
+    ``omni:sensor:tickRate`` must equal ``omni:sensor:Core:scanRateBaseHz`` on the ``OmniLidar`` prim.
+    See :ref:`isaac_sim_sensors_multitick_lidar_tickrate_must_match_scanrate`.
+
+**One sensor's auxiliary output level overrides another's**
+    The ``_replicator:rendervar:GenericModelOutput:channels`` attribute is currently global
+    per render-product-attach event. See :ref:`isaac_sim_sensors_multitick_known_issue_gmo_channels`.
+
 Performance Considerations
 ##########################
 
@@ -181,5 +190,7 @@ Related Tutorials
 -----------------
 
 - :ref:`isaac_sim_app_tutorial_ros2_rtx_lidar` - Publishing RTX Lidar data to ROS2
+- :ref:`isaac_sim_app_tutorial_ros2_rtx_radar` - Publishing RTX Radar data to ROS2
+- :ref:`isaac_sim_sensors_multitick_rendering` - Multi-tick rendering and 5.x → 6.0 migration
 - :ref:`isaac_debug_draw` - Visualizing point clouds and geometry
 - :ref:`isaac_sim_app_util_snippets` - Rendering and visualization utilities

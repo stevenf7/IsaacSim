@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+import tempfile
+
 import carb.settings
 import omni.kit
 import omni.usd
@@ -56,6 +58,9 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         USE_WARP = False
         ENV_URL = "/Isaac/Environments/Grid/default_environment.usd"
         SEED = 42
+
+        annot_test_root = tempfile.mkdtemp(prefix="test_augm_annot_")
+        print(f"Test output root: {annot_test_root}")
 
         # Enable warp scripts
         carb.settings.get_settings().set_bool("/app/omni.graph.scriptnode/opt_in", True)
@@ -171,7 +176,7 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
                     rep.randomizer.rotation()
 
             # Output directory
-            out_dir = os.path.join(os.getcwd(), f"_out_augm_annot_{'warp' if use_warp else 'numpy'}")
+            out_dir = os.path.join(annot_test_root, f"{'warp' if use_warp else 'numpy'}")
             print(f"Writing data to: {out_dir}")
             os.makedirs(out_dir, exist_ok=True)
 
@@ -224,10 +229,10 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             golden_dir = os.path.join(
                 os.path.dirname(os.path.realpath(__file__)), "data", "golden", f"_out_augm_annot_{mode_label}"
             )
-            out_dir = os.path.join(os.getcwd(), f"_out_augm_annot_{mode_label}")
             await run_example_async(
                 num_frames=test_num_frames, resolution=RESOLUTION, use_warp=test_use_warp, env_url=""
             )
+            out_dir = os.path.join(annot_test_root, mode_label)
 
             folder_contents_success = validate_folder_contents(
                 path=out_dir, expected_counts={"png": test_num_frames * 3}
@@ -264,6 +269,9 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         USE_WARP = False
         ENV_URL = "/Isaac/Environments/Grid/default_environment.usd"
         SEED = 42
+
+        writer_test_root = tempfile.mkdtemp(prefix="test_augm_writer_")
+        print(f"Test output root: {writer_test_root}")
 
         # Enable warp scripts
         carb.settings.get_settings().set_bool("/app/omni.graph.scriptnode/opt_in", True)
@@ -370,7 +378,8 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             gn_depth_augm = rep.annotators.get_augmentation("gn_depth_wp" if use_warp else "gn_depth_np")
 
             # Create a writer and apply the augmentations to its corresponding annotators
-            out_dir = os.path.join(os.getcwd(), f"_out_augm_writer_{'warp' if use_warp else 'numpy'}")
+            out_dir = os.path.join(writer_test_root, f"{'warp' if use_warp else 'numpy'}")
+            os.makedirs(out_dir)
             backend = rep.backends.get("DiskBackend")
             backend.initialize(output_dir=out_dir)
             print(f"Writing data to: {out_dir}")
@@ -428,10 +437,10 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             golden_dir = os.path.join(
                 os.path.dirname(os.path.realpath(__file__)), "data", "golden", f"_out_augm_writer_{mode_label}"
             )
-            out_dir = os.path.join(os.getcwd(), f"_out_augm_writer_{mode_label}")
             await run_example_async(
                 num_frames=test_num_frames, resolution=RESOLUTION, use_warp=test_use_warp, env_url=""
             )
+            out_dir = os.path.join(writer_test_root, mode_label)
 
             folder_contents_success = validate_folder_contents(
                 path=out_dir, expected_counts={"png": test_num_frames * 2, "npy": test_num_frames}

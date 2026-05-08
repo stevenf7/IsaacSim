@@ -79,7 +79,12 @@ class OgnUCXCameraHelper:
                     return False
                 db.per_instance_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
 
-                db.per_instance_state.publishStepSize = db.inputs.frameSkipCount + 1
+                if db.inputs.frameSkipCount > 0:
+                    carb.log_warn(
+                        "The frameSkipCount input is deprecated. "
+                        "Control publish rate by setting omni:sensor:tickRate on the sensor prim instead."
+                    )
+                db.per_instance_state.publishStepSize = 1
 
                 writer = None
 

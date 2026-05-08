@@ -75,6 +75,14 @@ This section will demonstrate the Isaac Simulation Gate node, which can be used 
 Setting Publish Rates for Nodes Within SDG Pipeline
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. warning::
+    The **frameSkipCount** parameter on ROS2 helper nodes is deprecated. The preferred way to
+    control sensor publish rates is by setting the ``omni:sensor:tickRate`` attribute on the
+    sensor prim via the ``OmniSensorAPI`` schema. See
+    :ref:`isaac_sim_sensors_multitick_rendering` for the full migration guide, and
+    :ref:`isaacsim_sensors_rtx_lidar` and :ref:`isaacsim_sensors_rtx_radar` for details on
+    configuring per-sensor tick rates.
+
 In the previous section, we added in the Isaac Simulation Gate Node in a |omnigraph_short| ROS2 publishing pipeline. For Camera and RTX Lidar sensors, this is configured automatically within the SDG pipeline. 
 
 To modify the publish rates for each individual publisher, the **frameSkipCount** parameter inside each ROS2 Helper node can be modified.

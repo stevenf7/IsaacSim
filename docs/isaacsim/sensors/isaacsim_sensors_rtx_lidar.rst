@@ -70,10 +70,6 @@ schema in the ``omni.usd.schema.omni_sensors`` extension to learn what attribute
 Tick Rate
 ^^^^^^^^^
 
-.. note::
-
-    This section only applies to RTX Lidars when the multi-tick rendering feature is enabled. This feature is currently disabled by default.
-
 The ``tick_rate`` parameter (Hz) controls how frequently the sensor renders. A value of ``0``
 (the default) enables autotrigger mode, where the sensor renders every simulation frame. Setting a
 nonzero value causes the sensor to render at the specified frequency independently of the simulation
@@ -82,31 +78,41 @@ step rate. This maps to the ``omni:sensor:tickRate`` prim attribute.
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_lidar/set_lidar_tick_rate.py
     :language: python
 
+.. warning::
+
+    For ``OmniLidar`` prims, ``tick_rate`` (i.e. ``omni:sensor:tickRate``) **must** equal
+    ``omni:sensor:Core:scanRateBaseHz`` for scan accumulation and multi-tick rendering to behave
+    correctly. Mismatched values cause the lidar to emit partial scans every frame instead of
+    accumulating to a full scan, which silently breaks LaserScan publishing and any pipeline that
+    expects a full scan per tick. See
+    :ref:`isaac_sim_sensors_multitick_lidar_tickrate_must_match_scanrate` for details.
+
 .. note::
 
     ``tick_rate`` is the recommended replacement for the deprecated ``frameSkipCount`` parameter
-    on ROS2 helper nodes.
+    on ROS2 helper nodes. For the full migration story, see
+    :ref:`isaac_sim_sensors_multitick_rendering`.
 
 Auxiliary Output Level
 ^^^^^^^^^^^^^^^^^^^^^^
 
-In previous releases, users set ``auxOutputType`` as a prim attribute directly on lidar prims. With
-the experimental API in 6.0, use the ``aux_output_level`` constructor parameter instead. This
-controls what auxiliary data appears in ``GenericModelOutput`` frames.
+In previous releases, users set ``omni:sensor:Core:auxOutputType`` as a prim attribute directly on
+lidar prims. That attribute has been removed from the ``OmniSensorGenericLidarCoreAPI`` schema. Use
+the ``aux_output_level`` constructor parameter instead, which authors
+``_replicator:rendervar:GenericModelOutput:channels`` on the prim. Replicator copies that value onto
+the ``GenericModelOutput`` RenderVar's ``channels`` attribute when a render product is attached.
 
 Valid values for Lidar: ``"NONE"`` (default), ``"BASIC"``, ``"EXTRA"``, ``"FULL"``.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_lidar/set_lidar_aux_output_level.py
     :language: python
 
-See :ref:`rtx_sensor_annotator_descriptions` for details on what fields are available at each level.
+See :ref:`rtx_sensor_annotator_descriptions` for details on what fields are available at each level,
+and :ref:`isaac_sim_sensors_multitick_aux_output_level` for the full attribute-flow explanation and
+a known issue when multiple RTX sensors with different auxiliary levels share a stage.
 
 Scan Accumulation
 ^^^^^^^^^^^^^^^^^
-.. note::
-
-    This section only applies to RTX Lidars when the multi-tick rendering feature is enabled. This feature is currently disabled by default.
-
 The ``accumulate_outputs`` parameter (default ``True``) controls the
 ``omni:sensor:Core:accumulateOutputs`` prim attribute. When ``True``, the lidar accumulates data
 over multiple frames until a full scan is complete. For rotary lidars, a full scan corresponds to a
@@ -114,6 +120,13 @@ over multiple frames until a full scan is complete. For rotary lidars, a full sc
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_lidar/disable_lidar_scan_accumulation.py
     :language: python
+
+.. warning::
+
+    Scan accumulation only behaves correctly when ``omni:sensor:tickRate`` equals
+    ``omni:sensor:Core:scanRateBaseHz`` on the prim. With mismatched values the lidar produces
+    partial scans every frame regardless of ``accumulate_outputs``. See
+    :ref:`isaac_sim_sensors_multitick_lidar_tickrate_must_match_scanrate`.
 
 How to Collect Data from an RTX Lidar
 -------------------------------------

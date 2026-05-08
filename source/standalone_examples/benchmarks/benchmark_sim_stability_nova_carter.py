@@ -55,7 +55,6 @@ parser.add_argument(
 parser.add_argument(
     "--async-render-handshake", action="store_true", help="Run with async rendering and handshake enabled"
 )
-parser.add_argument("--multitick", action="store_true", help="Run with multi-tick rendering enabled")
 parser.add_argument(
     "--tick-rate",
     type=float,
@@ -95,7 +94,6 @@ gpu_frametime = args.gpu_frametime
 headless = args.non_headless
 viewport_updates = args.viewport_updates
 async_render_handshake = args.async_render_handshake
-multitick = args.multitick
 tick_rate = args.tick_rate
 enable_lidar_multitick = args.enable_lidar_multitick
 rtf_window_ms = args.rtf_window_ms
@@ -112,12 +110,6 @@ if async_render_handshake:
         "--/omni/replicator/asyncRendering=true",
     ]
     extra_args.extend(async_render_handshake_args)
-
-if multitick or tick_rate > 0 or enable_lidar_multitick:
-    multitick_args = [
-        "--/rtx/hydra/supportMultiTickRate=true",
-    ]
-    extra_args.extend(multitick_args)
 
 import numpy as np
 from isaacsim import SimulationApp
@@ -168,7 +160,6 @@ benchmark = BaseIsaacBenchmark(
             {"name": "num_3d_lidars", "data": enable_3d_lidar},
             {"name": "num_robots", "data": n_robot},
             {"name": "tick_rate_hz", "data": tick_rate},
-            {"name": "multitick", "data": multitick},
             {"name": "enable_lidar_multitick", "data": enable_lidar_multitick},
             {"name": "rtf_window_wall_ms", "data": rtf_window_ms},
             {"name": "rtf_export_window_samples", "data": rtf_export_samples},

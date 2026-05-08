@@ -75,6 +75,26 @@ The ``isaacsim.sensors.experimental.rtx`` extension provides a set of classes fo
 
 For standalone examples, see ``standalone_examples/api/isaacsim.sensors.experimental.rtx/create_camera_basic.py`` (``CameraSensor``), ``camera_tiled.py`` (``TiledCameraSensor``), and ``camera_stereoscopic_depth.py`` (``SingleViewDepthCameraSensor``).
 
+Tick Rate
+^^^^^^^^^
+
+The ``tick_rate`` parameter (Hz) on ``RtxCamera`` controls how frequently the camera renders. A value
+of ``0`` (the default) enables autotrigger mode, where the camera renders every simulation frame.
+Setting a nonzero value causes the camera to render at the specified frequency independently of the
+simulation step rate. This maps to the ``omni:sensor:tickRate`` prim attribute and requires the
+``OmniSensorAPI`` schema to be applied to the Camera prim — ``RtxCamera`` does this automatically.
+
+.. code-block:: python
+
+    from isaacsim.sensors.experimental.rtx import RtxCamera
+
+    camera = RtxCamera(path="/World/Camera", tick_rate=30.0)
+
+``tick_rate`` is the recommended replacement for the deprecated ``frameSkipCount`` input on
+``ROS2 Camera Helper``, ``ROS2 Camera Info Helper``, ``UCX Camera Helper``, and
+``HSB Camera Helper`` nodes. See :ref:`isaac_sim_sensors_multitick_rendering` for the full
+migration guide and the list of related known issues.
+
 .. _isaacsim_sensors_camera_calibration_and_camera_lens_distortion_models:
 
 Calibration and Camera Lens Distortion Models

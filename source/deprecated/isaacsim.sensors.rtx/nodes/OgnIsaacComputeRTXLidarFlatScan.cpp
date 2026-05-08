@@ -20,7 +20,6 @@
 #include "LidarConfigHelper.h"
 #include "OgnIsaacComputeRTXLidarFlatScanDatabase.h"
 #include "isaacsim/core/includes/BaseResetNode.h"
-#include "isaacsim/core/includes/ScopedCudaDevice.h"
 #include "isaacsim/core/includes/UsdUtilities.h"
 
 #include <cstddef>
@@ -38,6 +37,7 @@ class OgnIsaacComputeRTXLidarFlatScan : public isaacsim::core::includes::BaseRes
 private:
     bool m_firstFrame{ true };
     bool m_isInitialized{ false };
+    bool m_deprecationWarned{ false };
 
     float m_rotationRate{ 0.0f };
     float m_horizontalFov{ 0.0f };
@@ -47,44 +47,24 @@ private:
     float m_nearRangeM{ 0.0f };
     float m_farRangeM{ 0.0f };
 
-    float* m_intensityBuffer{ nullptr };
-    float* m_distanceBuffer{ nullptr };
-    float* m_azimuthBuffer{ nullptr };
-
 public:
     void reset() override
     {
         m_firstFrame = true;
         m_isInitialized = false;
-        if (m_intensityBuffer)
-        {
-            CUDA_CHECK(cudaFreeHost(m_intensityBuffer));
-            m_intensityBuffer = nullptr;
-        }
-        if (m_distanceBuffer)
-        {
-            CUDA_CHECK(cudaFreeHost(m_distanceBuffer));
-            m_distanceBuffer = nullptr;
-        }
-        if (m_azimuthBuffer)
-        {
-            CUDA_CHECK(cudaFreeHost(m_azimuthBuffer));
-            m_azimuthBuffer = nullptr;
-        }
     }
+
     bool initialize(OgnIsaacComputeRTXLidarFlatScanDatabase& db)
     {
         CARB_PROFILE_ZONE(0, "[IsaacSim] IsaacComputeRTXLidarFlatScan initialize");
         auto& state = db.perInstanceState<OgnIsaacComputeRTXLidarFlatScan>();
 
-        // Retrieve lidar prim from render product path, then validate its attributes
         const std::string renderProductPath = std::string(db.tokenToString(db.inputs.renderProductPath()));
         if (renderProductPath.length() == 0)
         {
             CARB_LOG_ERROR("IsaacComputeRTXLidarFlatScan: renderProductPath input is empty. Skipping execution.");
             return false;
         }
-        size_t maxPoints = 0;
         pxr::UsdPrim lidarPrim = isaacsim::core::includes::getCameraPrimFromRenderProduct(renderProductPath);
         if (lidarPrim.IsA<pxr::UsdGeomCamera>())
         {
@@ -95,13 +75,13 @@ public:
             if (configHelper.scanType == LidarScanType::kUnknown)
             {
                 CARB_LOG_ERROR(
-                    "IsaacComputeRTXLidarFlatScan: Lidar prim scanType is Unknown, and node will not execute. Stop the simulation, correct the issue, and restart.");
+                    "IsaacComputeRTXLidarFlatScan: Lidar prim scanType is Unknown. Stop the simulation, correct the issue, and restart.");
                 return false;
             }
             if (!configHelper.is2D)
             {
                 CARB_LOG_ERROR(
-                    "IsaacComputeRTXLidarFlatScan: Lidar prim is not a 2D Lidar, and node will not execute. Stop the simulation, correct the issue, and restart.");
+                    "IsaacComputeRTXLidarFlatScan: Lidar prim is not a 2D Lidar. Stop the simulation, correct the issue, and restart.");
                 return false;
             }
             if (configHelper.scanType == LidarScanType::kSolidState)
@@ -126,9 +106,6 @@ public:
             state.m_nearRangeM = configHelper.nearRangeM;
             state.m_farRangeM = configHelper.farRangeM;
             state.m_rotationRate = static_cast<float>(configHelper.scanRateBaseHz);
-            maxPoints = configHelper.numChannels * configHelper.maxReturns *
-                        static_cast<size_t>(std::ceil(static_cast<float>(configHelper.reportRateBaseHz) /
-                                                      static_cast<float>(configHelper.scanRateBaseHz)));
         }
         else
         {
@@ -137,13 +114,13 @@ public:
                 elementsCoordsType != pxr::TfToken("SPHERICAL"))
             {
                 CARB_LOG_ERROR(
-                    "IsaacComputeRTXLidarFlatScan: Lidar prim elementsCoordsType is not set to SPHERICAL, and node will not execute. Stop the simulation, correct the issue, and restart.");
+                    "IsaacComputeRTXLidarFlatScan: Lidar prim elementsCoordsType is not set to SPHERICAL. Stop the simulation, correct the issue, and restart.");
                 return false;
             }
             pxr::VtFloatArray elevationDeg;
             if (lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:emitterState:s001:elevationDeg")).Get(&elevationDeg))
             {
-                const float epsilon = 1e-3f; // Tolerance of 0.001 degrees
+                const float epsilon = 1e-3f;
                 for (const float elev : elevationDeg)
                 {
                     if (::fabs(elev) > epsilon)
@@ -151,12 +128,11 @@ public:
                         CARB_LOG_ERROR(
                             "IsaacComputeRTXLidarFlatScan: Lidar prim elevationDeg contains nonzero value %f.", elev);
                         CARB_LOG_ERROR(
-                            "IsaacComputeRTXLidarFlatScan: Lidar prim is not a 2D Lidar, and node will not execute. Stop the simulation, correct the issue, and restart.");
+                            "IsaacComputeRTXLidarFlatScan: Lidar prim is not a 2D Lidar. Stop the simulation, correct the issue, and restart.");
                         return false;
                     }
                 }
             }
-            // Populate any prim-specific outputs
             uint32_t rotationRateAsInt;
             lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:scanRateBaseHz")).Get(&rotationRateAsInt);
             state.m_rotationRate = static_cast<float>(rotationRateAsInt);
@@ -182,7 +158,6 @@ public:
             }
             else
             {
-                // Set useful state variables
                 uint32_t reportRateBaseHzAsInt;
                 lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:patternFiringRateHz")).Get(&reportRateBaseHzAsInt);
                 float reportRateBaseHz = static_cast<float>(reportRateBaseHzAsInt);
@@ -192,21 +167,7 @@ public:
                 state.m_azimuthRangeEnd = 180.0f;
                 state.m_horizontalFov = 360.0;
             }
-
-            // Compute the max number of points in the scan
-            uint32_t maxReturns;
-            uint32_t numChannels;
-            uint32_t patternFiringRateHz;
-            lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:maxReturns")).Get(&maxReturns);
-            lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:numberOfChannels")).Get(&numChannels);
-            lidarPrim.GetAttribute(pxr::TfToken("omni:sensor:Core:patternFiringRateHz")).Get(&patternFiringRateHz);
-            maxPoints = numChannels * maxReturns *
-                        static_cast<size_t>(
-                            std::ceil(static_cast<float>(patternFiringRateHz) / static_cast<float>(rotationRateAsInt)));
         }
-        CUDA_CHECK(cudaMallocHost(&state.m_intensityBuffer, maxPoints * sizeof(float)));
-        CUDA_CHECK(cudaMallocHost(&state.m_distanceBuffer, maxPoints * sizeof(float)));
-        CUDA_CHECK(cudaMallocHost(&state.m_azimuthBuffer, maxPoints * sizeof(float)));
         return true;
     }
 
@@ -214,8 +175,15 @@ public:
     {
         CARB_PROFILE_ZONE(0, "[IsaacSim] IsaacComputeRTXLidarFlatScan compute");
         auto& state = db.perInstanceState<OgnIsaacComputeRTXLidarFlatScan>();
-        // Enable downstream execution by default
         db.outputs.exec() = kExecutionAttributeStateEnabled;
+
+        if (!state.m_deprecationWarned)
+        {
+            CARB_LOG_WARN(
+                "IsaacComputeRTXLidarFlatScan is deprecated and will be removed in a future release. "
+                "Use the GenericModelOutput annotator directly to access full-scan RTX Lidar data.");
+            state.m_deprecationWarned = true;
+        }
 
         if (state.m_firstFrame)
         {
@@ -237,33 +205,54 @@ public:
         db.outputs.numCols() = 0;
         db.outputs.numRows() = 1;
 
-        if (db.inputs.intensityPtr() == 0 || db.inputs.distancePtr() == 0 || db.inputs.azimuthPtr() == 0)
+        const float* intensityData = nullptr;
+        const float* distanceData = nullptr;
+        const float* azimuthData = nullptr;
+        size_t numInputElements = 0;
+
+        // Primary path: read directly from GenericModelOutput via dataPtr
+        if (db.inputs.dataPtr() != 0)
+        {
+            auto* gmo = omni::sensors::getModelOutputPtrFromBuffer(reinterpret_cast<void*>(db.inputs.dataPtr()));
+            if (!gmo || gmo->numElements == 0)
+            {
+                CARB_LOG_INFO("IsaacComputeRTXLidarFlatScan: GMO buffer is empty or invalid. Skipping execution.");
+                return false;
+            }
+            azimuthData = gmo->elements.x;
+            distanceData = gmo->elements.z;
+            intensityData = gmo->elements.scalar;
+            numInputElements = static_cast<size_t>(gmo->numElements);
+        }
+        // Deprecated fallback: use individual pointer inputs (host data only)
+        else if (db.inputs.intensityPtr() != 0 && db.inputs.distancePtr() != 0 && db.inputs.azimuthPtr() != 0)
+        {
+            if (db.inputs.intensityBufferSize() == 0 || db.inputs.distanceBufferSize() == 0 ||
+                db.inputs.azimuthBufferSize() == 0)
+            {
+                CARB_LOG_INFO("IsaacComputeRTXLidarFlatScan: Buffer sizes are 0. Skipping execution.");
+                return false;
+            }
+
+            if (db.inputs.intensityBufferSize() != db.inputs.distanceBufferSize() ||
+                db.inputs.intensityBufferSize() != db.inputs.azimuthBufferSize())
+            {
+                CARB_LOG_INFO("IsaacComputeRTXLidarFlatScan: Buffer sizes are not equal. Skipping execution.");
+                return false;
+            }
+
+            intensityData = reinterpret_cast<const float*>(db.inputs.intensityPtr());
+            distanceData = reinterpret_cast<const float*>(db.inputs.distancePtr());
+            azimuthData = reinterpret_cast<const float*>(db.inputs.azimuthPtr());
+            numInputElements = db.inputs.intensityBufferSize() / sizeof(float);
+        }
+        else
         {
             CARB_LOG_INFO(
-                "IsaacComputeRTXLidarFlatScan: intensityPtr, distancePtr, or azimuthPtr is empty. Skipping execution.");
+                "IsaacComputeRTXLidarFlatScan: No valid data input (dataPtr or individual pointers). Skipping execution.");
             return false;
         }
 
-        if (db.inputs.intensityBufferSize() == 0 || db.inputs.distanceBufferSize() == 0 ||
-            db.inputs.azimuthBufferSize() == 0)
-        {
-            CARB_LOG_INFO(
-                "IsaacComputeRTXLidarFlatScan: intensityBufferSize, distanceBufferSize, or azimuthBufferSize is 0. Skipping execution.");
-            return false;
-        }
-
-        if (db.inputs.intensityBufferSize() != db.inputs.distanceBufferSize() ||
-            db.inputs.intensityBufferSize() != db.inputs.azimuthBufferSize())
-        {
-            CARB_LOG_INFO(
-                "IsaacComputeRTXLidarFlatScan: intensityBufferSize, distanceBufferSize, or azimuthBufferSize is not equal. Skipping execution.");
-            return false;
-        }
-
-        // Number of elements in the input buffers
-        size_t numInputElements = db.inputs.intensityBufferSize() / sizeof(float);
-
-        // Reset output attributes on host
         size_t numOutputElements = static_cast<size_t>(state.m_horizontalFov / state.m_horizontalResolution);
         db.outputs.numCols() = static_cast<int>(numOutputElements);
         db.outputs.intensitiesData().resize(numOutputElements);
@@ -274,43 +263,11 @@ public:
             db.outputs.intensitiesData()[i] = 0;
         }
 
-        const float* intensityData;
-        const float* distanceData;
-        const float* azimuthData;
-
-        if (db.inputs.cudaDeviceIndex() == -1)
-        {
-            // Data is already on host — use input pointers directly (no D2H copy needed)
-            intensityData = reinterpret_cast<const float*>(db.inputs.intensityPtr());
-            distanceData = reinterpret_cast<const float*>(db.inputs.distancePtr());
-            azimuthData = reinterpret_cast<const float*>(db.inputs.azimuthPtr());
-        }
-        else
-        {
-            // Asynchronously copy input elements from device into the state buffers on host
-            isaacsim::core::includes::ScopedDevice scopedDevice(db.inputs.cudaDeviceIndex());
-            cudaStream_t cudaStream;
-            CUDA_CHECK(cudaStreamCreate(&cudaStream));
-            CUDA_CHECK(cudaMemcpyAsync(state.m_intensityBuffer, reinterpret_cast<void*>(db.inputs.intensityPtr()),
-                                       db.inputs.intensityBufferSize(), cudaMemcpyDeviceToHost, cudaStream));
-            CUDA_CHECK(cudaMemcpyAsync(state.m_distanceBuffer, reinterpret_cast<void*>(db.inputs.distancePtr()),
-                                       db.inputs.distanceBufferSize(), cudaMemcpyDeviceToHost, cudaStream));
-            CUDA_CHECK(cudaMemcpyAsync(state.m_azimuthBuffer, reinterpret_cast<void*>(db.inputs.azimuthPtr()),
-                                       db.inputs.azimuthBufferSize(), cudaMemcpyDeviceToHost, cudaStream));
-            CUDA_CHECK(cudaStreamSynchronize(cudaStream));
-            CUDA_CHECK(cudaStreamDestroy(cudaStream));
-
-            intensityData = state.m_intensityBuffer;
-            distanceData = state.m_distanceBuffer;
-            azimuthData = state.m_azimuthBuffer;
-        }
-
         for (size_t inIdx = 0; inIdx < numInputElements; inIdx++)
         {
             float azimuth = azimuthData[inIdx];
             float distance = distanceData[inIdx];
             uint8_t intensity = static_cast<uint8_t>(intensityData[inIdx] * 255.0f);
-            // Compute index of buffer in which measurements will be placed, based on beam azimuth
             size_t outIdx = static_cast<size_t>((azimuth - state.m_azimuthRangeStart) / state.m_horizontalResolution);
             if (outIdx >= numOutputElements)
             {
@@ -326,16 +283,9 @@ public:
 
         return true;
     }
-
-    // static void releaseInstance(NodeObj const& nodeObj, GraphInstanceID instanceId)
-    // {
-    //     auto& state = OgnIsaacComputeRTXLidarFlatScanDatabase::sPerInstanceState<OgnIsaacComputeRTXLidarFlatScan>(
-    //         nodeObj, instanceId);
-    //     state.reset();
-    // }
 };
 
 REGISTER_OGN_NODE()
-} // rtx
-} // sensors
-} // isaacsim
+} // namespace rtx
+} // namespace sensors
+} // namespace isaacsim

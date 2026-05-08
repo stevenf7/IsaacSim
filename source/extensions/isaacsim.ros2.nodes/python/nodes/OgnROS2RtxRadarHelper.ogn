@@ -70,15 +70,9 @@
                 "description": "If True, system timestamp will be included in messages. If False, simulation timestamp will be included in messages",
                 "default": false
             },
-            "frameSkipCount": {
-                "type": "uint",
-                "description": "Specifies the number of simulation frames to skip between each message publish. (e.g. Set to 0 to publish each frame. Set 1 to publish every other frame)",
-                "default": 0,
-                "deprecated": "Frame skipping is deprecated. Control publish rate by setting omni:sensor:tickRate on the sensor prim instead."
-            },
             "outputRadialVelocityMS": {
                 "type": "bool",
-                "description": "Include per-point radial velocity (m/s) in the published PointCloud2 message. Requires aux_output_level='BASIC' on the Radar prim.",
+                "description": "Include per-point radial velocity (m/s) in the published PointCloud2 message. Requires _replicator:rendervar:GenericModelOutput:channels = ['BASIC'] on the OmniRadar prim, which Radar(path, aux_output_level='BASIC') authors automatically.",
                 "default": false
             },
             "outputIntensity": {

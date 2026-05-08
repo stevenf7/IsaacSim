@@ -55,11 +55,6 @@
                 "description": "If True, system timestamp will be included in messages. If False, simulation timestamp will be included in messages",
                 "default": false
             },
-            "frameSkipCount": {
-                "type": "uint",
-                "description": "Specifies the number of simulation frames to skip between each message publish. (e.g. Set to 0 to publish each frame. Set 1 to publish every other frame)",
-                "default": 0
-            },
             "type": {
                 "type": "token",
                 "description": "Sensor type: vb1940_csi_coe (3p4b COE/AGX Thor) or vb1940_csi_linux (4p5b RoCE/linux_vb1940_player)",

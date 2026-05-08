@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import tempfile
+
 import omni.kit
 import omni.usd
 from isaacsim.test.utils.file_validation import validate_folder_contents
@@ -40,6 +42,9 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
         import omni.usd
         from isaacsim.storage.native import get_assets_root_path_async
         from pxr import Gf, Usd, UsdGeom, UsdLux
+
+        sphere_scan_dir = tempfile.mkdtemp(prefix="test_rand_sphere_scan_")
+        print(f"Output directory: {sphere_scan_dir}")
 
         # Fibonacci sphere algorithm: https://arxiv.org/pdf/0912.4540
         def next_point_on_sphere(idx, num_points, radius=1, origin=(0, 0, 0)):
@@ -93,10 +98,9 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
             textures_cycle = itertools.cycle(dome_textures_full)
 
             if write_data:
-                out_dir = os.path.join(os.getcwd(), "_out_rand_sphere_scan")
-                print(f"Writing data to {out_dir}..")
+                print(f"Writing data to {sphere_scan_dir}..")
                 backend = rep.backends.get("DiskBackend")
-                backend.initialize(output_dir=out_dir)
+                backend.initialize(output_dir=sphere_scan_dir)
                 writer = rep.WriterRegistry.get("BasicWriter")
                 writer.initialize(backend=backend, rgb=True)
                 persp_cam = rep.functional.create.camera(position=(5, 5, 5), look_at=(0, 0, 0), name="PerspCamera")
@@ -196,11 +200,10 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
             test_num_frames, FORKLIFT_PATH, PALLET_PATH, BIN_PATH, DOME_TEXTURES, write_data=True
         )
 
-        out_dir = os.path.join(os.getcwd(), "_out_rand_sphere_scan")
         folder_contents_success = validate_folder_contents(
-            path=out_dir, expected_counts={"png": test_num_frames * 2}, recursive=True
+            path=sphere_scan_dir, expected_counts={"png": test_num_frames * 2}, recursive=True
         )
-        self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
+        self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {sphere_scan_dir}")
 
     async def test_randomize_physics_based_volume_filling(self):
         import os
@@ -214,6 +217,9 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
         import omni.usd
         from isaacsim.storage.native import get_assets_root_path_async
         from pxr import Gf, PhysicsSchemaTools, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade, UsdUtils
+
+        box_stacking_dir = tempfile.mkdtemp(prefix="test_box_stacking_")
+        print(f"Output directory: {box_stacking_dir}")
 
         # Add transformation properties to the prim (if not already present)
         def set_transform_attributes(prim, location=None, orientation=None, rotation=None, scale=None):
@@ -565,10 +571,9 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
             timeline.pause()
 
             if write_data:
-                out_dir = os.path.join(os.getcwd(), "_out_box_stacking")
-                print(f"Writing data to {out_dir}..")
+                print(f"Writing data to {box_stacking_dir}..")
                 backend = rep.backends.get("DiskBackend")
-                backend.initialize(output_dir=out_dir)
+                backend.initialize(output_dir=box_stacking_dir)
                 writer = rep.WriterRegistry.get("BasicWriter")
                 writer.initialize(backend=backend, rgb=True)
                 cam = rep.functional.create.camera(position=(5, -5, 2), look_at=(0, 0, 0), name="PalletCamera")
@@ -593,6 +598,5 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
         # Test
         await run_box_stacking_scenarios_async(num_pallets=1, write_data=True)
 
-        out_dir = os.path.join(os.getcwd(), "_out_box_stacking")
-        folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": 1})
-        self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
+        folder_contents_success = validate_folder_contents(path=box_stacking_dir, expected_counts={"png": 1})
+        self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {box_stacking_dir}")

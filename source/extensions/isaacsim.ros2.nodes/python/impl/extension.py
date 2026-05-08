@@ -74,8 +74,6 @@ class ROS2NodesExtension(omni.ext.IExt):
         # For Simulation and System time. Removed first S char in keys to account for both upper and lower cases.
         TIME_TYPES = [("imulationTime", ""), ("ystemTime", "SystemTime")]
 
-        is_multitick_enabled = carb.settings.get_settings().get("/rtx/hydra/supportMultiTickRate")
-
         for time_type in TIME_TYPES:
             ##### Publish RGB
             rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
@@ -245,109 +243,49 @@ class ROS2NodesExtension(omni.ext.IExt):
                     category=BRIDGE_NAME,
                 )
 
-            # RTX lidar PCL publisher (direct from GMO)
-            if is_multitick_enabled:
-                gmo_pcl_annotators = [
-                    "IsaacExtractRTXSensorPointCloud",
-                    "PostProcessDispatchIsaacSimulationGate",
-                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                        f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
-                    ),
-                ]
-                for name_prefix in ("RtxLidar", "RtxRadar"):
-                    register_node_writer_with_telemetry(
-                        name=f"{name_prefix}{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
-                        node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
-                        annotators=gmo_pcl_annotators,
-                        category=BRIDGE_NAME,
-                    )
-
+            # RTX lidar/radar PCL publisher (direct from GMO)
+            gmo_pcl_annotators = [
+                "IsaacExtractRTXSensorPointCloud",
+                "PostProcessDispatchIsaacSimulationGate",
+                omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                    f"IsaacReadS{time_type[0]}", attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"}
+                ),
+            ]
+            for name_prefix in ("RtxLidar", "RtxRadar"):
                 register_node_writer_with_telemetry(
-                    name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloudBuffer",
+                    name=f"{name_prefix}{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
                     node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
                     annotators=gmo_pcl_annotators,
                     category=BRIDGE_NAME,
                 )
 
-                # RTX lidar LaserScan publisher (direct from GMO)
-                register_node_writer_with_telemetry(
-                    name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishLaserScan",
-                    node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishLaserScan",
-                    annotators=[
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            "GenericModelOutputPtr",
-                            attributes_mapping={
-                                "outputs:dataPtr": "inputs:dataPtr",
-                                "outputs:bufferSize": "inputs:bufferSize",
-                            },
-                        ),
-                        "PostProcessDispatchIsaacSimulationGate",
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            f"IsaacReadS{time_type[0]}",
-                            attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"},
-                        ),
-                    ],
-                    category=BRIDGE_NAME,
-                )
-            else:
-                # RTX lidar PCL publisher
-                register_node_writer_with_telemetry(
-                    name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
-                    node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
-                    annotators=[
-                        "IsaacExtractRTXSensorPointCloudNoAccumulator",
-                        "PostProcessDispatchIsaacSimulationGate",
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            f"IsaacReadS{time_type[0]}",
-                            attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"},
-                        ),
-                    ],
-                    category=BRIDGE_NAME,
-                )
+            register_node_writer_with_telemetry(
+                name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloudBuffer",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
+                annotators=gmo_pcl_annotators,
+                category=BRIDGE_NAME,
+            )
 
-                register_node_writer_with_telemetry(
-                    name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloudBuffer",
-                    node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
-                    annotators=[
-                        "IsaacCreateRTXLidarScanBuffer",
-                        "PostProcessDispatchIsaacSimulationGate",
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            f"IsaacReadS{time_type[0]}",
-                            attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"},
-                        ),
-                    ],
-                    category=BRIDGE_NAME,
-                )
-
-                # RTX Radar PCL publisher
-                register_node_writer_with_telemetry(
-                    name=f"RtxRadar{BRIDGE_PREFIX}{time_type[1]}PublishPointCloud",
-                    node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishPointCloud",
-                    annotators=[
-                        "IsaacExtractRTXSensorPointCloudNoAccumulator",
-                        "PostProcessDispatchIsaacSimulationGate",
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            f"IsaacReadS{time_type[0]}",
-                            attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"},
-                        ),
-                    ],
-                    category=BRIDGE_NAME,
-                )
-
-                # RTX lidar LaserScan publisher
-                register_node_writer_with_telemetry(
-                    name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishLaserScan",
-                    node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishLaserScan",
-                    annotators=[
-                        "IsaacComputeRTXLidarFlatScan",
-                        "PostProcessDispatchIsaacSimulationGate",
-                        omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
-                            f"IsaacReadS{time_type[0]}",
-                            attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"},
-                        ),
-                    ],
-                    category=BRIDGE_NAME,
-                )
+            # RTX lidar LaserScan publisher (direct from GMO)
+            register_node_writer_with_telemetry(
+                name=f"RtxLidar{BRIDGE_PREFIX}{time_type[1]}PublishLaserScan",
+                node_type_id=f"{BRIDGE_NAME}.{BRIDGE_PREFIX}PublishLaserScan",
+                annotators=[
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        "GenericModelOutputPtr",
+                        attributes_mapping={
+                            "outputs:dataPtr": "inputs:dataPtr",
+                            "outputs:bufferSize": "inputs:bufferSize",
+                        },
+                    ),
+                    "PostProcessDispatchIsaacSimulationGate",
+                    omni.syntheticdata.SyntheticData.NodeConnectionTemplate(
+                        f"IsaacReadS{time_type[0]}",
+                        attributes_mapping={f"outputs:s{time_type[0]}": "inputs:timeStamp"},
+                    ),
+                ],
+                category=BRIDGE_NAME,
+            )
 
             # Object ID Map publisher
             register_node_writer_with_telemetry(

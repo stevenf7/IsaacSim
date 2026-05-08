@@ -1,4 +1,5 @@
 import carb
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 from isaacsim.sensors.experimental.rtx import Radar
 
@@ -7,6 +8,9 @@ settings = carb.settings.get_settings()
 settings.set("/renderer/raytracingMotion/enabled", True)
 settings.set("/renderer/raytracingMotion/enableHydraEngineMasking", True)
 settings.set("/renderer/raytracingMotion/enabledForHydraEngines", "0,1,2,3,4")
+
+# Ensure a /World Xform exists on the stage as the parent for the radar.
+stage_utils.define_prim("/World", "Xform")
 
 # Create an RTX Radar with a custom tick rate.
 radar = Radar(

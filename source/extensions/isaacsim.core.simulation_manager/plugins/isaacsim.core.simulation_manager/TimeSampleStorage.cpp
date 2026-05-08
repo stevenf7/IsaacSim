@@ -62,12 +62,9 @@ omni::fabric::RationalTime TimeSampleStorage::getCurrentTime()
         {
             FabricTime frameTime{};
 
-            // in this mode we store the simulation time in a stage attribute explicitly,
-            // the rendering uses this time to trigger sensor rendering and outputs will be tagged with
-            // times between the previous simulation time and this one
-            carb::settings::ISettings* iSettings = carb::getCachedInterface<carb::settings::ISettings>();
-            const bool multiTickRateEnabled = iSettings->getAsBool("/rtx/hydra/supportMultiTickRate");
-            if (multiTickRateEnabled)
+            // Read the simulation time from the Fabric prim /ExternalSimulationTime.
+            // The rendering uses this time to trigger sensor rendering and outputs will be tagged with
+            // times between the previous simulation time and this one.
             {
                 static const omni::fabric::Path externalTimePrim =
                     omni::fabric::Path::createImmortal("/ExternalSimulationTime");
@@ -83,10 +80,6 @@ omni::fabric::RationalTime TimeSampleStorage::getCurrentTime()
                     return kInvalidRationalTime;
                 }
                 frameTime = omni::fabric::FabricTime(*externalSimTimeAttr);
-            }
-            else
-            {
-                frameTime = m_iStageReaderWriter->getFrameTime(stageReaderWriterId);
             }
 
             // Check if we got a valid rational time
@@ -179,35 +172,9 @@ std::optional<double> TimeSampleStorage::getSimulationTimeAt(const omni::fabric:
         return std::nullopt;
     }
 
-    // XXX: trodrigues: in this mode we passed the simulation time directly to the renderer,
-    // so sensor render time will be based on the simulation time
-    carb::settings::ISettings* iSettings = carb::getCachedInterface<carb::settings::ISettings>();
-    bool multiTickRateEnabled = iSettings->getAsBool("/rtx/hydra/supportMultiTickRate");
-    if (multiTickRateEnabled)
-    {
-        return double(time);
-    }
-
-    // Hold lock for entire operation to ensure thread safety
-    std::shared_lock<std::shared_mutex> lock(m_mutex);
-
-    // First, try to find an exact match
-    auto exactMatch = findExactMatch(time);
-    if (exactMatch.has_value())
-    {
-        return exactMatch->simTime;
-    }
-
-    // No exact match found, try interpolation
-    auto adjacent = findAdjacentSamples(time);
-    if (!adjacent.has_value())
-    {
-        CARB_LOG_INFO("No adjacent samples found for interpolation at time %s", time.toString().c_str());
-        return std::nullopt;
-    }
-
-    auto interpolated = performInterpolation(time, adjacent->first, adjacent->second);
-    return interpolated.simTime;
+    // Simulation time was passed directly to the renderer via /ExternalSimulationTime,
+    // so sensor render time is based on the simulation time.
+    return double(time);
 }
 
 std::optional<double> TimeSampleStorage::getMonotonicSimulationTimeAt(const omni::fabric::RationalTime& time)

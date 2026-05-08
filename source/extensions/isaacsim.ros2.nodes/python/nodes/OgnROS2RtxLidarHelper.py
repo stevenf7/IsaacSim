@@ -28,7 +28,6 @@ import omni.syntheticdata
 from isaacsim.core.nodes import BaseWriterNode
 from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.ros2.core import collect_namespace
-from isaacsim.ros2.nodes import build_rtx_sensor_pointcloud_writer
 from isaacsim.ros2.nodes.impl.ros2_common import (
     USE_SRTX_SETTING,
     _start_or_extend_continuous_capture,
@@ -240,6 +239,11 @@ class OgnROS2RtxLidarHelper:
         state.render_product_path = render_product_path
         sensor_type = db.inputs.type
         state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
+        if db.inputs.frameSkipCount > 0:
+            carb.log_warn(
+                "The frameSkipCount input is deprecated. "
+                "Control publish rate by setting omni:sensor:tickRate on the sensor prim instead."
+            )
         state.publishStepSize = db.inputs.frameSkipCount + 1
 
         writer = None
@@ -269,47 +273,34 @@ class OgnROS2RtxLidarHelper:
             state.initialized = True
             return True
 
-        is_multitick_enabled = carb.settings.get_settings().get("/rtx/hydra/supportMultiTickRate")
-
         try:
             with Usd.EditContext(stage, stage.GetSessionLayer()):
                 # OG path: create writer, initialize, attach.
                 if sensor_type == "laser_scan":
-                    if is_multitick_enabled:
-                        if not db.inputs.fullScan:
-                            carb.log_warn(
-                                "fullScan=False is deprecated. RTX Lidar now always produces full scans. Ignoring."
-                            )
-                        # Map scan metadata to writer init parameters
-                        scan_meta = OgnROS2RtxLidarHelper._read_laser_scan_metadata(prim)
-                        if scan_meta is None:
-                            carb.log_error("Failed to read laser scan metadata from lidar prim")
-                            return False
-                        init_params["horizontalFov"] = scan_meta["horizontal_fov"]
-                        init_params["horizontalResolution"] = scan_meta["horizontal_resolution"]
-                        init_params["depthRange"] = [scan_meta["depth_range_min"], scan_meta["depth_range_max"]]
-                        init_params["rotationRate"] = scan_meta["rotation_rate"]
-                        init_params["azimuthRange"] = [scan_meta["azimuth_range_start"], scan_meta["azimuth_range_end"]]
-                    elif not db.inputs.fullScan:
-                        carb.log_warn("Full scan does not have an effect with the laser_scan setting")
+                    if not db.inputs.fullScan:
+                        carb.log_warn(
+                            "fullScan=False is deprecated. RTX Lidar now always produces full scans. Ignoring."
+                        )
+                    scan_meta = OgnROS2RtxLidarHelper._read_laser_scan_metadata(prim)
+                    if scan_meta is None:
+                        carb.log_error("Failed to read laser scan metadata from lidar prim")
+                        return False
+                    init_params["horizontalFov"] = scan_meta["horizontal_fov"]
+                    init_params["horizontalResolution"] = scan_meta["horizontal_resolution"]
+                    init_params["depthRange"] = [scan_meta["depth_range_min"], scan_meta["depth_range_max"]]
+                    init_params["rotationRate"] = scan_meta["rotation_rate"]
+                    init_params["azimuthRange"] = [scan_meta["azimuth_range_start"], scan_meta["azimuth_range_end"]]
                     writer = rep.writers.get("RtxLidar" + f"ROS2{time_type}PublishLaserScan")
                 elif sensor_type == "point_cloud":
-                    if is_multitick_enabled:
-                        if not db.inputs.fullScan:
-                            carb.log_warn(
-                                "fullScan=False is deprecated. RTX Lidar now always produces full scans. Ignoring."
-                            )
-                        scan_meta = OgnROS2RtxLidarHelper._read_laser_scan_metadata(prim)
-                        for metadata_item in db.inputs.selectedMetadata:
-                            init_params[f"output{metadata_item[0].upper()}{metadata_item[1:]}"] = True
-                        init_params["gmoMaxElements"] = scan_meta["max_points"]
-                        writer = rep.writers.get(f"RtxLidarROS2{time_type}PublishPointCloud")
-                    else:
-                        writer = build_rtx_sensor_pointcloud_writer(
-                            metadata=db.inputs.selectedMetadata,
-                            enable_full_scan=db.inputs.fullScan,
-                            use_system_time=db.inputs.useSystemTime,
+                    if not db.inputs.fullScan:
+                        carb.log_warn(
+                            "fullScan=False is deprecated. RTX Lidar now always produces full scans. Ignoring."
                         )
+                    scan_meta = OgnROS2RtxLidarHelper._read_laser_scan_metadata(prim)
+                    for metadata_item in db.inputs.selectedMetadata:
+                        init_params[f"output{metadata_item[0].upper()}{metadata_item[1:]}"] = True
+                    init_params["gmoMaxElements"] = scan_meta["max_points"]
+                    writer = rep.writers.get(f"RtxLidarROS2{time_type}PublishPointCloud")
 
                     if db.inputs.enableObjectIdMap:
                         if "ObjectId" not in db.inputs.selectedMetadata:

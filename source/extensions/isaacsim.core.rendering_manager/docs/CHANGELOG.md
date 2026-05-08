@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.0] - 2026-05-05
+### Added
+- Adds _ensure_fabric_simulation_time class method to seed /ExternalSimulationTime prim in Fabric for multitick renderer.
+
 ## [0.3.2] - 2026-03-26
 ### Changed
 - Updated Python bindings import paths for consistency

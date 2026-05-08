@@ -39,6 +39,13 @@ Getting Started
 
 .. note:: In Windows 10 or 11, depending on your machine's configuration, RViz2 might not open properly.
 
+.. note::
+
+    In |isaac-sim_short| 6.0, the ``frameSkipCount`` input on ``ROS2 Camera Helper`` and
+    ``ROS2 Camera Info Helper`` is deprecated. Set ``omni:sensor:tickRate`` on the camera prim
+    (which must have ``OmniSensorAPI`` applied) to control publish rate instead. See
+    :ref:`isaac_sim_sensors_multitick_rendering` for the migration guide.
+
 
 Camera Publisher
 ===============================

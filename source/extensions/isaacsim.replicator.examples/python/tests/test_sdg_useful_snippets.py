@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import tempfile
+
 import carb.settings
 import omni.kit
 import omni.usd
@@ -45,6 +47,8 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         from omni.replicator.core.functional import write_image
 
         NUM_FRAMES = 5
+        mc_test_root = tempfile.mkdtemp(prefix="test_mc_")
+        print(f"Test output root: {mc_test_root}")
 
         # Randomize cube color every frame using a graph-based replicator randomizer
         def cube_color_randomizer():
@@ -64,9 +68,9 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
                     # Create a new rgb annotator and add it to the writer's list of annotators
                     self.annotators.append(rep.annotators.get("rgb"))
                 # Create writer output directory and initialize DiskBackend
-                output_dir = os.path.join(os.getcwd(), "_out_mc_writer")
-                print(f"Writing writer data to {output_dir}")
-                self.backend = DiskBackend(output_dir=output_dir, overwrite=True)
+                writer_dir = os.path.join(mc_test_root, "writer")
+                print(f"Writing writer data to {writer_dir}")
+                self.backend = DiskBackend(output_dir=writer_dir, overwrite=True)
 
             def write(self, data):
                 if "renderProducts" in data:
@@ -127,9 +131,9 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             rgb_annotators.append(rgb)
 
         # Create annotator output directory
-        output_dir_annot = os.path.join(os.getcwd(), "_out_mc_annot")
+        output_dir_annot = os.path.join(mc_test_root, "annot")
         print(f"Writing annotator data to {output_dir_annot}")
-        os.makedirs(output_dir_annot, exist_ok=True)
+        os.makedirs(output_dir_annot)
 
         async def run_example_async():
             for i in range(NUM_FRAMES):
@@ -153,14 +157,14 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         await run_example_async()
 
         # Validate the output directory contents
-        annot_output_dir = os.path.join(os.getcwd(), "_out_mc_annot")
+        annot_output_dir = os.path.join(mc_test_root, "annot")
         folder_contents_success_annot = validate_folder_contents(
             path=annot_output_dir, expected_counts={"png": NUM_FRAMES * 3}
         )
         self.assertTrue(
             folder_contents_success_annot, f"Output directory contents validation failed for {annot_output_dir}"
         )
-        writer_output_dir = os.path.join(os.getcwd(), "_out_mc_writer")
+        writer_output_dir = os.path.join(mc_test_root, "writer")
         folder_contents_success_writer = validate_folder_contents(
             path=writer_output_dir, expected_counts={"png": NUM_FRAMES * 3}
         )
@@ -208,13 +212,12 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         rp = rep.create.render_product(cam, resolution=(512, 512), name="MyRenderProduct")
 
         # Set the output directory for the data
-        out_dir = os.path.join(os.getcwd(), "_out_sim_event")
+        out_dir = tempfile.mkdtemp(prefix="test_sim_event_")
         writer_dir = os.path.join(out_dir, "writer")
         annotator_dir = os.path.join(out_dir, "annotator")
 
-        os.makedirs(out_dir, exist_ok=True)
-        os.makedirs(writer_dir, exist_ok=True)
-        os.makedirs(annotator_dir, exist_ok=True)
+        os.makedirs(writer_dir)
+        os.makedirs(annotator_dir)
 
         print(f"Outputting data to {out_dir}..")
         backend = rep.backends.get("DiskBackend")
@@ -315,7 +318,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
                 rep.randomizer.rotation()
 
         # Use the disk backend to write the data to disk
-        out_dir = os.path.join(os.getcwd(), "_out_custom_event")
+        out_dir = tempfile.mkdtemp(prefix="test_custom_event_")
         print(f"Writing data to {out_dir}")
         backend = rep.backends.get("DiskBackend")
         backend.initialize(output_dir=out_dir)
@@ -368,6 +371,9 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         import omni.usd
         from isaacsim.storage.native import get_assets_root_path
         from pxr import PhysxSchema, UsdPhysics
+
+        motion_blur_root = tempfile.mkdtemp(prefix="test_motion_blur_")
+        print(f"Test output root: {motion_blur_root}")
 
         # Paths to the animated and physics-ready assets
         PHYSICS_ASSET_URL = "/Isaac/Props/YCB/Axis_Aligned_Physics/003_cracker_box.usd"
@@ -480,7 +486,8 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             # Setup backend
             mode_str = f"pt_subsamples_{motion_blur_subsamples}_spp_{samples_per_pixel}" if use_path_tracing else "rt"
             delta_time_str = "None" if delta_time is None else f"{delta_time:.4f}"
-            output_directory = os.path.join(os.getcwd(), f"_out_motion_blur_func_dt_{delta_time_str}_{mode_str}")
+            output_directory = os.path.join(motion_blur_root, f"dt_{delta_time_str}_{mode_str}")
+            os.makedirs(output_directory)
             print(f"[MotionBlur] Output directory: {output_directory}")
             backend = rep.backends.get("DiskBackend")
             backend.initialize(output_dir=output_directory)
@@ -585,7 +592,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             delta_time_str = "None" if delta_time is None else f"{delta_time:.4f}"
 
             # RayTracing output directory
-            out_dir = os.path.join(os.getcwd(), f"_out_motion_blur_func_dt_{delta_time_str}_rt")
+            out_dir = os.path.join(motion_blur_root, f"dt_{delta_time_str}_rt")
             folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": NUM_FRAMES})
             self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
 
@@ -593,7 +600,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             for motion_blur_subsample in test_motion_blur_subsamples:
                 for spp in test_samples_per_pixel:
                     mode_str = f"pt_subsamples_{motion_blur_subsample}_spp_{spp}"
-                    out_dir = os.path.join(os.getcwd(), f"_out_motion_blur_func_dt_{delta_time_str}_{mode_str}")
+                    out_dir = os.path.join(motion_blur_root, f"dt_{delta_time_str}_{mode_str}")
                     folder_contents_success = validate_folder_contents(
                         path=out_dir, expected_counts={"png": NUM_FRAMES}
                     )

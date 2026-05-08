@@ -1,4 +1,7 @@
 # Changelog
+## [5.9.1] - 2026-05-05
+### Changed
+- Switch to app_uitls.update_app_async(...) instead of omni.syntheticdata.sensors.next_render_simulation_async(...) in unit tests for multitick compatibility
 
 ## [5.9.0] - 2026-05-05
 ### Fixed

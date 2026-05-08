@@ -343,12 +343,11 @@ class IsaacSensorCreateRtxLidar(IsaacSensorCreateRtxSensor):
             The created Lidar sensor prim.
         """
         prim = super().do()
-        is_multitick_enabled = carb.settings.get_settings().get("/rtx/hydra/supportMultiTickRate")
         if prim.IsValid():
             if prim.HasAttribute("omni:sensor:Core:skipDroppingInvalidPoints"):
-                prim.GetAttribute("omni:sensor:Core:skipDroppingInvalidPoints").Set(not is_multitick_enabled)
+                prim.GetAttribute("omni:sensor:Core:skipDroppingInvalidPoints").Set(False)
             if prim.HasAttribute("omni:sensor:Core:accumulateOutputs"):
-                prim.GetAttribute("omni:sensor:Core:accumulateOutputs").Set(is_multitick_enabled)
+                prim.GetAttribute("omni:sensor:Core:accumulateOutputs").Set(True)
             # WAR: Expose auxOutputType as "channels" for Replicator API to assign to RenderVar as attribute
             aux_output_type = None
             if "omni:sensor:Core:auxOutputType" in self._prim_creation_kwargs:

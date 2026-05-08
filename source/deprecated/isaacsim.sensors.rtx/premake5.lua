@@ -32,9 +32,9 @@ add_files("nodes", ogn.nodes_path)
 add_ogn_dependencies(ogn)
 
 include_physx()
-add_cuda_dependencies()
 
 includedirs {
+    target_deps .. "/cuda/include",
     "%{kit_sdk_bin_dir}/dev/fabric/include/",
     "%{root}/source/extensions/isaacsim.core.includes/include",
     "%{root}/source/extensions/isaacsim.core.nodes/include",

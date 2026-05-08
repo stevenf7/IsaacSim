@@ -248,6 +248,11 @@ class OgnROS2CameraHelper:
             return False
 
         state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
+        if db.inputs.frameSkipCount > 0:
+            carb.log_warn(
+                "The frameSkipCount input is deprecated. "
+                "Control publish rate by setting omni:sensor:tickRate on the sensor prim instead."
+            )
         state.publishStepSize = db.inputs.frameSkipCount + 1
 
         time_type = ""
