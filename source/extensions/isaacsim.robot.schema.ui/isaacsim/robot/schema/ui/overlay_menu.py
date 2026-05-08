@@ -35,7 +35,7 @@ class OverlayMenu:
     """
 
     @staticmethod
-    def show_menu(connection: Any):
+    def show_menu(connection: Any) -> None:
         """Display the overlay selection menu.
 
         Args:
@@ -134,7 +134,7 @@ class OverlayMenu:
         return menu_entries
 
     @staticmethod
-    def _select_joint(menu_context: dict[str, Any], index: int):
+    def _select_joint(menu_context: dict[str, Any], index: int) -> None:
         """Select a joint by index from the menu.
 
         Args:

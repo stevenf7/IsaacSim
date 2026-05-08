@@ -1,4 +1,16 @@
 # Changelog
+## [0.3.3] - 2026-05-07
+### Changed
+- Gate USD `SELECTION_CHANGED` subscription and `ObjectsChanged` listener on effective visibility. Background tabs and hidden windows no longer pay per-click or per-stage-tick handler cost.
+- Resolve the active robot via `usdrt.Usd.Stage.GetPrimsWithAppliedAPIName("IsaacRobotAPI")` against Fabric, replacing the per-selection USD `prim.HasAPI` ancestor walk.
+- Scope hierarchy generation and change tracking to the selected robot.
+- Pin the active robot scope across selection changes, eliminating the per-click flash.
+- Selecting a child robot in nested-robot setups now shows only the child, matching the new "single active robot" policy.
+- `SelectionWatch._on_selection_changed` early-returns when the resolved tree-view item set is unchanged.
+
+### Fixed
+- Inspector no longer crashes with `AttributeError: '_StageModel__usdrt_stage'` when filtering the tree after a view-mode switch.
+
 ## [0.3.2] - 2026-05-01
 ### Changed
 - Robot Inspector UI tests now open the window through the menu and use shared menu UI retry helpers for more robust CI behavior.
