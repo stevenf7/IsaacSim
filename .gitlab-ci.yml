@@ -1756,8 +1756,13 @@ publish-container-x86_64:
     before_script:
       - docker version
       - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005
-      - docker login -u \$oauthtoken -p $NGC_TOKEN nvcr.io
-      - docker login nvcr.io
+      - |
+        if [ "${CI_COMMIT_REF_PROTECTED:-false}" = "true" ]; then
+            docker login -u \$oauthtoken -p "$NGC_TOKEN" nvcr.io
+            docker login nvcr.io
+        else
+            echo "Skipping NGC login for unprotected ref ${CI_COMMIT_REF_NAME:-unknown}"
+        fi
     script:
       - source ./tools/ci/gitlab/section_marker.sh
       - section_start "unzipping_packages" "Unzipping packages"
@@ -1780,7 +1785,6 @@ publish-container-x86_64:
         artifacts: true
     rules:
       - !reference [.container-rules, rules]
-    allow_failure: true
 
 # ==============================================================================================================
 publish-container-aarch64:
@@ -1793,8 +1797,13 @@ publish-container-aarch64:
     before_script:
       - docker version
       - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005
-      - docker login -u \$oauthtoken -p $NGC_TOKEN nvcr.io
-      - docker login nvcr.io
+      - |
+        if [ "${CI_COMMIT_REF_PROTECTED:-false}" = "true" ]; then
+            docker login -u \$oauthtoken -p "$NGC_TOKEN" nvcr.io
+            docker login nvcr.io
+        else
+            echo "Skipping NGC login for unprotected ref ${CI_COMMIT_REF_NAME:-unknown}"
+        fi
     script:
       - 7z x -y -o_build/linux-aarch64/release _build/packages/isaac-sim-standalone*.7z
       - rm -r .vscode
@@ -1807,7 +1816,6 @@ publish-container-aarch64:
         artifacts: true
     rules:
       - !reference [.container-rules, rules]
-    allow_failure: true
 
 # ==============================================================================================================
 publish-container-multi-arch:
@@ -1817,8 +1825,13 @@ publish-container-multi-arch:
     before_script:
       - docker version
       - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005
-      - docker login -u \$oauthtoken -p $NGC_TOKEN nvcr.io
-      - docker login nvcr.io
+      - |
+        if [ "${CI_COMMIT_REF_PROTECTED:-false}" = "true" ]; then
+            docker login -u \$oauthtoken -p "$NGC_TOKEN" nvcr.io
+            docker login nvcr.io
+        else
+            echo "Skipping NGC login for unprotected ref ${CI_COMMIT_REF_NAME:-unknown}"
+        fi
     #   - docker run --privileged --rm tonistiigi/binfmt --install all
     #   - docker buildx create --name multiarch-builder --driver docker-container --use
     #   - docker buildx inspect --bootstrap
@@ -1827,6 +1840,11 @@ publish-container-multi-arch:
     #   - docker pull nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-aarch64
     #   - docker manifest inspect nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-aarch64
     script:
+      - |
+        if [ "${CI_COMMIT_REF_PROTECTED:-false}" != "true" ]; then
+            echo "Skipping NGC multi-arch manifest for unprotected ref ${CI_COMMIT_REF_NAME:-unknown}"
+            exit 0
+        fi
       - docker manifest create nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG} --amend nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-x86_64 --amend nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}-aarch64
       - docker manifest push nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}
       - docker manifest inspect nvcr.io/nvidian/isaac-sim:latest-${CI_COMMIT_REF_SLUG}
@@ -1839,8 +1857,9 @@ publish-container-multi-arch:
       # Special exemption to prevent this from happening on MRs
       - if: $CI_PIPELINE_SOURCE == "merge_request_event"
         when: never
+      - if: $CI_COMMIT_REF_PROTECTED != "true"
+        when: never
       - !reference [.container-rules, rules]
-    allow_failure: true
 
 # ==============================================================================================================
 test-container:

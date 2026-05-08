@@ -18,9 +18,13 @@ else
     # For non-MRs tag it with isaac-sim:latest-branch-platform and isaac-sim:branch-hash-platform
     CONTAINER_TAGS="${GITLAB_BASE}:latest-${CI_COMMIT_REF_SLUG}-${PLATFORM_TAG}"
     CONTAINER_TAGS="${CONTAINER_TAGS},${GITLAB_BASE}:${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}-${PLATFORM_TAG}"
-    # Additionally non-MRs get pushed to NGC as isaac-sim:latest-branch-platform and latest-branch-hash-platform
-    CONTAINER_TAGS="${CONTAINER_TAGS},${NGC_BASE}:latest-${CI_COMMIT_REF_SLUG}-${PLATFORM_TAG}"
-    CONTAINER_TAGS="${CONTAINER_TAGS},${NGC_BASE}:latest-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}-${PLATFORM_TAG}"
+    if [ "${CI_COMMIT_REF_PROTECTED:-false}" = "true" ]; then
+        # Additionally protected non-MRs get pushed to NGC as isaac-sim:latest-branch-platform and latest-branch-hash-platform
+        CONTAINER_TAGS="${CONTAINER_TAGS},${NGC_BASE}:latest-${CI_COMMIT_REF_SLUG}-${PLATFORM_TAG}"
+        CONTAINER_TAGS="${CONTAINER_TAGS},${NGC_BASE}:latest-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}-${PLATFORM_TAG}"
+    else
+        echo "Skipping NGC tags for unprotected ref ${CI_COMMIT_REF_NAME:-unknown}"
+    fi
 fi
 
 echo "Base container: $BASE_CONTAINER"
