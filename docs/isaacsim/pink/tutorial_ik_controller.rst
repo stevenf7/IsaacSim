@@ -18,8 +18,8 @@ By the end of this tutorial, you'll understand:
 - Review the :ref:`Robot Configuration tutorial <isaac_sim_pink_tutorial_robot_configuration>` to understand how to load robot configurations.
 - Review the :doc:`Controllers and the RobotState <../motion_generation/mobile_robot_control_example>` tutorial to understand the :class:`BaseController` interface and :class:`RobotState`.
 
-To follow along with the tutorial, you can search and enable the **PINK Examples** extension within your running
-|isaac-sim_short| instance. Within the ``isaacsim.robot_motion.pink.examples`` extension, the **IK Controller**
+To follow along with the tutorial, run your |isaac-sim_short| instance. Then open **Window > Extensions**, search for **PINK Examples** (``isaacsim.robot_motion.pink.examples``), and enable it. If you cannot find it, remove ``@feature`` from the Extensions search bar and search again.
+Within the ``isaacsim.robot_motion.pink.examples`` extension, the **IK Controller**
 example provides a fully functional demonstration of end-effector tracking.
 
 Key Concepts

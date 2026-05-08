@@ -17,7 +17,7 @@ By the end of this tutorial, you'll understand:
 - Review the :doc:`Controllers and the RobotState <../motion_generation/mobile_robot_control_example>` tutorial to understand the :class:`BaseController` interface and :class:`RobotState`.
 - Review the :ref:`World Interface tutorial <isaac_sim_cumotion_tutorial_world_interface>` to understand how to set up :class:`CumotionWorldInterface`.
 
-To follow along with the tutorial, you can search and enable the **cuMotion Examples** extension within your running |isaac-sim_short| instance.
+To follow along with the tutorial, run your |isaac-sim_short| instance. Then open **Window > Extensions**, search for **cuMotion Examples** (``isaacsim.robot_motion.cumotion.examples``), and enable it. If you cannot find it, remove ``@feature`` from the Extensions search bar and search again.
 Within the ``isaacsim.robot_motion.cumotion.examples`` extension, there is a fully functional example of RMPflow including following a target, world awareness,
 and obstacle avoidance.
 

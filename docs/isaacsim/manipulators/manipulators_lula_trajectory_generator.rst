@@ -18,7 +18,7 @@ Getting Started
 - You can reference the :ref:`isaac_sim_app_tutorial_motion_generation_robot_description_editor` to understand how to generate your own ``robot_description.yaml`` file to be able to use the :ref:`isaac_sim_lula_trajectory_generator` on unsupported robots.
 - Review the :ref:`Loaded Scenario Extension Template <isaac_sim_app_tutorial_extension_templates_loaded_scenario>` to understand how this tutorial is structured and run.
 
-To follow along with the tutorial, you can search and enable the **Motion Generation Examples** extension within your running Isaac Sim 6.0 instance.
+To follow along with the tutorial, run your Isaac Sim 6.0 instance. Then open **Window > Extensions**, search for **Motion Generation Examples** (``isaacsim.robot_motion.motion_generation.examples``), and enable it. If you cannot find it, remove ``@feature`` from the Extensions search bar and search again.
 Within the `isaacsim.robot_motion.motion_generation.examples` extension, there an example of the ``LulaTaskSpaceTrajectorygenerator`` and ``LulaCSpaceTrajectoryGenerator`` being used to generate trajectories
 connecting specified c-space and task-space points.
 The sections of this tutorial build up the file ``scenario.py`` from basic functionality to the completed code.

@@ -19,8 +19,8 @@ By the end of this tutorial, you'll understand:
 - Review the :ref:`Robot Configuration tutorial <isaac_sim_pink_tutorial_robot_configuration>` to understand robot loading.
 - Review the :ref:`IK Controller tutorial <isaac_sim_pink_tutorial_ik_controller>` to understand the basic controller workflow.
 
-To follow along with the tutorial, you can search and enable the **PINK Examples** extension within your running
-|isaac-sim_short| instance. The **Multi-Task** example provides an interactive demonstration with runtime cost-weight
+To follow along with the tutorial, run your |isaac-sim_short| instance. Then open **Window > Extensions**, search for **PINK Examples** (``isaacsim.robot_motion.pink.examples``), and enable it. If you cannot find it, remove ``@feature`` from the Extensions search bar and search again.
+The **Multi-Task** example provides an interactive demonstration with runtime cost-weight
 adjustment.
 
 Task Composition
