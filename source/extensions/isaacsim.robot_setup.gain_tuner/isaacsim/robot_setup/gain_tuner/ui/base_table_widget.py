@@ -545,8 +545,10 @@ class TableWidget:
             horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_OFF,
             vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
             style_type_name_override="TreeView",
+            width=ui.Fraction(1),
+            height=ui.Fraction(1),
         ):
-            with ui.HStack():
+            with ui.HStack(width=ui.Fraction(1)):
                 self.id_column = ui.TreeView(
                     self.id_model,
                     delegate=self.id_delegate,
@@ -556,7 +558,10 @@ class TableWidget:
                     header_visible=True,
                     resizeable_on_columns_resized=True,
                 )
-                self.build_tree_view()
+                # HStack does not stretch the main TreeView without an explicit flex frame; otherwise the table
+                # sizes to intrinsic width and leaves empty space (Tune Gains vs Test Gains).
+                with ui.Frame(width=ui.Fraction(1), height=ui.Fraction(1)):
+                    self.build_tree_view()
 
     def build_tree_view(self) -> None:
         """Creates the main tree view component with resizable columns and headers."""

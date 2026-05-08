@@ -1,9 +1,9 @@
 [package]
-version = "3.5.0"
+version = "3.5.1"
 category = "Simulation"
 title = "Gain Tuner"
 description = "Gain Tuner for Articulation PD Gains"
-authors = ["hmazhar@nvidia.com", "qwan@nvidia.com", "rgasoto@nvidia.com"]
+authors = ["hmazhar@nvidia.com", "qwan@nvidia.com", "rgasoto@nvidia.com", "akissel@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot_setup.gain_tuner"
 keywords = ["isaac", "physics", "analyze", "tune"]
 changelog = "docs/CHANGELOG.md"

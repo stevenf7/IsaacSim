@@ -1,4 +1,8 @@
 # Changelog
+## [3.5.1] - 2026-05-07
+### Fixed
+- Fixed first column collapsing on small window sizes
+
 ## [3.5.0] - 2026-04-23
 ### Added
 - `Snap to Limits` test mode with per-joint pass/blocked/fail results

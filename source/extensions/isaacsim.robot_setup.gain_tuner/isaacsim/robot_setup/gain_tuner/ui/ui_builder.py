@@ -143,6 +143,10 @@ class UIBuilder:
     def on_timeline_event(self, event: object) -> None:
         """Callback for Timeline events (Play, Pause, Stop).
 
+        On play, collapses Tune Gains and expands Test Gains (so a collapsed Test Gains section opens for testing).
+        On stop, expands Tune Gains again. Test Gains collapsed state is left unchanged on stop so the panel stays
+        open for inspection and table layout stays stable.
+
         Args:
             event: Event Type
         """
@@ -157,7 +161,6 @@ class UIBuilder:
                 self._test_button.enabled = True
         if event.event_name == omni.timeline.GLOBAL_EVENT_STOP:
             self._gains_tuning_frame.collapsed = False
-            self._test_gains_frame.collapsed = True
             if self._test_button:
                 self._test_button.enabled = False
 
@@ -305,7 +308,7 @@ class UIBuilder:
         )
 
         self._test_gains_frame = CollapsableFrame(
-            "Test Gains Settings", collapsed=True, enabled=True, build_fn=self._build_test_gains_frame
+            "Test Gains Settings", collapsed=False, enabled=True, build_fn=self._build_test_gains_frame
         )
 
         self._charts_frame = CollapsableFrame("Charts", collapsed=True, enabled=True, build_fn=self._build_charts_frame)
@@ -325,7 +328,7 @@ class UIBuilder:
                 ui.Label("No robot selected/found", style={"color": 0xFF6666FF})
 
             else:
-                with ui.VStack(style=get_style(), spacing=5, height=0):
+                with ui.VStack(style=get_style(), spacing=5, height=0, width=ui.Fraction(1)):
                     with ui.HStack():
                         ui.Spacer(width=10)
                         self._edit_mode_collection = ui.RadioCollection()
@@ -357,8 +360,8 @@ class UIBuilder:
                         self._edit_mode_collection.model.set_value(0)
                         self._edit_mode_collection.model.add_value_changed_fn(lambda m: self._switch_tuning_mode(m))
 
-                    with ui.ZStack(height=self._initial_table_height):
-                        with ui.VStack():
+                    with ui.ZStack(height=self._initial_table_height, width=ui.Fraction(1)):
+                        with ui.VStack(width=ui.Fraction(1)):
                             joint_entries = self._gains_tuner.get_joint_entries()
                             self._gains_table_widget = JointWidget(
                                 joint_entries,
@@ -549,7 +552,7 @@ class UIBuilder:
                 self._test_table_widget = None
                 ui.Label("Start Simulation to run Tests", name="gains_tuner_not_initialized")
                 return
-        with ui.VStack(style=get_style(), spacing=5, height=0):
+        with ui.VStack(style=get_style(), spacing=5, height=0, width=ui.Fraction(1)):
             with ui.HStack():
                 self._test_duration_frame = ui.Frame(width=0, visible=False)
                 with self._test_duration_frame:
@@ -768,8 +771,8 @@ class UIBuilder:
                         ui.Label("Disable Velocity Limits During Test", width=0)
                         ui.Spacer(width=ui.Fraction(1))
 
-            with ui.ZStack(height=self._initial_table_height):
-                with ui.VStack():
+            with ui.ZStack(height=self._initial_table_height, width=ui.Fraction(1)):
+                with ui.VStack(width=ui.Fraction(1)):
                     self._test_table_widget = TestJointWidget(self._gains_tuner)
                     self._test_table_widget.switch_mode(int(self._test_mode))
 
