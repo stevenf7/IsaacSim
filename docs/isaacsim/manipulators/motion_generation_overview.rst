@@ -2,12 +2,14 @@
 .. _isaac_sim_advanced_tutorials_motion_generation:
 
 
-=================
-Motion Generation
-=================
+==============================
+Motion Generation (Deprecated)
+==============================
 
-.. note::
-   For new development, consider using the newer :doc:`cuMotion Integration <../cumotion/index>`, which is built on the new experimental motion generation API and provides improved interfaces and additional features.
+.. admonition:: Deprecated
+   :class: warning
+
+   For new development, consider using the newer :doc:`Robot Motion (Experimental) <../robot_motion_experimental/index>` API, which provides improved interfaces and additional features.
 
 .. _isaac_sim_motion_generation_tutorials:
 

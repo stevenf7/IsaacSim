@@ -13,8 +13,10 @@
 Kinematics Solvers
 +++++++++++++++++++++++++++++++
 
-.. note::
-   For new development, consider using the newer experimental motion generation API in :doc:`Motion Generation (Experimental) <../../motion_generation/index>`, which provides improved interfaces and additional features.
+.. admonition:: Deprecated
+   :class: warning
+
+   For new development, consider using the newer :doc:`Robot Motion (Experimental) <../../robot_motion_experimental/index>` API, which provides improved interfaces and additional features.
 
 Like a :ref:`isaac_sim_motion_policy`, a :ref:`isaac_sim_kinematics_solver` is an interface class with a single provided implementation.  A `KinematicsSolver`
 is able to compute forward and inverse kinematics.  A single implementation is provided using the NVIDIA-developed **Lula** library. (see :ref:`isaac_sim_lula_kinematics_solver`)

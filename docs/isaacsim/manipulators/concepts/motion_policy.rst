@@ -11,8 +11,10 @@
 Motion Policy Algorithm
 ++++++++++++++++++++++++++++
 
-.. note::
-   For new development, consider using the newer experimental motion generation API in :doc:`Motion Generation (Experimental) <../../motion_generation/index>` and :doc:`cuMotion Integration <../../cumotion/index>`, which provide improved interfaces and additional features.
+.. admonition:: Deprecated
+   :class: warning
+
+   For new development, consider using the newer :doc:`Robot Motion (Experimental) <../../robot_motion_experimental/index>` API, which provides improved interfaces and additional features.
 
 An |isaac-sim_short| motion policy is a collision aware algorithm that outputs actions on each frame to navigate a single robot to a single task-space target.
 The `MotionPolicy` class is an interface that is designed to be basic to fulfill,

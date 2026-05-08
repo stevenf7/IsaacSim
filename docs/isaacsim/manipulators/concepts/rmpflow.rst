@@ -12,8 +12,10 @@
 RMPflow
 =======
 
-.. note::
-   For new development, consider using the newer :doc:`cuMotion Integration <../../cumotion/index>`, which provides improved interfaces and additional features over Lula.
+.. admonition:: Deprecated
+   :class: warning
+
+   For new development, consider using the newer :doc:`Robot Motion (Experimental) <../../robot_motion_experimental/index>` API, which provides improved interfaces and additional features over Lula.
 
 :ref:`isaac_sim_glossary_rmp` is a set of motion generation tools that underlies most |isaac-sim_short| manipulator controls.
 It creates smooth trajectories for the robots with intelligent collision avoidance.

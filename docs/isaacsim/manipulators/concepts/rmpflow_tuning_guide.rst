@@ -11,8 +11,10 @@
 RMPflow Tuning Guide
 ====================
 
-.. note::
-   For new development, consider using the newer :doc:`cuMotion Integration <../../cumotion/index>`, which provides improved interfaces and additional features over Lula. This
+.. admonition:: Deprecated
+   :class: warning
+
+   For new development, consider using the newer :doc:`Robot Motion (Experimental) <../../robot_motion_experimental/index>` API, which provides improved interfaces and additional features over Lula. This
    page is still a valid tuning guide for RMPflow in |cumotion|.
 
 Given the number of parameters involved in fully specifying a complete set of RMPs,

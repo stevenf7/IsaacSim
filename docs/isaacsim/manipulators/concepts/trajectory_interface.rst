@@ -11,8 +11,10 @@
 Trajectory Generation
 +++++++++++++++++++++++++++++
 
-.. note::
-   For new development, consider using the newer experimental motion generation API in :doc:`Motion Generation (Experimental) <../../motion_generation/index>` and :doc:`cuMotion Integration <../../cumotion/index>`, which provide improved interfaces and additional features.
+.. admonition:: Deprecated
+   :class: warning
+
+   For new development, consider using the newer :doc:`Robot Motion (Experimental) <../../robot_motion_experimental/index>` API, which provides improved interfaces and additional features.
 
 In the Motion Generation extension, a workflow is provided for defining c-space and task-space trajectories.  An interface is provided for a :ref:`isaac_sim_trajectory` class:
 

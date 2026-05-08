@@ -4,8 +4,10 @@
 Lula RRT
 ============================
 
-.. note::
-   For new development, consider using the newer :doc:`cuMotion Integration <../../cumotion/index>`, which is built on the new experimental motion generation API and provides improved interfaces and additional features over Lula.
+.. admonition:: Deprecated
+   :class: warning
+
+   For new development, consider using the newer :doc:`Robot Motion (Experimental) <../../robot_motion_experimental/index>` API, which provides improved interfaces and additional features over Lula.
 
 This tutorial shows how the :ref:`isaac_sim_motion_generation_rrt` class in the :ref:`isaac_sim_motion_generation` extension can be used to
 produce a collision free path from a starting configuration space (c-space) position to a c-space or task-space target.
