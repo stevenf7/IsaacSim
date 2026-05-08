@@ -109,7 +109,6 @@ class TestSingleViewDepthCameraSensor(omni.kit.test.AsyncTestCase):
     )
     async def test_enabled_post_processing(self, prim: Any, num_prims: int, operation: str) -> None:
         """Test that the enabled post processing flag can be set and retrieved correctly."""
-        return  # TODO: enabling it crashes the test
         for item in [False, True]:
             prim.set_enabled_post_processing(item)
             output = prim.get_enabled_post_processing()

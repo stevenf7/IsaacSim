@@ -43,8 +43,22 @@ ANNOTATOR = Literal[
     "semantic_segmentation",
 ]
 
-# Bounding-box annotators that must run on CPU.
-_CPU_ANNOTATORS = frozenset({"bounding_box_2d_tight", "bounding_box_2d_loose", "bounding_box_3d"})
+# Annotators that must be attached on the host (CPU) Replicator pipeline.
+# - Bounding-box annotators have no GPU implementation.
+# - Single-view depth sensor render vars (DepthSensor*) must route through
+#   SdPostRenderVarToHost; the device-buffer node SdPostRenderVarTextureToBuffer
+#   logs "corrupted input renderVar" every frame for them.
+_CPU_ANNOTATORS = frozenset(
+    {
+        "bounding_box_2d_tight",
+        "bounding_box_2d_loose",
+        "bounding_box_3d",
+        "depth_sensor_distance",
+        "depth_sensor_imager",
+        "depth_sensor_point_cloud_color",
+        "depth_sensor_point_cloud_position",
+    }
+)
 
 # Annotators that return non-image data (no reshape to resolution).
 _PASSTHROUGH_ANNOTATORS = frozenset({"bounding_box_2d_tight", "bounding_box_2d_loose", "bounding_box_3d", "pointcloud"})
@@ -175,6 +189,13 @@ class CameraSensor(_SensorRuntime):
         spec = self._get_annotator_spec(annotator)
         input_channels = spec["channels"]
         output_channels = spec.get("output_channels", input_channels)
+        # Annotators attached on the host Replicator pipeline may return data
+        # as a numpy.ndarray when a CUDA device is requested. Promote to a
+        # Warp array on the requested device so reshape/slice/wp.copy work
+        # uniformly regardless of attach device.
+        if not isinstance(data, wp.array):
+            target_device = out.device if out is not None else "cuda"
+            data = wp.array(data, dtype=spec["dtype"], device=target_device)
         data = data.reshape((*self._resolution, input_channels))
         if out is None:
             out = data[:, :, :output_channels] if "output_channels" in spec else data

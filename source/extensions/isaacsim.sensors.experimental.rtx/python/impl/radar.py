@@ -20,7 +20,6 @@ This module provides the Radar class for creating/wrapping USD OmniRadar prims.
 
 from __future__ import annotations
 
-import pathlib
 from typing import Any
 
 import carb
@@ -31,7 +30,7 @@ import omni.replicator.core as rep
 import warp as wp
 from isaacsim.storage.native import get_assets_root_path
 
-from ._sensor_base import _SensorAuthoring
+from ._sensor_base import _resolve_config_path, _SensorAuthoring
 from .rtx_radar_configs import SUPPORTED_RADAR_CONFIGS
 
 
@@ -186,15 +185,9 @@ class Radar(_SensorAuthoring):
         if config is not None and usd_path is not None:
             raise ValueError("Both 'config' and 'usd_path' cannot be provided")
         if config is not None:
-            for config_path in SUPPORTED_RADAR_CONFIGS:
-                config_name = pathlib.Path(config_path).stem
-                if config in [config_path, config_name]:
-                    usd_path = get_assets_root_path() + config_path
-                    break
-            if usd_path is None:
-                raise ValueError(
-                    f"Config '{config}' not found. Supported configs: {list(SUPPORTED_RADAR_CONFIGS.keys())}"
-                )
+            usd_path = get_assets_root_path() + _resolve_config_path(
+                config, SUPPORTED_RADAR_CONFIGS, sensor_type="Radar"
+            )
         if usd_path is not None:
             path = Radar._create_from_usd(path=path, usd_path=usd_path, variant=variant)
         return Radar(

@@ -1,5 +1,5 @@
 [package]
-version = "0.6.0"
+version = "0.7.0"
 category = "Simulation"
 title = "Isaac Sim Camera Simulation UI Components"
 description = "Provides UI components for Isaac Sim camera simulation, eg. menu options."
@@ -13,8 +13,9 @@ icon = "data/icon.png"
 writeTarget.kit = true
 
 [dependencies]
+"isaacsim.core.experimental.utils" = {}
 "isaacsim.gui.components" = {}
-"isaacsim.sensors.camera" = {}
+"isaacsim.sensors.experimental.rtx" = {}
 "omni.kit.actions.core" = {}
 "omni.kit.context_menu" = {}
 
