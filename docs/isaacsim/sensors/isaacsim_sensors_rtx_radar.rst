@@ -88,10 +88,6 @@ Details about available annotators can be explored :ref:`here<rtx_sensor_annotat
 Tick Rate
 ^^^^^^^^^
 
-.. note::
-
-    This section only applies to RTX Radars when the multi-tick rendering feature is enabled. This feature is currently disabled by default.
-
 The ``tick_rate`` parameter (Hz) controls how frequently the sensor renders. A value of ``0``
 (the default) enables autotrigger mode, where the sensor renders every simulation frame. Setting a
 nonzero value causes the sensor to render at the specified frequency independently of the simulation
@@ -131,7 +127,6 @@ which wraps a ``Radar`` authoring object and manages Replicator Annotators, simi
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_radar/collect_data_with_radar_sensor.py
     :language: python
-    gmo = parse_generic_model_output_data(data)
 
 Refer to :ref:`rtx_sensor_annotator_descriptions` for the full list of available lower-level annotators.
 

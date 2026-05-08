@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1] - 2026-05-05
+### Removed
+- Enabled multitick, removed `frameSkipCount` input as it's controlled directly on sensor prim.
+
 ## [1.0.0] - 2026-04-03
 ### Added
 - Initial release. OmniGraph nodes extracted from `isaacsim.hsb.bridge`.

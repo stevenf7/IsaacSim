@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.3] - 2026-05-05
+- Enable multitick in all tests
+- Tests now store results in uniquely-named temp directories to avoid run-to-run test pollution
+
 ## [1.5.2] - 2026-04-28
 ### Fixed
 - `project_pinhole` now returns the screen center for camera points whose homogeneous `w` is near zero, preventing a divide-by-zero crash when projecting points on the camera's projection plane.

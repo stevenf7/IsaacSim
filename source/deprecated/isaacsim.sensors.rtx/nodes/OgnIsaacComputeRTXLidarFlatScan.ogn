@@ -19,13 +19,13 @@
             },
             "dataPtr": {
                 "type": "uint64",
-                "description": "DEPRECATED - Pointer to Lidar render result.",
+                "description": "Pointer to GenericModelOutput buffer. When non-zero, individual channel pointer inputs are ignored.",
                 "uiName": "Data Pointer",
                 "default": 0
             },
             "cudaDeviceIndex": {
                 "type": "int",
-                "description": "Index of the device on which data was originally generated.",
+                "description": "DEPRECATED - GPU path is no longer supported; data must be on host (-1).",
                 "default": -1
             },
             "bufferSize": {
@@ -37,14 +37,14 @@
                 "description": "Used to retrieve Lidar configuration."
             },
             "azimuthPtr":{"uiName": "azimuth","type": "uint64",
-                "description": "azimuth in rad [-pi,pi]"},
+                "description": "DEPRECATED - azimuth in rad [-pi,pi]. Use dataPtr (GenericModelOutput) instead."},
                 "azimuthDataType":{
                     "type": "float",
                     "default": 4,"description": "type","metadata": {"hidden": "true"}},"azimuthBufferSize":{"type": "uint64","description": "size","metadata": {"hidden": "true"
                 }
             },
             "distancePtr":{"uiName": "distance","type": "uint64",
-                "description": "range in m"},
+                "description": "DEPRECATED - range in m. Use dataPtr (GenericModelOutput) instead."},
                 "distanceDataType":{
                     "type": "float",
                     "default": 4,"description": "type","metadata": {"hidden": "true"}},"distanceBufferSize":{"type": "uint64","description": "size","metadata": {"hidden": "true"
@@ -53,7 +53,7 @@
             "intensityPtr": {
                 "uiName": "intensity",
                 "type": "uint64",
-                "description": "intensity [0,1]",
+                "description": "DEPRECATED - intensity [0,1]. Use dataPtr (GenericModelOutput) instead.",
                 "default": 0
             },
             "intensityDataType": {

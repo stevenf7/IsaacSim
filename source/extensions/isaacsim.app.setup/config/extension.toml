@@ -30,7 +30,7 @@ name = "isaacsim.app.setup"
 
 [settings]
 # Creates a new stage when this extension is enabled so that something is visible in the viewport.
-isaac.startup.create_new_stage = true 
+isaac.startup.create_new_stage = true
 
 [settings."filter:platform"."windows-x86_64"]
 # Set this to specify the ROS bridge extension to use on Windows. Leave it blank for no ROS bridge.
@@ -104,9 +104,14 @@ args = [
     "--/rtx/descriptorSets=360000",
     "--/rtx/hydra/enableSemanticSchema=1",
     "--/rtx/hydra/materialSyncLoads=1",
+    "--/rtx/hydra/supportMultiTickRate=true",
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
+    "--/rtx/rendering/perSensorTickTlas=true",
     "--/rtx/reservedDescriptors=900000",
+    ### Extension specific args
+    # Short-circuit /ExternalSimulationTime check when multitick is enabled
+    "--/rtx/hydra/multiTickRateForcedFixedSimRate=60"
 ]
 
 stdoutFailPatterns.exclude = [

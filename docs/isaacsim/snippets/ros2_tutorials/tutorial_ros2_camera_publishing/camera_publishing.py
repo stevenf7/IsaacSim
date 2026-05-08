@@ -93,7 +93,6 @@ def publish_pointcloud_from_depth(sensor: CameraSensor, freq):
     # Note, this pointcloud publisher will convert the Depth image to a pointcloud using the Camera intrinsics.
     # This pointcloud generation method does not support semantic labeled objects.
     rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.DistanceToImagePlane.name)
-
     writer = rep.writers.get(rv + "ROS2PublishPointCloud")
     writer.initialize(frameId=frame_id, nodeNamespace="", queueSize=1, topicName=topic_name)
     writer.attach([rp_path])
@@ -137,12 +136,9 @@ def publish_camera_tf(sensor: CameraSensor):
         raise ValueError(f"Camera path '{camera_prim}' is invalid.")
 
     try:
-        # Generate the camera_frame_id. OmniActionGraph will use the last part of
-        # the full camera prim path as the frame name, so we will extract it here
-        # and use it for the pointcloud frame_id.
-        camera_frame_id = camera_prim.split("/")[-1]
+        # OmniActionGraph uses the last part of the full camera prim path as the frame name.
+        camera_frame_id = camera_prim_path.split("/")[-1]
 
-        # Generate an action graph associated with camera TF publishing.
         ros_camera_graph_path = "/CameraTFActionGraph"
 
         # If a camera graph is not found, create a new one.
@@ -208,9 +204,8 @@ def publish_camera_tf(sensor: CameraSensor):
     set_target_prims(
         primPath=ros_camera_graph_path + "/PublishTF_" + camera_frame_id,
         inputName="inputs:targetPrims",
-        targetPrimPaths=[camera_prim],
+        targetPrimPaths=[camera_prim_path],
     )
-    return
 
 
 ###################################################################

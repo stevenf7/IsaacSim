@@ -46,12 +46,11 @@ parser.add_argument(
 parser.add_argument(
     "--async-render-handshake", action="store_true", help="Run with async rendering and handshake enabled"
 )
-parser.add_argument("--multitick", action="store_true", help="Run with multi-tick rendering enabled")
 parser.add_argument(
     "--tick-rate", type=float, default=0.0, help="Tick rate for camera sensors (Hz). 0.0 means default rate."
 )
 parser.add_argument(
-    "--enable-lidar-multitick", action="store_true", help="Enable multi-tick rendering for lidar sensors"
+    "--enable-lidar-multitick", action="store_true", help="Set omni:sensor:tickRate on lidar sensors to their scan rate"
 )
 
 args, unknown = parser.parse_known_args()
@@ -66,7 +65,6 @@ gpu_frametime = args.gpu_frametime
 headless = args.non_headless
 viewport_updates = args.viewport_updates
 async_render_handshake = args.async_render_handshake
-multitick = args.multitick
 tick_rate = args.tick_rate
 enable_lidar_multitick = args.enable_lidar_multitick
 
@@ -78,12 +76,6 @@ if async_render_handshake:
         "--/omni/replicator/asyncRendering=true",
     ]
     extra_args.extend(async_render_handshake_args)
-
-if multitick or tick_rate > 0 or enable_lidar_multitick:
-    multitick_args = [
-        "--/rtx/hydra/supportMultiTickRate=true",
-    ]
-    extra_args.extend(multitick_args)
 
 import numpy as np
 from isaacsim import SimulationApp

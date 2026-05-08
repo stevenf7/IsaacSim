@@ -21,11 +21,12 @@ from __future__ import annotations
 import weakref
 
 import carb
+import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.app
 import omni.timeline
 import omni.usd
-from pxr import Usd
+from pxr import Sdf, Usd
 
 _SETTING_PLAY_SIMULATION = "/app/player/playSimulations"
 _SETTING_RATE_LIMIT_ENABLED = "/app/runLoops/main/rateLimitEnabled"
@@ -56,6 +57,8 @@ class RenderingManager:
     """Carbonite event dispatcher for managing event subscriptions and notifications."""
     _timeline = omni.timeline.get_timeline_interface()
     """Timeline interface for controlling time-related operations and frame rate settings."""
+    _fabric_time_stage_id = None
+    """Cached stage ID for :meth:`_ensure_fabric_simulation_time` to avoid redundant Fabric writes."""
     try:
         from omni.kit.loop import _loop as kit_loop
 
@@ -63,6 +66,32 @@ class RenderingManager:
     except Exception as e:
         carb.log_warn(f"Isaac Sim's loop runner not found. Its functionalities will not be used: {e}")
         _loop_runner = None
+
+    @classmethod
+    def _ensure_fabric_simulation_time(cls) -> None:
+        """Seed ``/ExternalSimulationTime`` in Fabric so the multitick renderer can proceed.
+
+        When :obj:`isaacsim.core.simulation_manager` is loaded it maintains this prim with the
+        real physics time on every step. When it is **not** loaded (e.g. rendering-only tests),
+        the prim would be missing and the multitick renderer would stall because it cannot
+        determine the current simulation time. This method creates the prim with ``time=0.0``
+        as a one-time fallback per stage so the viewport can initialise.
+        """
+        try:
+            stage_id = omni.usd.get_context().get_stage_id()
+            if not stage_id or stage_id == cls._fabric_time_stage_id:
+                return
+            fabric_stage = stage_utils.get_current_stage(backend="fabric")
+            prim = fabric_stage.GetPrimAtPath("/ExternalSimulationTime")
+            if prim and prim.HasAttribute("omni:time"):
+                cls._fabric_time_stage_id = stage_id
+                return
+            prim = fabric_stage.DefinePrim("/ExternalSimulationTime", "")
+            attr = prim_utils.create_prim_attribute(prim, name="omni:time", type_name=Sdf.ValueTypeNames.Double)
+            attr.Set(0.0)
+            cls._fabric_time_stage_id = stage_id
+        except Exception:
+            pass
 
     @classmethod
     def render(cls) -> None:
@@ -78,6 +107,7 @@ class RenderingManager:
             >>>
             >>> RenderingManager.render()
         """
+        cls._ensure_fabric_simulation_time()
         play_simulation = cls._carb_settings.get_as_bool(_SETTING_PLAY_SIMULATION)
         if play_simulation:
             cls._carb_settings.set_bool(_SETTING_PLAY_SIMULATION, False)
@@ -91,6 +121,7 @@ class RenderingManager:
 
         This method is the asynchronous version of :py:meth:`render`.
         """
+        cls._ensure_fabric_simulation_time()
         play_simulation = cls._carb_settings.get_as_bool(_SETTING_PLAY_SIMULATION)
         if play_simulation:
             cls._carb_settings.set_bool(_SETTING_PLAY_SIMULATION, False)

@@ -1,8 +1,6 @@
-_, sensor_2D = omni.kit.commands.execute(
-    "IsaacSensorCreateRtxLidar",
+lidar_2D = Lidar.create(
     path="/sensor_2D",
-    parent=None,
     config="Example_Rotary_2D",
-    translation=(0, 0, 1.0),
-    orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),
+    tick_rate=10.0,
+    translations=[[0.0, 0.0, 1.0]],
 )

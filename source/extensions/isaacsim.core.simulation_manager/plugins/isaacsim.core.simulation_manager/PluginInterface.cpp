@@ -86,38 +86,34 @@ uint32_t g_lastStepsPerSecond = 0;
 
 void updateMultiTickExternalSimulationTime()
 {
-    auto settings = carb::getCachedInterface<carb::settings::ISettings>();
-    if (settings && settings->getAsBool("/rtx/hydra/supportMultiTickRate"))
+    // Write the current simulation time to the Fabric prim
+    // /ExternalSimulationTime (attribute omni:time). Writing here from onPhysicsStep
+    // (eUsdContextUpdate, order -10) ensures the multitick rendering codepath
+    // reads the up-to-date value at eHydraRendering (order 30),
+    // within the same app update.
+    auto iSRW = carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
+    if (iSRW && g_stageId.id)
     {
-        // write the current simulation time to the Fabric prim
-        // /ExternalSimulationTime (attribute omni:time). Writing here from onPhysicsStep
-        // (eUsdContextUpdate, order -10) ensures the multitick rendering codepath
-        // reads the up-to-date value at eHydraRendering (order 30),
-        // within the same app update.
-        auto iSRW = carb::getCachedInterface<omni::fabric::IStageReaderWriter>();
-        if (iSRW && g_stageId.id)
+        auto srwId = iSRW->get(g_stageId);
+        if (srwId != omni::fabric::kInvalidStageReaderWriterId)
         {
-            auto srwId = iSRW->get(g_stageId);
-            if (srwId != omni::fabric::kInvalidStageReaderWriterId)
+            static const omni::fabric::Path externalTimePrim =
+                omni::fabric::Path::createImmortal("/ExternalSimulationTime");
+            static const omni::fabric::Token timeAttrToken = omni::fabric::Token::createImmortal("omni:time");
+
+            iSRW->createPrim(srwId, externalTimePrim);
+            static constexpr omni::fabric::Type kDoubleType = { omni::fabric::BaseDataType::eDouble, 1, 0,
+                                                                omni::fabric::AttributeRole::eNone };
+            iSRW->createAttribute(srwId, externalTimePrim, timeAttrToken, omni::fabric::TypeC(kDoubleType));
+
+            auto span = iSRW->getAttributeWr(srwId, externalTimePrim, timeAttrToken);
+            if (auto* p = span.getTypedPointer<double>())
             {
-                static const omni::fabric::Path externalTimePrim =
-                    omni::fabric::Path::createImmortal("/ExternalSimulationTime");
-                static const omni::fabric::Token timeAttrToken = omni::fabric::Token::createImmortal("omni:time");
-
-                iSRW->createPrim(srwId, externalTimePrim);
-                static constexpr omni::fabric::Type kDoubleType = { omni::fabric::BaseDataType::eDouble, 1, 0,
-                                                                    omni::fabric::AttributeRole::eNone };
-                iSRW->createAttribute(srwId, externalTimePrim, timeAttrToken, omni::fabric::TypeC(kDoubleType));
-
-                auto span = iSRW->getAttributeWr(srwId, externalTimePrim, timeAttrToken);
-                if (auto* p = span.getTypedPointer<double>())
-                {
-                    *p = g_simulationTime;
-                }
-                else
-                {
-                    CARB_LOG_ERROR("Failed to write external simulation time to Fabric");
-                }
+                *p = g_simulationTime;
+            }
+            else
+            {
+                CARB_LOG_ERROR("Failed to write external simulation time to Fabric");
             }
         }
     }

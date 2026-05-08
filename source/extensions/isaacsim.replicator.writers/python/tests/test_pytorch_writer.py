@@ -17,6 +17,7 @@
 
 
 import os
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -83,8 +84,8 @@ class TestMultipleRenderProducts(omni.kit.test.AsyncTestCase):
                 rep.randomizer.rotation(seed=test_seed)
 
         # Output directory for backend writing
-        self.out_dir = carb.tokens.get_tokens_interface().resolve("${temp}/test_pytorch_writer")
-        os.makedirs(self.out_dir, exist_ok=True)
+        self.out_dir = tempfile.mkdtemp(prefix="test_pytorch_writer_")
+        print(f"Output directory: {self.out_dir}")
 
         await omni.kit.app.get_app().next_update_async()
 

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import tempfile
+
 import carb.settings
 import omni.kit
 import omni.timeline
@@ -64,6 +66,9 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         SENSOR_FPS = 10.0
         SENSOR_DT = 1.0 / SENSOR_FPS
 
+        out_dir_rgb = tempfile.mkdtemp(prefix="test_writer_fps_rgb_")
+        print(f"Output directory: {out_dir_rgb}")
+
         async def run_custom_fps_example_async(duration_seconds):
             # Create a new stage
             await omni.usd.get_context().new_stage_async()
@@ -92,7 +97,6 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             rp.hydra_texture.set_updates_enabled(False)
 
             # Create the backend for the writer
-            out_dir_rgb = os.path.join(os.getcwd(), "_out_writer_fps_rgb")
             print(f"Writer data will be written to: {out_dir_rgb}")
             backend = rep.backends.get("DiskBackend")
             backend.initialize(output_dir=out_dir_rgb)
@@ -170,9 +174,8 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         await run_custom_fps_example_async(duration_seconds=duration)
 
         # Validate the output directory contents
-        out_dir = os.path.join(os.getcwd(), "_out_writer_fps_rgb")
-        folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": NUM_CAPTURES})
-        self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
+        folder_contents_success = validate_folder_contents(path=out_dir_rgb, expected_counts={"png": NUM_CAPTURES})
+        self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir_rgb}")
 
     async def test_sdg_snippet_subscribers_and_events(self):
         import time

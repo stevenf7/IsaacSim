@@ -397,14 +397,12 @@ class TestRtxSensorCommands(omni.kit.test.AsyncTestCase):
         self.assertTrue(prim.IsValid())
         self.assertTrue(prim.IsA("OmniLidar"))
 
-        is_multitick_enabled = carb.settings.get_settings().get("/rtx/hydra/supportMultiTickRate")
-
         attr = prim.GetAttribute("omni:sensor:Core:accumulateOutputs")
         self.assertTrue(attr.IsValid(), "Expected accumulateOutputs attribute on OmniLidar prim.")
         self.assertEqual(
             attr.Get(),
-            is_multitick_enabled,
-            f"Expected accumulateOutputs to be {is_multitick_enabled} after command execution.",
+            True,
+            "Expected accumulateOutputs to be True after command execution.",
         )
 
     async def test_rtx_lidar_default_creation_with_path(self) -> None:

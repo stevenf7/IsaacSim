@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,1185 +13,817 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for RTX sensor annotators including generic model output, lidar scan buffer, lidar flat scan, and radar point cloud functionality."""
-
+"""Tests for RTX sensor annotators with multi-tick and multi-frame validation."""
 
 import asyncio
+import math
+from typing import Any
 
 import carb
 import isaacsim.sensors.rtx.generic_model_output as gmo_utils
-import matplotlib.pyplot as plt
 import numpy as np
 import omni.kit.test
 import omni.replicator.core as rep
+from isaacsim.core.rendering_manager import RenderingManager
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
 from isaacsim.sensors.rtx import (
     LidarRtx,
     get_gmo_data,
 )
+from omni.replicator.core import Writer
 from pxr import Gf
 
 from .common import create_sarcophagus
 
-DEBUG_DRAW_PRINT = True
+DEBUG_DRAW_PRINT = False
 
-DEFAULT_CONFIG = "Example_Rotary"  # Default configuration for tests
+DEFAULT_CONFIG = None  # Default configuration for tests
 DEFAULT_VARIANT = None  # Default variant for tests
-MAX_TIMESTAMP_DIFF = 3500  # Maximum difference in fireTimeNs for DEFAULT_CONFIG configuration
 NEAR_EDGE_THRESHOLD = 0.5  # Threshold for near edge returns in degrees
 
 
-class TestGenericModelOutput(omni.kit.test.AsyncTestCase):
+def _extract_gmo_raw(rp_data: Any) -> Any:
+    """Extract raw GMO array from render product data, returning None if unavailable.
+
+    Args:
+        rp_data: Render product data dictionary.
+
+    Returns:
+        Raw GMO numpy array or None if unavailable.
+    """
+    gmo_raw = rp_data.get("GenericModelOutput")
+    if gmo_raw is None:
+        return None
+    if isinstance(gmo_raw, dict):
+        gmo_raw = gmo_raw.get("data")
+    if gmo_raw is None:
+        return None
+    if isinstance(gmo_raw, np.ndarray) and gmo_raw.size == 0:
+        return None
+    return gmo_raw
+
+
+class _SarcophagusTestCase(omni.kit.test.AsyncTestCase):
+    """Base test case that creates a sarcophagus scene with known geometry."""
+
+    _OCTANT_DIMENSIONS = [
+        (10, 10, 5),
+        (10, 10, 7),
+        (25, 25, 17),
+        (25, 25, 19),
+        (15, 15, 9),
+        (15, 15, 11),
+        (20, 20, 13),
+        (20, 20, 15),
+    ]
+
+    async def setUp(self) -> None:
+        """Set up the test environment with a new stage and sarcophagus scene."""
+        await create_new_stage_async()
+        await update_stage_async()
+        self._octant_dimensions = list(self._OCTANT_DIMENSIONS)
+        self.cube_info = create_sarcophagus()
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._hydra_texture = None
+        self._writer = None
+
+    async def tearDown(self) -> None:
+        """Tear down the test environment and stop timeline."""
+        self._timeline.stop()
+        if self._writer is not None:
+            self._writer.detach()
+            self._writer = None
+        if self._hydra_texture is not None:
+            self._hydra_texture.destroy()
+            self._hydra_texture = None
+        await omni.kit.app.get_app().next_update_async()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            print("tearDown, assets still loading, waiting to finish...")
+            await asyncio.sleep(1.0)
+        await update_stage_async()
+
+
+class TestGenericModelOutput(_SarcophagusTestCase):
     """Test the Generic Model Output annotator."""
 
-    async def setUp(self) -> None:
-        """Setup test environment with a cube and lidar."""
-        await create_new_stage_async()
-        await update_stage_async()
-
-        # Ordering octants in binary order, such that octant 0 is +++, octant 1 is ++-, etc. for XYZ.
-        self._octant_dimensions = [
-            (10, 10, 5),
-            (10, 10, 7),
-            (25, 25, 17),
-            (25, 25, 19),
-            (15, 15, 9),
-            (15, 15, 11),
-            (20, 20, 13),
-            (20, 20, 15),
-        ]
-        self.cube_info = create_sarcophagus()
-
-        self._timeline = omni.timeline.get_timeline_interface()
-        self._hydra_texture = None
-        self._annotator = rep.AnnotatorRegistry.get_annotator("GenericModelOutput")
-        self._annotator_data = None
-
-    async def tearDown(self) -> None:
-        """Clean up test environment and stop timeline."""
-        self._timeline.stop()
-        if self._annotator.is_attached:
-            self._annotator.detach()
-            self._annotator = None
-        if self._hydra_texture is not None:
-            self._hydra_texture.destroy()
-            self._hydra_texture = None
-        await omni.kit.app.get_app().next_update_async()
-        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            print("tearDown, assets still loading, waiting to finish...")
-            await asyncio.sleep(1.0)
-        await update_stage_async()
-
-    async def _test_point_cloud(self) -> None:
-        """Tests sensor returns stored in GMO buffer against expected range."""
-        # NOTE: if an element of unit_vecs is 0, indicating the return vector is parallel to the plane, the result of np.divide will be inf
-        # Suppress the error
-        np.seterr(divide="ignore")
-        # We have spherical coordinates, so convert to cartesian unit vectors and re-normalize
-        unit_vecs = np.concatenate(
-            [
-                np.cos(np.radians(self.azimuth))[..., None],
-                np.sin(np.radians(self.azimuth))[..., None],
-                np.sin(np.radians(self.elevation))[..., None],
-            ],
-            axis=1,
-        )
-        unit_vecs = unit_vecs / np.linalg.norm(unit_vecs, axis=1, keepdims=True)
-        # Get octant dimensions and indices
-        octant = (unit_vecs[:, 0] < 0) * 4 + (unit_vecs[:, 1] < 0) * 2 + (unit_vecs[:, 2] < 0)
-        dims = np.array([self._octant_dimensions[o] for o in octant])
-
-        # Let alpha be the angle between the normal to the plane and the return vector
-        # Let the distance from the origin of the return vector along the normal vector to the plane be l =  dims(idx)
-        # Let expected range R be the distance along the return vector to the point of intersection with the plane
-        # Then, cos(alpha) = l / R
-        # Next, observe cos(alpha) = n-hat dot r-hat, where n-hat is the unit normal vector to the plane
-        # and r-hat is the unit return vector
-        # Therefore, R = l / (n-hat dot r-hat)
-        # n-hat dot r-hat is simply the index of the unit return vector corresponding to the plane
-        # This simplifies the computation of expected range to elementwise-division of the dimensions by the unit return vectors
-        # The minimum of these values is the expected range to the first plane the return vector will intersect
-        expected_range = np.min(np.divide(dims, np.abs(unit_vecs)), axis=1)
-        # Compute index of the plane that the return vector intersects first for later use
-        plane_idx = np.argmin(np.divide(dims, np.abs(unit_vecs)), axis=1)
-
-        if DEBUG_DRAW_PRINT:
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection="3d")
-            x_plot = np.multiply(unit_vecs[:, 0], self.distance)
-            y_plot = np.multiply(unit_vecs[:, 1], self.distance)
-            z_plot = np.multiply(unit_vecs[:, 2], self.distance)
-            x_expected = np.multiply(unit_vecs[:, 0], expected_range)
-            y_expected = np.multiply(unit_vecs[:, 1], expected_range)
-            z_expected = np.multiply(unit_vecs[:, 2], expected_range)
-            ax.scatter(x_plot, y_plot, z_plot, c="b")
-            ax.scatter(x_expected, y_expected, z_expected, c="r")
-            plt.savefig(f"test_returns_cartesian.png")
-            plt.close()
-
-        # Compute percent differences
-        percent_diffs = np.divide(np.abs(expected_range - self.distance), expected_range)
-
-        # Exclude returns that are within 0.5deg of an octant edge or corner
-        near_edge = np.full(self.azimuth.shape, False)
-        for excl_az in np.arange(-180, 181, 45):
-            near_edge = np.logical_or(near_edge, np.abs(self.azimuth - excl_az) < NEAR_EDGE_THRESHOLD)
-        self._not_near_edge = np.logical_not(near_edge)
-
-        # Compute the number of returns that exceed the threshold of 2%
-        num_exceeding_threshold = np.sum(np.logical_and(percent_diffs > 2e-2, np.array(self._not_near_edge)))
-        num_returns = np.size(self.azimuth)
-        carb.log_warn(f"num_returns: {num_returns}")
-        pct_exceeding_threshold = num_exceeding_threshold / num_returns * 100
-        valid_threshold = 1.0 if num_returns >= 100 else 10.0
-        self.assertLessEqual(
-            pct_exceeding_threshold,
-            valid_threshold,
-            f"Expected fewer than 1% of returns to differ from expected range by more than 2%. {num_exceeding_threshold} of {num_returns} returns exceeded threshold.",
-        )
-
-        # Determine the cube which was struck by the return vector.
-        # The first check is which octant the return vector is in. Note the sequence is based on the sequence of
-        # octants as defined in the test setup.
-        cube_idx = np.zeros(octant.shape, dtype=int)
-        cube_idx[octant == 0] = 0
-        cube_idx[octant == 1] = 0
-        cube_idx[octant == 2] = 3
-        cube_idx[octant == 3] = 3
-        cube_idx[octant == 4] = 1
-        cube_idx[octant == 5] = 1
-        cube_idx[octant == 6] = 2
-        cube_idx[octant == 7] = 2
-        # Next, multiply the cube index by 4 to get which iteration of the test setup we're in, then add the plane index
-        # to select if the return vector struck the x-normal face, y-normal face, or one of the z-normal faces.
-        cube_idx = cube_idx * 4 + plane_idx
-        # For odd octants (z < 0), the z-normal face is the bottom face, so add 1 to the cube index.
-        cube_idx[np.bitwise_and(octant % 2 == 1, plane_idx == 2)] += 1
-        # Finally, convert the cube index to the prim path of the cube.
-        self.cube_prim_paths = [f"/World/cube_{int(i)}" for i in cube_idx]
-
-    async def _test_intensity(self) -> None:
-        """Tests that intensity values are non-negative."""
-        self.assertTrue(np.all(self.intensity >= 0), "Intensities are not non-negative.")
-
-    async def _test_timestamp(self) -> None:
-        """Tests that timestamps are monotonically increasing and within expected range."""
-        timestamp_diffs = np.diff(self.timestamp)
-        self.assertTrue(np.all(timestamp_diffs >= 0), "Timestamps are not monotonically increasing.")
-        max_timestamp_diff = np.max(timestamp_diffs)
-        self.assertTrue(
-            max_timestamp_diff <= MAX_TIMESTAMP_DIFF,
-            f"Max difference in timestamps {max_timestamp_diff}ns > {MAX_TIMESTAMP_DIFF}ns, the maximum difference in fireTimeNs in the Example_Rotary configuration.",
-        )
-
-    async def _test_emitter_id(self) -> None:
-        """Tests that emitter IDs are non-negative and within expected range."""
-        self.assertTrue(np.all(self.emitterId >= 0), "Emitter IDs are not non-negative.")
-        self.assertTrue(np.all(self.emitterId < 1024), "Emitter IDs are expected to be less than 1024.")
-
-    async def _test_channel_id(self) -> None:
-        """Tests that channel IDs are non-negative and within expected range."""
-        self.assertTrue(np.all(self.channelId >= 0), "Channel IDs are not non-negative.")
-        self.assertTrue(np.all(self.channelId < 1024), "Channel IDs are expected to be less than 1024.")
-
-    async def _test_material_id(self) -> None:
-        """Tests that material IDs match expected values for cube prim paths."""
-        self.assertEqual(
-            len(self.materialId),
-            len(self.cube_prim_paths),
-            "Expected same number of material ids as number of valid returns.",
-        )
-
-        failure_count = 0
-        checked_count = 0
-        for i, (material_id, prim_path) in enumerate(zip(self.materialId, self.cube_prim_paths)):
-            if not self._not_near_edge[i]:
-                continue
-            checked_count += 1
-            expected_material_id = self.cube_info[prim_path]["material_id"]
-            if material_id != expected_material_id:
-                failure_count += 1
-
-        failure_pct = (failure_count / checked_count * 100) if checked_count > 0 else 0
-        self.assertLess(
-            failure_pct,
-            1.0,
-            f"Expected fewer than 1% of returns to fail material ID check. "
-            f"{failure_count} of {checked_count} returns ({failure_pct:.2f}%) failed.",
-        )
-
-    async def _test_tick_id(self) -> None:
-        """Tests tick ID values."""
-
-    async def _test_hit_normal(self) -> None:
-        """Tests hit normal values from GMO data."""
-        # TODO: Implement hitNormal validation
-
-    async def _test_velocity(self) -> None:
-        """Validates that velocity values are near zero for stationary objects.
-
-        Prints the maximum absolute velocity and asserts all velocities are close to zero with a tolerance of 5e-3.
-        """
-        print(np.max(np.abs(self.velocity)))
-        self.assertTrue(np.allclose(self.velocity, 0, atol=5e-3), "Velocities are expected to be 0.")
-
-    async def _test_object_id(self) -> None:
-        """Validates object ID mapping and consistency with cube prim paths.
-
-        Decodes the stable ID mapping, validates object IDs exist in the mapping, and checks that object IDs
-        correctly correspond to the expected cube prim paths. Skips returns near octant edges and requires
-        less than 1% failure rate.
-        """
-        stable_id_map = LidarRtx.decode_stable_id_mapping(self._annotator_stable_id_map_data.tobytes())
-        self.assertGreater(len(stable_id_map), 0, "Expected non-empty stable id map.")
-        object_ids = LidarRtx.get_object_ids(self.objectId)
-        self.assertEqual(
-            len(object_ids), len(self.cube_prim_paths), "Expected same number of object ids as number of valid returns."
-        )
-
-        unexpected_object_ids = set(object_ids) - stable_id_map.keys()
-        self.assertFalse(
-            len(unexpected_object_ids) > 0,
-            f"Expected no unexpected object ids. Unexpected object ids: {unexpected_object_ids}",
-        )
-
-        failure_count = 0
-        checked_count = 0
-        for i, object_id in enumerate(object_ids):
-            if not self._not_near_edge[i]:
-                # Skip returns that are within 0.5deg of an octant edge or corner
-                continue
-            checked_count += 1
-            stable_id = stable_id_map[object_id]
-            if stable_id != self.cube_prim_paths[i]:
-                failure_count += 1
-
-        failure_pct = (failure_count / checked_count * 100) if checked_count > 0 else 0
-        self.assertLess(
-            failure_pct,
-            1.0,
-            f"Expected fewer than 1% of returns to fail object ID check. "
-            f"{failure_count} of {checked_count} returns ({failure_pct:.2f}%) failed.",
-        )
-
-    async def _test_echo_id(self) -> None:
-        """Validates that all echo IDs are zero as expected."""
-        self.assertTrue(np.all(self.echoId == 0), "Echo IDs are expected to be 0.")
-
-    async def _test_tick_state(self) -> None:
-        """Validates that all tick states are zero as expected."""
-        self.assertTrue(np.all(self.tickState == 0), "Tick states are expected to be 0.")
-
-    async def _test_annotator_outputs(self, config: str = DEFAULT_CONFIG, variant: str = DEFAULT_VARIANT) -> None:
-        """Creates RTX Lidar sensor and validates all Generic Model Output annotator data.
-
-        Creates an OmniLidar prim with specified configuration, attaches GenericModelOutput and StableIdMap
-        annotators, renders frames until valid data is obtained, then extracts and validates all GMO fields
-        including point cloud accuracy, intensity, timestamps, and object/material IDs.
+    class _GmoTestWriter(Writer):
+        """Custom Writer that validates GenericModelOutput data each frame.
 
         Args:
-            config: RTX Lidar configuration name.
-            variant: RTX Lidar variant name.
+            test_instance: Test case instance for assertions.
+            sensor_type: Sensor type string, e.g., "lidar" or "radar".
+            sensor_prim: USD prim for the sensor.
         """
-        # Create sensor prim
-        kwargs = {
-            "path": "lidar",
-            "parent": None,
-            "translation": Gf.Vec3d(0.0, 0.0, 0.0),
-            "orientation": Gf.Quatd(1.0, 0.0, 0.0, 0.0),
-            "config": config,
-            "variant": variant,
-            "omni:sensor:Core:outputFrameOfReference": "WORLD",
-            "omni:sensor:Core:auxOutputType": "FULL",
-            "omni:sensor:Core:skipDroppingInvalidPoints": False,
-        }
 
-        _, self.sensor = omni.kit.commands.execute(f"IsaacSensorCreateRtxLidar", **kwargs)
-        sensor_type = self.sensor.GetTypeName()
-        self.assertEqual(
-            sensor_type, "OmniLidar", f"Expected OmniLidar prim, got {sensor_type}. Was sensor prim created?"
-        )
-
-        # Create render product and attach to sensor
-        self._hydra_texture = rep.create.render_product(
-            self.sensor.GetPath(),
-            [32, 32],
-            name="RtxSensorRenderProduct",
-            render_vars=["GenericModelOutput", "RtxSensorMetadata"],
-        )
-        # Attach annotator to render product
-        self._annotator.attach([self._hydra_texture.path])
-
-        # Attach StableIdMap annotator to OmniLidar prim to pick up object IDs
-        self._annotator_stable_id_map = rep.AnnotatorRegistry.get_annotator("StableIdMap")
-        self._annotator_stable_id_map.attach([self._hydra_texture.path])
-
-        # Render frames until we get valid data, or until we've rendered the maximum number of frames
-        self._timeline.play()
-        for _ in range(10):
-            # Wait for a single frame
-            await omni.kit.app.get_app().next_update_async()
-            self._annotator_data = self._annotator.get_data()
-            # Test that the annotator data is not empty
-            if self._annotator_data is None or self._annotator_data.size == 0:
-                continue
-
-            gmo = get_gmo_data(self._annotator_data)
-            self._annotator_stable_id_map_data = self._annotator_stable_id_map.get_data()
-            # Test that the GMO magic number is correct
-            if gmo.magicNumber != gmo_utils.getMagicNumberGMO():
-                continue
-        self._timeline.stop()
-
-        # Test that all expected keys are present in the annotator data, then copy those values to the test class attributes
-        self.azimuth = gmo.x.copy()
-        self.elevation = gmo.y.copy()
-        self.distance = gmo.z.copy()
-        self.intensity = gmo.scalar.copy()
-        self.flags = gmo.flags.copy()
-        self.timestamp = gmo.timeOffsetNs.copy()
-        self.emitterId = gmo.emitterId.copy()
-        self.channelId = gmo.channelId.copy()
-        self.materialId = gmo.matId.copy()
-        self.tickId = gmo.tickId.copy()
-        self.hitNormal = gmo.hitNormals.copy()
-        self.velocity = gmo.velocities.copy()
-        self.objectId = gmo.objId.copy()
-        self.echoId = gmo.echoId.copy()
-        self.tickState = gmo.tickStates.copy()
-
-        # Test point cloud data shape
-        num_points = self.azimuth.shape[0]
-        self.assertGreater(num_points, 0, "Expected non-empty azimuth data.")
-
-        # Select only valid points
-        valid = np.bitwise_and(self.flags, 64) == 64
-        self.azimuth = self.azimuth[valid]
-        self.elevation = self.elevation[valid]
-        self.distance = self.distance[valid]
-        self.intensity = self.intensity[valid]
-        self.timestamp = self.timestamp[valid]
-        self.emitterId = self.emitterId[valid]
-        self.channelId = self.channelId[valid]
-        self.materialId = self.materialId[valid]
-        self.tickId = self.tickId[valid]
-        self.hitNormal = self.hitNormal[np.repeat(valid, 3)].reshape(-1, 3)
-        self.velocity = self.velocity[np.repeat(valid, 3)].reshape(-1, 3)
-        self.objectId = self.objectId[np.repeat(valid, 16)]
-        self.echoId = self.echoId[valid]
-        self.tickState = self.tickState[valid]
-
-        await self._test_point_cloud()
-        await self._test_intensity()
-        await self._test_timestamp()
-        await self._test_emitter_id()
-        await self._test_channel_id()
-        await self._test_material_id()
-        await self._test_tick_id()
-        await self._test_hit_normal()
-        await self._test_velocity()
-        await self._test_object_id()
-        await self._test_echo_id()
-        await self._test_tick_state()
-
-    async def _soak_annotator(self, config: str = DEFAULT_CONFIG, variant: str = DEFAULT_VARIANT) -> None:
-        """Performs sustained testing of the Generic Model Output annotator over multiple frames.
-
-        Creates an RTX Lidar sensor and runs extended validation including frame data consistency,
-        magic number verification, unique data per frame checks, and complete scan azimuth coverage testing.
-        Validates that scan data has no gaps and covers the full -180 to +180 degree range.
-
-        Args:
-            config: RTX Lidar configuration name.
-            variant: RTX Lidar variant name.
-        """
-        # Create sensor prim
-        kwargs = {
-            "path": "lidar",
-            "parent": None,
-            "translation": Gf.Vec3d(0.0, 0.0, 0.0),
-            "orientation": Gf.Quatd(1.0, 0.0, 0.0, 0.0),
-            "config": config,
-            "variant": variant,
-            "omni:sensor:Core:outputFrameOfReference": "WORLD",
-            "omni:sensor:Core:auxOutputType": "FULL",
-            "omni:sensor:Core:skipDroppingInvalidPoints": False,
-        }
-
-        _, self.sensor = omni.kit.commands.execute(f"IsaacSensorCreateRtxLidar", **kwargs)
-        sensor_type = self.sensor.GetTypeName()
-        self.assertEqual(
-            sensor_type, "OmniLidar", f"Expected OmniLidar prim, got {sensor_type}. Was sensor prim created?"
-        )
-        scan_rate_base_hz = self.sensor.GetAttribute("omni:sensor:Core:scanRateBaseHz").Get()
-
-        # Create render product and attach to sensor
-        self._hydra_texture = rep.create.render_product(
-            self.sensor.GetPath(),
-            [32, 32],
-            name="RtxSensorRenderProduct",
-            render_vars=["GenericModelOutput", "RtxSensorMetadata"],
-        )
-        # Attach annotator to render product
-        self._annotator.initialize()
-        self._annotator.attach([self._hydra_texture.path])
-
-        NUM_FRAMES = 100
-        WARMUP_FRAMES = 3
-        MAX_BAD_MAGIC_NUMBER_FRAME_COUNT = 1
-
-        data_frame_count = 0
-        empty_frame_count = 0
-        bad_magic_number_frame_count = 0
-        scan_azimuth = np.array([], dtype=np.float32)
-        num_concatenations = 0
-        last_gmo_buffer = None
-
-        self._timeline.play()
-        for _ in range(NUM_FRAMES):
-            # Wait for a single frame
-            await omni.kit.app.get_app().next_update_async()
-            self._annotator_data = self._annotator.get_data()
-            # Test that the annotator data is not empty
-            if self._annotator_data is None or self._annotator_data.size == 0:
-                empty_frame_count += 1
-                self.assertLessEqual(
-                    empty_frame_count, WARMUP_FRAMES, f"Expected at most {WARMUP_FRAMES} empty frames."
+        def __init__(self, test_instance: Any = None, sensor_type: Any = None, sensor_prim: Any = None) -> None:
+            self.data_structure = "renderProduct"
+            self.annotators = [
+                rep.annotators.get("GenericModelOutput"),
+                rep.annotators.get("StableIdMap"),
+            ]
+            self._test = test_instance
+            self._sensor_type = sensor_type
+            self._prev_timestamp_ns = None
+            self._stable_id_map = None
+            self._octant_dims = np.array(test_instance._octant_dimensions) if test_instance else None
+            self._expected_material_ids = None
+            self.bad_magic_count = 0
+            self.num_elements_zero_count = 0
+            self.valid_frame_count = 0
+            self._sensor_prim = sensor_prim
+            if self._sensor_type == "lidar":
+                tick_rate = self._sensor_prim.GetAttribute("omni:sensor:tickRate").Get()
+                pattern_firing_rate_hz = self._sensor_prim.GetAttribute("omni:sensor:Core:patternFiringRateHz").Get()
+                fire_time_ns = np.array(
+                    self._sensor_prim.GetAttribute("omni:sensor:Core:emitterState:s001:fireTimeNs").Get()
                 )
-                continue
-
-            gmo = get_gmo_data(self._annotator_data)
-            # Test that the GMO magic number is correct
-            if gmo.magicNumber != gmo_utils.getMagicNumberGMO():
-                bad_magic_number_frame_count += 1
-                self.assertLessEqual(
-                    bad_magic_number_frame_count,
-                    MAX_BAD_MAGIC_NUMBER_FRAME_COUNT,
-                    f"Expected at most {MAX_BAD_MAGIC_NUMBER_FRAME_COUNT} bad magic number frames.",
+                max_fire_time_ns = np.max(fire_time_ns)
+                max_fire_time_ns_diff = np.max(np.diff(fire_time_ns))
+                self._max_timeOffsetNs_expected = max(
+                    max_fire_time_ns_diff, 1.0 / pattern_firing_rate_hz * 1e9 - max_fire_time_ns
                 )
-                continue
+            elif self._sensor_type == "radar":
+                tick_rate = 60.0
+                self._max_timeOffsetNs_expected = 1.0
+            self._expected_advance_ns = round(1.0 / tick_rate * 1e9)
+            np.seterr(divide="ignore")
 
-            # Test that the GMO data is unique per frame
-            if last_gmo_buffer is not None and last_gmo_buffer.shape == self._annotator_data.shape:
-                self.assertFalse(
-                    np.all(last_gmo_buffer == self._annotator_data),
-                    "GMO data is the same as the last frame. Expected unique data per frame.",
-                )
-            last_gmo_buffer = self._annotator_data
-            data_frame_count += 1
-            # Concatenate the GMO x values to form a complete scan
-            scan_azimuth = np.concatenate((scan_azimuth, gmo.x), axis=0)
-            num_concatenations += 1
-            if num_concatenations == 60 / scan_rate_base_hz:
-                # Test that the complete scan has no gaps
-                sorted_azimuth = np.sort(scan_azimuth)
-                azimuth_diffs = np.diff(sorted_azimuth)
-                self.assertAlmostEqual(np.min(sorted_azimuth), -180.0, delta=5e-3)
-                self.assertAlmostEqual(np.max(sorted_azimuth), 180.0, delta=5e-3)
-                self.assertAlmostEqual(np.min(azimuth_diffs), 0.0)
-                # self.assertLessEqual(np.max(azimuth_diffs), 0.05)
-                # Reset the scan azimuth buffer
-                scan_azimuth = np.array([], dtype=np.float32)
-                num_concatenations = 0
-        self._timeline.stop()
-
-        expected_valid_frames = NUM_FRAMES - WARMUP_FRAMES
-        self.assertGreaterEqual(data_frame_count, expected_valid_frames)
-
-    async def test_3d_lidar(self) -> None:
-        """Tests Generic Model Output annotator with Example_Rotary 3D LiDAR configuration."""
-        await self._test_annotator_outputs(config="Example_Rotary", variant=None)
-
-    async def test_3d_lidar_soak(self) -> None:
-        """Performs sustained testing of Generic Model Output annotator with Example_Rotary 3D LiDAR."""
-        await self._soak_annotator(config="Example_Rotary", variant=None)
-
-    async def _test_timestamp_alignment(self, sensor_type: str) -> None:
-        """Test that GMO timestampNs aligns with timeline time and pausing prevents new data.
-
-        Args:
-            sensor_type: Either "lidar" or "radar".
-        """
-        # Create sensor prim based on type
-        if sensor_type == "lidar":
-            kwargs = {
-                "path": "lidar",
-                "parent": None,
-                "translation": Gf.Vec3d(0.0, 0.0, 0.0),
-                "orientation": Gf.Quatd(1.0, 0.0, 0.0, 0.0),
-                "config": DEFAULT_CONFIG,
-                "variant": DEFAULT_VARIANT,
-                "omni:sensor:Core:outputFrameOfReference": "WORLD",
-                "omni:sensor:Core:auxOutputType": "FULL",
-                "omni:sensor:Core:skipDroppingInvalidPoints": False,
-            }
-            _, self.sensor = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", **kwargs)
-            expected_prim_type = "OmniLidar"
-        else:  # radar
-            kwargs = {
-                "path": "radar",
-                "parent": None,
-                "translation": Gf.Vec3d(0.0, 0.0, 0.0),
-                "orientation": Gf.Quatd(1.0, 0.0, 0.0, 0.0),
-                "omni:sensor:WpmDmat:outputFrameOfReference": "WORLD",
-                "omni:sensor:WpmDmat:auxOutputType": "FULL",
-            }
-            _, self.sensor = omni.kit.commands.execute("IsaacSensorCreateRtxRadar", **kwargs)
-            expected_prim_type = "OmniRadar"
-
-        self.assertEqual(
-            self.sensor.GetTypeName(),
-            expected_prim_type,
-            f"Expected {expected_prim_type} prim, got {self.sensor.GetTypeName()}",
-        )
-
-        # Create render product and attach to sensor
-        self._hydra_texture = rep.create.render_product(
-            self.sensor.GetPath(),
-            [32, 32],
-            name="RtxSensorRenderProduct",
-            render_vars=["GenericModelOutput", "RtxSensorMetadata"],
-        )
-        self._annotator.initialize()
-        self._annotator.attach([self._hydra_texture.path])
-
-        WARMUP_FRAMES = 10
-        NUM_FRAMES = 10
-        PAUSE_FRAMES = 10
-        GRACE_FRAMES = 5
-        # Expected per-frame advance when playing: 1/60s in nanoseconds
-        EXPECTED_ADVANCE_NS = int(1.0 / 60.0 * 1e9)  # 16_666_666 ns
-        # Tolerance for timestamp delta (2ms in nanoseconds)
-        TOLERANCE_NS = 2_000_000
-
-        prev_gmo_timestamp_ns = None
-
-        # Phase 1: Start timeline and wait for warmup, then verify timestamp advances by 1/60s
-        self._timeline.play()
-
-        # Wait for warmup
-        for i in range(WARMUP_FRAMES):
-            await omni.kit.app.get_app().next_update_async()
-            timeline_time_ns = int(self._timeline.get_current_time() * 1e9)
-            self._annotator_data = self._annotator.get_data()
-            gmo_timestamp_ns = None
-            if self._annotator_data is not None and self._annotator_data.size > 0:
-                gmo = get_gmo_data(self._annotator_data)
-                if gmo.magicNumber == gmo_utils.getMagicNumberGMO():
-                    gmo_timestamp_ns = int(gmo.timestampNs)
-                    prev_gmo_timestamp_ns = gmo_timestamp_ns
-            print(f"[WARMUP  ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={str(gmo_timestamp_ns):>10s}")
-
-        self.assertIsNotNone(prev_gmo_timestamp_ns, "Expected at least one valid GMO frame during warmup")
-
-        # Collect frames and verify GMO timestamp advances by 1/60s relative to previous
-        for i in range(NUM_FRAMES):
-            await omni.kit.app.get_app().next_update_async()
-            timeline_time_ns = int(self._timeline.get_current_time() * 1e9)
-            self._annotator_data = self._annotator.get_data()
-
-            if self._annotator_data is None or self._annotator_data.size == 0:
-                print(f"[PLAYING ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (no data)")
-                continue
-
-            gmo = get_gmo_data(self._annotator_data)
-            if gmo.magicNumber != gmo_utils.getMagicNumberGMO():
-                print(f"[PLAYING ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (bad magic)")
-                continue
-
-            gmo_timestamp_ns = int(gmo.timestampNs)
-            delta_ns = gmo_timestamp_ns - prev_gmo_timestamp_ns
-            print(
-                f"[PLAYING ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={gmo_timestamp_ns:>10d}  delta_ns={delta_ns:>10d}  expected={EXPECTED_ADVANCE_NS}"
-            )
-
-            self.assertAlmostEqual(
-                delta_ns,
-                EXPECTED_ADVANCE_NS,
-                delta=TOLERANCE_NS,
-                msg=f"Playing: GMO timestamp delta ({delta_ns} ns) != expected ({EXPECTED_ADVANCE_NS} ns). "
-                f"prev={prev_gmo_timestamp_ns}, curr={gmo_timestamp_ns}",
-            )
-            prev_gmo_timestamp_ns = gmo_timestamp_ns
-
-        # Phase 2: Pause the timeline and verify GMO timestamp does not advance (delta == 0)
-        self._timeline.pause()
-
-        for i in range(PAUSE_FRAMES):
-            await omni.kit.app.get_app().next_update_async()
-            timeline_time_ns = int(self._timeline.get_current_time() * 1e9)
-            self._annotator_data = self._annotator.get_data()
-
-            if self._annotator_data is None or self._annotator_data.size == 0:
-                print(f"[PAUSED  ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (no data)")
-                continue
-
-            gmo = get_gmo_data(self._annotator_data)
-            if gmo.magicNumber != gmo_utils.getMagicNumberGMO():
-                print(f"[PAUSED  ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (bad magic)")
-                continue
-            if gmo.numElements == 0:
-                print(
-                    f"[PAUSED  ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (no elements)"
-                )
-                continue
-
-            gmo_timestamp_ns = int(gmo.timestampNs)
-            delta_ns = gmo_timestamp_ns - prev_gmo_timestamp_ns
-
-            if i < GRACE_FRAMES:
-                print(
-                    f"[PAUSED  ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={gmo_timestamp_ns:>10d}  delta_ns={delta_ns:>10d}  (grace)"
-                )
-                prev_gmo_timestamp_ns = gmo_timestamp_ns
-                continue
-
-            print(
-                f"[PAUSED  ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={gmo_timestamp_ns:>10d}  delta_ns={delta_ns:>10d}  expected=0"
-            )
-
-            self.assertEqual(
-                delta_ns,
-                0,
-                f"Paused: GMO timestamp should not advance (delta={delta_ns} ns). "
-                f"prev={prev_gmo_timestamp_ns}, curr={gmo_timestamp_ns}",
-            )
-
-        # Phase 3: Resume the timeline and verify timestamp advances by 1/60s again
-        self._timeline.play()
-
-        resumed_frames_collected = 0
-        found_new_data_after_resume = False
-
-        for i in range(NUM_FRAMES * 2):  # Allow more frames to find new data
-            await omni.kit.app.get_app().next_update_async()
-            timeline_time_ns = int(self._timeline.get_current_time() * 1e9)
-            self._annotator_data = self._annotator.get_data()
-
-            if self._annotator_data is None or self._annotator_data.size == 0:
-                print(f"[RESUMED ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (no data)")
-                continue
-
-            gmo = get_gmo_data(self._annotator_data)
-            if gmo.magicNumber != gmo_utils.getMagicNumberGMO():
-                print(f"[RESUMED ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (bad magic)")
-                continue
-            if gmo.numElements == 0:
-                print(
-                    f"[RESUMED ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={'None':>10s}  (no elements)"
-                )
-                continue
-
-            gmo_timestamp_ns = int(gmo.timestampNs)
-            delta_ns = gmo_timestamp_ns - prev_gmo_timestamp_ns
-
-            # Wait for timestamp to actually advance (skip stale/cached frames)
-            if not found_new_data_after_resume:
-                if gmo_timestamp_ns <= prev_gmo_timestamp_ns:
-                    print(
-                        f"[RESUMED ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={gmo_timestamp_ns:>10d}  delta_ns={delta_ns:>10d}  (stale)"
-                    )
+        def write(self, data: Any) -> None:
+            if "renderProducts" not in data:
+                return
+            for rp_name, rp_data in data["renderProducts"].items():
+                gmo_raw = _extract_gmo_raw(rp_data)
+                if gmo_raw is None:
                     continue
-                found_new_data_after_resume = True
 
-            delta_ns = gmo_timestamp_ns - prev_gmo_timestamp_ns
-            print(
-                f"[RESUMED ] step {i:3d}  timeline_ns={timeline_time_ns:>10d}  gmo_ns={gmo_timestamp_ns:>10d}  delta_ns={delta_ns:>10d}  expected={EXPECTED_ADVANCE_NS}"
+                gmo = get_gmo_data(gmo_raw)
+
+                if gmo.magicNumber != gmo_utils.getMagicNumberGMO():
+                    self.bad_magic_count += 1
+                    return
+
+                if gmo.numElements == 0:
+                    self.num_elements_zero_count += 1
+                    return
+
+                ts = int(gmo.timestampNs)
+                if ts == self._prev_timestamp_ns:
+                    return
+
+                if self._prev_timestamp_ns is not None:
+                    delta = ts - self._prev_timestamp_ns
+                    self._test.assertAlmostEqual(
+                        delta,
+                        self._expected_advance_ns,
+                        delta=10,
+                    )
+                self._prev_timestamp_ns = ts
+
+                if self._stable_id_map is None:
+                    sid_raw = rp_data.get("StableIdMap")
+                    if isinstance(sid_raw, dict):
+                        sid_raw = sid_raw.get("data")
+                    self._stable_id_map = LidarRtx.decode_stable_id_mapping(sid_raw.tobytes())
+
+                self._test_point_cloud(gmo)
+                self._test_intensity(gmo)
+                self._test_timestamp(gmo)
+                if self._sensor_type == "lidar":
+                    self._test_emitter_id(gmo)
+                    self._test_channel_id(gmo)
+                    self._test_material_id(gmo)
+                    self._test_velocity(gmo)
+                    self._test_object_id(gmo)
+                    self._test_echo_id(gmo)
+                    self._test_tick_state(gmo)
+                elif self._sensor_type == "radar":
+                    self._test_radial_velocity(gmo)
+
+                self.valid_frame_count += 1
+
+        _OCTANT_TO_CUBE = np.array([0, 0, 3, 3, 1, 1, 2, 2], dtype=int)
+
+        def _test_point_cloud(self, gmo: Any) -> None:
+            """Tests sensor returns stored in GMO buffer against expected range.
+
+            Args:
+                gmo: GMO data object with sensor return fields.
+            """
+            unit_vecs = np.concatenate(
+                [
+                    np.cos(np.radians(gmo.x))[..., None],
+                    np.sin(np.radians(gmo.x))[..., None],
+                    np.sin(np.radians(gmo.y))[..., None],
+                ],
+                axis=1,
+            )
+            unit_vecs = unit_vecs / np.linalg.norm(unit_vecs, axis=1, keepdims=True)
+            octant = (unit_vecs[:, 0] < 0) * 4 + (unit_vecs[:, 1] < 0) * 2 + (unit_vecs[:, 2] < 0)
+            dims = self._octant_dims[octant]
+
+            ratio = np.divide(dims, np.abs(unit_vecs))
+            expected_range = np.min(ratio, axis=1)
+            plane_idx = np.argmin(ratio, axis=1)
+
+            if DEBUG_DRAW_PRINT and self.valid_frame_count == 0:
+                import matplotlib.pyplot as plt
+
+                fig = plt.figure()
+                ax = fig.add_subplot(111, projection="3d")
+                ax.scatter(
+                    np.multiply(unit_vecs[:, 0], gmo.z),
+                    np.multiply(unit_vecs[:, 1], gmo.z),
+                    np.multiply(unit_vecs[:, 2], gmo.z),
+                    c="b",
+                )
+                ax.scatter(
+                    np.multiply(unit_vecs[:, 0], expected_range),
+                    np.multiply(unit_vecs[:, 1], expected_range),
+                    np.multiply(unit_vecs[:, 2], expected_range),
+                    c="r",
+                )
+                plt.savefig("test_returns_cartesian.png")
+                plt.close()
+
+            percent_diffs = np.divide(np.abs(expected_range - gmo.z), expected_range)
+
+            edge_azimuths = np.arange(-180, 181, 45).reshape(1, -1)
+            near_edge = np.any(np.abs(gmo.x[:, None] - edge_azimuths) < NEAR_EDGE_THRESHOLD, axis=1)
+            self._not_near_edge = ~near_edge
+
+            num_exceeding_threshold = np.sum(np.logical_and(percent_diffs > 2e-2, self._not_near_edge))
+            num_returns = np.size(gmo.x)
+            carb.log_warn(f"num_returns: {num_returns}")
+            pct_exceeding_threshold = num_exceeding_threshold / num_returns * 100
+            valid_threshold = 1.0 if num_returns >= 100 else 10.0
+            self._test.assertLessEqual(
+                pct_exceeding_threshold,
+                valid_threshold,
+                f"Expected fewer than 1% of returns to differ from expected range by more than 2%. "
+                f"{num_exceeding_threshold} of {num_returns} returns exceeded threshold.",
             )
 
-            if i >= GRACE_FRAMES:
-                self.assertAlmostEqual(
-                    delta_ns,
-                    EXPECTED_ADVANCE_NS,
-                    delta=TOLERANCE_NS,
-                    msg=f"Resumed: GMO timestamp delta ({delta_ns} ns) != expected ({EXPECTED_ADVANCE_NS} ns). "
-                    f"prev={prev_gmo_timestamp_ns}, curr={gmo_timestamp_ns}",
+            cube_idx = self._OCTANT_TO_CUBE[octant] * 4 + plane_idx
+            cube_idx[np.bitwise_and(octant % 2 == 1, plane_idx == 2)] += 1
+            self._cube_prim_paths = cube_idx
+
+        def _test_intensity(self, gmo: Any) -> None:
+            if self._sensor_type == "lidar":
+                self._test.assertTrue(np.all(gmo.scalar >= 0), "Intensities are not non-negative.")
+            elif self._sensor_type == "radar":
+                self._test.assertTrue(np.all(gmo.scalar != 0), "Intensities are not zero.")
+
+        def _test_timestamp(self, gmo: Any) -> None:
+            timestamp_diffs = np.diff(gmo.timeOffsetNs)
+            self._test.assertTrue(np.all(timestamp_diffs >= 0), "Timestamps are not monotonically increasing.")
+            max_timestamp_diff = np.max(timestamp_diffs)
+            self._test.assertLessEqual(max_timestamp_diff, self._max_timeOffsetNs_expected)
+
+        def _test_emitter_id(self, gmo: Any) -> None:
+            self._test.assertTrue(np.all(gmo.emitterId >= 0), "Emitter IDs are not non-negative.")
+            self._test.assertTrue(np.all(gmo.emitterId < 1024), "Emitter IDs are expected to be less than 1024.")
+
+        def _test_channel_id(self, gmo: Any) -> None:
+            self._test.assertTrue(np.all(gmo.channelId >= 0), "Channel IDs are not non-negative.")
+            self._test.assertTrue(np.all(gmo.channelId < 1024), "Channel IDs are expected to be less than 1024.")
+
+        def _test_material_id(self, gmo: Any) -> None:
+            self._test.assertEqual(
+                len(gmo.matId),
+                len(self._cube_prim_paths),
+                "Expected same number of material ids as number of returns.",
+            )
+            if self._expected_material_ids is None:
+                self._expected_material_ids = np.array(
+                    [
+                        self._test.cube_info[f"/World/cube_{i}"]["material_id"]
+                        for i in range(len(self._test.cube_info.keys()))
+                    ],
+                    dtype=gmo.matId.dtype,
                 )
-            prev_gmo_timestamp_ns = gmo_timestamp_ns
-            resumed_frames_collected += 1
+            expected = self._expected_material_ids[self._cube_prim_paths]
+            mask = self._not_near_edge
+            checked_count = int(np.sum(mask))
+            failure_count = int(np.sum(gmo.matId[mask] != expected[mask])) if checked_count > 0 else 0
+            failure_pct = (failure_count / checked_count * 100) if checked_count > 0 else 0
+            self._test.assertLess(
+                failure_pct,
+                1.0,
+                f"Expected fewer than 1% of returns to fail material ID check. "
+                f"{failure_count} of {checked_count} returns ({failure_pct:.2f}%) failed.",
+            )
 
-    async def test_lidar_timestamp_alignment(self) -> None:
-        """Test that RTX Lidar GMO timestamps align with timeline and pause/resume behavior."""
-        await self._test_timestamp_alignment("lidar")
+        def _test_velocity(self, gmo: Any) -> None:
+            self._test.assertTrue(np.allclose(gmo.velocities, 0, atol=5e-3), "Velocities are expected to be 0.")
 
-    async def test_radar_timestamp_alignment(self) -> None:
-        """Test that RTX Radar GMO timestamps align with timeline and pause/resume behavior."""
-        await self._test_timestamp_alignment("radar")
+        def _test_object_id(self, gmo: Any) -> None:
+            self._test.assertGreater(len(self._stable_id_map), 0, "Expected non-empty stable id map.")
+            object_ids = np.array(LidarRtx.get_object_ids(gmo.objId))
+            self._test.assertEqual(
+                len(object_ids),
+                len(self._cube_prim_paths),
+                "Expected same number of object ids as number of returns.",
+            )
+            mask = self._not_near_edge
+            masked_oids = object_ids[mask]
+            unexpected_object_ids = set(masked_oids) - self._stable_id_map.keys()
+            self._test.assertFalse(
+                len(unexpected_object_ids) > 0,
+                f"Expected no unexpected object ids. Unexpected: {unexpected_object_ids}. "
+                f"Actual: {set(masked_oids)}, Allowed: {self._stable_id_map.keys()}",
+            )
+            expected_paths = np.array([f"/World/cube_{i}" for i in self._cube_prim_paths[mask]])
+            resolved_paths = np.array([self._stable_id_map[oid] for oid in masked_oids])
+            checked_count = len(expected_paths)
+            failure_count = int(np.sum(resolved_paths != expected_paths)) if checked_count > 0 else 0
+            failure_pct = (failure_count / checked_count * 100) if checked_count > 0 else 0
+            self._test.assertLess(
+                failure_pct,
+                1.0,
+                f"Expected fewer than 1% of returns to fail object ID check. "
+                f"{failure_count} of {checked_count} returns ({failure_pct:.2f}%) failed.",
+            )
+
+        def _test_echo_id(self, gmo: Any) -> None:
+            self._test.assertTrue(np.all(gmo.echoId == 0), "Echo IDs are expected to be 0.")
+
+        def _test_tick_state(self, gmo: Any) -> None:
+            self._test.assertTrue(np.all(gmo.tickStates == 0), "Tick states are expected to be 0.")
+
+        def _test_radial_velocity(self, gmo: Any) -> None:
+            self._test.assertLessEqual(
+                np.max(np.abs(gmo.rv_ms)), 1e-2, "Radial velocity is expected to be (close to) 0."
+            )
+
+    _writer_registered = False
+
+    async def setUp(self) -> None:
+        """Set up test environment and register GMO writer."""
+        await super().setUp()
+        if not TestGenericModelOutput._writer_registered:
+            rep.WriterRegistry.register(TestGenericModelOutput._GmoTestWriter)
+            TestGenericModelOutput._writer_registered = True
+
+    async def _test_sensor(self, sensor_type: str, **kwargs: Any) -> None:
+        COLLECTION_SECONDS = 3.0
+
+        sensor_kwargs = {
+            "path": "sensor",
+            "parent": None,
+            "translation": Gf.Vec3d(0.0, 0.0, 0.0),
+            "orientation": Gf.Quatd(1.0, 0.0, 0.0, 0.0),
+        }
+        sensor_kwargs.update(kwargs)
+
+        _, self.sensor = omni.kit.commands.execute(f"IsaacSensorCreateRtx{sensor_type.capitalize()}", **sensor_kwargs)
+        sensor_type_name = self.sensor.GetTypeName()
+        self.assertEqual(
+            sensor_type_name,
+            f"Omni{sensor_type.capitalize()}",
+            f"Expected Omni{sensor_type.capitalize()} prim, got {sensor_type_name}. Was sensor prim created?",
+        )
+
+        self._hydra_texture = rep.create.render_product(
+            self.sensor.GetPath(),
+            [32, 32],
+            name="RtxSensorRenderProduct",
+        )
+
+        self._writer = rep.WriterRegistry.get("_GmoTestWriter")
+        self._writer.initialize(test_instance=self, sensor_type=sensor_type, sensor_prim=self.sensor)
+        self._writer.attach([self._hydra_texture.path])
+
+        total_frames = int(COLLECTION_SECONDS * 60)
+        self._timeline.set_end_time(COLLECTION_SECONDS + 1.0)
+        self._timeline.play()
+        for _ in range(total_frames):
+            await omni.kit.app.get_app().next_update_async()
+        self._timeline.stop()
+
+        carb.log_warn(f"bad magic number frames: {self._writer.bad_magic_count}")
+        carb.log_warn(f"numElements==0 frames: {self._writer.num_elements_zero_count}")
+        carb.log_warn(f"valid frames: {self._writer.valid_frame_count}")
+
+        self.assertGreater(self._writer.valid_frame_count, 0, "Expected at least one valid GMO frame.")
+
+    async def test_lidar(self) -> None:
+        """Test GMO annotator with a lidar sensor."""
+        kwargs = {
+            "omni:sensor:Core:outputFrameOfReference": "WORLD",
+            "omni:sensor:Core:auxOutputType": "FULL",
+        }
+        await self._test_sensor("lidar", **kwargs)
+
+    async def test_radar(self) -> None:
+        """Test GMO annotator with a radar sensor."""
+        kwargs = {
+            "omni:sensor:WpmDmat:outputFrameOfReference": "WORLD",
+            "omni:sensor:WpmDmat:auxOutputType": "BASIC",
+        }
+        await self._test_sensor("radar", **kwargs)
 
 
-class TestIsaacCreateRTXLidarScanBuffer(omni.kit.test.AsyncTestCase):
+class TestIsaacCreateRTXLidarScanBuffer(_SarcophagusTestCase):
     """Test the Isaac Create RTX Lidar Scan Buffer annotator."""
 
-    async def setUp(self) -> None:
-        """Setup test environment with a cube and lidar."""
-        await create_new_stage_async()
-        await update_stage_async()
+    _SCAN_BUFFER_INIT_PARAMS = {
+        "outputAzimuth": True,
+        "outputElevation": True,
+        "outputDistance": True,
+        "outputIntensity": True,
+        "outputTimestamp": True,
+        "outputEmitterId": True,
+        "outputChannelId": True,
+        "outputMaterialId": True,
+        "outputTickId": True,
+        "outputHitNormal": True,
+        "outputVelocity": True,
+        "outputObjectId": True,
+        "outputEchoId": True,
+        "outputTickState": True,
+    }
 
-        # Ordering octants in binary order, such that octant 0 is +++, octant 1 is ++-, etc. for XYZ.
-        self._octant_dimensions = [
-            (10, 10, 5),
-            (10, 10, 7),
-            (25, 25, 17),
-            (25, 25, 19),
-            (15, 15, 9),
-            (15, 15, 11),
-            (20, 20, 13),
-            (20, 20, 15),
-        ]
-        self.cube_info = create_sarcophagus()
-
-        self._timeline = omni.timeline.get_timeline_interface()
-        self._hydra_texture = None
-        self._annotator = rep.AnnotatorRegistry.get_annotator("IsaacCreateRTXLidarScanBuffer")
-        self._annotator_data = None
-        self._annotator_generic_model_output_data = None
-        self._default_use_fixed_time_stepping = carb.settings.get_settings().get("/app/player/useFixedTimeStepping")
-
-    async def tearDown(self) -> None:
-        """Clean up test environment and restore default settings."""
-        self._timeline.stop()
-        if self._annotator.is_attached:
-            self._annotator.detach()
-            self._annotator = None
-        if self._hydra_texture is not None:
-            self._hydra_texture.destroy()
-            self._hydra_texture = None
-        await omni.kit.app.get_app().next_update_async()
-        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            print("tearDown, assets still loading, waiting to finish...")
-            await asyncio.sleep(1.0)
-        await update_stage_async()
-        carb.settings.get_settings().set_bool("/app/player/useFixedTimeStepping", self._default_use_fixed_time_stepping)
-
-    async def _test_annotator_outputs(
-        self, config: str = DEFAULT_CONFIG, variant: str = DEFAULT_VARIANT, enable_per_frame_output: bool = False
-    ) -> None:
-        """Test the IsaacCreateRTXLidarScanBuffer annotator output data.
+    class _ScanBufferTestWriter(Writer):
+        """Custom Writer that validates IsaacCreateRTXLidarScanBuffer against GenericModelOutput.
 
         Args:
-            config: Lidar configuration name.
-            variant: Lidar variant name.
-            enable_per_frame_output: Whether to enable per-frame output mode instead of full scan mode.
+            test_instance: Test case instance for assertions.
         """
-        # Create sensor prim
-        kwargs = {
-            "path": "lidar",
-            "parent": None,
-            "translation": Gf.Vec3d(0.0, 0.0, 0.0),
-            "orientation": Gf.Quatd(1.0, 0.0, 0.0, 0.0),
-            "config": config,
-            "variant": variant,
-            "omni:sensor:Core:outputFrameOfReference": "WORLD",
-            "omni:sensor:Core:auxOutputType": "FULL",
-        }
 
-        _, self.sensor = omni.kit.commands.execute(f"IsaacSensorCreateRtxLidar", **kwargs)
-        sensor_type = self.sensor.GetTypeName()
-        self.assertEqual(
-            sensor_type, "OmniLidar", f"Expected OmniLidar prim, got {sensor_type}. Was sensor prim created?"
-        )
+        def __init__(self, test_instance: Any = None) -> None:
+            self.data_structure = "renderProduct"
+            self.annotators = [
+                rep.annotators.get("GenericModelOutput"),
+                rep.annotators.get(
+                    "IsaacCreateRTXLidarScanBuffer",
+                    init_params=TestIsaacCreateRTXLidarScanBuffer._SCAN_BUFFER_INIT_PARAMS,
+                ),
+            ]
+            self._test = test_instance
+            self._gmo_buffer = {}
+            self.bad_magic_count = 0
+            self.num_elements_zero_count = 0
+            self.valid_frame_count = 0
 
-        # Create render product and attach to sensor
-        self._hydra_texture = rep.create.render_product(
-            self.sensor.GetPath(),
-            [32, 32],
-            name="RtxSensorRenderProduct",
-            render_vars=["GenericModelOutput", "RtxSensorMetadata"],
-        )
-        # Attach annotator to render product
-        self._annotator.initialize(
-            outputAzimuth=True,
-            outputElevation=True,
-            outputDistance=True,
-            outputIntensity=True,
-            outputTimestamp=True,
-            outputEmitterId=True,
-            outputChannelId=True,
-            outputMaterialId=True,
-            outputTickId=True,
-            outputHitNormal=True,
-            outputVelocity=True,
-            outputObjectId=True,
-            outputEchoId=True,
-            outputTickState=True,
-            enablePerFrameOutput=enable_per_frame_output,
-        )
-        self._annotator.attach([self._hydra_texture.path])
+        def write(self, data: Any) -> None:
+            if "renderProducts" not in data:
+                return
+            for rp_name, rp_data in data["renderProducts"].items():
+                gmo_raw = _extract_gmo_raw(rp_data)
+                if gmo_raw is None:
+                    continue
 
-        # Attach GenericModelOutput annotator to OmniLidar prim to pick up object IDs
-        annotator_generic_model_output = rep.AnnotatorRegistry.get_annotator("GenericModelOutput")
-        annotator_generic_model_output.attach([self._hydra_texture.path])
+                gmo = get_gmo_data(gmo_raw)
 
-        # Render frames until we get valid data, or until we've rendered the maximum number of frames
-        self._timeline.play()
-        gmo_buffer = {}
-        for _ in range(20):
-            # Wait for a single frame
-            await omni.kit.app.get_app().next_update_async()
-            self._annotator_data = self._annotator.get_data(do_array_copy=True)
-            self._annotator_generic_model_output_data = annotator_generic_model_output.get_data(do_array_copy=True)
-            gmo = get_gmo_data(self._annotator_generic_model_output_data)
-            if gmo.magicNumber == gmo_utils.getMagicNumberGMO() and gmo.numElements > 0:
+                if gmo.magicNumber != gmo_utils.getMagicNumberGMO():
+                    self.bad_magic_count += 1
+                    return
+
+                if gmo.numElements == 0:
+                    self.num_elements_zero_count += 1
+                    return
+
                 key = gmo.timestampNs + gmo.timeOffsetNs[0].astype(np.uint64)
-                num_elements = gmo.numElements
-                valid_elements = np.bitwise_and(gmo.flags, 64) == 64
-                # Need to copy data out of the GMO buffer here to avoid losing the original data when the GMO buffer is cleared
-                gmo_buffer[key] = {
-                    "azimuth": gmo.x[valid_elements],
-                    "elevation": gmo.y[valid_elements],
-                    "distance": gmo.z[valid_elements],
-                    "intensity": gmo.scalar[valid_elements],
-                    "timestamp": gmo.timeOffsetNs[valid_elements].astype(np.uint64) + gmo.timestampNs,
-                    "emitterId": gmo.emitterId[valid_elements],
-                    "channelId": gmo.channelId[valid_elements],
-                    "materialId": gmo.matId[valid_elements],
-                    "tickId": gmo.tickId[valid_elements],
-                    "hitNormal": gmo.hitNormals[np.repeat(valid_elements, 3)].reshape(-1, 3),
-                    "velocity": gmo.velocities[np.repeat(valid_elements, 3)].reshape(-1, 3),
-                    "objectId": gmo.objId[np.repeat(valid_elements, 16)],
-                    "echoId": gmo.echoId[valid_elements],
-                    "tickState": gmo.tickStates[valid_elements],
+                self._gmo_buffer[key] = {
+                    "azimuth": gmo.x.copy(),
+                    "elevation": gmo.y.copy(),
+                    "distance": gmo.z.copy(),
+                    "intensity": gmo.scalar.copy(),
+                    "timestamp": gmo.timeOffsetNs.astype(np.uint64) + gmo.timestampNs,
+                    "emitterId": gmo.emitterId.copy(),
+                    "channelId": gmo.channelId.copy(),
+                    "materialId": gmo.matId.copy(),
+                    "tickId": gmo.tickId.copy(),
+                    "hitNormal": gmo.hitNormals.copy().reshape(-1, 3),
+                    "velocity": gmo.velocities.copy().reshape(-1, 3),
+                    "objectId": gmo.objId.copy(),
+                    "echoId": gmo.echoId.copy(),
+                    "tickState": gmo.tickStates.copy(),
                 }
-            if (
-                not enable_per_frame_output
-                and self._annotator_data
-                and "data" in self._annotator_data
-                and self._annotator_data["data"].size > 0
-            ):
-                break
-        self._timeline.stop()
-        annotator_generic_model_output.detach()
 
-        # Test point cloud data shape and dtype
-        self.assertIn("data", self._annotator_data)
-        self.data = self._annotator_data["data"]
-        self.assertGreater(self.data.shape[0], 0, "Expected non-empty data.")
-        self.assertEqual(self.data.shape[1], 3)
-        self.assertEqual(self.data.dtype, np.float32)
-        num_points = self.data.shape[0]
+                sb = rp_data.get("IsaacCreateRTXLidarScanBuffer")
+                if sb is None or not isinstance(sb, dict):
+                    continue
+                if "data" not in sb or not isinstance(sb["data"], np.ndarray) or sb["data"].size == 0:
+                    continue
 
-        # Test that all expected keys are present in the annotator data with the correct shape and dtype
-        self.assertIn("info", self._annotator_data)
+                self._validate_scan_buffer(sb)
+                self.valid_frame_count += 1
 
-        self.assertIn("transform", self._annotator_data["info"])
-        self.transform = self._annotator_data["info"]["transform"]
-        self.assertEqual(self.transform.shape[0], 16, "Expected non-empty transform.")
-        self.assertEqual(self.transform.dtype, np.float64)
-        self.assertTrue(
-            np.allclose(self.transform, np.eye(4, dtype=np.float64).flatten()), "Expected identity transform."
-        )
+        def _validate_scan_buffer(self, sb: Any) -> None:
+            """Validate scan buffer structure and compare against buffered GMO data.
 
-        self.assertIn("radialVelocityMS", self._annotator_data)
-        self.assertEqual(self._annotator_data["radialVelocityMS"].size, 0, "Expected empty radial velocity data.")
+            Args:
+                sb: Scan buffer data dictionary.
+            """
+            t = self._test
 
-        expected_keys = {
-            "azimuth": (num_points, np.float32),
-            "elevation": (num_points, np.float32),
-            "distance": (num_points, np.float32),
-            "intensity": (num_points, np.float32),
-            "timestamp": (num_points, np.uint64),
-            "emitterId": (num_points, np.uint32),
-            "channelId": (num_points, np.uint32),
-            "materialId": (num_points, np.uint32),
-            "tickId": (num_points, np.uint32),
-            "hitNormal": (num_points, np.float32),
-            "velocity": (num_points, np.float32),
-            "objectId": (num_points * 4, np.uint32),
-            "echoId": (num_points, np.uint8),
-            "tickState": (num_points, np.uint8),
-        }
+            point_cloud = sb["data"]
+            t.assertGreater(point_cloud.shape[0], 0, "Expected non-empty data.")
+            t.assertEqual(point_cloud.shape[1], 3)
+            t.assertEqual(point_cloud.dtype, np.float32)
+            num_points = point_cloud.shape[0]
 
-        for attribute in expected_keys:
-            self.assertIn(attribute, self._annotator_data, f"Expected {attribute} in annotator.get_data().")
-            self.assertIn(
-                attribute, self._annotator_data["info"], f"Expected {attribute} in annotator.get_data()['info']."
-            )
-            self.assertTrue(
-                np.allclose(self._annotator_data[attribute], self._annotator_data["info"][attribute]),
-                f"Expected {attribute} in annotator.get_data() and annotator.get_data()['info'] to be the same.",
-            )
-            attribute_data = self._annotator_data[attribute]
-            self.assertEqual(
-                attribute_data.shape[0],
-                expected_keys[attribute][0],
-                f"Expected {attribute} to have {expected_keys[attribute][0]} points, got {attribute_data.shape[0]}.",
-            )
-            self.assertEqual(
-                attribute_data.dtype,
-                expected_keys[attribute][1],
-                f"Expected {attribute} to have dtype {expected_keys[attribute][1]}, got {attribute_data.dtype}.",
+            t.assertIn("transform", sb)
+            transform = sb["transform"]
+            t.assertEqual(transform.shape[0], 16, "Expected non-empty transform.")
+            t.assertEqual(transform.dtype, np.float64)
+            t.assertTrue(
+                np.allclose(transform, np.eye(4, dtype=np.float64).flatten()),
+                "Expected identity transform.",
             )
 
-        self._compare_annotator_to_gmo(gmo_buffer, expected_keys, compare_data_values=enable_per_frame_output)
+            t.assertIn("radialVelocityMS", sb)
+            t.assertEqual(sb["radialVelocityMS"].size, 0, "Expected empty radial velocity data.")
 
-    def _compare_annotator_to_gmo(
-        self, gmo_buffer: dict, expected_keys: dict, compare_data_values: bool = True
-    ) -> None:
-        """Compare annotator output data against GMO buffer data.
+            expected_keys = {
+                "azimuth": (num_points, np.float32),
+                "elevation": (num_points, np.float32),
+                "distance": (num_points, np.float32),
+                "intensity": (num_points, np.float32),
+                "timestamp": (num_points, np.uint64),
+                "emitterId": (num_points, np.uint32),
+                "channelId": (num_points, np.uint32),
+                "materialId": (num_points, np.uint32),
+                "tickId": (num_points, np.uint32),
+                "hitNormal": (num_points, np.float32),
+                "velocity": (num_points, np.float32),
+                "objectId": (num_points * 4, np.uint32),
+                "echoId": (num_points, np.uint8),
+                "tickState": (num_points, np.uint8),
+            }
 
-        Args:
-            gmo_buffer: Dictionary of GMO frame data keyed by timestamp.
-            expected_keys: Dictionary of expected attribute keys with (shape, dtype) tuples.
-            compare_data_values: If True, compare against single frame matching timestamp and verify data values.
-                If False, compare against concatenated 6 frames and only verify shape and dtype.
-        """
-        if compare_data_values:
-            # For per-frame output, use single GMO frame matching the annotator's timestamp
-            self.assertIn(
-                self._annotator_data["timestamp"][0],
-                gmo_buffer.keys(),
-                f"Expected timestamp {self._annotator_data['timestamp'][0]} to be in GMO buffer (keys: {gmo_buffer.keys()}).",
+            for attribute, (expected_size, expected_dtype) in expected_keys.items():
+                t.assertIn(attribute, sb, f"Expected {attribute} in scan buffer data.")
+                attribute_data = sb[attribute]
+                t.assertEqual(
+                    attribute_data.shape[0],
+                    expected_size,
+                    f"Expected {attribute} to have {expected_size} points, got {attribute_data.shape[0]}.",
+                )
+                t.assertEqual(
+                    attribute_data.dtype,
+                    expected_dtype,
+                    f"Expected {attribute} to have dtype {expected_dtype}, got {attribute_data.dtype}.",
+                )
+
+            self._compare_to_gmo(sb, expected_keys)
+
+        def _compare_to_gmo(self, sb: Any, expected_keys: Any) -> None:
+            """Compare scan buffer output against buffered GMO data.
+
+            Args:
+                sb: Scan buffer data dictionary.
+                expected_keys: Dictionary of expected attribute keys with (size, dtype) tuples.
+            """
+            t = self._test
+            ts_key = sb["timestamp"][0]
+            t.assertIn(
+                ts_key,
+                self._gmo_buffer.keys(),
+                f"Expected timestamp {ts_key} in GMO buffer (keys: {list(self._gmo_buffer.keys())}).",
             )
-            gmo_data_for_comparison = gmo_buffer[self._annotator_data["timestamp"][0]]
-        else:
-            # For full scan, compute expected shape from most recent GMO buffer scaled by 6x
-            sorted_keys = sorted(gmo_buffer.keys())
-            most_recent_key = sorted_keys[-1]
-            most_recent_gmo = gmo_buffer[most_recent_key]
-            gmo_data_for_comparison = {}
+            gmo_data = self._gmo_buffer[ts_key]
+
             for attribute in expected_keys:
-                single_frame_data = most_recent_gmo[attribute]
-                expected_size = single_frame_data.shape[0] * 6
-                # Create placeholder array with the expected shape and dtype
-                if len(single_frame_data.shape) == 1:
-                    gmo_data_for_comparison[attribute] = np.empty((expected_size,), dtype=single_frame_data.dtype)
-                else:
-                    gmo_data_for_comparison[attribute] = np.empty(
-                        (expected_size,) + single_frame_data.shape[1:], dtype=single_frame_data.dtype
-                    )
-
-        for attribute in expected_keys:
-            attribute_data = self._annotator_data[attribute]
-            comparison_data = gmo_data_for_comparison[attribute]
-            expected_shape = comparison_data.shape
-            expected_dtype = comparison_data.dtype
-            if attribute == "objectId":
-                expected_shape = (comparison_data.shape[0] // 4,)
-                expected_dtype = np.uint32
-
-            # Verify shape matches
-            self.assertAlmostEqual(
-                attribute_data.shape[0],
-                expected_shape[0],
-                delta=0.01 * expected_shape[0],
-                msg=f"Expected {attribute} to have shape {expected_shape[0]}, got {attribute_data.shape[0]}.",
-            )
-
-            # Verify dtype matches
-            self.assertEqual(
-                attribute_data.dtype,
-                expected_dtype,
-                f"Expected {attribute} to have dtype {expected_dtype}, got {attribute_data.dtype}.",
-            )
-
-            # Optionally verify data values match
-            if compare_data_values:
+                attribute_data = sb[attribute]
+                comparison_data = gmo_data[attribute]
+                expected_shape = comparison_data.shape
+                expected_dtype = comparison_data.dtype
                 if attribute == "objectId":
-                    self.assertTrue(
+                    expected_shape = (comparison_data.shape[0] // 4,)
+                    expected_dtype = np.uint32
+
+                t.assertAlmostEqual(
+                    attribute_data.shape[0],
+                    expected_shape[0],
+                    delta=0.01 * expected_shape[0],
+                    msg=f"Expected {attribute} shape {expected_shape[0]}, got {attribute_data.shape[0]}.",
+                )
+                t.assertEqual(
+                    attribute_data.dtype,
+                    expected_dtype,
+                    f"Expected {attribute} dtype {expected_dtype}, got {attribute_data.dtype}.",
+                )
+
+                if attribute == "objectId":
+                    t.assertTrue(
                         np.all(attribute_data.view(np.uint8) == comparison_data.view(np.uint8)),
-                        f"Expected objectId to match the corresponding data from the GMO buffer.",
+                        "Expected objectId to match GMO buffer.",
                     )
                 else:
-                    self.assertTrue(
+                    t.assertTrue(
                         np.allclose(attribute_data, comparison_data),
-                        f"Expected {attribute} to match the corresponding data from the GMO buffer.",
+                        f"Expected {attribute} to match GMO buffer.",
                     )
 
-    async def _soak_annotator(
-        self,
-        config: str = DEFAULT_CONFIG,
-        variant: str = DEFAULT_VARIANT,
-        enable_full_scan: bool = False,
-        enable_fixed_time_stepping: bool = False,
-    ) -> None:
-        """Test the annotator over multiple frames to verify stability and correct data production patterns.
+    _writer_registered = False
 
-        Args:
-            config: Lidar configuration name.
-            variant: Lidar variant name.
-            enable_full_scan: Whether to enable full scan mode instead of per-frame output.
-            enable_fixed_time_stepping: Whether to enable fixed time stepping for consistent frame timing.
-        """
-        # Create sensor prim
+    async def setUp(self) -> None:
+        """Set up test environment and register scan buffer writer."""
+        await super().setUp()
+        if not TestIsaacCreateRTXLidarScanBuffer._writer_registered:
+            rep.WriterRegistry.register(TestIsaacCreateRTXLidarScanBuffer._ScanBufferTestWriter)
+            TestIsaacCreateRTXLidarScanBuffer._writer_registered = True
+
+    async def _test_annotator_outputs(self) -> None:
+        COLLECTION_SECONDS = 3.0
+
         kwargs = {
             "path": "lidar",
             "parent": None,
             "translation": Gf.Vec3d(0.0, 0.0, 0.0),
             "orientation": Gf.Quatd(1.0, 0.0, 0.0, 0.0),
-            "config": config,
-            "variant": variant,
             "omni:sensor:Core:outputFrameOfReference": "WORLD",
             "omni:sensor:Core:auxOutputType": "FULL",
         }
-
-        if enable_fixed_time_stepping:
-            carb.settings.get_settings().set_bool("/app/player/useFixedTimeStepping", enable_fixed_time_stepping)
 
         _, self.sensor = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", **kwargs)
         sensor_type = self.sensor.GetTypeName()
         self.assertEqual(
             sensor_type, "OmniLidar", f"Expected OmniLidar prim, got {sensor_type}. Was sensor prim created?"
         )
-        scan_rate_base_hz = self.sensor.GetAttribute("omni:sensor:Core:scanRateBaseHz").Get()
 
-        # Create render product and attach to sensor
         self._hydra_texture = rep.create.render_product(
             self.sensor.GetPath(),
             [32, 32],
             name="RtxSensorRenderProduct",
-            render_vars=["GenericModelOutput", "RtxSensorMetadata"],
         )
-        # Attach annotator to render product
-        self._annotator.initialize(enablePerFrameOutput=(not enable_full_scan), outputAzimuth=True)
-        self._annotator.attach([self._hydra_texture.path])
 
+        self._writer = rep.WriterRegistry.get("_ScanBufferTestWriter")
+        self._writer.initialize(test_instance=self)
+        self._writer.attach([self._hydra_texture.path])
+
+        total_frames = int(COLLECTION_SECONDS * 60)
+        self._timeline.set_end_time(COLLECTION_SECONDS + 1.0)
         self._timeline.play()
-        data_frame_count = 0
-        NUM_FRAMES = 100
-        WARMUP_FRAMES = 5
-
-        # For full scan mode: track frames between data updates
-        frames_per_scan = int(60.0 / scan_rate_base_hz)  # Expected frames between full scans
-        last_nonzero_data = None  # Track last nonzero data to detect updates
-        frames_since_last_update = 0  # Counter for frames since last data change
-
-        for frame_idx in range(NUM_FRAMES):
-            # Wait for a single frame
+        for _ in range(total_frames):
             await omni.kit.app.get_app().next_update_async()
-            self._annotator_data = self._annotator.get_data(do_array_copy=True)
-
-            has_data = self._annotator_data and "data" in self._annotator_data and self._annotator_data["data"].size > 0
-
-            if not enable_full_scan:
-                # Per-frame output mode: count frames with data
-                if has_data:
-                    data_frame_count += 1
-                continue
-
-            # Full scan mode: verify data update pattern
-            current_data = self._annotator_data["data"] if has_data else None
-            is_new_data = has_data and (
-                last_nonzero_data is None or not np.array_equal(current_data, last_nonzero_data)
-            )
-
-            if is_new_data:
-                data_frame_count += 1
-                if last_nonzero_data is None:
-                    # First nonzero data received - verify warmup requirement
-                    self.assertGreaterEqual(
-                        frame_idx,
-                        WARMUP_FRAMES,
-                        f"Expected first valid data after at least {WARMUP_FRAMES} frames, "
-                        f"but got valid data at frame {frame_idx}",
-                    )
-                else:
-                    # Data changed - verify interval and full scan properties
-                    self.assertEqual(
-                        frames_since_last_update,
-                        frames_per_scan - 1,
-                        f"Expected data update after exactly {frames_per_scan} frames (inclusive), "
-                        f"but got update after {frames_since_last_update + 1} frames (frame {frame_idx})",
-                    )
-                    azimuth = np.sort(self._annotator_data["azimuth"])
-                    azimuth_diff = np.diff(azimuth)
-                    self.assertAlmostEqual(np.min(azimuth), -180.0, delta=5e-3)
-                    self.assertAlmostEqual(np.max(azimuth), 180.0, delta=5e-3)
-                    self.assertAlmostEqual(np.min(azimuth_diff), 0.0)
-                    if enable_fixed_time_stepping:
-                        self.assertLessEqual(np.max(azimuth_diff), 0.05)
-
-                last_nonzero_data = current_data.copy()
-                frames_since_last_update = 0
-            elif last_nonzero_data is not None:
-                # After first valid data, count frames until next update
-                frames_since_last_update += 1
-
         self._timeline.stop()
 
-        expected_valid_frames = NUM_FRAMES - WARMUP_FRAMES
-        expected_data_frame_count = (
-            int(expected_valid_frames * scan_rate_base_hz / 60.0) if enable_full_scan else expected_valid_frames
-        )
-        self.assertGreaterEqual(data_frame_count, expected_data_frame_count)
+        carb.log_warn(f"bad magic number frames: {self._writer.bad_magic_count}")
+        carb.log_warn(f"numElements==0 frames: {self._writer.num_elements_zero_count}")
+        carb.log_warn(f"valid frames: {self._writer.valid_frame_count}")
+
+        self.assertGreater(self._writer.valid_frame_count, 0, "Expected at least one valid scan buffer frame.")
 
     async def test_3d_lidar(self) -> None:
-        """Test the annotator with 3D lidar in per-frame output mode."""
-        await self._test_annotator_outputs(config="Example_Rotary", variant=None, enable_per_frame_output=True)
-
-    async def test_3d_lidar_full_scan(self) -> None:
-        """Test the annotator with 3D lidar in full scan mode."""
-        await self._test_annotator_outputs(config="Example_Rotary", variant=None, enable_per_frame_output=False)
-
-    async def test_3d_lidar_soak(self) -> None:
-        """Test the annotator stability with 3D lidar in per-frame output mode over multiple frames."""
-        await self._soak_annotator(config="Example_Rotary", variant=None, enable_full_scan=False)
-
-    async def test_3d_lidar_soak_full_scan(self) -> None:
-        """Test the annotator stability with 3D lidar in full scan mode over multiple frames."""
-        await self._soak_annotator(config="Example_Rotary", variant=None, enable_full_scan=True)
-
-    async def test_3d_lidar_soak_full_scan_fixed_time_stepping(self) -> None:
-        """Test the annotator stability with 3D lidar in full scan mode using fixed time stepping over multiple frames."""
-        await self._soak_annotator(
-            config="Example_Rotary", variant=None, enable_full_scan=True, enable_fixed_time_stepping=True
-        )
+        """Test IsaacCreateRTXLidarScanBuffer annotator with a 3D lidar sensor."""
+        await self._test_annotator_outputs()
 
 
-class TestIsaacComputeRTXLidarFlatScan(omni.kit.test.AsyncTestCase):
+class TestIsaacComputeRTXLidarFlatScan(_SarcophagusTestCase):
     """Test class for IsaacComputeRTXLidarFlatScan annotator."""
 
-    async def setUp(self) -> None:
-        """Setup test environment with a cube and lidar."""
-        await create_new_stage_async()
-        await update_stage_async()
+    _EXPECTED_FLAT_SCAN_KEYS = [
+        "azimuthRange",
+        "depthRange",
+        "horizontalFov",
+        "horizontalResolution",
+        "intensitiesData",
+        "linearDepthData",
+        "numCols",
+        "numRows",
+        "rotationRate",
+    ]
 
-        # Ordering octants in binary order, such that octant 0 is +++, octant 1 is ++-, etc. for XYZ.
-        self._octant_dimensions = [
-            (10, 10, 5),
-            (10, 10, 7),
-            (25, 25, 17),
-            (25, 25, 19),
-            (15, 15, 9),
-            (15, 15, 11),
-            (20, 20, 13),
-            (20, 20, 15),
-        ]
-        self.cube_info = create_sarcophagus()
-
-        self._timeline = omni.timeline.get_timeline_interface()
-        self._annotator_data = None
-        self._hydra_texture = None
-
-        self._lidar_scan_buffer_annotator = rep.AnnotatorRegistry.get_annotator(
-            "IsaacCreateRTXLidarScanBufferForFlatScan"
-        )
-        self._lidar_flat_scan_annotator = rep.AnnotatorRegistry.get_annotator("IsaacComputeRTXLidarFlatScan")
-
-    async def tearDown(self) -> None:
-        """Clean up test environment by stopping timeline and detaching annotators."""
-        self._timeline.stop()
-        if self._lidar_scan_buffer_annotator.is_attached:
-            self._lidar_scan_buffer_annotator.detach()
-            self._lidar_scan_buffer_annotator = None
-        if self._lidar_flat_scan_annotator.is_attached:
-            self._lidar_flat_scan_annotator.detach()
-            self._lidar_flat_scan_annotator = None
-        if self._hydra_texture is not None:
-            self._hydra_texture.destroy()
-            self._hydra_texture = None
-
-    async def _test_annotator_outputs(
-        self, config: str = DEFAULT_CONFIG, variant: str = DEFAULT_VARIANT
-    ) -> None:  # Create sensor prim
-        """Test the IsaacComputeRTXLidarFlatScan annotator outputs against expected values.
-
-        Creates RTX Lidar sensor, attaches scan buffer and flat scan annotators, then validates
-        all output parameters against sensor configuration and point cloud data for both 3D and 2D lidars.
+    class _FlatScanTestWriter(Writer):
+        """Custom Writer that validates IsaacComputeRTXLidarFlatScan against GenericModelOutput.
 
         Args:
-            config: Lidar configuration to use for testing.
-            variant: Lidar variant to use for testing.
+            test_instance: Test case instance for assertions.
+            sensor_attrs: Dictionary of sensor attributes for validation.
         """
+
+        def __init__(self, test_instance: Any = None, sensor_attrs: Any = None) -> None:
+            self.data_structure = "renderProduct"
+            self.annotators = [
+                rep.annotators.get("GenericModelOutput"),
+                rep.annotators.get("IsaacComputeRTXLidarFlatScan"),
+            ]
+            self._test = test_instance
+            self._attrs = sensor_attrs
+            self._is_2d_lidar = all(abs(e) < 1e-3 for e in sensor_attrs["elevationDeg"])
+            carb.log_warn(f"is_2d_lidar: {self._is_2d_lidar}")
+            self.bad_magic_count = 0
+            self.num_elements_zero_count = 0
+            self.valid_frame_count = 0
+
+        def write(self, data: Any) -> None:
+            if "renderProducts" not in data:
+                return
+            for rp_name, rp_data in data["renderProducts"].items():
+                gmo_raw = _extract_gmo_raw(rp_data)
+                if gmo_raw is None:
+                    continue
+
+                gmo = get_gmo_data(gmo_raw)
+
+                if gmo.magicNumber != gmo_utils.getMagicNumberGMO():
+                    self.bad_magic_count += 1
+                    return
+
+                if gmo.numElements == 0:
+                    self.num_elements_zero_count += 1
+                    return
+
+                fs = rp_data.get("IsaacComputeRTXLidarFlatScan")
+                if fs is None or not isinstance(fs, dict):
+                    continue
+                if "numCols" not in fs:
+                    continue
+
+                self._validate_flat_scan(fs, gmo)
+                self.valid_frame_count += 1
+
+        def _validate_flat_scan(self, fs: Any, gmo: Any) -> None:
+            t = self._test
+
+            for key in TestIsaacComputeRTXLidarFlatScan._EXPECTED_FLAT_SCAN_KEYS:
+                t.assertIn(key, fs, f"Expected {key} in flat scan data.")
+
+            if not self._is_2d_lidar:
+                t.assertTrue(
+                    np.allclose(np.zeros([1, 2]), fs["azimuthRange"]),
+                    f"azimuthRange: {fs['azimuthRange']}",
+                )
+                t.assertTrue(
+                    np.allclose(np.zeros([1, 2]), fs["depthRange"]),
+                    f"depthRange: {fs['depthRange']}",
+                )
+                t.assertEqual(0.0, fs["horizontalFov"])
+                t.assertEqual(0.0, fs["horizontalResolution"])
+                t.assertEqual(0, fs["intensitiesData"].size)
+                t.assertEqual(0, fs["linearDepthData"].size)
+                t.assertEqual(0, fs["numCols"])
+                t.assertEqual(1, fs["numRows"])
+                t.assertEqual(0.0, fs["rotationRate"])
+                return
+
+            if fs["numCols"] == 0:
+                return
+
+            attrs = self._attrs
+            if attrs["is_solid_state"]:
+                expectedMinAzimuth = min(attrs["azimuthDeg"])
+                expectedMaxAzimuth = max(attrs["azimuthDeg"])
+                expectedHorizontalFov = expectedMaxAzimuth - expectedMinAzimuth
+                expectedHorizontalResolution = expectedHorizontalFov / len(attrs["azimuthDeg"])
+                if expectedMaxAzimuth > 180.0:
+                    expectedMinAzimuth -= 180.0
+                    expectedMaxAzimuth -= 180.0
+            else:
+                expectedMinAzimuth = -180.0
+                expectedMaxAzimuth = 180.0
+                expectedHorizontalFov = 360.0
+                expectedHorizontalResolution = 360.0 * attrs["patternFiringRateHz"] / attrs["scanRateBaseHz"]
+
+            t.assertAlmostEqual(fs["azimuthRange"][0], expectedMinAzimuth)
+            t.assertAlmostEqual(fs["azimuthRange"][1], expectedMaxAzimuth - expectedHorizontalResolution)
+            t.assertAlmostEqual(fs["horizontalResolution"], expectedHorizontalResolution)
+            t.assertAlmostEqual(fs["horizontalFov"], expectedHorizontalFov)
+            t.assertAlmostEqual(fs["rotationRate"], attrs["scanRateBaseHz"])
+            t.assertAlmostEqual(fs["depthRange"][0], attrs["nearRangeM"])
+            t.assertAlmostEqual(fs["depthRange"][1], attrs["farRangeM"])
+
+            expectedNumCols = round(fs["horizontalFov"] / fs["horizontalResolution"])
+            t.assertEqual(fs["numCols"], expectedNumCols)
+            t.assertEqual(fs["numRows"], 1)
+            t.assertEqual(fs["linearDepthData"].size, expectedNumCols)
+            t.assertEqual(fs["intensitiesData"].size, expectedNumCols)
+
+            indices = np.clip(
+                ((gmo.x - expectedMinAzimuth) / expectedHorizontalResolution).astype(int),
+                0,
+                expectedNumCols - 1,
+            )
+            expectedLinearDepthData = np.full(expectedNumCols, -1.0, dtype=np.float32)
+            expectedIntensitiesData = np.zeros(expectedNumCols, dtype=np.uint8)
+            expectedLinearDepthData[indices] = gmo.z
+            expectedIntensitiesData[indices] = (gmo.scalar * 255.0).astype(np.uint8)
+
+            t.assertTrue(
+                np.allclose(fs["linearDepthData"], expectedLinearDepthData),
+                "linearDepthData does not match expected values from GMO.",
+            )
+            t.assertTrue(
+                np.allclose(fs["intensitiesData"], expectedIntensitiesData),
+                "intensitiesData does not match expected values from GMO.",
+            )
+
+    _writer_registered = False
+
+    async def setUp(self) -> None:
+        """Set up test environment and register flat scan writer."""
+        await super().setUp()
+        if not TestIsaacComputeRTXLidarFlatScan._writer_registered:
+            rep.WriterRegistry.register(TestIsaacComputeRTXLidarFlatScan._FlatScanTestWriter)
+            TestIsaacComputeRTXLidarFlatScan._writer_registered = True
+
+    async def _test_annotator_outputs(self, config: str = DEFAULT_CONFIG, variant: str = DEFAULT_VARIANT) -> None:
+        COLLECTION_SECONDS = 3.0
+
         kwargs = {
             "path": "lidar",
             "parent": None,
@@ -1203,192 +835,112 @@ class TestIsaacComputeRTXLidarFlatScan(omni.kit.test.AsyncTestCase):
             "omni:sensor:Core:auxOutputType": "BASIC",
         }
 
-        _, self.sensor = omni.kit.commands.execute(f"IsaacSensorCreateRtxLidar", **kwargs)
+        _, self.sensor = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", **kwargs)
         sensor_type = self.sensor.GetTypeName()
         self.assertEqual(
             sensor_type, "OmniLidar", f"Expected OmniLidar prim, got {sensor_type}. Was sensor prim created?"
         )
-        # Test attributes of the sensor prim
-        azimuthDeg = self.sensor.GetAttribute("omni:sensor:Core:emitterState:s001:azimuthDeg").Get()
-        elevationDeg = self.sensor.GetAttribute("omni:sensor:Core:emitterState:s001:elevationDeg").Get()
-        scanRateBaseHz = self.sensor.GetAttribute("omni:sensor:Core:scanRateBaseHz").Get()
-        patternFiringRateHz = self.sensor.GetAttribute("omni:sensor:Core:patternFiringRateHz").Get()
-        nearRangeM = self.sensor.GetAttribute("omni:sensor:Core:nearRangeM").Get()
-        farRangeM = self.sensor.GetAttribute("omni:sensor:Core:farRangeM").Get()
-        is_solid_state = self.sensor.GetAttribute("omni:sensor:Core:scanType").Get() == "SOLID_STATE"
-        self._is_2d_lidar = all(abs(i) < 1e-3 for i in list(elevationDeg))
-        carb.log_warn(f"is_2d_lidar: {self._is_2d_lidar}")
 
-        # Create render product and attach to sensor
+        sensor_attrs = {
+            "azimuthDeg": self.sensor.GetAttribute("omni:sensor:Core:emitterState:s001:azimuthDeg").Get(),
+            "elevationDeg": self.sensor.GetAttribute("omni:sensor:Core:emitterState:s001:elevationDeg").Get(),
+            "scanRateBaseHz": self.sensor.GetAttribute("omni:sensor:Core:scanRateBaseHz").Get(),
+            "patternFiringRateHz": self.sensor.GetAttribute("omni:sensor:Core:patternFiringRateHz").Get(),
+            "nearRangeM": self.sensor.GetAttribute("omni:sensor:Core:nearRangeM").Get(),
+            "farRangeM": self.sensor.GetAttribute("omni:sensor:Core:farRangeM").Get(),
+            "is_solid_state": self.sensor.GetAttribute("omni:sensor:Core:scanType").Get() == "SOLID_STATE",
+        }
+
         self._hydra_texture = rep.create.render_product(
             self.sensor.GetPath(),
             [32, 32],
             name="RtxSensorRenderProduct",
-            render_vars=["GenericModelOutput", "RtxSensorMetadata"],
         )
 
-        self._lidar_scan_buffer_annotator.attach([self._hydra_texture.path])
-        self._lidar_flat_scan_annotator.attach([self._hydra_texture.path])
+        self._writer = rep.WriterRegistry.get("_FlatScanTestWriter")
+        self._writer.initialize(test_instance=self, sensor_attrs=sensor_attrs)
+        self._writer.attach([self._hydra_texture.path])
 
-        # Render frames until we get valid data, or until we've rendered the maximum number of frames
+        total_frames = int(COLLECTION_SECONDS * 60)
+        self._timeline.set_end_time(COLLECTION_SECONDS + 1.0)
         self._timeline.play()
-        for i in range(10):
-            # Wait for a single frame
+        for _ in range(total_frames):
             await omni.kit.app.get_app().next_update_async()
-            self._lidar_scan_buffer_annotator_data = self._lidar_scan_buffer_annotator.get_data()
-            self._lidar_flat_scan_annotator_data = self._lidar_flat_scan_annotator.get_data()
-            if (
-                self._lidar_scan_buffer_annotator_data
-                and "data" in self._lidar_scan_buffer_annotator_data
-                and self._lidar_scan_buffer_annotator_data["data"].size > 0
-                and self._lidar_flat_scan_annotator_data
-                and "numCols" in self._lidar_flat_scan_annotator_data
-                and self._lidar_flat_scan_annotator_data["numCols"] > 0
-            ):
-                break
         self._timeline.stop()
 
-        # Test that all expected keys are present in the annotator data, then copy those values to the test class attributes
-        for expected_key in [
-            "azimuthRange",
-            "depthRange",
-            "horizontalFov",
-            "horizontalResolution",
-            "intensitiesData",
-            "linearDepthData",
-            "numCols",
-            "numRows",
-            "rotationRate",
-        ]:
-            self.assertIn(expected_key, self._lidar_flat_scan_annotator_data)
-            setattr(self, expected_key, self._lidar_flat_scan_annotator_data[expected_key])
+        carb.log_warn(f"bad magic number frames: {self._writer.bad_magic_count}")
+        carb.log_warn(f"numElements==0 frames: {self._writer.num_elements_zero_count}")
+        carb.log_warn(f"valid frames: {self._writer.valid_frame_count}")
 
-        # Confirm default values for 3D lidar
-        if not self._is_2d_lidar:
-            self.assertTrue(np.allclose(np.zeros([1, 2]), self.azimuthRange), f"azimuthRange: {self.azimuthRange}")
-            self.assertTrue(np.allclose(np.zeros([1, 2]), self.depthRange), f"depthRange: {self.depthRange}")
-            self.assertEqual(0.0, self.horizontalFov)
-            self.assertEqual(0.0, self.horizontalResolution)
-            self.assertEqual(0, self.intensitiesData.size)
-            self.assertEqual(0, self.linearDepthData.size)
-            self.assertEqual(0, self.numCols)
-            self.assertEqual(1, self.numRows)
-            self.assertEqual(0.0, self.rotationRate)
-            return
-
-        pcl_azimuth = self._lidar_scan_buffer_annotator_data["azimuth"]
-        pcl_distance = self._lidar_scan_buffer_annotator_data["distance"]
-        pcl_intensity = self._lidar_scan_buffer_annotator_data["intensity"]
-
-        # Test IsaacComputeRTXLidarFlatScan annotator outputs against prim attributes or IsaacCreateRTXLidarScanBuffer outputs as appropriate
-        if is_solid_state:
-            expectedMinAzimuth = min(azimuthDeg)
-            expectedMaxAzimuth = max(azimuthDeg)
-            expectedHorizontalFov = expectedMaxAzimuth - expectedMinAzimuth
-            expectedHorizontalResolution = expectedHorizontalFov / len(azimuthDeg)
-            if expectedMaxAzimuth > 180.0:
-                expectedMinAzimuth -= 180.0
-                expectedMaxAzimuth -= 180.0
-        else:
-            expectedMinAzimuth = -180.0
-            expectedMaxAzimuth = 180.0
-            expectedHorizontalFov = 360.0
-            expectedHorizontalResolution = 360.0 * patternFiringRateHz / scanRateBaseHz
-
-        self.assertAlmostEqual(self.azimuthRange[0], expectedMinAzimuth)
-        self.assertAlmostEqual(self.azimuthRange[1], expectedMaxAzimuth - expectedHorizontalResolution)
-        self.assertAlmostEqual(self.horizontalResolution, expectedHorizontalResolution)
-        self.assertAlmostEqual(self.horizontalFov, expectedHorizontalFov)
-        self.assertAlmostEqual(self.rotationRate, scanRateBaseHz)
-        self.assertAlmostEqual(self.depthRange[0], nearRangeM)
-        self.assertAlmostEqual(self.depthRange[1], farRangeM)
-
-        expectedNumCols = round(self.horizontalFov / self.horizontalResolution)
-        self.assertEqual(self.numCols, expectedNumCols)
-        self.assertEqual(self.numRows, 1)
-        self.assertEqual(self.linearDepthData.size, expectedNumCols)
-        self.assertEqual(self.intensitiesData.size, expectedNumCols)
-
-        expectedLinearDepthData = np.ones(expectedNumCols, dtype=np.float32) * -1.0
-        expectedIntensitiesData = np.zeros(expectedNumCols, dtype=np.uint8)
-        for i in range(pcl_azimuth.shape[0]):
-            azimuth = pcl_azimuth[i]
-            distance = pcl_distance[i]
-            intensity = int(pcl_intensity[i] * 255.0)
-            index = int((azimuth - expectedMinAzimuth) / expectedHorizontalResolution)
-            if index >= expectedNumCols:
-                index = expectedNumCols - 1
-            expectedLinearDepthData[index] = distance
-            expectedIntensitiesData[index] = intensity
-
-        self.assertTrue(np.allclose(self.linearDepthData, expectedLinearDepthData))
-        self.assertTrue(np.allclose(self.intensitiesData, expectedIntensitiesData))
+        self.assertGreater(self._writer.valid_frame_count, 0, "Expected at least one valid flat scan frame.")
 
     async def test_3d_lidar(self) -> None:
-        """Test 3D lidar using Example_Rotary configuration."""
+        """Test IsaacComputeRTXLidarFlatScan annotator with a 3D lidar sensor."""
         await self._test_annotator_outputs(config="Example_Rotary", variant=None)
 
     async def test_2d_lidar(self) -> None:
-        """Test 2D lidar using SICK_picoScan150 configuration with Profile_1 variant."""
+        """Test IsaacComputeRTXLidarFlatScan annotator with a 2D lidar sensor."""
         await self._test_annotator_outputs(config="SICK_picoScan150", variant="Profile_1")
 
 
-class TestIsaacCreateRTXRadarPointCloud(omni.kit.test.AsyncTestCase):
+class TestIsaacCreateRTXRadarPointCloud(_SarcophagusTestCase):
     """Test class for IsaacCreateRTXRadarPointCloud annotator."""
 
+    class _RadarTestWriter(Writer):
+        """Custom Writer that validates IsaacCreateRTXRadarPointCloud output.
+
+        Args:
+            test_instance: Test case instance for assertions.
+        """
+
+        def __init__(self, test_instance: Any = None) -> None:
+            self.data_structure = "renderProduct"
+            self.annotators = [
+                rep.annotators.get(
+                    "IsaacCreateRTXRadarPointCloud",
+                    init_params={"outputIntensity": True, "outputRadialVelocityMS": True},
+                ),
+            ]
+            self._test = test_instance
+            self.valid_frame_count = 0
+
+        def write(self, data: Any) -> None:
+            if "renderProducts" not in data:
+                return
+            for rp_name, rp_data in data["renderProducts"].items():
+                rd = rp_data.get("IsaacCreateRTXRadarPointCloud")
+                if rd is None or not isinstance(rd, dict):
+                    continue
+                if "data" not in rd or not isinstance(rd["data"], np.ndarray) or rd["data"].size == 0:
+                    continue
+                self._validate(rd)
+                self.valid_frame_count += 1
+
+        def _validate(self, rd: Any) -> None:
+            t = self._test
+            for key in ["data", "intensity", "radialVelocityMS"]:
+                t.assertIn(key, rd, f"Expected {key} in radar point cloud data.")
+
+            t.assertGreater(rd["data"].shape[0], 0, "Expected non-empty data.")
+            t.assertEqual(rd["data"].shape[1], 3)
+            t.assertTrue(np.all(rd["intensity"] != 0))
+            t.assertLessEqual(
+                np.max(np.abs(rd["radialVelocityMS"])), 1e-2, "Radial velocity is expected to be (close to) 0."
+            )
+
+    _writer_registered = False
+
     async def setUp(self) -> None:
-        """Setup test environment with a cube and radar sensor.
-
-        Creates a new stage, initializes octant dimensions for geometric testing,
-        and prepares the radar testing environment with cube geometries.
-        """
-        await create_new_stage_async()
-        await update_stage_async()
-
-        # Ordering octants in binary order, such that octant 0 is +++, octant 1 is ++-, etc. for XYZ.
-        self._octant_dimensions = [
-            (10, 10, 5),
-            (10, 10, 7),
-            (25, 25, 17),
-            (25, 25, 19),
-            (15, 15, 9),
-            (15, 15, 11),
-            (20, 20, 13),
-            (20, 20, 15),
-        ]
-        self.cube_info = create_sarcophagus()
-
-        self._timeline = omni.timeline.get_timeline_interface()
-        self._annotator = rep.AnnotatorRegistry.get_annotator("IsaacCreateRTXRadarPointCloud")
-        self._annotator_data = None
-        self._hydra_texture = None
-
-    async def tearDown(self) -> None:
-        """Clean up test environment.
-
-        Stops the timeline, detaches the annotator, destroys the hydra texture,
-        and waits for all assets to finish loading before updating the stage.
-        """
-        self._timeline.stop()
-        if self._annotator.is_attached:
-            self._annotator.detach()
-            self._annotator = None
-        if self._hydra_texture is not None:
-            self._hydra_texture.destroy()
-        self._hydra_texture = None
-        await omni.kit.app.get_app().next_update_async()
-        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
-            print("tearDown, assets still loading, waiting to finish...")
-            await asyncio.sleep(1.0)
-        await update_stage_async()
+        """Set up test environment and register radar writer."""
+        await super().setUp()
+        if not TestIsaacCreateRTXRadarPointCloud._writer_registered:
+            rep.WriterRegistry.register(TestIsaacCreateRTXRadarPointCloud._RadarTestWriter)
+            TestIsaacCreateRTXRadarPointCloud._writer_registered = True
 
     async def test_rtx_radar(self) -> None:
-        """Test RTX radar point cloud generation and data validation.
+        """Test IsaacCreateRTXRadarPointCloud annotator with a radar sensor."""
+        COLLECTION_SECONDS = 3.0
 
-        Creates an RTX radar sensor, attaches the IsaacCreateRTXRadarPointCloud annotator,
-        and validates that the generated point cloud data contains proper intensity values
-        and zero radial velocity measurements for stationary objects.
-        """
         kwargs = {
             "path": "radar",
             "parent": None,
@@ -1398,58 +950,314 @@ class TestIsaacCreateRTXRadarPointCloud(omni.kit.test.AsyncTestCase):
             "omni:sensor:WpmDmat:auxOutputType": "BASIC",
         }
 
-        _, self.sensor = omni.kit.commands.execute(f"IsaacSensorCreateRtxRadar", **kwargs)
+        _, self.sensor = omni.kit.commands.execute("IsaacSensorCreateRtxRadar", **kwargs)
         sensor_type = self.sensor.GetTypeName()
         self.assertEqual(
             sensor_type, "OmniRadar", f"Expected OmniRadar prim, got {sensor_type}. Was sensor prim created?"
         )
 
-        # Create render product and attach to sensor
         self._hydra_texture = rep.create.render_product(
             self.sensor.GetPath(),
             [32, 32],
             name="RtxSensorRenderProduct",
             render_vars=["GenericModelOutput"],
         )
-        # Attach annotator to render product
-        self._annotator.initialize(
-            outputIntensity=True,
-            outputRadialVelocityMS=True,
-        )
-        self._annotator.attach([self._hydra_texture.path])
 
-        # Render frames until we get valid data, or until we've rendered the maximum number of frames
+        self._writer = rep.WriterRegistry.get("_RadarTestWriter")
+        self._writer.initialize(test_instance=self)
+        self._writer.attach([self._hydra_texture.path])
+
+        total_frames = int(COLLECTION_SECONDS * 60)
+        self._timeline.set_end_time(COLLECTION_SECONDS + 1.0)
         self._timeline.play()
-        for _ in range(10):
-            # Wait for a single frame
+        for _ in range(total_frames):
             await omni.kit.app.get_app().next_update_async()
-            self._annotator_data = self._annotator.get_data()
-            if self._annotator_data and "data" in self._annotator_data and self._annotator_data["data"].size > 0:
-                break
         self._timeline.stop()
 
-        # Test that all expected keys are present in the annotator data, then copy those values to the test class attributes
-        for expected_key in [
-            "data",
-            "intensity",
-            "radialVelocityMS",
-        ]:
-            self.assertIn(expected_key, self._annotator_data)
-            setattr(self, expected_key, self._annotator_data[expected_key])
+        carb.log_warn(f"valid radar frames: {self._writer.valid_frame_count}")
+        self.assertGreater(self._writer.valid_frame_count, 0, "Expected at least one valid radar frame.")
 
-        self.assertIn("info", self._annotator_data)
-        for expected_key in [
-            "intensity",
-            "radialVelocityMS",
-        ]:
-            self.assertIn(expected_key, self._annotator_data["info"])
-            setattr(self, expected_key, self._annotator_data["info"][expected_key])
 
-        # Test point cloud data shape
-        self.assertGreater(self.data.shape[0], 0, "Expected non-empty data.")
-        self.assertEqual(self.data.shape[1], 3)
+class TestTimestepVsScanRate(omni.kit.test.AsyncTestCase):
+    """Verify GMO timestamps advance by scan_period across dt / scan-rate combos.
 
-        self.assertTrue(np.all(self.intensity != 0))
-        self.assertLessEqual(
-            np.max(np.abs(self.radialVelocityMS)), 1e-2, "Radial velocity is expected to be (close to) 0."
+    Exercises all 27 combinations of:
+      - physics_dt:    1/30 s, 1/60 s, 1/120 s  (via SimulationManager)
+      - timeline_dt:   1/30 s, 1/60 s, 1/120 s  (via RenderingManager)
+      - scan rate:     5 Hz, 10 Hz, 20 Hz        (via scanRateBaseHz + tickRate)
+
+    Asserted invariants:
+      1. First valid timestamp within pipeline warmup budget (~0.25 s).
+      2. Every new scan has ``numElements > 0`` and ``scanComplete == True``.
+      3. Timestamp advances by exactly ``scan_period`` between consecutive scans.
+    """
+
+    COLLECTION_SECONDS = 3.0
+    TIMESTAMP_TOLERANCE_NS = 10
+
+    class _CadenceTestWriter(Writer):
+        """Writer that collects unique GMO scan timestamps."""
+
+        def __init__(self) -> None:
+            self.data_structure = "renderProduct"
+            self.annotators = [rep.annotators.get("GenericModelOutput")]
+            self.scans = []
+            self.warmup_count = 0
+            self._last_ts = None
+
+        def reset(self) -> None:
+            self.scans.clear()
+            self.warmup_count = 0
+            self._last_ts = None
+
+        def write(self, data: Any) -> None:
+            if "renderProducts" not in data:
+                self.warmup_count += 1
+                return
+
+            for rp_name, rp_data in data["renderProducts"].items():
+                gmo_raw = _extract_gmo_raw(rp_data)
+                if gmo_raw is None:
+                    self.warmup_count += 1
+                    return
+
+                gmo = get_gmo_data(gmo_raw)
+                if gmo.magicNumber != gmo_utils.getMagicNumberGMO():
+                    self.warmup_count += 1
+                    return
+
+                if gmo.numElements == 0:
+                    return
+
+                ts = int(gmo.timestampNs)
+                if ts != self._last_ts:
+                    self.scans.append((ts, gmo.numElements, gmo.scanComplete))
+                    self._last_ts = ts
+
+    _writer_registered = False
+
+    async def setUp(self) -> None:
+        """Set up test environment with a new stage and cadence writer."""
+        await create_new_stage_async()
+        await update_stage_async()
+        self.stage = omni.usd.get_context().get_stage()
+        create_sarcophagus(enable_nonvisual_material=False)
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._hydra_texture = None
+        self._writer = None
+        if not TestTimestepVsScanRate._writer_registered:
+            rep.WriterRegistry.register(TestTimestepVsScanRate._CadenceTestWriter)
+            TestTimestepVsScanRate._writer_registered = True
+
+    async def tearDown(self) -> None:
+        """Tear down the test environment and stop timeline."""
+        self._timeline.stop()
+        if self._writer is not None:
+            self._writer.detach()
+            self._writer = None
+        if self._hydra_texture is not None:
+            self._hydra_texture.destroy()
+            self._hydra_texture = None
+        await omni.kit.app.get_app().next_update_async()
+        while omni.usd.get_context().get_stage_loading_status()[2] > 0:
+            await asyncio.sleep(1.0)
+        await update_stage_async()
+
+    async def _run_test(self, physics_dt: float, timeline_dt: float, scan_rate_hz: float) -> None:
+        """Run a single combination and assert timestamp invariants.
+
+        Args:
+            physics_dt: Physics simulation time step in seconds.
+            timeline_dt: Timeline rendering time step in seconds.
+            scan_rate_hz: Lidar scan rate in Hz.
+        """
+        label = f"phys={physics_dt:.6f} tl={timeline_dt:.6f} scan={scan_rate_hz}Hz"
+
+        SimulationManager.set_physics_dt(dt=physics_dt)
+        SimulationManager.initialize_physics()
+        RenderingManager.set_dt(dt=timeline_dt)
+
+        kwargs = {
+            "path": "lidar",
+            "parent": None,
+            "translation": Gf.Vec3d(0.0, 0.0, 0.0),
+            "orientation": Gf.Quatd(1.0, 0.0, 0.0, 0.0),
+            "omni:sensor:Core:auxOutputType": "FULL",
+            "omni:sensor:Core:scanRateBaseHz": scan_rate_hz,
+            "omni:sensor:tickRate": scan_rate_hz,
+        }
+        _, sensor = omni.kit.commands.execute("IsaacSensorCreateRtxLidar", **kwargs)
+
+        self._hydra_texture = rep.create.render_product(
+            sensor.GetPath(),
+            [32, 32],
+            name="RtxSensorRenderProduct",
         )
+
+        self._writer = rep.WriterRegistry.get("_CadenceTestWriter")
+        self._writer.initialize()
+        self._writer.attach([self._hydra_texture.path])
+
+        scan_period = 1.0 / scan_rate_hz
+        scan_period_ns = round(scan_period * 1e9)
+        total_frames = int(self.COLLECTION_SECONDS / timeline_dt)
+
+        self._writer.reset()
+        self._timeline.set_end_time(self.COLLECTION_SECONDS + 1.0)
+        self._timeline.play()
+        for _ in range(total_frames):
+            await omni.kit.app.get_app().next_update_async()
+        self._timeline.stop()
+
+        scans = self._writer.scans
+        self.assertGreater(len(scans), 2, f"[{label}] Need ≥3 scans for timestamp verification")
+
+        # -- 1. Warmup: first scan timestamp within budget --
+        warmup_budget_s = 0.25
+        max_missed = max(1, math.ceil(warmup_budget_s / scan_period))
+        max_first_ts = max_missed * scan_period_ns
+        first_ts = scans[0][0]
+        carb.log_warn(
+            f"[{label}] warmup={self._writer.warmup_count} frames,"
+            f" first_ts={first_ts}ns (max={max_first_ts}ns, {max_missed} scan(s))"
+        )
+        self.assertLessEqual(
+            first_ts,
+            max_first_ts,
+            f"[{label}] First valid ts {first_ts}ns > {max_first_ts}ns" f" (missed >{max_missed} scans)",
+        )
+
+        # -- 2. Every new scan: numElements > 0 and scanComplete == True --
+        for i, (ts, ne, sc) in enumerate(scans):
+            self.assertGreater(ne, 0, f"[{label}] scan {i}: numElements should be > 0")
+            self.assertTrue(sc, f"[{label}] scan {i}: scanComplete should be True")
+
+        # -- 3. Timestamp delta = scan_period_ns --
+        # Skip first segment (scan #0 → #1): scan #0 is a backlogged
+        # pipeline-warmup scan whose timestamp delta is unreliable.
+        for i in range(2, len(scans)):
+            ts_delta = scans[i][0] - scans[i - 1][0]
+            self.assertAlmostEqual(
+                ts_delta,
+                scan_period_ns,
+                delta=self.TIMESTAMP_TOLERANCE_NS,
+                msg=f"[{label}] scan {i}: ts delta {ts_delta} != expected {scan_period_ns}",
+            )
+
+    # ------------------------------------------------------------------
+    # 27 combinations: physics_dt x timeline_dt x scan_rate
+    # ------------------------------------------------------------------
+
+    # --- physics_dt = 1/30 ---
+
+    async def test_phys30_tl30_scan5(self) -> None:
+        """Test phys=1/30s, timeline=1/30s, scan=5Hz."""
+        await self._run_test(1.0 / 30, 1.0 / 30, 5.0)
+
+    async def test_phys30_tl30_scan10(self) -> None:
+        """Test phys=1/30s, timeline=1/30s, scan=10Hz."""
+        await self._run_test(1.0 / 30, 1.0 / 30, 10.0)
+
+    async def test_phys30_tl30_scan20(self) -> None:
+        """Test phys=1/30s, timeline=1/30s, scan=20Hz."""
+        await self._run_test(1.0 / 30, 1.0 / 30, 20.0)
+
+    async def test_phys30_tl60_scan5(self) -> None:
+        """Test phys=1/30s, timeline=1/60s, scan=5Hz."""
+        await self._run_test(1.0 / 30, 1.0 / 60, 5.0)
+
+    async def test_phys30_tl60_scan10(self) -> None:
+        """Test phys=1/30s, timeline=1/60s, scan=10Hz."""
+        await self._run_test(1.0 / 30, 1.0 / 60, 10.0)
+
+    async def test_phys30_tl60_scan20(self) -> None:
+        """Test phys=1/30s, timeline=1/60s, scan=20Hz."""
+        await self._run_test(1.0 / 30, 1.0 / 60, 20.0)
+
+    async def test_phys30_tl120_scan5(self) -> None:
+        """Test phys=1/30s, timeline=1/120s, scan=5Hz."""
+        await self._run_test(1.0 / 30, 1.0 / 120, 5.0)
+
+    async def test_phys30_tl120_scan10(self) -> None:
+        """Test phys=1/30s, timeline=1/120s, scan=10Hz."""
+        await self._run_test(1.0 / 30, 1.0 / 120, 10.0)
+
+    async def test_phys30_tl120_scan20(self) -> None:
+        """Test phys=1/30s, timeline=1/120s, scan=20Hz."""
+        await self._run_test(1.0 / 30, 1.0 / 120, 20.0)
+
+    # --- physics_dt = 1/60 ---
+
+    async def test_phys60_tl30_scan5(self) -> None:
+        """Test phys=1/60s, timeline=1/30s, scan=5Hz."""
+        await self._run_test(1.0 / 60, 1.0 / 30, 5.0)
+
+    async def test_phys60_tl30_scan10(self) -> None:
+        """Test phys=1/60s, timeline=1/30s, scan=10Hz."""
+        await self._run_test(1.0 / 60, 1.0 / 30, 10.0)
+
+    async def test_phys60_tl30_scan20(self) -> None:
+        """Test phys=1/60s, timeline=1/30s, scan=20Hz."""
+        await self._run_test(1.0 / 60, 1.0 / 30, 20.0)
+
+    async def test_phys60_tl60_scan5(self) -> None:
+        """Test phys=1/60s, timeline=1/60s, scan=5Hz."""
+        await self._run_test(1.0 / 60, 1.0 / 60, 5.0)
+
+    async def test_phys60_tl60_scan10(self) -> None:
+        """Test phys=1/60s, timeline=1/60s, scan=10Hz."""
+        await self._run_test(1.0 / 60, 1.0 / 60, 10.0)
+
+    async def test_phys60_tl60_scan20(self) -> None:
+        """Test phys=1/60s, timeline=1/60s, scan=20Hz."""
+        await self._run_test(1.0 / 60, 1.0 / 60, 20.0)
+
+    async def test_phys60_tl120_scan5(self) -> None:
+        """Test phys=1/60s, timeline=1/120s, scan=5Hz."""
+        await self._run_test(1.0 / 60, 1.0 / 120, 5.0)
+
+    async def test_phys60_tl120_scan10(self) -> None:
+        """Test phys=1/60s, timeline=1/120s, scan=10Hz."""
+        await self._run_test(1.0 / 60, 1.0 / 120, 10.0)
+
+    async def test_phys60_tl120_scan20(self) -> None:
+        """Test phys=1/60s, timeline=1/120s, scan=20Hz."""
+        await self._run_test(1.0 / 60, 1.0 / 120, 20.0)
+
+    # --- physics_dt = 1/120 ---
+
+    async def test_phys120_tl30_scan5(self) -> None:
+        """Test phys=1/120s, timeline=1/30s, scan=5Hz."""
+        await self._run_test(1.0 / 120, 1.0 / 30, 5.0)
+
+    async def test_phys120_tl30_scan10(self) -> None:
+        """Test phys=1/120s, timeline=1/30s, scan=10Hz."""
+        await self._run_test(1.0 / 120, 1.0 / 30, 10.0)
+
+    async def test_phys120_tl30_scan20(self) -> None:
+        """Test phys=1/120s, timeline=1/30s, scan=20Hz."""
+        await self._run_test(1.0 / 120, 1.0 / 30, 20.0)
+
+    async def test_phys120_tl60_scan5(self) -> None:
+        """Test phys=1/120s, timeline=1/60s, scan=5Hz."""
+        await self._run_test(1.0 / 120, 1.0 / 60, 5.0)
+
+    async def test_phys120_tl60_scan10(self) -> None:
+        """Test phys=1/120s, timeline=1/60s, scan=10Hz."""
+        await self._run_test(1.0 / 120, 1.0 / 60, 10.0)
+
+    async def test_phys120_tl60_scan20(self) -> None:
+        """Test phys=1/120s, timeline=1/60s, scan=20Hz."""
+        await self._run_test(1.0 / 120, 1.0 / 60, 20.0)
+
+    async def test_phys120_tl120_scan5(self) -> None:
+        """Test phys=1/120s, timeline=1/120s, scan=5Hz."""
+        await self._run_test(1.0 / 120, 1.0 / 120, 5.0)
+
+    async def test_phys120_tl120_scan10(self) -> None:
+        """Test phys=1/120s, timeline=1/120s, scan=10Hz."""
+        await self._run_test(1.0 / 120, 1.0 / 120, 10.0)
+
+    async def test_phys120_tl120_scan20(self) -> None:
+        """Test phys=1/120s, timeline=1/120s, scan=20Hz."""
+        await self._run_test(1.0 / 120, 1.0 / 120, 20.0)

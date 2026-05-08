@@ -13,6 +13,3 @@
   - class def detach(cls, render_product_path: str)
   - class def get_writer(cls, render_product_path: str, use_system_time: bool = False) -> rep.Writer
 
-## Functions
-
-- def build_rtx_sensor_pointcloud_writer(metadata: list[str], enable_full_scan: bool = True, use_system_time: bool = False) -> rep.Writer

@@ -25,7 +25,6 @@ import omni.replicator.core as rep
 from isaacsim.core.nodes import BaseWriterNode
 from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.ros2.core import collect_namespace
-from isaacsim.ros2.nodes import build_rtx_sensor_pointcloud_writer
 from pxr import Usd
 
 
@@ -83,12 +82,7 @@ class OgnROS2RtxRadarHelper:
 
         state.render_product_path = render_product_path
         state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
-        if db.inputs.frameSkipCount > 0:
-            carb.log_warn(
-                "The frameSkipCount input is deprecated. "
-                "Control publish rate by setting omni:sensor:tickRate on the sensor prim instead."
-            )
-        state.publishStepSize = db.inputs.frameSkipCount + 1
+        state.publishStepSize = 1
 
         time_type = ""
         if db.inputs.useSystemTime:
@@ -114,26 +108,11 @@ class OgnROS2RtxRadarHelper:
         if db.inputs.outputTimestamp:
             metadata.append("timestamp")
 
-        is_multitick_enabled = carb.settings.get_settings().get("/rtx/hydra/supportMultiTickRate")
-
         try:
             with Usd.EditContext(stage, stage.GetSessionLayer()):
-                if is_multitick_enabled:
-                    # The multitick annotator (IsaacExtractRTXSensorPointCloud) exposes all
-                    # radar auxiliary data unconditionally; pass flags to the publisher for
-                    # forward-compat with the GMO path.
-                    for item in metadata:
-                        init_params[f"output{item[0].upper()}{item[1:]}"] = True
-                    writer = rep.writers.get(f"RtxRadarROS2{time_type}PublishPointCloud")
-                else:
-                    # Non-multitick path: metadata flags must be baked into the
-                    # IsaacCreateRTXLidarScanBuffer annotator's init_params at registration
-                    # time. build_rtx_sensor_pointcloud_writer handles this correctly.
-                    writer = build_rtx_sensor_pointcloud_writer(
-                        metadata=metadata,
-                        enable_full_scan=False,
-                        use_system_time=db.inputs.useSystemTime,
-                    )
+                for item in metadata:
+                    init_params[f"output{item[0].upper()}{item[1:]}"] = True
+                writer = rep.writers.get(f"RtxRadarROS2{time_type}PublishPointCloud")
                 writer.initialize(**init_params)
                 state.append_writer(writer)
 

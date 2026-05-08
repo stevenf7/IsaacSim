@@ -11,3 +11,4 @@ radar = Radar(path="/Radar")
 
 sensor = RadarSensor(radar, annotators=["generic-model-output"])
 data, info = sensor.get_data("generic-model-output")
+gmo = parse_generic_model_output_data(data)

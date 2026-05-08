@@ -121,8 +121,20 @@ timeline.play()
 
 # Wait for the lidar to warm up and produce valid data
 carb.log_info("Waiting for lidar to produce data...")
-for _ in range(8):
+for _ in range(20):
     simulation_app.update()
+
+    gmo = get_gmo_data(my_lidar.get_current_frame()["GenericModelOutput"])
+
+    # =============================================================================
+    # EXTRACT AND RESOLVE OBJECT IDS FROM GMO
+    # =============================================================================
+    # The GMO objId field contains 128-bit stable IDs for each point.
+    # LidarRtx.get_object_ids() converts these to Python integers.
+
+    if gmo.numElements > 0:
+        object_ids = LidarRtx.get_object_ids(gmo.objId)
+        break
 
 # Step one more frame to ensure we have data
 simulation_app.update()
@@ -138,16 +150,6 @@ stable_id_map_buffer = my_lidar.get_current_frame()["StableIdMap"]
 stable_id_map = LidarRtx.decode_stable_id_mapping(stable_id_map_buffer.tobytes())
 
 carb.log_info(f"Decoded StableIdMap with {len(stable_id_map)} entries")
-
-# =============================================================================
-# EXTRACT AND RESOLVE OBJECT IDS FROM GMO
-# =============================================================================
-# The GMO objId field contains 128-bit stable IDs for each point.
-# LidarRtx.get_object_ids() converts these to Python integers.
-
-gmo = get_gmo_data(my_lidar.get_current_frame()["GenericModelOutput"])
-object_ids = LidarRtx.get_object_ids(gmo.objId)
-
 carb.log_info(f"Found {len(object_ids)} points with {len(set(object_ids))} unique objects")
 
 # =============================================================================

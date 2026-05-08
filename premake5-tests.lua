@@ -1413,11 +1413,6 @@ local function get_benchmark_tests()
             "--num-frames 10 --num-robots 2 --enable-3d-lidar 1 --enable-2d-lidar 2 --enable-hawks 1 --non-headless --async-render-handshake",
         },
         {
-            "tests-standalone_benchmarks-benchmark_robots_nova_carter_ros2_multitick",
-            "standalone_examples/benchmarks/benchmark_robots_nova_carter_ros2.py",
-            "--num-frames 10 --num-robots 2 --enable-3d-lidar 1 --enable-2d-lidar 2 --enable-hawks 1 --non-headless --multitick",
-        },
-        {
             "tests-standalone_benchmarks-benchmark_robots_nova_carter",
             "standalone_examples/benchmarks/benchmark_robots_nova_carter.py",
             "--num-frames 10 --num-robots 2",

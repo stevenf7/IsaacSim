@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.11.1] - 2026-05-05
+### Changed
+- Enable multitick in all tests
+- Update golden images for test_data_augmentation
+- Tests now store results in uniquely-named temp directories to avoid run-to-run test pollution
+
 ## [1.11.0] - 2026-04-24
 ### Changed
 - Migrated imports from `isaacsim.core.utils` to `isaacsim.core.experimental.utils`

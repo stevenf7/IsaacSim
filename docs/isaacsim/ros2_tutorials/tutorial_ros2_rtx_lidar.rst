@@ -21,6 +21,14 @@ Each RTX Sensor must be attached to its own viewport to simulate properly.
 
 .. Warning:: Docking windows in the Isaac Sim UI when an RTX Lidar simulation is running will likely lead to a crash. Pause the simulation before re-docking the window.
 
+.. note::
+
+    In |isaac-sim_short| 6.0, RTX Lidar publish rates are governed by the ``omni:sensor:tickRate``
+    attribute on the ``OmniLidar`` prim, not by ``frameSkipCount`` on the helper node. For
+    ``OmniLidar`` prims, ``omni:sensor:tickRate`` must equal ``omni:sensor:Core:scanRateBaseHz``
+    for scan accumulation to behave correctly. See :ref:`isaac_sim_sensors_multitick_rendering`
+    for the migration guide and a list of related known issues.
+
 Learning Objectives
 =======================
 
@@ -128,15 +136,14 @@ After the scene finishes loading, verify that you observe the point cloud for th
 
 RTX Lidar Script Sample
 =========================
-While most of the sample code is fairly generic, there are a few specific pieces needed to create and simulate the sensor. In this sample, you create a 2D and 3D RTX Lidar sensor.
-
+While most of the sample code is fairly generic, there are a few specific pieces needed to create and simulate the sensor. In this sample, you create a 2D and 3D RTX Lidar sensor using the ``isaacsim.sensors.experimental.rtx`` Python API.
 
 Create the 3D RTX Lidar Sensor:
 
 .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample.py
     :language: python
 
-Here ``Example_Rotary`` defines the configuration for the 3D Lidar sensor. To switch the Lidar to the example solid state configuration you can replace ``config="Example_Rotary"``, with ``config="Example_Solid_State"``.
+Here ``Example_Rotary`` selects the 3D Lidar configuration USD. To switch the Lidar to the example solid-state configuration, replace ``config="Example_Rotary"`` with ``config="Example_Solid_State"`` and update ``tick_rate`` to that asset's ``omni:sensor:Core:scanRateBaseHz`` value (see :ref:`isaac_sim_sensors_multitick_lidar_tickrate_must_match_scanrate`).
 
 Create a render product and attach this sensor to it:
 
@@ -153,7 +160,7 @@ Create the 2D RTX Lidar Sensor:
 .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample_3.py
     :language: python
 
-Here ``Example_Rotary_2D`` defines the configuration for the 2D Lidar sensor.
+``Example_Rotary_2D`` selects the 2D Lidar configuration USD.
 
 Similar to the 3D Lidar sensor, create a render product and the post process pipeline that publishes the rendered RTX Lidar laser scan data to ROS:
 
@@ -161,7 +168,7 @@ Similar to the 3D Lidar sensor, create a render product and the post process pip
     :language: python
 
 .. note::
-    You can specify an optional ``attributes={...} dictionary`` when calling ``activate_node_template`` to set node specific parameters. See the |link_ext| for complete usage information.
+    For details on additional parameters supported by ``Lidar.create``, including ``aux_output_level`` and ``accumulate_outputs``, see :ref:`isaacsim_sensors_rtx_lidar` and the |link_ext|.
 
 .. |link_ext| raw:: html
 
@@ -284,10 +291,17 @@ enabling visualization of the intensity channel in the PointCloud2 message. Most
 Exposing Metadata Through Python Script
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Similar to the steps in :ref:`isaac_sim_app_tutorial_ros2_rtx_lidar_script_sample`, create the 3D RTX Lidar Sensor, a render product, and the post-process pipeline:
+Create the 3D RTX Lidar Sensor with ``aux_output_level="FULL"``, a render product, and the
+``RtxLidarROS2PublishPointCloud`` writer with the ``output*`` flags that select which auxiliary
+fields end up in the PointCloud2 message:
 
 .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/exposing_metadata_through_python_script.py
     :language: python
+
+The snippet authors ``_replicator:rendervar:GenericModelOutput:channels = ["FULL"]`` on the lidar
+prim via ``Lidar.create(..., aux_output_level="FULL")``. See
+:ref:`isaac_sim_sensors_multitick_aux_output_level` for the attribute-flow explanation and a known
+issue when multiple RTX sensors with different auxiliary levels share a stage.
 
 In addition, specify ``--/rtx-transient/stableIds/enabled=true`` when invoking ``SimulationApp``, like so:
 

@@ -23,7 +23,7 @@
             },
             "cudaDeviceIndex": {
                 "type": "int",
-                "description": "Index of the device where the data lives (-1 for host data)",
+                "description": "DEPRECATED - GPU path is no longer supported; data must be on host (-1).",
                 "default": -1
             },
             "keepOnlyPositiveDistance": {
@@ -111,12 +111,6 @@
                 "default": false,
                 "uiName": "Output The TickId"
             },
-            "outputNormal": {
-                "type": "bool",
-                "description": "[DEPRECATED] - replaced by outputHitNormal. Create an output array for the Normals.",
-                "default": false,
-                "uiName": "Output The Normals"
-            },
             "outputHitNormal": {
                 "type": "bool",
                 "description": "Create an output array for the Normals.",
@@ -155,7 +149,7 @@
             },
             "enablePerFrameOutput": {
                 "type": "bool",
-                "description": "Enable per frame output",
+                "description": "DEPRECATED - Full scan output is now always enabled via accumulateOutputs.",
                 "default": false,
                 "uiName": "Enable Per Frame Output"
             }

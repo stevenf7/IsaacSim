@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import json
+import tempfile
 
 import carb.settings
 import omni.kit
@@ -58,6 +59,9 @@ class TestSDGDeformables(omni.kit.test.AsyncTestCase):
         from isaacsim.core.simulation_manager import SimulationManager
         from isaacsim.storage.native import get_assets_root_path_async
         from pxr import Gf, Sdf, Usd, UsdShade
+
+        out_dir = tempfile.mkdtemp(prefix="test_deformable_drop_")
+        print(f"Output directory: {out_dir}")
 
         TRIGGER_HEIGHT = 0.15  # Capture when lowest vertex falls below this (m)
         BASE_DROP_HEIGHT = 0.2  # Starting height for first asset (m)
@@ -160,9 +164,8 @@ class TestSDGDeformables(omni.kit.test.AsyncTestCase):
             camera = rep.functional.create.camera(position=(1, 1, 1), look_at=(0, 0, 0), parent="/World", name="Camera")
             render_product = rep.create.render_product(camera, (720, 480))
             render_product.hydra_texture.set_updates_enabled(False)
-            output_dir = os.path.join(os.getcwd(), "_out_deformable_drop")
             backend = rep.backends.get("DiskBackend")
-            backend.initialize(output_dir=output_dir)
+            backend.initialize(output_dir=out_dir)
             writer = rep.writers.get("BasicWriter")
             writer.initialize(
                 backend=backend, rgb=True, semantic_segmentation=True, colorize_semantic_segmentation=True
@@ -226,7 +229,7 @@ class TestSDGDeformables(omni.kit.test.AsyncTestCase):
                     break
 
             # Pause the simulation and clean up resources
-            print(f"[SDG] Simulation complete. {len(triggered)} frames saved to {output_dir}")
+            print(f"[SDG] Simulation complete. {len(triggered)} frames saved to {out_dir}")
             timeline.pause()
             await rep.orchestrator.wait_until_complete_async()
             writer.detach()
@@ -244,7 +247,6 @@ class TestSDGDeformables(omni.kit.test.AsyncTestCase):
         expected_pngs = num_assets * 2  # 2 assets * 2 (rgb+segmentation annotators)
         expected_json = num_assets * 1  # 2 assets * 1 (segmentation annotator)
         golden_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "golden", "_out_deformable_drop")
-        out_dir = os.path.join(os.getcwd(), "_out_deformable_drop")
         all_data_written = validate_folder_contents(
             path=out_dir,
             recursive=True,

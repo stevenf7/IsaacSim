@@ -32,7 +32,9 @@ parser.add_argument(
     help="Benchmarking backend, defaults",
 )
 parser.add_argument(
-    "--enable-lidar-multitick", action="store_true", help="Enable multi-tick rendering for lidar sensors"
+    "--enable-lidar-multitick",
+    action="store_true",
+    help="Set omni:sensor:tickRate on lidar sensors to their scan rate",
 )
 
 
@@ -43,13 +45,9 @@ n_gpu = args.num_gpus
 n_frames = args.num_frames
 enable_lidar_multitick = args.enable_lidar_multitick
 
-extra_args = []
-if enable_lidar_multitick:
-    extra_args.append("--/rtx/hydra/supportMultiTickRate=true")
-
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpu, "extra_args": extra_args})
+simulation_app = SimulationApp({"headless": True, "max_gpu_count": n_gpu})
 
 import carb
 import omni

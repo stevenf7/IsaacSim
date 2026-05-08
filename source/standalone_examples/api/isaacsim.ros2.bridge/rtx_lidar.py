@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2020-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2020-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,17 +29,14 @@ import carb
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni
-import omni.kit.viewport.utility
 import omni.replicator.core as rep
 from isaacsim.core.simulation_manager import SimulationManager
+from isaacsim.sensors.experimental.rtx import Lidar
 from isaacsim.storage.native import get_assets_root_path
-from pxr import Gf
 
-# enable ROS2 bridge extension
+# Enable the ROS 2 bridge so the RtxLidar*ROS2Publish* writers are registered.
 app_utils.enable_extension("isaacsim.ros2.bridge")
-
 simulation_app.update()
-
 
 # Locate Isaac Sim assets folder to load environment and robot stages
 assets_root_path = get_assets_root_path()
@@ -48,63 +45,53 @@ if assets_root_path is None:
     simulation_app.close()
     sys.exit()
 
-simulation_app.update()
 # Loading the simple_room environment
 stage_utils.add_reference_to_stage(
     assets_root_path + "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd", "/background"
 )
 simulation_app.update()
 
-# Create the lidar sensor that generates data into "RtxSensorCpu"
-# Sensor needs to be rotated 90 degrees about X so that its Z up
-
-# Possible options are Example_Rotary and Example_Solid_State
-# drive sim applies 0.5,-0.5,-0.5,w(-0.5), we have to apply the reverse
-_, sensor = omni.kit.commands.execute(
-    "IsaacSensorCreateRtxLidar",
+# Create the 3D rotating RTX Lidar. Example_Rotary scans at 10 Hz, so tick_rate must be 10
+# (see isaac_sim_sensors_multitick_lidar_tickrate_must_match_scanrate).
+lidar = Lidar.create(
     path="/sensor",
-    parent=None,
     config="Example_Rotary",
-    translation=(0, 0, 1.0),
-    orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
+    tick_rate=10.0,
+    translations=[[0.0, 0.0, 1.0]],
 )
 
-# RTX sensors are cameras and must be assigned to their own render product
-hydra_texture = rep.create.render_product(sensor.GetPath(), [1, 1], name="Isaac")
+# RTX sensors are cameras and must be assigned to their own render product.
+hydra_texture = rep.create.render_product(lidar.paths[0], [1, 1], name="Isaac")
 
-# Additionally, create a 2D lidar sensor with Example_Rotary_2D config
-_, sensor_2D = omni.kit.commands.execute(
-    "IsaacSensorCreateRtxLidar",
+# Create a 2D solid-state-style RTX Lidar with the Example_Rotary_2D config.
+lidar_2D = Lidar.create(
     path="/sensor_2D",
-    parent=None,
     config="Example_Rotary_2D",
-    translation=(0, 0, 1.0),
-    orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
+    tick_rate=10.0,
+    translations=[[0.0, 0.0, 1.0]],
 )
-
-# RTX sensors are cameras and must be assigned to their own render product
-hydra_texture_2D = rep.create.render_product(sensor_2D.GetPath(), [1, 1], name="Isaac")
+hydra_texture_2D = rep.create.render_product(lidar_2D.paths[0], [1, 1], name="Isaac")
 
 SimulationManager.setup_simulation(dt=1.0 / 60.0, device="cpu")
 simulation_app.update()
 
-# Create Point cloud publisher pipeline in the post process graph
-writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
+# Create the PointCloud2 publisher pipeline for the 3D Lidar.
+writer = rep.writers.get("RtxLidarROS2PublishPointCloud")
 writer.initialize(topicName="point_cloud", frameId="base_scan")
 writer.attach([hydra_texture])
 
-# Create the Point Clouddebug draw pipeline in the post process graph
-writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
-writer.attach([hydra_texture])
+# Visualize the 3D Lidar point cloud in the viewport.
+debug_writer = rep.writers.get("RtxLidarDebugDrawPointCloud")
+debug_writer.attach([hydra_texture])
 
-# Create Laser Scan publisher pipeline in the post process graph
-writer = rep.writers.get("RtxLidar" + "ROS2PublishLaserScan")
+# Create the LaserScan publisher pipeline for the 2D Lidar.
+writer = rep.writers.get("RtxLidarROS2PublishLaserScan")
 writer.initialize(topicName="scan", frameId="base_scan")
 writer.attach([hydra_texture_2D])
 
-# Create the Laser Scan debug draw pipeline in the post process graph
-writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
-writer.attach([hydra_texture_2D])
+# Visualize the 2D Lidar scan in the viewport.
+debug_writer = rep.writers.get("RtxLidarDebugDrawPointCloud")
+debug_writer.attach([hydra_texture_2D])
 
 simulation_app.update()
 

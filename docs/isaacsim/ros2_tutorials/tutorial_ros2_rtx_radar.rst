@@ -18,6 +18,13 @@ RTX Radar Sensors
 |isaac-sim_short| supports RTX Radar sensors that simulate radar detections including per-point radial velocity.
 RTX Radar requires Motion BVH to be enabled for Doppler velocity estimation.
 
+.. note::
+
+    In |isaac-sim_short| 6.0, RTX Radar publish rates are governed by the ``omni:sensor:tickRate``
+    attribute on the ``OmniRadar`` prim. The ``ROS2 RTX Radar Helper`` node does not expose a
+    ``frameSkipCount`` input. See :ref:`isaac_sim_sensors_multitick_rendering` for the multi-tick
+    migration guide.
+
 Learning Objectives
 =======================
 
@@ -72,7 +79,7 @@ Exposing Radar Metadata
 
 The ``ROS2 RTX Radar Helper`` node supports optional per-point metadata fields in the PointCloud2 message:
 
-- **outputRadialVelocityMS**: Include per-point radial velocity (m/s). Requires setting the ``_replicator:rendervar:GenericModelOutput:channels`` attribute on the OmniRadar prim to ``["BASIC"]``.
+- **outputRadialVelocityMS**: Include per-point radial velocity (m/s). Requires the OmniRadar prim to be created with ``Radar(path, aux_output_level="BASIC")`` (or have ``_replicator:rendervar:GenericModelOutput:channels = ["BASIC"]`` authored on it). See :ref:`isaac_sim_sensors_multitick_aux_output_level` for the full attribute-flow explanation and a known issue when multiple RTX sensors share a stage with different auxiliary levels.
 - **outputIntensity**: Include per-point intensity values.
 - **outputTimestamp**: Include per-point timestamps.
 

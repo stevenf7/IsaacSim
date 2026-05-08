@@ -64,7 +64,9 @@ parser.add_argument(
 parser.add_argument("--gpu-frametime", action="store_true", help="Enable GPU frametime measurement")
 parser.add_argument("--non-headless", action="store_false", dest="headless", help="Run with GUI")
 parser.add_argument(
-    "--enable-lidar-multitick", action="store_true", help="Enable multi-tick rendering for lidar sensors"
+    "--enable-lidar-multitick",
+    action="store_true",
+    help="Set omni:sensor:tickRate on lidar sensors to their scan rate",
 )
 
 args, unknown = parser.parse_known_args()
@@ -85,9 +87,6 @@ if "ObjectId" in metadata_fields:
     extra_args.append("--/rtx-transient/stableIds/enabled=true")
 if "HitNormal" in metadata_fields:
     extra_args.append("--/app/sensors/nv/lidar/publishNormals=true")
-if enable_lidar_multitick:
-    extra_args.append("--/rtx/hydra/supportMultiTickRate=true")
-
 simulation_app = SimulationApp({"headless": headless, "max_gpu_count": n_gpu, "extra_args": extra_args})
 
 import carb

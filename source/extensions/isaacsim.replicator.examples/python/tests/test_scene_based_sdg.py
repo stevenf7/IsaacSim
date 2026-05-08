@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import tempfile
+
 import carb.settings
 import omni.kit
 import omni.usd
@@ -542,10 +544,12 @@ class TestSceneBasedSDG(omni.kit.test.AsyncTestCase):
         env_url = "/Isaac/Environments/Grid/default_environment.usd"
         config["num_frames"] = num_frames
         config["env_url"] = env_url
+        out_dir = tempfile.mkdtemp(prefix="test_scene_based_sdg_")
+        print(f"Output directory: {out_dir}")
+        config["backend_params"]["output_dir"] = out_dir
         await run_example_async(config)
 
         # Validate that all expected files were written to disk
-        out_dir = os.path.join(os.getcwd(), "_out_scene_based_sdg")
         # pngs: num_frames * 3 (cameras) * ( 1 (rgb) + 1 (semantic segmentation))
         # json: num_frames * 3 (cameras) * ( 2 (bounding_box_2d_tight) + 2 (bounding_box_3d) + 1 (semantic segmentation) )
         # npy: num_frames * 3 (cameras) * ( 1 (bounding_box_2d_tight) + 1 (bounding_box_3d) +  1 (distance to image plane) + 1 (occlusion))

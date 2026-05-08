@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+import tempfile
 
 import omni.kit
 import omni.replicator.core as rep
@@ -47,7 +48,7 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
         # Create and attach the writer while the timeline is running
-        out_dir = os.path.join(os.getcwd(), f"_out_timeline_running")
+        out_dir = tempfile.mkdtemp(prefix="test_sdg_timeline_running_")
         print(f"output_directory: {out_dir}")
         basic_writer = rep.WriterRegistry.get("BasicWriter")
         basic_writer.initialize(output_dir=out_dir, rgb=True)

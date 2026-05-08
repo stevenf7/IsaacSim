@@ -69,8 +69,7 @@ class OgnHSBCameraHelper:
                     db.per_instance_state.initialized = False
                     return False
                 db.per_instance_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
-
-                db.per_instance_state.publishStepSize = db.inputs.frameSkipCount + 1
+                db.per_instance_state.publishStepSize = 1
 
                 writer = None
 

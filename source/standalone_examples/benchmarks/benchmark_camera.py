@@ -48,10 +48,6 @@ headless = args.non_headless
 viewport_updates = args.viewport_updates
 tick_rate = args.tick_rate
 
-extra_args = []
-if tick_rate > 0:
-    extra_args.append("--/rtx/hydra/supportMultiTickRate=true")
-
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp(
@@ -59,7 +55,6 @@ simulation_app = SimulationApp(
         "headless": headless,
         "max_gpu_count": n_gpu,
         "disable_viewport_updates": viewport_updates,
-        "extra_args": extra_args,
     }
 )
 

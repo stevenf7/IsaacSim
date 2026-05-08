@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.1] - 2026-05-05
+### Changed
+- Enable multitick, deprecate `frameSkipCount` in UCXCameraHelper.
+
 ## [1.5.0] - 2026-04-17
 ### Added
 - FlatBuffers schemas and package dependency for UCX bridge message types

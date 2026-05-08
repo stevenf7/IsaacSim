@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.0] - 2026-05-05
+### Removed
+- Removed non-multitick code path.
+
 ## [1.14.9] - 2026-05-01
 ### Changed
 - Removed redundant `fetch_results()` after `simulate()` in warmup, simulation-view creation, and `SimulationManager.step()`.
