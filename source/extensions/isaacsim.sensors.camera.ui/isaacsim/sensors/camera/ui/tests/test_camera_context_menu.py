@@ -15,10 +15,10 @@
 
 """Test camera context menu functionality."""
 
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.app
 import omni.kit.ui_test as ui_test
 import omni.usd
-from isaacsim.core.utils.stage import clear_stage
 from isaacsim.sensors.camera.ui import Extension
 from isaacsim.test.utils import MenuUITestCase, count_menu_items, get_all_menu_paths
 
@@ -57,7 +57,7 @@ class TestCameraContextMenu(MenuUITestCase):
         for test_path in all_menu_paths:
             full_test_path = "Create/Isaac/Sensors/Camera and Depth Sensors/" + test_path
 
-            clear_stage()
+            await stage_utils.create_new_stage_async()
             await self.wait_n_frames(2)
 
             await self.get_viewport_context_menu()

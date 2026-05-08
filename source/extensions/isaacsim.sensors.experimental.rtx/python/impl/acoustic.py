@@ -20,7 +20,6 @@ This module provides the Acoustic class for creating/wrapping USD OmniAcoustic p
 
 from __future__ import annotations
 
-import pathlib
 from typing import Any
 
 import isaacsim.core.experimental.utils.prim as prim_utils
@@ -29,7 +28,7 @@ import numpy as np
 import warp as wp
 from isaacsim.storage.native import get_assets_root_path
 
-from ._sensor_base import _SensorAuthoring
+from ._sensor_base import _resolve_config_path, _SensorAuthoring
 from .rtx_acoustic_configs import SUPPORTED_ACOUSTIC_CONFIGS
 
 
@@ -174,15 +173,9 @@ class Acoustic(_SensorAuthoring):
         if config is not None and usd_path is not None:
             raise ValueError("Both 'config' and 'usd_path' cannot be provided")
         if config is not None:
-            for config_path in SUPPORTED_ACOUSTIC_CONFIGS:
-                config_name = pathlib.Path(config_path).stem
-                if config in [config_path, config_name]:
-                    usd_path = get_assets_root_path() + config_path
-                    break
-            if usd_path is None:
-                raise ValueError(
-                    f"Config '{config}' not found. Supported configs: {list(SUPPORTED_ACOUSTIC_CONFIGS.keys())}"
-                )
+            usd_path = get_assets_root_path() + _resolve_config_path(
+                config, SUPPORTED_ACOUSTIC_CONFIGS, sensor_type="Acoustic"
+            )
         if usd_path is not None:
             path = Acoustic._create_from_usd(path=path, usd_path=usd_path, variant=variant)
         return Acoustic(

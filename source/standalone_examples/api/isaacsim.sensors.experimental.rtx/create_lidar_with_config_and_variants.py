@@ -83,14 +83,23 @@ while is_stage_loading():
 # SUPPORTED_LIDAR_CONFIGS is a dictionary mapping asset paths to their available
 # variants. Configs with empty sets have no variants (single configuration).
 
+
+def _format_variant(variant):
+    # Variants are either a flat string (single "sensor" variant set) or a
+    # dict mapping variant-set names to selections (e.g. SICK family USDs).
+    if isinstance(variant, dict):
+        return ", ".join(f"{k}={v}" for k, v in sorted(variant.items()))
+    return str(variant)
+
+
 print("\n=== Available Lidar Configurations ===")
 for config_path, variants in SUPPORTED_LIDAR_CONFIGS.items():
     # Extract config name from path (e.g., "/Isaac/Sensors/Ouster/OS1/OS1.usd" -> "OS1")
     config_name = config_path.split("/")[-1].replace(".usd", "").replace(".usda", "")
     if variants:
         print(f"  {config_name}: {len(variants)} variants")
-        for variant in sorted(variants):
-            print(f"    - {variant}")
+        for variant in sorted(variants, key=_format_variant):
+            print(f"    - {_format_variant(variant)}")
     else:
         print(f"  {config_name}: (no variants)")
 
@@ -144,14 +153,17 @@ if prim.HasAttribute("omni:sensor:Core:scanRateBaseHz"):
 # =============================================================================
 # EXAMPLE 3: SICK LIDAR WITH PROFILE VARIANT
 # =============================================================================
-# SICK lidars support different operational profiles.
+# SICK lidars use multiple variant sets ("Product", "Profile") rather than the
+# default "sensor" set name, so the variant must be passed as a dict mapping
+# each variant set to its selection. Pairs are applied in dict insertion order
+# (outer variant sets first).
 
 print("\n--- Creating SICK picoScan100 lidar with profile variant ---")
 
 lidar3 = Lidar.create(
     "/World/Lidar_SICK",
     config="SICK_picoScan100",
-    variant="picoScan150Pro_Profile01_15Hz_0p5deg",
+    variant={"Product": "picoScan150Pro", "Profile": "Profile01_15Hz_0p5deg"},
     translations=np.array([5, 0, 1.0]),
 )
 

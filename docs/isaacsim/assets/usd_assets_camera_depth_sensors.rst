@@ -42,7 +42,7 @@ The Hawk Stereo Camera (`LI-AR0234CS-STEREO-GMSL2-30 <https://leopardimaging.com
     :alt: Hawk Sensor
     :width: 50%
 
-    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>LeopardImaging>Hawk*
+    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>Leopard Imaging>Hawk*
 
 To create the sensor from the Content Browser: *Isaac Sim>Sensors>LeopardImaging>Hawk>hawk_v1.1_nominal.usd*
 
@@ -100,7 +100,7 @@ The Owl camera (`LI-AR0234CS-GMSL2-OWL <https://leopardimaging.com/product/autom
     :alt: Owl Sensor
     :width: 50%
 
-    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>LeopardImaging>Owl*
+    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>Leopard Imaging>Owl*
 
 To create the sensor from the Content Browser: *Isaac Sim>Sensors>LeopardImaging>Owl>owl.usd*
 
@@ -434,7 +434,7 @@ Realsense D455 (Certified by Realsense)
     :alt: Realsense D455
     :width: 50%
 
-    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>Realsense>Realsense D455*
+    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>RealSense>Realsense D455*
 
 .. dropdown:: Camera Attributes
     :animate: fade-in
@@ -480,7 +480,7 @@ Realsense D457 (Certified by Realsense)
     :alt: Realsense D457
     :width: 50%
 
-    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>Realsense>Realsense D457*
+    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>RealSense>Realsense D457*
 
 To create the sensor from the Content Browser: *Isaac Sim>Sensors>Realsense>D457>rsd457.usd*
 
@@ -526,7 +526,7 @@ Realsense D555 (Certified by Realsense)
     :alt: Realsense D555
     :width: 50%
 
-    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>Realsense>Realsense D555*
+    To create the camera from the menu: *Create>Sensors>Camera and Depth Sensors>RealSense>Realsense D555*
 
 To create the sensor from the Content Browser: *Isaac Sim>Sensors>Realsense>D555>rsd555.usd*
 

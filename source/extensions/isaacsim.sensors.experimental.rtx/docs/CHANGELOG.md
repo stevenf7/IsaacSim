@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.1] - 2026-05-07
+### Added
+- `SUPPORTED_CAMERA_CONFIGS` / `SUPPORTED_CAMERA_VARIANT_SET_NAME` and `config=` parameter on `RtxCamera.create()`. The camera registry value is a metadata dict (rather than the variant spec directly) carrying `display_name` and an optional `is_depth_sensor` flag; `vendor` and `prim_prefix` are derived from the asset path. `get_camera_metadata(config_path)` returns the normalized record for UI consumption.
+
+### Changed
+- `Radar.create()` and `Acoustic.create()` config matching now accepts the same five alias forms as `Lidar.create()` (full asset path, USD stem, stem with underscores → spaces, vendor-stripped stem, vendor-stripped stem with underscores → spaces); previously only the full path and stem were accepted.
+- `Lidar.create()` / `Radar.create()` / `Acoustic.create()` / `RtxCamera.create()` `'config not found'` error now lists the short (vendor-stripped) config names instead of the full asset paths, includes a "Did you mean..." suggestion when there is a near-match, and points the reader to `SUPPORTED_<TYPE>_CONFIGS` for the full mapping.
+
+### Fixed
+- `SingleViewDepthCameraSensor` no longer spams `SdPostRenderVarTextureToBuffer : corrupted input renderVar DepthSensorDistance` (and the same for the other `DepthSensor*` render vars) once `set_enabled_post_processing(True)` is called. The four `depth_sensor_*` annotators are now attached on the host Replicator pipeline (matching the deprecated `isaacsim.sensors.camera.SingleViewDepthSensor` default), which routes through `SdPostRenderVarToHost` instead of the device-buffer node that does not support these render vars.
+- `CameraSensor.get_data` now promotes non-Warp array results (e.g. `numpy.ndarray` returned by host-pipeline annotators when a CUDA device is requested) to a `wp.array` on the requested device, so `wp.copy` no longer fails with `"Copy source and destination must be arrays"` when a pre-allocated `out=` buffer is provided.
+
 ## [1.4.0] - 2026-05-05
 ### Added
 - `SUPPORTED_RADAR_CONFIGS` / `SUPPORTED_RADAR_VARIANT_SET_NAME` and `config` parameter on `Radar.create()`, with Texas Instruments IWRL6432AOP as the first entry

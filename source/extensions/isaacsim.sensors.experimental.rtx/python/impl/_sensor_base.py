@@ -17,7 +17,9 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal
+import difflib
+import pathlib
+from typing import Any, Iterable, Literal
 
 import carb
 import isaacsim.core.experimental.utils.prim as prim_utils
@@ -34,6 +36,88 @@ ANNOTATOR = Literal[
     "generic-model-output",
     "stable-id-map",
 ]
+
+
+def _config_aliases(config_path: str) -> tuple[str, str, str, str, str]:
+    """Return the five accepted aliases for a registry entry.
+
+    The aliases are, in order:
+
+    1. The full Isaac Sim asset path (e.g. ``/Isaac/Sensors/SICK/picoScan100/SICK_picoScan100.usd``).
+    2. The USD file stem (e.g. ``SICK_picoScan100``).
+    3. The stem with underscores replaced by spaces (e.g. ``SICK picoScan100``).
+    4. The vendor-stripped stem (e.g. ``picoScan100``).
+    5. The vendor-stripped stem with underscores replaced by spaces (e.g. ``picoScan 100``).
+
+    The vendor is taken from the fourth path component (``/Isaac/Sensors/<Vendor>/...``);
+    when the stem starts with ``<Vendor>_`` that prefix is stripped to produce the
+    vendor-stripped form. The vendor-stripped form falls back to the bare stem when
+    the path does not follow the conventional layout.
+    """
+    _p = pathlib.Path(config_path)
+    _vendor = _p.parts[3] if len(_p.parts) > 3 else ""
+    _stem = _p.stem
+    _stem_no_vendor = _stem[len(_vendor) + 1 :] if _vendor and _stem.startswith(_vendor + "_") else _stem
+    return (
+        config_path,
+        _stem,
+        _stem.replace("_", " "),
+        _stem_no_vendor,
+        _stem_no_vendor.replace("_", " "),
+    )
+
+
+def _resolve_config_path(config: str, registry: Iterable[str], *, sensor_type: str) -> str:
+    """Resolve a user-supplied config name to a registry asset path.
+
+    Each entry in *registry* is matched against the five aliases produced by
+    :func:`_config_aliases`. On a miss, a :class:`ValueError` is raised whose message:
+
+    * lists the short (vendor-stripped) config names rather than the full asset paths,
+    * includes a "Did you mean..." suggestion derived from :func:`difflib.get_close_matches`
+      across all aliases, and
+    * points the reader to ``SUPPORTED_<TYPE>_CONFIGS`` for the full asset paths and
+      per-config variant sets.
+
+    Args:
+        config: The user-supplied config name.
+        registry: Iterable of registry asset paths (typically the keys of one of
+            the ``SUPPORTED_*_CONFIGS`` mappings).
+        sensor_type: Capitalized sensor type (e.g. ``"Lidar"``, ``"Radar"``, ``"Acoustic"``)
+            used in the error message and the ``SUPPORTED_*_CONFIGS`` reference.
+
+    Returns:
+        The matching registry asset path.
+
+    Raises:
+        ValueError: If no registry entry matches *config*.
+    """
+    short_names: list[str] = []
+    unique_aliases: list[str] = []
+    seen_aliases: set[str] = set()
+    for config_path in registry:
+        aliases = _config_aliases(config_path)
+        if config in aliases:
+            return config_path
+        short_names.append(aliases[3])
+        # Dedup while preserving registry order so "Did you mean..." returns
+        # distinct suggestions instead of repeating identical aliases produced
+        # by entries whose stem and vendor-stripped stem coincide (e.g. ``OS1``).
+        for alias in aliases:
+            if alias not in seen_aliases:
+                seen_aliases.add(alias)
+                unique_aliases.append(alias)
+
+    parts = [f"{sensor_type} config '{config}' not found."]
+    suggestions = difflib.get_close_matches(config, unique_aliases, n=3, cutoff=0.6)
+    if suggestions:
+        parts.append(f"Did you mean: {', '.join(repr(s) for s in suggestions)}?")
+    if short_names:
+        parts.append(f"Available configs: {', '.join(sorted(set(short_names)))}.")
+    parts.append(
+        f"See SUPPORTED_{sensor_type.upper()}_CONFIGS for the full asset paths " "and per-config variant sets."
+    )
+    raise ValueError(" ".join(parts))
 
 
 class _SensorAuthoring(XformPrim):

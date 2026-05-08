@@ -28,9 +28,11 @@ import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import warp as wp
 from isaacsim.core.experimental.objects import Camera
+from isaacsim.storage.native import get_assets_root_path
 from pxr import UsdGeom
 
-from ._sensor_base import _SensorAuthoring
+from ._sensor_base import _resolve_config_path, _SensorAuthoring
+from .rtx_camera_configs import SUPPORTED_CAMERA_CONFIGS
 
 
 class RtxCamera(_SensorAuthoring):
@@ -149,10 +151,11 @@ class RtxCamera(_SensorAuthoring):
         orientations: list | np.ndarray | wp.array | None = None,
         scales: list | np.ndarray | wp.array | None = None,
         reset_xform_op_properties: bool = True,
+        config: str | None = None,
         usd_path: str | None = None,
-        variant: str | None = None,
+        variant: str | dict[str, str] | None = None,
     ) -> "RtxCamera":
-        """Create an RtxCamera instance, optionally from a USD file.
+        """Create an RtxCamera instance, optionally from a known config or USD file.
 
         Args:
             path: Single path to existing or non-existing (one of both) USD Camera prim.
@@ -167,11 +170,18 @@ class RtxCamera(_SensorAuthoring):
             orientations: Orientations in the world frame (shape ``(N, 4)``, quaternion ``wxyz``).
             scales: Scales to be applied to the prims (shape ``(N, 3)``).
             reset_xform_op_properties: Whether to reset the transformation operation attributes of the prims.
+            config: Configuration name for the sensor (from ``SUPPORTED_CAMERA_CONFIGS``).
             usd_path: Path to a USD file containing the camera asset.
-            variant: Variant name for the camera configuration.
+            variant: Variant name for the camera configuration. Nested variants
+                supported via dictionary; pairs applied in dict insertion order,
+                so outer variant sets must come first.
 
         Returns:
             RtxCamera instance.
+
+        Raises:
+            ValueError: If both ``config`` and ``usd_path`` are provided.
+            ValueError: If the specified ``config`` is not found in :data:`SUPPORTED_CAMERA_CONFIGS`.
 
         Example:
 
@@ -182,6 +192,12 @@ class RtxCamera(_SensorAuthoring):
             >>> cam = RtxCamera.create(path="/World/cam", tick_rate=30.0)
             >>> cam.camera.set_focal_lengths(24.0)
         """
+        if config is not None and usd_path is not None:
+            raise ValueError("Both 'config' and 'usd_path' cannot be provided")
+        if config is not None:
+            usd_path = get_assets_root_path() + _resolve_config_path(
+                config, SUPPORTED_CAMERA_CONFIGS, sensor_type="Camera"
+            )
         asset_root_path = path
         if usd_path is not None:
             path = RtxCamera._create_from_usd(path=path, usd_path=usd_path, variant=variant)

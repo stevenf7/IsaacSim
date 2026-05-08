@@ -206,8 +206,14 @@ onto the stage by specifying the ``config`` and ``variant`` parameters of ``Lida
 * The exact name of a Lidar model USD file without extension, as provided in the *Content Browser* and noted in the :ref:`isaac_assets_nonvisual_sensors_rtx_lidar` library (for example, ``HESAI_XT32_SD10``).
 * The exact name of a Lidar model USD file as noted above, omitting the vendor name (for example, ``XT32_SD10``).
 
-The optional ``variant`` will select the specific variant of the provided Lidar configuration, as noted in the model's documentation. For example,
-the snippet below will load a SICK picoScan150 Lidar with the ``Profile_11`` variant selected.
+The optional ``variant`` parameter selects a specific variant of the provided Lidar configuration. ``variant`` accepts two forms:
+
+* A flat string for USDs that author a single variant set named ``sensor`` (most configurations, including the Ouster OS family). The string is applied against that ``sensor`` set.
+* A ``dict[str, str]`` mapping ``{variant_set: variant_name, ...}`` for USDs that author multiple variant sets (notably the SICK family, which uses ``Product`` and ``Profile`` sets). Pairs are applied in dict insertion order, so outer variant sets must come first.
+
+The full set of supported configs and their variant shapes is exposed via ``isaacsim.sensors.experimental.rtx.SUPPORTED_LIDAR_CONFIGS``; iterate over it to enumerate the available ``(config, variant)`` combinations programmatically.
+
+The snippet below loads a SICK picoScan100 Lidar with the ``picoScan150Pro`` product and the ``Profile11_15Hz_1p0deg`` profile selected.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_lidar/create_lidar_from_config.py
     :language: python

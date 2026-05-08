@@ -38,7 +38,7 @@ class TestSingleViewDepthSensorAsset(omni.kit.test.AsyncTestCase):
         """Test valid asset path initialization and depth sensor access."""
         # Create SingleViewDepthSensorAsset with valid asset path
         depth_sensor_asset = SingleViewDepthSensorAsset(
-            prim_path="/sensor", asset_path=f"{self.assets_root_path}/Isaac/Sensors/Intel/RealSense/rsd455.usd"
+            prim_path="/sensor", asset_path=f"{self.assets_root_path}/Isaac/Sensors/RealSense/D455/rsd455.usd"
         )
 
         # Test get_child_depth_sensor with valid camera_prim_path
