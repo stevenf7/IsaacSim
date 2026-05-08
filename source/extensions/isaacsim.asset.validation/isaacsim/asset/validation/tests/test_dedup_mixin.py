@@ -13,22 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Standalone unit tests for DedupMixin and _resolve_at in util.py.
+"""Unit tests for DedupMixin and _resolve_at in util.py."""
 
-No USD/Kit dependencies — all USD objects are replaced by duck-typed stubs.
-"""
-
-import unittest
-
+import omni.kit.test
 from isaacsim.asset.validation.util import DedupMixin, _resolve_at
+from pxr import Usd, UsdGeom
 
 # ---------------------------------------------------------------------------
-# Stubs — no pxr required
+# Stand in for BaseRuleChecker
 # ---------------------------------------------------------------------------
 
 
-class _StubBase:
-    """Minimal stand-in for BaseRuleChecker that records forwarded calls."""
+class _RecordingBase:
+    """Records forwarded _AddError/_AddWarning/_AddInfo calls for assertions."""
 
     def __init__(self):
         self.calls = []
@@ -43,34 +40,22 @@ class _StubBase:
         self.calls.append(("info", message, kwargs.get("at")))
 
 
-class _TestRule(DedupMixin, _StubBase):
-    """Concrete rule that inherits dedup via MRO: DedupMixin → _StubBase."""
+class _TestRule(DedupMixin, _RecordingBase):
+    """Concrete rule that inherits dedup via mixin."""
 
     pass
 
 
-class _StubStage:
-    """Duck-type stub for Usd.Stage (has GetRootLayer)."""
-
-    def __init__(self, identifier):
-        self._identifier = identifier
-
-    def GetRootLayer(self):
-        class _Layer:
-            def __init__(self, ident):
-                self.identifier = ident
-
-        return _Layer(self._identifier)
+# ---------------------------------------------------------------------------
+# Helpers - fresh stage + prim per test, no cross-test state.
+# ---------------------------------------------------------------------------
 
 
-class _StubPrim:
-    """Duck-type stub for Usd.Prim (has GetPath but not GetRootLayer)."""
-
-    def __init__(self, path):
-        self._path = path
-
-    def GetPath(self):
-        return self._path  # str is fine; _resolve_at calls str() on it
+def _make_stage_and_prim(prim_path: str = "/World/Cube"):
+    """Return an in-memory stage and an Xform prim at ``prim_path``."""
+    stage = Usd.Stage.CreateInMemory()
+    prim = UsdGeom.Xform.Define(stage, prim_path).GetPrim()
+    return stage, prim
 
 
 # ---------------------------------------------------------------------------
@@ -78,52 +63,51 @@ class _StubPrim:
 # ---------------------------------------------------------------------------
 
 
-class TestResolveAt(unittest.TestCase):
+class TestResolveAt(omni.kit.test.AsyncTestCase):
     """Unit tests for the _resolve_at helper."""
 
-    def test_none_returns_empty_string(self):
+    async def test_none_returns_empty_string(self):
         self.assertEqual(_resolve_at(None), "")
 
-    def test_stage_uses_root_layer_identifier(self):
-        stage = _StubStage("/tmp/asset.usd")
-        self.assertEqual(_resolve_at(stage), "/tmp/asset.usd")
+    async def test_stage_uses_root_layer_identifier(self):
+        stage = Usd.Stage.CreateInMemory()
+        self.assertEqual(_resolve_at(stage), stage.GetRootLayer().identifier)
 
-    def test_prim_uses_get_path(self):
-        prim = _StubPrim("/World/Cube")
+    async def test_prim_uses_get_path(self):
+        _stage, prim = _make_stage_and_prim("/World/Cube")
         self.assertEqual(_resolve_at(prim), "/World/Cube")
 
-    def test_unknown_type_falls_back_to_str(self):
+    async def test_unknown_type_falls_back_to_str(self):
         self.assertEqual(_resolve_at(42), "42")
         self.assertEqual(_resolve_at("some/path"), "some/path")
 
 
-class TestDedupMixinError(unittest.TestCase):
+class TestDedupMixinError(omni.kit.test.AsyncTestCase):
     """_AddError deduplication."""
 
-    def test_duplicate_error_emits_once(self):
+    async def test_duplicate_error_emits_once(self):
         """Identical _AddError calls on the same key → forwarded once."""
+        _stage, prim = _make_stage_and_prim()
         rule = _TestRule()
-        prim = _StubPrim("/World/Cube")
         rule._AddError("mesh missing", at=prim)
         rule._AddError("mesh missing", at=prim)
         rule._AddError("mesh missing", at=prim)
         self.assertEqual(len(rule.calls), 1)
         self.assertEqual(rule.calls[0], ("error", "mesh missing", prim))
 
-    def test_different_messages_both_emitted(self):
+    async def test_different_messages_both_emitted(self):
         """Same prim, different messages → both forwarded."""
+        _stage, prim = _make_stage_and_prim()
         rule = _TestRule()
-        prim = _StubPrim("/World/Cube")
         rule._AddError("mesh missing", at=prim)
         rule._AddError("normals bad", at=prim)
         self.assertEqual(len(rule.calls), 2)
 
 
-class TestDedupMixinWarning(unittest.TestCase):
+class TestDedupMixinWarning(omni.kit.test.AsyncTestCase):
     """_AddWarning deduplication."""
 
-    def test_duplicate_warning_emits_once(self):
-        """Identical _AddWarning calls → forwarded once."""
+    async def test_duplicate_warning_emits_once(self):
         rule = _TestRule()
         rule._AddWarning("soft warning", at=None)
         rule._AddWarning("soft warning", at=None)
@@ -131,11 +115,10 @@ class TestDedupMixinWarning(unittest.TestCase):
         self.assertEqual(rule.calls[0][0], "warning")
 
 
-class TestDedupMixinInfo(unittest.TestCase):
+class TestDedupMixinInfo(omni.kit.test.AsyncTestCase):
     """_AddInfo deduplication."""
 
-    def test_duplicate_info_emits_once(self):
-        """Identical _AddInfo calls → forwarded once."""
+    async def test_duplicate_info_emits_once(self):
         rule = _TestRule()
         rule._AddInfo("fyi note", at=None)
         rule._AddInfo("fyi note", at=None)
@@ -143,15 +126,13 @@ class TestDedupMixinInfo(unittest.TestCase):
         self.assertEqual(rule.calls[0][0], "info")
 
 
-class TestDedupMixinInstanceIsolation(unittest.TestCase):
-    """Per-instance _seen sets."""
+class TestDedupMixinInstanceIsolation(omni.kit.test.AsyncTestCase):
+    """Per-instance _seen sets don't bleed across rule instances."""
 
-    def test_two_instances_have_independent_seen_sets(self):
-        """Each rule instance tracks its own _seen; a call on rule_b doesn't
-        suppress the same call on rule_a and vice-versa."""
+    async def test_two_instances_have_independent_seen_sets(self):
+        _stage, prim = _make_stage_and_prim("/World/Mesh")
         rule_a = _TestRule()
         rule_b = _TestRule()
-        prim = _StubPrim("/World/Mesh")
 
         rule_a._AddError("duplicate issue", at=prim)
         rule_a._AddError("duplicate issue", at=prim)  # suppressed in a
@@ -163,37 +144,37 @@ class TestDedupMixinInstanceIsolation(unittest.TestCase):
         self.assertEqual(len(rule_b.calls), 1, "rule_b should have 1 forwarded call")
 
 
-class TestResolveAtInKey(unittest.TestCase):
-    """`at=` variants produce the correct key component."""
+class TestResolveAtInKey(omni.kit.test.AsyncTestCase):
+    """``at=`` variants produce the correct key component."""
 
-    def test_at_none_key_component_is_empty_string(self):
+    async def test_at_none_key_component_is_empty_string(self):
         """at=None → key built with "" → subsequent call suppressed."""
         rule = _TestRule()
         rule._AddError("msg", at=None)
         rule._AddError("msg", at=None)
         self.assertEqual(len(rule.calls), 1)
 
-    def test_at_stage_mock_uses_root_layer_identifier(self):
-        """at= with GetRootLayer → identifier used in key."""
-        stage_a = _StubStage("/a.usd")
-        stage_b = _StubStage("/b.usd")
+    async def test_at_stage_uses_root_layer_identifier(self):
+        """at= with GetRootLayer → identifier used in key; different stages forwarded."""
+        stage_a = Usd.Stage.CreateInMemory()
+        stage_b = Usd.Stage.CreateInMemory()
         rule = _TestRule()
         rule._AddError("msg", at=stage_a)
         rule._AddError("msg", at=stage_a)  # duplicate → suppressed
         rule._AddError("msg", at=stage_b)  # different identifier → forwarded
         self.assertEqual(len(rule.calls), 2)
 
-    def test_at_prim_mock_uses_get_path(self):
-        """at= with GetPath → str(path) used in key."""
-        prim_a = _StubPrim("/World/A")
-        prim_b = _StubPrim("/World/B")
+    async def test_at_prim_uses_get_path(self):
+        """at= with GetPath → str(path) used in key; different paths forwarded."""
+        _stage_a, prim_a = _make_stage_and_prim("/World/A")
+        _stage_b, prim_b = _make_stage_and_prim("/World/B")
         rule = _TestRule()
         rule._AddError("msg", at=prim_a)
         rule._AddError("msg", at=prim_a)  # duplicate → suppressed
         rule._AddError("msg", at=prim_b)  # different path → forwarded
         self.assertEqual(len(rule.calls), 2)
 
-    def test_at_unknown_type_falls_back_to_str(self):
+    async def test_at_unknown_type_falls_back_to_str(self):
         """at= unknown type → str(at) used in key."""
         rule = _TestRule()
         rule._AddError("msg", at=99)
@@ -202,16 +183,12 @@ class TestResolveAtInKey(unittest.TestCase):
         self.assertEqual(len(rule.calls), 2)
 
 
-class TestSeverityDoesNotCrossContaminate(unittest.TestCase):
+class TestSeverityDoesNotCrossContaminate(omni.kit.test.AsyncTestCase):
     """Severity string is part of the key, so error/warning/info are distinct."""
 
-    def test_same_message_different_severity_all_forwarded(self):
+    async def test_same_message_different_severity_all_forwarded(self):
         rule = _TestRule()
         rule._AddError("shared msg", at=None)
         rule._AddWarning("shared msg", at=None)
         rule._AddInfo("shared msg", at=None)
         self.assertEqual(len(rule.calls), 3)
-
-
-if __name__ == "__main__":
-    unittest.main()

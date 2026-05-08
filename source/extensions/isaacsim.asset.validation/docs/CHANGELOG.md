@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.5] - 2026-05-07
+### Fixed
+- Repaired failing validator dedup mixin test.
+
 ## [1.3.4] - 2026-05-02
 ### Changed
 - Added DedupBaseRuleChecker to filter duplicate errors and warnings caused by multiple variants.
