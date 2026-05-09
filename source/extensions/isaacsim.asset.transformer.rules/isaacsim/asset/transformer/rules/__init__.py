@@ -17,7 +17,7 @@
 
 from pathlib import Path as _Path
 
-from .extension import Extension, register_all_rules  # noqa: F401
+from .extension import Extension, discover_rule_classes, register_all_rules  # noqa: F401
 
 
 def _resolve_default_profile_path() -> str:
@@ -33,4 +33,4 @@ def _resolve_default_profile_path() -> str:
 DEFAULT_PROFILE_PATH = _resolve_default_profile_path()
 """Absolute path to the default Isaac Sim asset-structure profile shipped with this extension."""
 
-__all__ = ["DEFAULT_PROFILE_PATH", "register_all_rules"]
+__all__ = ["DEFAULT_PROFILE_PATH", "discover_rule_classes", "register_all_rules"]
