@@ -16,14 +16,14 @@
 """Smoke tests for isaacsim.examples.ipc native plugin load."""
 
 import omni.kit.test
-from isaacsim.examples.ipc.bindings._isaacsim_examples_ipc import (
-    acquire_example_ipc_interface,
-    release_example_ipc_interface,
-)
+from isaacsim.examples.ipc.bindings._isaacsim_examples_ipc import acquire_example_ipc_interface
 
 
 class TestNodeExamplesPlugin(omni.kit.test.AsyncTestCase):
-    async def test_acquire_release_plugin_interface(self):
+    async def test_acquire_plugin_interface(self):
+        # Verify the Carbonite plugin loaded successfully and returns a valid interface.
+        # The extension owns the plugin lifecycle; releasing from a test context would
+        # decrement the shared per-client refcount to zero and unload the plugin for all
+        # subsequent tests.
         iface = acquire_example_ipc_interface()
         self.assertIsNotNone(iface)
-        release_example_ipc_interface(iface)

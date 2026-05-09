@@ -30,7 +30,7 @@ namespace ipc
 class TcpClockClient
 {
 public:
-    explicit TcpClockClient(std::string uri) : m_uri(std::move(uri)), m_socketFd(-1)
+    explicit TcpClockClient(std::string uri) : m_uri(std::move(uri)), m_socketFd(kInvalidSocket)
     {
     }
 
@@ -49,7 +49,7 @@ public:
             return false;
         }
         m_socketFd = tcp::connectTcpClient(host, port);
-        return m_socketFd >= 0;
+        return m_socketFd != kInvalidSocket;
     }
 
     void disconnect()
@@ -59,12 +59,12 @@ public:
 
     bool isConnected() const
     {
-        return m_socketFd >= 0;
+        return m_socketFd != kInvalidSocket;
     }
 
     bool sendClock(int64_t timeNanoseconds)
     {
-        if (m_socketFd < 0)
+        if (m_socketFd == kInvalidSocket)
         {
             return false;
         }
@@ -80,7 +80,7 @@ public:
 
 private:
     std::string m_uri;
-    int m_socketFd;
+    socket_t m_socketFd;
 };
 
 } // namespace ipc

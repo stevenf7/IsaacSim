@@ -15,17 +15,37 @@
 
 #pragma once
 
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/types.h>
+// Platform socket abstraction.
+// Kit initialises Winsock2 (WSAStartup) before loading extensions, so plugins
+// do not need to call it themselves.
+#ifdef _WIN32
+#    ifndef WIN32_LEAN_AND_MEAN
+#        define WIN32_LEAN_AND_MEAN
+#    endif
+#    include <winsock2.h>
+#    include <ws2tcpip.h>
+// socket handle type — unsigned UINT_PTR on Windows, int on POSIX
+using socket_t = SOCKET;
+inline const socket_t kInvalidSocket = INVALID_SOCKET;
+#    ifndef MSG_NOSIGNAL
+#        define MSG_NOSIGNAL 0 // no SIGPIPE on Windows; silently map send flag to 0
+#    endif
+#else
+#    include <arpa/inet.h>
+#    include <netinet/in.h>
+#    include <sys/socket.h>
+#    include <sys/types.h>
+
+#    include <fcntl.h>
+#    include <unistd.h>
+using socket_t = int;
+inline constexpr socket_t kInvalidSocket = -1;
+#endif
 
 #include <cerrno>
 #include <cstdint>
 #include <cstring>
-#include <fcntl.h>
 #include <string>
-#include <unistd.h>
 
 namespace isaacsim
 {
@@ -96,46 +116,81 @@ inline bool parseHostPort(const std::string& uri, std::string& outHost, uint16_t
     return true;
 }
 
-inline bool setNonBlocking(int fd)
+// Returns true when the last socket operation failed because no data was ready
+// (non-blocking would-block condition). Abstracts errno/WSAGetLastError.
+inline bool wouldBlock()
 {
+#ifdef _WIN32
+    return WSAGetLastError() == WSAEWOULDBLOCK;
+#else
+    return errno == EAGAIN || errno == EWOULDBLOCK;
+#endif
+}
+
+inline bool setNonBlocking(socket_t fd)
+{
+#ifdef _WIN32
+    u_long mode = 1;
+    return ioctlsocket(fd, FIONBIO, &mode) == 0;
+#else
     const int flags = fcntl(fd, F_GETFL, 0);
     if (flags < 0)
     {
         return false;
     }
     return fcntl(fd, F_SETFL, flags | O_NONBLOCK) == 0;
+#endif
 }
 
-inline void closeSocket(int fd)
+inline void closeSocket(socket_t fd)
 {
+#ifdef _WIN32
+    if (fd != INVALID_SOCKET)
+    {
+        closesocket(fd);
+    }
+#else
     if (fd >= 0)
     {
         ::close(fd);
     }
+#endif
 }
 
-inline void closeFd(int& fd)
+inline void closeFd(socket_t& fd)
 {
+#ifdef _WIN32
+    if (fd != INVALID_SOCKET)
+    {
+        closesocket(fd);
+        fd = INVALID_SOCKET;
+    }
+#else
     if (fd >= 0)
     {
         ::close(fd);
-        fd = -1;
+        fd = kInvalidSocket;
     }
+#endif
 }
 
-inline bool sendAll(int fd, const void* data, size_t length)
+inline bool sendAll(socket_t fd, const void* data, size_t length)
 {
     const char* bytes = static_cast<const char*>(data);
     size_t sent = 0;
     while (sent < length)
     {
-        const ssize_t n = ::send(fd, bytes + sent, length - sent, MSG_NOSIGNAL);
+        // ::send() returns int on Windows and ssize_t on POSIX; int covers both
+        // since a single send never exceeds INT_MAX bytes.
+        const int n = ::send(fd, bytes + sent, static_cast<int>(length - sent), MSG_NOSIGNAL);
         if (n < 0)
         {
+#ifndef _WIN32
             if (errno == EINTR)
             {
                 continue;
             }
+#endif
             return false;
         }
         if (n == 0)
@@ -147,12 +202,12 @@ inline bool sendAll(int fd, const void* data, size_t length)
     return true;
 }
 
-inline int connectTcpClient(const std::string& host, uint16_t port)
+inline socket_t connectTcpClient(const std::string& host, uint16_t port)
 {
-    const int fd = ::socket(AF_INET, SOCK_STREAM, 0);
-    if (fd < 0)
+    const socket_t fd = ::socket(AF_INET, SOCK_STREAM, 0);
+    if (fd == kInvalidSocket)
     {
-        return -1;
+        return kInvalidSocket;
     }
 
     sockaddr_in addr;
@@ -162,30 +217,31 @@ inline int connectTcpClient(const std::string& host, uint16_t port)
     if (inet_pton(AF_INET, host.c_str(), &addr.sin_addr) != 1)
     {
         closeSocket(fd);
-        return -1;
+        return kInvalidSocket;
     }
 
     if (::connect(fd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != 0)
     {
         closeSocket(fd);
-        return -1;
+        return kInvalidSocket;
     }
     return fd;
 }
 
-inline int listenTcpServer(const std::string& bindHost, uint16_t port)
+inline socket_t listenTcpServer(const std::string& bindHost, uint16_t port)
 {
-    const int fd = ::socket(AF_INET, SOCK_STREAM, 0);
-    if (fd < 0)
+    const socket_t fd = ::socket(AF_INET, SOCK_STREAM, 0);
+    if (fd == kInvalidSocket)
     {
-        return -1;
+        return kInvalidSocket;
     }
 
     int one = 1;
-    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) != 0)
+    // setsockopt takes const char* on Windows and const void* on POSIX; const char* is accepted by both.
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&one), sizeof(one)) != 0)
     {
         closeSocket(fd);
-        return -1;
+        return kInvalidSocket;
     }
 
     sockaddr_in addr;
@@ -195,25 +251,25 @@ inline int listenTcpServer(const std::string& bindHost, uint16_t port)
     if (inet_pton(AF_INET, bindHost.c_str(), &addr.sin_addr) != 1)
     {
         closeSocket(fd);
-        return -1;
+        return kInvalidSocket;
     }
 
     if (::bind(fd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != 0)
     {
         closeSocket(fd);
-        return -1;
+        return kInvalidSocket;
     }
 
     if (::listen(fd, 1) != 0)
     {
         closeSocket(fd);
-        return -1;
+        return kInvalidSocket;
     }
 
     if (!setNonBlocking(fd))
     {
         closeSocket(fd);
-        return -1;
+        return kInvalidSocket;
     }
 
     return fd;
