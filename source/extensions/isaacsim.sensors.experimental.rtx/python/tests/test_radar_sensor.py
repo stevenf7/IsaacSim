@@ -81,6 +81,8 @@ class TestRadarSensor(omni.kit.test.AsyncTestCase):
             self._sensor_prim = sensor_prim
             tick_rate = sensor_prim.GetAttribute("omni:sensor:tickRate").Get()
             self._expected_advance_ns = round(1.0 / tick_rate * 1e9) if tick_rate and tick_rate > 0 else 0
+            # In kit 110.1.1, RTX Radar autotriggers regardless of tickRate attribute
+            self._expected_advance_ns = 1.0 / 60.0 * 1e9
 
         # -- frame callback ------------------------------------------
 
@@ -99,7 +101,6 @@ class TestRadarSensor(omni.kit.test.AsyncTestCase):
                     return
 
                 ts = int(gmo.timestampNs)
-
                 if self._prev_timestamp_ns is not None and self._expected_advance_ns > 0:
                     delta = ts - self._prev_timestamp_ns
                     self._test.assertAlmostEqual(delta, self._expected_advance_ns, delta=10)

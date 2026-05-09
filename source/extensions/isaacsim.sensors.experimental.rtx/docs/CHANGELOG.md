@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.2] - 2026-05-08
+### Fixed
+- Fixed TestRadarSensor.test_gmo_writer timing check.
+
 ## [1.4.1] - 2026-05-07
 ### Added
 - `SUPPORTED_CAMERA_CONFIGS` / `SUPPORTED_CAMERA_VARIANT_SET_NAME` and `config=` parameter on `RtxCamera.create()`. The camera registry value is a metadata dict (rather than the variant spec directly) carrying `display_name` and an optional `is_depth_sensor` flag; `vendor` and `prim_prefix` are derived from the asset path. `get_camera_metadata(config_path)` returns the normalized record for UI consumption.

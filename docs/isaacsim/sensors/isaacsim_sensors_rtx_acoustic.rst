@@ -102,10 +102,12 @@ The snippet above creates an ``OmniAcoustic`` prim at ``/World/acoustic`` with:
 Tick Rate
 ^^^^^^^^^
 
+.. warning::
+
+    In Isaac Sim 6.0 GA, RTX Acoustic autotriggers regardless of ``omni:sensor:tickRate`` attribute. This will be corrected in a future release.
+
 The ``tick_rate`` parameter (Hz) controls how frequently the sensor renders. A value of ``0``
-(the default) enables autotrigger mode, where the sensor renders every simulation frame. Setting a
-nonzero value causes the sensor to render at the specified frequency independently of the simulation
-step rate. This maps to the ``omni:sensor:tickRate`` prim attribute.
+(the default) enables autotrigger mode, where the sensor renders every simulation frame. This maps to the ``omni:sensor:tickRate`` prim attribute.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_acoustic/set_acoustic_tick_rate.py
     :language: python
