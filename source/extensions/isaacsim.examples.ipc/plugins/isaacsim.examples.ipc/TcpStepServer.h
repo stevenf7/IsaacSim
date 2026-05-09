@@ -17,7 +17,6 @@
 
 #include "TcpIo.h"
 
-#include <cerrno>
 #include <cstdint>
 #include <cstring>
 #include <optional>
@@ -33,7 +32,8 @@ namespace ipc
 class TcpStepServer
 {
 public:
-    explicit TcpStepServer(std::string uri) : m_uri(std::move(uri)), m_listenFd(-1), m_clientFd(-1), m_filled(0)
+    explicit TcpStepServer(std::string uri)
+        : m_uri(std::move(uri)), m_listenFd(kInvalidSocket), m_clientFd(kInvalidSocket), m_filled(0)
     {
         std::memset(m_buffer, 0, sizeof(m_buffer));
     }
@@ -53,7 +53,7 @@ public:
             return false;
         }
         m_listenFd = tcp::listenTcpServer(host, port);
-        return m_listenFd >= 0;
+        return m_listenFd != kInvalidSocket;
     }
 
     void disconnect()
@@ -65,25 +65,21 @@ public:
 
     bool isConnected() const
     {
-        return m_listenFd >= 0;
+        return m_listenFd != kInvalidSocket;
     }
 
     std::optional<uint32_t> tryReceiveStep()
     {
-        if (m_listenFd < 0)
+        if (m_listenFd == kInvalidSocket)
         {
             return std::nullopt;
         }
 
-        if (m_clientFd < 0)
+        if (m_clientFd == kInvalidSocket)
         {
-            const int c = ::accept(m_listenFd, nullptr, nullptr);
-            if (c < 0)
+            const socket_t c = ::accept(m_listenFd, nullptr, nullptr);
+            if (c == kInvalidSocket)
             {
-                if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)
-                {
-                    return std::nullopt;
-                }
                 return std::nullopt;
             }
             if (!tcp::setNonBlocking(c))
@@ -97,7 +93,10 @@ public:
 
         while (m_filled < 4)
         {
-            const ssize_t n = ::recv(m_clientFd, m_buffer + m_filled, 4 - m_filled, 0);
+            // ::recv() takes char* on Windows and void* on POSIX; char* is accepted by both.
+            // Length is int on Windows and size_t on POSIX; int covers both since the request never exceeds 4 bytes.
+            const int n =
+                ::recv(m_clientFd, reinterpret_cast<char*>(m_buffer + m_filled), static_cast<int>(4 - m_filled), 0);
             if (n > 0)
             {
                 m_filled += static_cast<size_t>(n);
@@ -109,11 +108,13 @@ public:
                 m_filled = 0;
                 return std::nullopt;
             }
+#ifndef _WIN32
             if (errno == EINTR)
             {
                 continue;
             }
-            if (errno == EAGAIN || errno == EWOULDBLOCK)
+#endif
+            if (tcp::wouldBlock())
             {
                 return std::nullopt;
             }
@@ -134,8 +135,8 @@ public:
 
 private:
     std::string m_uri;
-    int m_listenFd;
-    int m_clientFd;
+    socket_t m_listenFd;
+    socket_t m_clientFd;
     uint8_t m_buffer[4];
     size_t m_filled;
 };
