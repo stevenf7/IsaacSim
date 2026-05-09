@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.9.0] - 2026-05-07
+### Fixed
+- Downgraded bundled Fast-RTPS from 2.6.11 to 2.6.10 in the Humble nv_ros2 linux packages to avoid a regression introduced upstream in 2.6.11. 
+
 ## [1.8.6] - 2026-04-28
 ### Changed
 - `wait_for_publishers_on_topic` and `wait_for_subscribers_on_topic` now include the last-observed endpoint count in their timeout failure messages to aid flake diagnosis
