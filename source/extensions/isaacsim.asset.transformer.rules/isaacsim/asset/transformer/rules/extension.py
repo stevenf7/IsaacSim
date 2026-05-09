@@ -15,8 +15,13 @@
 
 """Register transformer rules with the global registry."""
 
+from __future__ import annotations
+
 import asyncio
+import importlib
+import inspect
 import logging
+import pkgutil
 
 try:
     import omni.ext
@@ -29,40 +34,66 @@ except ImportError:
         def on_shutdown(self) -> None: ...
 
 
-from isaacsim.asset.transformer import RuleRegistry
+from isaacsim.asset.transformer import RuleInterface, RuleRegistry
 
-from .core.prims import PrimRoutingRule
-from .core.properties import PropertyRoutingRule
-from .core.remove_schema import RemoveSchemaRule
-from .core.schemas import SchemaRoutingRule
-from .isaac_sim.joint_state_api import JointStateAPIRule
-from .isaac_sim.make_lists_non_explicit import MakeListsNonExplicitRule
-from .isaac_sim.physics_joint_pose_fix import PhysicsJointPoseFixRule
-from .isaac_sim.robot_schema import RobotSchemaRule
-from .perf.geometries import GeometriesRoutingRule
-from .perf.materials import MaterialsRoutingRule
-from .structure.flatten import FlattenRule
-from .structure.interface import InterfaceConnectionRule
-from .structure.variants import VariantRoutingRule
 from .utils import refresh_builtin_mdl_cache_async
 
 logger = logging.getLogger(__name__)
 
-_ALL_RULES = [
-    FlattenRule,
-    GeometriesRoutingRule,
-    MaterialsRoutingRule,
-    PhysicsJointPoseFixRule,
-    JointStateAPIRule,
-    MakeListsNonExplicitRule,
-    RemoveSchemaRule,
-    PrimRoutingRule,
-    SchemaRoutingRule,
-    PropertyRoutingRule,
-    VariantRoutingRule,
-    RobotSchemaRule,
-    InterfaceConnectionRule,
-]
+
+_EXCLUDED_SUBPACKAGES = frozenset({"tests"})
+"""Top-level subpackages of :mod:`isaacsim.asset.transformer.rules` that are
+skipped when discovering rule classes (e.g. test fixtures)."""
+
+
+def discover_rule_classes() -> list[type[RuleInterface]]:
+    """Return every concrete :class:`RuleInterface` subclass in the extension package.
+
+    Discovery is dynamic: any rule module added under
+    :mod:`isaacsim.asset.transformer.rules` (in any current or future
+    subpackage that is not in :data:`_EXCLUDED_SUBPACKAGES`) is picked up
+    automatically without needing to edit this file.
+
+    Returns:
+        List of rule classes, sorted by fully qualified class name for
+        deterministic registration order.
+
+    """
+    import isaacsim.asset.transformer.rules as _rules_pkg
+
+    package_root = _rules_pkg.__name__
+    discovered: dict[str, type[RuleInterface]] = {}
+
+    for module_info in pkgutil.walk_packages(_rules_pkg.__path__, prefix=f"{package_root}."):
+        rel = module_info.name[len(package_root) + 1 :]
+        top = rel.split(".", 1)[0]
+        if top in _EXCLUDED_SUBPACKAGES:
+            continue
+
+        try:
+            module = importlib.import_module(module_info.name)
+        except Exception as exc:
+            logger.warning(
+                "[isaacsim.asset.transformer.rules] Skipping %s during rule discovery: %s",
+                module_info.name,
+                exc,
+            )
+            continue
+
+        for _, cls in inspect.getmembers(module, inspect.isclass):
+            if cls is RuleInterface:
+                continue
+            if not issubclass(cls, RuleInterface):
+                continue
+            if inspect.isabstract(cls):
+                continue
+            # Skip classes re-exported from other modules.
+            if cls.__module__ != module.__name__:
+                continue
+            fqcn = f"{cls.__module__}.{cls.__qualname__}"
+            discovered[fqcn] = cls
+
+    return [discovered[name] for name in sorted(discovered)]
 
 
 def register_all_rules() -> None:
@@ -71,11 +102,15 @@ def register_all_rules() -> None:
     This is called automatically by the Kit extension on startup. Standalone
     callers (outside Kit) should invoke this once before running the asset
     transformer pipeline.
+
+    Rules are discovered dynamically via :func:`discover_rule_classes`, so
+    new rule modules added to the extension are registered automatically.
     """
     registry = RuleRegistry()
-    for rule_cls in _ALL_RULES:
+    rules = discover_rule_classes()
+    for rule_cls in rules:
         registry.register(rule_cls)
-    logger.info("[isaacsim.asset.transformer.rules] Rules registered")
+    logger.info("[isaacsim.asset.transformer.rules] Registered %d rule(s)", len(rules))
 
 
 class Extension(_ExtBase):

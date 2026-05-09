@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.7.3] - 2026-05-08
+### Added
+- `JointStateAPIRule` applies `PhysxSchema.JointStateAPI` (`linear` on prismatic, `angular` on revolute) to non-fixed joints missing it. Wired into the Isaac Sim profile between `Fix Physics Joint Poses` and `Route Materials`.
+- `MakeListsNonExplicitRule` now normalizes the `isaac:physics:robotLinks` and `isaac:physics:robotJoints` relationships to `prepend` list ops, walking each prim's `GetPrimStack()` so sublayered PrimSpecs are also rewritten. A second profile entry is added to `isaacsim_structure.json` targeting these relationships.
+
 ## [1.7.2] - 2026-05-05
 ### Added
 - `canonical_builtin_mdl_path` helper that returns the Kit-resolvable bare/suffix form of a built-in MDL path.
@@ -15,10 +20,16 @@
 - `MaterialsRoutingRule` now rewrites absolute or explicit-relative paths to project-local copies of Kit built-in MDLs (e.g. `C:/Dev/.../OmniPBR.mdl`) into their canonical bare form (`OmniPBR.mdl`) so Kit's MDL search paths resolve them. Previously these paths were left absolute, leaking host-specific paths into the package; relocating the file is unsafe because Kit's MDL system ties module identity to filesystem location.
 - MDL texture path rewriting in `_remap_mdl_texture_paths` consolidated through the same forward-slash, relative helper for consistency.
 
-## [1.7.1] - 2026-04-24
+## [1.7.1] - 2026-04-30
 ### Added
-- `JointStateAPIRule` applies `PhysxSchema.JointStateAPI` (`linear` on prismatic, `angular` on revolute) to non-fixed joints missing it. Wired into the Isaac Sim profile between `Fix Physics Joint Poses` and `Route Materials`.
-- `MakeListsNonExplicitRule` now normalizes the `isaac:physics:robotLinks` and `isaac:physics:robotJoints` relationships to `prepend` list ops, walking each prim's `GetPrimStack()` so sublayered PrimSpecs are also rewritten. A second profile entry is added to `isaacsim_structure.json` targeting these relationships.
+- `discover_rule_classes()` helper that walks the extension package and returns every concrete `RuleInterface` subclass
+- Test that asserts every discovered rule class ends up in the global `RuleRegistry` after `register_all_rules()`
+
+### Changed
+- `register_all_rules()` now discovers rule implementations dynamically via `discover_rule_classes()` instead of a hard-coded list, so new rule modules added to the package are registered automatically
+
+### Fixed
+- `MergeMeshRule`, `MjcToPhysxConversionRule`, and `UrdfToMjcPhysxConversionRule` are now registered with the global `RuleRegistry`
 
 ## [1.7.0] - 2026-04-22
 ### Added
