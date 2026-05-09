@@ -88,18 +88,15 @@ Details about available annotators can be explored :ref:`here<rtx_sensor_annotat
 Tick Rate
 ^^^^^^^^^
 
+.. warning::
+
+    In Isaac Sim 6.0 GA, RTX Radar autotriggers regardless of ``omni:sensor:tickRate`` attribute. This will be corrected in a future release.
+
 The ``tick_rate`` parameter (Hz) controls how frequently the sensor renders. A value of ``0``
-(the default) enables autotrigger mode, where the sensor renders every simulation frame. Setting a
-nonzero value causes the sensor to render at the specified frequency independently of the simulation
-step rate. This maps to the ``omni:sensor:tickRate`` prim attribute.
+(the default) enables autotrigger mode, where the sensor renders every simulation frame. This maps to the ``omni:sensor:tickRate`` prim attribute.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_radar/set_radar_tick_rate.py
     :language: python
-
-.. note::
-
-    ``tick_rate`` is the recommended replacement for the deprecated ``frameSkipCount`` parameter
-    on ROS2 helper nodes.
 
 Auxiliary Output Level
 ^^^^^^^^^^^^^^^^^^^^^^
