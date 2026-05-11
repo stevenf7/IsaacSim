@@ -169,6 +169,7 @@ class Extension(omni.ext.IExt):
             item_filter_options=[".png Files (*.png, *.PNG)"],
             item_filter_fn=_on_filter_png_files,
         )
+        self._filepicker.show()
 
     def _load_image(self, filename: str, folder_path: str) -> None:
         """Load a PNG image file and display it in a visualization window.

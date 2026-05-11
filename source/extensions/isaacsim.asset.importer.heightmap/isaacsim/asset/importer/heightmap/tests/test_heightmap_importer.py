@@ -70,6 +70,28 @@ class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
             self.importer.create_heightmap(test_image, -0.5)
         self.assertIn("Cell scale must be positive", str(context.exception))
 
+    def test_create_heightmap_rejects_non_pil_images_before_stage_writes(self) -> None:
+        """Test invalid image objects raise ValueError without modifying the stage."""
+
+        class FakeImage:
+            size = (64, 64)
+
+        invalid_images = ["/tmp/heightmap.png", 42, b"\x89PNG", FakeImage()]
+
+        for invalid_image in invalid_images:
+            with self.subTest(invalid_image=invalid_image):
+                stage = MagicMock()
+                importer = HeightmapImporter(stage)
+
+                with self.assertRaises(ValueError) as context:
+                    importer.create_heightmap(invalid_image, 0.05)
+
+                self.assertIn("PIL Image", str(context.exception))
+                stage.assert_not_called()
+                stage.GetPrimAtPath.assert_not_called()
+                stage.DefinePrim.assert_not_called()
+                stage.RemovePrim.assert_not_called()
+
     @patch("isaacsim.asset.importer.heightmap.importer.omni.usd.get_context")
     def test_create_heightmap_no_stage_available(self, mock_get_context: object) -> None:
         """Test that create_heightmap raises RuntimeError when stage is not available.
@@ -292,6 +314,48 @@ class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
         # All pixels are 0 (below threshold 127), so all 25 cells are occupied
         self.assertEqual(len(positions), 25)
         mock_carb.log_error.assert_not_called()
+
+    def test_generate_occupied_positions_raises_for_invalid_image_shape(self) -> None:
+        """Test invalid image data is reported to callers instead of becoming an empty heightmap."""
+
+        class InvalidImage:
+            pass
+
+        with self.assertRaises(ValueError) as context:
+            self.importer._generate_occupied_positions(InvalidImage(), 1.0, 0.5)
+
+        self.assertIn("invalid shape", str(context.exception))
+
+    @patch("isaacsim.asset.importer.heightmap.importer.np.array")
+    def test_generate_occupied_positions_propagates_image_processing_errors(self, mock_np_array: object) -> None:
+        """Test unexpected image processing failures are propagated to the caller."""
+        mock_np_array.side_effect = RuntimeError("boom")
+        test_image = Image.new("RGBA", (2, 2), color=(255, 255, 255, 255))
+
+        with self.assertRaises(ValueError) as context:
+            self.importer._generate_occupied_positions(test_image, 1.0, 0.5)
+
+        self.assertIn("Failed to generate occupied positions", str(context.exception))
+
+
+class TestHeightmapExtension(omni.kit.test.AsyncTestCase):
+    """Test suite for the heightmap extension UI."""
+
+    @patch("omni.kit.window.filepicker.FilePickerDialog")
+    def test_load_image_dialog_shows_filepicker(self, mock_file_picker_dialog: object) -> None:
+        """Test that the load image file picker is visible after construction.
+
+        Args:
+            mock_file_picker_dialog: Mock for the file picker dialog constructor.
+        """
+        from isaacsim.asset.importer.heightmap.extension import Extension
+
+        extension = Extension()
+        extension._load_image_dialog()
+
+        file_picker = mock_file_picker_dialog.return_value
+        self.assertIs(extension._filepicker, file_picker)
+        file_picker.show.assert_called_once_with()
 
 
 class TestHeightmapImporterIntegration(omni.kit.test.AsyncTestCase):

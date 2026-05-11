@@ -101,6 +101,9 @@ class HeightmapImporter:
         if image is None:
             raise ValueError("Image cannot be None")
 
+        if not isinstance(image, Image.Image):
+            raise ValueError(f"Image must be a PIL Image, got {type(image).__name__}")
+
         if cell_scale <= 0:
             raise ValueError(f"Cell scale must be positive, got {cell_scale}")
 
@@ -282,10 +285,9 @@ class HeightmapImporter:
             elif img_array.ndim >= 3 and img_array.shape[2] >= 1:
                 channel = img_array[:, :, 0]
             else:
-                carb.log_error(
+                raise ValueError(
                     f"Image has invalid shape: {img_array.shape}. Expected 2D grayscale or 3D+ with channels."
                 )
-                return []
 
             # Find occupied pixels (below threshold)
             occupied_mask = channel < OCCUPIED_PIXEL_THRESHOLD
@@ -302,8 +304,8 @@ class HeightmapImporter:
 
             return occupied_positions
         except IndexError as e:
-            carb.log_error(f"Failed to access image array channels: {e}")
-            return []
+            raise ValueError(f"Failed to access image array channels: {e}") from e
         except Exception as e:
-            carb.log_error(f"Failed to generate occupied positions: {e}")
-            return []
+            if isinstance(e, ValueError):
+                raise
+            raise ValueError(f"Failed to generate occupied positions: {e}") from e
