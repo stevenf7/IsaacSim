@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.11.6] - 2026-05-10
+### Fixed
+- Preserve unselected articulation default gains during partial stiffness/damping updates (6042276)
+- Fix `SingleArticulation.get_world_velocity()` return description typo while keeping the documented `(6,)` shape (6038995)
+- Remove unused timeline interface lookup from `ParticleSystem` callback initialization (6035373)
+
 ## [0.11.5] - 2026-05-05
 ### Changed
 - Update the return types of the RigidPrim annotations

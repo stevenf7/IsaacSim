@@ -127,13 +127,15 @@ def check_missing_labels(prim_path: str | None = None) -> list[str]:
     return prim_paths
 
 
-def check_incorrect_labels(prim_path: str | None = None) -> list[list[str]]:
+def check_incorrect_labels(prim_path: str | None = None, validate_against_prim_path: bool = False) -> list[list[str]]:
     """Returns a list of [prim_path, label] for meshes where at least one semantic label (LabelsAPI).
 
-    is not found within the prim's path string (case-insensitive, ignoring '_' and '-').
+    is considered incorrect. By default, this returns no mismatches for labeled meshes. The legacy heuristic that treats
+    labels absent from the prim path as incorrect can be enabled with validate_against_prim_path.
 
     Args:
         prim_path: This will check Prim path and its childrens' labels. If None, checks the whole stage.
+        validate_against_prim_path: Whether to check if labels appear in the prim path string.
 
     Returns:
         List containing pairs of [prim_path, first_incorrect_label].
@@ -156,21 +158,22 @@ def check_incorrect_labels(prim_path: str | None = None) -> list[list[str]]:
         if prim.IsA(UsdGeom.Mesh):
             labels_dict = get_labels(prim)
             if labels_dict:
-                prim_path_str = prim.GetPath().pathString.lower()
                 all_labels = [
                     label for sublist in labels_dict.values() for label in sublist if label
                 ]  # Flatten and filter None/empty
-                for label in all_labels:
-                    label_lower = label.lower()
-                    # Check if label (or label without separators) is in path
-                    if (
-                        label_lower not in prim_path_str
-                        and label_lower.replace("_", "") not in prim_path_str
-                        and label_lower.replace("-", "") not in prim_path_str
-                    ):
-                        incorrect_pair = [prim.GetPath().pathString, label]
-                        incorrect_pairs.append(incorrect_pair)
-                        break  # Only report first incorrect label per prim
+                if validate_against_prim_path:
+                    prim_path_str = prim.GetPath().pathString.lower()
+                    for label in all_labels:
+                        label_lower = label.lower()
+                        # Check if label (or label without separators) is in path
+                        if (
+                            label_lower not in prim_path_str
+                            and label_lower.replace("_", "") not in prim_path_str
+                            and label_lower.replace("-", "") not in prim_path_str
+                        ):
+                            incorrect_pair = [prim.GetPath().pathString, label]
+                            incorrect_pairs.append(incorrect_pair)
+                            break  # Only report first incorrect label per prim
     return incorrect_pairs
 
 

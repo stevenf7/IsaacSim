@@ -395,7 +395,7 @@ class SingleArticulation(_SinglePrimWrapper):
         """Get the articulation root velocity.
 
         Returns:
-            current velocity of the the root prim. Shape (6,).
+            current velocity of the root prim. Shape (6,).
         """
         velocities = self._articulation_view.get_velocities()
         return velocities[0]

@@ -46,6 +46,14 @@ from .xform_prim import XFormPrim
 torch = import_module("torch")
 
 
+def _warp_default_state_value(value: object) -> object:
+    return value.data if isinstance(value, wp.indexedarray) else value
+
+
+def _warp_contiguous_if_indexed(value: object) -> object:
+    return value.contiguous() if isinstance(value, wp.indexedarray) else value
+
+
 class Articulation(XFormPrim):
     """Provide high-level wrapper for prims that have the Root Articulation API applied.
 
@@ -2853,6 +2861,8 @@ class Articulation(XFormPrim):
             return
         if kps is None and kds is None:
             return
+        update_default_kps = kps is not None
+        update_default_kds = kds is not None
         if joint_names is not None and joint_indices is not None:
             raise Exception("joint indices and joint names can't be both specified")
         if joint_names is not None:
@@ -2944,8 +2954,33 @@ class Articulation(XFormPrim):
                                 )
                     dof_read_idx += 1
                 articulation_read_idx += 1
-        self._default_kps, self._default_kds = self.get_gains(clone=True)
+        self._update_default_gains(update_default_kps, update_default_kds, indices, joint_indices)
         return
+
+    def _update_default_gains(
+        self,
+        update_default_kps: bool,
+        update_default_kds: bool,
+        indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+        joint_indices: np.ndarray | list | torch.Tensor | wp.array | None = None,
+    ) -> None:
+        """Update cached default gains for the selected articulations and joints."""
+        indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+        kps, kds = self.get_gains(indices=indices, joint_indices=joint_indices, clone=True)
+        if self._backend == "warp":
+            kps = _warp_contiguous_if_indexed(kps)
+            kds = _warp_contiguous_if_indexed(kds)
+            self._default_kps = _warp_contiguous_if_indexed(self._default_kps)
+            self._default_kds = _warp_contiguous_if_indexed(self._default_kds)
+        write_indices = [
+            self._backend_utils.expand_dims(indices, 1) if self._backend != "warp" else indices,
+            joint_indices,
+        ]
+        if update_default_kps:
+            self._default_kps = self._backend_utils.assign(kps, self._default_kps, write_indices)
+        if update_default_kds:
+            self._default_kds = self._backend_utils.assign(kds, self._default_kds, write_indices)
 
     def get_gains(
         self,
@@ -3122,6 +3157,8 @@ class Articulation(XFormPrim):
             joint_indices = self._convert_joint_names_to_indices(joint_names)
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
         joint_indices = self._backend_utils.resolve_indices(joint_indices, self.num_dof, self._device)
+        default_kps = _warp_default_state_value(self._default_kps)
+        default_kds = _warp_default_state_value(self._default_kds)
         if mode == "velocity":
             self.set_gains(
                 kps=self._backend_utils.create_zeros_tensor(
@@ -3130,7 +3167,7 @@ class Articulation(XFormPrim):
                 kds=(
                     self._default_kds[indices][:, joint_indices]
                     if self._backend != "warp"
-                    else self._default_kds.data[indices, joint_indices]
+                    else default_kds[indices, joint_indices]
                 ),
                 indices=indices,
                 joint_indices=joint_indices,
@@ -3140,12 +3177,12 @@ class Articulation(XFormPrim):
                 kps=(
                     self._default_kps[indices][:, joint_indices]
                     if self._backend != "warp"
-                    else self._default_kps.data[indices, joint_indices]
+                    else default_kps[indices, joint_indices]
                 ),
                 kds=(
                     self._default_kds[indices][:, joint_indices]
                     if self._backend != "warp"
-                    else self._default_kds.data[indices, joint_indices]
+                    else default_kds[indices, joint_indices]
                 ),
                 indices=indices,
                 joint_indices=joint_indices,
@@ -3208,6 +3245,11 @@ class Articulation(XFormPrim):
             carb.log_warn("Articulation needs to be initialized.")
             return
         indices = self._backend_utils.resolve_indices(indices, self.count, self._device)
+        default_kps = _warp_default_state_value(self._default_kps)
+        default_kds = _warp_default_state_value(self._default_kds)
+        warp_dof_indices = (
+            wp.array([dof_index], dtype=wp.int32, device=self._device) if self._backend == "warp" else None
+        )
         if mode == "velocity":
             self.set_gains(
                 kps=self._backend_utils.create_zeros_tensor(
@@ -3216,9 +3258,7 @@ class Articulation(XFormPrim):
                 kds=(
                     self._backend_utils.expand_dims(self._default_kds[indices, dof_index], 1)
                     if self._backend != "warp"
-                    else self._default_kds.data[
-                        indices, wp.array([dof_index], dtype=wp.int32, device=self._default_kds.device)
-                    ]
+                    else default_kds[indices, warp_dof_indices]
                 ),
                 indices=indices,
                 joint_indices=[dof_index],
@@ -3228,16 +3268,12 @@ class Articulation(XFormPrim):
                 kps=(
                     self._backend_utils.expand_dims(self._default_kps[indices, dof_index], 1)
                     if self._backend != "warp"
-                    else self._default_kps.data[
-                        indices, wp.array(dof_index, dtype=wp.int32, device=self._default_kds.device)
-                    ]
+                    else default_kps[indices, warp_dof_indices]
                 ),
                 kds=(
                     self._backend_utils.expand_dims(self._default_kds[indices, dof_index], 1)
                     if self._backend != "warp"
-                    else self._default_kds.data[
-                        indices, wp.array([dof_index], dtype=wp.int32, device=self._default_kds.device)
-                    ]
+                    else default_kds[indices, warp_dof_indices]
                 ),
                 indices=indices,
                 joint_indices=[dof_index],
@@ -4899,17 +4935,22 @@ class Articulation(XFormPrim):
             carb.log_info(f"Articulation Prim View Device: {self._device}")
             self._is_initialized = True
             self._default_kps, self._default_kds = self.get_gains(clone=True)
+            if self._backend == "warp":
+                self._default_kps = _warp_contiguous_if_indexed(self._default_kps)
+                self._default_kds = _warp_contiguous_if_indexed(self._default_kds)
             default_actions = self.get_applied_actions(clone=True)
             # TODO: implement effort part
             if self._default_state.positions is None or self._default_state.orientations is None:
                 default_positions, default_orientations = self.get_world_poses()
                 if self._default_state.positions is None:
                     self._default_state.positions = (
-                        default_positions.data if self._backend == "warp" else default_positions
+                        _warp_default_state_value(default_positions) if self._backend == "warp" else default_positions
                     )
                 if self._default_state.orientations is None:
                     self._default_state.orientations = (
-                        default_orientations.data if self._backend == "warp" else default_orientations
+                        _warp_default_state_value(default_orientations)
+                        if self._backend == "warp"
+                        else default_orientations
                     )
 
             if self._default_joints_state is None:

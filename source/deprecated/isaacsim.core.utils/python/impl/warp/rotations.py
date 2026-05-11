@@ -250,11 +250,16 @@ wp.overload(_wxyz2xyzw3, {"q": wp.array(dtype=float, ndim=3)})
 wp.overload(_wxyz2xyzw3, {"q": wp.indexedarray(dtype=float, ndim=3)})
 
 
+def _roll_quaternion_components(q: wp.array | wp.indexedarray, shift: int) -> wp.array:
+    if isinstance(q, wp.indexedarray):
+        q = q.contiguous()
+    return wp.from_torch(torch.roll(wp.to_torch(q), shift, dims=-1).contiguous())
+
+
 def xyzw2wxyz(q: wp.array) -> wp.array:
     """Converts quaternion from XYZW (scalar last) to WXYZ (scalar first) format.
 
-    Supports Warp arrays with 1D, 2D, or 3D shapes. The conversion is performed using CUDA kernels
-    for optimal performance.
+    Supports Warp arrays with 1D, 2D, or 3D shapes and preserves the input array device.
 
     Args:
         q: Quaternion array in XYZW format to convert to WXYZ format.
@@ -262,30 +267,13 @@ def xyzw2wxyz(q: wp.array) -> wp.array:
     Returns:
         The input array with quaternion components reordered to WXYZ format.
     """
-    # TODO: warp kernels not working on cpu
-    from . import move_data
-
-    device = q.device
-    q = move_data(q, device="cuda:0")
-    if isinstance(q.shape, int) or len(q.shape) == 1:
-        wp.launch(_xyzw2wxyz1, dim=q.shape, inputs=[q], device=q.device)
-    elif len(q.shape) == 2:
-        wp.launch(_xyzw2wxyz2, dim=(q.shape[0]), inputs=[q], device=q.device)
-    elif len(q.shape) == 3:
-        wp.launch(_xyzw2wxyz3, dim=(q.shape[0], q.shape[1]), inputs=[q], device=q.device)
-    else:
-        print("xyzw2wxyz does not support input >3 dimensions.")
-
-    q = move_data(q, device=device)
-
-    return q
+    return _roll_quaternion_components(q, 1)
 
 
 def wxyz2xyzw(q: wp.array) -> wp.array:
     """Converts quaternion from WXYZ (scalar first) to XYZW (scalar last) format.
 
-    Supports Warp arrays with 1D, 2D, or 3D shapes. The conversion is performed using CUDA kernels
-    for optimal performance.
+    Supports Warp arrays with 1D, 2D, or 3D shapes and preserves the input array device.
 
     Args:
         q: Quaternion array in WXYZ format to convert to XYZW format.
@@ -293,23 +281,7 @@ def wxyz2xyzw(q: wp.array) -> wp.array:
     Returns:
         The input array with quaternion components reordered to XYZW format.
     """
-    # TODO: warp kernels not working on cpu
-    from . import move_data
-
-    device = q.device
-    q = move_data(q, device="cuda:0")
-    if isinstance(q.shape, int) or len(q.shape) == 1:
-        wp.launch(_wxyz2xyzw1, dim=q.shape, inputs=[q], device=q.device)
-    elif len(q.shape) == 2:
-        wp.launch(_wxyz2xyzw2, dim=(q.shape[0]), inputs=[q], device=q.device)
-    elif len(q.shape) == 3:
-        wp.launch(_wxyz2xyzw3, dim=(q.shape[0], q.shape[1]), inputs=[q], device=q.device)
-    else:
-        print("wxyz2xyzw does not support input >3 dimensions.")
-
-    q = move_data(q, device=device)
-
-    return q
+    return _roll_quaternion_components(q, -1)
 
 
 PI = wp.constant(np.pi)

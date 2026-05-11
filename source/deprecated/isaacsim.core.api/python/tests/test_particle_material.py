@@ -143,3 +143,12 @@ class TestParticleMaterial(CoreTestCase, TestProperties):
         )
 
         self.my_world.clear_instance()
+
+    async def test_constructor_optional_properties_without_simulation_context(self) -> None:
+        """Test optional properties work before a SimulationContext exists."""
+        World.clear_instance()
+        await create_new_stage_async()
+
+        particle_material = ParticleMaterial(prim_path="/particleMaterial", friction=0.6, damping=0.1)
+
+        self.assertTrue(particle_material.is_valid())

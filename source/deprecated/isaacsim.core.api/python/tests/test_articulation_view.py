@@ -33,6 +33,8 @@ from isaacsim.core.deprecation_manager import import_module
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from isaacsim.core.prims import Articulation, RigidPrim
+from isaacsim.core.utils import numpy as numpy_utils
+from isaacsim.core.utils import warp as warp_utils
 from isaacsim.core.utils.stage import add_reference_to_stage, create_new_stage_async, update_stage_async
 from isaacsim.core.utils.torch.rotations import euler_angles_to_quats
 from isaacsim.storage.native import get_assets_root_path_async
@@ -813,6 +815,86 @@ class TestArticulationView(CoreTestCase):
                     kps, kds = self._frankas_view.get_gains()
                 self.assertTrue(np.isclose(new_kps, kps, atol=1e-05).all())
                 self.assertTrue(np.isclose(old_kds, kds, atol=1e-05).all())
+
+    async def test_partial_default_gain_update_preserves_unselected_joints(self) -> None:
+        """Test partial gain updates only rewrite selected default gain entries."""
+
+        class GainCacheHarness:
+            _backend = "numpy"
+            _device = "cpu"
+            _backend_utils = numpy_utils
+            count = 2
+            num_dof = 4
+            _default_kps = np.array([[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0]], dtype=np.float32)
+            _default_kds = np.array([[10.0, 20.0, 30.0, 40.0], [50.0, 60.0, 70.0, 80.0]], dtype=np.float32)
+
+            def get_gains(self, indices, joint_indices, clone):
+                return (
+                    np.array([[100.0, 200.0]], dtype=np.float32),
+                    np.array([[300.0, 400.0]], dtype=np.float32),
+                )
+
+        articulation = GainCacheHarness()
+
+        Articulation._update_default_gains(articulation, True, False, indices=[1], joint_indices=[1, 3])
+
+        np.testing.assert_allclose(
+            articulation._default_kps,
+            np.array([[1.0, 2.0, 3.0, 4.0], [5.0, 100.0, 7.0, 200.0]], dtype=np.float32),
+        )
+        np.testing.assert_allclose(
+            articulation._default_kds,
+            np.array([[10.0, 20.0, 30.0, 40.0], [50.0, 60.0, 70.0, 80.0]], dtype=np.float32),
+        )
+
+    async def test_partial_warp_default_gain_update_handles_indexed_arrays(self) -> None:
+        """Test partial warp gain cache updates handle indexed-array buffers."""
+        if not wp.is_cuda_available():
+            self.skipTest("warp assign requires CUDA")
+
+        device = "cuda:0"
+
+        class GainCacheHarness:
+            _backend = "warp"
+            _device = device
+            _backend_utils = warp_utils
+            count = 2
+            num_dof = 4
+
+            def __init__(self) -> None:
+                self._default_kps = wp.indexedarray(
+                    wp.array([[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0]], dtype=wp.float32, device=device),
+                    [None, None],
+                )
+                self._default_kds = wp.indexedarray(
+                    wp.array(
+                        [[10.0, 20.0, 30.0, 40.0], [50.0, 60.0, 70.0, 80.0]],
+                        dtype=wp.float32,
+                        device=device,
+                    ),
+                    [None, None],
+                )
+                self._current_kps = wp.array([[0.0, 100.0, 0.0, 200.0]], dtype=wp.float32, device=device)
+                self._current_kds = wp.array([[0.0, 300.0, 0.0, 400.0]], dtype=wp.float32, device=device)
+
+            def get_gains(self, indices, joint_indices, clone):
+                return (
+                    wp.indexedarray(self._current_kps, [None, joint_indices]),
+                    wp.indexedarray(self._current_kds, [None, joint_indices]),
+                )
+
+        articulation = GainCacheHarness()
+
+        Articulation._update_default_gains(articulation, True, False, indices=[1], joint_indices=[1, 3])
+
+        np.testing.assert_allclose(
+            articulation._default_kps.numpy(),
+            np.array([[1.0, 2.0, 3.0, 4.0], [5.0, 100.0, 7.0, 200.0]], dtype=np.float32),
+        )
+        np.testing.assert_allclose(
+            articulation._default_kds.numpy(),
+            np.array([[10.0, 20.0, 30.0, 40.0], [50.0, 60.0, 70.0, 80.0]], dtype=np.float32),
+        )
 
     @unittest.skipIf(os.getenv("ETM_ACTIVE"), "skipped in ETM")
     async def test_gains_warp(self) -> None:
