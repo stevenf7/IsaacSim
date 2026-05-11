@@ -172,6 +172,8 @@ def main(args: argparse.Namespace) -> None:
 
     _run_step(["./isaaclab.sh", "-i", "ov[ovrtx]"], step="Install ov[ovrtx]")
 
+    _run_step(["./isaaclab.sh", "-p", "-m", "pip", "install", "leapp"], step="Install leapp")
+
     # IsaacLab's installer may replace prebundled nvidia/ directories with
     # symlinks to site-packages, losing CUDA shared objects.  Undo that.
     _restore_repointed_prebundle("_isaac_sim")
