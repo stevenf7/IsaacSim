@@ -1,4 +1,11 @@
 # Changelog
+## [1.7.2] - 2026-05-10
+### Fixed
+- Validate clone source prim paths before calling USD bindings.
+- Restore USD/Fabric change listeners when cloning exits with an exception.
+- Initialize cloner listener state before listener enable/disable calls.
+- Handle zero-clone grid requests and invalidate cached grid transforms when the clone count changes.
+
 ## [1.7.1] - 2026-03-26
 ### Changed
 - Moved Python binding module to `bindings/` subdirectory

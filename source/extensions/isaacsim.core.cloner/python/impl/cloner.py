@@ -73,6 +73,8 @@ class Cloner:
     def __init__(self, stage: Usd.Stage = None) -> None:
         self._base_env_path = None
         self._root_path = None
+        self._physx_ui_notice_enabled = False
+        self._fabric_usd_notice_enabled = False
         self._stage = stage
         if stage is None:
             self._stage = omni.usd.get_context().get_stage()
@@ -351,236 +353,249 @@ class Cloner:
             ...     positions=positions,
             ... )
         """
+        if not isinstance(source_prim_path, str):
+            raise TypeError(f"source_prim_path must be a str, got {type(source_prim_path).__name__}")
+        if not Sdf.Path.IsValidPathString(source_prim_path):
+            raise ValueError(f"source_prim_path {source_prim_path!r} is not a valid SdfPath")
+
         self.disable_change_listener()
-
-        # check if inputs are valid
-        if positions is not None:
-            if len(positions) != len(prim_paths):
-                raise ValueError("Dimension mismatch between positions and prim_paths!")
-            # convert to numpy array
-            # - convert from torch (without explicit importing it)
-            try:
-                positions = positions.detach().cpu().numpy()
-            except Exception:
-                pass
-            # - convert from other types
-            if not isinstance(positions, np.ndarray):
-                positions = np.asarray(positions)
-            # convert to pxr gf
-            positions = Vt.Vec3fArray.FromNumpy(positions)
-        if orientations is not None:
-            if len(orientations) != len(prim_paths):
-                raise ValueError("Dimension mismatch between orientations and prim_paths!")
-            # convert to numpy array
-            # - convert from torch (without explicit importing it)
-            try:
-                orientations = orientations.detach().cpu().numpy()
-            except Exception:
-                pass
-            # - convert from other types
-            if not isinstance(orientations, np.ndarray):
-                orientations = np.asarray(orientations)
-            # convert to pxr gf -- wxyz to xyzw
-            orientations = np.roll(orientations, -1, -1)
-            orientations = Vt.QuatdArray.FromNumpy(orientations)
-
-        # make sure source prim has valid xform properties
-        source_prim = self._stage.GetPrimAtPath(source_prim_path)
-        if not source_prim:
-            raise Exception("Source prim does not exist")
-        properties = source_prim.GetPropertyNames()
-        xformable = UsdGeom.Xformable(source_prim)
-        # get current position and orientation
-        T_p_w = xformable.ComputeParentToWorldTransform(Usd.TimeCode.Default())
-        T_l_w = xformable.ComputeLocalToWorldTransform(Usd.TimeCode.Default())
-        T_l_p = Gf.Transform()
-        T_l_p.SetMatrix(Gf.Matrix4d(np.matmul(T_l_w, np.linalg.inv(T_p_w)).tolist()))
-        current_translation = T_l_p.GetTranslation()
-        current_orientation = T_l_p.GetRotation().GetQuat()
-        # get current scale
-        current_scale = Gf.Vec3d(1, 1, 1)
-        if "xformOp:scale" in properties:
-            current_scale = Gf.Vec3d(source_prim.GetAttribute("xformOp:scale").Get())
-
-        # remove all xform ops except for translate, orient, and scale
-        properties_to_remove = [
-            "xformOp:rotateX",
-            "xformOp:rotateXZY",
-            "xformOp:rotateY",
-            "xformOp:rotateYXZ",
-            "xformOp:rotateYZX",
-            "xformOp:rotateZ",
-            "xformOp:rotateZYX",
-            "xformOp:rotateZXY",
-            "xformOp:rotateXYZ",
-            "xformOp:transform",
-            "xformOp:scale",
-        ]
-        xformable.ClearXformOpOrder()
-        for prop_name in properties:
-            if prop_name in properties_to_remove:
-                source_prim.RemoveProperty(prop_name)
-
-        properties = source_prim.GetPropertyNames()
-        # add xform ops if they don't exist
-        if "xformOp:translate" not in properties:
-            xform_op_translate = xformable.AddXformOp(
-                UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionDouble, ""
-            )
-        else:
-            xform_op_translate = UsdGeom.XformOp(source_prim.GetAttribute("xformOp:translate"))
-        xform_op_translate.Set(current_translation)
-
-        if "xformOp:orient" not in properties:
-            xform_op_rot = xformable.AddXformOp(UsdGeom.XformOp.TypeOrient, UsdGeom.XformOp.PrecisionDouble, "")
-        else:
-            xform_op_rot = UsdGeom.XformOp(source_prim.GetAttribute("xformOp:orient"))
-        if xform_op_rot.GetPrecision() == UsdGeom.XformOp.PrecisionFloat:
-            current_orientation = Gf.Quatf(current_orientation)
-        else:
-            current_orientation = Gf.Quatd(current_orientation)
-        xform_op_rot.Set(current_orientation)
-
-        if "xformOp:scale" not in properties:
-            xform_op_scale = xformable.AddXformOp(UsdGeom.XformOp.TypeScale, UsdGeom.XformOp.PrecisionDouble, "")
-        else:
-            xform_op_scale = UsdGeom.XformOp(source_prim.GetAttribute("xformOp:scale"))
-        xform_op_scale.Set(current_scale)
-        # set xform op order
-        xformable.SetXformOpOrder([xform_op_translate, xform_op_rot, xform_op_scale])
-
-        # set source actor transform
-        if source_prim_path in prim_paths:
-            idx = prim_paths.index(source_prim_path)
-            prim = UsdGeom.Xform(self._stage.GetPrimAtPath(source_prim_path))
-
+        try:
+            # check if inputs are valid
             if positions is not None:
-                translation = positions[idx]
-            else:
-                translation = current_translation
-
+                if len(positions) != len(prim_paths):
+                    raise ValueError("Dimension mismatch between positions and prim_paths!")
+                # convert to numpy array
+                # - convert from torch (without explicit importing it)
+                try:
+                    positions = positions.detach().cpu().numpy()
+                except Exception:
+                    pass
+                # - convert from other types
+                if not isinstance(positions, np.ndarray):
+                    positions = np.asarray(positions)
+                # convert to pxr gf
+                positions = Vt.Vec3fArray.FromNumpy(positions)
             if orientations is not None:
-                orientation = orientations[idx]
+                if len(orientations) != len(prim_paths):
+                    raise ValueError("Dimension mismatch between orientations and prim_paths!")
+                # convert to numpy array
+                # - convert from torch (without explicit importing it)
+                try:
+                    orientations = orientations.detach().cpu().numpy()
+                except Exception:
+                    pass
+                # - convert from other types
+                if not isinstance(orientations, np.ndarray):
+                    orientations = np.asarray(orientations)
+                # convert to pxr gf -- wxyz to xyzw
+                orientations = np.roll(orientations, -1, -1)
+                orientations = Vt.QuatdArray.FromNumpy(orientations)
+
+            # make sure source prim has valid xform properties
+            source_prim = self._stage.GetPrimAtPath(source_prim_path)
+            if not source_prim:
+                raise Exception("Source prim does not exist")
+            properties = source_prim.GetPropertyNames()
+            xformable = UsdGeom.Xformable(source_prim)
+            # get current position and orientation
+            T_p_w = xformable.ComputeParentToWorldTransform(Usd.TimeCode.Default())
+            T_l_w = xformable.ComputeLocalToWorldTransform(Usd.TimeCode.Default())
+            T_l_p = Gf.Transform()
+            T_l_p.SetMatrix(Gf.Matrix4d(np.matmul(T_l_w, np.linalg.inv(T_p_w)).tolist()))
+            current_translation = T_l_p.GetTranslation()
+            current_orientation = T_l_p.GetRotation().GetQuat()
+            # get current scale
+            current_scale = Gf.Vec3d(1, 1, 1)
+            if "xformOp:scale" in properties:
+                current_scale = Gf.Vec3d(source_prim.GetAttribute("xformOp:scale").Get())
+
+            # remove all xform ops except for translate, orient, and scale
+            properties_to_remove = [
+                "xformOp:rotateX",
+                "xformOp:rotateXZY",
+                "xformOp:rotateY",
+                "xformOp:rotateYXZ",
+                "xformOp:rotateYZX",
+                "xformOp:rotateZ",
+                "xformOp:rotateZYX",
+                "xformOp:rotateZXY",
+                "xformOp:rotateXYZ",
+                "xformOp:transform",
+                "xformOp:scale",
+            ]
+            xformable.ClearXformOpOrder()
+            for prop_name in properties:
+                if prop_name in properties_to_remove:
+                    source_prim.RemoveProperty(prop_name)
+
+            properties = source_prim.GetPropertyNames()
+            # add xform ops if they don't exist
+            if "xformOp:translate" not in properties:
+                xform_op_translate = xformable.AddXformOp(
+                    UsdGeom.XformOp.TypeTranslate, UsdGeom.XformOp.PrecisionDouble, ""
+                )
             else:
-                orientation = current_orientation
+                xform_op_translate = UsdGeom.XformOp(source_prim.GetAttribute("xformOp:translate"))
+            xform_op_translate.Set(current_translation)
 
-            # overwrite translation and orientation to values specified
-            prim.GetPrim().GetAttribute("xformOp:translate").Set(translation)
-            prim.GetPrim().GetAttribute("xformOp:orient").Set(orientation)
-
-        has_clones = False
-
-        if clone_in_fabric:
-            stageId = UsdUtils.StageCache.Get().Insert(self._stage).ToLongInt()
-            ret_val = _fabric_clone(stageId, source_prim_path, prim_paths)
-            if ret_val:
-                usdrt_stage = usdrt.Usd.Stage.Attach(stageId)
-                for i, prim_path in enumerate(prim_paths):
-                    if prim_path != source_prim_path:
-                        has_clones = True
-                        # setup transformations for cloned environments
-                        prim = usdrt_stage.GetPrimAtPath(prim_path)
-                        attr = prim.GetAttribute("omni:fabric:localMatrix")
-
-                        local_matrix = attr.Get()
-
-                        transform = usdrt.Gf.Transform(local_matrix)
-
-                        if positions is not None:
-                            translation = positions[i]  # use specified translation
-                        else:
-                            translation = current_translation  # use the same translation as source
-
-                        if orientations is not None:
-                            orientation = orientations[i]  # use specified orientation
-                        else:
-                            orientation = current_orientation  # use the same orientation as source
-
-                        transform.SetTranslation(usdrt.Gf.Vec3d(translation))
-                        gf_quat = Gf.Quatd(orientation)
-
-                        transform.SetRotation(
-                            usdrt.Gf.Rotation(usdrt.Gf.Quatd(gf_quat.GetReal(), usdrt.Gf.Vec3d(gf_quat.GetImaginary())))
-                        )
-                        attr.Set(transform.GetMatrix())
-
-                # update fabric hierarchy
-                fabric_id = usdrt_stage.GetFabricId()
-                hier = usdrt.hierarchy.IFabricHierarchy().get_fabric_hierarchy(fabric_id, stageId)
-                hier.update_world_xforms()
+            if "xformOp:orient" not in properties:
+                xform_op_rot = xformable.AddXformOp(UsdGeom.XformOp.TypeOrient, UsdGeom.XformOp.PrecisionDouble, "")
             else:
-                carb.log_error("Failed to clone in Fabric")
-        else:
-            with Sdf.ChangeBlock():
-                for i, prim_path in enumerate(prim_paths):
-                    if prim_path != source_prim_path:
-                        has_clones = True
+                xform_op_rot = UsdGeom.XformOp(source_prim.GetAttribute("xformOp:orient"))
+            if xform_op_rot.GetPrecision() == UsdGeom.XformOp.PrecisionFloat:
+                current_orientation = Gf.Quatf(current_orientation)
+            else:
+                current_orientation = Gf.Quatd(current_orientation)
+            xform_op_rot.Set(current_orientation)
 
-                        env_spec = Sdf.CreatePrimInLayer(self._stage.GetRootLayer(), prim_path)
-                        stack = UsdGeom.Xform(self._stage.GetPrimAtPath(source_prim_path)).GetPrim().GetPrimStack()
+            if "xformOp:scale" not in properties:
+                xform_op_scale = xformable.AddXformOp(UsdGeom.XformOp.TypeScale, UsdGeom.XformOp.PrecisionDouble, "")
+            else:
+                xform_op_scale = UsdGeom.XformOp(source_prim.GetAttribute("xformOp:scale"))
+            xform_op_scale.Set(current_scale)
+            # set xform op order
+            xformable.SetXformOpOrder([xform_op_translate, xform_op_rot, xform_op_scale])
 
-                        if copy_from_source:
-                            Sdf.CopySpec(
-                                env_spec.layer, Sdf.Path(source_prim_path), env_spec.layer, Sdf.Path(prim_path)
+            # set source actor transform
+            if source_prim_path in prim_paths:
+                idx = prim_paths.index(source_prim_path)
+                prim = UsdGeom.Xform(self._stage.GetPrimAtPath(source_prim_path))
+
+                if positions is not None:
+                    translation = positions[idx]
+                else:
+                    translation = current_translation
+
+                if orientations is not None:
+                    orientation = orientations[idx]
+                else:
+                    orientation = current_orientation
+
+                # overwrite translation and orientation to values specified
+                prim.GetPrim().GetAttribute("xformOp:translate").Set(translation)
+                prim.GetPrim().GetAttribute("xformOp:orient").Set(orientation)
+
+            has_clones = False
+
+            if clone_in_fabric:
+                stageId = UsdUtils.StageCache.Get().Insert(self._stage).ToLongInt()
+                ret_val = _fabric_clone(stageId, source_prim_path, prim_paths)
+                if ret_val:
+                    usdrt_stage = usdrt.Usd.Stage.Attach(stageId)
+                    for i, prim_path in enumerate(prim_paths):
+                        if prim_path != source_prim_path:
+                            has_clones = True
+                            # setup transformations for cloned environments
+                            prim = usdrt_stage.GetPrimAtPath(prim_path)
+                            attr = prim.GetAttribute("omni:fabric:localMatrix")
+
+                            local_matrix = attr.Get()
+
+                            transform = usdrt.Gf.Transform(local_matrix)
+
+                            if positions is not None:
+                                translation = positions[i]  # use specified translation
+                            else:
+                                translation = current_translation  # use the same translation as source
+
+                            if orientations is not None:
+                                orientation = orientations[i]  # use specified orientation
+                            else:
+                                orientation = current_orientation  # use the same orientation as source
+
+                            transform.SetTranslation(usdrt.Gf.Vec3d(translation))
+                            gf_quat = Gf.Quatd(orientation)
+
+                            transform.SetRotation(
+                                usdrt.Gf.Rotation(
+                                    usdrt.Gf.Quatd(gf_quat.GetReal(), usdrt.Gf.Vec3d(gf_quat.GetImaginary()))
+                                )
                             )
-                        else:
-                            env_spec.inheritPathList.Prepend(source_prim_path)
+                            attr.Set(transform.GetMatrix())
 
-                        if positions is not None:
-                            translation = positions[i]  # use specified translation
-                        else:
-                            translation = current_translation  # use the same translation as source
+                    # update fabric hierarchy
+                    fabric_id = usdrt_stage.GetFabricId()
+                    hier = usdrt.hierarchy.IFabricHierarchy().get_fabric_hierarchy(fabric_id, stageId)
+                    hier.update_world_xforms()
+                else:
+                    carb.log_error("Failed to clone in Fabric")
+            else:
+                with Sdf.ChangeBlock():
+                    for i, prim_path in enumerate(prim_paths):
+                        if prim_path != source_prim_path:
+                            has_clones = True
 
-                        if orientations is not None:
-                            orientation = orientations[i]  # use specified orientation
-                        else:
-                            orientation = current_orientation  # use the same orientation as source
+                            env_spec = Sdf.CreatePrimInLayer(self._stage.GetRootLayer(), prim_path)
+                            stack = UsdGeom.Xform(self._stage.GetPrimAtPath(source_prim_path)).GetPrim().GetPrimStack()
 
-                        translate_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOp:translate")
-                        if translate_spec is None:
-                            translate_spec = Sdf.AttributeSpec(
-                                env_spec, "xformOp:translate", Sdf.ValueTypeNames.Double3
+                            if copy_from_source:
+                                Sdf.CopySpec(
+                                    env_spec.layer, Sdf.Path(source_prim_path), env_spec.layer, Sdf.Path(prim_path)
+                                )
+                            else:
+                                env_spec.inheritPathList.Prepend(source_prim_path)
+
+                            if positions is not None:
+                                translation = positions[i]  # use specified translation
+                            else:
+                                translation = current_translation  # use the same translation as source
+
+                            if orientations is not None:
+                                orientation = orientations[i]  # use specified orientation
+                            else:
+                                orientation = current_orientation  # use the same orientation as source
+
+                            translate_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOp:translate")
+                            if translate_spec is None:
+                                translate_spec = Sdf.AttributeSpec(
+                                    env_spec, "xformOp:translate", Sdf.ValueTypeNames.Double3
+                                )
+                            translate_spec.default = translation
+
+                            orient_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOp:orient")
+                            default_precision = carb.settings.get_settings().get_as_string(
+                                "app/primCreation/DefaultXformOpPrecision"
                             )
-                        translate_spec.default = translation
-
-                        orient_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOp:orient")
-                        default_precision = carb.settings.get_settings().get_as_string(
-                            "app/primCreation/DefaultXformOpPrecision"
-                        )
-                        if orient_spec is None:
-                            if len(default_precision) > 0 and default_precision == "Float":
-                                orient_spec = Sdf.AttributeSpec(env_spec, "xformOp:orient", Sdf.ValueTypeNames.Quatf)
+                            if orient_spec is None:
+                                if len(default_precision) > 0 and default_precision == "Float":
+                                    orient_spec = Sdf.AttributeSpec(
+                                        env_spec, "xformOp:orient", Sdf.ValueTypeNames.Quatf
+                                    )
+                                    orient_spec.default = Gf.Quatf(orientation)
+                                else:
+                                    orient_spec = Sdf.AttributeSpec(
+                                        env_spec, "xformOp:orient", Sdf.ValueTypeNames.Quatd
+                                    )
+                                    orient_spec.default = Gf.Quatd(orientation)
+                            elif orient_spec.default is not None and type(orient_spec.default) == Gf.Quatf:
                                 orient_spec.default = Gf.Quatf(orientation)
                             else:
-                                orient_spec = Sdf.AttributeSpec(env_spec, "xformOp:orient", Sdf.ValueTypeNames.Quatd)
                                 orient_spec.default = Gf.Quatd(orientation)
-                        elif orient_spec.default is not None and type(orient_spec.default) == Gf.Quatf:
-                            orient_spec.default = Gf.Quatf(orientation)
-                        else:
-                            orient_spec.default = Gf.Quatd(orientation)
 
-                        scale_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOp:scale")
-                        if scale_spec is None:
-                            scale_spec = Sdf.AttributeSpec(env_spec, "xformOp:scale", Sdf.ValueTypeNames.Double3)
-                        scale_spec.default = current_scale
+                            scale_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOp:scale")
+                            if scale_spec is None:
+                                scale_spec = Sdf.AttributeSpec(env_spec, "xformOp:scale", Sdf.ValueTypeNames.Double3)
+                            scale_spec.default = current_scale
 
-                        op_order_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOpOrder")
-                        if op_order_spec is None:
-                            op_order_spec = Sdf.AttributeSpec(
-                                env_spec, UsdGeom.Tokens.xformOpOrder, Sdf.ValueTypeNames.TokenArray
+                            op_order_spec = env_spec.GetAttributeAtPath(prim_path + ".xformOpOrder")
+                            if op_order_spec is None:
+                                op_order_spec = Sdf.AttributeSpec(
+                                    env_spec, UsdGeom.Tokens.xformOpOrder, Sdf.ValueTypeNames.TokenArray
+                                )
+                            op_order_spec.default = Vt.TokenArray(
+                                ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                             )
-                        op_order_spec.default = Vt.TokenArray(["xformOp:translate", "xformOp:orient", "xformOp:scale"])
 
-        if replicate_physics and has_clones:
-            self.replicate_physics(
-                source_prim_path, prim_paths, base_env_path, root_path, enable_env_ids, clone_in_fabric
-            )
-        elif unregister_physics_replication:
-            get_physx_replicator_interface().unregister_replicator(
-                UsdUtils.StageCache.Get().Insert(self._stage).ToLongInt()
-            )
-
-        self.enable_change_listener()
+            if replicate_physics and has_clones:
+                self.replicate_physics(
+                    source_prim_path, prim_paths, base_env_path, root_path, enable_env_ids, clone_in_fabric
+                )
+            elif unregister_physics_replication:
+                get_physx_replicator_interface().unregister_replicator(
+                    UsdUtils.StageCache.Get().Insert(self._stage).ToLongInt()
+                )
+        finally:
+            self.enable_change_listener()
 
     def filter_collisions(
         self,

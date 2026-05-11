@@ -16,6 +16,7 @@
 """Test for cloner."""
 
 import os
+from unittest import mock
 
 import numpy as np
 import omni.kit
@@ -69,6 +70,44 @@ class TestSimpleCloner(omni.kit.test.AsyncTestCase):
                 stage.GetPrimAtPath(f"/World/Cube_{i}").GetAttribute("xformOp:translate").Get()
                 == target_translations[i]
             )
+
+    async def test_enable_change_listener_without_prior_disable(self):
+        """Test enable_change_listener is safe before disable_change_listener."""
+        cloner = Cloner()
+
+        cloner.enable_change_listener()
+
+    async def test_clone_rejects_none_source_prim_path(self):
+        """Test clone rejects None source path before USD binding calls."""
+        cloner = Cloner()
+
+        with self.assertRaisesRegex(TypeError, "source_prim_path"):
+            cloner.clone(source_prim_path=None, prim_paths=[])
+
+    async def test_clone_rejects_invalid_source_prim_path(self):
+        """Test clone distinguishes invalid SdfPath strings from missing prims."""
+        cloner = Cloner()
+
+        with self.assertRaisesRegex(ValueError, "valid SdfPath"):
+            cloner.clone(source_prim_path="not a valid path!!!", prim_paths=[])
+
+    async def test_clone_restores_change_listener_when_validation_raises(self):
+        """Test clone restores listeners when an exception interrupts cloning."""
+        stage = omni.usd.get_context().get_stage()
+        UsdGeom.Cube.Define(stage, "/World/Cube_0")
+        cloner = Cloner()
+
+        with mock.patch.object(cloner, "disable_change_listener") as disable_listener:
+            with mock.patch.object(cloner, "enable_change_listener") as enable_listener:
+                with self.assertRaisesRegex(ValueError, "positions"):
+                    cloner.clone(
+                        source_prim_path="/World/Cube_0",
+                        prim_paths=["/World/Cube_0"],
+                        positions=np.array([[0, 0, 0], [1, 1, 1]]),
+                    )
+
+        disable_listener.assert_called_once()
+        enable_listener.assert_called_once()
 
     async def test_quatf_cloner(self):
         """Test quatf cloner."""
@@ -248,6 +287,30 @@ class TestSimpleCloner(omni.kit.test.AsyncTestCase):
                 stage.GetPrimAtPath(f"/World/Cube_{i}").GetAttribute("xformOp:translate").Get()
                 == target_translations[i]
             )
+
+    async def test_grid_cloner_recomputes_transforms_when_count_changes(self):
+        """Test grid cloner recomputes transforms when clone count changes."""
+        stage = omni.usd.get_context().get_stage()
+        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
+
+        cloner = GridCloner(spacing=2.0)
+
+        positions_4, _ = cloner.get_clone_transforms(4)
+        positions_9, _ = cloner.get_clone_transforms(9)
+
+        self.assertEqual(len(positions_4), 4)
+        self.assertEqual(len(positions_9), 9)
+        self.assertEqual(positions_9[0], [2.0, -2.0, 0])
+        self.assertEqual(positions_9[-1], [-2.0, 2.0, 0])
+
+    async def test_grid_cloner_empty_clone_count_returns_empty_transforms(self):
+        """Test grid cloner returns empty transforms for zero clones."""
+        cloner = GridCloner(spacing=2.0)
+
+        positions, orientations = cloner.get_clone_transforms(0)
+
+        self.assertEqual(positions, [])
+        self.assertEqual(orientations, [])
 
     async def test_grid_cloner_physics_replication(self):
         """Test grid cloner physics replication."""

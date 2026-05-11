@@ -26,7 +26,7 @@ import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 from isaacsim.core.cloner import GridCloner
-from isaacsim.core.experimental.objects import GroundPlane
+from isaacsim.core.experimental.objects import DistantLight, GroundPlane
 from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.storage.native import get_assets_root_path
@@ -39,6 +39,7 @@ if assets_root_path is None:
 
 stage_utils.set_stage_units(meters_per_unit=1.0)
 GroundPlane("/World/GroundPlane")
+DistantLight("/World/DistantLight").set_intensities(1000)
 
 # create initial robot
 asset_path = assets_root_path + "/Isaac/Robots/IsaacSim/Ant/ant.usd"
@@ -66,8 +67,10 @@ ants = Articulation("/World/Ants/.*/torso")
 SimulationManager.setup_simulation(dt=1.0 / 60.0, device="cpu")
 app_utils.play()
 simulation_app.update()
+positions, orientations = ants.get_world_poses()
+print(f"Positions:\n{positions.numpy()}")
+print(f"Orientations (wxyz):\n{orientations.numpy()}")
 
 for i in range(1000):
-    print(ants.get_world_poses())
     simulation_app.update()
 simulation_app.close()
