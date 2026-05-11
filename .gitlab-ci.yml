@@ -528,6 +528,7 @@ build-linux-x86_64-c++-coverage:
     # Override to remove yum install bsdtar
     before_script:
       - set -eu
+      - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
 # ==============================================================================================================
 build-linux-x86_64-debug:
     extends:
@@ -1575,10 +1576,7 @@ verify-publish-python-packages-linux-x86_64:
       - job: publish-python-packages-linux-x86_64
         artifacts: true
     rules:
-      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS == "true"
-        when: never
-      - !reference [.rules-version-changed, rules]
-      - !reference [.rules-push-manual, rules]
+      - !reference [publish-python-packages-linux-x86_64, rules]
 
 verify-publish-python-packages-windows-x86_64:
     interruptible: true
@@ -1608,10 +1606,7 @@ verify-publish-python-packages-windows-x86_64:
       - job: publish-python-packages-windows-x86_64
         artifacts: true
     rules:
-      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_NIGHTLY_TESTS == "true"
-        when: never
-      - !reference [.rules-version-changed, rules]
-      - !reference [.rules-push-manual, rules]
+      - !reference [publish-python-packages-windows-x86_64, rules]
 
 # ==============================================================================================================
 publish-docs:
