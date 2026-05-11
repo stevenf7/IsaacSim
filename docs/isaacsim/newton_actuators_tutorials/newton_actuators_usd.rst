@@ -37,14 +37,18 @@ By the end of this tutorial you'll know how to:
 * Inspect the resulting USDA so you can hand-edit it later.
 * Save the stage and re-open it so the actuators are discovered automatically.
 
+All code examples come from the complete, runnable file ``newton_actuators_usd_example.py``:
+
+.. code-block:: bash
+
+    # Newton Actuators USD example
+    ./python.sh standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_usd_example.py
+
 **Prerequisites**
 
 * Read :ref:`isaac_sim_newton_actuators_tutorials` for the actuator pipeline
   overview.
 * Familiarity with USD references and API schemas.
-
-A complete runnable script is available at
-``standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_usd_example.py``.
 
 The Newton actuator schema
 ==================================================

@@ -44,6 +44,13 @@ By the end of this tutorial you'll know how to:
 * Build a minimal OmniGraph that drives a USD-authored actuated robot.
 * Send per-DOF feedforward effort commands through the node.
 
+All code examples come from the complete, runnable file ``newton_actuators_omnigraph_example.py``:
+
+.. code-block:: bash
+
+    # Newton Actuators OmniGraph example
+    ./python.sh standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_omnigraph_example.py
+
 **Prerequisites**
 
 * A robot asset with ``NewtonActuator`` prims already authored — see

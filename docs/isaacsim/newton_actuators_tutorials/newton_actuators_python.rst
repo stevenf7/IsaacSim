@@ -29,13 +29,17 @@ By the end of this tutorial you'll know how to:
   from a list of Python configs.
 * Drive an articulation to a position target through the actuator pipeline.
 
+All code examples come from the complete, runnable file ``newton_actuators_python_example.py``:
+
+.. code-block:: bash
+
+    # Newton Actuators Python example
+    ./python.sh standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_python_example.py
+
 **Prerequisites**
 
 * Read :ref:`isaac_sim_newton_actuators_tutorials` for the high-level structure
   of a Newton actuator pipeline.
-
-A complete runnable script is available at
-``standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_python_example.py``.
 
 Building a stock PD actuator config
 ==================================================
