@@ -1335,7 +1335,10 @@ isaacsim = "isaacsim:main"
 """
 
 # package generation
-definition_paths = ["${root}/python_packages.toml"]
+definition_paths = [
+  "${root}/python_packages.toml",
+  "${root}/python_packages-isolated.toml"
+]
 distributions_folder = "${root}/_build/packages/dist"
 namespace = "isaacsim"
 packages_folder = "${root}/_build/packages/python"
