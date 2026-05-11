@@ -43,15 +43,22 @@ class KeyboardButton:
         """Return True if the button is currently pressed."""
         return self._value
 
-    def _event_callback(self, event: carb.input.KeyboardEvent, *args: object, **kwargs: object) -> None:
-        if event.input == self._key:
-            if (
-                event.type == carb.input.KeyboardEventType.KEY_PRESS
-                or event.type == carb.input.KeyboardEventType.KEY_REPEAT
-            ):
-                self._value = True
-            elif event.type == carb.input.KeyboardEventType.KEY_RELEASE:
-                self._value = False
+    def _event_callback(self, event: carb.input.KeyboardEvent, *args: object, **kwargs: object) -> bool:
+        # Only consume events for this button's key and the press/repeat/release types we
+        # actually act on; otherwise return False so Kit can keep propagating the event
+        # (e.g. to UI text fields).
+        if event.input != self._key:
+            return False
+        if (
+            event.type == carb.input.KeyboardEventType.KEY_PRESS
+            or event.type == carb.input.KeyboardEventType.KEY_REPEAT
+        ):
+            self._value = True
+            return True
+        if event.type == carb.input.KeyboardEventType.KEY_RELEASE:
+            self._value = False
+            return True
+        return False
 
 
 class KeyboardDriver(object):
@@ -75,9 +82,14 @@ class KeyboardDriver(object):
 
         self.buttons = [KeyboardButton(key) for key in key_input_types]
 
-    def _event_callback(self, event: carb.input.KeyboardEvent, *args: object, **kwargs: object) -> None:
+    def _event_callback(self, event: carb.input.KeyboardEvent, *args: object, **kwargs: object) -> bool:
+        # Consume the event only if one of the tracked WASD buttons handled it; otherwise
+        # return False so Kit continues propagating to other listeners and UI widgets.
+        consumed = False
         for button in self.buttons:
-            button._event_callback(event, *args, **kwargs)
+            if button._event_callback(event, *args, **kwargs):
+                consumed = True
+        return consumed
 
     def _connect(self) -> None:
         self._event_handle = self._input.subscribe_to_keyboard_events(self._keyboard, self._event_callback)

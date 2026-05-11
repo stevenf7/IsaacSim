@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.3] - 2026-05-08
+### Fixed
+- `KeyboardButton._event_callback` and `KeyboardDriver._event_callback`: return `True` for handled WASD key events so Kit's `carb.input` stops propagating them to focused `omni.ui` text fields. Fixes buffered keystrokes (e.g. `wwwwwwwwaaa`) appearing in text fields after teleoperation.
+
 ## [0.2.2] - 2026-04-28
 ### Fixed
 - `Module.state_dict_common`: cache buffer list after first call; skip module-tree walk on subsequent steps.
