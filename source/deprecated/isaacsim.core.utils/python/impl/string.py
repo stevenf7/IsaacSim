@@ -63,4 +63,7 @@ def find_root_prim_path_from_regex(prim_path_regex: str) -> tuple[str, int]:
     if root_idx is not None:
         root_prim_path = "/".join(prim_paths_list[:root_idx])
         tree_level = root_idx
+    else:
+        root_prim_path = prim_path_regex
+        tree_level = len(prim_paths_list) - 1
     return root_prim_path, tree_level

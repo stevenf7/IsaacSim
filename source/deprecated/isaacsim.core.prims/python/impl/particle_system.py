@@ -149,7 +149,6 @@ class ParticleSystem:
         if global_self_collisions_enabled is not None:
             self.set_global_self_collisions_enabled(global_self_collisions_enabled)
 
-        timeline = omni.timeline.get_timeline_interface()
         self._invalidate_physics_handle_event = carb.eventdispatcher.get_eventdispatcher().observe_event(
             event_name=omni.timeline.GLOBAL_EVENT_STOP,
             on_event=self._invalidate_physics_handle_callback,

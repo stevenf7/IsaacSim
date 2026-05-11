@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.6] - 2026-05-10
+### Fixed
+- Remove unused timeline interface lookup from `EffortSensor` callback initialization (6035373)
+
 ## [1.1.5] - 2026-04-21
 ### Fixed
 - Removed unused `numpy` import from `EffortSensor`

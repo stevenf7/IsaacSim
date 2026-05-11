@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.1.6] - 2026-05-10
+### Fixed
+- Preserve Warp quaternion conversion input device placement for CPU and CUDA arrays (6035739)
+- Return the concrete root path and tree level for plain USD paths in `find_root_prim_path_from_regex()` (6035972)
+- Stop treating valid semantic labels as incorrect merely because they are absent from the prim path (6036025)
+
 ## [4.1.5] - 2026-04-18
 ### Fixed
 - Fix `normalize()` zero-vector guard to prevent NaN and in-place corruption of caller's array (6035322, 6035555)

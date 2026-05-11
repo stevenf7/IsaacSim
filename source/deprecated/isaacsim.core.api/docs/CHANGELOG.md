@@ -1,5 +1,10 @@
 # Changelog
 
+## [5.2.10] - 2026-05-10
+### Fixed
+- Initialize `ParticleMaterial` with numpy backend utilities when no `SimulationContext` exists (6035776)
+- Add regression coverage for partial articulation default-gain updates preserving unselected joints (6042276)
+
 ## [5.2.9] - 2026-05-08
 ### Fixed
 - Fix `Stacking.set_params` annotating `cube_position`, `cube_orientation`, and `stack_target_position` as `str | None` instead of `np.ndarray | None` (copy-paste from preceding `cube_name: str | None`)

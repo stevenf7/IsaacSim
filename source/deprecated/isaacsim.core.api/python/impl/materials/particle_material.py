@@ -87,7 +87,11 @@ class ParticleMaterial:
             self._device = SimulationContext.instance().device
             self._backend_utils = SimulationContext.instance().backend_utils
         else:
-            import isaacsim.core.utils.numpy as np_utils  # noqa: F401
+            import isaacsim.core.utils.numpy as np_utils
+
+            self._backend = "numpy"
+            self._device = "cpu"
+            self._backend_utils = np_utils
 
         if stage.GetPrimAtPath(prim_path).IsValid():
             if not self._prim.IsA(UsdShade.Material):

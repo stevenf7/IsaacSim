@@ -219,6 +219,12 @@ class TestSemantics(omni.kit.test.AsyncTestCase):
         # Check from root
         mismatch_prims = check_incorrect_labels()
 
+        # Valid semantic labels do not need to appear in the prim path.
+        self.assertEqual(len(mismatch_prims), 0)
+
+        # The legacy path-substring heuristic remains available when explicitly requested.
+        mismatch_prims = check_incorrect_labels(validate_against_prim_path=True)
+
         # Cube_0 path: /World/Cube_0, label: cube -> OK
         # Cube_1 path: /World/Cube_1, label: cube -> OK
         # Cube_2 path: /World/Cube_2, label: sphere -> MISMATCH
