@@ -434,8 +434,9 @@ void BaseArticulationView::_notifyJointDofPropertiesChanged()
             solver.attr("notify_model_changed")(flags);
         }
     }
-    catch (py::error_already_set&)
+    catch (py::error_already_set& e)
     {
+        CARB_LOG_WARN("_notifyJointDofPropertiesChanged failed: %s", e.what());
     }
 }
 
@@ -446,8 +447,9 @@ void BaseArticulationView::_syncCtrlDirectActuatorGains()
         py::module_ mod = py::module_::import("isaacsim.physics.newton.tensors.impl.ctrl_direct_sync");
         mod.attr("sync_actuator_gains")(m_newtonStage, m_model);
     }
-    catch (py::error_already_set&)
+    catch (py::error_already_set& e)
     {
+        CARB_LOG_WARN("_syncCtrlDirectActuatorGains failed: %s", e.what());
     }
 }
 
@@ -458,8 +460,9 @@ void BaseArticulationView::_syncCtrlDirectPositionTargets()
         py::module_ mod = py::module_::import("isaacsim.physics.newton.tensors.impl.ctrl_direct_sync");
         mod.attr("sync_position_targets")(m_newtonStage, m_model);
     }
-    catch (py::error_already_set&)
+    catch (py::error_already_set& e)
     {
+        CARB_LOG_WARN("_syncCtrlDirectPositionTargets failed: %s", e.what());
     }
 }
 

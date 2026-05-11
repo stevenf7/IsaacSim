@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.4] - 2026-05-05
+### Added
+- Log Python exceptions in C++ articulation view bridge calls (`_notifyJointDofPropertiesChanged`, `_syncCtrlDirectActuatorGains`, `_syncCtrlDirectPositionTargets`) instead of silently swallowing them
+
+- Actuator bridge tests covering effort control, position targets, and PD gain overrides through the high-level `Articulation` API on a quadruped robot
+
 ## [0.1.3] - 2026-05-04
 ### Fixed
 - Swap contact normal and separation sign convention between sensorA/sensorB in CPU and GPU contact data kernels to match MuJoCo 3.7 output

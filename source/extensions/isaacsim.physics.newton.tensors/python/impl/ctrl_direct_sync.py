@@ -20,7 +20,6 @@ vec10 = wp.types.vector(length=10, dtype=float)
 
 _dof_map_cache: wp.array | None = None
 _dof_map_model_id: int | None = None
-_biastype_set: bool = False
 
 
 # ---------------------------------------------------------------------------
@@ -64,10 +63,9 @@ def _sync_ctrl_direct_gains(
         return
     kp = joint_target_ke[dof]
     kd = joint_target_kd[dof]
-    if kp > 0.0 or kd > 0.0:
-        actuator_gainprm[act_idx][0] = kp
-        actuator_biasprm[act_idx][1] = -kp
-        actuator_biasprm[act_idx][2] = -kd
+    actuator_gainprm[act_idx][0] = kp
+    actuator_biasprm[act_idx][1] = -kp
+    actuator_biasprm[act_idx][2] = -kd
 
 
 def _build_ctrl_direct_dof_mapping(model: Any) -> wp.array | None:
@@ -148,10 +146,9 @@ def _build_ctrl_direct_dof_mapping(model: Any) -> wp.array | None:
 
 def reset() -> None:
     """Reset cached state (call when simulation is destroyed)."""
-    global _dof_map_cache, _dof_map_model_id, _biastype_set
+    global _dof_map_cache, _dof_map_model_id
     _dof_map_cache = None
     _dof_map_model_id = None
-    _biastype_set = False
 
 
 def _get_dof_map(model: Any) -> wp.array | None:
@@ -163,11 +160,10 @@ def _get_dof_map(model: Any) -> wp.array | None:
     Returns:
         Warp array mapping DOF indices to actuator indices, or None if unavailable.
     """
-    global _dof_map_cache, _dof_map_model_id, _biastype_set
+    global _dof_map_cache, _dof_map_model_id
     model_id = id(model)
     if _dof_map_model_id != model_id:
         _dof_map_model_id = model_id
-        _biastype_set = False
         try:
             _dof_map_cache = _build_ctrl_direct_dof_mapping(model)
         except Exception:
@@ -195,6 +191,8 @@ def sync_actuator_gains(newton_stage: Any, model: Any) -> None:
     nworlds = model.world_count if hasattr(model, "world_count") else 1
     dofs_per_world = model.joint_dof_count // max(nworlds, 1)
 
+    _set_ctrl_direct_biastype_affine(newton_stage, model, dof_map)
+
     wp.launch(
         _sync_ctrl_direct_gains,
         dim=(dofs_per_world,),
@@ -220,7 +218,6 @@ def sync_position_targets(newton_stage: Any, model: Any) -> None:
         newton_stage: The Newton stage object.
         model: The Newton model object.
     """
-    global _biastype_set
     dof_map = _get_dof_map(model)
     if dof_map is None:
         return
@@ -234,6 +231,8 @@ def sync_position_targets(newton_stage: Any, model: Any) -> None:
     dofs_per_world = model.joint_dof_count // max(nworlds, 1)
     ctrls_per_world = mujoco_ctrl.shape[0] // max(nworlds, 1)
 
+    _set_ctrl_direct_biastype_affine(newton_stage, model, dof_map)
+
     wp.launch(
         _sync_ctrl_direct_targets,
         dim=(nworlds, dofs_per_world),
@@ -241,10 +240,6 @@ def sync_position_targets(newton_stage: Any, model: Any) -> None:
         outputs=[mujoco_ctrl],
         device=model.device,
     )
-
-    if not _biastype_set:
-        _biastype_set = True
-        _set_ctrl_direct_biastype_affine(newton_stage, model, dof_map)
 
 
 def _set_ctrl_direct_biastype_affine(newton_stage: Any, model: Any, dof_map: wp.array) -> None:
