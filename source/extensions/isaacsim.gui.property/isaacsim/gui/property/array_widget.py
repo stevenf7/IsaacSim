@@ -156,6 +156,65 @@ class _CustomMultiIntField(_BaseMultiField):
         return self._field.get_item_value_model(self._field.get_item_children()[index]).get_value_as_int()
 
 
+class _CustomStringField:
+    """A single-string input field widget for USD ``string[]``/``token[]`` array editing.
+
+    Unlike :class:`_BaseMultiField`, this class does not extend the multi-component base
+    because :class:`omni.ui.StringField` is a single-value field with a different
+    constructor signature and a value-model API (``add_value_changed_fn`` and
+    ``get_value_as_string``) rather than the item-model API used by
+    :class:`omni.ui.MultiIntField` and :class:`omni.ui.MultiFloatField`.
+
+    Args:
+        model: The USD array attribute model that manages the underlying data.
+        index: The index of the array item being edited, or ``None`` for new items.
+        frame: The UI frame that contains this widget and handles rebuilding.
+        button_style: The style dictionary for the add/remove button appearance.
+        callback: The callback method name to execute when the button is clicked
+            (``"remove"`` or ``"append"``).
+        default: Default value used when creating new items. Defaults to ``""``.
+    """
+
+    def __init__(
+        self,
+        model: object,
+        index: object,
+        frame: object,
+        button_style: dict,
+        callback: str,
+        default: str = "",
+    ) -> None:
+        self._model = model
+        self._index = index
+        self._frame = frame
+
+        initial = self._model.get_item(self._index) if index is not None else default
+        self._field = ui.StringField().model
+        self._field.set_value("" if initial is None else str(initial))
+
+        ui.Spacer(width=2)
+        ui.Button(style=button_style, width=16, clicked_fn=getattr(self, callback))
+
+        if self._index is not None:
+            self._field.add_value_changed_fn(
+                lambda m, list_model=self._model, index=self._index: list_model.set_item(index, m.get_value_as_string())
+            )
+
+    def get_value(self) -> str:
+        """Return the current string value of the field."""
+        return self._field.get_value_as_string()
+
+    def remove(self) -> None:
+        """Remove this item from the model and rebuild the frame."""
+        self._model.remove_item(self._index)
+        self._frame.rebuild()
+
+    def append(self) -> None:
+        """Append the current field value as a new item to the model and rebuild the frame."""
+        self._model.add_item(self.get_value())
+        self._frame.rebuild()
+
+
 class _CustomMultiFloatField(_BaseMultiField):
     """Custom multi-float field widget for editing array elements in USD property interfaces.
 
@@ -197,9 +256,9 @@ class _ArrayBaseItem:
     elements within USD array attributes. It creates appropriate input fields based on the array type
     and manages the interaction between the UI and the underlying data model.
 
-    The class supports various USD array types including integer arrays, float arrays, and vector
-    arrays of different dimensions (Vec2, Vec3, Vec4). It automatically determines the appropriate
-    UI field type and count based on the provided type information.
+    The class supports various USD array types including integer arrays, float arrays, vector
+    arrays of different dimensions (Vec2, Vec3, Vec4), and string/token arrays. It automatically
+    determines the appropriate UI field type and count based on the provided type information.
 
     Args:
         type_name: The USD type information specifying the array element type.
@@ -220,9 +279,9 @@ class _ArrayBaseItem:
     def create_list_item(self, button_style: dict, callback: str) -> None:
         """Creates a list item UI element based on the array type.
 
-        Creates an appropriate input field (int or float, single or multi-field) with an action button based on the
-        array type name. The UI is built within a horizontal stack and includes the appropriate field type for
-        editing array elements.
+        Creates an appropriate input field (int, float, or string, single or multi-field) with an action button
+        based on the array type name. The UI is built within a horizontal stack and includes the appropriate field
+        type for editing array elements.
 
         Args:
             button_style: Style configuration for the action button.
@@ -245,6 +304,10 @@ class _ArrayBaseItem:
                 _CustomMultiIntField(self._model, self._index, 4, self._frame, button_style, callback)
             elif self._type_name == Tf.Type.FindByName("VtArray<GfVec4f>"):
                 _CustomMultiFloatField(self._model, self._index, 4, self._frame, button_style, callback)
+            elif self._type_name == Tf.Type.FindByName("VtArray<string>"):
+                _CustomStringField(self._model, self._index, self._frame, button_style, callback)
+            elif self._type_name == Tf.Type.FindByName("VtArray<TfToken>"):
+                _CustomStringField(self._model, self._index, self._frame, button_style, callback)
 
 
 class _ArrayWidgetBuilder:
@@ -255,8 +318,8 @@ class _ArrayWidgetBuilder:
     window allows users to modify, add, and remove individual array elements with appropriate input
     fields based on the array's data type.
 
-    Supports various USD array types including int[], float[], and vector arrays (int2[], float2[],
-    int3[], float3[], int4[], float4[]).
+    Supports various USD array types including int[], float[], vector arrays (int2[], float2[],
+    int3[], float3[], int4[], float4[]), and string[]/token[].
 
     Args:
         stage: The USD stage containing the attribute.
@@ -395,6 +458,7 @@ class ArrayPropertiesWidget(UsdPropertiesWidget):
     - ``int2[]``, ``float2[]``: Arrays of 2D vectors
     - ``int3[]``, ``float3[]``: Arrays of 3D vectors
     - ``int4[]``, ``float4[]``: Arrays of 4D vectors
+    - ``string[]``, ``token[]``: Arrays of strings or tokens
 
     When an array attribute is detected, the widget displays the attribute name, type, and current array length,
     along with an "Edit" button. Clicking this button opens a dedicated editing window where users can:
@@ -446,7 +510,18 @@ class ArrayPropertiesWidget(UsdPropertiesWidget):
             if isinstance(prop, Usd.Attribute)
             and any(
                 prop.GetTypeName() == item
-                for item in ["int[]", "float[]", "int2[]", "float2[]", "int3[]", "float3[]", "int4[]", "float4[]"]
+                for item in [
+                    "int[]",
+                    "float[]",
+                    "int2[]",
+                    "float2[]",
+                    "int3[]",
+                    "float3[]",
+                    "int4[]",
+                    "float4[]",
+                    "string[]",
+                    "token[]",
+                ]
             )
         ]
 

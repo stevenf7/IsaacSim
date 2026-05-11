@@ -1,4 +1,8 @@
 # Changelog
+## [1.6.2] - 2026-05-11
+### Added
+- Array Properties widget now supports editing `string[]` and `token[]` USD attributes alongside the existing scalar/vector numeric arrays.
+
 ## [1.6.1] - 2026-04-28
 ### Added
 - Added `Attachment Point API` to Robot Schema UI menu
