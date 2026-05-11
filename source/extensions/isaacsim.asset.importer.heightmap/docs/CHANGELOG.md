@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.2] - 2026-05-10
+### Fixed
+- Show the Heightmap Importer file picker after the Load Image button creates it, unblocking PNG selection from the UI (6083539)
+- Raise `ValueError` for non-PIL heightmap inputs before modifying the stage, and propagate image processing failures instead of silently returning an empty heightmap (6132964)
+
 ## [2.3.1] - 2026-04-22
 ### Fixed
 - Fix heightmap importer crashing on grayscale images (PIL modes `L`, `I`, `F`) that produce 2D numpy arrays
