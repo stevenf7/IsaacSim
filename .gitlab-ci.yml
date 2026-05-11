@@ -1387,6 +1387,7 @@ benchmark-windows-x86_64:
 # ==============================================================================================================
 .deploy-common:
     stage: deploy
+    timeout: 12 hours
     extends:
       - .deploy-artifacts
       - .osec:vault:v3:prod_token_job
