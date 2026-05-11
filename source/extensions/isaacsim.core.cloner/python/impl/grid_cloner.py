@@ -69,6 +69,7 @@ class GridCloner(Cloner):
 
         self._positions = None
         self._orientations = None
+        self._cached_num_clones = None
 
         Cloner.__init__(self, stage)
 
@@ -134,11 +135,33 @@ class GridCloner(Cloner):
             if not isinstance(orientation_offsets, np.ndarray):
                 orientation_offsets = np.asarray(orientation_offsets)
 
-        if self._positions is not None and self._orientations is not None:
+        if num_clones < 0:
+            raise ValueError("num_clones must be non-negative")
+
+        use_cache = position_offsets is None and orientation_offsets is None
+
+        if (
+            use_cache
+            and self._positions is not None
+            and self._orientations is not None
+            and self._cached_num_clones == num_clones
+        ):
             return self._positions, self._orientations
 
-        self._num_per_row = int(np.sqrt(num_clones)) if self._num_per_row == -1 else self._num_per_row
-        num_rows = np.ceil(num_clones / self._num_per_row)
+        if num_clones == 0:
+            positions = []
+            orientations = []
+            if use_cache:
+                self._positions = positions
+                self._orientations = orientations
+                self._cached_num_clones = num_clones
+            return positions, orientations
+
+        num_per_row = int(np.sqrt(num_clones)) if self._num_per_row == -1 else self._num_per_row
+        if num_per_row <= 0:
+            raise ValueError("num_per_row must be positive")
+
+        num_rows = np.ceil(num_clones / num_per_row)
         num_cols = np.ceil(num_clones / num_rows)
 
         row_offset = 0.5 * self._spacing * (num_rows - 1)
@@ -179,8 +202,10 @@ class GridCloner(Cloner):
             positions.append(translation)
             orientations.append(orientation)
 
-        self._positions = positions
-        self._orientations = orientations
+        if use_cache:
+            self._positions = positions
+            self._orientations = orientations
+            self._cached_num_clones = num_clones
 
         return positions, orientations
 
