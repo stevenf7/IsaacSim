@@ -126,6 +126,12 @@ Save as ``agent_config.yaml``. The trigger's ``event:`` string must match what S
                         weight: 1.0
                         repeat: 1
                         time_range: [10.0, 15.0]
+      replicator:
+        writers:
+          IRABasicWriter:
+            output_dir: ~/out_event_reactive_actors
+            rgb: true
+            camera_params: true
 
 A few notes on this config:
 
@@ -163,7 +169,7 @@ In the **Actor SDG** window:
 
 Internally this opens the warehouse stage, instantiates two ``warehouse_workers`` characters with their wander routine, and attaches a carb-event listener to each character already subscribed to ``isaacsim.replicator.incident.core.events/warehouse_fire``. The subscription is live before you touch anything else.
 
-Do **not** start the timeline yet. Avoid both **Start Data Generation** and the play button, because Event Generation's time countdown begins as soon as the timeline plays. Complete Step 5 first.
+Do **not** start the timeline yet. Avoid both **Start Data Generation** and the **Play** button, because Event Generation's time countdown begins as soon as the timeline plays. Complete Step 5 first.
 
 Step 5 - Set Up Event Generation
 ================================
@@ -186,8 +192,8 @@ Step 6 - Play and Watch
 
 You have two ways to start the simulation:
 
-- **Timeline play button** -- the standard Omniverse play button at the top of the viewport. It plays the timeline only and writes no data.
-- **Start Data Generation** (**Actor SDG** window) -- plays the timeline *and* runs Replicator writers on top to capture synthetic data. With no ``replicator`` section in this example's YAML, the writers produce no output, but ``simulation_duration: 25.0`` still stops playback automatically.
+- **Play** button -- in the Toolbar on the left side of the viewport. It plays the timeline only and writes no data. Useful for previewing the event and behavior sequence.
+- **Start Data Generation** (**Actor SDG** window) -- plays the timeline *and* runs the Replicator writers configured in the ``replicator`` section to capture synthetic data. ``simulation_duration: 25.0`` stops playback automatically when the run completes; ``IRABasicWriter`` output appears under ``~/out_event_reactive_actors/`` in your home directory.
 
 Either way, verify that you receive:
 
