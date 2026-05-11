@@ -679,6 +679,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: dict) -> Callable:
 
         # get python packages definitions
         definition_paths = python_package_tool_config.get("definition_paths", [])
+        # - exclude isolated packages from definition paths
+        definition_paths = [path for path in definition_paths if "-isolated" not in path]
         package_definitions = omni.repo.python_package.create.load_extra_package_definitions({}, definition_paths)
         platforms = sorted(list(python_package_tool_config.get("wheel", {}).get("platforms", {}).keys()))
 
