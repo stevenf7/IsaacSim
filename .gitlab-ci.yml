@@ -1302,7 +1302,9 @@ pages:
           - public
     pages:
       # develop -> develop, release/x.y -> normalized branch-prefixed deployment
+      # GitLab 17.4 expires parallel Pages deployments after 24 hours unless kept.
       path_prefix: "$PAGES_PATH_PREFIX"
+      expire_in: never
     rules:
       - !reference [.rules-publish-docs, rules]
     needs:
