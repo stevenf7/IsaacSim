@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.9] - 2026-05-08
+### Fixed
+- Resolve pre-physics articulation link, joint, and DOF metadata by parsing the USD subtree with Newton's importer, mirroring the runtime articulation view's filtering of root and fixed joints, so `Articulation.dof_names` and the corresponding indices are available before physics is initialized and match the order produced once the simulation view is created. Results are cached per `(stage_id, prim_path)` and invalidated on USD stage close events.
+
 ## [0.7.8] - 2026-05-04
 ### Fixed
 - Use the newton collision pipeline as default instead of mujoco

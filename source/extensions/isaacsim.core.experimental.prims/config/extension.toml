@@ -1,5 +1,5 @@
 [package]
-version = "1.8.6"
+version = "1.8.7"
 category = "Simulation"
 title = "Isaac Sim Core (Prims)"
 description = "The Core Prims extension provides a set of APIs to wrap one or more USD prims in the stage in order to manipulate (read/write) their attributes and perform other operations during the simulation."
@@ -180,7 +180,9 @@ pythonTests.include = [
 
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
-    '*Simulation step error: Error while parsing function*'
+    '*Simulation step error: Error while parsing function*',
+    '*UserWarning: UV primvar length*',
+    '*UserWarning: Warning: mesh*'
 ]
 
 [documentation]
