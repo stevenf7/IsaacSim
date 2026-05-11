@@ -193,12 +193,19 @@ if prim1.HasAttribute("omni:sensor:Core:farRangeM"):
 # =============================================================================
 # CREATE LIDAR SENSORS AND ATTACH DEBUG DRAW WRITERS
 # =============================================================================
-# LidarSensor wraps each Lidar, creates a render product, and attaches
-# the "draw-point-cloud" writer for viewport debug draw visualization.
+# LidarSensor wraps each Lidar and creates a render product. The constructor's
+# ``writers=`` parameter only forwards the writer's registered defaults, so to
+# customize per-sensor appearance we attach the "draw-point-cloud" writer
+# explicitly with ``size`` (point radius) and ``color`` (RGBA in [0, 1]).
 
-sensor1 = LidarSensor(lidar1, annotators=[], writers=["draw-point-cloud"])
-sensor2 = LidarSensor(lidar2, annotators=[], writers=["draw-point-cloud"])
-sensor3 = LidarSensor(lidar3, annotators=[], writers=["draw-point-cloud"])
+sensor1 = LidarSensor(lidar1, annotators=[])
+sensor1.attach_writer("draw-point-cloud", size=0.10, color=[0.0, 1.0, 1.0, 1.0])  # cyan, large
+
+sensor2 = LidarSensor(lidar2, annotators=[])
+sensor2.attach_writer("draw-point-cloud", size=0.03, color=[1.0, 0.0, 1.0, 1.0])  # magenta, small
+
+sensor3 = LidarSensor(lidar3, annotators=[])
+sensor3.attach_writer("draw-point-cloud", size=0.05, color=[1.0, 1.0, 0.0, 1.0])  # yellow, medium
 
 print("\nCreated LidarSensors with debug draw writers:")
 print("  Lidar 1 (Example_Rotary): Cyan, large points")

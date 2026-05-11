@@ -101,12 +101,23 @@ print(f"Created RTX Radar at {radar.paths[0]}")
 # =============================================================================
 # CREATE RADAR SENSOR FOR RUNTIME
 # =============================================================================
-# RadarSensor wraps the Radar authoring object, creates a render product, and
-# attaches the requested annotators.
+# RadarSensor wraps the Radar authoring object and creates a render product.
+# The "draw-point-cloud" writer (registered by isaacsim.sensors.rtx.nodes)
+# extracts the radar detections and draws them in the viewport via debug draw.
+#
+# Radar typically returns far fewer points than lidar, so we use a larger
+# ``size`` and a distinctive color to make the detections visible. The
+# constructor's ``writers=`` parameter only forwards the writer's registered
+# defaults, so we attach the writer explicitly to pass ``size``/``color``.
 
-sensor = RadarSensor(radar, annotators=[], writers=["draw-point-cloud"])
+sensor = RadarSensor(radar, annotators=[])
+sensor.attach_writer(
+    "draw-point-cloud",
+    size=0.2,  # Larger point size for visibility (radar has fewer points)
+    color=[1.0, 0.3, 0.1, 1.0],  # Orange-red with full opacity
+)
 
-print("Created RadarSensor with debug draw visualization")
+print("Created RadarSensor with debug draw visualization (orange points, size=0.2)")
 
 # =============================================================================
 # RUN SIMULATION
