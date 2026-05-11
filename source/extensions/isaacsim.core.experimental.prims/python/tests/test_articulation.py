@@ -21,6 +21,7 @@ from unittest.mock import patch
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
+import omni.kit.app
 import omni.kit.test
 import warp as wp
 from isaacsim.core.experimental.prims import Articulation
@@ -30,6 +31,7 @@ from isaacsim.core.experimental.prims.impl._usd_articulation import (
     _query_articulation_metadata_from_usd,
 )
 from isaacsim.core.experimental.utils.backend import use_backend
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Sdf, UsdGeom, UsdPhysics
 
@@ -1033,3 +1035,67 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
                             Articulation.fetch_articulation_root_api_prim_paths(["/World/A_2/Arm"]),
                             ["/World/A_2"],
                         )
+
+    async def _assert_articulation_metadata_consistent(self, asset_relative_path: str) -> None:
+        """Assert link/joint/DOF metadata is non-empty pre-physics and matches post-physics."""
+        await stage_utils.create_new_stage_async()
+        usd_path = f"{get_assets_root_path()}/{asset_relative_path}"
+        stage_utils.add_reference_to_stage(usd_path=usd_path, path="/Robot")
+        articulation = Articulation("/Robot")
+        engine = SimulationManager.get_active_physics_engine()
+        self.assertIsNone(
+            SimulationManager.get_physics_simulation_view(),
+            "Precondition: no physics simulation view should exist before the test reads metadata.",
+        )
+
+        pre_link_names = list(articulation.link_names)
+        pre_joint_names = list(articulation.joint_names)
+        pre_dof_names = list(articulation.dof_names)
+        self.assertGreater(len(pre_link_names), 0, f"Pre-physics link_names empty under engine '{engine}'.")
+        self.assertGreater(len(pre_joint_names), 0, f"Pre-physics joint_names empty under engine '{engine}'.")
+        self.assertGreater(len(pre_dof_names), 0, f"Pre-physics dof_names empty under engine '{engine}'.")
+
+        pre_link_indices = articulation.get_link_indices(names=pre_link_names).numpy().tolist()
+        pre_joint_indices = articulation.get_joint_indices(names=pre_joint_names).numpy().tolist()
+        pre_dof_indices = articulation.get_dof_indices(names=pre_dof_names).numpy().tolist()
+        self.assertListEqual(pre_link_indices, list(range(len(pre_link_names))))
+        self.assertListEqual(pre_joint_indices, list(range(len(pre_joint_names))))
+        self.assertListEqual(pre_dof_indices, list(range(len(pre_dof_names))))
+
+        SimulationManager.initialize_physics()
+        for _ in range(10):
+            await omni.kit.app.get_app().next_update_async()
+
+        post_link_names = list(articulation.link_names)
+        post_joint_names = list(articulation.joint_names)
+        post_dof_names = list(articulation.dof_names)
+        self.assertEqual(
+            pre_link_names,
+            post_link_names,
+            f"link_names order changed after physics initialization under engine '{engine}'.",
+        )
+        self.assertEqual(
+            pre_joint_names,
+            post_joint_names,
+            f"joint_names order changed after physics initialization under engine '{engine}'.",
+        )
+        self.assertEqual(
+            pre_dof_names,
+            post_dof_names,
+            f"dof_names order changed after physics initialization under engine '{engine}'.",
+        )
+
+        post_link_indices = articulation.get_link_indices(names=post_link_names).numpy().tolist()
+        post_joint_indices = articulation.get_joint_indices(names=post_joint_names).numpy().tolist()
+        post_dof_indices = articulation.get_dof_indices(names=post_dof_names).numpy().tolist()
+        self.assertListEqual(pre_link_indices, post_link_indices)
+        self.assertListEqual(pre_joint_indices, post_joint_indices)
+        self.assertListEqual(pre_dof_indices, post_dof_indices)
+
+    async def test_articulation_metadata_consistent_fixed_base(self):
+        """Fixed-base articulation (Franka): pre-physics metadata must match post-physics."""
+        await self._assert_articulation_metadata_consistent("Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd")
+
+    async def test_articulation_metadata_consistent_floating_base(self):
+        """Floating-base articulation (Spot quadruped): pre-physics metadata must match post-physics."""
+        await self._assert_articulation_metadata_consistent("Isaac/Robots/BostonDynamics/spot/spot.usd")

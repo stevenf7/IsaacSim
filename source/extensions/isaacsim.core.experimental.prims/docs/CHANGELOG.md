@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.7] - 2026-05-08
+### Added
+- Tests verifying that `Articulation` link, joint, and DOF names and indices are non-empty before physics initialization and match the post-physics enumeration for both fixed-base (Franka) and floating-base (Spot) assets.
+
 ## [1.8.6] - 2026-05-03
 ### Fixed
 - Resolve descendant articulation targets to their containing articulation root.
