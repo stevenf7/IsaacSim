@@ -1,5 +1,14 @@
 # Changelog
 
+## [5.2.5] - 2026-05-05
+### Added
+- Standing test for the Go2 policy that holds a zero command and asserts the robot remains upright
+
+### Fixed
+- Select the USD `Physics` variant from `SimulationManager.get_active_physics_engine()` so the Newton-compatible variant is chosen when Newton is the active engine
+- Log a warning when the requested USD `Physics` variant is not declared on the robot prim instead of silently selecting a non-existent variant
+- Remove the `_set_physics_variant` override in `SpotFlatTerrainPolicy` so it inherits the engine-to-variant mapping from `PolicyController`
+
 ## [5.2.5] - 2026-04-23
 ### Changed
 - Decreased test tolerance to pass with newton backend.

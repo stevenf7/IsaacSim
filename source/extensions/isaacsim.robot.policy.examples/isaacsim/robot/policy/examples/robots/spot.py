@@ -17,7 +17,6 @@
 
 
 import isaacsim.core.experimental.utils.transform as transform_utils
-import omni.usd
 import warp as wp
 from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.simulation_manager import SimulationManager
@@ -72,22 +71,6 @@ class SpotFlatTerrainPolicy(PolicyController):
         self._previous_action = None
         self._current_action = None
         self._policy_counter = 0
-
-    def _set_physics_variant(self, prim_path: str) -> None:
-        """Set the Physics variant on the multi-physics asset to match the active engine.
-
-        Args:
-            prim_path: The USD prim path of the robot asset.
-        """
-        stage = omni.usd.get_context().get_stage()
-        prim = stage.GetPrimAtPath(prim_path)
-        if not prim.IsValid():
-            return
-        variant_sets = prim.GetVariantSets()
-        if "Physics" not in variant_sets.GetNames():
-            return
-        engine = SimulationManager.get_active_physics_engine()
-        variant_sets.GetVariantSet("Physics").SetVariantSelection(engine)
 
     def _compute_observation(self, command: object) -> object:
         """Compute the observation vector for the policy.

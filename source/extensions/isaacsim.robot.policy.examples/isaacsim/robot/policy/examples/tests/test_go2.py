@@ -106,6 +106,26 @@ class TestGo2CPU(omni.kit.test.AsyncTestCase):
             f"Articulation root prim at {articulation_root_path} should have ArticulationRootAPI",
         )
 
+    async def test_robot_standing(self):
+        """Test the robot remains upright with a zero command (standing in place)."""
+        await self.spawn_go2()
+        await omni.kit.app.get_app().next_update_async()
+
+        start_positions_wp, _ = self._go2.robot.get_world_poses()
+        start_pos = start_positions_wp.numpy()[0]
+
+        self._base_command = torch.zeros(3, dtype=torch.float32, device=self.get_device())
+
+        for _ in range(120):
+            await omni.kit.app.get_app().next_update_async()
+
+        current_positions_wp, _ = self._go2.robot.get_world_poses()
+        current_pos = current_positions_wp.numpy()[0]
+
+        self.assertGreater(current_pos[2], 0.2, f"Robot should remain upright. base z={current_pos[2]:.4f}m")
+        horizontal_drift = float(np.linalg.norm(current_pos[:2] - start_pos[:2]))
+        self.assertLess(horizontal_drift, 0.5, f"Robot should not drift horizontally. drift={horizontal_drift:.4f}m")
+
     async def test_robot_move_forward_command(self):
         """Test the robot moves forward in response to a forward command."""
         await self.spawn_go2()
@@ -152,7 +172,7 @@ class TestGo2CPU(omni.kit.test.AsyncTestCase):
         current_yaw = np.arctan2(current_rot[1, 0], current_rot[0, 0])
 
         heading_delta = abs(current_yaw - start_yaw)
-        self.assertGreater(heading_delta, 0.25)
+        self.assertGreater(heading_delta, 0.35)
 
     async def spawn_go2(self, name="go2"):
         """Spawn a Go2 robot and register the physics callback.
@@ -162,7 +182,7 @@ class TestGo2CPU(omni.kit.test.AsyncTestCase):
         """
         self._prim_path = "/World/" + name
 
-        self._go2 = Go2FlatTerrainPolicy(prim_path=self._prim_path, position=[0, 0, 0.60])
+        self._go2 = Go2FlatTerrainPolicy(prim_path=self._prim_path, position=[0, 0, 0.50])
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
 

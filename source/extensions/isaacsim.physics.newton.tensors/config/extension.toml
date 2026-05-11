@@ -32,6 +32,8 @@ name = "startup"
 timeout = 3600
 dependencies = [
     "isaacsim.test.utils",
+    "isaacsim.core.experimental.prims",
+    "isaacsim.storage.native",
 ]
 
 stdoutFailPatterns.exclude = [
