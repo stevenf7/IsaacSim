@@ -1,5 +1,5 @@
 [package]
-version = "5.9.1"
+version = "5.10.0"
 category = "Simulation"
 title = "Isaac Sim Core OmniGraph Nodes"
 description = "Provides OmniGraph nodes for Isaac Sim workflows including articulation control, simulation timing, camera info reading, viewport management, and physics step event handling."
@@ -51,6 +51,7 @@ stdoutFailPatterns.exclude = [
 timeout = 900
 dependencies = [
     "isaacsim.core.experimental.objects",  # for GroundPlane
+    "isaacsim.robot.schema",  # for IsaacRtxLidarSensorAPI schema registration (used by transform tree tests)
     "isaacsim.test.utils",  # for image comparison utilities
 ]
 args = [
