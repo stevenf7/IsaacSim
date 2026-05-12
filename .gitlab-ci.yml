@@ -859,7 +859,29 @@ test-linux-x86_64:
     - echo "Running test with suite $SUITE $BUCKET_CMD $GEN_REPORT_CMD"
     - ./repo.sh ci test -- -s $SUITE $BUCKET_CMD $GEN_REPORT_CMD
 
-
+test-linux-x86_64-blocking:
+  extends:
+    - .test-common
+    - .test-linux-common
+    - .install-linux-test-packages
+    - .ipp_lnx_x86_64_gpu
+    - .kit-runner-test-linux-x86_64-1x-gpu
+    - .test-linux-matrix-blocking
+  allow_failure: false
+  script:
+    - !reference [.determine_report_generation_timing_linux, script]
+    - if [ "$REPORT_TIMING" == "inline" ]; then
+    -   GEN_REPORT_CMD="--generate-report"
+    - else
+    -   GEN_REPORT_CMD=""
+    - fi
+    - if [ -n "$BUCKET" ]; then
+    -   BUCKET_CMD="-b $BUCKET"
+    - else
+    -   BUCKET_CMD=""
+    - fi
+    - echo "Running test with suite $SUITE $BUCKET_CMD $GEN_REPORT_CMD"
+    - ./repo.sh ci test -- -s $SUITE $BUCKET_CMD $GEN_REPORT_CMD
 
 
 test-linux-x86_64-benchmarks-1-gpu:
@@ -974,6 +996,20 @@ test-windows-x86_64:
       - Write-Host "Running test with suite $SUITE $BUCKET_CMD $GEN_REPORT_CMD"
       - ./repo.bat ci test -- -s $SUITE @BUCKET_CMD @GEN_REPORT_CMD
 
+test-windows-x86_64-blocking:
+    extends:
+      - .test-common
+      - .test-windows-common
+      - .kit-runner-test-windows-x86_64-1x-gpu
+      - .test-windows-matrix-blocking
+    allow_failure: false
+    script:
+      - !reference [.determine_report_generation_timing_windows, script]
+      - if ($env:REPORT_TIMING -eq "inline") { $GEN_REPORT_CMD = @("--generate-report") } else { $GEN_REPORT_CMD = @() }
+      - if ($BUCKET) { $BUCKET_CMD = @("-b", $BUCKET)} else { $BUCKET_CMD = @() }
+      - Write-Host "Running test with suite $SUITE $BUCKET_CMD $GEN_REPORT_CMD"
+      - ./repo.bat ci test -- -s $SUITE @BUCKET_CMD @GEN_REPORT_CMD
+
 # ==============================================================================================================
 # nightly-tests
 
@@ -1034,6 +1070,8 @@ gather-coverage:
       IPP_RUNNER_EXECUTION_DURATION: 7200 # 2 hours
     needs:
       - job: test-linux-x86_64
+        artifacts: true
+      - job: test-linux-x86_64-blocking
         artifacts: true
       - job: test-linux-x86_64-benchmarks-1-gpu
         artifacts: true

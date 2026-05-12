@@ -1,48 +1,63 @@
 .test-linux-matrix:
   parallel:
     matrix:
-      - SUITE: startuptests
       - SUITE: pythontests
         BUCKET:
-          - deprecated
-          - asset
           - core
           - examples_tests
           - replicator
           - ros
           - sensors
-          - utils_gui
           - robot
           - other
       - SUITE: doc_snippets
       - SUITE: doc_snippets_async
-      - SUITE: warmuptests
-      - SUITE: postinstalltests
       - SUITE: nativepythontests
         BUCKET:
           - api
           - deprecated
-          - replicator
           - testing
+
+.test-linux-matrix-blocking:
+  parallel:
+    matrix:
+      - SUITE: startuptests
+      - SUITE: warmuptests
+      - SUITE: postinstalltests
+      - SUITE: pythontests
+        BUCKET:
+          - asset
+          - deprecated
+          - utils_gui
+      - SUITE: nativepythontests
+        BUCKET:
+          - replicator
+
 
 
 .test-windows-matrix:
     parallel:
       matrix:
-        - SUITE: startuptests
         - SUITE: pythontests
           BUCKET:
-            - deprecated
-            - asset
             - core
             - examples_tests
             - replicator
             - ros
             - sensors
-            - utils_gui
             - robot
             - other
         - SUITE: doc_snippets
         - SUITE: doc_snippets_async
         - SUITE: warmuptests
+
+.test-windows-matrix-blocking:
+    parallel:
+      matrix:
+        - SUITE: startuptests
         - SUITE: postinstalltests
+        - SUITE: pythontests
+          BUCKET:
+            - asset
+            - deprecated
+            - utils_gui
