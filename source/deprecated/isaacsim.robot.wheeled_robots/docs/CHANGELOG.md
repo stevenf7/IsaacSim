@@ -1,4 +1,11 @@
 # Changelog
+
+## [5.2.3] - 2026-05-11
+### Fixed
+- Raise an error when `quintic_polynomials_planner()` cannot find a trajectory satisfying acceleration and jerk constraints.
+- Reject non-finite `normalize_angle()` inputs instead of looping indefinitely.
+- Raise a clear `ValueError` when `WheeledRobot` is initialized without wheel DOF names or indices.
+
 ## [5.2.2] - 2026-04-17
 ### Fixed
 - Add validation for `wheel_radius` in `DifferentialController.__init__` to reject zero/negative values (division by zero)

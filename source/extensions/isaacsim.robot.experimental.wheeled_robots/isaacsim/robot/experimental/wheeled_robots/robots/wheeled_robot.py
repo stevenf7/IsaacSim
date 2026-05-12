@@ -17,7 +17,6 @@
 
 from __future__ import annotations
 
-import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 from isaacsim.core.experimental.prims import Articulation
@@ -33,6 +32,9 @@ class WheeledRobot(Articulation):
         usd_path: Optional USD asset path to reference onto the stage.
         positions: Initial world position(s) as [x, y, z].
         orientations: Initial world orientation(s) as [w, x, y, z] quaternion.
+
+    Raises:
+        ValueError: If neither wheel_dof_names nor wheel_dof_indices is specified.
     """
 
     def __init__(
@@ -46,7 +48,7 @@ class WheeledRobot(Articulation):
         orientations: list | np.ndarray | None = None,
     ) -> None:
         if wheel_dof_names is None and wheel_dof_indices is None:
-            carb.log_error("WheeledRobot: need either wheel_dof_names or wheel_dof_indices")
+            raise ValueError("WheeledRobot requires either wheel_dof_names or wheel_dof_indices")
         self._wheel_dof_names = wheel_dof_names
         self._wheel_dof_indices_input = wheel_dof_indices
         self._wheel_dof_indices_resolved: list[int] | None = None

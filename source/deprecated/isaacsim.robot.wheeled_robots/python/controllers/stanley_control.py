@@ -172,14 +172,17 @@ def normalize_angle(angle: float) -> float:
 
     Returns:
         Angle in radian in [-pi, pi].
+
+    Raises:
+        ValueError: If angle is not finite.
     """
-    while angle > np.pi:
-        angle -= 2.0 * np.pi
+    if not np.isfinite(angle):
+        raise ValueError("angle must be finite")
 
-    while angle < -np.pi:
-        angle += 2.0 * np.pi
-
-    return angle
+    normalized = (angle + np.pi) % (2.0 * np.pi) - np.pi
+    if normalized == -np.pi and angle > 0.0:
+        return np.pi
+    return normalized
 
 
 def calc_target_index(state: "State", cx: list[float], cy: list[float]) -> tuple[int, float]:
