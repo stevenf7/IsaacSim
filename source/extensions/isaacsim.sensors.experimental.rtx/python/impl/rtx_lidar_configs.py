@@ -32,11 +32,8 @@ SUPPORTED_LIDAR_VARIANT_SET_NAME = "sensor"
 #:   for USDs with multiple variant sets, or where the variant set name is not ``"sensor"``.
 SUPPORTED_LIDAR_CONFIGS: dict[str, "set[str] | list[dict[str, str]]"] = {
     "/Isaac/Sensors/HESAI/XT32_SD10/HESAI_XT32_SD10.usd": set(),
-    # "/Isaac/Sensors/NVIDIA/Debug_Rotary.usda": set(),
     "/Isaac/Sensors/NVIDIA/Example_Rotary_2D.usda": set(),
-    # "/Isaac/Sensors/NVIDIA/Example_Rotary_BEAMS.usda": set(),
     "/Isaac/Sensors/NVIDIA/Example_Rotary.usda": set(),
-    # "/Isaac/Sensors/NVIDIA/Example_Solid_State_BEAMS.usda": set(),
     "/Isaac/Sensors/NVIDIA/Example_Solid_State.usda": set(),
     "/Isaac/Sensors/NVIDIA/Simple_Example_Solid_State.usda": set(),
     "/Isaac/Sensors/Ouster/OS0/OS0.usd": {

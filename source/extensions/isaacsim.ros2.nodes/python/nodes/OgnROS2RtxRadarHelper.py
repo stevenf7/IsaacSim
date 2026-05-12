@@ -117,11 +117,11 @@ class OgnROS2RtxRadarHelper:
                 state.append_writer(writer)
 
                 if db.inputs.showDebugView:
-                    doTransform = False
-                    if prim.HasAttribute("omni:sensor:WpmDmat:outputFrameOfReference"):
-                        doTransform = prim.GetAttribute("omni:sensor:WpmDmat:outputFrameOfReference").Get() == "WORLD"
+                    doTransform = prim.GetAttribute("omni:sensor:WpmDmat:outputFrameOfReference").Get() != "WORLD"
                     debug_writer = rep.writers.get("RtxSensorDebugDrawPointCloud")
-                    debug_writer.initialize(doTransform=doTransform)
+                    # size/color match the legacy RtxRadarDebugDrawPointCloud writer defaults
+                    # so radar points stay visible against the background.
+                    debug_writer.initialize(doTransform=doTransform, size=0.2, color=[1.0, 0.2, 0.3, 1.0])
                     state.append_writer(debug_writer)
 
                 state.attach_writers(render_product_path)

@@ -114,7 +114,7 @@ sensor = RadarSensor(radar, annotators=[])
 sensor.attach_writer(
     "draw-point-cloud",
     size=0.2,  # Larger point size for visibility (radar has fewer points)
-    color=[1.0, 0.3, 0.1, 1.0],  # Orange-red with full opacity
+    color=[1.0, 0.2, 0.3, 1.0],  # Orange-red with full opacity
 )
 
 print("Created RadarSensor with debug draw visualization (orange points, size=0.2)")

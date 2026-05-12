@@ -47,13 +47,9 @@ There are several example Lidar configuration files that ship with |isaac-sim_sh
 so only a prim will appear in the Stage window when they are created. To create them via the UI, select the appropriate
 option below from the menu: *Create>Sensors>RTX Lidar>NVIDIA*.
 
-.. * **Debug Rotary** - a single emitter rotary Lidar configuration, used to debug simple rotary Lidar issues.
-
 * **Example Rotary 2D** - a 10Hz rotary Lidar configuration with emitters in a single plane.
 * **Example Rotary** - a 10Hz rotary Lidar configuration with emitters in a single plane.
-* **Example Rotary Beams** - a 10Hz rotary Lidar configuration using a Gaussian beam ray type.
 * **Example Solid State** - a solid state Lidar configuration.
-* **Example Solid State Beams** - a solid state Lidar configuration using a Gaussian beam ray type.
 * **Simple Example Solid State** - a simple 12-emitter solid state Lidar configuration, used to debug solid state Lidar issues.
 
 HESAI
@@ -1019,7 +1015,7 @@ STMicroelectronics provides an Isaac Sim extension for simulating their MEMS-bas
 Please follow the instructions in the link to install the extension and create the sensor.
 
 ASM330LHH
-#########   
+#########
 
 `STMicroelectronics ASM330LHH <https://www.st.com/resource/en/datasheet/asm330lhh.pdf>`_ is a automotive 6 axis inertial module with 3D accelerometer and 3D gyroscope.
 
