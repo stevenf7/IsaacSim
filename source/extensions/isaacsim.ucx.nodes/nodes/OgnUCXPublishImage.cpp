@@ -51,7 +51,8 @@ public:
     /**
      * @brief Compute function - called when node is executed.
      * @details
-     * Extracts inputs, gets the per-instance state, and delegates to the base class logic.
+     * Routes to GPU-direct two-message path when GPU buffer data is available,
+     * otherwise falls back to the CPU-copy path.
      *
      * @param[in] db Database accessor for node inputs/outputs
      * @return bool True if execution succeeded, false otherwise
@@ -60,13 +61,161 @@ public:
     {
         const uint16_t port = static_cast<uint16_t>(db.inputs.port());
         const uint64_t tag = db.inputs.tag();
-
-        // Get the per-instance state and call the instance method
         auto& state = db.template perInstanceState<OgnUCXPublishImage>();
+
+        const bool gpuBuffer = db.inputs.cudaDeviceIndex() != -1 && db.inputs.bufferSize() > 0;
+        if (gpuBuffer && db.inputs.sendCudaBuffer())
+        {
+            return state.computeGpuDirect(db, port, tag);
+        }
         return state.computeImpl(db, port, tag);
     }
 
+    /**
+     * @brief GPU-direct compute path: two-message protocol (metadata FlatBuffer + raw GPU tensor).
+     * @details
+     * Sends a metadata-only FlatBuffer (empty pixel bytes, kDLCUDA device) followed by the raw
+     * GPU buffer as a second tagged send. The receiver must use tensor_buffer_size > 0 to post
+     * a device-memory tagRecv for the second message. Eliminates the GPU-to-CPU copy.
+     *
+     * @param[in] db Database accessor for node inputs/outputs
+     * @param[in] port UCX port
+     * @param[in] tag UCX tag
+     * @return bool True if execution succeeded, false otherwise
+     */
+    bool computeGpuDirect(OgnUCXPublishImageDatabase& db, uint16_t port, uint64_t tag)
+    {
+        if (!this->ensureListenerReady(db, port))
+        {
+            return false;
+        }
+        if (!this->waitForConnection())
+        {
+            return true;
+        }
+        if (db.inputs.width() == 0 || db.inputs.height() == 0)
+        {
+            db.logError("Width %d or height %d is not valid", db.inputs.width(), db.inputs.height());
+            return false;
+        }
+        if (db.inputs.dataPtr() == 0)
+        {
+            db.logError("GPU data pointer is null");
+            return false;
+        }
+
+        // Skip frame if either previous async send is still in progress.
+        if ((m_sendRequest && !m_sendRequest->isCompleted()) ||
+            (m_tensorSendRequest && !m_tensorSendRequest->isCompleted()))
+        {
+            return true;
+        }
+
+        isaacsim::ucx::nodes::ImageMetadata metadata = extractMetadata(db);
+        std::vector<uint8_t> metaMsg = generateMetadataMessage(metadata, db.inputs.cudaDeviceIndex());
+        if (metaMsg.empty())
+        {
+            db.logError("Failed to generate GPU-direct metadata message");
+            return false;
+        }
+
+        // Send metadata FlatBuffer (CPU memory, small).
+        m_messageBuffer = std::move(metaMsg);
+        std::string errorMessage;
+        auto result = this->m_listener->tagSendWithRequest(
+            m_messageBuffer.data(), m_messageBuffer.size(), tag, errorMessage, m_sendRequest);
+        if (result != isaacsim::ucx::core::UcxSendResult::eSuccess)
+        {
+            db.logError("GPU-direct metadata tagSend failed: %s", errorMessage.c_str());
+            return false;
+        }
+
+        // Send raw GPU tensor buffer directly — no CPU copy.
+        // Same tag as metadata: UCX guarantees in-order delivery on a tag, so the receiver
+        // can predictably post tagRecv for metadata then tagRecv for the tensor.
+        void* gpuPtr = reinterpret_cast<void*>(db.inputs.dataPtr());
+        result =
+            this->m_listener->tagSendWithRequest(gpuPtr, db.inputs.bufferSize(), tag, errorMessage, m_tensorSendRequest);
+        if (result != isaacsim::ucx::core::UcxSendResult::eSuccess)
+        {
+            db.logError("GPU-direct tensor tagSend failed: %s", errorMessage.c_str());
+            // Cancel the metadata send so the pair stays atomic. Without this, the
+            // receiver would consume the orphan metadata and then interpret the next
+            // frame's metadata as the missing tensor — sender/receiver desync.
+            if (m_sendRequest)
+            {
+                m_sendRequest->cancel();
+            }
+            m_sendRequest.reset();
+            m_tensorSendRequest.reset();
+            return false;
+        }
+
+        return true;
+    }
+
 protected:
+    /**
+     * @brief Generate metadata-only FlatBuffer for the GPU-direct two-message protocol.
+     * @details
+     * Builds an Image FlatBuffer with empty pixel bytes and kDLCUDA device type.
+     * The receiver replaces the data pointer with a separately received GPU tensor buffer.
+     *
+     * @param[in] metadata Image metadata (timestamp, dimensions, encoding)
+     * @param[in] cudaDeviceIndex CUDA device index where the tensor lives
+     * @return std::vector<uint8_t> Serialized metadata FlatBuffer
+     */
+    std::vector<uint8_t> generateMetadataMessage(const isaacsim::ucx::nodes::ImageMetadata& metadata, int cudaDeviceIndex)
+    {
+        flatbuffers::FlatBufferBuilder builder;
+
+        // Empty pixel bytes — receiver will substitute the separately received GPU buffer.
+        auto pixel_bytes = builder.CreateVector(std::vector<uint8_t>{});
+        std::vector<int64_t> shape = { static_cast<int64_t>(metadata.dataSize) };
+        auto shape_fb = builder.CreateVector(shape);
+        isaac::DLDataType dtype(isaac::DLDataTypeCode_kDLUInt, 8, 1);
+        // Mark device as CUDA so downstream consumers treat the tensor as GPU memory.
+        isaac::DLDevice device(isaac::DLDeviceType_kDLCUDA, cudaDeviceIndex);
+        std::vector<int64_t> strides = { 1 };
+        auto strides_fb = builder.CreateVector(strides);
+        auto data_tensor = isaac::CreateTensor(builder, pixel_bytes, shape_fb, &dtype, &device, 1, strides_fb);
+
+        isaac::ImageEncoding encoding = isaac::ImageEncoding_CUSTOM;
+        {
+            const std::string& enc = metadata.encoding;
+            if (enc == "rgb8")
+                encoding = isaac::ImageEncoding_RGB8;
+            else if (enc == "rgba8")
+                encoding = isaac::ImageEncoding_RGBA8;
+            else if (enc == "bgr8")
+                encoding = isaac::ImageEncoding_BGR8;
+            else if (enc == "bgra8")
+                encoding = isaac::ImageEncoding_BGRA8;
+            else if (enc == "r8_g8_b8")
+                encoding = isaac::ImageEncoding_R8_G8_B8;
+            else if (enc == "b8_g8_r8")
+                encoding = isaac::ImageEncoding_B8_G8_R8;
+            else if (enc == "mono8")
+                encoding = isaac::ImageEncoding_MONO8;
+            else if (enc == "mono16")
+                encoding = isaac::ImageEncoding_MONO16;
+            else if (enc == "mono32")
+                encoding = isaac::ImageEncoding_MONO32;
+            else if (enc == "mono32f")
+                encoding = isaac::ImageEncoding_MONO32F;
+        }
+
+        const int64_t time_ns = static_cast<int64_t>(metadata.timestamp * 1e9);
+        auto frame_id_fb = builder.CreateString("");
+        auto stamp_fb = isaac::CreateTime(builder, time_ns, 0);
+        auto header_fb = isaac::CreateHeader(builder, stamp_fb, frame_id_fb);
+        auto image_fb = isaac::CreateImage(builder, header_fb, static_cast<int32_t>(metadata.height),
+                                           static_cast<int32_t>(metadata.width), encoding, data_tensor);
+        builder.Finish(image_fb);
+
+        uint8_t const* bufPtr = builder.GetBufferPointer();
+        return std::vector<uint8_t>(bufPtr, bufPtr + builder.GetSize());
+    }
     /**
      * @brief Generate message from image metadata and pixel data.
      * @details

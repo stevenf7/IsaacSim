@@ -92,6 +92,12 @@ if os.target() == "linux" then
         { "%{root}/_build/target-deps/pip_ucx_prebundle/libucx/lib/lib**", ext.bin_dir .. "/" },
         { "%{root}/_build/target-deps/pip_ucx_prebundle/libucxx/lib64/lib**", ext.bin_dir .. "/" },
         { "%{root}/_build/target-deps/pip_ucx_prebundle/rapids_logger/lib64/lib**", ext.bin_dir .. "/" },
+        -- UCX CUDA transport plugins and their CUDA runtime dep go into bin/ucx/ so that
+        -- UCX_MODULE_DIR (set at runtime via dladdr) points to them, and libucm_cuda.so.0
+        -- can resolve libcudart-256e6409.so.12.9.79 without needing bin/ucx/ in LD_LIBRARY_PATH.
+        { "%{root}/_build/target-deps/pip_ucx_prebundle/libucx/lib/ucx/libuct_cuda**", ext.bin_dir .. "/ucx/" },
+        { "%{root}/_build/target-deps/pip_ucx_prebundle/libucx/lib/ucx/libucm_cuda**", ext.bin_dir .. "/ucx/" },
+        { "%{root}/_build/target-deps/pip_ucx_prebundle/libucx_cu12.libs/libcudart**", ext.bin_dir .. "/ucx/" },
     }
 
     -- Python Bindings
