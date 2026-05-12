@@ -21,10 +21,10 @@ connect to. This is the recommended path for piping simulated camera output
 into perception stacks, recording rigs, broadcast pipelines, or downstream
 analytics services that already speak RTSP.
 
-The streaming pipeline ships in the ``isaacsim.streaming.rtsp`` extension and is
-enabled by default in the full Isaac Sim experience. It exposes two
-entry points: an |omnigraph_short| node for declarative scene-graph
-authoring, and a Replicator writer for fully programmatic setups.
+The streaming pipeline ships in the ``isaacsim.streaming.rtsp`` extension. Enable
+the extension when you need RTSP streaming. It exposes two entry points: an
+|omnigraph_short| node for declarative scene-graph authoring, and a Replicator
+writer for fully programmatic setups.
 
 
 .. _isaac_sim_rtsp_prerequisites:
@@ -35,10 +35,9 @@ Prerequisites
 Ensure you have the following:
 
 * An NVIDIA GPU with NVENC support (required for H.264 encoding).
-* The ``isaacsim.streaming.rtsp`` extension. It is bundled with the
-  ``isaacsim.exp.full`` experience and loads automatically. To enable it
-  manually in a custom experience, open **Window > Extensions** and toggle
-  **RTSP Streaming OmniGraph Nodes** on.
+* Enable the ``isaacsim.streaming.rtsp`` extension in the **Extension Manager**
+  window by navigating to **Window** > **Extensions**, or launch |isaac-sim|
+  with ``--enable isaacsim.streaming.rtsp``.
 
 
 .. _isaac_sim_rtsp_streaming_a_camera:
