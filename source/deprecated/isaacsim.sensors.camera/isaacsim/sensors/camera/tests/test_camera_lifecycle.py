@@ -16,6 +16,7 @@
 """Tests for camera lifecycle management."""
 
 import math
+from unittest.mock import patch
 
 import carb
 import omni.kit.test
@@ -78,6 +79,21 @@ class TestCameraLifecycle(omni.kit.test.AsyncTestCase):
         self.assertIsNone(camera._fabric_time_annotator)
         self.assertEqual(len(camera._custom_annotators), 0)
         self.assertIsNone(camera.get_render_product_path())
+
+    async def test_attach_annotator_before_initialize_raises_clear_error(self) -> None:
+        """Test attach_annotator fails clearly before initialize creates a render product."""
+        camera = Camera(prim_path="/World/Camera", resolution=(64, 64))
+
+        with patch.object(
+            rep.AnnotatorRegistry,
+            "get_annotator",
+            side_effect=AssertionError("attach_annotator should not request annotators before initialize()"),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "Call initialize\\(\\) before attach_annotator"):
+                camera.attach_annotator("rgb")
+
+        self.assertEqual(len(camera._custom_annotators), 0)
+        self.assertNotIn("rgb", camera.get_current_frame())
 
     async def test_dt_and_clipping_range_edge_cases(self) -> None:
         """Test dt and clipping range edge cases."""

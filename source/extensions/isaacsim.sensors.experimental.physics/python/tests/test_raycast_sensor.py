@@ -363,6 +363,40 @@ class TestRaycastSensorRuntimeData(omni.kit.test.AsyncTestCase):
         self.assertTrue(reading.is_valid, "Reading should be valid after simulation")
         self.assertEqual(reading.ray_count, 1)
 
+    async def test_physics_only_step_outputs_raycast_data(self):
+        """RaycastSensor produces data when stepping physics without app/render updates."""
+        await _create_basic_scene()
+
+        sensor = RaycastSensor(
+            Raycast.create(
+                "/World/Sensors/PhysicsOnlySensor",
+                ray_origins=[[0.0, 0.0, 0.0]],
+                ray_directions=[[1.0, 0.0, 0.0]],
+                min_range=0.1,
+                max_range=100.0,
+                output_frame="WORLD",
+                translations=np.array([[0.0, 0.0, 1.5]]),
+            )
+        )
+
+        self.assertFalse(sensor.get_sensor_reading().is_valid, "Reading should be invalid before physics steps")
+
+        try:
+            self._timeline.play()
+            SimulationManager.initialize_physics()
+            SimulationManager.step(steps=3, update_fabric=False)
+
+            reading = sensor.get_sensor_reading()
+            self.assertTrue(reading.is_valid, "Reading should be valid after physics-only steps")
+            self.assertEqual(reading.ray_count, 1)
+            self.assertEqual(len(reading.depths), 1)
+            self.assertLess(reading.depths[0], 100.0, "Ray should hit the wall")
+        finally:
+            sensor.reset()
+            if self._timeline.is_playing():
+                self._timeline.stop()
+                await omni.kit.app.get_app().next_update_async()
+
     async def test_invalid_frame_before_play(self):
         """get_data returns empty arrays before simulation starts."""
         await _create_basic_scene()

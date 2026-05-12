@@ -75,6 +75,28 @@ public:
     virtual void tick();
 
     /**
+     * @brief Updates LiDAR data during physics-only simulation steps
+     */
+    virtual void onPhysicsStep() override;
+
+    /**
+     * @brief Returns whether the LiDAR already simulated during the latest physics step
+     * @return True when the stage-update path should draw only
+     */
+    virtual bool hasTickedOnPhysicsStep() const override
+    {
+        return m_tickedOnPhysicsStep;
+    }
+
+    /**
+     * @brief Clears the marker used to prevent double simulation after physics-step scans
+     */
+    virtual void clearTickedOnPhysicsStep() override
+    {
+        m_tickedOnPhysicsStep = false;
+    }
+
+    /**
      * @brief Handles component property changes
      * @details Updates sensor configuration when properties are modified through the interface
      */
@@ -473,6 +495,11 @@ private:
      * @brief Current and last primitive data for semantic information
      */
     std::vector<std::string> m_primData, m_lastPrimData;
+
+    /**
+     * @brief Tracks whether the latest physics callback already simulated this LiDAR
+     */
+    bool m_tickedOnPhysicsStep = false;
 };
 
 

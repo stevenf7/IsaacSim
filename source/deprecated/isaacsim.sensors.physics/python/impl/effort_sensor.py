@@ -281,9 +281,8 @@ class EffortSensor(SingleArticulation):
 
                 else:
                     # if the most recent one is valid, but old data is not, use the most recent
-                    if self.sensor_reading_buffer[1].is_valid:
-                        sensor_reading = self.sensor_reading_buffer[0]
-                        sensor_reading.is_valid = True
+                    if self.sensor_reading_buffer[0].is_valid:
+                        sensor_reading = copy.copy(self.sensor_reading_buffer[0])
 
                     # no valid data, reset it
                     else:

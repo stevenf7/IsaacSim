@@ -122,6 +122,7 @@ public:
             return;
         }
 
+        bool tickedOnPhysicsStep = false;
         for (auto& component : m_components)
         {
             if (component.second->mDoStart == true)
@@ -136,7 +137,14 @@ public:
             }
             if (component.second->getEnabled())
             {
-                component.second->preTick();
+                if (component.second->hasTickedOnPhysicsStep())
+                {
+                    tickedOnPhysicsStep = true;
+                }
+                else
+                {
+                    component.second->preTick();
+                }
             }
         }
         // No need to make threads if there is only one sensor.
@@ -148,7 +156,7 @@ public:
                                       auto it = m_components.begin();
                                       std::advance(it, index);
 
-                                      if (it->second.get()->getEnabled())
+                                      if (it->second.get()->getEnabled() && !it->second.get()->hasTickedOnPhysicsStep())
                                       {
                                           it->second.get()->updateTimestamp(
                                               this->m_timeSeconds, dt, this->m_timeNanoSeconds);
@@ -160,7 +168,7 @@ public:
         {
             for (auto& component : m_components)
             {
-                if (component.second->getEnabled())
+                if (component.second->getEnabled() && !component.second->hasTickedOnPhysicsStep())
                 {
                     component.second.get()->updateTimestamp(this->m_timeSeconds, dt, this->m_timeNanoSeconds);
                     component.second->tick();
@@ -175,10 +183,14 @@ public:
             {
                 component.second.get()->draw();
             }
+            component.second->clearTickedOnPhysicsStep();
         }
 
-        this->m_timeSeconds += dt;
-        this->m_timeNanoSeconds = static_cast<int64_t>(m_timeSeconds * 1e9);
+        if (!tickedOnPhysicsStep)
+        {
+            this->m_timeSeconds += dt;
+            this->m_timeNanoSeconds = static_cast<int64_t>(m_timeSeconds * 1e9);
+        }
     }
 
     /**
@@ -190,6 +202,7 @@ public:
         // PxScene can change after stop is pressed so reset mDoStart bool to force OnStart to run
         for (auto& component : m_components)
         {
+            component.second->clearTickedOnPhysicsStep();
             component.second->mDoStart = true;
             component.second->onStop();
         }

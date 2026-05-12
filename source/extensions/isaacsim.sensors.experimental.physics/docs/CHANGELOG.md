@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.0.1] - 2026-05-10
+### Fixed
+- Refresh IMU prim-data reader initialization when reading or stepping so IMU data is available after physics-only simulation steps
+- Add physics-only stepping coverage for contact, effort, IMU, joint state, and raycast sensors
+
 ## [3.0.0] - 2026-04-30
 ### Changed
 - Aligned `IMUSensor`, `ContactSensor`, and `RaycastSensor` with `isaacsim.sensors.experimental.rtx`:

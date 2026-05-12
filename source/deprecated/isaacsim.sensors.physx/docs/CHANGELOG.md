@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.5.4] - 2026-05-10
+### Fixed
+- Update rotating PhysX LiDAR during physics-only simulation steps and avoid double simulation on the following stage update
+
 ## [2.5.3] - 2026-04-20
 ### Deprecated
 - Extension deprecated in favor of the Experimental extension `isaacsim.sensors.experimental.physics`

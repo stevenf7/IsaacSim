@@ -78,11 +78,13 @@ class TestIMU(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
         data = self._imu.get_current_frame()
-        for key in ["time", "physics_step", "lin_acc", "ang_vel", "orientation"]:
+        for key in ["time", "physics_step", "lin_acc", "ang_vel", "orientation", "is_valid"]:
             self.assertTrue(key in data)
+        self.assertIsInstance(data["is_valid"], bool)
         data = self._imu.get_current_frame(read_gravity=False)
-        for key in ["time", "physics_step", "lin_acc", "ang_vel", "orientation"]:
+        for key in ["time", "physics_step", "lin_acc", "ang_vel", "orientation", "is_valid"]:
             self.assertTrue(key in data)
+        self.assertIsInstance(data["is_valid"], bool)
         return
 
     async def test_data_values_gravity_toggle(self) -> None:
@@ -96,6 +98,7 @@ class TestIMU(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         self.assertIsNotNone(data)
         self.assertGreater(data["time"], 0.0)
+        self.assertTrue(data["is_valid"])
         self.assertAlmostEqual(float(data["lin_acc"][2]), EARTH_GRAVITY, delta=GRAVITY_TOLERANCE)
 
         data_no_gravity = self._imu.get_current_frame(read_gravity=False)

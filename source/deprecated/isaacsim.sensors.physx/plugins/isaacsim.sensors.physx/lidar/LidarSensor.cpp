@@ -49,6 +49,7 @@ LidarSensor::~LidarSensor() = default;
 
 void LidarSensor::onStart()
 {
+    m_tickedOnPhysicsStep = false;
     RangeSensorComponent::onStart();
 }
 
@@ -202,6 +203,13 @@ void LidarSensor::preTick()
 
     m_finalTranslation = isaacsim::core::includes::conversions::asPxVec3(worldMat.ExtractTranslation());
     m_finalRotation = isaacsim::core::includes::conversions::asPxQuat(worldMat.ExtractRotation());
+}
+
+void LidarSensor::onPhysicsStep()
+{
+    preTick();
+    tick();
+    m_tickedOnPhysicsStep = true;
 }
 
 void LidarSensor::tick()

@@ -42,6 +42,7 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
     # Before running each test
     async def setUp(self) -> None:
         """Set up test fixtures."""
+        self.effort_sensor = None
         self._assets_root_path = await get_assets_root_path_async()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
@@ -206,6 +207,48 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
             self.assertEqual(custom_reading.time, sensor_reading.time)
             self.assertEqual(custom_reading.value, 1000)
             self.assertNotEqual(custom_reading.value, sensor_reading.value)
+
+    def _make_mock_effort_sensor(self) -> object:
+        """Create a minimal object that can call EffortSensor.get_sensor_reading."""
+
+        class MockEffortSensor:
+            pass
+
+        mock_sensor = MockEffortSensor()
+        mock_sensor.step_size = 1.0 / 60.0
+        mock_sensor.sensor_period = 0.1
+        mock_sensor.use_latest_data = False
+        mock_sensor.enabled = True
+        mock_sensor.sensor_time = 0.05
+        mock_sensor.sensor_reading_buffer = [EsSensorReading() for _ in range(10)]
+        mock_sensor.interpolation_buffer = [EsSensorReading() for _ in range(10)]
+        mock_sensor.lerp = EffortSensor.lerp.__get__(mock_sensor, MockEffortSensor)
+        return mock_sensor
+
+    async def test_get_sensor_reading_uses_newest_valid_fallback(self) -> None:
+        """Use the newest valid reading when the older reading is invalid."""
+        mock_sensor = self._make_mock_effort_sensor()
+        mock_sensor.sensor_reading_buffer[0] = EsSensorReading(is_valid=True, time=0.05, value=99.9)
+        mock_sensor.sensor_reading_buffer[1] = EsSensorReading(is_valid=False, time=0.0, value=0.0)
+
+        reading = EffortSensor.get_sensor_reading(mock_sensor)
+
+        self.assertTrue(reading.is_valid)
+        self.assertEqual(reading.time, 0.05)
+        self.assertEqual(reading.value, 99.9)
+        self.assertIsNot(reading, mock_sensor.sensor_reading_buffer[0])
+
+    async def test_get_sensor_reading_does_not_promote_invalid_newest_fallback(self) -> None:
+        """Do not mark an invalid newest reading valid because an older reading was valid."""
+        mock_sensor = self._make_mock_effort_sensor()
+        mock_sensor.sensor_reading_buffer[0] = EsSensorReading(is_valid=False, time=0.05, value=0.0)
+        mock_sensor.sensor_reading_buffer[1] = EsSensorReading(is_valid=True, time=0.0, value=42.0)
+
+        reading = EffortSensor.get_sensor_reading(mock_sensor)
+
+        self.assertFalse(reading.is_valid)
+        self.assertEqual(reading.value, 0)
+        self.assertFalse(mock_sensor.sensor_reading_buffer[0].is_valid)
 
     # Remove this test later
     async def test_change_to_wrong_dof_name_in_play(self) -> None:

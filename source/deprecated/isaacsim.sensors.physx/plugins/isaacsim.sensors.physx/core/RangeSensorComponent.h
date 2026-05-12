@@ -152,6 +152,20 @@ public:
     virtual void onPhysicsStep(){};
 
     /**
+     * @brief Returns whether the sensor already ran its tick during the latest physics step
+     * @return True when the next stage-update tick should skip sensor simulation
+     */
+    virtual bool hasTickedOnPhysicsStep() const
+    {
+        return false;
+    };
+
+    /**
+     * @brief Clears the physics-step tick marker after the stage-update path observes it
+     */
+    virtual void clearTickedOnPhysicsStep(){};
+
+    /**
      * @brief Called after all sensors have simulated to perform any drawing related tasks
      * @details Renders the debug visualization for both points and lines if enabled
      */

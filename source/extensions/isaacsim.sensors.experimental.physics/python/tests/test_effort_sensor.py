@@ -139,6 +139,32 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
         reading = self.effort_sensor.get_sensor_reading()
         self.assertFalse(reading.is_valid)
 
+    async def test_physics_only_step_outputs_effort_data(self):
+        """EffortSensor produces data when stepping physics without app/render updates."""
+        await self.create_simple_articulation()
+
+        self.effort_sensor = EffortSensor("/Articulation/Arm/RevoluteJoint")
+        reading = self.effort_sensor.get_sensor_reading()
+        self.assertFalse(reading.is_valid, "Reading should be invalid before physics steps")
+
+        try:
+            self._timeline.play()
+            SimulationManager.initialize_physics()
+            SimulationManager.step(steps=3, update_fabric=False)
+
+            reading = self.effort_sensor.get_sensor_reading()
+            self.assertTrue(reading.is_valid, "Reading should be valid after physics-only steps")
+            self.assertGreater(reading.time, 0.0)
+            self.assertNotEqual(reading.value, 0.0)
+        finally:
+            if self.effort_sensor is not None:
+                self.effort_sensor.reset()
+                self.effort_sensor._stage_open_callback_fn()
+                self.effort_sensor = None
+            if self._timeline.is_playing():
+                self._timeline.stop()
+                await omni.kit.app.get_app().next_update_async()
+
     # Remove this test later
     async def test_change_to_wrong_dof_name_in_play(self):
         """Test change to wrong dof name in play."""
