@@ -95,15 +95,22 @@ print(f"Created RTX Lidar at {lidar.paths[0]} with config '{args.config}'")
 # =============================================================================
 # CREATE LIDAR SENSOR FOR RUNTIME
 # =============================================================================
-# LidarSensor wraps the Lidar authoring object, creates a render product,
-# and attaches the requested annotators and writers.
-#
+# LidarSensor wraps the Lidar authoring object and creates a render product.
 # The "draw-point-cloud" writer (registered by isaacsim.sensors.rtx.nodes)
 # extracts a Cartesian point cloud and draws it in the viewport via debug draw.
+#
+# The constructor's ``writers=`` parameter only forwards the writer's registered
+# defaults, so to customize ``size`` (point radius in world units) and ``color``
+# (RGBA in [0, 1]) we attach the writer explicitly via ``attach_writer``.
 
-sensor = LidarSensor(lidar, annotators=[], writers=["draw-point-cloud"])
+sensor = LidarSensor(lidar, annotators=[])
+sensor.attach_writer(
+    "draw-point-cloud",
+    size=0.05,  # Point size in meters (smaller = more detailed)
+    color=[0.0, 1.0, 0.5, 1.0],  # Bright green with full opacity
+)
 
-print("Created LidarSensor with debug draw visualization")
+print("Created LidarSensor with debug draw visualization (green points, size=0.05)")
 
 # =============================================================================
 # RUN SIMULATION
