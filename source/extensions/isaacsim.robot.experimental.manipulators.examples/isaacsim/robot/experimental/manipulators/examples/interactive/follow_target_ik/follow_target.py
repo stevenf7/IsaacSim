@@ -38,7 +38,7 @@ class UR10FollowTargetInteractive(BaseSample):
         """Set up the scene with UR10 robot and target cube."""
         # Create controller and setup scene
         self.controller = UR10FollowTarget()
-        self.controller.setup_scene(target_position=[0.4, 0.2, 0.3])
+        self.controller.setup_scene(target_position=[0.4, 0.2, 0.7])
 
         print("UR10 follow target scene setup complete")
 

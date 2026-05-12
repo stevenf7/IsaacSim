@@ -1,8 +1,12 @@
 # Changelog
 
+## [0.1.2] - 2026-05-11
+### Fixed
+- Move default cube placement position to [0.4, 0.2, 0.7] for follow_target.py example so all IK methods can reach default pose.
+
 ## [0.1.1] - 2026-05-01
 ### Fixed
-- Move default cube placement target position to [0.0, 0.5, 0.14] so the placed cube is visible and not blocked by the robot arm (nvbugs-6081440).
+- Move default cube placement target position to [0.0, 0.5, 0.14] so the placed cube is visible and not blocked by the robot arm.
 
 ## [0.1.0] - 2026-04-06
 ### Added
