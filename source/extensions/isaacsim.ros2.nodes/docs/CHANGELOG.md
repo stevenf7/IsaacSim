@@ -1,4 +1,15 @@
 # Changelog
+## [1.18.1] - 2026-05-11
+### Fixed
+- `OgnROS2RtxLidarHelper` / `OgnROS2RtxRadarHelper`: `showDebugView` now sets `doTransform=True` on the debug-draw writer when the sensor's `outputFrameOfReference` is anything other than `WORLD` (fixes inverted condition that left points untransformed in SENSOR frame and double-transformed in WORLD frame).
+- `OgnROS2PublishPointCloud`: optional metadata fields (intensity, timestamp, emitter/channel/material/tick IDs, hit normal, velocity, object ID, echo ID, tick state, radial velocity) are gated on the matching `output*` boolean inputs in addition to the pointer being non-zero, so wiring a pointer through `IsaacExtractRTXSensorPointCloud` no longer forces the field into the message when the user has not selected it via `selectedMetadata` / `ROS2RtxLidarPointCloudConfig`. **Behavior change**: if you were driving the publisher's metadata pointer inputs directly without setting the matching `output*` flag, you will need to set the flag to keep that field in the published `PointCloud2`.
+
+### Removed
+- `OgnROS2PublishPointCloud`: removed the unused `gmoDataPtr` / `gmoBufferSize` / `gmoMaxElements` inputs and the `publishFromGMO` code path. Point cloud publishing always goes through the per-field pointer inputs populated by `IsaacExtractRTXSensorPointCloud`.
+
+### Changed
+- `OgnROS2RtxLidarHelper`: marked the `fullScan` input as `deprecated` (was already documented as ignored). The runtime warning now fires once per node lifetime rather than every compute.
+
 ## [1.18.0] - 2026-05-07
 ### Changed
 - Enable multitick and remove non-multitick code paths.

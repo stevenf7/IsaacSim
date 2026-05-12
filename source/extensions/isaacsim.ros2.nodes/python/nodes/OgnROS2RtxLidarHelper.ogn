@@ -72,9 +72,10 @@
             },
             "fullScan": {
                 "type": "bool",
-                "description": "DEPRECATED - RTX Lidar now always produces full scans via accumulateOutputs. This setting is ignored.",
+                "description": "RTX Lidar now always produces full scans via accumulateOutputs; this setting is ignored.",
                 "uiName": "Publish Full Scan",
-                "default": true
+                "default": true,
+                "deprecated": "fullScan is deprecated. RTX Lidar now always produces full scans via accumulateOutputs. This setting is ignored."
             },
             "showDebugView": {
                 "type": "bool",

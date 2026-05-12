@@ -664,3 +664,223 @@ class TestROS2RadarPointCloudRTX(TestROS2SensorMsgRTX):
             aux_output_level="BASIC",
             **kwargs,
         )
+
+
+class TestROS2RtxHelperDoTransform(ROS2TestCase):
+    """Verify the lidar/radar helpers pass the correct ``doTransform`` value to the
+    debug-draw writer based on the sensor's ``outputFrameOfReference`` attribute.
+
+    The expected mapping is:
+      * ``WORLD`` frame  -> ``doTransform=False`` (points are already in world coords)
+      * any other frame  -> ``doTransform=True``  (writer must apply sensor->world)
+    """
+
+    @staticmethod
+    def _find_debug_writer(state, marker: str):
+        """Return the writer in ``state._writers`` whose node_type_id contains *marker*.
+
+        Compares against ``DebugDrawPointCloud`` (the underlying OG node type) so we
+        match both ``RtxLidarDebugDrawPointCloudBuffer`` and ``RtxSensorDebugDrawPointCloud``.
+        """
+        return next(
+            (w for w in getattr(state, "_writers", []) if marker in getattr(w, "node_type_id", "")),
+            None,
+        )
+
+    async def _setup_lidar_helper(self, frame_of_reference: str | None):
+        """Create a Lidar with the given outputFrameOfReference and a helper OG node."""
+        attributes = {}
+        if frame_of_reference is not None:
+            attributes["omni:sensor:Core:outputFrameOfReference"] = frame_of_reference
+
+        lidar = Lidar.create("/lidar", attributes=attributes or None)
+        sensor_path = lidar.paths[0]
+        render_product = rep.create.render_product(sensor_path, resolution=(64, 64))
+
+        og.Controller.edit(
+            {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+            {
+                og.Controller.Keys.CREATE_NODES: [
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("PCLPublish", "isaacsim.ros2.bridge.ROS2RtxLidarHelper"),
+                ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("PCLPublish.inputs:renderProductPath", render_product.path),
+                    ("PCLPublish.inputs:type", "point_cloud"),
+                    ("PCLPublish.inputs:showDebugView", True),
+                ],
+                og.Controller.Keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "PCLPublish.inputs:execIn"),
+                ],
+            },
+        )
+
+        # Drive the helper's compute() once so it sets up its writers.
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+
+    async def _setup_radar_helper(self, frame_of_reference: str):
+        """Create a Radar with the given outputFrameOfReference and a helper OG node."""
+        from isaacsim.sensors.experimental.rtx import Radar
+
+        # Radar requires Motion BVH.
+        carb.settings.get_settings().set("/renderer/raytracingMotion/enabled", True)
+
+        radar = Radar(
+            "/radar",
+            attributes={"omni:sensor:WpmDmat:outputFrameOfReference": frame_of_reference},
+        )
+        sensor_path = radar.paths[0]
+        render_product = rep.create.render_product(sensor_path, resolution=(64, 64))
+
+        og.Controller.edit(
+            {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+            {
+                og.Controller.Keys.CREATE_NODES: [
+                    ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                    ("PCLPublish", "isaacsim.ros2.bridge.ROS2RtxRadarHelper"),
+                ],
+                og.Controller.Keys.SET_VALUES: [
+                    ("PCLPublish.inputs:renderProductPath", render_product.path),
+                    ("PCLPublish.inputs:showDebugView", True),
+                ],
+                og.Controller.Keys.CONNECT: [
+                    ("OnPlaybackTick.outputs:tick", "PCLPublish.inputs:execIn"),
+                ],
+            },
+        )
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+
+    async def _assert_lidar_debug_dotransform(self, frame_of_reference: str | None, expected: bool):
+        from isaacsim.ros2.nodes.ogn.OgnROS2RtxLidarHelperDatabase import OgnROS2RtxLidarHelperDatabase
+
+        await self._setup_lidar_helper(frame_of_reference)
+        node = og.Controller.node("/ActionGraph/PCLPublish")
+        state = OgnROS2RtxLidarHelperDatabase.per_instance_internal_state(node)
+        debug_writer = self._find_debug_writer(state, "DebugDrawPointCloud")
+        self.assertIsNotNone(
+            debug_writer,
+            f"Expected the lidar helper to register a debug-draw writer for frame={frame_of_reference!r}.",
+        )
+        self.assertEqual(
+            debug_writer._kwargs.get("doTransform"),
+            expected,
+            f"Expected doTransform={expected} for outputFrameOfReference={frame_of_reference!r}",
+        )
+
+    async def _assert_radar_debug_dotransform(self, frame_of_reference: str, expected: bool):
+        from isaacsim.ros2.nodes.ogn.OgnROS2RtxRadarHelperDatabase import OgnROS2RtxRadarHelperDatabase
+
+        await self._setup_radar_helper(frame_of_reference)
+        node = og.Controller.node("/ActionGraph/PCLPublish")
+        state = OgnROS2RtxRadarHelperDatabase.per_instance_internal_state(node)
+        debug_writer = self._find_debug_writer(state, "DebugDrawPointCloud")
+        self.assertIsNotNone(
+            debug_writer,
+            f"Expected the radar helper to register a debug-draw writer for frame={frame_of_reference!r}.",
+        )
+        self.assertEqual(
+            debug_writer._kwargs.get("doTransform"),
+            expected,
+            f"Expected doTransform={expected} for outputFrameOfReference={frame_of_reference!r}",
+        )
+
+    async def test_lidar_world_frame_disables_transform(self):
+        await self._assert_lidar_debug_dotransform("WORLD", expected=False)
+
+    async def test_lidar_sensor_frame_enables_transform(self):
+        await self._assert_lidar_debug_dotransform("SENSOR", expected=True)
+
+    async def test_lidar_unauthored_frame_enables_transform(self):
+        # When the attribute is not authored, GetAttribute().Get() returns None,
+        # which is `!= "WORLD"` -> doTransform must default to True (matches the
+        # writer's registered default and avoids points landing at the origin).
+        await self._assert_lidar_debug_dotransform(None, expected=True)
+
+    async def test_radar_world_frame_disables_transform(self):
+        await self._assert_radar_debug_dotransform("WORLD", expected=False)
+
+    async def test_radar_sensor_frame_enables_transform(self):
+        await self._assert_radar_debug_dotransform("SENSOR", expected=True)
+
+
+class TestROS2PCLMetadataGating(TestROS2SensorMsgRTX):
+    """Verify ``ROS2PublishPointCloud`` only includes optional fields when both the
+    pointer input *and* the matching ``output*`` flag are provided.
+
+    Coverage:
+      * Helper-driven path: when ``selectedMetadata`` is empty, the helper does not
+        set ``output*`` flags on the publisher even though the upstream
+        ``IsaacExtractRTXSensorPointCloud`` annotator wires the ``intensityPtr``
+        and ``timestampPtr`` outputs unconditionally. The published PointCloud2
+        must therefore contain only ``x``/``y``/``z``.
+      * When ``selectedMetadata`` is non-empty, the helper sets the flags and the
+        corresponding fields appear in the message.
+    """
+
+    _ros_msg_type = PointCloud2
+    _helper_type = "point_cloud"
+
+    async def _test_message_data(self, full_scan: bool = False, test_duration_s: float = 1.5, metadata: List[str] = []):
+        self.assertIsNotNone(self._ros_msg_data)
+        self.assertGreater(self._ros_msg_count, 0, "No PointCloud2 messages received")
+
+        # Build the set of expected ROS field names from the requested metadata.
+        # Only the fields driven by this test are listed; xyz is always present.
+        metadata_to_fields = {
+            "intensity": {"intensity"},
+            "timestamp": {"timestamp_0", "timestamp_1"},
+            "emitterId": {"emitter_id"},
+            "channelId": {"channel_id"},
+            "materialId": {"material_id"},
+            "tickId": {"tick_id"},
+            "echoId": {"echo_id"},
+            "tickState": {"tick_state"},
+        }
+        expected_optional_fields = set()
+        for item in metadata:
+            expected_optional_fields.update(metadata_to_fields.get(item, set()))
+
+        msg_field_names = {f.name for f in self._ros_msg_data.fields}
+        # xyz is always expected.
+        self.assertTrue({"x", "y", "z"}.issubset(msg_field_names), f"Missing xyz in fields {msg_field_names}")
+
+        # Every metadata field that was *not* selected must be absent from the message,
+        # even though the upstream annotator wires the matching pointer input.
+        all_optional_fields = set().union(*metadata_to_fields.values())
+        unexpected = (all_optional_fields - expected_optional_fields) & msg_field_names
+        self.assertFalse(
+            unexpected,
+            f"Fields {unexpected} appeared in the PointCloud2 even though they were not in metadata={metadata}",
+        )
+
+        # Every selected field must be present.
+        missing = expected_optional_fields - msg_field_names
+        self.assertFalse(
+            missing,
+            f"Fields {missing} were selected (metadata={metadata}) but missing from the PointCloud2 ({msg_field_names})",
+        )
+
+    async def test_intensity_excluded_when_flag_not_set(self):
+        """metadata=[] means outputIntensity stays False, so the message has no intensity."""
+        await self._test_sensor(
+            sensor_type="lidar",
+            full_scan=True,
+            aux_output_level="NONE",
+            use_system_time=False,
+            metadata=[],
+            test_duration_s=0.5,
+        )
+
+    async def test_intensity_included_when_flag_set(self):
+        """When intensity is requested, it must appear in the published PointCloud2."""
+        await self._test_sensor(
+            sensor_type="lidar",
+            full_scan=True,
+            aux_output_level="BASIC",
+            use_system_time=False,
+            metadata=["intensity"],
+            test_duration_s=0.5,
+        )

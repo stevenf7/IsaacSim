@@ -276,11 +276,14 @@ class OgnROS2RtxLidarHelper:
         try:
             with Usd.EditContext(stage, stage.GetSessionLayer()):
                 # OG path: create writer, initialize, attach.
+                # Deprecation warning fires once per node: compute() returns early on subsequent
+                # ticks because state.initialized is True.
+                if db.inputs.fullScan:
+                    carb.log_warn(
+                        "fullScan is deprecated. RTX Lidar now always produces full scans via "
+                        "accumulateOutputs. This setting is ignored."
+                    )
                 if sensor_type == "laser_scan":
-                    if not db.inputs.fullScan:
-                        carb.log_warn(
-                            "fullScan=False is deprecated. RTX Lidar now always produces full scans. Ignoring."
-                        )
                     scan_meta = OgnROS2RtxLidarHelper._read_laser_scan_metadata(prim)
                     if scan_meta is None:
                         carb.log_error("Failed to read laser scan metadata from lidar prim")
@@ -292,16 +295,9 @@ class OgnROS2RtxLidarHelper:
                     init_params["azimuthRange"] = [scan_meta["azimuth_range_start"], scan_meta["azimuth_range_end"]]
                     writer = rep.writers.get("RtxLidar" + f"ROS2{time_type}PublishLaserScan")
                 elif sensor_type == "point_cloud":
-                    if not db.inputs.fullScan:
-                        carb.log_warn(
-                            "fullScan=False is deprecated. RTX Lidar now always produces full scans. Ignoring."
-                        )
-                    scan_meta = OgnROS2RtxLidarHelper._read_laser_scan_metadata(prim)
                     for metadata_item in db.inputs.selectedMetadata:
                         init_params[f"output{metadata_item[0].upper()}{metadata_item[1:]}"] = True
-                    init_params["gmoMaxElements"] = scan_meta["max_points"]
                     writer = rep.writers.get(f"RtxLidarROS2{time_type}PublishPointCloud")
-
                     if db.inputs.enableObjectIdMap:
                         if "ObjectId" not in db.inputs.selectedMetadata:
                             carb.log_warn(
@@ -327,7 +323,7 @@ class OgnROS2RtxLidarHelper:
                     writer.initialize(**init_params)
                     state.append_writer(writer)
                     if db.inputs.showDebugView:
-                        doTransform = prim.GetAttribute("omni:sensor:Core:outputFrameOfReference").Get() == "WORLD"
+                        doTransform = prim.GetAttribute("omni:sensor:Core:outputFrameOfReference").Get() != "WORLD"
                         writer = rep.writers.get("RtxLidarDebugDrawPointCloudBuffer")
                         writer.initialize(doTransform=doTransform)
                         state.append_writer(writer)
