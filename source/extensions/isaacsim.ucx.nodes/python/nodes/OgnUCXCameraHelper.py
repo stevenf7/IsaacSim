@@ -73,8 +73,9 @@ class OgnUCXCameraHelper:
                     carb.log_warn("Render product not valid")
                     db.per_instance_state.initialized = False
                     return False
+
                 if stage.GetPrimAtPath(render_product_path) is None:
-                    carb.log_warn("Render product no created yet, retrying on next call")
+                    carb.log_warn("Render product not created yet, retrying on next call")
                     db.per_instance_state.initialized = False
                     return False
                 db.per_instance_state.resetSimulationTimeOnStop = db.inputs.resetSimulationTimeOnStop
@@ -104,6 +105,7 @@ class OgnUCXCameraHelper:
                     writer.initialize(
                         port=db.inputs.port,
                         tag=db.inputs.tag,
+                        sendCudaBuffer=bool(db.inputs.sendCudaBuffer),
                     )
 
                     if writer is not None:

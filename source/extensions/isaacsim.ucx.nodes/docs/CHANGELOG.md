@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.0] - 2026-05-08
+### Added
+- Camera streaming over UCX in `OgnUCXPublishImage` / `OgnUCXCameraHelper`, controlled via the `sendCudaBuffer` bool input.
+  - When `false`: pixel bytes are copied to host memory and embedded in a single FlatBuffer message (CPU path).
+  - When `true`: a metadata FlatBuffer is sent first, followed by the raw CUDA buffer as a second message on the same UCX tag (UCX preserves in-order delivery within a tag). The receiver pre-allocates a device buffer and posts a tagRecv directly into it, avoiding any CPU copy when the chosen transport supports it. UCX selects the actual transport — GPU-direct RDMA, NVLink, CUDA IPC, or TCP with host staging.
+  - Metadata + tensor sends are atomic at queue time: if the tensor send fails to queue, the metadata send is cancelled so the receiver does not desync.
+  - Reads `cudaDeviceIndex` from the input into the `DLDevice` metadata for multi-GPU systems.
+
 ## [1.5.1] - 2026-05-05
 ### Changed
 - Enable multitick, deprecate `frameSkipCount` in UCXCameraHelper.

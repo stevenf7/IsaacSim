@@ -92,6 +92,7 @@ public:
         // it after the UCXListener is gone would trigger a close callback on a
         // dangling pointer, crashing in onEndpointClosed().
         m_sendRequest.reset();
+        m_tensorSendRequest.reset();
         m_messageBuffer.clear();
 
         if (m_streamNotCreated == false)
@@ -312,6 +313,7 @@ protected:
     bool m_streamNotCreated = true; //!< Flag indicating if stream needs creation
     std::vector<uint8_t> m_messageBuffer; //!< Persistent buffer to keep message alive during async send
     std::shared_ptr<ucxx::Request> m_sendRequest; //!< Request handle to track async send completion
+    std::shared_ptr<ucxx::Request> m_tensorSendRequest; //!< Request handle for GPU tensor send (GPU-direct path)
 };
 
 // NOTE: To use this base class:
