@@ -1,4 +1,11 @@
 # Changelog
+
+## [5.10.0] - 2026-04-27
+### Changed
+- `OgnIsaacComputeTransformTree`: optimized world-pose computation by reading physics poses from the active backend and composing non-physics prims from cached USD local transforms.
+- `OgnIsaacComputeTransformTree`: improved non-physics, camera, and `parentPrim` handling, including `isaac:nameOverride`, `resetXformStack`, physics-ancestor discovery, and RTX lidar camera-frame behavior.
+- `OgnIsaacComputeTransformTree`: expanded Python test coverage for physics-backed and USD-backed transform-tree paths.
+
 ## [5.9.1] - 2026-05-05
 ### Changed
 - Switch to app_uitls.update_app_async(...) instead of omni.syntheticdata.sensors.next_render_simulation_async(...) in unit tests for multitick compatibility
