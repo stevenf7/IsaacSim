@@ -87,6 +87,9 @@ class WheeledRobot(Robot):
         position: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,
     ) -> None:
+        if wheel_dof_names is None and wheel_dof_indices is None:
+            raise ValueError("WheeledRobot requires either wheel_dof_names or wheel_dof_indices")
+
         prim = get_prim_at_path(prim_path)
         if not prim.IsValid():
             if create_robot:
@@ -205,7 +208,7 @@ class WheeledRobot(Robot):
                 self.get_dof_index(self._wheel_dof_names[i]) for i in range(len(self._wheel_dof_names))
             ]
         elif self._wheel_dof_indices is None:
-            carb.log_error("need to have either wheel names or wheel indices")
+            raise ValueError("WheeledRobot requires either wheel_dof_names or wheel_dof_indices")
 
         self._num_wheel_dof = len(self._wheel_dof_indices)
 

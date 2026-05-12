@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.8] - 2026-05-11
+### Fixed
+- Raise an error when `quintic_polynomials_planner()` cannot find a trajectory satisfying acceleration and jerk constraints.
+- Reject non-finite `normalize_angle()` inputs instead of looping indefinitely.
+- Raise a clear `ValueError` when `WheeledRobot` is constructed without wheel DOF names or indices.
+
 ## [0.2.7] - 2026-04-03
 ### Changed
 - Remove `[::-1]` reversal in `HolonomicController` to match new `[roll, pitch, yaw]` euler angle convention

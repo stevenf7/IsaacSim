@@ -202,6 +202,11 @@ def quatd4_to_euler(orientation: np.ndarray) -> tuple[float, float, float]:
         Tuple of normalized (roll, pitch, yaw) in radians.
 
     """
+    orientation = np.asarray(orientation, dtype=float)
+    if orientation.size != 4 or not np.all(np.isfinite(orientation)) or np.linalg.norm(orientation) == 0.0:
+        return 0.0, 0.0, 0.0
+
+    orientation = orientation.reshape(4)
     x, y, z, w = tuple(orientation)
     roll, pitch, yaw = transform_utils.quaternion_to_euler_angles(np.array([w, x, y, z])).numpy()
 

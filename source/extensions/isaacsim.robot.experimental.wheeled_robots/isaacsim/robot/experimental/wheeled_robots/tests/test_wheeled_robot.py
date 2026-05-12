@@ -25,6 +25,15 @@ from isaacsim.robot.experimental.wheeled_robots.robots.wheeled_robot import Whee
 from isaacsim.storage.native import get_assets_root_path_async
 
 
+class TestWheeledRobotValidation(omni.kit.test.AsyncTestCase):
+    """Tests for WheeledRobot input validation."""
+
+    async def test_requires_wheel_dof_names_or_indices(self):
+        """Verify missing wheel DOF identifiers fail with a clear exception."""
+        with self.assertRaises(ValueError):
+            WheeledRobot("/World/MissingWheelConfig")
+
+
 class TestWheeledRobot(omni.kit.test.AsyncTestCase):
     """Tests for the WheeledRobot experimental class."""
 
