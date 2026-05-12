@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.7] - 2026-05-10
+### Fixed
+- Raise a clear error when `Camera.attach_annotator()` is called before `Camera.initialize()`
+
 ## [1.7.6] - 2026-05-08
 ### Fixed
 - Fix `CameraView` docstring listing `int32` for `instance_segmentation_fast` and `instance_id_segmentation_fast`; runtime dtype is `uint32` (matches `ANNOTATOR_SPEC` and `semantic_segmentation`)

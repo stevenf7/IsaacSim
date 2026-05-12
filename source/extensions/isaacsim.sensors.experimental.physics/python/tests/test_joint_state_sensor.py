@@ -94,6 +94,33 @@ class TestJointStateSensor(omni.kit.test.AsyncTestCase):
         self.assertEqual(len(reading.dof_types), len(reading.dof_names), "dof_types length must match dof_names")
         self.assertGreater(reading.stage_meters_per_unit, 0.0, "Expected positive stage_meters_per_unit when valid")
 
+    async def test_physics_only_step_outputs_joint_state_data(self):
+        """JointStateSensor produces data when stepping physics without app/render updates."""
+        await self.create_simple_articulation()
+
+        self.joint_state_sensor = JointStateSensor("/Articulation")
+        reading = self.joint_state_sensor.get_sensor_reading()
+        self.assertFalse(reading.is_valid, "Reading should be invalid before physics steps")
+
+        try:
+            self._timeline.play()
+            SimulationManager.initialize_physics()
+            SimulationManager.step(steps=3, update_fabric=False)
+
+            reading = self.joint_state_sensor.get_sensor_reading()
+            self.assertTrue(reading.is_valid, "Reading should be valid after physics-only steps")
+            self.assertGreater(reading.time, 0.0)
+            self.assertGreater(len(reading.dof_names), 0)
+            self.assertEqual(len(reading.positions), len(reading.dof_names))
+        finally:
+            if self.joint_state_sensor is not None:
+                self.joint_state_sensor.reset()
+                self.joint_state_sensor._stage_open_callback_fn()
+                self.joint_state_sensor = None
+            if self._timeline.is_playing():
+                self._timeline.stop()
+                await omni.kit.app.get_app().next_update_async()
+
     async def test_dof_names_populated(self):
         """Verify DOF name strings are non-empty."""
         await self.create_simple_articulation()

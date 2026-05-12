@@ -140,6 +140,42 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
         await self._setup_ant()
         await self._add_sensor_prims()
 
+    async def test_physics_only_step_outputs_contact_data(self):
+        """ContactSensor produces data when stepping physics without app/render updates."""
+        await stage_utils.create_new_stage_async()
+        stage_utils.set_stage_units(meters_per_unit=1.0)
+        SimulationManager.setup_simulation(dt=1.0 / self._physics_rate)
+
+        GroundPlane("/World/GroundPlane", sizes=10.0)
+        Cube("/World/Cube", sizes=1.0, positions=[0.0, 0.0, 0.5])
+        GeomPrim("/World/Cube", apply_collision_apis=True)
+        RigidPrim("/World/Cube", masses=[1.0])
+
+        sensor = ContactSensor(
+            Contact.create(
+                "/World/Cube/contact_sensor",
+                min_threshold=0,
+                max_threshold=10000000,
+                radius=-1,
+            )
+        )
+        self.assertFalse(sensor.get_sensor_reading().is_valid, "Reading should be invalid before physics steps")
+
+        try:
+            self._timeline.play()
+            SimulationManager.initialize_physics()
+            SimulationManager.step(steps=10, update_fabric=False)
+
+            reading = sensor.get_sensor_reading()
+            self.assertTrue(reading.is_valid, "Reading should be valid after physics-only steps")
+            self.assertTrue(reading.in_contact, "Cube should contact the ground")
+            self.assertGreater(reading.value, 0.0)
+        finally:
+            sensor.reset()
+            if self._timeline.is_playing():
+                self._timeline.stop()
+                await omni.kit.app.get_app().next_update_async()
+
     # test plan:
     # move the ground to -10, simulate 10 steps, test for no contact
     # move the ground to -0.78, simulate 60 steps, test for contact

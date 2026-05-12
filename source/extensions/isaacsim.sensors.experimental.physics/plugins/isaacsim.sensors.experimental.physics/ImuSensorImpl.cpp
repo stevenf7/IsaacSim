@@ -522,6 +522,14 @@ ImuSensorReading ImuSensorImpl::getSensorReading(const char* primPath, bool read
         }
     }
 
+    if (m_impl->readerManager && m_impl->stageId != 0)
+    {
+        if (m_impl->readerManager->ensureInitialized(m_impl->stageId, -1))
+        {
+            m_impl->reader = m_impl->readerManager->getReader();
+        }
+    }
+
     if (m_impl->reader && m_impl->reader->getGeneration() != m_impl->readerGeneration)
     {
         _recreateSensorViews();
@@ -674,6 +682,15 @@ void ImuSensorImpl::_stepSensors(float dt)
     if (!m_impl->simManager || !m_impl->usdStage || m_impl->sensors.empty())
     {
         return;
+    }
+
+    if (m_impl->readerManager && m_impl->stageId != 0)
+    {
+        if (!m_impl->readerManager->ensureInitialized(m_impl->stageId, -1))
+        {
+            return;
+        }
+        m_impl->reader = m_impl->readerManager->getReader();
     }
 
     if (m_impl->reader && m_impl->reader->getGeneration() != m_impl->readerGeneration)

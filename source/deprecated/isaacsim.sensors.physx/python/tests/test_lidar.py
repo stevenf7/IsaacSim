@@ -20,9 +20,11 @@ import numpy as np
 import omni.isaac.RangeSensorSchema as RangeSensorSchema
 import omni.kit.commands
 import omni.kit.test
+from isaacsim.core.api import SimulationContext, World
+from isaacsim.core.api.objects import DynamicCuboid
 from isaacsim.core.utils.physics import simulate_async
 from isaacsim.core.utils.stage import open_stage_async
-from isaacsim.sensors.physx import _range_sensor
+from isaacsim.sensors.physx import RotatingLidarPhysX, _range_sensor
 from isaacsim.storage.native import get_assets_root_path_async
 from omni.syntheticdata.tests.utils import add_semantics
 from pxr import Gf, PhysicsSchemaTools, Sdf, UsdGeom, UsdLux, UsdPhysics
@@ -147,6 +149,53 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         self.assertLess(depth[0, 0], 2000)
         self.assertEqual(depth[450, 0], 65535)
         self._timeline.play()
+
+    async def test_rotating_lidar_physx_physics_only_step_outputs_scan_data(self) -> None:
+        """Test RotatingLidarPhysX produces frame data when stepping physics without rendering."""
+        World.clear_instance()
+        SimulationContext.clear_instance()
+        world = World(stage_units_in_meters=1.0, physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0)
+        await world.initialize_simulation_context_async()
+        world.scene.add_default_ground_plane()
+        lidar = world.scene.add(
+            RotatingLidarPhysX(
+                prim_path="/World/Lidar",
+                name="physics_only_lidar",
+                rotation_frequency=0.0,
+                translation=np.array([0.0, 0.0, 1.0]),
+            )
+        )
+        world.scene.add(
+            DynamicCuboid(
+                prim_path="/World/Cube",
+                name="cube",
+                position=np.array([2.0, 0.0, 1.0]),
+                scale=np.array([1.0, 1.0, 1.0]),
+            )
+        )
+        await omni.kit.app.get_app().next_update_async()
+
+        try:
+            world.reset()
+            lidar.add_depth_data_to_frame()
+            lidar.add_linear_depth_data_to_frame()
+            lidar.add_point_cloud_data_to_frame()
+
+            for _ in range(3):
+                world.step(render=False)
+
+            frame = lidar.get_current_frame()
+            depth = np.asarray(frame["depth"])
+            linear_depth = np.asarray(frame["linear_depth"])
+            point_cloud = np.asarray(frame["point_cloud"])
+
+            self.assertGreater(depth.size, 0)
+            self.assertGreater(linear_depth.size, 0)
+            self.assertGreater(point_cloud.shape[0], 0)
+        finally:
+            world.stop()
+            World.clear_instance()
+            SimulationContext.clear_instance()
 
     # Tests a lidar on a falling cube, with a cube in front of it after it lands
     async def test_dynamic_lidar(self) -> None:

@@ -1,5 +1,5 @@
 [package]
-version = "1.7.6"
+version = "1.7.7"
 category = "Simulation"
 title = "Isaac Sim Camera Simulation"
 description = "Provides APIs for camera prims, eg. setting lens distortion and enabling tiled rendering."

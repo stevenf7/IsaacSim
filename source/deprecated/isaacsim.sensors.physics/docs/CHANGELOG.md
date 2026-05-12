@@ -1,6 +1,11 @@
 # Changelog
 
-## [1.1.6] - 2026-05-10
+## [1.1.7] - 2026-05-10
+### Fixed
+- Add `is_valid` to `IMUSensor.get_current_frame()` output
+- Fix `EffortSensor.get_sensor_reading()` fallback to use the newest valid buffered reading without mutating buffered state
+
+## [1.1.6] - 2026-05-09
 ### Fixed
 - Remove unused timeline interface lookup from `EffortSensor` callback initialization (6035373)
 

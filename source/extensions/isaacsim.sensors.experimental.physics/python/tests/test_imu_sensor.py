@@ -122,6 +122,10 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
     # After running each test
     async def tearDown(self):
         """Tear down test fixtures."""
+        for sensor in self._imu_sensors.values():
+            sensor.reset()
+            sensor.on_timeline_stop()
+        self._imu_sensors.clear()
         if self._timeline.is_playing():
             self._timeline.stop()
         SimulationManager.invalidate_physics()
@@ -158,6 +162,41 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         """Test add sensor prim."""
         await self._setup_ant()
         await self._add_sensor_prims()
+
+    async def test_physics_only_step_outputs_imu_data(self):
+        """IMUSensor produces data when stepping physics without app/render updates."""
+        await stage_utils.create_new_stage_async()
+        await omni.kit.app.get_app().next_update_async()
+        stage_utils.set_stage_units(meters_per_unit=1.0)
+        SimulationManager.setup_simulation(dt=1.0 / self._sensor_rate)
+
+        cube_path = "/World/PhysicsOnlyCube"
+        Cube(cube_path, sizes=1.0, positions=[0.0, 0.0, 2.0])
+        GeomPrim(cube_path, apply_collision_apis=True)
+        RigidPrim(cube_path, masses=[1.0])
+
+        sensor = IMUSensor(
+            IMU.create(
+                cube_path + "/physics_only_imu",
+                translations=[[0.0, 0.0, 0.0]],
+                orientations=[[1.0, 0.0, 0.0, 0.0]],
+            )
+        )
+
+        try:
+            self._timeline.play()
+            SimulationManager.initialize_physics()
+            SimulationManager.step(steps=3, update_fabric=False)
+
+            reading = sensor.get_sensor_reading()
+            self.assertTrue(reading.is_valid, "Reading should be valid after physics-only steps")
+            self.assertGreater(reading.time, 0.0)
+            self.assertTrue(np.isfinite(reading.linear_acceleration_z))
+        finally:
+            sensor.reset()
+            if self._timeline.is_playing():
+                self._timeline.stop()
+                await omni.kit.app.get_app().next_update_async()
 
     async def test_orientation_imu(self):
         """Test orientation imu."""

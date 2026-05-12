@@ -141,6 +141,7 @@ class IMUSensor(BaseSensor):
             shape=[4], dtype="float32", device=self._device
         )
         self._current_frame["orientation"][0] = 1
+        self._current_frame["is_valid"] = False
         return
 
     def initialize(self, physics_sim_view: object = None) -> None:
@@ -164,8 +165,10 @@ class IMUSensor(BaseSensor):
             - 'orientation': Orientation quaternion in scalar-first (w, x, y, z) order as a 4D tensor
             - 'time': Sensor reading timestamp
             - 'physics_step': Current physics simulation step
+            - 'is_valid': Whether the current sensor reading is valid
         """
         imu_sensor_reading = self._imu_sensor_interface.get_sensor_reading(self.prim_path, read_gravity=read_gravity)
+        self._current_frame["is_valid"] = bool(imu_sensor_reading.is_valid)
         if imu_sensor_reading.is_valid:
             self._current_frame["lin_acc"] = self._backend_utils.create_tensor_from_list(
                 [

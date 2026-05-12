@@ -26,7 +26,7 @@ import carb
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-from isaacsim.core.experimental.objects import GroundPlane
+from isaacsim.core.experimental.objects import DistantLight, GroundPlane
 from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.robot.experimental.wheeled_robots.controllers import DifferentialController
@@ -39,6 +39,7 @@ args, unknown = parser.parse_known_args()
 
 stage_utils.set_stage_units(meters_per_unit=1.0)
 GroundPlane("/World/GroundPlane")
+DistantLight("/World/DistantLight").set_intensities(1000)
 
 assets_root_path = get_assets_root_path()
 if assets_root_path is None:

@@ -282,6 +282,7 @@ class Camera(BaseSensor):
         self._render_product_path = render_product_path
         self._resolution = resolution
         self._render_product = None
+        self._is_initialized = False
         self._annotator_device = annotator_device
         self._supported_annotators = [
             "normals",
@@ -341,6 +342,7 @@ class Camera(BaseSensor):
             self._render_product.destroy()
             self._render_product = None
         self._render_product_path = None
+        self._is_initialized = False
 
         self._acquisition_callback = None
         self._stage_open_callback = None
@@ -465,6 +467,7 @@ class Camera(BaseSensor):
         else:
             self._render_product = rep.create.render_product(self.prim_path, resolution=self._resolution)
             self._render_product_path = self._render_product.path
+        self._is_initialized = True
         if attach_rgb_annotator:
             self.attach_annotator(annotator_name="rgb")
         self._fabric_time_annotator = rep.AnnotatorRegistry.get_annotator("ReferenceTime")
@@ -872,12 +875,16 @@ class Camera(BaseSensor):
             **kwargs: Additional arguments to pass to the annotator.
 
         Raises:
+            RuntimeError: If the camera has not been initialized.
             rep.annotators.AnnotatorRegistryError: If the annotator is not found.
 
         Returns:
             None.
 
         """
+        if not self._is_initialized:
+            raise RuntimeError("Camera is not initialized. Call initialize() before attach_annotator().")
+
         # Normalize key by removing variant suffixes for consistent frame data access
         frame_key = annotator_name.replace("_fast", "")
 

@@ -33,7 +33,7 @@ import carb
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-from isaacsim.core.experimental.objects import Cube, GroundPlane
+from isaacsim.core.experimental.objects import Cube, DistantLight, GroundPlane
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 from isaacsim.core.experimental.utils.prim import get_prim_at_path
 from isaacsim.core.simulation_manager import SimulationManager
@@ -49,6 +49,7 @@ if assets_root_path is None:
 
 stage_utils.set_stage_units(meters_per_unit=1.0)
 GroundPlane("/World/GroundPlane", positions=[0, 0, -1])
+DistantLight("/World/DistantLight").set_intensities(1000)
 
 asset_path = assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/simple_articulation.usd"
 stage_utils.add_reference_to_stage(usd_path=asset_path, path="/Articulation")
