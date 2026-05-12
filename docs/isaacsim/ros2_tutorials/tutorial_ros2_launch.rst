@@ -16,7 +16,7 @@
 ROS 2 Launch
 ===============================
 
-.. note:: ROS 2 Launch with |isaac-sim_short| is only supported in Linux and Windows with Pixi-based installation. The ``isaacsim`` package is not supported in WSL2.
+.. note:: ROS 2 Launch with |isaac-sim_short| is only supported in Linux and Windows with Pixi-based installation. The ``isaacsim_bringup`` package is not supported in WSL2.
 
 Learning Objectives
 =======================
@@ -32,16 +32,16 @@ In this tutorial, we are demonstrating running |isaac-sim| from a ROS 2 launch f
     - ROS 2 and Nav2 are installed.
     - ROS 2 bridge is enabled.
 
-- This tutorial requires the ``carter_navigation``, ``isaac_ros_navigation_goal``, and ``isaacsim`` ROS 2 packages that are provided as part of your |isaac-sim| download. These ROS 2 packages are located inside the appropriate ``ros2_ws``. They contain the required launch files, navigation parameters, and robot model. Complete :ref:`isaac_sim_app_install_ros`, specifically the :ref:`isaac_sim_ros_workspace_setup` steps, to make sure the ROS 2 workspace is built and sourced correctly.
+- This tutorial requires the ``carter_navigation``, ``isaac_ros_navigation_goal``, and ``isaacsim_bringup`` ROS 2 packages that are provided as part of your |isaac-sim| download. These ROS 2 packages are located inside the appropriate ``ros2_ws``. They contain the required launch files, navigation parameters, and robot model. Complete :ref:`isaac_sim_app_install_ros`, specifically the :ref:`isaac_sim_ros_workspace_setup` steps, to make sure the ROS 2 workspace is built and sourced correctly.
 
 
 
 Launching |isaac-sim_short| with ROS 2
 =========================================
 
-The ``isaacsim`` package contains scripts and a ROS 2 launch file to launch |isaac-sim_short|.
+The ``isaacsim_bringup`` package contains scripts and a ROS 2 launch file to launch |isaac-sim_short|.
 
-The launch file called ``run_isaacsim.launch.py`` is included in the *launch* folder of the ``isaacsim`` package.
+The launch file called ``run_isaacsim.launch.py`` is included in the *launch* folder of the ``isaacsim_bringup`` package.
 
 The launch parameters are defined below:
 
@@ -78,7 +78,7 @@ Now we will go through the main examples for running |isaac-sim_short| from ROS 
 
     .. code-block:: bash
 
-        ros2 launch isaacsim run_isaacsim.launch.py
+        ros2 launch isaacsim_bringup run_isaacsim.launch.py
 
 2. To launch Isaac Sim with custom ROS packages in your workspace, run the command below.
 
@@ -88,7 +88,7 @@ Now we will go through the main examples for running |isaac-sim_short| from ROS 
 
             .. code-block:: bash
 
-                ros2 launch isaacsim run_isaacsim.launch.py exclude_install_path:=/home/user/IsaacSim-ros_workspaces/humble_ws/install ros_installation_path:=/home/user/IsaacSim-ros_workspaces/build_ws/humble/humble_ws/install/local_setup.bash
+                ros2 launch isaacsim_bringup run_isaacsim.launch.py exclude_install_path:=/home/user/IsaacSim-ros_workspaces/humble_ws/install ros_installation_path:=/home/user/IsaacSim-ros_workspaces/build_ws/humble/humble_ws/install/local_setup.bash
 
             .. important:: Due to Isaac Sim only supporting Python 3.12, we need to ensure that ``exclude_install_path`` parameter is set to the install folder of your workspace (for example: ``/home/user/IsaacSim-ros_workspaces/humble_ws/install``) as that contains the incompatible Python 3.10 modules (for Ubuntu 22.04 only). Next, add the ``ros_installation_path`` parameter with path to the local_setup.bash file in your Python 3.12 build of your workspace.
 
@@ -96,7 +96,7 @@ Now we will go through the main examples for running |isaac-sim_short| from ROS 
 
             .. code-block:: bash
 
-                ros2 launch isaacsim run_isaacsim.launch.py exclude_install_path:=/home/user/IsaacSim-ros_workspaces/jazzy_ws/install ros_installation_path:=/home/user/IsaacSim-ros_workspaces/build_ws/jazzy/jazzy_ws/install/local_setup.bash
+                ros2 launch isaacsim_bringup run_isaacsim.launch.py exclude_install_path:=/home/user/IsaacSim-ros_workspaces/jazzy_ws/install ros_installation_path:=/home/user/IsaacSim-ros_workspaces/build_ws/jazzy/jazzy_ws/install/local_setup.bash
 
             .. important:: (Only in Ubuntu 22.04). Due to Isaac Sim only supporting Python 3.12, we need to ensure that ``exclude_install_path`` parameter is set to the install folder of your workspace (for example: ``/home/user/IsaacSim-ros_workspaces/jazzy_ws/install``) as that contains the incompatible Python 3.10 modules. Next, add the ``ros_installation_path`` parameter with path to the local_setup.bash file in your Python 3.12 build of your workspace.
 
@@ -104,13 +104,13 @@ Now we will go through the main examples for running |isaac-sim_short| from ROS 
 
     .. code-block:: bash
 
-        ros2 launch isaacsim run_isaacsim.launch.py gui:=https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd play_sim_on_start:=true
+        ros2 launch isaacsim_bringup run_isaacsim.launch.py gui:=https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd play_sim_on_start:=true
 
 4. Now let's launch |isaac-sim_short| with :ref:`standalone workflow <isaac_sim_app_tutorial_ros2_nav_goals>`. Run the command below.
 
     .. code-block:: bash
 
-        ros2 launch isaacsim run_isaacsim.launch.py standalone:=$HOME/isaacsim/standalone_examples/api/isaacsim.ros2.bridge/moveit.py
+        ros2 launch isaacsim_bringup run_isaacsim.launch.py standalone:=$HOME/isaacsim/standalone_examples/api/isaacsim.ros2.bridge/moveit.py
 
 .. _isaac_sim_app_tutorial_ros2_nav_goals_launch:
 
@@ -123,7 +123,7 @@ Here we will demonstrate launching |isaac-sim_short| with the :ref:`Nav2 example
 
 The example launch file can be found in the ``carter_navigation`` package in ``carter_navigation/launch/carter_navigation_isaacsim.launch.py``.
 
-In this scenario, the launch file is configured to wait for a console output from |isaac-sim_short|: "Stage loaded and simulation is playing.". This message is printed from the ``open_isaacsim_stage.py`` script which is used to load any scene in GUI mode. This is found in the scripts folder of ``isaacsim`` package.
+In this scenario, the launch file is configured to wait for a console output from |isaac-sim_short|: "Stage loaded and simulation is playing.". This message is printed from the ``open_isaacsim_stage.py`` script which is used to load any scene in GUI mode. This is found in the scripts folder of ``isaacsim_bringup`` package.
 
 .. note:: If running |isaac-sim_short| in standalone workflow, you would need to add your own print statement that launch files can listen for and act accordingly.
 

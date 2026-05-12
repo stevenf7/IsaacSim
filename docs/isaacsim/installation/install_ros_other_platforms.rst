@@ -307,7 +307,7 @@ A list of sample ROS 2 packages created for |isaac-sim|:
     - **isaac_moveit**: Contains the launch files and parameter to run |isaac-sim_short| with the MoveIt2 stack.
     - **isaac_ros_navigation_goal**: Used to automatically set random or user-defined goal poses in ROS 2 Navigation.
     - **isaac_ros2_messages**: A custom set of ROS 2 service interfaces for retrieving poses as well as listing prims and manipulate their attributes.
-    - **isaacsim**: Contains launch files and scripts for running and launching Isaac Sim as a ROS 2 node.
+    - **isaacsim_bringup**: Contains launch files and scripts for running and launching Isaac Sim as a ROS 2 node.
     - **isaac_tutorials**: Contains launch files, RViz2 config files, and scripts for the tutorial series.
     - **iw_hub_navigation**: Contains the required launch file and ROS 2 navigation parameters for the iw.hub robot.
 
