@@ -39,6 +39,7 @@ from pxr import UsdGeom
 
 EXTENSION_ROOT = Path(__file__).resolve().parents[1]
 CAMERA_HELPER_PATH = EXTENSION_ROOT / "nodes" / "OgnROS2CameraHelper.py"
+CAMERA_INFO_HELPER_PATH = EXTENSION_ROOT / "nodes" / "OgnROS2CameraInfoHelper.py"
 LIDAR_HELPER_PATH = EXTENSION_ROOT / "nodes" / "OgnROS2RtxLidarHelper.py"
 
 USE_SRTX_SETTING = "/exts/omni.replicator.srtx/enabled"
@@ -425,6 +426,194 @@ class TestConfiguredSrtxSensorSets(omni.kit.test.AsyncTestCase):
         )
         self.assertEqual(capture_calls, [("ss-configured", "/Render/Product/A/LdrColorSD")])
         self.assertEqual(state._srtx_sensor_set, "ss-configured")
+
+    async def test_camera_info_setup_declares_and_uses_configured_sensor_set(self) -> None:
+        """CameraInfo helper should use the render-product-specific configured sensor set."""
+        srtx_instance = FakeSrtxInstance()
+        camera_info_helper = _load_module("test_ogn_ros2_camera_info_helper", CAMERA_INFO_HELPER_PATH)
+        self._settings.set_bool(USE_SRTX_SETTING, True)
+        self._settings.set(ros2_common.SRTX_SENSOR_SET_NAME_SETTING, "bridge-fallback")
+        self._settings.set(
+            ros2_common.SRTX_SENSOR_SET_NAME_BY_RENDER_PRODUCT_PATH_SETTING,
+            json.dumps({"/Render/Product/A": "ss-configured"}),
+        )
+        self._settings.set(
+            ros2_common.SRTX_SENSOR_SET_RENDER_PRODUCT_PATHS_BY_NAME_SETTING,
+            json.dumps({"ss-configured": ["/Render/Product/A", "/Render/Product/B"]}),
+        )
+        camera_info = types.SimpleNamespace(
+            width=640,
+            height=480,
+            distortion_model="plumb_bob",
+            k=[1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+            r=[1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+            p=[1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+            d=[],
+        )
+        state = types.SimpleNamespace(
+            initialized=False,
+            _srtx_callback_handles=[],
+            _srtx_callback_sensor_sets=[],
+            _srtx_capsules=[],
+            _srtx_sensor_set=None,
+        )
+        db = types.SimpleNamespace(
+            per_instance_state=state,
+            inputs=types.SimpleNamespace(
+                enabled=True,
+                renderProductPath="/Render/Product/A",
+                renderProductPathRight="",
+                resetSimulationTimeOnStop=True,
+                frameSkipCount=0,
+                useSystemTime=False,
+                frameId="camera",
+                topicName="camera_info",
+                nodeNamespace="",
+                queueSize=10,
+                qosProfile="sensor-data",
+                context=0,
+            ),
+        )
+        publisher_calls: list[tuple[str, str]] = []
+
+        def record_camera_info_publisher(
+            state,
+            stage,
+            srtx_instance,
+            sensor_set_name,
+            frameId,
+            topicName,
+            nodeNamespace,
+            queueSize,
+            qosProfile,
+            camera_info,
+            render_product_path,
+        ) -> bool:
+            publisher_calls.append((sensor_set_name, render_product_path))
+            return True
+
+        with (
+            mock_srtx_binding(srtx_instance),
+            patch.object(camera_info_helper, "read_camera_info", return_value=(camera_info, object())),
+            patch.object(camera_info_helper, "collect_namespace", return_value=""),
+            patch.object(
+                camera_info_helper.OgnROS2CameraInfoHelper,
+                "add_srtx_camera_info_publisher",
+                side_effect=record_camera_info_publisher,
+            ),
+        ):
+            success = camera_info_helper.OgnROS2CameraInfoHelper.compute(db)
+
+        self.assertTrue(success)
+        self.assertTrue(state.initialized)
+        self.assertEqual(
+            srtx_instance.declare_calls,
+            [("ss-configured", ["/Render/Product/A", "/Render/Product/B"])],
+        )
+        self.assertEqual(publisher_calls, [("ss-configured", "/Render/Product/A")])
+
+    async def test_camera_info_setup_uses_configured_sensor_sets_for_stereo(self) -> None:
+        """CameraInfo helper should use left and right configured sensor sets for stereo."""
+        srtx_instance = FakeSrtxInstance()
+        camera_info_helper = _load_module("test_ogn_ros2_camera_info_helper", CAMERA_INFO_HELPER_PATH)
+        self._settings.set_bool(USE_SRTX_SETTING, True)
+        self._settings.set(
+            ros2_common.SRTX_SENSOR_SET_NAME_BY_RENDER_PRODUCT_PATH_SETTING,
+            json.dumps({"/Render/Product/Left": "ss-left", "/Render/Product/Right": "ss-right"}),
+        )
+        self._settings.set(
+            ros2_common.SRTX_SENSOR_SET_RENDER_PRODUCT_PATHS_BY_NAME_SETTING,
+            json.dumps({"ss-left": ["/Render/Product/Left"], "ss-right": ["/Render/Product/Right"]}),
+        )
+
+        def make_camera_info() -> types.SimpleNamespace:
+            return types.SimpleNamespace(
+                width=640,
+                height=480,
+                distortion_model="plumb_bob",
+                k=[1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+                r=[1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+                p=[1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+                d=[],
+            )
+
+        state = types.SimpleNamespace(
+            initialized=False,
+            _srtx_callback_handles=[],
+            _srtx_callback_sensor_sets=[],
+            _srtx_capsules=[],
+            _srtx_sensor_set=None,
+        )
+        db = types.SimpleNamespace(
+            per_instance_state=state,
+            inputs=types.SimpleNamespace(
+                enabled=True,
+                renderProductPath="/Render/Product/Left",
+                renderProductPathRight="/Render/Product/Right",
+                resetSimulationTimeOnStop=True,
+                frameSkipCount=0,
+                useSystemTime=False,
+                frameId="left_camera",
+                frameIdRight="right_camera",
+                topicName="left/camera_info",
+                topicNameRight="right/camera_info",
+                nodeNamespace="",
+                queueSize=10,
+                qosProfile="sensor-data",
+                context=0,
+            ),
+        )
+        publisher_calls: list[tuple[str, str]] = []
+        np = camera_info_helper.np
+
+        def record_camera_info_publisher(
+            state,
+            stage,
+            srtx_instance,
+            sensor_set_name,
+            frameId,
+            topicName,
+            nodeNamespace,
+            queueSize,
+            qosProfile,
+            camera_info,
+            render_product_path,
+        ) -> bool:
+            publisher_calls.append((sensor_set_name, render_product_path))
+            return True
+
+        with (
+            mock_srtx_binding(srtx_instance),
+            patch.object(
+                camera_info_helper,
+                "read_camera_info",
+                side_effect=[(make_camera_info(), object()), (make_camera_info(), object())],
+            ),
+            patch.object(camera_info_helper, "compute_relative_pose", return_value=(np.zeros(3), np.eye(3))),
+            patch.object(camera_info_helper, "collect_namespace", return_value=""),
+            patch.object(
+                camera_info_helper.cv,
+                "stereoRectify",
+                return_value=(np.eye(3), np.eye(3), np.zeros((3, 4)), np.zeros((3, 4)), None, None, None),
+            ),
+            patch.object(
+                camera_info_helper.OgnROS2CameraInfoHelper,
+                "add_srtx_camera_info_publisher",
+                side_effect=record_camera_info_publisher,
+            ),
+        ):
+            success = camera_info_helper.OgnROS2CameraInfoHelper.compute(db)
+
+        self.assertTrue(success)
+        self.assertTrue(state.initialized)
+        self.assertEqual(
+            srtx_instance.declare_calls,
+            [("ss-left", ["/Render/Product/Left"]), ("ss-right", ["/Render/Product/Right"])],
+        )
+        self.assertEqual(
+            publisher_calls,
+            [("ss-right", "/Render/Product/Right"), ("ss-left", "/Render/Product/Left")],
+        )
 
     async def test_lidar_setup_declares_and_registers_configured_sensor_set(self) -> None:
         """Lidar helper setup should declare and reuse the configured shared sensor set."""

@@ -29,7 +29,7 @@ from isaacsim.core.nodes import BaseWriterNode
 from isaacsim.ros2.core import collect_namespace, compute_relative_pose, read_camera_info
 from isaacsim.ros2.nodes.impl.ros2_common import (
     USE_SRTX_SETTING,
-    get_srtx_sensor_set_name,
+    prepare_srtx_sensor_set,
     validate_srtx_platform,
 )
 from pxr import Usd
@@ -50,6 +50,7 @@ class OgnROS2CameraInfoHelperInternalState(BaseWriterNode):
         self.resetSimulationTimeOnStop = False
         self.publishStepSize = 1
         self._srtx_callback_handles = []
+        self._srtx_callback_sensor_sets = []
         self._srtx_capsules = []
         self._srtx_sensor_set = None
 
@@ -82,8 +83,9 @@ class OgnROS2CameraInfoHelperInternalState(BaseWriterNode):
 def cleanup_srtx_camera_info_state(state: OgnROS2CameraInfoHelperInternalState) -> None:
     """Unregister SRTX camera info callbacks owned by a CameraInfo helper state."""
     handles = getattr(state, "_srtx_callback_handles", [])
-    sensor_set = getattr(state, "_srtx_sensor_set", None)
-    if handles and sensor_set:
+    sensor_sets = getattr(state, "_srtx_callback_sensor_sets", [])
+    fallback_sensor_set = getattr(state, "_srtx_sensor_set", None)
+    if handles:
         try:
             from omni.replicator.srtx import SrtxCore
 
@@ -92,12 +94,16 @@ def cleanup_srtx_camera_info_state(state: OgnROS2CameraInfoHelperInternalState) 
                 usd_scene = str(stage.GetRootLayer().identifier)
                 srtx_instance = SrtxCore.get_instance(usd_scene)
                 if srtx_instance is not None:
-                    for handle in handles:
+                    for index, handle in enumerate(handles):
+                        sensor_set = sensor_sets[index] if index < len(sensor_sets) else fallback_sensor_set
+                        if sensor_set is None:
+                            continue
                         srtx_instance.unregister_frame_callback(sensor_set, handle)
         except Exception as e:
             carb.log_warn(f"Error during SRTX camera info cleanup: {e}")
 
     state._srtx_callback_handles = []
+    state._srtx_callback_sensor_sets = []
     state._srtx_capsules = []
     state._srtx_sensor_set = None
 
@@ -222,6 +228,7 @@ class OgnROS2CameraInfoHelper:
             return False
 
         state._srtx_callback_handles.append(handle)
+        state._srtx_callback_sensor_sets.append(sensor_set_name)
         state._srtx_capsules.append(capsule)
         state._srtx_sensor_set = sensor_set_name
         return True
@@ -349,14 +356,21 @@ class OgnROS2CameraInfoHelper:
                         carb.log_error(f"No SRTX instance for stage '{usd_scene}'")
                         return False
 
-                    sensor_set_name = get_srtx_sensor_set_name()
+                    sensor_set_name_left = prepare_srtx_sensor_set(srtx_instance, render_product_path)
+                    if sensor_set_name_left is None:
+                        carb.log_error(f"Failed to prepare SRTX sensor set for {render_product_path}")
+                        return False
+                    sensor_set_name_right = prepare_srtx_sensor_set(srtx_instance, render_product_path_right)
+                    if sensor_set_name_right is None:
+                        carb.log_error(f"Failed to prepare SRTX sensor set for {render_product_path_right}")
+                        return False
                     node_namespace_left = collect_namespace(db.inputs.nodeNamespace, render_product_path)
                     node_namespace_right = collect_namespace(db.inputs.nodeNamespace, render_product_path_right)
                     if not OgnROS2CameraInfoHelper.add_srtx_camera_info_publisher(
                         state,
                         stage,
                         srtx_instance,
-                        sensor_set_name,
+                        sensor_set_name_right,
                         db.inputs.frameIdRight,
                         db.inputs.topicNameRight,
                         node_namespace_right,
@@ -371,7 +385,7 @@ class OgnROS2CameraInfoHelper:
                         state,
                         stage,
                         srtx_instance,
-                        sensor_set_name,
+                        sensor_set_name_left,
                         db.inputs.frameId,
                         db.inputs.topicName,
                         node_namespace_left,
@@ -406,7 +420,10 @@ class OgnROS2CameraInfoHelper:
                     carb.log_error(f"No SRTX instance for stage '{usd_scene}'")
                     return False
 
-                sensor_set_name = get_srtx_sensor_set_name()
+                sensor_set_name = prepare_srtx_sensor_set(srtx_instance, render_product_path)
+                if sensor_set_name is None:
+                    carb.log_error(f"Failed to prepare SRTX sensor set for {render_product_path}")
+                    return False
                 node_namespace = collect_namespace(db.inputs.nodeNamespace, render_product_path)
                 if not OgnROS2CameraInfoHelper.add_srtx_camera_info_publisher(
                     state,

@@ -1,4 +1,8 @@
 # Changelog
+## [1.18.2] - 2026-05-12
+### Fixed
+- `OgnROS2CameraInfoHelper`: use render-product-specific SRTX sensor sets so `camera_info` publishes alongside RGB/depth in configured Mega deployments.
+
 ## [1.18.1] - 2026-05-11
 ### Fixed
 - `OgnROS2RtxLidarHelper` / `OgnROS2RtxRadarHelper`: `showDebugView` now sets `doTransform=True` on the debug-draw writer when the sensor's `outputFrameOfReference` is anything other than `WORLD` (fixes inverted condition that left points untransformed in SENSOR frame and double-transformed in WORLD frame).
