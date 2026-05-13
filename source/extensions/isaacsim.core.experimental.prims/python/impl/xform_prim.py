@@ -1040,6 +1040,10 @@ class XformPrim(Prim):
             for property_name in properties_to_remove:
                 if property_name in property_names:
                     prim.RemoveProperty(property_name)
+            # remove unused 'unitsResolve' properties (other than 'xformOp:scale:unitsResolve')
+            for property_name in property_names:
+                if property_name.endswith(":unitsResolve") and ":scale:" not in property_name:
+                    prim.RemoveProperty(property_name)
             # get/add xformOp
             # - xformOp:translate
             if "xformOp:translate" in property_names:
