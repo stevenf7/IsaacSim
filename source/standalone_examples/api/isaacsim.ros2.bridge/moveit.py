@@ -86,7 +86,7 @@ try:
         {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
         {
             og.Controller.Keys.CREATE_NODES: [
-                ("OnImpulseEvent", "omni.graph.action.OnImpulseEvent"),
+                ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                 ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
                 ("Context", "isaacsim.ros2.bridge.ROS2Context"),
                 ("PublishJointState", "isaacsim.ros2.bridge.ROS2PublishJointState"),
@@ -95,10 +95,10 @@ try:
                 ("PublishClock", "isaacsim.ros2.bridge.ROS2PublishClock"),
             ],
             og.Controller.Keys.CONNECT: [
-                ("OnImpulseEvent.outputs:execOut", "PublishJointState.inputs:execIn"),
-                ("OnImpulseEvent.outputs:execOut", "SubscribeJointState.inputs:execIn"),
-                ("OnImpulseEvent.outputs:execOut", "PublishClock.inputs:execIn"),
-                ("OnImpulseEvent.outputs:execOut", "ArticulationController.inputs:execIn"),
+                ("OnPlaybackTick.outputs:tick", "PublishJointState.inputs:execIn"),
+                ("OnPlaybackTick.outputs:tick", "SubscribeJointState.inputs:execIn"),
+                ("OnPlaybackTick.outputs:tick", "PublishClock.inputs:execIn"),
+                ("OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"),
                 ("Context.outputs:context", "PublishJointState.inputs:context"),
                 ("Context.outputs:context", "SubscribeJointState.inputs:context"),
                 ("Context.outputs:context", "PublishClock.inputs:context"),
@@ -141,8 +141,6 @@ while simulation_app.is_running():
     # Run with a fixed step size
     simulation_app.update()
 
-    # Tick the Publish/Subscribe JointState and Publish Clock nodes each frame
-    og.Controller.set(og.Controller.attribute("/ActionGraph/OnImpulseEvent.state:enableImpulse"), True)
     frame_count += 1
     if args.test and frame_count >= 10:
         break
