@@ -17,7 +17,6 @@
 
 from __future__ import annotations
 
-import math
 import traceback
 
 import carb
@@ -106,8 +105,6 @@ class OgnROS2RtxLidarHelper:
         rotation_rate = float(prim.GetAttribute("omni:sensor:Core:scanRateBaseHz").Get() or 0)
         near_range = float(prim.GetAttribute("omni:sensor:Core:nearRangeM").Get() or 0)
         far_range = float(prim.GetAttribute("omni:sensor:Core:farRangeM").Get() or 0)
-        num_channels = int(prim.GetAttribute("omni:sensor:Core:numberOfChannels").Get() or 0)
-        max_returns = int(prim.GetAttribute("omni:sensor:Core:maxReturns").Get() or 0)
         firing_rate = int(prim.GetAttribute("omni:sensor:Core:patternFiringRateHz").Get() or 0)
         scan_type = str(prim.GetAttribute("omni:sensor:Core:scanType").Get() or "")
 
@@ -132,7 +129,6 @@ class OgnROS2RtxLidarHelper:
             az_end = 180.0
             h_fov = 360.0
 
-        max_points = int(num_channels * max_returns * math.ceil(firing_rate / rotation_rate))
         return dict(
             azimuth_range_start=az_start,
             azimuth_range_end=az_end,
@@ -141,7 +137,6 @@ class OgnROS2RtxLidarHelper:
             rotation_rate=rotation_rate,
             horizontal_resolution=h_res,
             horizontal_fov=h_fov,
-            max_points=max_points,
         )
 
     @staticmethod
@@ -179,7 +174,16 @@ class OgnROS2RtxLidarHelper:
                 carb.log_error("Failed to read laser scan metadata from lidar prim")
                 return False
 
-            capsule = create_laser_scan_publisher_capsule(**common_params, **scan_meta)
+            capsule = create_laser_scan_publisher_capsule(
+                **common_params,
+                azimuth_range_start=scan_meta["azimuth_range_start"],
+                azimuth_range_end=scan_meta["azimuth_range_end"],
+                depth_range_min=scan_meta["depth_range_min"],
+                depth_range_max=scan_meta["depth_range_max"],
+                rotation_rate=scan_meta["rotation_rate"],
+                horizontal_resolution=scan_meta["horizontal_resolution"],
+                horizontal_fov=scan_meta["horizontal_fov"],
+            )
         else:
             from isaacsim.ros2.nodes.bindings._ros2_nodes import create_lidar_publisher_capsule
 

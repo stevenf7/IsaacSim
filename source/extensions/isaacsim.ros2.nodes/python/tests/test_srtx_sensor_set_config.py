@@ -255,6 +255,52 @@ def mock_srtx_binding(srtx_instance: FakeSrtxInstance):
                     delattr(omni.replicator, "srtx")
 
 
+@contextmanager
+def mock_laser_scan_capsule_binding(captured_kwargs: dict[str, object]):
+    """Patch the ROS 2 laser scan capsule binding with the current pybind signature."""
+
+    module_name = "isaacsim.ros2.nodes.bindings._ros2_nodes"
+    ros2_nodes = types.ModuleType(module_name)
+
+    def create_laser_scan_publisher_capsule(
+        *,
+        topic_name: str,
+        frame_id: str,
+        node_namespace: str,
+        queue_size: int,
+        qos_profile: str,
+        azimuth_range_start: float,
+        azimuth_range_end: float,
+        depth_range_min: float,
+        depth_range_max: float,
+        rotation_rate: float,
+        horizontal_resolution: float,
+        horizontal_fov: float,
+    ) -> str:
+        captured_kwargs.update(
+            {
+                "topic_name": topic_name,
+                "frame_id": frame_id,
+                "node_namespace": node_namespace,
+                "queue_size": queue_size,
+                "qos_profile": qos_profile,
+                "azimuth_range_start": azimuth_range_start,
+                "azimuth_range_end": azimuth_range_end,
+                "depth_range_min": depth_range_min,
+                "depth_range_max": depth_range_max,
+                "rotation_rate": rotation_rate,
+                "horizontal_resolution": horizontal_resolution,
+                "horizontal_fov": horizontal_fov,
+            }
+        )
+        return "laser-scan-capsule"
+
+    ros2_nodes.create_laser_scan_publisher_capsule = create_laser_scan_publisher_capsule
+
+    with patch.dict(sys.modules, {module_name: ros2_nodes}):
+        yield
+
+
 class TestConfiguredSrtxSensorSets(omni.kit.test.AsyncTestCase):
     async def setUp(self) -> None:
         if omni.usd.get_context().get_stage() is None:
@@ -669,6 +715,92 @@ class TestConfiguredSrtxSensorSets(omni.kit.test.AsyncTestCase):
         )
         self.assertEqual(capture_calls, [("ss-configured", "/Render/Product/Lidar/GenericModelOutput")])
         self.assertEqual(state._srtx_sensor_set, "ss-configured")
+
+    async def test_laser_scan_setup_does_not_forward_removed_max_points_metadata(self) -> None:
+        """LaserScan setup should ignore stale max_points metadata before calling pybind."""
+        srtx_instance = FakeSrtxInstance()
+        lidar_helper = _load_module("test_ogn_ros2_rtx_lidar_helper", LIDAR_HELPER_PATH)
+        self._settings.set(
+            ros2_common.SRTX_SENSOR_SET_NAME_BY_RENDER_PRODUCT_PATH_SETTING,
+            json.dumps({"/Render/Product/Lidar": "ss-configured"}),
+        )
+        self._settings.set(
+            ros2_common.SRTX_SENSOR_SET_RENDER_PRODUCT_PATHS_BY_NAME_SETTING,
+            json.dumps({"ss-configured": ["/Render/Product/Lidar", "/Render/Product/Camera"]}),
+        )
+        capture_calls: list[tuple[str, str]] = []
+        capsule_kwargs: dict[str, object] = {}
+        scan_meta = {
+            "azimuth_range_start": -180.0,
+            "azimuth_range_end": 180.0,
+            "depth_range_min": 0.1,
+            "depth_range_max": 60.0,
+            "rotation_rate": 10.0,
+            "horizontal_resolution": 0.1125,
+            "horizontal_fov": 360.0,
+            "max_points": 3200,
+        }
+        state = types.SimpleNamespace(initialized=True)
+        fake_camera = types.SimpleNamespace(GetPrim=lambda: object())
+
+        with (
+            mock_srtx_binding(srtx_instance),
+            mock_laser_scan_capsule_binding(capsule_kwargs),
+            patch.object(
+                lidar_helper,
+                "ensure_render_var_on_product",
+                lambda stage, render_product_path, aov, compression_type=None, is_image=False: (
+                    True,
+                    f"{render_product_path}/{aov}",
+                ),
+            ),
+            patch.object(
+                lidar_helper,
+                "_start_or_extend_continuous_capture",
+                lambda srtx_instance, sensor_set_name, output_path: capture_calls.append(
+                    (sensor_set_name, output_path)
+                ),
+            ),
+            patch.object(lidar_helper.ViewportManager, "get_camera", return_value=fake_camera),
+            patch.object(lidar_helper.OgnROS2RtxLidarHelper, "_read_laser_scan_metadata", return_value=scan_meta),
+        ):
+            success = lidar_helper.OgnROS2RtxLidarHelper._setup_srtx(
+                init_params={
+                    "topicName": "scan",
+                    "frameId": "lidar",
+                    "nodeNamespace": "",
+                    "queueSize": 10,
+                    "qosProfile": "sensor-data",
+                },
+                render_product_path="/Render/Product/Lidar",
+                state=state,
+                sensor_type="laser_scan",
+                compression_type=None,
+            )
+
+        self.assertTrue(success)
+        self.assertEqual(
+            capsule_kwargs,
+            {
+                "topic_name": "scan",
+                "frame_id": "lidar",
+                "node_namespace": "",
+                "queue_size": 10,
+                "qos_profile": "sensor-data",
+                "azimuth_range_start": -180.0,
+                "azimuth_range_end": 180.0,
+                "depth_range_min": 0.1,
+                "depth_range_max": 60.0,
+                "rotation_rate": 10.0,
+                "horizontal_resolution": 0.1125,
+                "horizontal_fov": 360.0,
+            },
+        )
+        self.assertEqual(
+            srtx_instance.register_calls[0],
+            ("ss-configured", "/Render/Product/Lidar/GenericModelOutput", "laser-scan-capsule"),
+        )
+        self.assertEqual(capture_calls, [("ss-configured", "/Render/Product/Lidar/GenericModelOutput")])
 
 
 class TestConfiguredSrtxSensorSetsRealNodes(ROS2TestCase):
