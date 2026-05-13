@@ -242,7 +242,7 @@ class OgnROS2RtxLidarHelper:
         if db.inputs.frameSkipCount > 0:
             carb.log_warn(
                 "The frameSkipCount input is deprecated. "
-                "Control publish rate by setting omni:sensor:tickRate on the sensor prim instead."
+                "Control publish rate by setting omni:sensor:tickRate on the sensor prim instead, and setting frameSkipCount to 0."
             )
         state.publishStepSize = db.inputs.frameSkipCount + 1
 
@@ -324,7 +324,7 @@ class OgnROS2RtxLidarHelper:
                     state.append_writer(writer)
                     if db.inputs.showDebugView:
                         doTransform = prim.GetAttribute("omni:sensor:Core:outputFrameOfReference").Get() != "WORLD"
-                        writer = rep.writers.get("RtxLidarDebugDrawPointCloudBuffer")
+                        writer = rep.writers.get("RtxSensorDebugDrawPointCloud")
                         writer.initialize(doTransform=doTransform)
                         state.append_writer(writer)
                 state.attach_writers(render_product_path)

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.3] - 2026-05-12
+### Added
+- Added TestMultiSensorWarmup as smoke test for WAR low-frequency fatal crash when multiple Lidars and Radars are in the same scene.
+
 ## [1.4.2] - 2026-05-08
 ### Fixed
 - Fixed TestRadarSensor.test_gmo_writer timing check.

@@ -16,8 +16,8 @@ settings.set("/renderer/raytracingMotion/enabled", True)
 settings.set("/renderer/raytracingMotion/enableHydraEngineMasking", True)
 settings.set("/renderer/raytracingMotion/enabledForHydraEngines", "0,1,2,3,4")
 
-# Create radar with auxiliary output for radial velocity.
-radar = Radar(path="/Radar", aux_output_level="BASIC")
+# Create radar
+radar = Radar(path="/Radar")
 
 # Create the OmniGraph (mirrors the action graph built by the GUI workflow above).
 og.Controller.edit(
@@ -33,7 +33,6 @@ og.Controller.edit(
             ("CreateRenderProduct.inputs:cameraPrim", radar.paths[0]),
             ("RadarHelper.inputs:topicName", "radar_point_cloud"),
             ("RadarHelper.inputs:frameId", "radar"),
-            ("RadarHelper.inputs:outputRadialVelocityMS", True),
         ],
         og.Controller.Keys.CONNECT: [
             ("OnPlaybackTick.outputs:tick", "RunOnce.inputs:execIn"),

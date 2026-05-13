@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.6.1] - 2026-05-13
+### Changed
+- `frameSkipCount` deprecation message in UCXCameraHelper directs users to set input to 0.
+### Fixed
+- `OgnUCXCameraHelper`: `frameSkipCount` is once again honored when set (`publishStepSize = frameSkipCount + 1`). In 1.5.1, `publishStepSize` was hard-coded to `1`, which silently ignored any user-set `frameSkipCount` even though the deprecation warning fired. The publish gate is now consistent with `OgnROS2CameraHelper` / `OgnROS2RtxLidarHelper`.
+
 ## [1.6.0] - 2026-05-08
 ### Added
 - Camera streaming over UCX in `OgnUCXPublishImage` / `OgnUCXCameraHelper`, controlled via the `sendCudaBuffer` bool input.

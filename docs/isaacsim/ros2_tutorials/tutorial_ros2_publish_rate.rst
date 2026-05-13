@@ -20,7 +20,7 @@ Learning Objectives
 In this example, you learn to:
 
 - Set the simulation frame rate in |isaac-sim_short|.
-- Set different publish rates for various ROS2 publishers simultaneously.
+- Set different publish rates for different sensor types (IMU, RTX Lidar, Camera) publishing to ROS 2 simultaneously.
 
 
 Getting Started
@@ -38,14 +38,14 @@ Setting Publish Rates with |omnigraph_short|
 ===================================================
 Action Graphs are ticked every simulation frame and therefore |omnigraph_short| nodes are bound to the factors of the simulation rate. This tutorial explains how to configure publishing ROS2 nodes at these factors of simulation.
 
-Isaac Simulation Gate Node
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Non-RTX Sensors
+^^^^^^^^^^^^^^^
 
-This section will demonstrate the Isaac Simulation Gate node, which can be used to tick |omnigraph_short| every certain number of frames, as defined. An IMU publisher is setup with this |omnigraph_short| node.
+Sensors which do not rely on RTX rendering, such as IMU sensors, can be configured to publish at a different rate than the simulation rate using the Isaac Simulation Gate node.
 
 1. Open the turtlebot simple room scene, which can be found by going to the Isaac Sim Content browser and clicking **Isaac Sim>Samples>ROS2>Scenario>turtlebot_tutorial.usd**.
 
-2. Select the prim at ``/World/turtlebot3_burger/base_link/imu_link`` and then create an IMU sensor by going to **Create > Sensors > Imu Sensor**. Verify that the Imu sensor is created under the *imu_link* prim.
+2. Select the prim at ``/World/turtlebot3_burger/base_link/imu_link`` and then create an IMU sensor by going to **Create > Isaac > Sensors > Imu Sensor**. Verify that the Imu sensor is created under the *imu_link* prim.
 
 3. Create a new Action Graph inside */World/turtlebot3_burger/base_link/imu_link* prim and name it *ROS_IMU* (the placement of the graph is important for :ref:`isaac_sim_app_tutorial_ros2_auto_namespace`). To do this, select the prim at ``/World/turtlebot3_burger/base_link/imu_link`` and then create an Action Graph by going to **Window > Graph Editors > Action Graph**.
 
@@ -65,46 +65,37 @@ This section will demonstrate the Isaac Simulation Gate node, which can be used 
     - In the Property tab for the **Isaac Read IMU Node**:
 
         - Add the IMU sensor prim ``/World/turtlebot3_burger/base_link/imu_link/Imu_Sensor`` to its *imuPrim* input field.
-    
+
     - In the Property tab for the **ROS2 Publish Imu** node:
 
         - Set the frameId attribute to ``imu_link``. This will match the ``imu_link`` frame used in the TF tree that is already being published by the TF publisher, which you created in :ref:`isaac_sim_app_tutorial_ros2_tf_odometry`.
 
 
 
-Setting Publish Rates for Nodes Within SDG Pipeline
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RTX Sensors
+^^^^^^^^^^^^
+
+Cameras, RTX Lidars, and RTX Radars can be configured to publish at a different rate than the simulation rate using the ``omni:sensor:tickRate`` attribute on the sensor prim, described in :ref:`isaac_sim_sensors_multitick_configuring_per_sensor_tick_rates`.
 
 .. warning::
-    The **frameSkipCount** parameter on ROS2 helper nodes is deprecated. The preferred way to
-    control sensor publish rates is by setting the ``omni:sensor:tickRate`` attribute on the
-    sensor prim via the ``OmniSensorAPI`` schema. See
-    :ref:`isaac_sim_sensors_multitick_rendering` for the full migration guide, and
-    :ref:`isaacsim_sensors_rtx_lidar` and :ref:`isaacsim_sensors_rtx_radar` for details on
-    configuring per-sensor tick rates.
+    Previous versions of |isaac-sim_short| used the **frameSkipCount** parameter on ROS2 helper nodes to control sensor publish rates. This is now deprecated.
+    If **frameSkipCount** is set to a non-zero value, and the corresponding sensor prim has ``omni:sensor:tickRate`` set to a non-zero value, message publishing frequency may be unexpected as the **frameSkipCount** may not
+    align periodically with the sensor's tick rate. See :ref:`isaac_sim_sensors_multitick_configuring_per_sensor_tick_rates`, and
+    :ref:`isaac_sim_sensors_multitick_rendering` for the full migration guide.
 
-In the previous section, we added in the Isaac Simulation Gate Node in a |omnigraph_short| ROS2 publishing pipeline. For Camera and RTX Lidar sensors, this is configured automatically within the SDG pipeline. 
+1. Select the 2D Lidar prim ``/World/turtlebot3_burger/base_scan/Example_Rotary_2D`` (the ``OmniLidar`` referenced as ``cameraPrim`` on the ``Isaac Create Render Product`` node feeding ``/World/turtlebot3_burger/base_scan/ROS_LidarRTX/LaserScanPublish``). In the **Property** tab:
 
-To modify the publish rates for each individual publisher, the **frameSkipCount** parameter inside each ROS2 Helper node can be modified.
+    - Set ``omni:sensor:tickRate`` to ``5``. The laser scan publishes once per tick, so this yields a publish rate of 5 Hz (every 12 frames at the default 60 Hz simulation rate).
+    - Set ``omni:sensor:Core:scanRateBaseHz`` to ``5`` to match. The two values must be equal so the lidar accumulates a full scan per tick instead of falling back to per-frame partial scans (see :ref:`isaac_sim_sensors_multitick_lidar_tickrate_must_match_scanrate`). The shipped ``Example_Rotary_2D`` asset defaults to ``10``, so you must lower it.
 
-1. Open the Lidar Action Graph */World/turtlebot3_burger/base_scan/ROS_LidarRTX*. Select the Ros2RTXLidarHelper node (*/World/turtlebot3_burger/base_scan/ROS_LidarRTX/LaserScanPublish*) and in the property panel set value for **frameSkipCount** to ``11``.
-
-    This will skip 11 frames between publishing and automatically set the **step** attribute of the Isaac Simulation Gate node connected within the SDG Pipeline to a value of 11. Skipping 11 frames is equivalent to publishing every 12 frames.
-
-2. Because you don't need to publish a point cloud in this tutorial, select the Ros2RTXLidarHelper node for point cloud and disable it by unchecking **enabled** attribute in */World/turtlebot3_burger/base_scan/ROS_LidarRTX/PointCloudPublish*. 
+2. Because you don't need to publish a point cloud in this tutorial, select the Ros2RTXLidarHelper node for point cloud and disable it by unchecking **enabled** attribute in */World/turtlebot3_burger/base_scan/ROS_LidarRTX/PointCloudPublish*.
 
 3. Open the camera Action Graph */World/ActionGraph_camera*. Disable the second camera render product by unchecking **enabled** attribute in */World/ActionGraph_camera/isaac_create_render_product_01*.
 
+4. Select the camera prim ``/World/Camera_1`` (the ``Camera`` referenced as ``cameraPrim`` on the ``Isaac Create Render Product`` node feeding both ``/World/ActionGraph_camera/ros2_camera_helper`` and ``/World/ActionGraph_camera/ros2_camera_info_helper``). In the **Property** tab, set ``omni:sensor:tickRate`` to ``15``. Both ``/camera_1/rgb/image_raw`` and ``/camera_1/rgb/camera_info`` now publish at 15 Hz (every 4 frames at the default 60 Hz simulation rate).
 
-4. In the property panel of the Camera Helper node setup for RGB images, */World/ActionGraph_camera/ros2_camera_helper*, set the value for **frameSkipCount** to ``3``.
-
-    This will skip ``3`` frames between publishing and automatically set the **step** attribute of the Isaac Simulation Gate node connected within the SDG Pipeline to a value of ``4``. Skipping three frames is equivalent to publishing every four frames.
 
 5. You don't need to publish depth images from Camera1 for this tutorial. Disable the camera helper for depth images by unchecking **enabled** attribute in */World/ActionGraph_camera/ros2_camera_helper_02*.
-
-6. In the property panel of the Camera Info Helper node setup for camera info, */World/ActionGraph_camera/ros2_camera_info_helper*, set the value for **frameSkipCount** to ``5``.
-
-    This will skip five frames between publishing and automatically set the **step** attribute of the Isaac Simulation Gate node connected within the SDG Pipeline to a value of ``6``. Skipping five frames is equivalent to publishing every six frames.
 
 .. _isaac_sim_app_tutorial_ros2_publish_rate_set_simulation_frame_rates:
 
@@ -159,24 +150,24 @@ You configured the ActionGraphs to tick certain nodes at various rates. Because 
 Checking ROS 2 Publish Rate
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. Press **Play** to start the simulation. 
+1. Press **Play** to start the simulation.
 2. Check the publish rate for each ROS topic using the command:
-   
+
     .. code::
-  
+
       ros2 topic hz /topic_name
-  
-    Where ``/topic_name`` is replaced by each sensor topic listed below. 
-    
-    The publish rates are estimated. On a high-performance machine the maximum FPS would be closer to the ``physics_rate`` that was set in the previous section (default of 60Hz). 
-    
+
+    Where ``/topic_name`` is replaced by each sensor topic listed below.
+
+    The publish rates are estimated. On a high-performance machine the maximum FPS would be closer to the ``physics_rate`` that was set in the previous section (default of 60Hz).
+
 3.  For each sensor topic, the rate is a factor of the maximum simulation FPS (according to the execution steps that we defined earlier).
 
     - **/clock**:  publish at same rate as the simulation FPS (~60hz default).
     - **/imu**:  publish at rate of *sim_fps/2* (~30 hz)
     - **/scan**:  publish at rate *sim_fps/12* (~5 hz)
     - **/camera_1/rgb/image_raw**:  publish at *sim_fps/4* (~15 Hz)
-    - **/camera_1/rgb/camera_info**:  publish at *sim_fps/6* (~10 hz)
+    - **/camera_1/rgb/camera_info**:  publish at *sim_fps/4* (~15 Hz, matching the RGB rate because both helpers share the same Camera prim's tick rate)
 
     The file that contains all of the steps in this tutorial can be opened by going to the Isaac Sim Content browser and clicking **Isaac Sim>Samples>ROS2>Scenario>turtlebot_tutorial_multi_sensor_publish_rates.usd**. After opening the file, remember to run the steps in :ref:`isaac_sim_app_tutorial_ros2_publish_rate_set_simulation_frame_rates` to set the target simulation rate.
 
@@ -213,7 +204,7 @@ Summary
 This tutorial covered:
 
 - Two ways to set the simulation frame rate in |isaac-sim_short| using the Python interface.
-- Set different publish rates for various ROS2 publishers in |omnigraph_short| and within the SDG Pipeline.
+- Setting different publish rates for different sensor types: an Isaac Simulation Gate for non-RTX sensors (IMU), and ``omni:sensor:tickRate`` on the sensor prim for RTX sensors (Lidar, Camera).
 
 Next Steps
 ^^^^^^^^^^^^^^^^^^^^^^

@@ -143,6 +143,7 @@ isaacsim.ros2.bridge
 * ``clock.py``
 * ``moveit.py``
 * ``rtx_lidar.py``
+* ``rtx_radar.py``
 * ``subscriber.py``
 
 isaacsim.sensors.experimental.physics
