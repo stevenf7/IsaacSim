@@ -43,6 +43,9 @@ class HolonomicController:
         max_wheel_speed: Maximum individual wheel speed in rad/s.
         linear_gain: Gain applied to the linear velocity command.
         angular_gain: Gain applied to the angular velocity command.
+
+    Raises:
+        ValueError: If `wheel_radius`, `wheel_positions`, `wheel_orientations`, or `mecanum_angles` is None.
     """
 
     def __init__(
@@ -64,6 +67,16 @@ class HolonomicController:
             wheel_axis = np.array([1.0, 0.0, 0.0])
         if up_axis is None:
             up_axis = np.array([0.0, 0.0, 1.0])
+        for param_name, param_val in (
+            ("wheel_radius", wheel_radius),
+            ("wheel_positions", wheel_positions),
+            ("wheel_orientations", wheel_orientations),
+            ("mecanum_angles", mecanum_angles),
+        ):
+            if param_val is None:
+                raise ValueError(
+                    f"{param_name} is required (received None). " f"Pass an array with one entry per wheel."
+                )
         wheel_positions = np.asarray(wheel_positions)
         self.num_wheels = len(wheel_positions)
         wheel_radius = np.asarray(wheel_radius)

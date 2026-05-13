@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.9] - 2026-05-13
+### Fixed
+- Raise `ValueError` (instead of cryptic `TypeError`) when `HolonomicController` is constructed without `wheel_radius`, `wheel_positions`, `wheel_orientations`, or `mecanum_angles`.
+
 ## [0.2.8] - 2026-05-11
 ### Fixed
 - Raise an error when `quintic_polynomials_planner()` cannot find a trajectory satisfying acceleration and jerk constraints.
