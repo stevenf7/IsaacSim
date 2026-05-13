@@ -86,3 +86,17 @@ class TestHolonomicController(omni.kit.test.AsyncTestCase):
         actions = controller.forward([1.0, 0.0, 0.0])
         net_x = np.dot(controller.base_dir[0, :], actions)
         self.assertGreater(net_x, 0, "Forward command should produce positive net X velocity")
+
+    async def test_init_raises_on_missing_required_param(self):
+        """Constructor must raise a descriptive ValueError when a required array is omitted."""
+        base = dict(
+            wheel_radius=[0.04, 0.04, 0.04],
+            wheel_positions=[[0.0, 0.0, 0.0]] * 3,
+            wheel_orientations=[[0, 0, 0, 1]] * 3,
+            mecanum_angles=[90, 90, 90],
+        )
+        for missing in ("wheel_radius", "wheel_positions", "wheel_orientations", "mecanum_angles"):
+            kwargs = dict(base)
+            kwargs[missing] = None
+            with self.assertRaises(ValueError):
+                HolonomicController(**kwargs)
