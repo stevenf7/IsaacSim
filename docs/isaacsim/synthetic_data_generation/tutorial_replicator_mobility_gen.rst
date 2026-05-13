@@ -183,10 +183,9 @@ simulation.
 Isaac Sim ships a standalone replay script for this. Run it from the Isaac Sim root directory
 (replace ``~/omni_isaac_sim`` with your actual Isaac Sim installation path):
 
-.. code::
+.. code-block:: bash
 
-   cd ~/omni_isaac_sim
-   ./_build/linux-x86_64/release/python.sh \
+   ./python.sh \
        standalone_examples/replicator/mobility_gen/replay_directory.py \
        --input  ~/MobilityGenData/recordings \
        --output ~/MobilityGenData/replays \
@@ -387,6 +386,23 @@ Use a NuRec Scene
    may be incomplete or noisy. Semantic segmentation is not supported for reconstructed scenes
    in this workflow.
 
+   To skip depth and semantic segmentation during replay (recommended for NuRec-only workflows),
+   pass the negated flags supported by ``replay_directory.py``:
+
+   .. code-block:: bash
+
+      ./python.sh \
+          standalone_examples/replicator/mobility_gen/replay_directory.py \
+          --input  ~/MobilityGenData/recordings \
+          --output ~/MobilityGenData/replays \
+          --render_interval 6 \
+          --no-depth_enabled \
+          --no-segmentation_enabled
+
+   ``--no-depth_enabled`` turns off depth image rendering; ``--no-segmentation_enabled`` turns off
+   semantic segmentation.  RGB remains on by default (use ``--no-rgb_enabled`` only if you want to
+   disable RGB as well).
+
    Occupancy-map quality depends on the collision geometry available in the USD stage. When
    generating a map for a reconstructed scene, review the occupancy-map visualization and adjust
    bounds as needed before recording trajectories.
@@ -402,10 +418,9 @@ so older recordings must be converted before replay.
 
 To convert all recordings in a directory in-place, run:
 
-.. code::
+.. code-block:: bash
 
-   cd ~/omni_isaac_sim
-   ./_build/linux-x86_64/release/python.sh \
+   ./python.sh \
        standalone_examples/replicator/mobility_gen/migrate_recordings.py \
        --input ~/MobilityGenData/recordings
 
