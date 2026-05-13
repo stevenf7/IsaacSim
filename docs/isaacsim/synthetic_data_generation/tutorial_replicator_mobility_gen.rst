@@ -173,6 +173,41 @@ After creating a map of the environment, you can generate data with MobilityGen:
 
 The data is now recorded to ``~/MobilityGenData/recordings`` by default.
 
+Sensor calibration overrides
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you change sensors on the robot in Isaac Sim—for example camera intrinsics, distortion
+coefficients, projection type, or sensor transforms—MobilityGen persists those edits as a **small
+USD diff**, not a full copy of the robot asset.
+
+The comparison below contrasts replay **without** the persisted override file against replay **with**
+``sensor_overrides.usda`` applied, so rendered cameras match the calibration from capture time.
+
+.. image:: ../images/isim_6.0_replicator_tut_gui_mobility_gen_sensor_overrides_compare.png
+   :width: 640
+   :align: center
+
+The following screen capture walks through applying sensor calibration in the UI and how that ties
+into recording and replay with ``sensor_overrides.usda``.
+
+.. image:: ../images/isim_6.0_replicator_tut_gui_mobility_gen_sensor_overrides.gif
+   :width: 640
+   :align: center
+
+The MobilityGen extension uses the helpers in
+``source/extensions/isaacsim.replicator.experimental.mobility_gen/python/impl/sensor_overrides.py``
+to:
+
+#. **Save** calibration overrides from the live stage into a file named ``sensor_overrides.usda``
+   inside each recording directory.  Only attributes you changed (relative to the referenced robot
+   USD) are written; the result is a lightweight override layer.
+#. **Apply** that same file when you replay or render: the extension loads ``sensor_overrides.usda``
+   and merges those opinions onto the robot prim **subtree** so nested cameras and rigs match the
+   calibration from capture time.
+
+``sensor_overrides.usda`` is optional: if a recording does not contain one (for example,
+recordings predating this feature), no overrides are applied during replay.
+
 Replay and Render
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
