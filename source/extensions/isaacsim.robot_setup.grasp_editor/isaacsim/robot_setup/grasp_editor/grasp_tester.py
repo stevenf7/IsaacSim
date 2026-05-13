@@ -263,8 +263,8 @@ class GraspTester:
                 ):
                     yield (
                         "The initial grasp succeeded, but it was not able to withstand "
-                        + f"rigid body {s} of  {f} applied for 1/3 second about the reference frame.  "
-                        + "Exporting the grasp will export the state of the initial successdul grasp."
+                        + f"rigid body {s} of {f} applied for 1/3 second about the reference frame.  "
+                        + "Exporting the grasp will export the state of the initial successful grasp."
                     )
                     succ = False
                     break
@@ -273,10 +273,10 @@ class GraspTester:
                 break
 
         rigid_body.apply_forces_and_torques_at_pos(np.zeros((1, 3)), np.zeros((1, 3)))
-        rigid_body.set_velocities(np.zeros((1, 6)))
+        rigid_body.set_velocities(np.zeros(3), np.zeros(3))
         yield ()
 
-        rigid_body.set_velocities(np.zeros((1, 6)))
+        rigid_body.set_velocities(np.zeros(3), np.zeros(3))
 
         yield ()
         return succ

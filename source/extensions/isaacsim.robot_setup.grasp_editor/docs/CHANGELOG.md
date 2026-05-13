@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.2] - 2026-05-12
+### Fixed
+- Wrong shape on forces/torques being added into the RigidBody during simulation.
+- Spelling mistakes corrected.
+
 ## [2.3.1] - 2026-05-08
 ### Fixed
 - Fixed silent failure of Skip Simulation -> Export Grasp; export state is preserved across internal timeline stops and errors are surfaced in the UI.
