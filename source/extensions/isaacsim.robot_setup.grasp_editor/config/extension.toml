@@ -1,9 +1,9 @@
 [package]
-version = "2.3.1"
+version = "2.3.2"
 category = "Simulation"
 title = "Grasp Editor"
 description = "Author grasps by hand for a specific robot gripper and USD asset."
-authors = ["hmazhar@nvidia.com", "qwan@nvidia.com", "rgasoto@nvidia.com"]
+authors = ["hmazhar@nvidia.com", "jhough@nvidia.com", "rgasoto@nvidia.com"]
 repository = "https://gitlab-master.nvidia.com/omniverse/isaac/omni_isaac_sim/-/tree/develop/source/extensions/isaacsim.robot_setup.grasp_editor"
 keywords = []
 changelog = "docs/CHANGELOG.md"

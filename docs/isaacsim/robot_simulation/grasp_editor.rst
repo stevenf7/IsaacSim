@@ -27,6 +27,9 @@ You can download the stage used in this tutorial
 :download:`here <../../content/packages/Grasp_Editor_Tutorial_Stage.zip>`
 and follow along.
 
+After downloading, extract the archive.  In your running |isaac-sim| instance,
+click **File > Open** and select the ``grasp_editor_tutorial.usd`` file.
+
 What is an Isaac Grasp File?
 =============================
 
@@ -58,11 +61,14 @@ elsewhere for visualization and validation.
 
 A grasp is defined by the relative position of the gripper and object.  In order for this relative
 position to have meaning, a representative frame must be chosen for the gripper and object positions.
-The `Grasp Editor` writes the USD paths of these representative frames to an `isaac_grasp` file
-under the `object_frame` and `gripper_frame` fields.  Because `isaac_grasp` files may be
-authored externally (possibly without going through USD at all), the `Grasp Editor` ignores the
-`object_frame` and `gripper_frame` fields when importing grasps.  This makes it the user's
-responsibility to identify the correct USD frames when using the `Grasp Editor` for importing.
+The `Grasp Editor` handles these frames in two distinct ways:
+
+- On export, the USD paths of the representative frames are written to the `isaac_grasp` file
+  under the `object_frame` and `gripper_frame` fields.
+- On import, the `object_frame` and `gripper_frame` fields are ignored, because `isaac_grasp`
+  files may be authored externally (possibly without going through USD at all).
+- As a result, identifying the correct USD frames is the user's responsibility when using the
+  `Grasp Editor` for importing.
 
 Each grasp in an `isaac_grasp` file has a unique name (e.g. `grasp_0`).  The fields for a named
 grasp are:
@@ -103,22 +109,30 @@ non-Articulation that has an associated mesh.
     :width: 1200
     :alt: Grasp Editor Selection Frame
 
-In the `Selection Frame`, select the Articulation and object of interest.  The prim path for the object
-can be copied by right clicking on the desired prim and selecting "Copy Prim Path".  An export path
-must be chosen for the `isaac_grasp` file (this should end in '.yaml').  The `Grasp Editor` may be used
-to author a sequence of grasps to the selected export file, but it does not support modifying an existing
-file.  If an export path is supplied that already exists, the existing file will be overwritten with
-a new `isaac_grasp` file.
+To fill in the `Selection Frame`:
 
-This tutorial will author grasps between the Panda hand gripper (isolated from the Franka Emika Panda robot)
-and a mug.  When "Ready" is clicked, the Grasp Editor will validate each field and perform all necessary
-conversions of the selected object prim (the mug) to make it graspable.  Specifically, it applies the
-Rigid Body and Collision APIs from Usd Physics so that the object has a collision geometry and can be moved
-by external forces.
+1. Select the Articulation and object of interest.  The prim path for the object can be copied by
+   right clicking on the desired prim and selecting "Copy Prim Path".
+2. Choose an export path for the `isaac_grasp` file.  This should end in '.yaml'.
+
+A few rules apply to the export file:
+
+- The `Grasp Editor` may be used to author a sequence of grasps to the selected export file, but
+  it does not support modifying an existing file.
+- If an export path is supplied that already exists, the existing file will be overwritten with a
+  new `isaac_grasp` file.
+
+This tutorial will author grasps between the Panda hand gripper (isolated from the Franka Emika Panda
+robot) and a mug.  When "Ready" is clicked, the `Grasp Editor` will:
+
+- Validate each field in the panel.
+- Perform all necessary conversions of the selected object prim (the mug) to make it graspable.
+  Specifically, it applies the Rigid Body and Collision APIs from Usd Physics so that the object has
+  a collision geometry and can be moved by external forces.
 
 .. Note:: The Grasp Editor does not revert these changes to the object asset, and so it is best not to save the USD stage unless these changes are specifically desired.
 
-.. Warning:: There is a known issue that the mug may "dissappear", this is a visual bug. You can press "STOP", then "PLAY" again to make it reappear.
+.. Warning:: There is a known issue that the mug may "disappear", this is a visual bug. You can press "STOP", then "PLAY" again to make it reappear.
 
 .. _isaac_sim_app_tutorial_grasp_editor_reference_frames:
 
@@ -207,13 +221,18 @@ you can mask collisions and move things into place visually.
 Author a Grasp
 --------------
 
-A grasp may be authored with the aid of simulation.  Moving assets by hand into what appears to be the right
-position is imprecise.  In the figure below, the mug is moved into roughly the right position to
-be grasped, and the "Simulate" button is clicked to close the gripper according to its joint settings.
-This causes the lip of the mug to be pushed into the exact center of the gripper fingers, and it
-leaves the gripper fingers in the exact position of contact with the object.  This gives a high
-degree of confidence to the grasp that is written to the output file. Once the simulation is complete,
-the export panel will populate, and the grasp may be written to file.
+A grasp may be authored with the aid of simulation, since moving assets by hand into what appears to
+be the right position is imprecise.  The figure below demonstrates the simulated authoring workflow:
+
+1. Move the object into roughly the right position to be grasped.
+2. Click the "Simulate" button to close the gripper according to its joint settings.  In the figure,
+   this causes the lip of the mug to be pushed into the exact center of the gripper fingers and leaves
+   the gripper fingers in the exact position of contact with the object.
+3. Once the simulation is complete, the export panel will populate, and the grasp may be written
+   to file.
+
+Letting the simulation settle the contact in this way gives a high degree of confidence to the grasp
+that is written to the output file.
 
 .. image:: /images/isim_4.5_full_ref_gui_grasp_editor_3.gif
     :align: center
@@ -308,11 +327,15 @@ to execute one of the authored grasps.
     :width: 400
     :alt: Grasping Scenario
 
-The following code snippet imports the grasp file demonstrated in :ref:`isaac_sim_app_tutorial_grasp_editor_import` and
-determines where the `panda_hand` frame should be in order to duplicate `grasp_1`.
+The following function snippet imports a grasp file demonstrated in :ref:`isaac_sim_app_tutorial_grasp_editor_import` and
+determines where the `panda_hand` frame should be in order to duplicate `grasp_1`. To try this function, copy it into the
+:ref:`Script Editor <script-editor>`, and pass the `import_file_path="path/to/your/isaac_grasp.yaml"` argument to the function.
 
 .. literalinclude:: ../snippets/robot_simulation/grasp_editor/using_authored_grasps_in_isaac_sim.py
+    :start-after: <start-function-snippet>
+    :end-before: <end-function-snippet>
     :language: python
+
 
 .. code-block:: console
 

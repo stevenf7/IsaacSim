@@ -1155,6 +1155,12 @@ local function get_doc_snippets_tests()
             "../../../docs/isaacsim/snippets/robot_setup/merge_mesh.py",
             "--test",
         },
+        -- robot_simulation/grasp_editor
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.robot_simulation.grasp_editor.using_authored_grasps_in_isaac_sim",
+            "../../../docs/isaacsim/snippets/robot_simulation/grasp_editor/using_authored_grasps_in_isaac_sim.py",
+            "--test",
+        },
         -- ros2_tutorials
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.ros2_tutorials.tutorial_ros2_camera_publishing.camera_publishing",

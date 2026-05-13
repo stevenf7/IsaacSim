@@ -212,10 +212,13 @@ class UIBuilder:
             )
 
             def show_warning_if_existing(file_path):
-                if not is_yaml(file_path):
-                    self._selection_ready_btn.enabled = False
+                valid = is_yaml(file_path)
+                self._selection_ready_btn.enabled = valid
+                if not valid and file_path:
+                    self._selection_frame_helper_text.set_text("Export path must end in '.yaml' or '.yml'.")
+                    self._selection_frame_helper_text.visible = True
                 else:
-                    self._selection_ready_btn.enabled = True
+                    self._selection_frame_helper_text.visible = False
                 self._warning_box.visible = os.path.isfile(file_path)
 
             self._export_path = StringField(
@@ -585,7 +588,7 @@ class UIBuilder:
                         "External Torque Magnitude",
                         default_value=0.0,
                         lower_limit=0.0,
-                        tooltip="A torque of the specified magnitude will be applied about each axis of the Rigid body to testgrasp quality.",
+                        tooltip="A torque of the specified magnitude will be applied about each axis of the Rigid body to test grasp quality.",
                     )
 
                     TextBlock(
