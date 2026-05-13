@@ -44,6 +44,10 @@ class ArticulationController(object):
         self._articulation_view = articulation_view
         return
 
+    def _require_initialized(self) -> None:
+        if self._articulation_view is None:
+            raise RuntimeError("ArticulationController is not initialized. Call initialize() first.")
+
     def apply_action(self, control_actions: ArticulationAction) -> None:
         """Apply control actions to the articulation for the next physics step.
 
@@ -54,8 +58,7 @@ class ArticulationController(object):
             RuntimeError: If the articulation view is not initialized.
 
         """
-        if self._articulation_view is None:
-            raise RuntimeError("ArticulationController is not initialized. Call initialize() first.")
+        self._require_initialized()
         applied_actions = self.get_applied_action()
         joint_positions = control_actions.joint_positions
         if control_actions.joint_indices is None:
@@ -151,6 +154,7 @@ class ArticulationController(object):
             Exception: If the articulation view is not initialized.
 
         """
+        self._require_initialized()
         self._articulation_view.switch_control_mode(mode=mode)
         return
 
@@ -165,6 +169,7 @@ class ArticulationController(object):
             Exception: If the articulation view is not initialized.
 
         """
+        self._require_initialized()
         self._articulation_view.switch_dof_control_mode(dof_index=dof_index, mode=mode)
 
     def set_max_efforts(self, values: np.ndarray, joint_indices: np.ndarray | list | None = None) -> None:
@@ -258,6 +263,7 @@ class ArticulationController(object):
             Last applied action.
 
         """
+        self._require_initialized()
         applied_actions = self._articulation_view.get_applied_actions()
 
         if applied_actions is not None:

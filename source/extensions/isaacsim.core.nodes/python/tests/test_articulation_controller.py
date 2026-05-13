@@ -24,9 +24,110 @@ import omni.graph.core.tests as ogts
 import omni.kit.test
 from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.nodes.ogn.python.nodes.OgnIsaacArticulationController import (
+    OgnIsaacArticulationController,
     OgnIsaacArticulationControllerInternalState,
 )
 from isaacsim.storage.native import get_assets_root_path_async
+
+
+class TestArticulationControllerWrapper(omni.kit.test.AsyncTestCase):
+    # ----------------------------------------------------------------------
+    async def test_initialization_exception_logs_error_with_prim_path(self):
+        class FakeInputs:
+            robotPath = "/BadRobot"
+            targetPrim = []
+            jointNames = []
+            jointIndices = []
+            positionCommand = []
+            velocityCommand = []
+            effortCommand = []
+
+        class FakeState:
+            initialized = False
+            prim_path = None
+
+            def initialize_controller(self):
+                raise RuntimeError("init failed")
+
+        class FakeDb:
+            def __init__(self):
+                self.inputs = FakeInputs()
+                self.per_instance_state = FakeState()
+                self.errors = []
+                self.warnings = []
+
+            def log_error(self, message):
+                self.errors.append(message)
+
+            def log_warn(self, message):
+                self.warnings.append(message)
+
+        db = FakeDb()
+
+        self.assertFalse(OgnIsaacArticulationController.compute(db))
+        self.assertEqual(db.warnings, [])
+        self.assertEqual(len(db.errors), 1)
+        self.assertIn("/BadRobot", db.errors[0])
+        self.assertIn("init failed", db.errors[0])
+
+    # ----------------------------------------------------------------------
+    async def test_command_mismatch_logs_actionable_error_and_does_not_apply_partial_targets(self):
+        class FakeInputs:
+            robotPath = "/Robot"
+            targetPrim = []
+            jointNames = []
+            jointIndices = []
+            positionCommand = [0.1, 0.2]
+            velocityCommand = []
+            effortCommand = [0.3]
+
+        class FakeArticulation:
+            def __init__(self):
+                self.position_targets = []
+                self.velocity_targets = []
+                self.efforts = []
+
+            def set_dof_position_targets(self, *args, **kwargs):
+                self.position_targets.append((args, kwargs))
+
+            def set_dof_velocity_targets(self, *args, **kwargs):
+                self.velocity_targets.append((args, kwargs))
+
+            def set_dof_efforts(self, *args, **kwargs):
+                self.efforts.append((args, kwargs))
+
+        class FakeDb:
+            def __init__(self, state):
+                self.inputs = FakeInputs()
+                self.per_instance_state = state
+                self.errors = []
+                self.warnings = []
+
+            def log_error(self, message):
+                self.errors.append(message)
+
+            def log_warn(self, message):
+                self.warnings.append(message)
+
+        state = OgnIsaacArticulationControllerInternalState.__new__(OgnIsaacArticulationControllerInternalState)
+        state.initialized = True
+        state.prim_path = "/Robot"
+        state.joint_names = None
+        state.joint_indices = [1, 2]
+        state.joint_picked = True
+        state.articulation = FakeArticulation()
+        db = FakeDb(state)
+
+        self.assertFalse(OgnIsaacArticulationController.compute(db))
+        self.assertEqual(db.warnings, [])
+        self.assertEqual(len(db.errors), 1)
+        self.assertIn("/Robot", db.errors[0])
+        self.assertIn("effortCommand", db.errors[0])
+        self.assertIn("1", db.errors[0])
+        self.assertIn("2", db.errors[0])
+        self.assertEqual(state.articulation.position_targets, [])
+        self.assertEqual(state.articulation.velocity_targets, [])
+        self.assertEqual(state.articulation.efforts, [])
 
 
 class TestArticulationControllerNode(ogts.OmniGraphTestCase):

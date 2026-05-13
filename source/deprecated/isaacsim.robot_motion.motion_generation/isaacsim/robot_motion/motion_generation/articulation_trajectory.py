@@ -52,12 +52,14 @@ class ArticulationTrajectory:
             ArticulationAction that may be passed directly to the robot Articulation to send it to the desired position/velocity at the given time.
         """
         if time < self._trajectory.start_time:
-            carb.log_error(
-                f"Provided time {time} is before the start time {self._trajectory.start_time} of the Trajectory"
-            )
+            message = f"Provided time {time} is before the start time {self._trajectory.start_time} of the Trajectory"
+            carb.log_error(message)
+            raise ValueError(message)
 
         if time > self._trajectory.end_time:
-            carb.log_error(f"Provided time {time} is after the end time {self._trajectory.end_time} of the Trajectory")
+            message = f"Provided time {time} is after the end time {self._trajectory.end_time} of the Trajectory"
+            carb.log_error(message)
+            raise ValueError(message)
 
         position_target, velocity_target = self._trajectory.get_joint_targets(time)
 

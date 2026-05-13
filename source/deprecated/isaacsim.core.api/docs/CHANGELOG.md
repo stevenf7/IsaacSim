@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.2.11] - 2026-05-12
+### Fixed
+- `ArticulationController.get_applied_action`, `switch_control_mode`, and `switch_dof_control_mode` now raise the documented `RuntimeError` when called before `initialize()` instead of leaking `AttributeError: 'NoneType' object has no attribute ...` (added shared `_require_initialized()` helper, also reused by `apply_action`) (6132508)
+
 ## [5.2.10] - 2026-05-10
 ### Fixed
 - Initialize `ParticleMaterial` with numpy backend utilities when no `SimulationContext` exists (6035776)
