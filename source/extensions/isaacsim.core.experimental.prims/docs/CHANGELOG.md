@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.8] - 2026-05-11
+### Fixed
+- Remove unused `unitsResolve` properties (other than `xformOp:scale:unitsResolve`) when resetting the transformation operation attributes of wrapped prims
+
 ## [1.8.7] - 2026-05-08
 ### Added
 - Tests verifying that `Articulation` link, joint, and DOF names and indices are non-empty before physics initialization and match the post-physics enumeration for both fixed-base (Franka) and floating-base (Spot) assets.
