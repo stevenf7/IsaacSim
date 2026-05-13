@@ -138,6 +138,7 @@ class Extension(omni.ext.IExt):
         self._ext_id = ext_id
         self._ext_name = omni.ext.get_extension_name(ext_id)
         self._registered_actions = []
+        self._depth_sensors: list = []
 
         icon_dir = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
 
@@ -208,6 +209,7 @@ class Extension(omni.ext.IExt):
             action_registry.deregister_action(self._ext_name, action_id)
         self._registered_actions.clear()
 
+        self._depth_sensors.clear()
         gc.collect()
 
     def _get_stage_and_path(self):
@@ -244,4 +246,4 @@ class Extension(omni.ext.IExt):
             usd_path=get_assets_root_path() + usd_path,
         )
         if is_depth_sensor:
-            _wrap_depth_sensor_cameras(rtx_cam)
+            self._depth_sensors.extend(_wrap_depth_sensor_cameras(rtx_cam))

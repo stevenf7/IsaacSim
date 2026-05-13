@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.1] - 2026-05-12
+### Fixed
+- Depth sensor wrappers returned by `_wrap_depth_sensor_cameras` are now stored in `Extension._depth_sensors` instead of being discarded, preventing a create/destroy cycle that corrupted the RTX pipeline and made asset materials invisible.
+
 ## [0.7.0] - 2026-05-07
 ### Changed
 - Sensor list (vendors, models, depth-sensor flags, USD asset paths) is now sourced from `isaacsim.sensors.experimental.rtx.SUPPORTED_CAMERA_CONFIGS`. `Extension.SENSORS` is built at import time from that registry via `get_camera_metadata`, so adding a new camera vendor/model is a one-place change in the registry. The legacy `Extension.SENSORS` shape (`{vendor: {display_name: {prim_prefix, usd_path, is_depth_sensor}}}`) is preserved for backward compatibility.
