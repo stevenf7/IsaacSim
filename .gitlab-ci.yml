@@ -46,6 +46,10 @@ include:
   - project: "omniverse/devplat/gitlab/templates/common/compliance"
     file: "modules/omniverse-repo-compliance.gitlab-ci.yml"
     ref: v1_latest
+  - project: 'omniverse/devplat/gitlab/templates/common/github-mirror-control'
+    file: 'templates/candidate-pipeline.yml'
+    ref: v1_latest
+
   # Internal
   # This odd structure allows us to toggle between the two test matrixes depending on the pipeline source
   # It is vital that we make sure the rules are mutually exclusive
@@ -140,6 +144,8 @@ variables:
     OSEC_PULSE_TRUFFLEHOG_ENABLED: "false"
     OSEC_OMNI_PULSE_ENABLED: "false"
     OSEC_README_ENABLED: "false" # WARNING: Also have the init() function get_nspectid_from_repo_toml() in there...
+    MIRROR_REPO_ID: "omniverse-isaac-omni_isaac_sim"
+
     ALLOW_PUBLISH_DOCS:
         value: "false"
         description: "Set to true to publish docs"
