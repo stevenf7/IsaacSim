@@ -273,7 +273,7 @@ To exit the sample, you can terminate the process using ``CTRL-C`` from the term
 MoveIt2
 ******************
 
-This sample shows how to add multiple USD stages. It also demonstrates how to manually create an action graph with ROS 2 component nodes and then manually tick them.
+This sample shows how to add multiple USD stages. It also demonstrates how to manually create an action graph with ROS 2 component nodes and automatically tick them.
 
 To visualize the output refer to the :ref:`interactive version of the sample<isaac_sim_app_tutorial_ros2_moveit>`:
 
