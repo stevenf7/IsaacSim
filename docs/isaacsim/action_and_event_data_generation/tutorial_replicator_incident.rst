@@ -39,8 +39,8 @@ A sample scene with tags already applied is provided in the Content Browser
 ``[Isaac Sim Assets Path]/Isaac/Samples/Replicator/Incidents/full_warehouse_with_incident_tags.usd``.
 
 .. note::
-    * ``[Isaac Sim Assets Path]`` is the path to :ref:`Isaac Sim Assets<isaac_assets_overview>`.
-    * Refer to :ref:`Isaac Sim Assets Check<isaac_sim_setup_assets_check>` for how to verify the assets access and how to retrieve the asset path.
+    * ``[Isaac Sim Assets Path]`` is the path to your Isaac Sim assets; refer to :ref:`Isaac Sim Assets <isaac_assets_overview>`.
+    * Refer to :ref:`Isaac Sim Assets Check <isaac_sim_setup_assets_check>` for how to verify the assets access and how to retrieve the asset path.
 
 3. (IRI standalone) Set up an event configuration file which defines what events will occur in the scene by using the **Event Config File** window
 located in the menu **Tools > Action and Event Data Generation > Event Config File**.
@@ -48,11 +48,11 @@ This configuration can also be saved and loaded later, though it is not saved in
 the **Event Config File** panel.
 After configuring the events or loading an event config file, press **Set Up Events** to load the demons that will trigger the events at the specified times.
 
-4. Run the simulation with the play button to preview the scene. To generate SDG data you can also use the **Record Events** button in the **Event Config File** window
-Event items are given semantic labels as the simulation runs to support replicator's SDG collection. A separate event log is also generated
-to record the event details.
+4. Run the simulation with the play button to preview the scene. To generate SDG data you can also use the **Record Events** button in the **Event Config File** window.
+Event items are given semantic labels as the simulation runs to support replicator's SDG collection. A separate incident report is also written
+as JSON (by default ``incidents_report.json`` in the output directory) to record event details. Refer to :ref:`iri_incident_report_json`.
 
-.. Note:: No adjustment is made to the viewport camera during an event, so the you must manually find the event in the scene and move the viewport camera there to view it.
+.. Note:: No adjustment is made to the viewport camera during an event, so you must manually find the event in the scene and move the viewport camera there to view it.
 
 IRI Standalone UI Example
 --------------------------
@@ -79,7 +79,7 @@ uses the navmesh to determine the direction to topple the items.
 
 #. Play the scene and collect event data with the **Record Events** button in the **Event Config File** window. Press **Stop Record** to stop the recording.
 
-An event report will be generated in the specified output directory.
+An incident report is written to the specified output directory (default file name ``incidents_report.json``). Refer to :ref:`iri_incident_report_json` for the JSON layout.
 
 Scene Tagging
 --------------------------
@@ -201,7 +201,7 @@ IRI saves the event configuration to the script file, which can be edited direct
                 time: 9
 
 In this example, three events are defined: a topple event, a fire event, and a spill event.
-Each event has a name, and a simple time based trigger that will be trigger the event at the specified time.
+Each event has a name, and a simple time based trigger that will trigger the event at the specified time.
 
 The next few sections will go over the various event types and the parameters available for each.
 
@@ -218,7 +218,7 @@ A topple event has the following required fields:
     * name: the name of the event
     * topple_item: the item to topple. Can be a specific tagged item prim path, or a random tagged item given by $random_loose_item$
         * topple_nearby_radius: Other loose items within this radius will also be toppled.
-    * trigger: the trigger for the event. Can be a time based trigger. Triggers are defined in the trigger section :ref:`Trigger Fields <iri_trigger_section>`.
+    * trigger: the trigger for the event. Can be a time based trigger. Refer to :ref:`Trigger Fields <iri_trigger_section>` for the trigger section.
 
 
 .. code:: yaml
@@ -247,7 +247,7 @@ A fire event has the following required fields:
 
     * name: the name of the event
     * flammable_item: the item to catch fire. Can be a specific tagged item prim path, or a random tagged item given by ``$random_flammable_item$``
-    * trigger: the trigger for the event. Can be a time based trigger. Triggers are defined in the trigger section :ref:`Trigger Fields <iri_trigger_section>`.
+    * trigger: the trigger for the event. Can be a time based trigger. Refer to :ref:`Trigger Fields <iri_trigger_section>` for the trigger section.
 
 .. code:: yaml
 
@@ -260,6 +260,8 @@ A fire event has the following required fields:
             time: 2.0
 
 Flammable items in the scene will be given the semantic label 'incident_flaming_item'. The flame itself will require a custom replicator writer to be written.
+
+The YAML ``trigger`` above sets the fire start time in seconds on the trigger; the incident report JSON records that trigger under ``trigger_data`` and adds fire-specific ``simulation_data`` (``start_time`` in frames and ``fire_prim``). Refer to :ref:`iri_incident_report_json`.
 
 
 Spill Event
@@ -276,7 +278,7 @@ A spill event has the following required fields:
     * leakable_item: the item to spill. Can be a specific tagged item prim path, or a random tagged item given by ``$random_leakable_item$``
         * target_size: the size of the spill area.
         * leak_duration: the duration of the spill.
-    * trigger: the trigger for the event. Can be a time based trigger. Triggers are defined in the trigger section :ref:`Trigger Fields <iri_trigger_section>`.
+    * trigger: the trigger for the event. Can be a time based trigger. Refer to :ref:`Trigger Fields <iri_trigger_section>` for the trigger section.
 
 .. code:: yaml
 
@@ -333,8 +335,32 @@ Here are the parameters for the various trigger types currently supported
 
 SDG Collection
 --------------------------
-SDG collection is handled by the replicator's SDG writers based on the semantic labels of the event items. Additional information
-is collected in the event log, which is a yaml file in the output directory.
+SDG collection is handled by the replicator's SDG writers based on the semantic labels of the event items. The structured incident
+metadata file written when you record events is **JSON** (``incidents_report.json`` by default; refer to :ref:`iri_incident_report_json`).
+It is **not** a YAML event log. The event configuration you save and load in Event Config File remains YAML and is separate from the incident report.
+
+.. _iri_incident_report_json:
+
+Incident Report JSON
+########################
+
+Recording uses ``IncidentReport.start_recording`` in ``isaacsim.replicator.incident.core``. By default the report file name is
+``incidents_report.json`` (override with the ``file_name`` argument).
+
+The file is a JSON object whose **top-level keys are event names** (strings). Each event entry may include any of the following
+sections (all optional unless noted for a given event type):
+
+* ``event_data``: Event-specific fields from configuration or setup.
+* ``trigger_data``: Present when the event is launched by a trigger whose callback forwards the trigger to the incident handler (typical for time triggers on all event types). Contains a nested ``trigger`` object with fields such as ``type``, ``priority``, and ``time``. Time-based triggers use ``time`` in **seconds** (refer to :ref:`Triggers <iri_trigger_section>`).
+* ``simulation_data``: Simulation timeline metadata in simulation frame indices (integers), not seconds. Do not equate these numbers with trigger time unless you convert it using your timeline FPS or ticks-per-frame.
+
+**Per event type (current implementation):**
+
+* **Topple:** ``event_data``, ``trigger_data``, and ``simulation_data`` with ``start_time`` and ``end_time`` (frames). ``end_time`` is when the topple observer considers the event finished (for example, loose items sleeping), not only the trigger instant.
+* **Spill:** ``event_data``, ``trigger_data``, and ``simulation_data`` with ``start_time`` and ``end_time`` (frames). The interval spans from the trigger frame through ``trigger_time + leak_duration`` in simulation time (see spill ``leak_duration`` in the YAML/UI).
+* **Fire:** ``event_data``, ``trigger_data`` (when the event is triggered through the standard trigger callback), and ``simulation_data`` with only ``start_time`` (frame at ignition) and ``fire_prim`` (USD path of the FlowEmitterBox emitter prim). Fire entries do not include ``end_time`` in ``simulation_data``. Note: ``event_data`` may include a field such as ``flame_emitter`` that refers to the flammable item prim path. The ``fire_prim`` field is separate and points to the emitter prim used for the pyro effect.
+
+Parsers should treat ``simulation_data`` keys as **event-type-specific** (for example ``end_time`` is absent for fire) and tolerate missing sections if older builds or code paths omit them.
 
 .. image:: /images/isim_5.0_full_ext-isaacsim.replicator.incident-0.1.0_viewport_semantic_label.png
 
