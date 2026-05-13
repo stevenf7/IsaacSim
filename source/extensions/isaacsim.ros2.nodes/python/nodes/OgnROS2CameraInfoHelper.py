@@ -275,7 +275,7 @@ class OgnROS2CameraInfoHelper:
             if db.inputs.frameSkipCount > 0:
                 carb.log_warn(
                     "The frameSkipCount input is deprecated. "
-                    "Control publish rate by setting omni:sensor:tickRate on the sensor prim instead."
+                    "Control publish rate by setting omni:sensor:tickRate on the sensor prim instead, and setting frameSkipCount to 0."
                 )
             db.per_instance_state.publishStepSize = db.inputs.frameSkipCount + 1
 

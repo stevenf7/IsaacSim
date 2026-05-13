@@ -1065,6 +1065,11 @@ local function get_ros_tests()
             "--test",
         },
         {
+            "tests-nativepython-isaacsim.ros2.bridge.rtx_radar",
+            "standalone_examples/api/isaacsim.ros2.bridge/rtx_radar.py",
+            "--test",
+        },
+        {
             "tests-nativepython-isaacsim.ros2.bridge.subscriber",
             "standalone_examples/api/isaacsim.ros2.bridge/subscriber.py",
             "--test",
@@ -1200,6 +1205,12 @@ local function get_doc_snippets_tests()
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.sensors.isaacsim_sensors_rtx.how_to_enable_motion_bvh",
             "../../../docs/isaacsim/snippets/sensors/isaacsim_sensors_rtx/how_to_enable_motion_bvh.py",
+            "--test",
+        },
+        -- sensors/isaacsim_sensors_multitick_rendering
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.sensors.isaacsim_sensors_multitick_rendering.defer_radar_after_lidar_warmup",
+            "../../../docs/isaacsim/snippets/sensors/isaacsim_sensors_multitick_rendering/defer_radar_after_lidar_warmup.py",
             "--test",
         },
         -- motion_generation/controllers (no noise and no filtering)

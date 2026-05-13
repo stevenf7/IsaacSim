@@ -58,7 +58,12 @@ Adding a RTX Radar ROS 2 Bridge
 
 #. Start with the turtlebot scene from the :ref:`isaac_sim_app_tutorial_ros2_turtlebot` tutorial.
 #. Add a Radar sensor by going to **Create > Sensors > RTX Radar > NVIDIA > Generic RTX Radar**.
-#. To place the radar sensor on the robot, drag the Radar prim under ``/World/turtlebot3_burger/base_scan``. Zero out any displacement in the **Transform** fields inside the **Property** tab.
+#. To place the radar sensor on the robot, drag the Radar prim under ``/World/turtlebot3_burger/base_scan``. Modify the **Transform** fields inside the **Property** tab as follows:
+
+    #. Zero out any displacement.
+    #. Set **Rotate Z** to ``90.0``, so the Radar prim is pointing forward.
+    #. Set **Translate Z** to ``1.0``, so the Radar prim is slightly above the robot base and returns are more visible.
+
 #. Connect the ROS 2 bridge with the sensor output using OmniGraph nodes. Open the visual scripting editor by going to **Window > Graph Editors > Action Graph**. Add the following nodes to the graph:
 
     #. ``On Playback Tick``: Triggers all downstream nodes after **Play** is pressed.
@@ -74,17 +79,7 @@ Adding a RTX Radar ROS 2 Bridge
     - ``Isaac Create Render Product > outputs:execOut`` → ``ROS2 RTX Radar Helper > inputs:execIn``
     - ``Isaac Create Render Product > outputs:renderProductPath`` → ``ROS2 RTX Radar Helper > inputs:renderProductPath``
 
-Exposing Radar Metadata
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The ``ROS2 RTX Radar Helper`` node supports optional per-point metadata fields in the PointCloud2 message:
-
-- **outputRadialVelocityMS**: Include per-point radial velocity (m/s). Requires the OmniRadar prim to be created with ``Radar(path, aux_output_level="BASIC")`` (or have ``_replicator:rendervar:GenericModelOutput:channels = ["BASIC"]`` authored on it). See :ref:`isaac_sim_sensors_multitick_aux_output_level` for the full attribute-flow explanation and a known issue when multiple RTX sensors share a stage with different auxiliary levels.
-- **outputIntensity**: Include per-point intensity values.
-- **outputTimestamp**: Include per-point timestamps.
-
-Running the Example
-^^^^^^^^^^^^^^^^^^^^^^^^
+.. warning:: Some users may experience a fatal crash when running the example. A description of the crash and a workaround are documented in :ref:`isaac_sim_sensors_multitick_known_issue_radar_lidar_fif_race`.
 
 After the graph has been set correctly, press **Play** to begin the simulation.
 
@@ -93,13 +88,16 @@ For RViz2 visualization:
 #. Run RViz2 (``rviz2``) in a sourced terminal.
 #. Set the **Fixed Frame** to ``base_scan`` to match the radar's frame ID.
 #. Add a **PointCloud2** visualization and set the topic to ``/radar_point_cloud``.
-#. If radial velocity is enabled, you can color the point cloud by the ``radial_velocity_ms`` field to visualize Doppler data.
 #. To observe the RViz image below, make sure the simulation is playing. In a ROS2-sourced terminal, open with the configuration provided using the command:
 
      ``ros2 run rviz2 rviz2 -d <ros2_ws>/src/isaac_tutorials/rviz2/camera_lidar.rviz``
 
  After the RViz window finishes loading, you can enable and disable the sensor streams inside the **Display** panel on the left hand side.
- Modify the PointCloud2 visualization topic to ``/radar_point_cloud`` to show the Radar point cloud, rather than the Lidar point cloud.
+ Modify the PointCloud2 visualization topic to ``/radar_point_cloud`` to show the Radar point cloud, rather than the Lidar point cloud. Set **Size (m)** to ``0.1`` so the points are more visible.
+
+.. note:: In the RViz2 image below, the **Camera 1 - RGB** window was closed because it was hiding one of the Radar returns.
+
+.. note:: The generic RTX Radar sensor is configured to generate few points by default, hence typically only 1-2 points are picked up in this specific scene. Other environments and Radar configurations will generate different point clouds with possibly more points; this example is used for tutorial purposes only.
 
 .. figure:: /images/isim_6.0_ros_tut_external_rtx_radar_multisensor_rviz2.png
     :align: center
@@ -117,7 +115,7 @@ For RViz2 visualization:
 Programmatic Setup (Script Editor)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can also set up the radar ROS 2 bridge programmatically. The following example creates an RTX Radar sensor with radial velocity metadata and publishes it to ROS 2.
+You can also set up the radar ROS 2 bridge programmatically. The following example creates an RTX Radar sensor and publishes its detections to ROS 2 (see :ref:`isaac_sim_app_tutorial_ros2_rtx_radar_velocity_example` below for a standalone script that additionally publishes per-point radial velocity).
 
 .. note::
 
@@ -125,6 +123,40 @@ You can also set up the radar ROS 2 bridge programmatically. The following examp
 
 .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_rtx_radar/programmatic_setup.py
     :language: python
+
+.. _isaac_sim_app_tutorial_ros2_rtx_radar_velocity_example:
+
+Exposing Radar Metadata
+=======================
+
+The ``ROS2 RTX Radar Helper`` node supports optional per-point metadata fields in the PointCloud2 message:
+
+- **outputRadialVelocityMS**: Include per-point radial velocity (m/s). Requires the OmniRadar prim to be created with ``Radar(path, aux_output_level="BASIC")`` (or have ``_replicator:rendervar:GenericModelOutput:channels = ["BASIC"]`` authored on it). See :ref:`isaac_sim_sensors_multitick_aux_output_level` for known issues and more details, including how to set the attribute via the UI.
+- **outputIntensity**: Include per-point intensity values.
+- **outputTimestamp**: Include per-point timestamps.
+
+Standalone Example: Radial Velocity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The example below shows how to create an RTX Radar sensor and publish radial velocity metadata to ROS 2, such that the point cloud can be colored by the radial velocity when visualized. The example creates two rigid bodies moving cyclically towards and away from the radar, such that the radial velocity is non-zero for each point in the point cloud.
+
+- Run the sample script:
+
+    .. code-block:: bash
+
+        ./python.sh standalone_examples/api/isaacsim.ros2.bridge/rtx_radar.py
+
+- In a new terminal with your ROS2 environment sourced, run the following command to start RViz and show the Radar point cloud. Replace ``ros2_ws`` with ``humble_ws`` or ``jazzy_ws`` as appropriate.
+
+    .. code-block:: bash
+
+        rviz2 -d <ros2_ws>/src/isaac_tutorials/rviz2/rtx_radar.rviz
+
+After the scene finishes loading, verify that you observe the point cloud returns colored by the radial velocity and changing over time as the rigid bodies accelerate and decelerate cyclically.
+
+.. image:: /images/isim_6.0_ros_tut_rtx_radar_standalone.webp
+    :alt: RTX Radar publishing PointCloud2 with radial velocity, visualized in RViz2
+    :align: center
+    :width: 80%
 
 
 Summary

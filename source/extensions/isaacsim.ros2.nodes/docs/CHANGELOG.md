@@ -1,4 +1,10 @@
 # Changelog
+
+## [1.18.3] - 2026-05-12
+### Fixed
+- `OgnROS2CameraHelper` / `OgnROS2CameraInfoHelper` / `OgnROS2RtxLidarHelper` - `frameSkipCount` deprecation message directs users to set input to 0.
+- `OgnROS2RtxLidarHelper` uses new `RtxSensorDebugDrawPointCloud` writer rather than deprecated `RtxLidarDebugDrawPointCloudBuffer`
+
 ## [1.18.2] - 2026-05-12
 ### Fixed
 - `OgnROS2CameraInfoHelper`: use render-product-specific SRTX sensor sets so `camera_info` publishes alongside RGB/depth in configured Mega deployments.

@@ -64,6 +64,8 @@ To reproduce the |isaac-sim_short| 5.x render-every-frame behavior in 6.0 (for e
 a regression), launch with ``--/rtx/hydra/supportMultiTickRate=false``. Most other code paths
 in 6.0 assume the global default and have not been validated with the setting disabled.
 
+.. _isaac_sim_sensors_multitick_configuring_per_sensor_tick_rates:
+
 Configuring Per-Sensor Tick Rates
 =================================
 
@@ -145,6 +147,24 @@ Auxiliary Output Level and the GenericModelOutput RenderVar
 RTX Lidar, Radar, and Acoustic sensors emit a ``GenericModelOutput`` (GMO) AOV. The amount
 of auxiliary data carried in each GMO frame is controlled by the
 ``_replicator:rendervar:GenericModelOutput:channels`` attribute on the sensor prim.
+
+Setting the channels attribute in the UI
+----------------------------------------
+
+To set ``_replicator:rendervar:GenericModelOutput:channels`` on an OmniRadar prim from
+the Isaac Sim UI:
+
+#. Select the prim in the **Stage** window.
+#. Open the **Property** tab.
+#. Expand the **Array Properties** widget.
+#. Click **Edit** on the ``_replicator:rendervar:GenericModelOutput:channels`` row.
+#. Set the first field in the dialog to ``BASIC``.
+#. Close the dialog to save the change.
+
+.. figure:: /images/isim_6.0_sensors_multitick_gui_array_properties_channels.png
+    :align: center
+    :width: 800
+    :alt: Setting the GenericModelOutput channels attribute on an OmniRadar prim via the Array Properties widget in the Property tab
 
 How the attribute flows to the RenderVar
 ----------------------------------------
@@ -398,3 +418,58 @@ If ``omni:sensor:tickRate`` is not equal to ``omni:sensor:Core:scanRateBaseHz`` 
 ``OmniLidar`` prim, the sensor falls back to emitting partial scans every frame. See
 :ref:`isaac_sim_sensors_multitick_lidar_tickrate_must_match_scanrate` for details and the
 recommended remediation.
+
+.. _isaac_sim_sensors_multitick_known_issue_radar_lidar_fif_race:
+
+Radar + Lidar frames-in-flight race
+-----------------------------------
+
+A fatal crash from ``rtx.sensors.lidar.core.plugin`` may occur during the first 1-2
+wall-clock seconds after starting simulation when a scene combines RTX Radar, RTX Lidar,
+and Motion BVH. The crash is caused by a timing-dependent race in the RTX sensor
+framework's frames-in-flight (FIF) scheduling, where the Lidar's per-frame trace begins
+before its sensor profile has been initialized. Affected configurations crash
+deterministically; unaffected hardware does not see the issue. The error appears as a
+floating-point exception inside ``LidarRotary::openTrace`` or, less commonly, a
+segmentation fault in the v3.0 sensor scheduler:
+
+   .. code-block:: bash
+
+       [Fatal] [carb.crashreporter-breakpad.plugin] Crashing: SIGFPE
+       at rtx.sensors.lidar.core.plugin::LidarRotary::openTrace
+
+Once the simulation has been running for ~1-2 wall-clock seconds without crashing, the
+session is stable for the remainder of its lifetime.
+
+Standalone Python workaround
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In standalone Python workflows, delay creating the render product for the Radar and
+attaching any Annotators or Writers until after the frames-in-flight have stabilized.
+Construct the Lidars normally before ``timeline.play()``, but construct only the Radar's
+USD authoring object pre-play and defer the ``RadarSensor`` wrap until after a short
+warmup window:
+
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_multitick_rendering/defer_radar_after_lidar_warmup.py
+    :language: python
+
+The 5-frame warmup is conservative: it is one full rotation of the default 3-slot
+frames-in-flight buffer plus a small margin. Heavier scenes may require a larger value.
+
+.. _isaac_sim_sensors_multitick_known_issue_radar_lidar_fif_race_omnigraph_workaround:
+
+OmniGraph workaround
+^^^^^^^^^^^^^^^^^^^^
+
+In OmniGraph workflows using the ``ROS2RtxRadarHelper`` node, you can stagger creating
+the Radar's render product until after the Lidars have stabilized. Place an
+``omni.graph.action.Countdown`` node between the ``OnPlaybackTick`` and the
+``ROS2RtxRadarHelper`` node, setting its ``duration`` to ``5`` and its ``period`` to
+``1``. The ``Countdown`` node's ``finished`` output triggers downstream graph execution
+after ``duration`` ticks have elapsed, analogous to the 5-frame warmup in the standalone
+Python workflow.
+
+.. figure:: /images/isim_6.0_ros_tut_gui_rtx_radar_countdown_workaround.png
+    :align: center
+    :width: 800
+    :alt: RTX Radar crash workaround in OmniGraph, using Countdown node to stagger Radar writer attachment
