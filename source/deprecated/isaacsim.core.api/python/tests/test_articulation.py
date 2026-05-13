@@ -22,6 +22,7 @@
 from typing import Any
 
 from isaacsim.core.api import World
+from isaacsim.core.api.controllers import ArticulationController
 from isaacsim.core.deprecation_manager import import_module
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
@@ -40,6 +41,26 @@ from pxr import PhysxSchema, UsdPhysics
 from .common import CoreTestCase
 
 torch = import_module("torch")
+
+
+class TestArticulationController(CoreTestCase):
+    """Test articulation controller."""
+
+    async def test_articulation_controller_raises_runtime_error_before_initialize(self) -> None:
+        """Test uninitialized controller calls raise a descriptive error."""
+        expected_message = "ArticulationController is not initialized. Call initialize() first."
+
+        controller = ArticulationController()
+
+        with self.assertRaises(RuntimeError) as error:
+            controller.get_applied_action()
+        self.assertEqual(str(error.exception), expected_message)
+        with self.assertRaises(RuntimeError) as error:
+            controller.switch_control_mode("position")
+        self.assertEqual(str(error.exception), expected_message)
+        with self.assertRaises(RuntimeError) as error:
+            controller.switch_dof_control_mode(0, "position")
+        self.assertEqual(str(error.exception), expected_message)
 
 
 class TestSingleArticulation(CoreTestCase):

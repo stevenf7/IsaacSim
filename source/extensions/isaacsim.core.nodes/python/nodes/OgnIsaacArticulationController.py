@@ -28,6 +28,7 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
         self.joint_names = None
         self.joint_indices = None
         self.joint_picked = False
+        self.command_error_message = None
         self.node = None
         super().__init__(initialize=False)
 
@@ -65,12 +66,14 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
             True when all provided commands were valid and applied; False when the controller is not initialized or any
             command is invalid.
         """
+        self.command_error_message = None
         if not self.initialized:
+            self.command_error_message = "Articulation controller is not initialized; ignoring command."
             return False
 
-        position_command = self._prepare_command(joint_positions)
-        velocity_command = self._prepare_command(joint_velocities)
-        effort_command = self._prepare_command(joint_efforts)
+        position_command = self._prepare_command(joint_positions, "positionCommand")
+        velocity_command = self._prepare_command(joint_velocities, "velocityCommand")
+        effort_command = self._prepare_command(joint_efforts, "effortCommand")
         if position_command is None or velocity_command is None or effort_command is None:
             return False
 
@@ -86,12 +89,13 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
         return True
 
     def _prepare_command(
-        self, command: np.ndarray | list | tuple
+        self, command: np.ndarray | list | tuple, command_name: str
     ) -> tuple[np.ndarray | list | tuple, np.ndarray | list | None] | None:
         """Validate and filter a command before any articulation targets are written.
 
         Args:
             command: Joint command values for the currently selected joints.
+            command_name: Name of the OGN command input being validated.
 
         Returns:
             A tuple of filtered command values and matching DOF indices. Returns None if the command width does not
@@ -101,11 +105,23 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
             return command, self.joint_indices
         command_valid, dof_indices = self._resolve_command_indices(command)
         if not command_valid:
+            self.command_error_message = self._format_command_mismatch(command_name, command)
             return None
-        command, dof_indices = self._filter_finite_command(command, dof_indices)
-        if command is None:
+        filtered_command, dof_indices = self._filter_finite_command(command, dof_indices)
+        if filtered_command is None:
+            self.command_error_message = self._format_command_mismatch(command_name, command)
             return None
-        return command, dof_indices
+        return filtered_command, dof_indices
+
+    def _format_command_mismatch(self, command_name: str, command: np.ndarray | list | tuple) -> str:
+        prim_path = getattr(self, "prim_path", None)
+        selected_joint_count = 0 if self.joint_indices is None else np.asarray(self.joint_indices).reshape(-1).size
+        selected_joints = "all DOFs" if self.joint_indices is None else f"jointIndices={self.joint_indices}"
+        return (
+            f"Articulation controller command mismatch for prim '{prim_path}': {command_name} has "
+            f"{np.size(command)} value(s), but the selected joint count is {selected_joint_count} "
+            f"({selected_joints}). Ignoring all commands."
+        )
 
     def _resolve_command_indices(self, command: np.ndarray | list | tuple) -> tuple[bool, np.ndarray | list | None]:
         """Validate that a command width matches the explicitly selected joints."""
@@ -191,13 +207,14 @@ class OgnIsaacArticulationController:
                 state.joint_indicator()
 
             if not state.apply_action(db.inputs.positionCommand, db.inputs.velocityCommand, db.inputs.effortCommand):
-                db.log_warn(
-                    "Articulation controller command length does not match the selected joint count; ignoring command."
+                db.log_error(
+                    getattr(state, "command_error_message", None)
+                    or f"Articulation controller command failed for prim '{getattr(state, 'prim_path', None)}'; ignoring command."
                 )
                 return False
 
         except Exception as error:
-            db.log_warn(str(error))
+            db.log_error(f"Articulation controller failed for prim '{getattr(state, 'prim_path', None)}': {error}")
             return False
 
         return True

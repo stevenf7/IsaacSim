@@ -1,4 +1,8 @@
 # Changelog
+## [8.2.8] - 2026-05-12
+### Fixed
+- `ArticulationTrajectory.get_action_at_time`: raise `ValueError` immediately after `carb.log_error` for out-of-bounds time instead of falling through to `get_joint_targets` and returning a structurally valid but semantically wrong action (6131126)
+
 ## [8.2.7] - 2026-04-20
 ### Fixed
 - Fix `ArticulationKinematicsSolver.compute_end_effector_pose` missing return after `carb.log_error` (crashes with None joint positions)
