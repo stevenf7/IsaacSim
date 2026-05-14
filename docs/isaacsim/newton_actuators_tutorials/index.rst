@@ -101,7 +101,7 @@ Two construction paths are supported:
       subtree, parses every ``NewtonActuator`` prim it finds, validates the
       target relationships, and builds the corresponding ``Actuator`` objects.
 
-      .. literalinclude:: ../snippets/newton_actuators/newton_actuators_usd_example.py
+      .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_usd_example.py
          :start-after: <start-discover-from-usd-snippet>
          :end-before: <end-discover-from-usd-snippet>
          :language: python
@@ -115,7 +115,7 @@ Two construction paths are supported:
       paired with DOF names.  Useful when the asset has no authored
       actuators or when iterating on parameters.
 
-      .. literalinclude:: ../snippets/newton_actuators/newton_actuators_python_example.py
+      .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_python_example.py
          :start-after: <start-construct-from-actuators-snippet>
          :end-before: <end-construct-from-actuators-snippet>
          :language: python

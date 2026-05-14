@@ -36,8 +36,19 @@ The simulation runs until the kit window is closed.
 from __future__ import annotations
 
 # ============================================================================
-# 1. Launch Simulation App (non-headless so the user can open the graph editor)
+# 1. Parse arguments and launch Simulation App (non-headless so the user can
+#    open the graph editor)
 # ============================================================================
+import argparse
+
+_parser = argparse.ArgumentParser(description="Newton actuators OmniGraph tutorial example.")
+_parser.add_argument(
+    "--test",
+    action="store_true",
+    help="Run a fixed number of simulation steps and exit (used for CI testing).",
+)
+args, _ = _parser.parse_known_args()
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
@@ -226,8 +237,12 @@ def main() -> None:
         "Window > Graph Editors > Action Graph to inspect it.  "
         "Close the kit window to exit."
     )
-    while simulation_app.is_running():
-        simulation_app.update()
+    if args.test:
+        for _ in range(5):
+            simulation_app.update()
+    else:
+        while simulation_app.is_running():
+            simulation_app.update()
 
 
 if __name__ == "__main__":

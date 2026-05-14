@@ -44,7 +44,7 @@ By the end of this tutorial you'll know how to:
 * Build a minimal OmniGraph that drives a USD-authored actuated robot.
 * Send per-DOF feedforward effort commands through the node.
 
-All code examples come from the complete, runnable file ``newton_actuators_omnigraph_example.py``:
+To run the example, use the following command:
 
 .. code-block:: bash
 

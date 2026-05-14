@@ -747,13 +747,54 @@ local function get_robot_tests()
             "--test",
         },
         {
+            "tests-nativepython-isaacsim.robot_motion.experimental.motion_generation.mobile_robot_control.noise",
+            "standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/mobile_robot_control_example.py",
+            "--noise --test",
+        },
+        {
+            "tests-nativepython-isaacsim.robot_motion.experimental.motion_generation.mobile_robot_control.filter",
+            "standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/mobile_robot_control_example.py",
+            "--filter --test",
+        },
+        {
+            "tests-nativepython-isaacsim.robot_motion.experimental.motion_generation.mobile_robot_control.filter_and_noise",
+            "standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/mobile_robot_control_example.py",
+            "--filter --noise --test",
+        },
+        {
             "tests-nativepython-isaacsim.robot_motion.experimental.motion_generation.trajectory",
             "standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/trajectory_example.py",
             "--test",
         },
         {
+            "tests-nativepython-isaacsim.robot_motion.experimental.motion_generation.trajectory.linear",
+            "standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/trajectory_example.py",
+            "--linear --test",
+        },
+        {
             "tests-nativepython-isaacsim.robot_motion.experimental.motion_generation.scene_interaction",
             "standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/scene_interaction_example.py",
+        },
+        -- Newton Actuators (Experimental)
+        {
+            "tests-nativepython-isaacsim.core.experimental.actuators.newton_actuators_python",
+            "standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_python_example.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.core.experimental.actuators.newton_actuators_python.non_ideal",
+            "standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_python_example.py",
+            "--non-ideal --test",
+        },
+        {
+            "tests-nativepython-isaacsim.core.experimental.actuators.newton_actuators_usd",
+            "standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_usd_example.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.core.experimental.actuators.newton_actuators_omnigraph",
+            "standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_omnigraph_example.py",
+            "--test",
         },
     }
 end
@@ -1213,48 +1254,6 @@ local function get_doc_snippets_tests()
             "../../../docs/isaacsim/snippets/sensors/isaacsim_sensors_multitick_rendering/defer_radar_after_lidar_warmup.py",
             "--test",
         },
-        -- motion_generation/controllers (no noise and no filtering)
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.controllers.mobile_robot_control_example",
-            "../../../docs/isaacsim/snippets/motion_generation/controllers/mobile_robot_control_example.py",
-            "--test",
-        },
-        -- motion_generation/controllers (noise but no filtering)
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.controllers.mobile_robot_control_example.noise",
-            "../../../docs/isaacsim/snippets/motion_generation/controllers/mobile_robot_control_example.py",
-            "--noise --test",
-        },
-        -- motion_generation/controllers (filter but no noise)
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.controllers.mobile_robot_control_example.filter",
-            "../../../docs/isaacsim/snippets/motion_generation/controllers/mobile_robot_control_example.py",
-            "--filter --test",
-        },
-        -- motion_generation/controllers (filter and noise)
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.controllers.mobile_robot_control_example.filter_and_noise",
-            "../../../docs/isaacsim/snippets/motion_generation/controllers/mobile_robot_control_example.py",
-            "--filter --noise --test",
-        },
-        -- motion_generation/scene_interaction
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.scene_interaction.scene_interaction_example",
-            "../../../docs/isaacsim/snippets/motion_generation/scene_interaction/scene_interaction_example.py",
-            "--test",
-        },
-        -- motion_generation/trajectories (minimal-time trajectory)
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.trajectories.trajectory_example",
-            "../../../docs/isaacsim/snippets/motion_generation/trajectories/trajectory_example.py",
-            "--test",
-        },
-        -- motion_generation/trajectories (linear trajectory)
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.motion_generation.trajectories.trajectory_example.linear",
-            "../../../docs/isaacsim/snippets/motion_generation/trajectories/trajectory_example.py",
-            "--linear --test",
-        },
         -- cumotion/trajectory_optimizer
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.cumotion.trajectory_optimizer_example",
@@ -1283,24 +1282,6 @@ local function get_doc_snippets_tests()
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.cumotion.world_interface_example",
             "../../../docs/isaacsim/snippets/cumotion/world_interface_example.py",
-            "--test",
-        },
-        -- actuators/newton_actuators_python_example
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.newton_actuators.newton_actuators_python_example",
-            "../../../docs/isaacsim/snippets/newton_actuators/newton_actuators_python_example.py",
-            "--test",
-        },
-        -- actuators/newton_actuators_python_example (delayed PD flag)
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.newton_actuators.newton_actuators_python_example.non_ideal",
-            "../../../docs/isaacsim/snippets/newton_actuators/newton_actuators_python_example.py",
-            "--non-ideal --test",
-        },
-        -- actuators/newton_actuators_usd_example
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.newton_actuators.newton_actuators_usd_example",
-            "../../../docs/isaacsim/snippets/newton_actuators/newton_actuators_usd_example.py",
             "--test",
         },
         -- actuators/newton_actuators_omnigraph_example

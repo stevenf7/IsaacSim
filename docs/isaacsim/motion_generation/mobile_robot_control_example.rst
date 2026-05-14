@@ -169,7 +169,7 @@ Now let's see how we'll use this space when creating :class:`RobotState` objects
 
 Here's how we'll read the current robot state and create a :class:`RobotState`:
 
-.. literalinclude:: ../snippets/motion_generation/controllers/mobile_robot_control_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/mobile_robot_control_example.py
    :start-after: <start-create-robotstate-from-robot-snippet>
    :end-before: <end-create-robotstate-from-robot-snippet>
    :language: python
@@ -178,7 +178,7 @@ Notice that we provide the full ``robot_joint_space`` and specify all joints wit
 
 Here's how we'll create a :class:`RobotState` with a desired root state to set desired velocities for our mobile robot:
 
-.. literalinclude:: ../snippets/motion_generation/controllers/mobile_robot_control_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/mobile_robot_control_example.py
    :start-after: <start-create-robotstate-root-space-snippet>
    :end-before: <end-create-robotstate-root-space-snippet>
    :language: python
@@ -197,7 +197,7 @@ Initialization: Parameterizing the Controller
 We need to parameterize the controller based on the geometry of our particular robot. The differential drive controller needs to know the wheel radius, 
 the distance between wheels (wheel base). We also need to know which joints control the left and right wheels:
 
-.. literalinclude:: ../snippets/motion_generation/controllers/mobile_robot_control_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/mobile_robot_control_example.py
    :start-after: <start-differential-drive-init-snippet>
    :end-before: <end-differential-drive-init-snippet>
    :language: python
@@ -207,7 +207,7 @@ The :meth:`reset` Method: Initializing the Controller
 
 The :class:`DifferentialDriveController` is stateless, so we don't actually need to do anything here. The :meth:`reset` method simply returns ``True``:
 
-.. literalinclude:: ../snippets/motion_generation/controllers/mobile_robot_control_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/mobile_robot_control_example.py
    :start-after: <start-differential-drive-reset-snippet>
    :end-before: <end-differential-drive-reset-snippet>
    :language: python
@@ -221,7 +221,7 @@ The :meth:`forward` method is where the controller does its work. We first verif
 * if the input joint state doesn't use the same ``robot_joint_space`` as our controller, we return ``None``. 
 * Otherwise, we compute the wheel speeds using differential drive kinematics and return the desired :class:`RobotState`:
 
-.. literalinclude:: ../snippets/motion_generation/controllers/mobile_robot_control_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/mobile_robot_control_example.py
    :start-after: <start-differential-drive-forward-snippet>
    :end-before: <end-differential-drive-forward-snippet>
    :language: python
@@ -241,7 +241,7 @@ Initialization: Configuring the Filter
 The low-pass filter controller needs to know the robot's joint space and the filter coefficient (alpha). The alpha parameter controls how much filtering 
 is applied - smaller values mean more filtering (smoother but more lag in the system response):
 
-.. literalinclude:: ../snippets/motion_generation/controllers/mobile_robot_control_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/mobile_robot_control_example.py
    :start-after: <start-low-pass-filter-init-snippet>
    :end-before: <end-low-pass-filter-init-snippet>
    :language: python
@@ -252,7 +252,7 @@ The :meth:`reset` Method: Initializing the Filter State
 We reset the initial filter state to be exactly the underlying joint-data array from the estimated state. This prevents jerky motions in the robot - 
 if the filter is initialized to match the exact state of the robot, then the robot will smoothly transition into following the filter as soon as it starts running:
 
-.. literalinclude:: ../snippets/motion_generation/controllers/mobile_robot_control_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/mobile_robot_control_example.py
    :start-after: <start-low-pass-filter-reset-snippet>
    :end-before: <end-low-pass-filter-reset-snippet>
    :language: python
@@ -263,7 +263,7 @@ The :meth:`forward` Method: Applying the Filter
 The :meth:`forward` method applies the low-pass filter to the entire underlying data array of the setpoint state, filtering all joint outputs (positions, velocities, 
 and efforts) simultaneously. If there is no setpoint state, we return ``None``:
 
-.. literalinclude:: ../snippets/motion_generation/controllers/mobile_robot_control_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/mobile_robot_control_example.py
    :start-after: <start-low-pass-filter-forward-snippet>
    :end-before: <end-low-pass-filter-forward-snippet>
    :language: python
@@ -276,7 +276,7 @@ Step 3: Composing the Controllers
 If the ``--filter`` argument is passed, we'll combine our two controllers using :class:`SequentialController`; the differential drive controller computes the wheel velocities, 
 and then the filter smooths them before they're sent to the robot. Otherwise, we'll use the differential drive controller alone.
 
-.. literalinclude:: ../snippets/motion_generation/controllers/mobile_robot_control_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/mobile_robot_control_example.py
    :start-after: <start-sequential-controller-snippet>
    :end-before: <end-sequential-controller-snippet>
    :language: python
@@ -290,7 +290,7 @@ in a control loop that runs in real-time.
 
 First, this is how we will apply the desired state to the robot:
 
-.. literalinclude:: ../snippets/motion_generation/controllers/mobile_robot_control_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/mobile_robot_control_example.py
    :start-after: <start-apply-desired-state-to-robot-snippet>
    :end-before: <end-apply-desired-state-to-robot-snippet>
    :language: python
@@ -299,7 +299,7 @@ And finally, here's the complete control loop that brings everything together. W
 velocities (``v_linear`` and ``v_angular``) to be constant numbers, which should make the robot follow a circular path.
 If the ``--noise`` argument is passed, we add noise to the setpoint velocities.
 
-.. literalinclude:: ../snippets/motion_generation/controllers/mobile_robot_control_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/mobile_robot_control_example.py
    :start-after: <start-mobile-control-loop-snippet>
    :end-before: <end-mobile-control-loop-snippet>
    :language: python
