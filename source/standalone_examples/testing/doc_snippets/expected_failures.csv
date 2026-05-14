@@ -88,14 +88,10 @@ python_scripting/manual_standalone_python/details_how_simulationapp_works.py
 # ROS2 bridge node types not available in default experience
 ros2_tutorials/tutorial_ros2_camera_noise/camera_noise.py
 # RTX lidar sequential snippets — need ROS2 bridge or undefined context vars
-ros2_tutorials/tutorial_ros2_rtx_lidar/exposing_metadata_through_python_script.py
-ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample.py
-ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample_3.py
-ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample_2.py
-ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample_4.py
 ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample_1.py
-# ROS2 class definition needing rclpy/sensor_msgs (not installed)
-ros2_tutorials/tutorial_ros2_rtx_lidar/interpreting_object_id_metadata.py
+ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample_2.py
+ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample_3.py
+ros2_tutorials/tutorial_ros2_rtx_lidar/rtx_lidar_script_sample_4.py
 # ROS2 launch file fragments — undefined vars (map_yaml_file, Node, LaunchDescription)
 ros2_tutorials/tutorial_ros2_multi_navigation/set_up_the_namespace_carter1_by_defining_the_node_.py
 ros2_tutorials/tutorial_ros2_multi_navigation/finally_at_the_end_of_the_launch_file_add_the_two_.py
