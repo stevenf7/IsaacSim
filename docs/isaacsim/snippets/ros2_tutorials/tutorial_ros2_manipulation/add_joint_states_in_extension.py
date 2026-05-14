@@ -7,6 +7,8 @@ extension_manager.set_extension_enabled_immediate("isaacsim.core.nodes", True)
 extension_manager.set_extension_enabled_immediate("isaacsim.ros2.nodes", True)
 # End test setup
 
+import omni.graph.core as og
+
 og.Controller.edit(
     {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
     {
