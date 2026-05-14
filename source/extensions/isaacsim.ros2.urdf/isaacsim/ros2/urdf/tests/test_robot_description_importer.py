@@ -24,7 +24,7 @@ import omni.kit.ui_test as ui_test
 import omni.usd
 from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
-from isaacsim.test.utils import find_enabled_widget_with_retry, find_widget_with_retry, menu_click_with_retry
+from isaacsim.test.utils import find_widget_with_retry, menu_click_with_retry, wait_for_widget_enabled
 from pxr import Sdf
 
 
@@ -114,7 +114,7 @@ class TestRos2UrdfNodeImporter(ROS2TestCase):
 
         await omni.kit.app.get_app().next_update_async()
 
-        await menu_click_with_retry("File/Import from ROS2 URDF Node")
+        await menu_click_with_retry("File/Import from ROS2 URDF Node", window_name="Import from ROS2 URDF Node")
         await omni.kit.app.get_app().next_update_async()
 
         string_field = await find_widget_with_retry(
@@ -130,9 +130,13 @@ class TestRos2UrdfNodeImporter(ROS2TestCase):
         await find_button.click()
         await ui_test.human_delay()
 
-        import_button = await find_enabled_widget_with_retry(
+        import_button = await find_widget_with_retry(
             "Import from ROS2 URDF Node//Frame/**/Button[*].identifier=='ros2_urdf_import'",
             max_frames=300,
+        )
+        self.assertTrue(
+            await wait_for_widget_enabled(import_button, max_frames=300),
+            "Import button was found but did not become enabled after fetching the ROS 2 robot_description.",
         )
 
         await import_button.click()
