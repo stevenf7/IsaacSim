@@ -40,6 +40,7 @@ from isaacsim import SimulationApp
 # Note: /renderer/asyncInit=false forces synchronous hydra engine initialization.
 # This ensures the RTX engine attaches during startup (critical for framework test mode).
 # This is separate from /app/asyncRendering which controls async render thread execution.
+# Explicitly disable multi-tick rendering while async is enabled.
 simulation_app = SimulationApp(
     {
         "headless": headless,
@@ -47,6 +48,8 @@ simulation_app = SimulationApp(
             "--/app/asyncRendering=true",
             "--/app/omni.usd/asyncHandshake=true",
             "--/renderer/asyncInit=false",
+            "--/rtx/hydra/supportMultiTickRate=false",
+            "--/rtx/rendering/perSensorTickTlas=false",
         ],
     }
 )
