@@ -130,15 +130,9 @@ def publish_depth(sensor: CameraSensor, freq):
 
 
 def publish_camera_tf(sensor: CameraSensor):
-    _, camera_prim, _ = _get_sensor_info(sensor)
-
-    if not stage_utils.get_current_stage().GetPrimAtPath(camera_prim).IsValid():
-        raise ValueError(f"Camera path '{camera_prim}' is invalid.")
+    _, camera_prim_path, camera_frame_id = _get_sensor_info(sensor)
 
     try:
-        # OmniActionGraph uses the last part of the full camera prim path as the frame name.
-        camera_frame_id = camera_prim_path.split("/")[-1]
-
         ros_camera_graph_path = "/CameraTFActionGraph"
 
         # If a camera graph is not found, create a new one.
