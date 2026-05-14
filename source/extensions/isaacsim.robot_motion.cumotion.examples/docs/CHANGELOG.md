@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.3] - 2026-05-12
+### Changed
+- Reduces the number of GPU copies needed, since certain warp arrays are only needed for `reset`.
+
 ## [0.3.2] - 2026-04-16
 ### Fixed
 - Fixed test failure caused by a leaked `_load_scene_async` task: `UIBuilder` now tracks and cancels in-flight async loads on cleanup and re-load, preventing expired-prim errors when a new stage is created between tests.

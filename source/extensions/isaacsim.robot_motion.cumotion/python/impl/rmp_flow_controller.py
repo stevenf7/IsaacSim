@@ -38,6 +38,13 @@ class RmpFlowController(mg.BaseController):
     configuration space. This controller continuously updates joint commands based on
     the desired targets.
 
+    .. note::
+
+        For performance, ``reset()`` pre-allocates a single output ``RobotState``
+        and ``forward()`` returns that same instance on every call, mutating its
+        joint buffer in place. Callers that need to retain a value across
+        ``forward()`` calls must copy it out (see ``forward()`` for details).
+
     Args:
         cumotion_robot: Robot containing kinematics and joint information.
         cumotion_world_interface: World interface providing collision geometry.
@@ -118,6 +125,22 @@ class RmpFlowController(mg.BaseController):
         self._output_velocity = None
         self._previous_run_time = None
 
+        # Pre-allocated output structures (populated in reset()).
+        self._joint_acceleration = None
+        self._output_joint_data = None
+        self._output_joint_valid = None
+        self._output_joint_indices = None
+        self._output_joint_state = None
+        self._cached_output_robot_state = None
+
+        # Memoized host-side copy of the world-to-robot-base transform; keyed
+        # on the wp.array identity returned by the world interface so it stays
+        # valid as long as the base is not updated.
+        self._cached_world_to_base_pos_wp: wp.array | None = None
+        self._cached_world_to_base_quat_wp: wp.array | None = None
+        self._cached_world_to_base_pos_np: np.ndarray | None = None
+        self._cached_world_to_base_quat_np: np.ndarray | None = None
+
         # create the rmp-flow configuration. Do not initialize, which will let the user modify
         # the configuration should they so choose.
         rmp_flow_path = pathlib.Path(rmp_flow_configuration_filename)
@@ -172,6 +195,27 @@ class RmpFlowController(mg.BaseController):
             Robot state containing desired joint positions and velocities, or None if
             the controller is not initialized.
 
+            .. warning::
+
+                For performance, ``forward()`` returns the **same** ``RobotState``
+                instance on every call and mutates its underlying joint buffer
+                in place. The returned object is a live view, not a snapshot.
+
+                * ``state_a is state_b`` is ``True`` for any two values returned
+                  by ``forward()`` between ``reset()`` calls.
+                * ``state.joints.data_array`` aliases the controller's internal
+                  buffer and reflects the most recent ``forward()`` result.
+                * ``state.joints.positions`` / ``.velocities`` are lazily
+                  rebuilt after each ``forward()``; reading them after a
+                  subsequent ``forward()`` returns the *new* values.
+                * ``reset()`` re-allocates these objects, so references taken
+                  before a ``reset()`` are orphaned (they keep their last
+                  values but are no longer updated).
+
+                If you need to retain a value across ``forward()`` calls (for
+                interpolation, logging, etc.), copy it out immediately, e.g.
+                ``positions = desired_state.joints.positions.numpy().copy()``.
+
         Example:
 
             .. code-block:: python
@@ -183,6 +227,10 @@ class RmpFlowController(mg.BaseController):
                         indices=[0],
                         dof_indices=robot.get_joint_indices(desired_state.joints.names)
                     )
+
+                # Snapshot for later use; do not hold desired_state itself,
+                # since the next forward() call will overwrite it.
+                positions_t1 = desired_state.joints.positions.numpy().copy()
         """
         # if we haven't initialized our rmp flow algorithm, return:
         if self._rmp_flow is None:
@@ -212,21 +260,13 @@ class RmpFlowController(mg.BaseController):
         )
         self._previous_run_time = t
 
-        # output the current desired joints & reference frames:
-        return mg.RobotState(
-            joints=mg.JointState.from_name(
-                robot_joint_space=self._robot_joint_space,
-                positions=(
-                    self._cumotion_robot.controlled_joint_names,
-                    wp.from_numpy(self._output_position),
-                ),
-                velocities=(
-                    self._cumotion_robot.controlled_joint_names,
-                    wp.from_numpy(self._output_velocity),
-                ),
-                efforts=None,
-            )
+        # Update the pre-allocated JointState data in-place and return the
+        # cached RobotState; avoids the per-frame JointState.from_name() cost.
+        self._output_joint_state._update_data_in_place(
+            positions_np=self._output_position,
+            velocities_np=self._output_velocity,
         )
+        return self._cached_output_robot_state
 
     def reset(
         self, estimated_state: mg.RobotState, setpoint_state: mg.RobotState | None, t: float, **kwargs: Any
@@ -236,6 +276,14 @@ class RmpFlowController(mg.BaseController):
         Initializes the RMPflow controller and sets the internal state to match the
         current robot configuration. This should be called before running the controller
         for the first time.
+
+        .. note::
+
+            ``reset()`` allocates a fresh output ``RobotState`` / ``JointState``
+            pair (the objects subsequently returned by ``forward()``). Any
+            ``RobotState`` reference obtained from a prior ``forward()`` call
+            becomes orphaned after ``reset()``: it retains its last values but
+            is no longer updated by future ``forward()`` calls.
 
         Args:
             estimated_state: Current estimated state of the robot.
@@ -283,6 +331,33 @@ class RmpFlowController(mg.BaseController):
         self._output_position = current_joint_positions
         self._output_velocity = np.zeros_like(current_joint_positions)
 
+        # Scratch buffer for joint accelerations; forward() zeroes it in place
+        # each frame instead of allocating.
+        self._joint_acceleration = np.zeros_like(current_joint_positions)
+
+        # Pre-allocate the output JointState/RobotState so that forward() can
+        # update data in place rather than calling JointState.from_name() each frame.
+        n_joints = len(self._robot_joint_space)
+        self._output_joint_data = wp.zeros(shape=[3, n_joints], dtype=wp.float32, device="cpu")
+        self._output_joint_valid = wp.zeros(shape=[3, n_joints], dtype=wp.bool, device="cpu")
+
+        joint_name_to_index = {name: i for i, name in enumerate(self._robot_joint_space)}
+        self._output_joint_indices = np.array(
+            [joint_name_to_index[name] for name in self._cumotion_robot.controlled_joint_names],
+            dtype=np.intp,
+        )
+
+        valid_np = self._output_joint_valid.numpy()
+        valid_np[0, self._output_joint_indices] = True  # positions row
+        valid_np[1, self._output_joint_indices] = True  # velocities row
+
+        self._output_joint_state = mg.JointState(
+            self._robot_joint_space,
+            self._output_joint_data,
+            self._output_joint_valid,
+        )
+        self._cached_output_robot_state = mg.RobotState(joints=self._output_joint_state)
+
         self._previous_run_time = t
 
         # successful reset.
@@ -311,6 +386,25 @@ class RmpFlowController(mg.BaseController):
 
         return output
 
+    def _get_world_to_robot_base_transform_numpy(self) -> tuple[np.ndarray, np.ndarray]:
+        """Memoized host-side view of the world-to-robot-base transform.
+
+        Refreshes the cached numpy copies only when the world interface returns
+        a different ``wp.array`` instance (i.e. the base pose has changed).
+
+        Returns:
+            Tuple of (position_np, quaternion_np) numpy views of the cached
+            world-to-base transform.
+        """
+        pos_wp, quat_wp = self._cumotion_world_interface.get_world_to_robot_base_transform()
+        if pos_wp is not self._cached_world_to_base_pos_wp:
+            self._cached_world_to_base_pos_wp = pos_wp
+            self._cached_world_to_base_pos_np = pos_wp.numpy()
+        if quat_wp is not self._cached_world_to_base_quat_wp:
+            self._cached_world_to_base_quat_wp = quat_wp
+            self._cached_world_to_base_quat_np = quat_wp.numpy()
+        return self._cached_world_to_base_pos_np, self._cached_world_to_base_quat_np
+
     def _tool_position_from_robot_state(self, state: mg.RobotState) -> np.ndarray | None:
         if state.sites is None:
             return None
@@ -323,14 +417,14 @@ class RmpFlowController(mg.BaseController):
         position_index = state.sites.position_names.index(self._tool_frame)
         position_world = np.array(state.sites.positions.numpy()[position_index])
 
-        world_to_robot_base_position, world_to_robot_base_quaternion = (
-            self._cumotion_world_interface.get_world_to_robot_base_transform()
+        world_to_robot_base_position_np, world_to_robot_base_quaternion_np = (
+            self._get_world_to_robot_base_transform_numpy()
         )
 
         return isaac_sim_to_cumotion_translation(
             position_world_to_target=position_world,
-            position_world_to_base=world_to_robot_base_position,
-            orientation_world_to_base=world_to_robot_base_quaternion,
+            position_world_to_base=world_to_robot_base_position_np,
+            orientation_world_to_base=world_to_robot_base_quaternion_np,
         )
 
     def _tool_orientation_from_robot_state(self, state: mg.RobotState) -> np.ndarray | None:
@@ -345,11 +439,11 @@ class RmpFlowController(mg.BaseController):
         orientation_index = state.sites.orientation_names.index(self._tool_frame)
         rotation_world_target = state.sites.orientations.numpy()[orientation_index]
 
-        _, world_to_robot_base_quaternion = self._cumotion_world_interface.get_world_to_robot_base_transform()
+        _, world_to_robot_base_quaternion_np = self._get_world_to_robot_base_transform_numpy()
 
         return isaac_sim_to_cumotion_rotation(
             orientation_world_to_target=rotation_world_target,
-            orientation_world_to_base=world_to_robot_base_quaternion,
+            orientation_world_to_base=world_to_robot_base_quaternion_np,
         )
 
     def _euler_integration(
@@ -373,8 +467,9 @@ class RmpFlowController(mg.BaseController):
         num_steps = int(np.ceil(frame_duration / self._maximum_substep_size))
         policy_timestep = frame_duration / num_steps
 
-        joint_acceleration = np.zeros_like(joint_positions)
+        joint_acceleration = self._joint_acceleration
         for _ in range(num_steps):
+            joint_acceleration[:] = 0.0
             self._rmp_flow.eval_accel(joint_positions, joint_velocities, joint_acceleration)
             joint_velocities += policy_timestep * joint_acceleration
             joint_positions += policy_timestep * joint_velocities

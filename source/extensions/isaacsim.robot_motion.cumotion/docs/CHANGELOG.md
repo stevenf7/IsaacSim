@@ -1,4 +1,12 @@
 # Changelog
+## [1.2.0] - 2026-05-05
+### Added
+- `CumotionWorldInterface` now accepts a `device` constructor parameter (any value `wp.get_device` accepts; defaults to `None`, which resolves to warp's current default device). Selects the device used for internally-allocated warp arrays and dispatches the per-frame collider transform composition to either a vectorized NumPy path (CPU) or the Warp kernel (CUDA).
+- `compute_collider_transforms_cpu` utility: vectorized NumPy mirror of the Warp collider-transform kernel.
+
+### Changed
+- `get_world_to_robot_base_transform` now memoizes its return value and yields the same `wp.array` tuple until the base pose is updated.
+
 ## [1.1.2] - 2026-04-23
 ### Added
 - `RmpFlowController` contains `maximum_substep_size` for sub-stepping when more stable integration is required.

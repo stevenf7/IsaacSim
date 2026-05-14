@@ -142,7 +142,7 @@ class FrankaRmpFlowExample:
 
         # Create world binding
         self._world_binding = WorldBinding(
-            world_interface=CumotionWorldInterface(),
+            world_interface=CumotionWorldInterface(device="cpu"),
             obstacle_strategy=obstacle_strategy,
             tracked_prims=objects,
             tracked_collision_api=TrackableApi.PHYSICS_COLLISION,
@@ -192,17 +192,6 @@ class FrankaRmpFlowExample:
         if self._controller is None or self._world_binding is None:
             return
 
-        # Get current robot state
-        controlled_joint_names = self._controlled_joint_names
-
-        estimated_state = mg.RobotState(
-            joints=mg.JointState.from_name(
-                robot_joint_space=self._robot_joint_space,
-                positions=(self._robot_joint_space, self._articulation.get_dof_positions()),
-                velocities=(self._robot_joint_space, self._articulation.get_dof_velocities()),
-            )
-        )
-
         # Get target pose
         target_positions, target_orientations = self._target.get_world_poses()
 
@@ -215,10 +204,20 @@ class FrankaRmpFlowExample:
             ),
         )
 
-        # Update world interface to track robot base movements
-        self._world_binding.get_world_interface().update_world_to_robot_root_transforms(
-            self._articulation.get_world_poses()
-        )
+        if not self._controller_reset:
+            # Update only on the first step, since the base is stationary.
+            self._world_binding.get_world_interface().update_world_to_robot_root_transforms(
+                self._articulation.get_world_poses()
+            )
+            estimated_state = mg.RobotState(
+                joints=mg.JointState.from_name(
+                    robot_joint_space=self._robot_joint_space,
+                    positions=(self._robot_joint_space, self._articulation.get_dof_positions()),
+                    velocities=(self._robot_joint_space, self._articulation.get_dof_velocities()),
+                )
+            )
+        else:
+            estimated_state = None
 
         # Synchronize transforms
         self._world_binding.synchronize_transforms()

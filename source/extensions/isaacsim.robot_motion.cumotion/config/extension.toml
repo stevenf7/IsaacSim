@@ -4,7 +4,7 @@
 #
 
 [package]
-version = "1.1.2"
+version = "1.2.0"
 category = "simulation"
 title = "cumotion"
 description = "Access to cuMotion planners under the isaacsim motion generation API."

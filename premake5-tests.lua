@@ -1415,6 +1415,16 @@ end
 local function get_benchmark_tests()
     return {
         {
+            "tests-standalone_benchmarks-benchmark_robot_motion_cumotion_rmpflow",
+            "standalone_examples/benchmarks/benchmark_robot_motion_cumotion_rmpflow.py",
+            "--num-frames 10",
+        },
+        {
+            "tests-standalone_benchmarks-benchmark_robot_motion_lula_rmpflow",
+            "standalone_examples/benchmarks/benchmark_robot_motion_lula_rmpflow.py",
+            "--num-frames 10",
+        },
+        {
             "tests-standalone_benchmarks-benchmark_camera",
             "standalone_examples/benchmarks/benchmark_camera.py",
             "--num-frames 10 --num-cameras 2",
