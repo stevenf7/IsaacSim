@@ -284,7 +284,7 @@ Nav2 requires a publish and subscribe to the following topics (the exact topic n
     ========================== ================================
     ROS 2 Topic                ROS 2 Message Type
     ========================== ================================
-    ``/joint_states``          sensor_msgs/JointState
+    ``/platform/joint_states`` sensor_msgs/JointState
     ``/tf`` and ``/tf_static`` tf2_msgs/TFMessage
     ``/odom``                  nav_msgs/Odometry
     ``/scan``                  sensor_msgs/LaserScan
@@ -387,7 +387,7 @@ Create separate ActionGraphs for each topic system:
         This ActionGraph publishes joint state and odometry data, broadcasts the ``odom`` → ``base_link`` transform, and publishes a static transform for the ``sim_lidar`` sensor frame.
 
         #. Create an **On Playback Tick** node.
-        #. Create a **ROS2 Publish Joint State** node and set ``targetPrim`` to ``/dd100/Geometry/base_link/chassis_link``.
+        #. Create a **ROS2 Publish Joint State** node. Set ``targetPrim`` to ``/dd100/Geometry/base_link/chassis_link`` and ``topicName`` to ``platform/joint_states``.
         #. Create an **Isaac Compute Odometry Node** and set ``chassisPrim`` to ``/dd100/Geometry/base_link/chassis_link``.
         #. Create a **ROS2 Publish Odometry** node and set ``topicName`` and ``odomFrameId`` to ``odom``.
         #. Create a **ROS2 Publish Raw Transform Tree** node and set ``childFrameId`` to ``base_link`` and ``parentFrameId`` to ``odom``.
@@ -435,6 +435,7 @@ Create separate ActionGraphs for each topic system:
                         ],
                         keys.SET_VALUES: [
                             ("PublishJointState.inputs:targetPrim", [Sdf.Path(CHASSIS_LINK)]),
+                            ("PublishJointState.inputs:topicName", "platform/joint_states"),
                             ("ComputeOdom.inputs:chassisPrim", [Sdf.Path(CHASSIS_LINK)]),
                             ("PublishOdom.inputs:topicName", "odom"),
                             ("PublishOdom.inputs:odomFrameId", "odom"),
@@ -568,7 +569,7 @@ With the ActionGraphs created, you can validate in a ROS 2 sourced terminal that
     .. code-block:: text
 
         /cmd_vel
-        /joint_states
+        /platform/joint_states
         /odom
         /parameter_events
         /rosout
@@ -652,7 +653,7 @@ Expected output, with the namespaced topics:
 .. code-block:: text
 
     /dd100_0000/cmd_vel
-    /dd100_0000/joint_states
+    /dd100_0000/platform/joint_states
     /dd100_0000/odom
     /dd100_0000/sim_lidar/scan
     /dd100_0000/tf
