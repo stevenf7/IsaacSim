@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.4] - 2026-05-13
+### Fixed
+- Fixed nvbug 6105784: `SearchListItemModel.filter_text()` crashed with `AttributeError: 'list' object has no attribute 'split'` when callers passed a list or tuple of search terms. Added `_normalize_search_filter_text()` to coerce `None`, `list`, and `tuple` inputs to a single string before splitting.
+
 ## [1.8.3] - 2026-04-23
 ### Fixed
 - Eliminated shell injection risk in `on_open_IDE_clicked` by resolving `code` via `shutil.which()` and removing `shell=True`

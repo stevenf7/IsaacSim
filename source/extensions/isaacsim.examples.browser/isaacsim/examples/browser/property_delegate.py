@@ -16,8 +16,10 @@
 """Property delegates for the Isaac Sim browser example that handle displaying asset properties in different selection states."""
 
 
+import asyncio
 from typing import List, Optional
 
+import omni.kit.app
 import omni.ui as ui
 from omni.kit.browser.folder.core import BrowserPropertyDelegate, FileDetailItem
 

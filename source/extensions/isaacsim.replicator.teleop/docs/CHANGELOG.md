@@ -3,8 +3,8 @@
 ## [0.3.3] - 2026-05-07
 ### Fixed
 - `test_teleop_sdg_pick_and_place.py` split into two independent writers for live and replay
-- fixed reach offset in `floating_xarm` scenario.
-- fixed camera orientation in `ik_dual_ur3_xarm_dex3` profile.
+- Fixed reach offset in `floating_xarm` scenario.
+- Fixed camera orientation in `ik_dual_ur3_xarm_dex3` profile.
 
 ## [0.3.2] - 2026-05-05
 ### Added

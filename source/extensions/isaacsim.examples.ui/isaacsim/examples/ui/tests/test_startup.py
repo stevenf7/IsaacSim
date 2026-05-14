@@ -21,6 +21,7 @@
 
 
 import omni.kit.test
+from isaacsim.examples.ui.extension import Extension
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -56,3 +57,23 @@ class TestUITemplate(omni.kit.test.AsyncTestCase):
         """
         for frame in range(60):
             await omni.kit.app.get_app().next_update_async()
+
+    async def test_window_content_is_scrollable(self):
+        """Verify the example UI root content is wrapped in a scrolling frame."""
+        extension = Extension()
+        extension._ext_id = "isaacsim.examples.ui.tests"
+        extension._window = None
+        extension._scrolling_frame = None
+
+        extension.build_example_gui_grid = lambda: None
+        extension.build_plot_frame = lambda: None
+        extension.build_search_frame = lambda: None
+        extension.build_folder_picker_frame = lambda: None
+        extension.build_comms_frame = lambda: None
+        extension.build_progress_bar_frame = lambda: None
+        extension.build_custom_ui = lambda: None
+
+        extension.build_window()
+        self.addCleanup(extension._window.destroy)
+
+        self.assertIsNotNone(extension._scrolling_frame)

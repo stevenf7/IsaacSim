@@ -5,7 +5,7 @@
 - `IsaacArticulationController`: promote silent `db.log_warn` failures to `db.log_error` for both the catch-all exception path and the command-validation path so OmniGraph users see actionable errors instead of a stationary robot with no diagnostic. Errors now include the prim path and the original exception text. (6109472, 6113767)
 - `IsaacArticulationController`: validate `positionCommand`, `velocityCommand`, and `effortCommand` atomically before any target is written, so a single bad command no longer leaves the articulation in a half-applied state. Mismatch errors now name the offending command, the provided value count, the selected joint count, and the selected joint indices. (6114423)
 
-## [5.10.0] - 2026-04-27
+## [5.10.0] - 2026-05-06
 ### Changed
 - `OgnIsaacComputeTransformTree`: optimized world-pose computation by reading physics poses from the active backend and composing non-physics prims from cached USD local transforms.
 - `OgnIsaacComputeTransformTree`: improved non-physics, camera, and `parentPrim` handling, including `isaac:nameOverride`, `resetXformStack`, physics-ancestor discovery, and RTX lidar camera-frame behavior.

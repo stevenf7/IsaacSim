@@ -23,6 +23,7 @@ from isaacsim.gui.components.callbacks import (
     on_docs_link_clicked,
     on_open_IDE_clicked,
 )
+from isaacsim.gui.components.ui_utils import SearchListItemModel
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -66,3 +67,12 @@ class TestUI(omni.kit.test.AsyncTestCase):
         """Test opening documentation link."""
         # on_open_folder_clicked(os.path.dirname(__file__)) # TODO: this test fails on TC due to permissions
         on_docs_link_clicked("https://docs.omniverse.nvidia.com")
+
+    async def test_search_list_item_model_accepts_sequence_filter_text(self):
+        """Test search list filtering with list and tuple text input."""
+        for search_text in (["find", "this"], ("find", "this")):
+            with self.subTest(search_text=search_text):
+                model = SearchListItemModel("find this item", "other item")
+                model.filter_text(search_text)
+
+                self.assertEqual([item.name() for item in model.get_item_children(None)], ["find this item"])

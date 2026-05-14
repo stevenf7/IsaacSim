@@ -34,7 +34,7 @@
 
 ## [1.3.1] - 2026-05-05
 ### Fixed
-- authoring APIs no longer clobber tickRate and other attributes if already set on wrapped prim or loaded USD
+- Authoring APIs no longer clobber tickRate and other attributes if already set on wrapped prim or loaded USD
 
 ## [1.3.0] - 2026-05-05
 ### Added
@@ -45,8 +45,10 @@
 - Add _asset_root_path attribute to _SensorAuthoring to handle assets which have multiple sensor prims.
 - RtxCamera.create method allows loading USD assets like the other authoring classes
 - New APIs in SingleViewDepthCameraSensor for functionality like deprecated isaacsim.sensors.rtx.SingleViewDepthSensorAsset
+
 ### Changed
 - Radar.__init__ mBVH warning made clearer
+
 ### Fixed
 - Lidar.create uses same config resolution logic as deprecated isaacsim.sensors.rtx.commands
 

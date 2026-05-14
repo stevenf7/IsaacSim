@@ -72,6 +72,7 @@ class Extension(omni.ext.IExt):
 
         # Intialize the UI Window
         self._window = None
+        self._scrolling_frame = None
 
         # Keep a Reference to interactive GUI elements
         self._models = {}
@@ -109,6 +110,7 @@ class Extension(omni.ext.IExt):
         self._app_event_subscription = None
         remove_menu_items(self._menu_items, "Window")
         self._window = None
+        self._scrolling_frame = None
         self._app_event_sub = None
         self._search_bar.destroy()
         if self._folder_picker:
@@ -143,35 +145,42 @@ class Extension(omni.ext.IExt):
         """Builds the UI for EXTENSION_NAME"""
         if not self._window:
             self._window = ui.Window(
-                title=EXTENSION_NAME, width=700, height=0, visible=True, dockPreference=ui.DockPreference.LEFT_BOTTOM
+                title=EXTENSION_NAME,
+                width=700,
+                height=600,
+                visible=True,
+                dockPreference=ui.DockPreference.LEFT_BOTTOM,
             )
             self._window.set_visibility_changed_fn(self._on_visibility_changed)
 
             with self._window.frame:
-                with ui.VStack(spacing=5, height=0):
+                self._scrolling_frame = ui.ScrollingFrame(
+                    horizontal_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_AS_NEEDED,
+                    vertical_scrollbar_policy=ui.ScrollBarPolicy.SCROLLBAR_ALWAYS_ON,
+                )
+                with self._scrolling_frame:
+                    with ui.VStack(spacing=5, height=0):
 
-                    title = "Isaac Sim Example UI"
-                    doc_link = "https://docs.isaacsim.omniverse.nvidia.com/latest/index.html"
+                        title = "Isaac Sim Example UI"
+                        doc_link = "https://docs.isaacsim.omniverse.nvidia.com/latest/index.html"
 
-                    overview = (
-                        "The Example UI shows how to use Isaac Sim's robotics-centric UI tools for your own extensions."
-                    )
-                    overview += "\n\nUse this as a reference or template when creating a UI for a new project."
-                    overview += "\n\nPress the 'Open in IDE' button to view the source code."
+                        overview = "The Example UI shows how to use Isaac Sim's robotics-centric UI tools for your own extensions."
+                        overview += "\n\nUse this as a reference or template when creating a UI for a new project."
+                        overview += "\n\nPress the 'Open in IDE' button to view the source code."
 
-                    setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
+                        setup_ui_headers(self._ext_id, __file__, title, doc_link, overview)
 
-                    self.build_example_gui_grid()
-                    self.build_plot_frame()
-                    self.build_search_frame()
-                    self.build_folder_picker_frame()
+                        self.build_example_gui_grid()
+                        self.build_plot_frame()
+                        self.build_search_frame()
+                        self.build_folder_picker_frame()
 
-                    self.build_comms_frame()
+                        self.build_comms_frame()
 
-                    self.build_progress_bar_frame()
+                        self.build_progress_bar_frame()
 
-                    # Shows how to Group UI elements
-                    self.build_custom_ui()
+                        # Shows how to Group UI elements
+                        self.build_custom_ui()
         else:
             self._window.visible = True
 

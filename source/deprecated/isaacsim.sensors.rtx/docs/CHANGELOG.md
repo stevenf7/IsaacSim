@@ -5,6 +5,7 @@
 - Multitick now enabled by default. Scan accumulation controlled by omni:sensor:Core:accumulateOutputs on OmniLidar prim.
 - OmniLidar omni:sensor:Core:skipDroppingInvalidPoints set to False by default when using command
 - OmniLidar omni:Sensor:Core:accumulateOutputs set to True by default when using command
+
 ### Removed
 - Remove CUDA-based post-processing paths for lidar scan accumulation
 - Multitick nodes replace non-multitick nodes
