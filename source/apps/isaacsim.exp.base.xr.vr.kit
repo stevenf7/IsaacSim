@@ -22,6 +22,8 @@ app.name = "Isaac-Sim XR VR"
 app.version = "6.0.0"
 app.vulkan = true                       # Explicitly enable Vulkan
 app.enableDeveloperWarnings = false     # disable developer warnings to reduce log noise
+rtx.hydra.supportMultiTickRate = false  # disable multi-tick rendering for XR VR
+rtx.rendering.perSensorTickTlas = false # disable per sensor tick tlas for XR VR
 
 [settings.app.exts.folders]
 '++' = [
