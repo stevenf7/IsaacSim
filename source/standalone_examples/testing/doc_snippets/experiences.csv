@@ -6,3 +6,5 @@
 ../../../../docs/isaacsim/snippets/action_and_event_data_generation/ira_config_load_save.py,isaacsim.exp.action_and_event_data_generation.full.kit
 ../../../../docs/isaacsim/snippets/action_and_event_data_generation/ira_config_read_update.py,isaacsim.exp.action_and_event_data_generation.full.kit
 ../../../../docs/isaacsim/snippets/action_and_event_data_generation/ira_setup_and_data_generation.py,isaacsim.exp.action_and_event_data_generation.full.kit
+../../../../docs/isaacsim/snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/exposing_metadata_through_python_script.py,isaacsim.exp.full.kit
+../../../../docs/isaacsim/snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/interpreting_object_id_metadata.py,isaacsim.exp.full.kit
