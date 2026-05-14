@@ -25,7 +25,6 @@ Example usage (from the Isaac Sim build directory):
 
     # Plain timing run — default RandomAccelerationScenario
     ./python.sh ../../../source/standalone_examples/benchmarks/benchmark_mobility_gen_recording.py \\
-        --omap ~/MobilityGenData/maps/warehouse_multiple_shelves/map.yaml \\
         --num-steps 200
 
     # Benchmark a different scenario
@@ -41,11 +40,19 @@ import os
 import tempfile
 import time
 
+DEFAULT_OMAP_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "data",
+    "mobility_gen",
+    "warehouse_multiple_shelves",
+    "map.yaml",
+)
+
 parser = argparse.ArgumentParser(description="MobilityGen recording benchmark")
 parser.add_argument(
     "--omap",
     type=str,
-    default=os.path.expanduser("~/MobilityGenData/maps/warehouse_multiple_shelves/map.yaml"),
+    default=DEFAULT_OMAP_PATH,
     help="Path to the occupancy map YAML file.",
 )
 parser.add_argument(
