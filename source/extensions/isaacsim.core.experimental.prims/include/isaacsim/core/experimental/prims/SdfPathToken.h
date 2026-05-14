@@ -47,7 +47,7 @@ inline uint64_t sdfPathToToken(const pxr::SdfPath& path)
 {
     static_assert(sizeof(pxr::SdfPath) == sizeof(uint64_t), "SdfPath size mismatch");
     uint64_t token;
-    std::memcpy(&token, &path, sizeof(uint64_t));
+    std::memcpy(&token, static_cast<const void*>(&path), sizeof(uint64_t));
     return token;
 }
 
@@ -55,7 +55,7 @@ inline pxr::SdfPath tokenToSdfPath(uint64_t token)
 {
     static_assert(sizeof(pxr::SdfPath) == sizeof(uint64_t), "SdfPath size mismatch");
     pxr::SdfPath path;
-    std::memcpy(&path, &token, sizeof(uint64_t));
+    std::memcpy(static_cast<void*>(&path), &token, sizeof(uint64_t));
     return path;
 }
 
