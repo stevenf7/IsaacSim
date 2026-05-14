@@ -18,6 +18,7 @@
 
 from .transforms import ColliderBatchTransformOutput as ColliderBatchTransformOutput
 from .transforms import batch_compute_collider_transforms as batch_compute_collider_transforms
+from .transforms import compute_collider_transforms_cpu as compute_collider_transforms_cpu
 from .transforms import cumotion_to_isaac_sim_pose as cumotion_to_isaac_sim_pose
 from .transforms import cumotion_to_isaac_sim_rotation as cumotion_to_isaac_sim_rotation
 from .transforms import cumotion_to_isaac_sim_translation as cumotion_to_isaac_sim_translation

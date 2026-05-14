@@ -1030,3 +1030,220 @@ class TestCumotionWorldInterface(omni.kit.test.AsyncTestCase):
                 ),
                 enabled_array=wp.array([True], dtype=bool),
             )
+
+    # ============================================================================
+    # device dispatch
+    # ============================================================================
+
+    def _add_three_spheres(self, world_interface: "cu_mg.CumotionWorldInterface") -> list[str]:
+        """Register three spheres on ``world_interface`` and return their prim paths."""
+        prim_paths = ["/World/Sphere0", "/World/Sphere1", "/World/Sphere2"]
+        positions = wp.array([[0.5, 0.0, 0.5], [0.0, 0.5, 0.6], [-0.3, 0.2, 0.4]], dtype=wp.float32)
+        quaternions = wp.array(
+            [
+                [1.0, 0.0, 0.0, 0.0],
+                [np.cos(np.pi / 6), 0.0, 0.0, np.sin(np.pi / 6)],
+                [np.cos(np.pi / 4), 0.0, np.sin(np.pi / 4), 0.0],
+            ],
+            dtype=wp.float32,
+        )
+        world_interface.add_spheres(
+            prim_paths=prim_paths,
+            radii=wp.array([[0.1], [0.05], [0.08]], dtype=wp.float32),
+            scales=wp.array([[1.0, 1.0, 1.0]] * 3, dtype=wp.float32),
+            safety_tolerances=wp.array([[0.0]] * 3, dtype=wp.float32),
+            poses=(positions, quaternions),
+            enabled_array=wp.array([True, True, True], dtype=bool),
+        )
+        return prim_paths
+
+    async def test_device_explicit_cpu_runs_through_update(self) -> None:
+        """``device='cpu'`` exercises the NumPy path end-to-end without raising."""
+        world_interface = cu_mg.CumotionWorldInterface(device="cpu")
+        prim_paths = self._add_three_spheres(world_interface)
+
+        # Drive the full hot path so the CPU dispatch branch runs.
+        world_interface.update_obstacle_transforms(
+            prim_paths=prim_paths,
+            poses=(
+                wp.array([[0.6, 0.0, 0.5], [0.1, 0.5, 0.6], [-0.2, 0.2, 0.4]], dtype=wp.float32),
+                wp.array([[1.0, 0.0, 0.0, 0.0]] * 3, dtype=wp.float32),
+            ),
+        )
+
+        # State arrays should reflect the new world-to-object positions.
+        for prim_path, expected in zip(prim_paths, [[0.6, 0.0, 0.5], [0.1, 0.5, 0.6], [-0.2, 0.2, 0.4]]):
+            idx = world_interface._prim_path_to_collision_data[prim_path].transform_world_to_object_index
+            self.assertTrue(np.allclose(world_interface._position_world_to_objects[idx, :], expected, atol=1e-5))
+
+    async def test_device_explicit_cuda_runs_through_update(self) -> None:
+        """``device='cuda'`` exercises the Warp kernel path end-to-end."""
+        if not wp.is_cuda_available():
+            self.skipTest("CUDA device not available")
+
+        world_interface = cu_mg.CumotionWorldInterface(device="cuda")
+        prim_paths = self._add_three_spheres(world_interface)
+
+        world_interface.update_obstacle_transforms(
+            prim_paths=prim_paths,
+            poses=(
+                wp.array([[0.6, 0.0, 0.5], [0.1, 0.5, 0.6], [-0.2, 0.2, 0.4]], dtype=wp.float32),
+                wp.array([[1.0, 0.0, 0.0, 0.0]] * 3, dtype=wp.float32),
+            ),
+        )
+
+        for prim_path, expected in zip(prim_paths, [[0.6, 0.0, 0.5], [0.1, 0.5, 0.6], [-0.2, 0.2, 0.4]]):
+            idx = world_interface._prim_path_to_collision_data[prim_path].transform_world_to_object_index
+            self.assertTrue(np.allclose(world_interface._position_world_to_objects[idx, :], expected, atol=1e-5))
+
+    async def test_device_none_resolves_to_warp_default(self) -> None:
+        """``device=None`` (the default) resolves to ``wp.get_device()``."""
+        world_interface = cu_mg.CumotionWorldInterface()
+        self.assertEqual(world_interface._device, wp.get_device())
+
+    async def test_device_invalid_value_raises(self) -> None:
+        """Strings that warp can't resolve to a Device are rejected at construction."""
+        for bad in ("auto", "gpu", "", "CPU"):
+            with self.assertRaises(ValueError):
+                cu_mg.CumotionWorldInterface(device=bad)  # type: ignore[arg-type]
+
+    async def test_cpu_and_cuda_produce_same_obstacle_pose_state(self) -> None:
+        """Both backends must agree on the per-obstacle world-frame state they store."""
+        if not wp.is_cuda_available():
+            self.skipTest("CUDA device not available")
+
+        new_positions = wp.array([[0.6, 0.0, 0.5], [0.1, 0.5, 0.6], [-0.2, 0.2, 0.4]], dtype=wp.float32)
+        new_quaternions = wp.array(
+            [
+                [1.0, 0.0, 0.0, 0.0],
+                [np.cos(np.pi / 8), 0.0, np.sin(np.pi / 8), 0.0],
+                [np.cos(np.pi / 5), np.sin(np.pi / 5), 0.0, 0.0],
+            ],
+            dtype=wp.float32,
+        )
+
+        cpu_iface = cu_mg.CumotionWorldInterface(device="cpu")
+        gpu_iface = cu_mg.CumotionWorldInterface(device="cuda")
+        cpu_paths = self._add_three_spheres(cpu_iface)
+        gpu_paths = self._add_three_spheres(gpu_iface)
+
+        cpu_iface.update_obstacle_transforms(prim_paths=cpu_paths, poses=(new_positions, new_quaternions))
+        gpu_iface.update_obstacle_transforms(prim_paths=gpu_paths, poses=(new_positions, new_quaternions))
+
+        self.assertTrue(
+            np.allclose(cpu_iface._position_world_to_objects, gpu_iface._position_world_to_objects, atol=1e-5)
+        )
+        self.assertTrue(
+            np.allclose(
+                cpu_iface._quaternion_world_to_objects,
+                gpu_iface._quaternion_world_to_objects,
+                atol=1e-5,
+            )
+        )
+
+    async def test_device_cpu_with_debug_visualization(self) -> None:
+        """The CPU dispatch branch must work when debug visualization is enabled."""
+        world_interface = cu_mg.CumotionWorldInterface(
+            device="cpu",
+            visualize_debug_prims=True,
+            visual_debug_enabled_prim_rgb=[1.0, 0.0, 0.0],
+        )
+        prim_paths = self._add_three_spheres(world_interface)
+
+        # Should run end-to-end without raising; debug prims may exist on the stage.
+        world_interface.update_obstacle_transforms(
+            prim_paths=prim_paths,
+            poses=(
+                wp.array([[0.6, 0.0, 0.5], [0.1, 0.5, 0.6], [-0.2, 0.2, 0.4]], dtype=wp.float32),
+                wp.array([[1.0, 0.0, 0.0, 0.0]] * 3, dtype=wp.float32),
+            ),
+        )
+
+    async def test_device_cuda_with_debug_visualization(self) -> None:
+        """The CUDA dispatch branch must still work when debug visualization is enabled."""
+        if not wp.is_cuda_available():
+            self.skipTest("CUDA device not available")
+
+        world_interface = cu_mg.CumotionWorldInterface(
+            device="cuda",
+            visualize_debug_prims=True,
+            visual_debug_enabled_prim_rgb=[1.0, 0.0, 0.0],
+        )
+        prim_paths = self._add_three_spheres(world_interface)
+
+        world_interface.update_obstacle_transforms(
+            prim_paths=prim_paths,
+            poses=(
+                wp.array([[0.6, 0.0, 0.5], [0.1, 0.5, 0.6], [-0.2, 0.2, 0.4]], dtype=wp.float32),
+                wp.array([[1.0, 0.0, 0.0, 0.0]] * 3, dtype=wp.float32),
+            ),
+        )
+
+    # ============================================================================
+    # get_world_to_robot_base_transform: documented caching contract
+    # ============================================================================
+
+    async def test_world_to_robot_base_transform_caches_until_invalidated(self) -> None:
+        """``get_world_to_robot_base_transform`` returns the same wp.array tuple until the base moves."""
+        world_interface = cu_mg.CumotionWorldInterface()
+        first_pos, first_quat = world_interface.get_world_to_robot_base_transform()
+        second_pos, second_quat = world_interface.get_world_to_robot_base_transform()
+        self.assertIs(first_pos, second_pos)
+        self.assertIs(first_quat, second_quat)
+
+        # Updating the base pose must invalidate the cache.
+        world_interface.update_world_to_robot_root_transforms(
+            poses=(
+                wp.array([[1.0, 0.0, 0.0]], dtype=wp.float32),
+                wp.array([[1.0, 0.0, 0.0, 0.0]], dtype=wp.float32),
+            )
+        )
+        third_pos, third_quat = world_interface.get_world_to_robot_base_transform()
+        self.assertIsNot(third_pos, first_pos)
+        self.assertIsNot(third_quat, first_quat)
+
+    # ============================================================================
+    # update_world_to_robot_root_transforms: CPU/CUDA smoke coverage
+    # ============================================================================
+
+    async def test_root_transform_update_cpu_smoke(self) -> None:
+        """The CPU branch of ``_update_world_to_robot_root_transforms`` runs end-to-end."""
+        world_interface = cu_mg.CumotionWorldInterface(device="cpu")
+        self._add_three_spheres(world_interface)
+
+        # Identity, translated, rotated, and combined base poses should all succeed.
+        sqrt2_2 = float(np.sqrt(2.0) / 2.0)
+        for pos, quat in (
+            ([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]),
+            ([1.0, 2.0, 0.0], [1.0, 0.0, 0.0, 0.0]),
+            ([0.0, 0.0, 0.0], [sqrt2_2, 0.0, 0.0, sqrt2_2]),
+            ([0.5, -0.5, 0.25], [sqrt2_2, sqrt2_2, 0.0, 0.0]),
+        ):
+            world_interface.update_world_to_robot_root_transforms(
+                poses=(
+                    wp.array([pos], dtype=wp.float32),
+                    wp.array([quat], dtype=wp.float32),
+                )
+            )
+
+    async def test_root_transform_update_cuda_smoke(self) -> None:
+        """The CUDA branch of ``update_world_to_robot_root_transforms`` runs end-to-end."""
+        if not wp.is_cuda_available():
+            self.skipTest("CUDA device not available")
+
+        world_interface = cu_mg.CumotionWorldInterface(device="cuda")
+        self._add_three_spheres(world_interface)
+
+        sqrt2_2 = float(np.sqrt(2.0) / 2.0)
+        for pos, quat in (
+            ([0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]),
+            ([1.0, 2.0, 0.0], [1.0, 0.0, 0.0, 0.0]),
+            ([0.0, 0.0, 0.0], [sqrt2_2, 0.0, 0.0, sqrt2_2]),
+            ([0.5, -0.5, 0.25], [sqrt2_2, sqrt2_2, 0.0, 0.0]),
+        ):
+            world_interface.update_world_to_robot_root_transforms(
+                poses=(
+                    wp.array([pos], dtype=wp.float32),
+                    wp.array([quat], dtype=wp.float32),
+                )
+            )

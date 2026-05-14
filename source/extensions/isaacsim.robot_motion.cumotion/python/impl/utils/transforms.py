@@ -173,6 +173,10 @@ def batch_compute_collider_transforms(
     quaternions_object_to_collider: wp.array,  # Shape: (M, 4) - (w, x, y, z)
     num_colliders_per_object: list[int],  # Length N, ith element = number of colliders for object i
     device: wp.Device | None = None,
+    collider_to_object_indices: wp.array | None = None,  # Shape: (M,) - pre-built mapping; built internally if None
+    output: (
+        ColliderBatchTransformOutput | None
+    ) = None,  # Pre-allocated output; allocated internally if None or wrong size
 ) -> ColliderBatchTransformOutput:
     """Batch compute all collider transforms in base frame using a Warp kernel.
 
@@ -217,19 +221,20 @@ def batch_compute_collider_transforms(
     # Total number of colliders
     total_colliders = int(sum(num_colliders_per_object))
 
-    # Build collider-to-object index mapping
-    collider_to_object_indices_list = []
-    for object_idx, num_colliders in enumerate(num_colliders_per_object):
-        collider_to_object_indices_list.extend([object_idx] * int(num_colliders))
+    # Build collider-to-object index mapping if not pre-supplied by caller
+    if collider_to_object_indices is None:
+        collider_to_object_indices_list = []
+        for object_idx, num_colliders in enumerate(num_colliders_per_object):
+            collider_to_object_indices_list.extend([object_idx] * int(num_colliders))
+        collider_to_object_indices = wp.array(collider_to_object_indices_list, dtype=wp.int32, device=device)
 
-    collider_to_object_indices = wp.array(collider_to_object_indices_list, dtype=wp.int32, device=device)
-
-    # Allocate output arrays
-    output = ColliderBatchTransformOutput()
-    output.positions_base_to_collider = wp.zeros((total_colliders, 3), dtype=wp.float32, device=device)
-    output.quaternions_base_to_collider = wp.zeros((total_colliders, 4), dtype=wp.float32, device=device)
-    output.positions_world_to_collider = wp.zeros((total_colliders, 3), dtype=wp.float32, device=device)
-    output.quaternions_world_to_collider = wp.zeros((total_colliders, 4), dtype=wp.float32, device=device)
+    # Allocate output arrays only when not pre-supplied or the collider count changed
+    if output is None or output.positions_base_to_collider.shape[0] != total_colliders:
+        output = ColliderBatchTransformOutput()
+        output.positions_base_to_collider = wp.zeros((total_colliders, 3), dtype=wp.float32, device=device)
+        output.quaternions_base_to_collider = wp.zeros((total_colliders, 4), dtype=wp.float32, device=device)
+        output.positions_world_to_collider = wp.zeros((total_colliders, 3), dtype=wp.float32, device=device)
+        output.quaternions_world_to_collider = wp.zeros((total_colliders, 4), dtype=wp.float32, device=device)
 
     # Launch kernel - one thread per collider
     wp.launch(
@@ -249,6 +254,101 @@ def batch_compute_collider_transforms(
     )
 
     return output
+
+
+def _quat_multiply_wxyz(qa: np.ndarray, qb: np.ndarray) -> np.ndarray:
+    """Hamilton product of two batches of unit quaternions in (w, x, y, z) order.
+
+    Args:
+        qa: Left-hand quaternion(s), shape ``(..., 4)``.
+        qb: Right-hand quaternion(s), shape ``(..., 4)``.
+
+    Returns:
+        ``qa * qb`` with shape ``(..., 4)``. Broadcasts over the leading dimensions.
+    """
+    aw, ax, ay, az = qa[..., 0], qa[..., 1], qa[..., 2], qa[..., 3]
+    bw, bx, by, bz = qb[..., 0], qb[..., 1], qb[..., 2], qb[..., 3]
+    return np.stack(
+        [
+            aw * bw - ax * bx - ay * by - az * bz,
+            aw * bx + ax * bw + ay * bz - az * by,
+            aw * by - ax * bz + ay * bw + az * bx,
+            aw * bz + ax * by - ay * bx + az * bw,
+        ],
+        axis=-1,
+    )
+
+
+def _quat_rotate_wxyz(q: np.ndarray, v: np.ndarray) -> np.ndarray:
+    """Rotate a batch of 3-vectors by a batch of quaternions in (w, x, y, z) order.
+
+    Uses the cross-product form ``v + 2 * (q.xyz x (q.xyz x v + q.w * v))``, which
+    avoids materializing a 3x3 rotation matrix per element and broadcasts cleanly.
+
+    Args:
+        q: Quaternion(s), shape ``(..., 4)``.
+        v: Vector(s), shape ``(..., 3)``.
+
+    Returns:
+        Rotated vector(s) with shape ``(..., 3)``.
+    """
+    qw = q[..., 0:1]
+    qxyz = q[..., 1:4]
+    t = 2.0 * np.cross(qxyz, v)
+    return v + qw * t + np.cross(qxyz, t)
+
+
+def compute_collider_transforms_cpu(
+    position_base_to_world: np.ndarray,
+    quaternion_base_to_world: np.ndarray,
+    positions_world_to_object: np.ndarray,
+    quaternions_world_to_object: np.ndarray,
+    positions_object_to_collider: np.ndarray,
+    quaternions_object_to_collider: np.ndarray,
+    collider_to_object_indices: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Vectorized NumPy mirror of :func:`compute_collider_transforms_kernel`.
+
+    Computes the same transform composition as the GPU kernel
+    (``T_base_collider = T_base_world * T_world_object * T_object_collider``) on
+    the host. Useful as a fast path for small collider counts.
+
+    Args:
+        position_base_to_world: Shape ``(1, 3)`` or ``(3,)``.
+        quaternion_base_to_world: Shape ``(1, 4)`` or ``(4,)`` in (w, x, y, z) order.
+        positions_world_to_object: Shape ``(N, 3)``.
+        quaternions_world_to_object: Shape ``(N, 4)`` in (w, x, y, z) order.
+        positions_object_to_collider: Shape ``(M, 3)``.
+        quaternions_object_to_collider: Shape ``(M, 4)`` in (w, x, y, z) order.
+        collider_to_object_indices: Shape ``(M,)`` mapping each collider to its
+            parent object index in ``[0, N)``.
+
+    Returns:
+        Tuple of four ``np.ndarray`` mirroring the kernel outputs:
+        ``(positions_base_to_collider, quaternions_base_to_collider,
+        positions_world_to_collider, quaternions_world_to_collider)``.
+    """
+    base_pos = np.asarray(position_base_to_world, dtype=np.float32).reshape(3)
+    base_quat = np.asarray(quaternion_base_to_world, dtype=np.float32).reshape(4)
+
+    # Per-collider parent transforms (gather along axis 0).
+    obj_pos = positions_world_to_object[collider_to_object_indices, :]
+    obj_quat = quaternions_world_to_object[collider_to_object_indices, :]
+
+    # T_world_collider = T_world_object * T_object_collider
+    pos_world_collider = _quat_rotate_wxyz(obj_quat, positions_object_to_collider) + obj_pos
+    quat_world_collider = _quat_multiply_wxyz(obj_quat, quaternions_object_to_collider)
+
+    # T_base_collider = T_base_world * T_world_collider
+    pos_base_collider = _quat_rotate_wxyz(base_quat, pos_world_collider) + base_pos
+    quat_base_collider = _quat_multiply_wxyz(base_quat, quat_world_collider)
+
+    return (
+        pos_base_collider.astype(np.float32, copy=False),
+        quat_base_collider.astype(np.float32, copy=False),
+        pos_world_collider.astype(np.float32, copy=False),
+        quat_world_collider.astype(np.float32, copy=False),
+    )
 
 
 def _position_quaternion_to_cumotion_pose(

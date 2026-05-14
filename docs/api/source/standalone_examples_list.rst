@@ -200,8 +200,11 @@ standalone_examples/benchmarks
 
 * ``benchmark_camera.py``
 * ``benchmark_core_world.py``
+* ``benchmark_mobility_gen_recording.py``
 * ``benchmark_nucleus_kpis.py``
 * ``benchmark_physx_lidar.py``
+* ``benchmark_robot_motion_cumotion_rmpflow.py``
+* ``benchmark_robot_motion_lula_rmpflow.py``
 * ``benchmark_robots_evobot.py``
 * ``benchmark_robots_humanoid.py``
 * ``benchmark_robots_nova_carter.py``
@@ -213,6 +216,7 @@ standalone_examples/benchmarks
 * ``benchmark_rtx_radar.py``
 * ``benchmark_scene_loading.py``
 * ``benchmark_sdg.py``
+* ``benchmark_sim_stability_nova_carter.py``
 * ``benchmark_single_view_depth_sensor.py``
 
 validation
@@ -221,6 +225,20 @@ validation
 * ``benchmark_async_handshake_validation.py``
 * ``benchmark_robots_nova_carter_ros2_validation.py``
 * ``benchmark_sdg_validation.py``
+
+standalone_examples/conveyor_belt
+---------------------------------
+
+* ``cb_actuators.py``
+* ``cb_app.py``
+* ``cb_body_manager.py``
+* ``cb_conveyor_belt_manager.py``
+* ``cb_kernels.py``
+* ``cb_material_pair_manager.py``
+* ``cb_scene.py``
+* ``cb_scene_building_utils.py``
+* ``cb_utils.py``
+* ``cb_visualizers.py``
 
 standalone_examples/deprecated
 ------------------------------
@@ -507,5 +525,17 @@ validation
 standalone_examples/tutorials
 -----------------------------
 
+getting_started
+~~~~~~~~~~~~~~~
+
 * ``getting_started.py``
 * ``getting_started_robot.py``
+
+manipulation
+~~~~~~~~~~~~
+
+* ``tutorial_9_arm_trajectory.py``
+* ``tutorial_9_follow_target.py``
+* ``tutorial_9_gripper_control.py``
+* ``tutorial_9_pick_place_cumotion.py``
+* ``tutorial_9_pick_place_pink.py``
