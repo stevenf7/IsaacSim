@@ -318,7 +318,7 @@
         ],
         "clear_properties": false
       },
-      "enabled": true
+      "enabled": false
     }
   ],
   "interface_asset_name": null,

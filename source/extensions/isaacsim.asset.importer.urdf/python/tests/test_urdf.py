@@ -30,7 +30,7 @@ import numpy as np
 import omni.kit.test
 import pxr
 from isaacsim.asset.importer.urdf import URDFImporter, URDFImporterConfig
-from isaacsim.asset.importer.utils.impl.physx_types import PhysxAttr, PhysxMimicAttr, PhysxMimicRel, PhysxSchema
+from isaacsim.asset.importer.utils.impl.physx_types import PhysxAttr, PhysxSchema
 from pxr import Gf, PhysicsSchemaTools, Sdf, UsdGeom, UsdPhysics, UsdShade
 
 
@@ -497,30 +497,31 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         # Verify source joint exists and has no mimic API
         source_joint = stage.GetPrimAtPath("/test_mimic/Physics/source_joint")
         self.assertNotEqual(source_joint.GetPath(), Sdf.Path.emptyPath)
+        self.assertFalse(source_joint.HasAPI("NewtonMimicAPI"))
         self.assertFalse(source_joint.HasAPI(PhysxSchema.MIMIC_JOINT_API))
 
-        # Verify a_mimic_joint (lexicographically BEFORE source_joint) has mimic API configured
-        # This tests that mimic joints are configured after all joints are created
+        # Verify a_mimic_joint (lexicographically BEFORE source_joint) has NewtonMimicAPI configured.
+        # The runtime consumes NewtonMimicAPI directly; the importer no longer authors PhysxMimicJointAPI.
         a_mimic_joint = stage.GetPrimAtPath("/test_mimic/Physics/a_mimic_joint")
         self.assertNotEqual(a_mimic_joint.GetPath(), Sdf.Path.emptyPath)
-        self.assertTrue(a_mimic_joint.HasAPI(PhysxSchema.MIMIC_JOINT_API))
+        self.assertTrue(a_mimic_joint.HasAPI("NewtonMimicAPI"))
+        self.assertFalse(a_mimic_joint.HasAPI(PhysxSchema.MIMIC_JOINT_API))
 
-        self.assertAlmostEqual(a_mimic_joint.GetAttribute(PhysxMimicAttr.GEARING.format("rotZ")).Get(), 1.5)
-        self.assertAlmostEqual(a_mimic_joint.GetAttribute(PhysxMimicAttr.OFFSET.format("rotZ")).Get(), 0.1)
-        # Verify reference joint relationship points to source_joint
-        ref_joint_targets = a_mimic_joint.GetRelationship(PhysxMimicRel.REFERENCE_JOINT.format("rotZ")).GetTargets()
+        self.assertAlmostEqual(a_mimic_joint.GetAttribute("newton:mimicCoef1").Get(), 1.5)
+        self.assertAlmostEqual(a_mimic_joint.GetAttribute("newton:mimicCoef0").Get(), 0.1)
+        ref_joint_targets = a_mimic_joint.GetRelationship("newton:mimicJoint").GetTargets()
         self.assertEqual(len(ref_joint_targets), 1)
         self.assertEqual(ref_joint_targets[0], source_joint.GetPath())
 
-        # Verify z_mimic_joint (lexicographically AFTER source_joint) has mimic API configured
+        # Verify z_mimic_joint (lexicographically AFTER source_joint) has NewtonMimicAPI configured.
         z_mimic_joint = stage.GetPrimAtPath("/test_mimic/Physics/z_mimic_joint")
         self.assertNotEqual(z_mimic_joint.GetPath(), Sdf.Path.emptyPath)
-        self.assertTrue(z_mimic_joint.HasAPI(PhysxSchema.MIMIC_JOINT_API))
+        self.assertTrue(z_mimic_joint.HasAPI("NewtonMimicAPI"))
+        self.assertFalse(z_mimic_joint.HasAPI(PhysxSchema.MIMIC_JOINT_API))
 
-        self.assertAlmostEqual(z_mimic_joint.GetAttribute(PhysxMimicAttr.GEARING.format("rotZ")).Get(), -1.0)
-        self.assertAlmostEqual(z_mimic_joint.GetAttribute(PhysxMimicAttr.OFFSET.format("rotZ")).Get(), 0.0)
-        # Verify reference joint relationship points to source_joint
-        ref_joint_targets = z_mimic_joint.GetRelationship(PhysxMimicRel.REFERENCE_JOINT.format("rotZ")).GetTargets()
+        self.assertAlmostEqual(z_mimic_joint.GetAttribute("newton:mimicCoef1").Get(), -1.0)
+        self.assertAlmostEqual(z_mimic_joint.GetAttribute("newton:mimicCoef0").Get(), 0.0)
+        ref_joint_targets = z_mimic_joint.GetRelationship("newton:mimicJoint").GetTargets()
         self.assertEqual(len(ref_joint_targets), 1)
         self.assertEqual(ref_joint_targets[0], source_joint.GetPath())
         self._success = True

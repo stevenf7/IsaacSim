@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.14.4] - 2026-05-12
+### Changed
+- `compare_usd_files` articulation check will check if the asset contains newton articulation root api or physx articulation root api and test the attributes accordingly
+
 ## [0.14.3] - 2026-04-28
 ### Fixed
 - `menu_click_with_retry` waits for the requested menu path to resolve before clicking, absorbing the async menubar rebuild that ran after a prior test's window destruction (fixes flaky `ui.Menu item failed to become show`).

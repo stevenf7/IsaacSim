@@ -590,7 +590,8 @@ Select a category tab to view available rules. Expand each rule for detailed par
 
          1. **Actuator Conversion**: For each ``MjcActuator`` prim, reads ``gainPrm``, ``biasPrm``, ``gainType``, ``biasType``, and ``forceRange`` attributes. Converts position-control (kp/kd) and velocity-control (kd) patterns to ``DriveAPI`` stiffness and damping.
          2. **Joint Conversion**: For each revolute/prismatic joint, converts MJCF-specific attributes (``frictionloss`` → ``PhysxJointAPI.jointFriction``, ``armature`` → ``PhysxJointAPI.armature``, ``ref`` → ``DriveAPI.targetPosition``).
-         3. **Mimic Joint Creation**: Creates ``PhysxMimicJointAPI`` for joints with ``NewtonMimicAPI`` relationships.
+
+         Mimic joints are left as ``NewtonMimicAPI`` on the joint prim and consumed directly by the runtime; no equivalent ``PhysxMimicJointAPI`` is authored.
 
       .. dropdown:: UrdfToMjcPhysxConversionRule
          :color: primary
@@ -607,7 +608,8 @@ Select a category tab to view available rules. Expand each rule for detailed par
          2. **URDF to PhysX Conversion**: For each revolute/prismatic joint, converts URDF attributes (``effort`` → ``DriveAPI.maxForce``, ``velocity`` → ``PhysxJointAPI.maxJointVelocity``, ``damping`` → ``DriveAPI.damping``, ``friction`` → ``PhysxJointAPI.jointFriction``, ``calibration`` → ``DriveAPI.targetPosition``).
          3. **MjcActuator Creation**: Creates ``MjcActuator`` prims with ``gainPrm``/``biasPrm`` arrays derived from drive stiffness and damping for position or velocity control modes.
          4. **PhysX to MJC Conversion**: Converts PhysX joint attributes back to MJCF attributes (``targetPosition`` → ``mjc:ref``, ``jointFriction`` → ``mjc:frictionloss``, ``armature`` → ``mjc:armature``).
-         5. **Mimic Joint Creation**: Creates ``PhysxMimicJointAPI`` for joints with ``NewtonMimicAPI`` relationships.
+
+         Mimic joints are left as ``NewtonMimicAPI`` on the joint prim and consumed directly by the runtime; no equivalent ``PhysxMimicJointAPI`` is authored.
 
 
 Idempotency Requirement

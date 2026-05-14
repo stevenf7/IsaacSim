@@ -40,7 +40,6 @@ __all__ = [
     "add_joint_schemas",
     "add_rigid_body_schemas",
     "remove_custom_scopes",
-    "create_physx_mimic_joint",
     "resolve_unique_path",
 ]
 
@@ -199,7 +198,7 @@ def enable_self_collision(usd_stage: Usd.Stage, enabled: bool = True) -> int:
     """Enable self-collisions on articulation roots.
 
     Args:
-        usd_stage: USD stage for authoring PhysX articulation attributes.
+        usd_stage: USD stage for authoring articulation attributes.
         enabled: Whether to enable self collisions on articulation roots.
 
     Returns:
@@ -219,13 +218,6 @@ def enable_self_collision(usd_stage: Usd.Stage, enabled: bool = True) -> int:
         if not default_prim:
             return 0
         default_prim.ApplyAPI("PhysicsArticulationRootAPI")
-        default_prim.ApplyAPI(PhysxSchema.ARTICULATION_API)
-        attr = default_prim.GetAttribute(PhysxAttr.ARTICULATION_SELF_COLLISION.name)
-        if not attr:
-            attr = default_prim.CreateAttribute(
-                PhysxAttr.ARTICULATION_SELF_COLLISION.name, PhysxAttr.ARTICULATION_SELF_COLLISION.type
-            )
-        attr.Set(enabled)
 
         default_prim.ApplyAPI("NewtonArticulationRootAPI")
         attr = default_prim.GetAttribute("newton:selfCollisionEnabled")
@@ -241,18 +233,8 @@ def enable_self_collision(usd_stage: Usd.Stage, enabled: bool = True) -> int:
         if not articulation_root.HasAPI("PhysicsArticulationRootAPI"):
             articulation_root.ApplyAPI("PhysicsArticulationRootAPI")
 
-        if not articulation_root.HasAPI(PhysxSchema.ARTICULATION_API):
-            articulation_root.ApplyAPI(PhysxSchema.ARTICULATION_API)
-
         if not articulation_root.HasAPI("NewtonArticulationRootAPI"):
             articulation_root.ApplyAPI("NewtonArticulationRootAPI")
-
-        attr = articulation_root.GetAttribute(PhysxAttr.ARTICULATION_SELF_COLLISION.name)
-        if not attr:
-            attr = articulation_root.CreateAttribute(
-                PhysxAttr.ARTICULATION_SELF_COLLISION.name, PhysxAttr.ARTICULATION_SELF_COLLISION.type
-            )
-        attr.Set(enabled)
 
         attr = articulation_root.GetAttribute("newton:selfCollisionEnabled")
         if not attr:
@@ -395,71 +377,6 @@ def remove_custom_scopes(stage: Usd.Stage) -> None:
     if scope and scope.IsA(UsdGeom.Scope):
         stage.RemovePrim(Sdf.Path(scope_paths))
     return
-
-
-def create_physx_mimic_joint(prim: Usd.Prim) -> None:
-    """Create PhysX mimic joint attributes on a joint prim.
-
-    Args:
-        prim: Joint prim to create the mimic joint on.
-    """
-    if prim.HasAPI("NewtonMimicAPI"):
-        # Get the mimic relation as a Usd.Rel
-        mimic_rel = prim.GetRelationship("newton:mimicJoint")
-        if mimic_rel is None or not mimic_rel.IsValid():
-            _logger.warning(f"newton:mimicJoint not found or invalid for prim {prim.GetPath()}")
-            return
-
-        target = mimic_rel.GetTargets()[0]
-        if not target:
-            _logger.warning(f"newton:mimicJoint relationship has no target for prim {prim.GetPath()}")
-            return
-
-        # Read newton:mimicCoef1 and newton:mimicCoef0
-        mimic_coef1_attr = prim.GetAttribute("newton:mimicCoef1")
-        mimic_coef0_attr = prim.GetAttribute("newton:mimicCoef0")
-        mimic_coef1 = mimic_coef1_attr.Get() if mimic_coef1_attr and mimic_coef1_attr.IsValid() else None
-        mimic_coef0 = mimic_coef0_attr.Get() if mimic_coef0_attr and mimic_coef0_attr.IsValid() else None
-
-        target_prim = prim.GetStage().GetPrimAtPath(target)
-        if not target_prim:
-            _logger.warning(f"target prim not found for prim {prim.GetPath()}")
-            return
-        if not target_prim.HasAttribute("physics:axis"):
-            _logger.warning(f"target prim does not have physics:axis attribute for prim {prim.GetPath()}")
-            return
-        target_axis = target_prim.GetAttribute("physics:axis").Get().upper()
-
-        axis = prim.GetAttribute("physics:axis").Get().upper() if prim.HasAttribute("physics:axis") else None
-        if axis is None:
-            _logger.warning(f"prim does not have physics:axis attribute for prim {prim.GetPath()}")
-            return
-
-        target_joint = UsdPhysics.Joint(target_prim)
-        # Check if the target joint is flipped, and if so, invert the gearing (mimic_coef1)
-        local_rot1 = target_joint.GetLocalRot1Attr().Get()
-        if local_rot1.GetReal() == -1 or any(v == -1 for v in local_rot1.GetImaginary()):
-            if mimic_coef1 is not None:
-                mimic_coef1 = -mimic_coef1
-            _logger.info(f"Inverted gearing for prim {prim.GetPath()} because target joint is flipped")
-
-        # Create the PhysX mimic joint attribute on the current prim
-        axis_token = PHYSICS_AXIS_MAP[axis]
-        prim.ApplyAPI(PhysxSchema.MIMIC_JOINT_API, axis_token)
-        prim.CreateRelationship(PhysxMimicRel.REFERENCE_JOINT.format(axis_token)).SetTargets([target])
-        if mimic_coef1 is not None:
-            prim.CreateAttribute(PhysxMimicAttr.GEARING.format(axis_token), PhysxMimicAttr.GEARING.type).Set(
-                mimic_coef1
-            )
-        else:
-            _logger.warning(f"newton:mimicCoef1 not found or invalid for prim {prim.GetPath()}")
-        if mimic_coef0 is not None:
-            prim.CreateAttribute(PhysxMimicAttr.OFFSET.format(axis_token), PhysxMimicAttr.OFFSET.type).Set(mimic_coef0)
-        else:
-            _logger.warning(f"newton:mimicCoef0 not found or invalid for prim {prim.GetPath()}")
-        prim.CreateAttribute(
-            PhysxMimicAttr.REFERENCE_JOINT_AXIS.format(axis_token), PhysxMimicAttr.REFERENCE_JOINT_AXIS.type
-        ).Set(PHYSICS_AXIS_MAP[target_axis])
 
 
 ROBOT_TYPE_TOKENS = [

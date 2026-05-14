@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.10.0] - 2026-05-07
+### Changed
+- Imported URDF mimic joints are now expressed exclusively through `NewtonMimicAPI` (via `newton:mimicJoint`, `newton:mimicCoef0`, `newton:mimicCoef1`). The transformer-driven authoring of the equivalent `PhysxMimicJointAPI` has been removed; the runtime consumes the Newton mimic schema directly.
+- Imported URDF articulation roots no longer carry `PhysxArticulationAPI`. Self-collision is authored via `NewtonArticulationRootAPI` (`newton:selfCollisionEnabled`) on top of the standard `UsdPhysics.ArticulationRootAPI`.
+
 ## [3.9.1] - 2026-04-23
 ### Changed
 - Update urdf-usd-converter to v0.1.2

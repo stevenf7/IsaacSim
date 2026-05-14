@@ -71,7 +71,12 @@ class TestImporterUtils(omni.kit.test.AsyncTestCase):
         self.assertTrue(body_prim.HasAPI(UsdPhysics.MassAPI))
 
     async def test_enable_self_collision_applies_articulation_api(self) -> None:
-        """Enable self-collision on the default prim when missing roots."""
+        """Enable self-collision on the default prim when missing roots.
+
+        The PhysX-specific ``PhysxArticulationAPI`` is intentionally not
+        authored here; the runtime consumes ``NewtonArticulationRootAPI``
+        directly.
+        """
         stage = Usd.Stage.CreateInMemory()
         default_prim = UsdGeom.Xform.Define(stage, "/World").GetPrim()
         stage.SetDefaultPrim(default_prim)
@@ -80,12 +85,8 @@ class TestImporterUtils(omni.kit.test.AsyncTestCase):
 
         self.assertEqual(updated, 1)
         self.assertTrue(default_prim.HasAPI("PhysicsArticulationRootAPI"))
-        self.assertTrue(default_prim.HasAPI(PhysxSchema.ARTICULATION_API))
+        self.assertFalse(default_prim.HasAPI(PhysxSchema.ARTICULATION_API))
         self.assertTrue(default_prim.HasAPI("NewtonArticulationRootAPI"))
-
-        physx_attr = default_prim.GetAttribute(PhysxAttr.ARTICULATION_SELF_COLLISION.name)
-        self.assertTrue(physx_attr.IsValid())
-        self.assertTrue(physx_attr.Get())
 
         newton_attr = default_prim.GetAttribute("newton:selfCollisionEnabled")
         self.assertTrue(newton_attr.IsValid())
