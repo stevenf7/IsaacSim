@@ -3787,6 +3787,95 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     - PhysX JointAPI
 
+        | **Addverb**
+
+        .. tab-set::
+
+            .. tab-item:: Syncro5
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Addverb_Syncro5.usd.png
+                  :align: center
+                  :alt: Addverb Syncro 5 collaborative manipulator
+                  :width: 80%
+
+                  **USD Path:** Addverb/Syncro5.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 6
+                        * - Number of Links
+                          - 7
+                        * - Number of DOFs
+                          - 6
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement Template_Addverb Technologies Limited.pdf>`
+
+            .. tab-item:: Syncro10
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Addverb_Syncro10.usd.png
+                  :align: center
+                  :alt: Addverb Syncro 10 collaborative manipulator
+                  :width: 80%
+
+                  **USD Path:** Addverb/Syncro10.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 6
+                        * - Number of Links
+                          - 7
+                        * - Number of DOFs
+                          - 6
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement Template_Addverb Technologies Limited.pdf>`
+
+        | **Mecademic**
+
+        .. tab-set::
+
+            .. tab-item:: meca500
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Mecademic_meca500.usd.png
+                  :align: center
+                  :alt: Mecademic Meca 500 industrial manipulator
+                  :width: 80%
+
+                  **USD Path:** Mecademic/meca500.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 6
+                        * - Number of Links
+                          - 7
+                        * - Number of DOFs
+                          - 6
+
+                    **License:** `Apache 2.0 <https://github.com/maximeriera/mecademic-ros>`__
+
         | **OpenArm**
 
         .. tab-set::
@@ -5144,6 +5233,37 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                     **License:** `BSD-3 <https://github.com/DeepRoboticsLab/deep_robotics_model/blob/main/LICENSE.txt>`__
 
+        | **Addverb**
+
+        .. tab-set::
+
+            .. tab-item:: Trakr
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Addverb_Trakr_trakr.usd.png
+                  :align: center
+                  :alt: Addverb Trakr quadruped robot
+                  :width: 80%
+
+                  **USD Path:** Addverb/Trakr/trakr.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 16
+                        * - Number of Links
+                          - 17
+                        * - Number of DOFs
+                          - 12
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement Template_Addverb Technologies Limited.pdf>`
+
     .. tab-item:: Holonomic
 
 
@@ -6010,3 +6130,38 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                     - PhysX JointAPI
 
                     **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/Boston Dynamics-Signed 3D Content Sharing.pdf>`
+
+        | **Galbot**
+
+        .. tab-set::
+
+            .. tab-item:: galbot_g1
+
+
+                .. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_6.0_full_ref_viewport_Isaac_Robots_Galbot_galbot_g1.usd.png
+                  :align: center
+                  :alt: Galbot G1 mobile manipulator
+                  :width: 80%
+
+                  **USD Path:** Galbot/galbot/g1.usd
+
+                .. dropdown:: Properties
+                    :animate: fade-in
+                    :color: light
+
+                    .. list-table::
+                        :align: center
+                        :widths: 40 40
+
+                        * - Number of Joints
+                          - 86
+                        * - Number of Links
+                          - 87
+                        * - Number of DOFs
+                          - 77
+
+                    **Physics APIs:**
+
+                    - PhysX ArticulationAPI
+
+                    **License:** :download:`3D Content Sharing Agreement <robot_asset_licenses/3D Content Sharing Agreement Template_SHENZHEN GALBOT CO.,LTD.pdf>`
