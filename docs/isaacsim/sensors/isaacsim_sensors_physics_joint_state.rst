@@ -45,6 +45,9 @@ The following snippet adds a Simple Articulation reference and creates a ``Joint
     :start-after: # [create-sensor]
     :end-before: # [/create-sensor]
 
+.. note::
+    The articulation root prim you pass in **is** the sensor's prim — ``JointStateSensor`` does not author a separate USD prim in the **Stage** panel on construction. DOF readings become available via ``get_sensor_reading()`` once the simulation is playing; check ``reading.is_valid`` after pressing **Play** to confirm the sensor is active.
+
 
 Reading sensor output
 ^^^^^^^^^^^^^^^^^^^^^

@@ -49,6 +49,9 @@ The effort sensor is created by constructing an ``isaacsim.sensors.experimental.
     :start-after: # [create-sensor]
     :end-before: # [/create-sensor]
 
+.. note::
+    The joint prim you pass in **is** the sensor's prim — ``EffortSensor`` does not author a separate USD prim in the **Stage** panel on construction. Effort readings become available via ``get_sensor_reading()`` once the simulation is playing; check ``reading.is_valid`` after pressing **Play** to confirm the sensor is active.
+
 To modify sensor parameters, change class member variables such as ``enabled`` directly. To change the ``dof_name`` and ``buffer_size`` for readings, use the corresponding member functions, ``update_dof_name`` and ``change_buffer_size``.
 
 
