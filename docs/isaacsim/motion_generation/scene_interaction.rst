@@ -20,7 +20,7 @@ It's useful for finding obstacles, robots, or other objects in your scene.
 
 The most common use is finding collision objects in a region:
 
-.. literalinclude:: ../snippets/motion_generation/scene_interaction/scene_interaction_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/scene_interaction_example.py
    :start-after: <start-scene-query-snippet>
    :end-before: <end-scene-query-snippet>
    :language: python
@@ -84,7 +84,7 @@ When querying the configuration for a specific obstacle, :class:`ObstacleStrateg
 
 Here's how to configure an :class:`ObstacleStrategy`:
 
-.. literalinclude:: ../snippets/motion_generation/scene_interaction/scene_interaction_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/scene_interaction_example.py
    :start-after: <start-obstacle-strategy-snippet>
    :end-before: <end-obstacle-strategy-snippet>
    :language: python
@@ -114,21 +114,21 @@ Here are examples of the three main types of methods you'll implement:
 
 **Adding obstacles** - Initialize objects in your planning world:
 
-.. literalinclude:: ../snippets/motion_generation/scene_interaction/scene_interaction_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/scene_interaction_example.py
    :start-after: <start-add-spheres-snippet>
    :end-before: <end-add-spheres-snippet>
    :language: python
 
 **Updating transforms** - Used frequently for real-time updates, or just before creating a trajectory plan:
 
-.. literalinclude:: ../snippets/motion_generation/scene_interaction/scene_interaction_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/scene_interaction_example.py
    :start-after: <start-update-transforms-snippet>
    :end-before: <end-update-transforms-snippet>
    :language: python
 
 **Updating properties** - Called when shape properties change:
 
-.. literalinclude:: ../snippets/motion_generation/scene_interaction/scene_interaction_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/scene_interaction_example.py
    :start-after: <start-update-sphere-properties-snippet>
    :end-before: <end-update-sphere-properties-snippet>
    :language: python
@@ -147,7 +147,7 @@ This keeps your planning library's world representation in sync with the simulat
 
 Here's how to use :class:`WorldBinding` with your :class:`WorldInterface` implementation:
 
-.. literalinclude:: ../snippets/motion_generation/scene_interaction/scene_interaction_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/scene_interaction_example.py
    :start-after: <start-world-binding-snippet>
    :end-before: <end-world-binding-snippet>
    :language: python
@@ -221,7 +221,7 @@ Complete Workflow
 
 Here's the complete example showing how all the pieces fit together. Note that the scene setup function creates a simple example scene, but emphasizes that the scene could come from anywhere:
 
-.. literalinclude:: ../snippets/motion_generation/scene_interaction/scene_interaction_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/scene_interaction_example.py
    :start-after: <start-setup-scene-snippet>
    :end-before: <end-setup-scene-snippet>
    :language: python
@@ -229,7 +229,7 @@ Here's the complete example showing how all the pieces fit together. Note that t
 
 The main function demonstrates the complete workflow, including the use of different synchronize methods:
 
-.. literalinclude:: ../snippets/motion_generation/scene_interaction/scene_interaction_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/scene_interaction_example.py
    :start-after: <start-main-snippet>
    :end-before: <end-main-snippet>
    :language: python

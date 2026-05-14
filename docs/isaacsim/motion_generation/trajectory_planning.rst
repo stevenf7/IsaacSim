@@ -48,14 +48,14 @@ the :class:`Trajectory` interface.
 
 1. The :meth:`__init__` method sets up the trajectory with waypoints and computes the duration:
 
-   .. literalinclude:: ../snippets/motion_generation/trajectories/trajectory_example.py
+   .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/trajectory_example.py
       :start-after: <start-linear-trajectory-init-snippet>
       :end-before: <end-linear-trajectory-init-snippet>
       :language: python
 
 2. Implement the required ``duration`` property, which returns the pre-computed duration:
 
-   .. literalinclude:: ../snippets/motion_generation/trajectories/trajectory_example.py
+   .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/trajectory_example.py
       :start-after: <start-linear-trajectory-duration-snippet>
       :end-before: <end-linear-trajectory-duration-snippet>
       :language: python
@@ -67,7 +67,7 @@ the :class:`Trajectory` interface.
    3. linearly interpolates between the start and end waypoints of that segment
    4. returns the interpolated :class:`RobotState`, or if the time is out of bounds, returns ``None``
 
-.. literalinclude:: ../snippets/motion_generation/trajectories/trajectory_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/trajectory_example.py
    :start-after: <start-linear-trajectory-get-target-state-snippet>
    :end-before: <end-linear-trajectory-get-target-state-snippet>
    :language: python
@@ -94,14 +94,14 @@ accelerate to maximum velocity, cruise at that velocity, then decelerate to a st
 
 1. Define your waypoints:
 
-   .. literalinclude:: ../snippets/motion_generation/trajectories/trajectory_example.py
+   .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/trajectory_example.py
       :start-after: <start-define-waypoints-snippet>
       :end-before: <end-define-waypoints-snippet>
       :language: python
 
 2. Create a Path and convert it to a minimal-time trajectory:
 
-   .. literalinclude:: ../snippets/motion_generation/trajectories/trajectory_example.py
+   .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/trajectory_example.py
       :start-after: <start-create-minimal-time-trajectory-snippet>
       :end-before: <end-create-minimal-time-trajectory-snippet>
       :language: python
@@ -124,7 +124,7 @@ The :class:`TrajectoryFollower` follows a specific use cycle:
 
 Here's how to use it:
 
-.. literalinclude:: ../snippets/motion_generation/trajectories/trajectory_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/trajectory_example.py
    :start-after: <start-trajectory-follower-cycle-snippet>
    :end-before: <end-trajectory-follower-cycle-snippet>
    :language: python
@@ -138,7 +138,7 @@ The Complete Control Loop
 
 Here's the complete control loop that brings everything together:
 
-.. literalinclude:: ../snippets/motion_generation/trajectories/trajectory_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/trajectory_example.py
    :start-after: <start-trajectory-control-loop-snippet>
    :end-before: <end-trajectory-control-loop-snippet>
    :language: python

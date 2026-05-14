@@ -93,7 +93,7 @@ prim under ``{articulation_root}/Actuators/{name}``, applies the appropriate
 API schemas, and authors the corresponding ``newton:*`` attributes — all in
 one call.
 
-.. literalinclude:: ../snippets/newton_actuators/newton_actuators_usd_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_usd_example.py
    :start-after: <start-author-actuators-snippet>
    :end-before: <end-author-actuators-snippet>
    :language: python
@@ -223,7 +223,7 @@ Once authored, the actuator prims are part of the stage and persist exactly
 like any other USD content.  Flatten the stage to a single file so it can be
 distributed:
 
-.. literalinclude:: ../snippets/newton_actuators/newton_actuators_usd_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_usd_example.py
    :start-after: <start-export-stage-snippet>
    :end-before: <end-export-stage-snippet>
    :language: python
@@ -241,7 +241,7 @@ just an articulation root, it walks the USD subtree, finds every
 ``NewtonActuator`` prim, parses its applied API schemas, and rebuilds the
 actuator pipeline:
 
-.. literalinclude:: ../snippets/newton_actuators/newton_actuators_usd_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_usd_example.py
    :start-after: <start-discover-from-usd-snippet>
    :end-before: <end-discover-from-usd-snippet>
    :language: python
@@ -256,7 +256,7 @@ The most useful pattern is the full round-trip: author once on a base asset,
 flatten to disk, then load the saved file in any application that understands
 the Newton schema:
 
-.. literalinclude:: ../snippets/newton_actuators/newton_actuators_usd_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_usd_example.py
    :start-after: <start-reopen-and-discover-snippet>
    :end-before: <end-reopen-and-discover-snippet>
    :language: python

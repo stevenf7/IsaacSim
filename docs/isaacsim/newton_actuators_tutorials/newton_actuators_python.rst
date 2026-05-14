@@ -49,7 +49,7 @@ of three components: a required Newton ``Controller`` plus an optional list of
 ``Clamping`` stages and an optional ``Delay``.  The simplest case is a PD
 controller with no clamping and no delay:
 
-.. literalinclude:: ../snippets/newton_actuators/newton_actuators_python_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_python_example.py
    :start-after: <start-build-pd-config-snippet>
    :end-before: <end-build-pd-config-snippet>
    :language: python
@@ -68,7 +68,7 @@ Most real actuators need at least an effort limit.  Append clamping stages
 to ``ActuatorConfig.clamping`` and optionally add a ``Delay`` for
 command-input latency:
 
-.. literalinclude:: ../snippets/newton_actuators/newton_actuators_python_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_python_example.py
    :start-after: <start-build-pd-with-clamping-snippet>
    :end-before: <end-build-pd-with-clamping-snippet>
    :language: python
@@ -86,7 +86,7 @@ Use :meth:`~isaacsim.core.experimental.actuators.ArticulationActuators.from_actu
 to skip USD discovery and supply the configs directly.  Each config is paired
 with the **DOF name** (the leaf of the joint's USD path) it should drive:
 
-.. literalinclude:: ../snippets/newton_actuators/newton_actuators_python_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_python_example.py
    :start-after: <start-construct-from-actuators-snippet>
    :end-before: <end-construct-from-actuators-snippet>
    :language: python
@@ -136,7 +136,7 @@ To send commands, write to the underlying
 :class:`~isaacsim.core.experimental.prims.Articulation` exactly as you would
 without actuators; the callback picks the targets up on the next tick:
 
-.. literalinclude:: ../snippets/newton_actuators/newton_actuators_python_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_python_example.py
    :start-after: <start-drive-to-target-snippet>
    :end-before: <end-drive-to-target-snippet>
    :language: python
@@ -153,7 +153,7 @@ output via
 :meth:`~isaacsim.core.experimental.actuators.ArticulationActuators.set_dof_feedforward_effort_targets`.
 With ``kp`` and ``kd`` set to zero this becomes a pure open-loop torque drive:
 
-.. literalinclude:: ../snippets/newton_actuators/newton_actuators_python_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_python_example.py
    :start-after: <start-feedforward-effort-snippet>
    :end-before: <end-feedforward-effort-snippet>
    :language: python
@@ -182,7 +182,7 @@ factory you wrote — for example
 or the ``construct_articulation_actuators`` helper from earlier in this
 tutorial):
 
-.. literalinclude:: ../snippets/newton_actuators/newton_actuators_python_example.py
+.. literalinclude:: ../../../source/standalone_examples/api/isaacsim.core.experimental.actuators/newton_actuators_python_example.py
    :start-after: <start-context-manager-snippet>
    :end-before: <end-context-manager-snippet>
    :language: python
