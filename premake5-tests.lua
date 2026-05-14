@@ -995,6 +995,7 @@ local function get_replicator_tests()
         {
             "tests-nativepython-isaacsim.replicator.examples.sdg_workflow_01",
             "standalone_examples/api/isaacsim.replicator.examples/sdg_workflow_01.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.sdg_workflow_02",

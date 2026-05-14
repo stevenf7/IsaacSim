@@ -25,6 +25,8 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp(launch_config={"headless": False})
 
+import argparse
+
 import carb
 import carb.settings
 import omni.replicator.core as rep
@@ -32,6 +34,14 @@ import omni.timeline
 import omni.usd
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Usd, UsdGeom, UsdPhysics
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--test",
+    action="store_true",
+    help="Exit immediately after the workflow finishes (skip the interactive idle loop).",
+)
+args, _ = parser.parse_known_args()
 
 NUM_CAPTURES = 10
 RESOLUTION = (1280, 720)
@@ -289,7 +299,9 @@ def run_workflow():
 
 run_workflow()
 
-while simulation_app.is_running():
-    simulation_app.update()
+# In test mode, exit immediately so automated runs don't hang on the interactive idle loop.
+if not args.test:
+    while simulation_app.is_running():
+        simulation_app.update()
 
 simulation_app.close()
