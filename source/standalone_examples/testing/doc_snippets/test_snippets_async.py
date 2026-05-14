@@ -272,7 +272,7 @@ def file_contains_simulation_app(file_path):
         raise
 
 
-def cleanup_before_new_stage(simulation_app, file_path):
+def cleanup_before_new_stage(simulation_app, file_path, deadline=None):
     """Clean up the current stage before creating a new one."""
     import omni.timeline
     import omni.usd
@@ -289,7 +289,14 @@ def cleanup_before_new_stage(simulation_app, file_path):
 
         if rep.orchestrator.get_status() not in [rep.orchestrator.Status.STOPPED, rep.orchestrator.Status.STOPPING]:
             rep.orchestrator.stop()
-            rep.orchestrator.wait_until_complete()
+        cleanup_deadline = time.monotonic() + 10.0
+        if deadline is not None:
+            cleanup_deadline = min(cleanup_deadline, deadline)
+        while rep.orchestrator.get_status() != rep.orchestrator.Status.STOPPED:
+            if time.monotonic() > cleanup_deadline:
+                print(f"Warning: Timed out waiting for replicator cleanup before file: {file_path}")
+                break
+            simulation_app.update()
         rep.orchestrator.set_capture_on_play(False)
     except Exception:
         pass
@@ -569,7 +576,7 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app, snippet
         loop.set_exception_handler(loop_exception_handler)
 
         # Clean up the current stage before creating a new one
-        cleanup_before_new_stage(simulation_app, file_path)
+        cleanup_before_new_stage(simulation_app, file_path, deadline=deadline)
         _check_deadline("cleanup")
 
         # Open a new stage and wait for it to finish loading

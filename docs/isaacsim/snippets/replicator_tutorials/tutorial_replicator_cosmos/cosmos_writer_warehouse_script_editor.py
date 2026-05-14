@@ -155,7 +155,7 @@ async def run_example_async(
     # Load carter nova asset with its navigation graph
     carter_url_path = assets_root_path + CARTER_NAV_ASSET_URL
     print(f"Loading carter nova asset: '{carter_url_path}' at prim path: '{CARTER_NAV_PATH}'")
-    carter_nav_prim = add_reference_to_stage(usd_path=carter_url_path, prim_path=CARTER_NAV_PATH)
+    carter_nav_prim = add_reference_to_stage(usd_path=carter_url_path, path=CARTER_NAV_PATH)
 
     if not carter_nav_prim.GetAttribute("xformOp:translate"):
         UsdGeom.Xformable(carter_nav_prim).AddTranslateOp()

@@ -51,7 +51,8 @@ async def setup_and_run_stacking_simulation_async(prim, seed: int | None = None)
     script_path = inspect.getfile(VolumeStackRandomizer)
     parameters = {
         f"{EXPOSED_ATTR_NS}:{VolumeStackRandomizer.BEHAVIOR_NS}:assets:csv": STACK_ASSETS_CSV,
-        f"{EXPOSED_ATTR_NS}:{VolumeStackRandomizer.BEHAVIOR_NS}:assets:numRange": Gf.Vec2i(2, 15),
+        f"{EXPOSED_ATTR_NS}:{VolumeStackRandomizer.BEHAVIOR_NS}:assets:numRange": Gf.Vec2i(2, 5),
+        f"{EXPOSED_ATTR_NS}:{VolumeStackRandomizer.BEHAVIOR_NS}:renderSimulation": False,
     }
     if seed is not None:
         parameters[f"{EXPOSED_ATTR_NS}:{VolumeStackRandomizer.BEHAVIOR_NS}:seed"] = seed
@@ -68,11 +69,14 @@ async def setup_and_run_stacking_simulation_async(prim, seed: int | None = None)
         )
 
     # Define and execute the stacking simulation steps
-    actions = [("reset", "RESET", 10), ("setup", "SETUP", 500), ("run", "FINISHED", 1500)]
+    actions = [("reset", "RESET", 10), ("setup", "SETUP", 500), ("run", "FINISHED", 10000)]
     for action, state, wait in actions:
         print(f"Executing '{action}' and waiting for state '{state}'...")
         if not await handle_event(action, state, wait):
             print(f"Failed to complete '{action}' with state '{state}'.")
+            if action == "run":
+                print("Requesting reset before continuing.")
+                await handle_event("reset", "RESET", 2000)
             return
 
     print("Stacking simulation finished.")
