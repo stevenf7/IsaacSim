@@ -14,7 +14,15 @@
 // limitations under the License.
 
 
+#if defined(__GNUC__) && !defined(__clang__)
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
 #include <flatbuffers/flatbuffers.h>
+#if defined(__GNUC__) && !defined(__clang__)
+#    pragma GCC diagnostic pop
+#endif
+
 #include <isaacsim/ucx/nodes/UcxPublishImuNodeBase.h>
 
 #include <OgnUCXPublishImuDatabase.h>

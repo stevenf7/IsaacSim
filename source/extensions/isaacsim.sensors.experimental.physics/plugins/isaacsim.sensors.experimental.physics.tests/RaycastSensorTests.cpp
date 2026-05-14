@@ -63,7 +63,7 @@ TEST_SUITE("isaacsim.sensors.experimental.physics.tests.raycast")
         CHECK_EQ(reading.depths[1], 10.0f);
         CHECK_EQ(reading.depths[2], 100.0f);
 
-        for (int i = 0; i < reading.rayCount; ++i)
+        for (uint32_t i = 0; i < reading.rayCount; ++i)
         {
             CHECK_EQ(reading.rayOriginsWorld[i * 3 + 2], 1.0f);
         }

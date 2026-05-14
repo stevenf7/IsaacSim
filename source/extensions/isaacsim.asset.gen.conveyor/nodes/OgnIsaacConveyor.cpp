@@ -33,11 +33,19 @@
 #include <physxSchema/physxSurfaceVelocityAPI.h>
 #include <pxr/pxr.h>
 #include <pxr/usd/usdPhysics/rigidBodyAPI.h>
+
+#if defined(__GNUC__) && !defined(__clang__)
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
 #include <usdrt/gf/vec.h>
 #include <usdrt/scenegraph/usd/sdf/types.h>
 #include <usdrt/scenegraph/usd/usd/attribute.h>
 #include <usdrt/scenegraph/usd/usd/prim.h>
 #include <usdrt/scenegraph/usd/usd/stage.h>
+#if defined(__GNUC__) && !defined(__clang__)
+#    pragma GCC diagnostic pop
+#endif
 
 #include <unordered_map>
 

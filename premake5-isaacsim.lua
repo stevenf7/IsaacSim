@@ -171,13 +171,13 @@ function add_cuda_dependencies()
     setRuntimeToBeKitCompatible()
 
     filter { "files:**.cu", "system:windows", "configurations:debug" }
-    make_nvcc_command(nvccPath, nvccHostCompilerVS, "/Od", "-g -G -allow-unsupported-compiler")
+    make_nvcc_command(nvccPath, nvccHostCompilerVS, "/Od", "-g -G -allow-unsupported-compiler -Wno-deprecated-gpu-targets")
     filter { "files:**.cu", "system:windows", "configurations:release" }
-    make_nvcc_command(nvccPath, nvccHostCompilerVS, "", "-allow-unsupported-compiler")
+    make_nvcc_command(nvccPath, nvccHostCompilerVS, "", "-allow-unsupported-compiler -Wno-deprecated-gpu-targets")
     filter { "files:**.cu", "system:linux", "configurations:debug" }
-    make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC -g", "-g -G -allow-unsupported-compiler")
+    make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC -g", "-g -G -allow-unsupported-compiler -Wno-deprecated-gpu-targets")
     filter { "files:**.cu", "system:linux", "configurations:release" }
-    make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC", "-allow-unsupported-compiler")
+    make_nvcc_command(nvccPath, nvccHostCompilerVS, "-fPIC", "-allow-unsupported-compiler -Wno-deprecated-gpu-targets")
     filter {}
 
     -- link against CUDA runtime static library.
