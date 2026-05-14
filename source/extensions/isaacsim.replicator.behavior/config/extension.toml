@@ -33,10 +33,10 @@ args = [
 dependencies = [
     "isaacsim.core.experimental.utils",
     "isaacsim.test.utils",
+    "omni.hydra.rtx",
     "omni.kit.test",
     "omni.kit.viewport.window",
-    "omni.replicator.core",
-    "omni.hydra.rtx",
+    "omni.replicator.core"
 ]
 
 args = [

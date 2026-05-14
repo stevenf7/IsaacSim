@@ -1,5 +1,5 @@
 [package]
-version = "0.1.3"
+version = "0.1.4"
 category = "Simulation"
 title = "Isaac Sim Newton Physics Tensor Backend"
 description = "C++ tensor interface implementation for Newton physics"
@@ -31,9 +31,9 @@ name = "startup"
 [[test]]
 timeout = 3600
 dependencies = [
-    "isaacsim.test.utils",
     "isaacsim.core.experimental.prims",
     "isaacsim.storage.native",
+    "isaacsim.test.utils"
 ]
 
 stdoutFailPatterns.exclude = [

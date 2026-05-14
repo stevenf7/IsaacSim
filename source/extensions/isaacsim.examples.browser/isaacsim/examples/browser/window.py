@@ -93,3 +93,6 @@ class ExampleBrowserWindow(ui.Window):
                     style=THUMBNAIL_STYLE,
                     property_delegates=[EmptyPropertyDelegate(), PropAssetPropertyDelegate(), MultiPropertyDelegate()],
                 )
+                # Hand the widget back to the model so folder tiles in the detail view can drive
+                # tree navigation when double-clicked.
+                self._browser_model.set_widget(self._widget)

@@ -1,6 +1,6 @@
 # Changelog
 
-## [5.2.5] - 2026-05-05
+## [5.2.6] - 2026-05-05
 ### Added
 - Standing test for the Go2 policy that holds a zero command and asserts the robot remains upright
 

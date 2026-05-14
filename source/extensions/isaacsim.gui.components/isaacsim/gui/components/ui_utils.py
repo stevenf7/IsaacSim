@@ -1736,6 +1736,24 @@ class SearchListItem(ui.AbstractItem):
         return self.name_model.as_string
 
 
+def _normalize_search_filter_text(text: object) -> str:
+    """Normalize search filter input to a text string.
+
+    Args:
+        text: Search text or a sequence of search terms.
+
+    Returns:
+        Text to pass through the search filter.
+    """
+    if text is None:
+        return ""
+
+    if isinstance(text, (list, tuple)):
+        return " ".join(str(part) for part in text if part is not None)
+
+    return str(text)
+
+
 class SearchListItemModel(ui.AbstractItemModel):
     """Represents the model for lists. It's very easy to initialize it.
 
@@ -1772,7 +1790,7 @@ class SearchListItemModel(ui.AbstractItemModel):
 
         return self._filtered
 
-    def filter_text(self, text):
+    def filter_text(self, text: object) -> None:
         """Filter the list items by the given text pattern.
 
         Args:
@@ -1780,12 +1798,13 @@ class SearchListItemModel(ui.AbstractItemModel):
         """
         import fnmatch
 
+        filter_text = _normalize_search_filter_text(text)
         self._filtered = []
-        if len(text) == 0:
+        if len(filter_text) == 0:
             for c in self._children:
                 self._filtered.append(c)
         else:
-            parts = text.split()
+            parts = filter_text.split()
             # for i in range(len(parts) - 1, -1, -1):
             #     w = parts[i]
 
