@@ -53,12 +53,12 @@ class Result:
 class Checker:
     """System compatibility checker for verifying hardware and software requirements."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the compatibility checker."""
         self._nvidia_smi = Result()
         self._gpu_driver_version = Result()
-        self._gpu_rtx = []
-        self._gpu_vram = []
+        self._gpu_rtx: list[Result] = []
+        self._gpu_vram: list[Result] = []
         self._cpu = Result()
         self._cpu_cores = Result()
         self._cpu_power_governor = Result()
@@ -67,66 +67,66 @@ class Checker:
         self._operating_system = Result()
         self._display = Result()
 
-        self._gpu_status = {}
+        self._gpu_status: dict[str, list[bool]] = {}
         self._compatibility_check_status = True
 
     @property
-    def compatibility_check_status(self):
+    def compatibility_check_status(self) -> bool:
         """Return the compatibility check status result."""
         return self._compatibility_check_status
 
     @property
-    def operating_system(self):
+    def operating_system(self) -> Result:
         """Return the operating system result."""
         return self._operating_system
 
     @property
-    def display(self):
+    def display(self) -> Result:
         """Return the display result."""
         return self._display
 
     @property
-    def nvidia_smi(self):
+    def nvidia_smi(self) -> Result:
         """Return the nvidia smi result."""
         return self._nvidia_smi
 
     @property
-    def gpu_driver_version(self):
+    def gpu_driver_version(self) -> Result:
         """Return the gpu driver version result."""
         return self._gpu_driver_version
 
     @property
-    def gpu_rtx(self):
+    def gpu_rtx(self) -> list[Result]:
         """Return the gpu rtx result."""
         return self._gpu_rtx
 
     @property
-    def gpu_vram(self):
+    def gpu_vram(self) -> list[Result]:
         """Return the gpu vram result."""
         return self._gpu_vram
 
     @property
-    def cpu(self):
+    def cpu(self) -> Result:
         """Return the cpu result."""
         return self._cpu
 
     @property
-    def cpu_cores(self):
+    def cpu_cores(self) -> Result:
         """Return the cpu cores result."""
         return self._cpu_cores
 
     @property
-    def cpu_power_governor(self):
+    def cpu_power_governor(self) -> Result:
         """Return the cpu power governor result."""
         return self._cpu_power_governor
 
     @property
-    def ram(self):
+    def ram(self) -> Result:
         """Return the ram result."""
         return self._ram
 
     @property
-    def disk_storage(self):
+    def disk_storage(self) -> Result:
         """Return the disk storage result."""
         return self._disk_storage
 
@@ -153,7 +153,7 @@ class Checker:
             return -2
         try:
             return int(raw_count)
-        except:
+        except ValueError:
             return -1
 
     def check_nvidia_smi(self, spec: dict) -> None:
@@ -433,7 +433,7 @@ class Checker:
                 if entry.startswith("cpu") and entry[3:].isdigit():  # Filter CPU directories
                     path = f"{cpu_path}{entry}/cpufreq/scaling_governor"
                     try:
-                        with open(path, "r") as file:
+                        with open(path) as file:
                             governor = file.read().strip()
                             governors.add(governor)
                     except FileNotFoundError:

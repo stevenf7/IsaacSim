@@ -59,7 +59,7 @@ class UIBuilder:
             self._app_folder = carb.tokens.get_tokens_interface().resolve("${app}")
         self._app_folder = os.path.normpath(os.path.join(self._app_folder, os.pardir))
 
-    def startup(self):
+    def startup(self) -> None:
         """Create menu item."""
         try:
             import omni.kit.actions.core
@@ -84,7 +84,7 @@ class UIBuilder:
         except ImportError:
             pass
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Clean up menu item."""
         try:
             import omni.kit.actions.core

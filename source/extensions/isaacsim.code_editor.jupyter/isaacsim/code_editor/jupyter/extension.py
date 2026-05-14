@@ -15,6 +15,7 @@
 
 """Extension for integrating Jupyter Notebook functionality into Isaac Sim."""
 
+from __future__ import annotations
 
 import asyncio
 import glob
@@ -191,7 +192,7 @@ class Extension(omni.ext.IExt):
         # run jupyter in a separate process
         self._launch_jupyter_process()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Shuts down the Jupyter extension and cleans up all resources.
 
         Closes socket server, terminates Jupyter notebook process, and shuts down UI components.
@@ -232,19 +233,19 @@ class Extension(omni.ext.IExt):
         """
         self.on_shutdown()
 
-    async def _create_socket(self):
+    async def _create_socket(self) -> None:
         """Create a socket server to listen for incoming connections."""
 
         class ServerProtocol(asyncio.Protocol):
-            def __init__(self, parent) -> None:
+            def __init__(self, parent: Extension) -> None:
                 super().__init__()
                 self._parent = parent
 
-            def connection_made(self, transport) -> None:
+            def connection_made(self, transport: asyncio.BaseTransport) -> None:
                 carb.log_info(f"Connection from {transport.get_extra_info('peername')}")
                 self.transport = transport
 
-            def data_received(self, data) -> None:
+            def data_received(self, data: bytes) -> None:
                 source = data.decode()
                 # completion
                 if source[:3] == "%!c":
@@ -281,7 +282,7 @@ class Extension(omni.ext.IExt):
             carb.log_error(str(e))
             self._server = None
 
-    async def _process_code(self, source: str, transport: asyncio.Transport):
+    async def _process_code(self, source: str, transport: asyncio.Transport) -> None:
         """Execute the source code in the Kit Python scope and send the result back to the client.
 
         Args:
@@ -304,7 +305,7 @@ class Extension(omni.ext.IExt):
         # close the connection
         transport.close()
 
-    async def _complete_code_async(self, source: str, transport: asyncio.Transport):
+    async def _complete_code_async(self, source: str, transport: asyncio.Transport) -> None:
         """Complete objects under the cursor and send the result back to the client.
 
         Args:
@@ -323,7 +324,7 @@ class Extension(omni.ext.IExt):
         # close the connection
         transport.close()
 
-    async def _introspect_code_async(self, source: str, line: int, column: int, transport: asyncio.Transport):
+    async def _introspect_code_async(self, source: str, line: int, column: int, transport: asyncio.Transport) -> None:
         """Introspect code under the cursor and send the result back to the client.
 
         Args:
@@ -348,7 +349,7 @@ class Extension(omni.ext.IExt):
 
     # Jupyter Notebook methods
 
-    def _launch_jupyter_process(self):
+    def _launch_jupyter_process(self) -> None:
         """Launch the Jupyter notebook in a separate process."""
         # get packages path
         paths = [p for p in sys.path if "pip3-envs" in p]
@@ -376,7 +377,7 @@ class Extension(omni.ext.IExt):
         try:
             self._process = subprocess.Popen(cmd, cwd=os.path.join(self._extension_path, "data", "launchers"))
         except Exception as e:
-            carb.log_error("Error starting Jupyter server: {}".format(e))
+            carb.log_error(f"Error starting Jupyter server: {e}")
             self._process = None
 
     def _get_display_url(self) -> str:
@@ -389,7 +390,7 @@ class Extension(omni.ext.IExt):
         if self._process is not None:
             notebook_txt = os.path.join(self._extension_path, "data", "launchers", "notebook.txt")
             if os.path.exists(notebook_txt):
-                with open(notebook_txt, "r") as f:
+                with open(notebook_txt) as f:
                     urls = f.readlines()
                     display_url = "\n".join([url.strip() for url in urls])
         return display_url

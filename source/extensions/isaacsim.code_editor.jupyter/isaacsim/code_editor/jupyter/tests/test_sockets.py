@@ -28,16 +28,16 @@ class TestSockets(omni.kit.test.AsyncTestCase):
     """Test suite for Jupyter socket communication."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures before each test."""
         settings = carb.settings.get_settings()
         self._socket_port = settings.get("/exts/isaacsim.code_editor.jupyter/port")
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures after each test."""
 
-    async def test_tcp_socket(self):
+    async def test_tcp_socket(self) -> None:
         """Test TCP socket code execution and response parsing."""
         # open TCP socket (code execution)
         reader, writer = await asyncio.open_connection("127.0.0.1", self._socket_port)

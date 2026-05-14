@@ -26,7 +26,7 @@ import omni
 import omni.kit.app
 import omni.ui as ui
 
-from .compatibility_checker import Level
+from .compatibility_checker import Checker, Level, Result
 
 GRAY: Final[int] = 0xFF4A4A4A
 LIGHT_GRAY: Final[int] = 0xFFA8A8A8
@@ -55,7 +55,7 @@ WINDOW_STYLE: dict[str, Any] = {}
 class CheckWindow:
     """Window for displaying compatibility check results."""
 
-    def __init__(self, ext_path, title, checker, test_config={}) -> None:
+    def __init__(self, ext_path: str, title: str, checker: Checker, test_config: dict[str, Any] | None = None) -> None:
         """Initialize the check window.
 
         Args:
@@ -68,7 +68,7 @@ class CheckWindow:
         self._ext_path = ext_path
         self._title = title
         self._checker = checker
-        self._test_config = test_config
+        self._test_config = {} if test_config is None else test_config
 
         self._window = None
         self._check_list_frame = None
@@ -76,11 +76,11 @@ class CheckWindow:
 
         self._build_window()
 
-    def destroy(self):
+    def destroy(self) -> None:
         """Destroy the window and release resources."""
         self._window = None
 
-    def _exit(self):
+    def _exit(self) -> None:
         omni.kit.app.get_app().post_quit()
 
     def _build_window(self) -> None:
@@ -94,7 +94,7 @@ class CheckWindow:
                 self._build_actions()
                 self._build_nvidia_status_bar()
 
-    def _widget_single_state(self, label, result):
+    def _widget_single_state(self, label: str, result: Result) -> None:
         with ui.HStack(height=0):
             ui.Label(label, width=125, style={"font_size": 18, "color": 0xFFBBBBBB})
             ui.Spacer(width=15)
@@ -109,7 +109,7 @@ class CheckWindow:
                     style={"font_size": 16, "color": WHITE},
                 )
 
-    def _widget_multi_state(self, label, result, disable: bool = False):
+    def _widget_multi_state(self, label: str, result: Result, disable: bool = False) -> None:
         color_by_level = {
             Level.UNMET: COLOR_DISABLED if disable else COLOR_UNMET,
             Level.MINIMUM: COLOR_DISABLED if disable else COLOR_MINIMUM,
@@ -139,7 +139,9 @@ class CheckWindow:
                     )
 
     # Single bar, multi-state by color
-    def _widget_single_level_state(self, label, result, disable: bool = False, font_size: int = 16):
+    def _widget_single_level_state(
+        self, label: str, result: Result, disable: bool = False, font_size: int = 16
+    ) -> None:
         color_by_level = {
             Level.UNMET: COLOR_DISABLED if disable else COLOR_UNMET,
             Level.MINIMUM: COLOR_DISABLED if disable else COLOR_MINIMUM,
@@ -253,7 +255,7 @@ class CheckWindow:
                     self._sub_build_test_output_frame("")
                 ui.Spacer(height=8)
 
-    def _sub_build_test_output_frame(self, text, color=0xFFBBBBBB) -> None:
+    def _sub_build_test_output_frame(self, text: str, color: int = 0xFFBBBBBB) -> None:
         if not self._test_output_frame:
             self._test_output_frame = ui.Frame()
         else:
@@ -302,8 +304,8 @@ class CheckWindow:
                     ui.Image(f"{self._ext_path}/data/app/NVIDIA.png", height=18, width=150)
                     ui.Spacer()
 
-    def _test_kit(self):
-        def _execute(cmd, app):
+    def _test_kit(self) -> None:
+        def _execute(cmd: list[str], app: str) -> None:
             try:
                 output = subprocess.check_output(cmd, shell=False).decode().strip()
             except subprocess.CalledProcessError as e:
@@ -337,7 +339,7 @@ class CheckWindow:
         # show execution message
         self._sub_build_test_output_frame(f"Running: {' '.join([test_script] + test_args)}")
 
-    def _resolve_test_config(self):
+    def _resolve_test_config(self) -> tuple[bool, tuple[str, str, list[str]]]:
         # get app folder
         app_folder = carb.settings.get_settings().get_as_string("/app/folder")
         if not app_folder:
