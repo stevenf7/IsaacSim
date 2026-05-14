@@ -23,6 +23,7 @@ import isaacsim.robot_motion.experimental.motion_generation as mg
 import numpy as np
 import omni.kit.test
 import pink
+import pink.limits
 import pink.tasks
 import warp as wp
 from isaacsim.robot_motion.pink import PinkIKController, load_pink_robot
@@ -159,6 +160,26 @@ class TestPinkIKController(omni.kit.test.AsyncTestCase):
             dt=1.0 / 60.0,
         )
         self.assertIsNotNone(controller)
+
+    async def test_extra_limits_extend_default_limits(self) -> None:
+        """Extra limits are additive and preserve PINK's default safety limits."""
+        extra_limit = object()
+        controller = PinkIKController(
+            pink_robot=self.pink_robot,
+            robot_joint_space=_JOINT_NAMES,
+            robot_site_space=[_TOOL_FRAME],
+            tool_frame=_TOOL_FRAME,
+            extra_limits=[extra_limit],
+            dt=1.0 / 60.0,
+        )
+        state = _make_estimated_state(_JOINT_NAMES, np.zeros(3))
+        controller.reset(state, None, 0.0)
+
+        limits = controller._get_limits()
+        self.assertEqual(len(limits), 3)
+        self.assertTrue(any(isinstance(limit, pink.limits.ConfigurationLimit) for limit in limits))
+        self.assertTrue(any(isinstance(limit, pink.limits.VelocityLimit) for limit in limits))
+        self.assertIn(extra_limit, limits)
 
     async def test_invalid_joint_space(self) -> None:
         """ValueError when robot_joint_space doesn't contain all controlled joints."""

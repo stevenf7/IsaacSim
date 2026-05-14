@@ -246,8 +246,7 @@ class PinkIKController(mg.BaseController):
             tasks.append(self._posture_task)
         tasks.extend(self._extra_tasks)
 
-        # Assemble limits (PINK auto-creates config+velocity limits when limits=None)
-        limits = self._extra_limits if self._extra_limits else None
+        limits = self._get_limits()
 
         # Solve IK
         try:
@@ -398,6 +397,28 @@ class PinkIKController(mg.BaseController):
                     q_current=self._pink_robot.q0.copy(),
                 )
                 self._posture_task.set_target(q_target)
+
+    def _get_limits(self) -> list[Any] | None:
+        """Get the flat PINK limit list for `solve_ik`.
+
+        PINK owns the limit objects and expects `limits` to be `None` or an
+        iterable of Limit objects. Passing a
+        non-None iterable replaces PINK's defaults, so custom limits must be
+        appended after the model's default limit objects.
+        """
+        if not self._extra_limits:
+            return None
+
+        model = self._configuration.model
+        configuration_limit = model.configuration_limit
+        velocity_limit = model.velocity_limit
+        floating_base_velocity_limit = getattr(model, "floating_base_velocity_limit", None)
+
+        limits_for_pink = [configuration_limit, velocity_limit]
+        if floating_base_velocity_limit is not None:
+            limits_for_pink.append(floating_base_velocity_limit)
+        limits_for_pink.extend(self._extra_limits)
+        return limits_for_pink
 
     def _extract_tool_position(self, state: mg.RobotState) -> np.ndarray | None:
         """Extract tool frame position from a RobotState's sites."""

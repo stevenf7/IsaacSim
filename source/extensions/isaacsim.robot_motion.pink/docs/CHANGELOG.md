@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.2] - 2026-05-11
+### Fixed
+- Preserve default configuration and velocity safety limits when adding custom PINK IK limits.
+
 ## [0.1.1] - 2026-05-01
 ### Fixed
 - Prevented OSQP sparse matrix conversion warnings from being emitted during PINK IK solves.
