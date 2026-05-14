@@ -38,7 +38,7 @@ _extension_instance = None
 class AboutExtension(omni.ext.IExt):
     """Extension that provides the About dialog UI."""
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the extension when it is loaded.
 
         Args:
@@ -70,7 +70,7 @@ class AboutExtension(omni.ext.IExt):
         global _extension_instance
         _extension_instance = self
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up resources when the extension is unloaded."""
         global _extension_instance
         _extension_instance = None
@@ -81,7 +81,7 @@ class AboutExtension(omni.ext.IExt):
 
         self._about_menu = None
 
-    def get_values(self):
+    def get_values(self) -> None:
         """Load application and version values for the About dialog.
 
         This populates cached values used by the About window, including
@@ -112,7 +112,7 @@ class AboutExtension(omni.ext.IExt):
         self.app_version = f"{self.app_version_core}-{self.app_version_prerel}"
 
     @staticmethod
-    def _resize_window(window: ui.Window, scrolling_frame: ui.ScrollingFrame):
+    def _resize_window(window: ui.Window, scrolling_frame: ui.ScrollingFrame) -> None:
         """Resize the scrolling area to match the window.
 
         Args:
@@ -122,7 +122,7 @@ class AboutExtension(omni.ext.IExt):
         scrolling_frame.width = ui.Pixel(window.width - 10)
         scrolling_frame.height = ui.Pixel(window.height - 235)
 
-    def _on_menu_show_about(self):
+    def _on_menu_show_about(self) -> None:
         """Handle the menu action to show the About dialog."""
         plugins = carb.get_framework().get_plugins()
         plugins = sorted(plugins, key=lambda x: x.impl.name)
@@ -147,15 +147,15 @@ class AboutExtension(omni.ext.IExt):
         """
         info = f"App Name: {self.app_name}\nApp Version: {self.app_version}\nKit SDK Version{self.kit_version}\nClient Library Version: {self.client_library_version}"
 
-        def hide(w):
+        def hide(w: ui.Window) -> None:
             w.visible = False
 
-        def add_separator():
+        def add_separator() -> None:
             ui.Spacer(height=4)
             ui.Line(style={"color": 0x338A8777}, width=ui.Fraction(1))
             ui.Spacer(height=4)
 
-        def copy_to_clipboard(x, y, button, modifier):
+        def copy_to_clipboard(x: float, y: float, button: int, modifier: int) -> None:
             if button != 1:
                 return
 

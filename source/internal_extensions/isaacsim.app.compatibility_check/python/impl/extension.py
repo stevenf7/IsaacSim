@@ -27,7 +27,7 @@ from . import compatibility_checker
 class Extension(omni.ext.IExt):
     """Extension for running application compatibility checks on startup."""
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the extension and run compatibility checks."""
         # extension metadata
         import omni  # FIXME: UnboundLocalError: local variable 'omni' referenced before assignment
@@ -98,7 +98,7 @@ class Extension(omni.ext.IExt):
         )
         self._build_task = asyncio.ensure_future(self._build_layout())
 
-    async def _build_layout(self):
+    async def _build_layout(self) -> None:
         import omni.ui as ui
 
         await omni.kit.app.get_app().next_update_async()
@@ -115,7 +115,7 @@ class Extension(omni.ext.IExt):
 
         await omni.kit.app.get_app().next_update_async()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up resources when the extension shuts down."""
         if self._window:
             self._window.destroy()
