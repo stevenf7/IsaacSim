@@ -29,9 +29,13 @@ from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.gui.components.element_wrappers import Button, CollapsableFrame, FloatField, StateButton
 from isaacsim.gui.components.style import get_style
+from isaacsim.storage.native import get_assets_root_path_async
 from pxr import UsdPhysics
 
 from .scenario import FrankaMultiTaskExample
+
+_GRID_ENVIRONMENT_PATH = "/Isaac/Environments/Grid/default_environment.usd"
+_GRID_ENVIRONMENT_PRIM_PATH = "/World/gridEnvironment"
 
 
 class UIBuilder:
@@ -162,10 +166,17 @@ class UIBuilder:
         asyncio.ensure_future(self._load_scene_async())
 
     async def _load_scene_async(self) -> None:
-        await stage_utils.create_new_stage_async(template="default stage")
+        await stage_utils.create_new_stage_async(template="empty")
 
         stage_utils.set_stage_up_axis("Z")
         stage_utils.set_stage_units(meters_per_unit=1.0)
+        stage_utils.define_prim("/World", "Xform")
+
+        assets_root_path = await get_assets_root_path_async()
+        stage_utils.add_reference_to_stage(
+            usd_path=assets_root_path + _GRID_ENVIRONMENT_PATH,
+            path=_GRID_ENVIRONMENT_PRIM_PATH,
+        )
 
         await self._scenario.load_example_assets()
 

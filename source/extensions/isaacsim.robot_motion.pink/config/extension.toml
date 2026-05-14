@@ -1,5 +1,5 @@
 [package]
-version = "0.1.1"
+version = "0.1.2"
 category = "simulation"
 title = "pink"
 description = "Access to PINK (Python Inverse Kinematics) solvers under the isaacsim motion generation API."
