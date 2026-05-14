@@ -22,6 +22,7 @@ USD
     open_usd
     intro_to_usd
     usd_tools
+    building_cpp_usd_plugins
     robot_schema
     sensor_schema
 
