@@ -27,8 +27,9 @@ class MjcToPhysxConversionRule(RuleInterface):
     Walks all ``MjcActuator`` prims and revolute/prismatic joints in the
     stage, converting MJCF gain/bias parameters to PhysX drive stiffness
     and damping, and MJCF joint attributes (friction, armature, ref) to
-    their PhysX equivalents.  Also creates PhysX mimic joints for any
-    joints that have the ``NewtonMimicAPI``.
+    their PhysX equivalents.  Mimic joints are left as ``NewtonMimicAPI``
+    on the joint prim and consumed directly by the runtime; no equivalent
+    ``PhysxMimicJointAPI`` is authored.
     """
 
     def get_configuration_parameters(self) -> list[RuleConfigurationParam]:

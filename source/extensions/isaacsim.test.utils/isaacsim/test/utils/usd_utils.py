@@ -132,10 +132,38 @@ async def compare_usd_files(paths: list[str]) -> bool:
     carb.log_info("\n------------------------")
     carb.log_info("Checking other values...")
     carb.log_info("------------------------")
-    status &= compare_articulation_properties(prims, Articulation.get_enabled_self_collisions)
-    status &= compare_articulation_properties(prims, Articulation.get_sleep_thresholds)
-    status &= compare_articulation_properties(prims, Articulation.get_solver_iteration_counts)
-    status &= compare_articulation_properties(prims, Articulation.get_stabilization_thresholds)
+
+    # Dispatch the self-collision check based on which articulation schema is authored:
+    # ``PhysxArticulationAPI`` is read via the Articulation view; ``NewtonArticulationRootAPI``
+    # exposes the value as the ``newton:selfCollisionEnabled`` attribute on the root prim.
+    stage = stage_utils.get_current_stage()
+
+    def _articulation_has_api(articulation: Articulation, api_name: str) -> bool:
+        for path in articulation.paths:
+            prim = stage.GetPrimAtPath(path)
+            if prim and prim.IsValid() and prim.HasAPI(api_name):
+                return True
+        return False
+
+    if all(_articulation_has_api(p, "PhysxArticulationAPI") for p in prims):
+        status &= compare_articulation_properties(prims, Articulation.get_enabled_self_collisions)
+        status &= compare_articulation_properties(prims, Articulation.get_sleep_thresholds)
+        status &= compare_articulation_properties(prims, Articulation.get_solver_iteration_counts)
+        status &= compare_articulation_properties(prims, Articulation.get_stabilization_thresholds)
+
+    elif all(_articulation_has_api(p, "NewtonArticulationRootAPI") for p in prims):
+
+        def get_newton_self_collisions(articulation: Articulation) -> list[bool | None]:
+            values: list[bool | None] = []
+            for path in articulation.paths:
+                prim = stage.GetPrimAtPath(path)
+                attr = prim.GetAttribute("newton:selfCollisionEnabled") if prim and prim.IsValid() else None
+                values.append(bool(attr.Get()) if attr and attr.IsValid() else None)
+            return values
+
+        status &= compare_articulation_properties(prims, get_newton_self_collisions)
+    else:
+        carb.log_info("Skipping self-collision comparison: no PhysxArticulationAPI or NewtonArticulationRootAPI found")
 
     stage = None
     gc.collect()

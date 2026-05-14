@@ -1,4 +1,10 @@
 # Changelog
+
+## [3.9.0] - 2026-05-07
+### Changed
+- Imported MJCF mimic joints are now expressed exclusively through `NewtonMimicAPI` (via `newton:mimicJoint`, `newton:mimicCoef0`, `newton:mimicCoef1`). The transformer-driven authoring of the equivalent `PhysxMimicJointAPI` has been removed; the runtime consumes the Newton mimic schema directly.
+- Imported MJCF articulation roots no longer carry `PhysxArticulationAPI`. Self-collision is authored via `NewtonArticulationRootAPI` (`newton:selfCollisionEnabled`) on top of the standard `UsdPhysics.ArticulationRootAPI`.
+
 ## [3.8.0] - 2026-04-29
 ### Changed
 - Updated mujoco-usd-converter to 0.2.0

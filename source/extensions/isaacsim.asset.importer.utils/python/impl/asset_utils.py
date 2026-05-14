@@ -27,9 +27,6 @@ from pxr import Sdf, Usd, UsdPhysics, Vt
 _logger = logging.getLogger(__name__)
 
 
-# ---------------------------------------------------------------------------
-# Fix-base helpers
-# ---------------------------------------------------------------------------
 def _get_joint_body(joint_prim: Usd.Prim, body_index: int) -> Sdf.Path | None:
     """Get the body relationship target for a joint.
 
@@ -294,11 +291,6 @@ def _remove_articulation_schemas(prim: Usd.Prim, api_names: list[str]) -> None:
             prim.RemoveAppliedSchema(name)
 
 
-# ---------------------------------------------------------------------------
-# Density
-# ---------------------------------------------------------------------------
-
-
 def apply_link_density(stage: Usd.Stage, density: float) -> None:
     """Set default density on rigid body links that have no explicit mass.
 
@@ -317,11 +309,6 @@ def apply_link_density(stage: Usd.Stage, density: float) -> None:
         if not density_attr:
             density_attr = mass_api.CreateDensityAttr()
         density_attr.Set(density)
-
-
-# ---------------------------------------------------------------------------
-# Joint drive helpers
-# ---------------------------------------------------------------------------
 
 
 def _collect_joints(stage: Usd.Stage) -> dict[str, tuple]:
@@ -565,11 +552,6 @@ def _set_or_create_string(prim: Usd.Prim, name: str, value: str) -> None:
     if not attr or not attr.IsValid():
         attr = prim.CreateAttribute(name, Sdf.ValueTypeNames.String)
     attr.Set(value)
-
-
-# ---------------------------------------------------------------------------
-# Internal dispatch helper
-# ---------------------------------------------------------------------------
 
 
 def _apply_to_joints(

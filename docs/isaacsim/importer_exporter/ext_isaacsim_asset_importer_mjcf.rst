@@ -196,24 +196,23 @@ You can use the :ref:`isaac_gain_tuner` tutorial to tune the gains for your robo
 
 .. note::
 
-    **Mimic joints:**  
-    The MJCF importer supports conversion of mimic (dependent) joints, allowing one joint's motion to follow another with scaling and offset. In MuJoCo/MJCF, mimic relationships use ``mimicJoint``, ``mimicCoef`` 
-    to model a higher order relationship between teh follower and leader joint. In PhysX, this is limited to a first order relationship, where ``mimicCoef0`` is the offset and ``mimicCoef1`` is the scale.
+    **Mimic joints:**
 
-    When importing, these are mapped to corresponding PhysX and Newton schemas:
-    
-    - The source joint will have a relationship targeting the mimic joint, with ``mimicCoef`` modelling the higher order relationship.
-    - For PhysX, these values are applied via ``PhysxMimicJointAPI``, where the ``MimicJointRel`` points to the driven joint, and ``Gearing`` or ``Offset`` attributes are set.
-    - For Newton, the mimic attributes are applied through the ``NewtonMimicAPI`` (via relationship and attributes).
-    - Both schemas are applied automatically if mimic attributes are present.
-    - Newton Mimic API is disabled in the PhysX layer, to avoid conflicts with the PhysX Mimic Joint API.
+    The MJCF importer supports conversion of mimic (dependent) joints, allowing one joint's motion to follow another with scaling and offset. In MuJoCo/MJCF, mimic relationships use ``mimicJoint`` plus ``mimicCoef`` to model a higher-order relationship between the follower and leader joint. The importer captures the first-order term (offset and scale) so the runtime can enforce ``follower = mimicCoef0 + mimicCoef1 * leader``.
+
+    When importing, the mimic attributes are written through ``NewtonMimicAPI`` on the follower joint:
+
+    - ``newton:mimicJoint`` is a relationship targeting the leader joint.
+    - ``newton:mimicCoef1`` stores the scale factor.
+    - ``newton:mimicCoef0`` stores the offset.
+
+    The runtime consumes ``NewtonMimicAPI`` directly, so no equivalent ``PhysxMimicJointAPI`` is authored.
 
     See source code for precise logic and usage.
 
 Articulation Root API
 =====================
-The MJCF importer will create ``UsdPhysics ArticulationRootAPI``, ``Newton ArticulationRootAPI`` and ``PhysxArticulationAPI`` on the root link of the MJCF file.
-``Newton ArticulationRootAPI`` is disabled in the PhysX layer, to avoid conflicts with the ``PhysxArticulationRootAPI``.
+The MJCF importer applies the standard ``UsdPhysics.ArticulationRootAPI`` and the ``NewtonArticulationRootAPI`` on the root link of the MJCF file. Self-collision behavior is authored via ``newton:selfCollisionEnabled`` and consumed by the runtime directly; the PhysX-specific ``PhysxArticulationAPI`` is no longer authored.
 
 Known Issues
 =======================

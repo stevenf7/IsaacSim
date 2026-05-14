@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.7.4] - 2026-05-11
+### Changed
+- `MjcToPhysxConversionRule` and `UrdfToMjcPhysxConversionRule` no longer author `PhysxMimicJointAPI` from joints with `NewtonMimicAPI`. The runtime consumes `NewtonMimicAPI` directly, so the equivalent PhysX mimic schema is redundant and is now omitted.
+- No longer deletes physx mimic and articulation roots by default in isaacsim structure json file
+
 ## [1.7.3] - 2026-05-08
 ### Added
 - `JointStateAPIRule` applies `PhysxSchema.JointStateAPI` (`linear` on prismatic, `angular` on revolute) to non-fixed joints missing it. Wired into the Isaac Sim profile between `Fix Physics Joint Poses` and `Route Materials`.

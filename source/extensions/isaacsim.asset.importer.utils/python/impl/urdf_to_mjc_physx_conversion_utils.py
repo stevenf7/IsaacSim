@@ -21,7 +21,6 @@ import logging
 
 from pxr import Sdf, Usd, UsdGeom, UsdPhysics
 
-from .importer_utils import create_physx_mimic_joint
 from .physx_types import PhysxAttr, PhysxSchema
 
 _logger = logging.getLogger(__name__)
@@ -44,7 +43,6 @@ def convert_joints_attributes(stage: Usd.Stage) -> None:
             convert_urdf_to_physx(prim)
             create_mjc_actuator_from_physics(prim, stage, scope_path)
             convert_physx_to_mjc(prim)
-            create_physx_mimic_joint(prim)
 
 
 def convert_urdf_to_physx(joint: Usd.Prim) -> None:

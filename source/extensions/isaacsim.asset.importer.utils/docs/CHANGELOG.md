@@ -1,4 +1,12 @@
 # Changelog
+
+## [1.7.0] - 2026-05-07
+### Changed
+- `enable_self_collision` no longer applies `PhysxArticulationAPI` or writes `physxArticulation:enabledSelfCollisions`. Articulation roots are now marked with the standard `UsdPhysics.ArticulationRootAPI` plus `NewtonArticulationRootAPI` (`newton:selfCollisionEnabled`); the runtime consumes the Newton articulation schema directly. The `PhysxSchema.ARTICULATION_API` and `PhysxAttr.ARTICULATION_SELF_COLLISION` enums remain available for code that still reads existing PhysX articulation data.
+
+### Removed
+- `create_physx_mimic_joint` helper from `importer_utils`. The URDF and MJCF importers now leave joints as `NewtonMimicAPI` and the runtime consumes the Newton mimic schema directly, so an equivalent `PhysxMimicJointAPI` is no longer authored. The `PhysxMimicAttr`, `PhysxMimicRel`, and `PhysxSchema.MIMIC_JOINT_API` enums remain available for code that still reads existing PhysX mimic data (e.g. the URDF exporter).
+
 ## [1.6.0] - 2026-04-20
 ### Changed
 - Added robot schema related helpers

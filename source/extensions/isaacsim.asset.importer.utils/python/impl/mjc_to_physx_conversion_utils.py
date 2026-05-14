@@ -22,7 +22,6 @@ import math
 
 from pxr import Usd, UsdPhysics
 
-from .importer_utils import create_physx_mimic_joint
 from .physx_types import PhysxAttr, PhysxSchema
 
 _logger = logging.getLogger(__name__)
@@ -39,7 +38,6 @@ def convert_mjc_to_physx(stage: Usd.Stage) -> None:
             convert_mjc_actuator_to_physics(prim, stage)
         elif prim.IsA(UsdPhysics.RevoluteJoint) or prim.IsA(UsdPhysics.PrismaticJoint):
             convert_mjc_joint_to_physx(prim, stage)
-            create_physx_mimic_joint(prim)
 
 
 def convert_mjc_actuator_to_physics(mjc_actuator: Usd.Prim, stage: Usd.Stage) -> None:

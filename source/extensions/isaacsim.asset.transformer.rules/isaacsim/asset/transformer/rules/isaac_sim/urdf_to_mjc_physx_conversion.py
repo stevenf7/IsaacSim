@@ -32,7 +32,10 @@ class UrdfToMjcPhysxConversionRule(RuleInterface):
        and bias parameters derived from the PhysX drive stiffness/damping.
     3. Converts PhysX joint properties back to MJCF attributes (ref,
        frictionloss, armature).
-    4. Creates PhysX mimic joints for joints with the ``NewtonMimicAPI``.
+
+    Mimic joints are left as ``NewtonMimicAPI`` on the joint prim and
+    consumed directly by the runtime; no equivalent ``PhysxMimicJointAPI``
+    is authored.
     """
 
     def get_configuration_parameters(self) -> list[RuleConfigurationParam]:
