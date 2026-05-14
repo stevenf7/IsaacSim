@@ -56,6 +56,9 @@ Python API
 
 IRC provides a Python API (``CaptionAPI``) for programmatic model configuration and caption generation:
 
+.. note::
+   The snippet below reads the model API key from the ``NVIDIA_API_KEY`` environment variable. Generate your own key from the `NVIDIA NIM API key page <https://docs.nvidia.com/nim/large-language-models/latest/getting-started.html#generate-an-api-key>`_ and export it (for example, ``export NVIDIA_API_KEY=<API_KEY>``) before running the script.
+
 .. code-block:: python
    :caption: Setting up the IRC model
 
@@ -66,7 +69,7 @@ IRC provides a Python API (``CaptionAPI``) for programmatic model configuration 
        CaptionAPI.set_model_params(
            url="https://integrate.api.nvidia.com/v1",
            name="meta/llama3-8b-instruct",
-           key=os.environ.get("NVIDIA_API_KEY", "your_key"),
+           key=os.environ["NVIDIA_API_KEY"],
        )
        print("IRC model params set successfully.")
 

@@ -42,6 +42,9 @@ To launch the app, use:
 
 The application launches with the Action and Event Data Generation extensions pre-enabled and a custom workspace layout.
 
+.. tip::
+   **New to Action and Event Data Generation?** Start with the :ref:`Actor Simulation and Synthetic Data Generation <actor_sim_getting_started>` tutorial for an end-to-end walkthrough with a default config.
+
 Action and Event Data Generation Stack
 --------------------------------------
 
@@ -80,15 +83,15 @@ The core functionality is provided by a set of application-level extensions and 
    * - RTX Sensor Calibration
      - ``isaacsim.sensors.rtx.calibration``
      - The **RTX Sensor Calibration (ISC)** extension generates camera calibration data for deployed cameras in the scene.
-   * - Behavior tree generation
+   * - Behavior Tree Generation
      - ``omni.ai.behavior_tree_gen.core`` and ``omni.ai.behavior_tree_gen.bridge``
      - The **Behavior Tree Generation** workflow converts natural-language scenarios into behavior tree outputs. ``omni.ai.behavior_tree_gen.core`` provides the reusable pipeline and scripted API, while ``omni.ai.behavior_tree_gen.bridge`` provides the Kit UI, example loaders, and interactive workflow orchestration.
    * - Animated Robot Controller
-     - ``isaacsim.anim.robot``
+     - ``isaacsim.anim.robot.core``
      - The **Animated Robot Controller (IAR)** extension enables realistic robot animation by playing back captured simulation motion data. It bridges physics-based simulation and animation, allowing for precise robot movements without the overhead of real-time physics.
-   * - Action and Event Generation Utilities
+   * - Action and Event Data Generation Utilities
      - ``omni.metropolis.utils``
-     - The **Action and Event Generation Utilities (OMU)** extension provides shared utilities across the Action and Event Generation extension stack.
+     - The **Action and Event Data Generation Utilities (OMU)** extension provides shared utilities across the Action and Event Data Generation extension stack.
    * - Chat IRO
      - ``omni.ai.langchain.agent.chat_iro``
      - **Chat IRO** is an AI assistant that enables natural language scene authoring for the **Object Simulation (IRO)** extension. It allows users to describe scenes in plain English to automatically generate YAML configurations, providing immediate viewport previews and iterative editing capabilities.

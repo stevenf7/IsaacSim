@@ -439,9 +439,6 @@ Robot Group Parameters
 -   ``triggers`` (optional): List of triggers that interrupt routines. Robots support ``event_trigger``, ``time_trigger``, and ``collision_trigger``.
 -   ``colliders`` (optional): List of colliders to spawn and attach under each robot (same schema as character ``colliders``; refer to the :ref:`Colliders <ira_colliders>` section). Used together with ``collision_trigger`` to drive behaviors when the robot enters or exits other colliders.
 
-.. note::
-    ``write_data`` has a behavior regression (comparing to Isaac Sim 6.0 EA) and enabling it may lead to program hang. It is recommended to disable it until next release.
-
 Robot Behaviors
 ^^^^^^^^^^^^^^^
 
