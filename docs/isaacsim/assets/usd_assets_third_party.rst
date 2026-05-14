@@ -10,14 +10,14 @@
 
 .. _isaac_assets_third_party:
 
-================================
-Third-Party SimReady USD Assets
-================================
+======================
+Third-Party USD Assets
+======================
 
 |isaac-sim_short| welcomes open source assets from the community. This page outlines links to third-party assets that are compatible with |isaac-sim_short|.
 
 
-.. list-table:: Third-Party SimReady USD Assets
+.. list-table:: Third-Party USD Assets
    :widths: 30 70
    :header-rows: 1
 
