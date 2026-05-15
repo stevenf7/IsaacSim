@@ -87,7 +87,7 @@ class UtilitiesMenuExtension:
         """Notify the visibility changed callback."""
         refresh_menu_items("Utilities")
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Remove menu layouts and placeholders.
 
         Example:

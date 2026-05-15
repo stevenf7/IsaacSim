@@ -31,17 +31,17 @@ class TestUI(omni.kit.test.AsyncTestCase):
     """Test suite for basic UI components."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up the test environment."""
         await omni.kit.app.get_app().next_update_async()
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up after each test."""
         await omni.kit.app.get_app().next_update_async()
 
     # Run for a single frame and exit
-    async def test_ui(self):
+    async def test_ui(self) -> None:
         """Test basic UI frame update."""
         await omni.kit.app.get_app().next_update_async()
 
@@ -56,14 +56,14 @@ class TestUI(omni.kit.test.AsyncTestCase):
     #         carb.log_warn(pyperclip.EXCEPT_MSG)
     #         return
 
-    async def test_ide(self):
+    async def test_ide(self) -> None:
         """Test opening IDE from the UI."""
         import os
 
         on_open_IDE_clicked(os.path.dirname(__file__), __file__)
 
     # TODO: this test causes TC to hang on exit, disabling
-    async def test_docs(self):
+    async def test_docs(self) -> None:
         """Test opening documentation link."""
         # on_open_folder_clicked(os.path.dirname(__file__)) # TODO: this test fails on TC due to permissions
         on_docs_link_clicked("https://docs.omniverse.nvidia.com")

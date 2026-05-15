@@ -59,4 +59,5 @@ __all__ = [
     "ColorPicker",
     "TextBlock",
     "XYPlot",
+    "ScreenPrinter",
 ]

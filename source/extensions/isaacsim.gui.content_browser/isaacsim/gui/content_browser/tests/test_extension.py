@@ -29,14 +29,14 @@ import omni.kit.test
 class TestExtension(omni.kit.test.AsyncTestCase):
     """Test suite for the content browser extension."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Method called to prepare the test fixture."""
         super().setUp()
         # ---------------
         # Do custom setUp
         # ---------------
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Method called immediately after the test method has been called."""
         # ------------------
         # Do custom tearDown
@@ -45,7 +45,7 @@ class TestExtension(omni.kit.test.AsyncTestCase):
 
     # --------------------------------------------------------------------
 
-    async def test_extension(self):
+    async def test_extension(self) -> None:
         """Test that the extension loads successfully."""
         # Kit extension system test for Python is based on the unittest module.
         # Visit https://docs.python.org/3/library/unittest.html to see the

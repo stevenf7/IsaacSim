@@ -33,3 +33,21 @@ from .ui_widget_wrappers import (
     TextBlock,
     XYPlot,
 )
+
+__all__ = [
+    "UIWidgetWrapper",
+    "Button",
+    "CheckBox",
+    "CollapsableFrame",
+    "ColorPicker",
+    "DropDown",
+    "FloatField",
+    "Frame",
+    "IntField",
+    "ScrollingFrame",
+    "ScrollingWindow",
+    "StateButton",
+    "StringField",
+    "TextBlock",
+    "XYPlot",
+]

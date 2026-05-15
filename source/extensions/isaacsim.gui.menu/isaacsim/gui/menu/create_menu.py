@@ -102,7 +102,7 @@ def create_apriltag(usd_path: str, shader_name: str, stage_path: str, tag_path: 
     stage = omni.usd.get_context().get_stage()
     stage_path = omni.usd.get_stage_next_free_path(stage, stage_path, False)
 
-    async def create_tag():
+    async def create_tag() -> None:
         omni.kit.commands.execute(
             "CreateMdlMaterialPrim",
             mtl_url=assets_root_path + usd_path,
@@ -127,7 +127,7 @@ class CreateMenuExtension:
         ext_id: Extension identifier provided by the extension manager.
     """
 
-    def __init__(self, ext_id: str):
+    def __init__(self, ext_id: str) -> None:
         self._ext_id = ext_id
         self._ext_name = omni.ext.get_extension_name(ext_id)
         self._menu_categories = []
@@ -390,7 +390,7 @@ class CreateMenuExtension:
             "CREATE",
         )
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Remove menu layouts and deregister actions.
 
         Example:

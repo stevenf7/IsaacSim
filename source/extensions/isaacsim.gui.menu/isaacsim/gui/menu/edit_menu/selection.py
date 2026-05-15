@@ -28,12 +28,12 @@ class Selection:
         selection: Selection data or paths to store.
     """
 
-    def __init__(self, description: str, selection: list[str]):
+    def __init__(self, description: str, selection: list[str]) -> None:
         self.time = time.monotonic()
         self.description = description
         self.selection = selection
 
-    def touch(self):
+    def touch(self) -> None:
         """Update the timestamp for the selection.
 
         Example:

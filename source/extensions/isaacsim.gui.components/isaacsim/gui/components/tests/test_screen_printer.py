@@ -31,7 +31,7 @@ class TestScreenPrinter(omni.kit.test.AsyncTestCase):
     """Test suite for the ScreenPrinter UI component."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up the test environment with a new stage and timeline."""
         await omni.usd.get_context().new_stage_async()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -41,7 +41,7 @@ class TestScreenPrinter(omni.kit.test.AsyncTestCase):
         self.printers = []
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up the test environment."""
         self._timeline.stop()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
@@ -53,7 +53,7 @@ class TestScreenPrinter(omni.kit.test.AsyncTestCase):
         [printer.exit() for printer in self.printers]
 
     # Run for a single frame and exit
-    async def test_screen_printer(self):
+    async def test_screen_printer(self) -> None:
         """Test ScreenPrinter text display and configuration."""
         printer = ScreenPrinter()
         self.printers.append(printer)

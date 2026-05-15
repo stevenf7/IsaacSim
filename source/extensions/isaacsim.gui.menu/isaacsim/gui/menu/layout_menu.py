@@ -25,7 +25,7 @@ class LayoutMenuExtension:
         ext_id: Extension identifier provided by the extension manager.
     """
 
-    def __init__(self, ext_id: str):
+    def __init__(self, ext_id: str) -> None:
         self._menu_placeholder = [MenuItemDescription(name="placeholder", show_fn=lambda: False)]
         omni.kit.menu.utils.add_menu_items(self._menu_placeholder, "Layouts")
 
@@ -59,7 +59,7 @@ class LayoutMenuExtension:
         ]
         omni.kit.menu.utils.add_layout(self.__menu_layout)
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Remove menu layouts and placeholders.
 
         Example:

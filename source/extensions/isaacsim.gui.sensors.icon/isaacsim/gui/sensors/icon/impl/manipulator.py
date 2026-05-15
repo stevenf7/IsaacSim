@@ -33,7 +33,7 @@ SHOW_TITLE_PATH = "exts/omni.kit.prim.icon/showTitle"
 class PreventOthers(sc.GestureManager):
     """Prevent other gestures from hiding the icon click gesture."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     def can_be_prevented(self, gesture: object) -> bool:
@@ -78,7 +78,7 @@ class IconManipulator(sc.Manipulator):
         **kwargs: Additional keyword arguments passed to the parent class.
     """
 
-    def __init__(self, icon_scale: float = 1.0, **kwargs):
+    def __init__(self, icon_scale: float = 1.0, **kwargs: object) -> None:
         super().__init__(**kwargs)
         self._icons = {}
         self._icons_images = {}
@@ -228,7 +228,7 @@ class IconManipulator(sc.Manipulator):
                 with self._icon_panel:
                     self.build_icon_by_path(prim_path, False)
 
-    def _icon_clicked(self, prim_path: Sdf.Path, shape: sc.AbstractShape):
+    def _icon_clicked(self, prim_path: Sdf.Path, shape: sc.AbstractShape) -> None:
         """Handle click gestures on the icon image.
 
         Args:
@@ -236,7 +236,7 @@ class IconManipulator(sc.Manipulator):
             shape: The scene shape that was clicked.
         """
 
-        async def delay_click():
+        async def delay_click() -> None:
             await omni.kit.app.get_app().next_update_async()
             # Re-fetch the handler inside async func to ensure it's still valid
             # and check it before calling

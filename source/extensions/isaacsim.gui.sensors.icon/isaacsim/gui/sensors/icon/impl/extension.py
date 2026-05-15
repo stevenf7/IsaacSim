@@ -76,7 +76,7 @@ class SensorIconExtension(omni.ext.IExt):
         self._custom_item = CategoryStateItem("Sensors", setting_path=VISIBLE_SETTING)
         self._menubar_display_inst.register_custom_category_item("Show By Type", self._custom_item)
 
-    def on_shutdown(self):  # pragma: no cover
+    def on_shutdown(self) -> None:  # pragma: no cover
         """Called when the extension is disabled.
 
         Cleans up the sensor icon system by deregistering viewport scenes, stage widget icons,

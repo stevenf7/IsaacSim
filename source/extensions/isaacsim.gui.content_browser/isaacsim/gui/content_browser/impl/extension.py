@@ -30,7 +30,7 @@ from .isaac_collection import IsaacCollection
 class Extension(omni.ext.IExt):
     """The Extension class."""
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Method called when the extension is loaded/enabled.
 
         Args:
@@ -66,14 +66,14 @@ class Extension(omni.ext.IExt):
         assetFileInfo = ExtendedFileInfo()
         content_browser.api.add_detail_frame_from_controller("File Info", assetFileInfo)
 
-    def _expand_collections(self):
+    def _expand_collections(self) -> None:
         """Expands the Isaac Sim collection in the content browser.
 
         Asynchronously expands the Isaac collection while collapsing other collections after the UI is ready.
         """
         # Only expand Isaac Sim collection after the UI is ready
 
-        async def expand_collections_async():
+        async def expand_collections_async() -> None:
             # The collection expand status is set 6 frames later after the window displayed
             for _ in range(7):
                 await omni.kit.app.get_app().next_update_async()
@@ -91,7 +91,7 @@ class Extension(omni.ext.IExt):
 
         asyncio.ensure_future(expand_collections_async())
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Method called when the extension is disabled."""
         carb.log_info(f"on_shutdown")
         content_browser = self._content_browser_ref()
