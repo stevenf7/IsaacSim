@@ -34,7 +34,6 @@ Each script iterates over the configured scenarios, opens the stage, loads the C
 
 .. note::
 
-   * For correct rendering of NuRec scenes, launch |isaac-sim_short| with ``./isaac-sim.sh --/UJITSO/geometry=true`` or ``./python.sh --/UJITSO/geometry=true``. This option is currently disabled by default.
    * Rendering particle fields with DLSS Frame Generation enabled may show visual artifacts. If that happens, disable Frame Generation in Rendering Settings. See `Gaussian Splats (Particle Fields) <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/particle-fields.html#particle-fields>`_.
 
 Prerequisites
