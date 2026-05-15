@@ -43,13 +43,13 @@ CLOCK_MESSAGE_SIZE_BYTES = 24
 class TestUCXPublishClock(UCXTestCase):
     """Test UCX clock publishing."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up a new stage for clock publishing tests."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def setup_ucx_client_with_listener(self):
+    async def setup_ucx_client_with_listener(self) -> None:
         """Setup UCX client to connect to the OmniGraph node's listener.
 
         The OmniGraph nodes create their own internal listeners automatically.
@@ -66,7 +66,9 @@ class TestUCXPublishClock(UCXTestCase):
         for _ in range(CONNECTION_ESTABLISH_FRAMES):
             await omni.kit.app.get_app().next_update_async()
 
-    async def receive_clock_message(self, tag: int = DEFAULT_TEST_TAG, timeout_frames: int = RECEIVE_TIMEOUT_FRAMES):
+    async def receive_clock_message(
+        self, tag: int = DEFAULT_TEST_TAG, timeout_frames: int = RECEIVE_TIMEOUT_FRAMES
+    ) -> float:
         """Receive and unpack a clock message from the client endpoint.
 
         Args:
@@ -94,7 +96,7 @@ class TestUCXPublishClock(UCXTestCase):
         time_msg = Time.Time.GetRootAs(bytearray(buffer.tobytes()), 0)
         return time_msg.TimeNs() / 1e9
 
-    async def test_sim_clock(self):
+    async def test_sim_clock(self) -> None:
         """Test clock publishing with simulation time."""
         # Create graph with clock publisher using manual trigger (like test_manual_clock)
         try:
@@ -157,7 +159,7 @@ class TestUCXPublishClock(UCXTestCase):
         # Verify timestamp is reasonable (simulation time should be positive)
         self.assertGreater(timestamp, 0.0, "Timestamp should be greater than 0.0 seconds")
 
-    async def test_clock_progression(self):
+    async def test_clock_progression(self) -> None:
         """Test that clock values increase over time."""
         # Create graph with manual trigger to control when messages are sent
         try:
@@ -228,7 +230,7 @@ class TestUCXPublishClock(UCXTestCase):
                 f"Timestamp should increase (sample {i}: {timestamps[i]} <= sample {i-1}: {timestamps[i-1]})",
             )
 
-    async def test_multiple_nodes_same_port(self):
+    async def test_multiple_nodes_same_port(self) -> None:
         """Test that multiple nodes can share the same port (listener is reused)."""
         try:
             og.Controller.edit(
@@ -284,7 +286,7 @@ class TestUCXPublishClock(UCXTestCase):
         self.assertGreater(timestamp2, 0.0)
         self.assertAlmostEqual(timestamp1, timestamp2, delta=0.1)
 
-    async def test_no_connection(self):
+    async def test_no_connection(self) -> None:
         """Test node behavior when no client is connected."""
         another_port = find_available_port()
         try:

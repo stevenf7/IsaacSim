@@ -1,4 +1,8 @@
 # Changelog
+## [1.4.2] - 2026-05-14
+### Changed
+- Add return type and docstring annotations to Python binding tests to satisfy ruff lint rules.
+
 ## [1.4.1] - 2026-05-05
 ### Fixed
 - Set UCX_MODULE_DIR via dladdr so the UCS module loader finds libuct_cuda.so.0 and libucm_cuda.so.0 in the ucx/ subdirectory alongside the library

@@ -31,7 +31,7 @@ BRIDGE_PREFIX = "HSB"
 class HsbNodesExtension(omni.ext.IExt):
     """HSB Nodes Extension class."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.registered_annotators = []
 
@@ -60,7 +60,7 @@ class HsbNodesExtension(omni.ext.IExt):
 
         carb.log_info("HSB Nodes Extension shut down")
 
-    def register_nodes(self):
+    def register_nodes(self) -> None:
         """Register OmniGraph nodes with Replicator."""
         # Get the RGB rendervar name
         rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
@@ -143,7 +143,7 @@ class HsbNodesExtension(omni.ext.IExt):
                 category=BRIDGE_CATEGORY,
             )
 
-    def unregister_nodes(self):
+    def unregister_nodes(self) -> None:
         """Unregister Replicator writers and annotators."""
         # Unregister writers
         for writer in rep.WriterRegistry.get_writers(category=BRIDGE_CATEGORY):

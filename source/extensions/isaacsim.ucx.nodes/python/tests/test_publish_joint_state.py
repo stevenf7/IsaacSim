@@ -39,7 +39,7 @@ CONNECTION_ESTABLISH_FRAMES = 20  # Additional frames for connection to establis
 RECEIVE_TIMEOUT_FRAMES = 1000  # Maximum frames to wait for a message
 
 
-def unpack_joint_state_message(buffer: object):
+def unpack_joint_state_message(buffer: object) -> tuple:
     """Unpack a UCX joint state FlatBuffers message.
 
     Args:
@@ -61,7 +61,7 @@ def unpack_joint_state_message(buffer: object):
 class TestUCXPublishJointState(UCXTestCase):
     """Test UCX joint state publishing."""
 
-    async def setup_ucx_client_with_listener(self):
+    async def setup_ucx_client_with_listener(self) -> None:
         """Setup UCX client to connect to the OmniGraph node's listener.
 
         The OmniGraph nodes create their own internal listeners automatically.
@@ -79,7 +79,7 @@ class TestUCXPublishJointState(UCXTestCase):
         for _ in range(CONNECTION_ESTABLISH_FRAMES):
             await omni.kit.app.get_app().next_update_async()
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up stage with an articulation and UCX joint state publisher."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
@@ -135,7 +135,7 @@ class TestUCXPublishJointState(UCXTestCase):
 
     async def receive_joint_state_message(
         self, tag: int = 1, timeout_frames: int = RECEIVE_TIMEOUT_FRAMES, retry_count: int = 3
-    ):
+    ) -> tuple:
         """Receive and unpack a joint state message from the client endpoint.
 
         Args:
@@ -189,7 +189,7 @@ class TestUCXPublishJointState(UCXTestCase):
             "This may indicate a connection issue or the node is not publishing."
         )
 
-    async def test_joint_state_publisher(self):
+    async def test_joint_state_publisher(self) -> None:
         """Test that joint state messages are published via UCX."""
         # Receive joint state message
         timestamp, num_joints, positions, velocities, efforts = await self.receive_joint_state_message()
@@ -207,7 +207,7 @@ class TestUCXPublishJointState(UCXTestCase):
         self.assertEqual(len(efforts), num_joints)
         self.assertGreater(timestamp, 0.0, "Timestamp should be positive")
 
-    async def test_joint_state_values(self):
+    async def test_joint_state_values(self) -> None:
         """Test that joint state values match simulation."""
         # Simulate to initialize physics
         await app_utils.update_app_async(steps=30)

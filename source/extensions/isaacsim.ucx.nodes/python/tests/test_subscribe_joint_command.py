@@ -30,13 +30,13 @@ from ucxx._lib.arr import Array
 class TestUCXSubscribeJointCommand(UCXTestCase):
     """Test UCX joint command subscribing."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up a new stage for joint command subscription tests."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def setup_ucx_client_with_listener(self):
+    async def setup_ucx_client_with_listener(self) -> None:
         """Setup UCX client."""
         for _ in range(60):
             await omni.kit.app.get_app().next_update_async()
@@ -44,7 +44,7 @@ class TestUCXSubscribeJointCommand(UCXTestCase):
         for _ in range(20):
             await omni.kit.app.get_app().next_update_async()
 
-    def pack_joint_command_message(self, timestamp: float, positions: list, velocities: list, efforts: list):
+    def pack_joint_command_message(self, timestamp: float, positions: list, velocities: list, efforts: list) -> bytes:
         """Pack a joint command FlatBuffers message for UCX.
 
         Args:
@@ -58,7 +58,7 @@ class TestUCXSubscribeJointCommand(UCXTestCase):
         """
         builder = flatbuffers.Builder(1024)
 
-        def build_f32_tensor(values):
+        def build_f32_tensor(values: list) -> int:
             data_bytes = np.array(values, dtype=np.float32).tobytes()
             Tensor.TensorStartDataVector(builder, len(data_bytes))
             for b in reversed(data_bytes):
@@ -98,7 +98,7 @@ class TestUCXSubscribeJointCommand(UCXTestCase):
 
     async def send_joint_command(
         self, timestamp: float, positions: list, velocities: list, efforts: list, tag: int = 3
-    ):
+    ) -> None:
         """Send a joint command message via UCX.
 
         Args:
@@ -125,7 +125,7 @@ class TestUCXSubscribeJointCommand(UCXTestCase):
         self.assertTrue(request.completed, "Failed to send joint command message")
         request.check_error()
 
-    async def test_joint_command_basic(self):
+    async def test_joint_command_basic(self) -> None:
         """Test basic joint command subscription."""
         try:
             og.Controller.edit(
@@ -191,7 +191,7 @@ class TestUCXSubscribeJointCommand(UCXTestCase):
             self.assertAlmostEqual(velocities[i], test_velocities[i], places=5)
             self.assertAlmostEqual(efforts[i], test_efforts[i], places=5)
 
-    async def test_joint_command_multiple(self):
+    async def test_joint_command_multiple(self) -> None:
         """Test receiving multiple joint commands."""
         try:
             og.Controller.edit(

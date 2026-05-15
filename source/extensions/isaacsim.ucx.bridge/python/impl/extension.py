@@ -26,14 +26,14 @@ class UCXBridgeExtension(omni.ext.IExt):
     This extension brings together all UCX extensions required for the UCX bridge extension.
     """
 
-    def on_startup(self, ext_id: str):
-        """Initializes the UCX Bridge extension.
+    def on_startup(self, ext_id: str) -> None:
+        """Initialize the UCX Bridge extension.
 
         Args:
             ext_id: Extension identifier provided by the extension manager.
         """
         carb.log_info("Starting UCX Bridge extension")
 
-    def on_shutdown(self):
-        """Cleans up the UCX Bridge extension resources."""
+    def on_shutdown(self) -> None:
+        """Clean up the UCX Bridge extension resources."""
         carb.log_info("Shutting down UCX Bridge extension")

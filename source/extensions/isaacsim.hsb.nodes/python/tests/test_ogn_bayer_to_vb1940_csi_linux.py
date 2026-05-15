@@ -24,16 +24,16 @@ import omni.timeline
 class TestRGBToVB1940VB1940CSILinux(omni.kit.test.AsyncTestCase):
     """Test RGBToVB1940 when outputMode is vb1940_csi_linux (RGB -> CSI Linux frame in one node)."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up test environment."""
         await omni.kit.stage_templates.new_stage_async()
 
-    async def test_node_creation(self):
+    async def test_node_creation(self) -> None:
         """Test that the node can be created (same RGBToVB1940 type)."""
         graph_path = "/TestGraph"
 
@@ -51,7 +51,7 @@ class TestRGBToVB1940VB1940CSILinux(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(test_graph)
         self.assertEqual(len(new_nodes), 1)
 
-    async def test_node_vb1940_csi_linux_output(self):
+    async def test_node_vb1940_csi_linux_output(self) -> None:
         """Test node with RGB input and outputMode=vb1940_csi_linux produces CSI frame and bufferSize."""
         graph_path = "/TestGraph"
         width, height = 64, 48
@@ -99,7 +99,7 @@ class TestRGBToVB1940VB1940CSILinux(omni.kit.test.AsyncTestCase):
         expected_size = line_bytes * (1 + height + 2)
         self.assertEqual(len(output_data), expected_size)
 
-    async def test_node_invalid_dimensions(self):
+    async def test_node_invalid_dimensions(self) -> None:
         """Test node with zero dimensions does not crash (bufferSize remains 0)."""
         graph_path = "/TestGraph"
 

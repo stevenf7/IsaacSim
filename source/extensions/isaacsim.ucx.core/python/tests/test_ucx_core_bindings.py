@@ -32,7 +32,8 @@ CONNECT_TIMEOUT_MS = 5000
 class TestUcxCoreBindings(TimedAsyncTestCase):
     """Tests for the UCX Core Python bindings."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Set up the test fixture."""
         await super().setUp()
         os.environ["UCX_TLS"] = "tcp,self"
         os.environ["UCX_NET_DEVICES"] = "all"
@@ -42,7 +43,8 @@ class TestUcxCoreBindings(TimedAsyncTestCase):
         self._client_worker = None
         self._client_endpoint = None
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Tear down the test fixture."""
         if self._client_worker:
             try:
                 self._client_worker.stop_progress_thread()
@@ -66,7 +68,7 @@ class TestUcxCoreBindings(TimedAsyncTestCase):
 
         await super().tearDown()
 
-    def _connect_client(self, port: int):
+    def _connect_client(self, port: int) -> None:
         """Connect a UCXX client to the given port."""
         self._client_context = ucx_api.UCXContext()
         self._client_worker = ucx_api.UCXWorker(self._client_context)
@@ -75,38 +77,38 @@ class TestUcxCoreBindings(TimedAsyncTestCase):
         )
         self._client_worker.start_progress_thread()
 
-    async def test_imports(self):
+    async def test_imports(self) -> None:
         """Verify all public symbols are importable from isaacsim.ucx.core."""
         self.assertIsNotNone(UCXListener)
         self.assertIsNotNone(add_listener)
         self.assertIsNotNone(remove_listener)
         self.assertIsNotNone(is_listener_registered)
 
-    async def test_add_listener_auto_port(self):
+    async def test_add_listener_auto_port(self) -> None:
         """add_listener(0) assigns an ephemeral port."""
         self._listener = add_listener(0)
         self.assertIsInstance(self._listener, UCXListener)
         self.assertGreater(self._listener.get_port(), 0)
 
-    async def test_add_listener_fixed_port(self):
+    async def test_add_listener_fixed_port(self) -> None:
         """add_listener returns the same listener object for the same port."""
         self._listener = add_listener(0)
         port = self._listener.get_port()
         same = add_listener(port)
         self.assertEqual(same.get_port(), port)
 
-    async def test_is_not_connected_initially(self):
+    async def test_is_not_connected_initially(self) -> None:
         """A fresh listener reports not connected before any client joins."""
         self._listener = add_listener(0)
         self.assertFalse(self._listener.is_connected())
 
-    async def test_wait_for_connection_timeout(self):
+    async def test_wait_for_connection_timeout(self) -> None:
         """wait_for_connection returns False when no client connects within the timeout."""
         self._listener = add_listener(0)
         self.assertFalse(self._listener.wait_for_connection(timeout_ms=200))
         self.assertFalse(self._listener.is_connected())
 
-    async def test_is_listener_registered(self):
+    async def test_is_listener_registered(self) -> None:
         """is_listener_registered reflects the registry state correctly."""
         self._listener = add_listener(0)
         port = self._listener.get_port()
@@ -117,7 +119,7 @@ class TestUcxCoreBindings(TimedAsyncTestCase):
         self._listener = None
         self.assertFalse(is_listener_registered(port))
 
-    async def test_shutdown_and_remove(self):
+    async def test_shutdown_and_remove(self) -> None:
         """shutdown() + remove_listener() clean up without error."""
         listener = add_listener(0)
         port = listener.get_port()
@@ -125,7 +127,7 @@ class TestUcxCoreBindings(TimedAsyncTestCase):
         remove_listener(port)
         self.assertFalse(is_listener_registered(port))
 
-    async def test_connection_established(self):
+    async def test_connection_established(self) -> None:
         """A client connecting to the listener sets is_connected() to True."""
         self._listener = add_listener(0)
 

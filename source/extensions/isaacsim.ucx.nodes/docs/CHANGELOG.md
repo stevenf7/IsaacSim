@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.3] - 2026-05-14
+### Changed
+- Add type annotations and docstrings to `OgnUCXCameraHelper`, extension lifecycle methods, and tests to satisfy ruff lint rules.
+
 ## [1.6.2] - 2026-05-14
 ### Fixed
 - `test_camera.py`: `receive_image_message` now performs the second `tag_recv` required by the GPU-direct two-message protocol (`sendCudaBuffer=True`, the camera helper default). Previously the test only consumed the metadata FlatBuffer, leaving `image_data` empty and `step = 0`; this caused `test_camera_rgb` and `test_camera_multiple_resolutions` to fail with `0 != width * 3` and silently masked the pixel-data validation in `test_camera_system_time` and `test_camera_frame_skip`. Added matching `step` and `len(image_data)` asserts to the latter two so the CPU-/GPU-direct pixel payload is actually verified in all four tests.

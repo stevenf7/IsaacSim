@@ -27,7 +27,7 @@ from isaacsim.ucx.nodes.tests.common import UCXTestCase, _read_tensor_f32
 from ucxx._lib.arr import Array
 
 
-def unpack_imu_message(buffer: object):
+def unpack_imu_message(buffer: object) -> tuple:
     """Unpack a UCX IMU FlatBuffers message.
 
     Args:
@@ -64,13 +64,13 @@ def unpack_imu_message(buffer: object):
 class TestUCXPublishImu(UCXTestCase):
     """Test UCX IMU publishing."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up a new stage for IMU publishing tests."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def receive_imu_message(self, tag: int = 2, timeout_frames: int = 1000):
+    async def receive_imu_message(self, tag: int = 2, timeout_frames: int = 1000) -> tuple:
         """Receive and unpack an IMU message.
 
         Args:
@@ -96,7 +96,7 @@ class TestUCXPublishImu(UCXTestCase):
 
         return unpack_imu_message(buffer)
 
-    async def test_imu_basic(self):
+    async def test_imu_basic(self) -> None:
         """Test basic IMU publishing."""
         try:
             og.Controller.edit(

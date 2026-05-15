@@ -27,13 +27,13 @@ from ucxx._lib.arr import Array
 class TestUCXPublishImage(UCXTestCase):
     """Test UCX image publishing."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up a new stage for image publishing tests."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def setup_ucx_client_with_listener(self):
+    async def setup_ucx_client_with_listener(self) -> None:
         """Setup UCX client."""
         for _ in range(5):
             await omni.kit.app.get_app().next_update_async()
@@ -41,7 +41,7 @@ class TestUCXPublishImage(UCXTestCase):
         for _ in range(10):
             await omni.kit.app.get_app().next_update_async()
 
-    async def receive_image_message(self, tag: int = 10, timeout_frames: int = 1000):
+    async def receive_image_message(self, tag: int = 10, timeout_frames: int = 1000) -> tuple:
         """Receive and unpack an image message.
 
         Args:
@@ -70,7 +70,7 @@ class TestUCXPublishImage(UCXTestCase):
 
         return unpack_image_message(buffer)
 
-    async def test_image_basic_data(self):
+    async def test_image_basic_data(self) -> None:
         """Test basic image publishing with raw data input."""
         # Create a simple test image (10x10 RGB)
         test_width = 10
