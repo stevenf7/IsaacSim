@@ -96,11 +96,12 @@ class TestMigrateRecordingSingleFile(omni.kit.test.AsyncTestCase):
             _make_legacy_recording(tmp, [data])
             _migrate_recording(tmp)
 
-            npz = np.load(os.path.join(tmp, "state", "common", "000000.npz"))
-            self.assertIn("pose_x", npz)
-            self.assertIn("joint_vel", npz)
-            np.testing.assert_allclose(npz["pose_x"], np.float32(3.0))
-            np.testing.assert_allclose(npz["joint_vel"], [0.1, 0.2])
+            # `np.load` mmaps the .npz on Windows; close it before tempdir cleanup.
+            with np.load(os.path.join(tmp, "state", "common", "000000.npz")) as npz:
+                self.assertIn("pose_x", npz)
+                self.assertIn("joint_vel", npz)
+                np.testing.assert_allclose(npz["pose_x"], np.float32(3.0))
+                np.testing.assert_allclose(npz["joint_vel"], [0.1, 0.2])
 
     async def test_none_values_excluded_from_npz(self):
         """None values in the legacy dict must be dropped (np.savez can't store None)."""
@@ -109,9 +110,9 @@ class TestMigrateRecordingSingleFile(omni.kit.test.AsyncTestCase):
             _make_legacy_recording(tmp, [data])
             _migrate_recording(tmp)
 
-            npz = np.load(os.path.join(tmp, "state", "common", "000000.npz"))
-            self.assertIn("pose_x", npz)
-            self.assertNotIn("optional", npz)
+            with np.load(os.path.join(tmp, "state", "common", "000000.npz")) as npz:
+                self.assertIn("pose_x", npz)
+                self.assertNotIn("optional", npz)
 
 
 class TestMigrateRecordingMultipleFiles(omni.kit.test.AsyncTestCase):

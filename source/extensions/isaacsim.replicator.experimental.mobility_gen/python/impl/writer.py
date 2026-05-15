@@ -16,12 +16,14 @@
 """Writer for saving MobilityGen recorded data to disk."""
 
 
+import hashlib
 import io
 import os
 import queue
 import shutil
 import threading
 
+import carb
 import numpy as np
 import PIL.Image
 
@@ -29,6 +31,179 @@ from .config import Config
 from .occupancy_map import OccupancyMap
 
 _SENTINEL = object()
+
+_ASSETS_SUBDIR = "assets"
+
+
+def _is_url_asset_path(asset_path: str) -> bool:
+    # A `://` substring distinguishes URL schemes from Windows drive letters (`C:/`).
+    return "://" in asset_path
+
+
+def _norm_path_key(p: str) -> str:
+    """Canonicalize an absolute filesystem path for dict-key use across OSes.
+
+    `UsdUtils.ComputeAllDependencies` and `Sdf.Layer.ComputeAbsolutePath` can
+    return paths that differ in separator (`/` vs `\\`) or case on Windows.
+    Canonicalize to forward slashes and lowercase the path on Windows so dict
+    lookups hit. No-op on POSIX, where filesystem paths are case-sensitive.
+    """
+    p = p.replace("\\", "/")
+    if os.name == "nt":
+        p = p.lower()
+    return p
+
+
+def _stable_asset_dest(src_abs_path: str, dest_root: str) -> str:
+    """Return `<dest_root>/assets/<md5(parent_dir)>/<basename>`.
+
+    Hashing the parent dir prevents collisions between two assets sharing a
+    basename but coming from different source directories. The hash is taken
+    on the canonical (forward-slash, case-folded on Windows) form so the same
+    logical parent always maps to the same hash.
+    """
+    parent = _norm_path_key(os.path.dirname(os.path.abspath(src_abs_path)))
+    digest = hashlib.md5(parent.encode("utf-8")).hexdigest()[:8]
+    return os.path.join(dest_root, _ASSETS_SUBDIR, digest, os.path.basename(src_abs_path))
+
+
+def _copy_url_asset(src_url: str, dest_abs_path: str) -> bool:
+    """Try `omni.client.copy(src_url → dest_abs_path)`. Any failure is non-fatal."""
+    # Lazy import: writer.py is also exercised under non-Kit Python contexts.
+    try:
+        import omni.client
+    except ImportError:
+        return False
+
+    os.makedirs(os.path.dirname(dest_abs_path), exist_ok=True)
+    if os.path.exists(dest_abs_path):
+        return True
+    try:
+        dst_url = omni.client.make_file_url_if_possible(dest_abs_path)
+        result = omni.client.copy(src_url, dst_url, omni.client.CopyBehavior.OVERWRITE)
+    except Exception as exc:  # noqa: BLE001
+        carb.log_warn(f"MobilityGen: exception copying remote asset `{src_url}`: {exc}")
+        return False
+    if result != omni.client.Result.OK:
+        return False
+    return os.path.exists(dest_abs_path)
+
+
+def _copy_stage_with_dependencies(input_path: str, dest_root: str) -> None:
+    """Copy a flattened `.usd` stage and its asset dependencies into `dest_root`.
+
+    Walks `UsdUtils.ComputeAllDependencies`, copies each resolved asset into
+    `dest_root/assets/<hash>/<basename>`, then rewrites asset paths via
+    `UsdUtils.ModifyAssetPaths` on an anonymous copy of the cached layer and
+    saves the rewritten layer to `dest_root/stage.usd`.
+
+    The rewrite runs on an anonymous copy because the layer returned by
+    `ComputeAllDependencies` is shared via USD's global `Sdf.Layer` registry —
+    mutating it in place would leak rewrites into other consumers (e.g. a live
+    simulation stage opened from the same on-disk file).
+
+    URL-scheme assets (e.g. `omniverse://...`) are pulled down via
+    `omni.client.copy`; on failure the URL is kept and a warning is logged.
+    UDIM-templated paths are kept as `<UDIM>` in the rewritten layer with each
+    tile copied alongside. Unresolved paths are warned about and left as-is.
+    MDL and other asset-typed attributes are walked by `ModifyAssetPaths`.
+    """
+    # Lazy import: writer.py must remain importable without USD bindings.
+    from pxr import Sdf, UsdUtils
+
+    layers, resolved_assets, unresolved_paths = UsdUtils.ComputeAllDependencies(Sdf.AssetPath(input_path))
+
+    # Normalized-resolved-asset-path -> local destination (or None when an URL copy failed).
+    # Keys are canonicalized via `_norm_path_key` so lookups in `_rewrite` (which
+    # resolves authored paths through `Sdf.Layer.ComputeAbsolutePath`) match the
+    # entries built from `ComputeAllDependencies`.
+    asset_dest_map: dict[str, str | None] = {}
+    # Track originals separately so the copy step uses the un-normalized path.
+    local_copies: list[tuple[str, str]] = []
+    for asset in resolved_assets:
+        dest = _stable_asset_dest(asset, dest_root)
+        key = _norm_path_key(asset)
+        if _is_url_asset_path(asset):
+            if _copy_url_asset(asset, dest):
+                asset_dest_map[key] = dest
+            else:
+                asset_dest_map[key] = None
+                carb.log_warn(
+                    f"MobilityGen: could not copy remote asset `{asset}` into recording; "
+                    "keeping the URL in `stage.usd`."
+                )
+            continue
+        asset_dest_map[key] = dest
+        local_copies.append((asset, dest))
+
+    for missing in unresolved_paths:
+        carb.log_warn(f"MobilityGen: could not resolve asset dependency `{missing}`; keeping original reference.")
+
+    for src, dest in local_copies:
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        if not os.path.exists(dest):
+            shutil.copy2(src, dest)
+
+    dest_stage_path = os.path.join(dest_root, "stage.usd")
+    dest_stage_dir = os.path.dirname(dest_stage_path)
+
+    if not layers:
+        carb.log_warn(
+            f"MobilityGen: `ComputeAllDependencies` returned no layers for `{input_path}`; "
+            "falling back to a plain copy. External asset references will not be rewritten."
+        )
+        shutil.copyfile(input_path, dest_stage_path)
+        return
+
+    source_layer = layers[0]
+
+    layer_text = source_layer.ExportToString()
+    rewrite_layer = Sdf.Layer.CreateAnonymous(".usda")
+    if not rewrite_layer.ImportFromString(layer_text):
+        raise RuntimeError(f"MobilityGen: failed to import source layer into anonymous copy for `{input_path}`")
+
+    # Normalized parent dirs (on the source side) of every concretely-copied
+    # local tile. Used to gate UDIM template rewrites so we only emit a
+    # templated local ref when `ComputeAllDependencies` actually expanded the
+    # family. Without this, an unresolvable UDIM (no tiles on disk) would
+    # silently get rewritten to a nonexistent local path, replacing the
+    # authored reference that USD's resolver could otherwise still expand.
+    copied_parent_dirs: set[str] = {_norm_path_key(os.path.dirname(os.path.abspath(src))) for src, _ in local_copies}
+
+    def _rewrite(asset_path: str) -> str:
+        if not asset_path:
+            return asset_path
+        if _is_url_asset_path(asset_path):
+            # URL UDIM families (e.g. `omniverse://.../tile.<UDIM>.png`) are not
+            # locally consolidated: the keys in asset_dest_map are concrete tile
+            # URLs, so a templated authored URL misses here and the authored URL
+            # is preserved. The remote tiles remain reachable while online.
+            dest = asset_dest_map.get(_norm_path_key(asset_path))
+        else:
+            # Resolve against the source layer — the anonymous copy has no on-disk
+            # location, so its `ComputeAbsolutePath` would be an identity.
+            resolved = source_layer.ComputeAbsolutePath(asset_path)
+            if "<UDIM>" in resolved:
+                # ComputeAllDependencies expands the template into individual
+                # tiles (already in asset_dest_map); the templated destination
+                # shares the same hash dir because `_stable_asset_dest` keys on
+                # parent dir, which is identical for every tile in a family.
+                # Only rewrite if at least one tile from this family actually
+                # landed locally — otherwise keep the authored path so the
+                # original reference (and any future resolver expansion) is
+                # preserved instead of pointing at an empty local hash dir.
+                template_parent = _norm_path_key(os.path.dirname(os.path.abspath(resolved)))
+                dest = _stable_asset_dest(resolved, dest_root) if template_parent in copied_parent_dirs else None
+            else:
+                dest = asset_dest_map.get(_norm_path_key(resolved))
+        if dest is None:
+            return asset_path
+        return os.path.relpath(dest, dest_stage_dir).replace(os.sep, "/")
+
+    UsdUtils.ModifyAssetPaths(rewrite_layer, _rewrite)
+
+    if not rewrite_layer.Export(dest_stage_path):
+        raise RuntimeError(f"MobilityGen: failed to export rewritten stage to `{dest_stage_path}`")
 
 
 class MobilityGenWriter:
@@ -173,17 +348,19 @@ class MobilityGenWriter:
                 np.save(output_path, value)
 
     def copy_stage(self, input_path: str) -> None:
-        """Copy the stage USD file to the recording directory.
+        """Copy the stage to the recording directory as a self-contained tree.
 
-        Args:
-            input_path: The source path to the USD or USDZ stage file.
+        For `.usd` inputs, walks `UsdUtils.ComputeAllDependencies`, copies every
+        reachable asset into a sibling ``assets/`` subdir, and rewrites the
+        layer's asset paths to point at the copies. `.usdz` archives are
+        already self-contained and are copied byte-for-byte.
         """
         if not os.path.exists(self.path):
             os.makedirs(self.path)
         if input_path.endswith(".usdz"):
             shutil.copyfile(input_path, os.path.join(self.path, "stage.usdz"))
         else:
-            shutil.copyfile(input_path, os.path.join(self.path, "stage.usd"))
+            _copy_stage_with_dependencies(input_path, self.path)
 
     def write_config(self, config: Config) -> None:
         """Write the scenario configuration to disk as JSON.
@@ -207,16 +384,17 @@ class MobilityGenWriter:
         occupancy_map.save_ros(os.path.join(self.path, "occupancy_map"))
 
     def copy_init(self, other_path: str) -> None:
-        """Copy the initialization data (stage, config, occupancy map) from another recording.
-
-        Args:
-            other_path: The source recording directory to copy from.
-        """
+        """Copy stage, config, occupancy map, and the sibling assets/ tree from
+        another recording. `.usdz` recordings are archive-self-contained and
+        don't need an assets/ tree."""
         if not os.path.exists(self.path):
             os.makedirs(self.path)
         if os.path.exists(os.path.join(other_path, "stage.usdz")):
             shutil.copyfile(os.path.join(other_path, "stage.usdz"), os.path.join(self.path, "stage.usdz"))
         else:
             shutil.copyfile(os.path.join(other_path, "stage.usd"), os.path.join(self.path, "stage.usd"))
+            src_assets = os.path.join(other_path, _ASSETS_SUBDIR)
+            if os.path.isdir(src_assets):
+                shutil.copytree(src_assets, os.path.join(self.path, _ASSETS_SUBDIR), dirs_exist_ok=True)
         shutil.copyfile(os.path.join(other_path, "config.json"), os.path.join(self.path, "config.json"))
         shutil.copytree(os.path.join(other_path, "occupancy_map"), os.path.join(self.path, "occupancy_map"))

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.4] - 2026-05-13
+### Fixed
+- Broken texture/material references on replay when the source scene uses external assets — recordings are now self-contained.
+- Windows test failures caused by leaked `np.load` mmap handles blocking tempdir cleanup.
+
 ## [0.2.3] - 2026-05-08
 ### Fixed
 - `KeyboardButton._event_callback` and `KeyboardDriver._event_callback`: return `True` for handled WASD key events so Kit's `carb.input` stops propagating them to focused `omni.ui` text fields. Fixes buffered keystrokes (e.g. `wwwwwwwwaaa`) appearing in text fields after teleoperation.

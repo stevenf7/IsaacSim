@@ -538,14 +538,15 @@ class MobilityGenExtension(omni.ext.IExt):
         self.reset()
 
     async def _cache_stage(self, scene_usd_str: str) -> str:
-        """Open the stage, flatten it to a self-contained cached USD, and return its path.
+        """Open the stage, flatten composition arcs to a cached USD, return its path.
 
-        Uses export_as_stage for both USD and USDZ so all sublayers are inlined and
-        the cached file has no external references. Kit-injected prims are stripped
-        from the file before reopening so they are never baked into recording stages.
+        `export_as_stage` only collapses composition (sublayers, references,
+        payloads). Asset-path attributes (textures, MDL, sub-USDs referenced
+        through attribute strings) are left intact and still resolve to their
+        original on-disk locations; `MobilityGenWriter.copy_stage` collects and
+        rewrites those when the recording dir is produced.
 
-        Returns:
-            Path to the cached stage file.
+        Kit-injected prims are stripped so they are never baked into recordings.
         """
         tmp_dir = tempfile.mkdtemp()
         cached_path = os.path.join(tmp_dir, "stage.usd")

@@ -31,7 +31,8 @@ segmentation enabled for the final dataset.
 ```
 my_recording/
 ├── config.json                          # scenario_type, robot_type, scene_usd_rel_path
-├── stage.usd                            # flattened scene — all sublayers inlined, self-contained
+├── stage.usd                            # flattened scene — sublayers inlined; references textures/MDL under assets/
+├── assets/                              # external assets (textures, MDL, sub-USDs) copied alongside stage.usd
 ├── occupancy_map/
 │   ├── map.yaml                         # ROS-style map metadata
 │   └── map.png                          # freespace bitmap
