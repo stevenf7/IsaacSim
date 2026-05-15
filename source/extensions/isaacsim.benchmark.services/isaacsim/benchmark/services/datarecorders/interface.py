@@ -15,7 +15,7 @@
 
 """Data recorder interfaces and registry utilities."""
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -70,7 +70,7 @@ class MeasurementDataRecorder:
         self,
         context: InputContext | None = None,
         root_dir: Path | None = None,
-    ):
+    ) -> None:
         pass
 
     def get_data(self) -> MeasurementData:
@@ -95,7 +95,7 @@ class MeasurementDataRecorderRegistry:
     """Mapping from recorder names to their corresponding recorder classes."""
 
     @classmethod
-    def add(cls, name: str, recorder: type[MeasurementDataRecorder]):
+    def add(cls, name: str, recorder: type[MeasurementDataRecorder]) -> None:
         """Register a recorder class by name.
 
         Args:
@@ -148,7 +148,7 @@ class MeasurementDataRecorderRegistry:
         return [c for c in classes if c is not None]
 
     @classmethod
-    def register(cls, name: str):
+    def register(cls, name: str) -> Callable[[type[MeasurementDataRecorder]], type[MeasurementDataRecorder]]:
         """Decorator for registering recorder classes.
 
         Args:
@@ -166,7 +166,7 @@ class MeasurementDataRecorderRegistry:
                 pass
         """
 
-        def decorator(recorder_class: type[MeasurementDataRecorder]):
+        def decorator(recorder_class: type[MeasurementDataRecorder]) -> type[MeasurementDataRecorder]:
             cls.add(name, recorder_class)
             return recorder_class
 

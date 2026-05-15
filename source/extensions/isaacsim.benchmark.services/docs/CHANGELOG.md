@@ -1,4 +1,8 @@
 # Changelog
+## [4.2.1] - 2026-05-14
+### Fixed
+- Improved docstrings and return type clarity
+
 ## [4.2.0] - 2026-04-24
 ### Added
 - `rtf_stability` data recorder: windowed real-time factor (sim time / wall time) with mean/stdev for stability analysis. Default wall window is 100 ms. Controlled with settings: `/exts/isaacsim.benchmark.services/rtf_stability/window_wall_ms`, `/exts/isaacsim.benchmark.services/rtf_stability/export_window_samples`.

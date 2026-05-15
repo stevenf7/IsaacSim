@@ -34,7 +34,7 @@ default_exclusions = [
 class Report:
     """Format benchmark metrics into a human-readable report."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._test_phases: list[measurements.TestPhase] = []
         self._phase_data: list[dict[str, list[str]]] = []
         self._addt_metadata: list[str] = []
@@ -43,7 +43,7 @@ class Report:
         self._cpu_metrics: dict[str, dict[str, str]] = {}
         self._use_section_headers = False  # Set to True for section headers within phases
 
-    def add_metric_phase(self, test_phase: measurements.TestPhase):
+    def add_metric_phase(self, test_phase: measurements.TestPhase) -> None:
         """Add a test phase and pre-format its output lines.
 
         Args:
@@ -81,7 +81,6 @@ class Report:
         # Categorize measurements for output
         performance_metrics = []
         memory_metrics = []
-        cpu_metrics: list[measurements.SingleMeasurement] = []
         custom_metrics = []
 
         for measurement in test_phase.measurements:
@@ -122,7 +121,7 @@ class Report:
         # 2. Custom metrics (grouped by prefix)
         if custom_metrics:
             # Sort custom metrics by prefix to group related metrics together
-            def get_metric_prefix(name):
+            def get_metric_prefix(name: str) -> str:
                 return name.split()[0] if " " in name else name
 
             for m in sorted(custom_metrics, key=lambda x: (get_metric_prefix(x.name), x.name)):
@@ -175,7 +174,7 @@ class Report:
         line = f"{measurement.name}: {measurement.value} {measurement.unit}".rstrip()
         return self._boxed_inner_lines(line)
 
-    def _add_metadata(self, measurement: measurements.SingleMeasurement):
+    def _add_metadata(self, measurement: measurements.SingleMeasurement) -> None:
         """Add measurement to the metadata list.
 
         Args:
@@ -185,7 +184,7 @@ class Report:
         if metadata not in self._addt_metadata:
             self._addt_metadata.append(metadata)
 
-    def _process_frametime_metric(self, measurement: measurements.SingleMeasurement):
+    def _process_frametime_metric(self, measurement: measurements.SingleMeasurement) -> None:
         """Add frametime metric data to the frametime table.
 
         Args:
@@ -197,7 +196,7 @@ class Report:
             self._frametime_metrics[frametime] = {}
         self._frametime_metrics[frametime][metric_type] = f"{measurement.value:.2f}"
 
-    def _process_cpu_metric(self, measurement: measurements.SingleMeasurement):
+    def _process_cpu_metric(self, measurement: measurements.SingleMeasurement) -> None:
         """Add CPU usage data to the CPU metrics table.
 
         Args:
@@ -209,7 +208,7 @@ class Report:
             self._cpu_metrics["Process"] = {}
         self._cpu_metrics["Process"][metric_type] = f"{measurement.value:.2f}"
 
-    def print_formatted_lines(self, phase: dict[str, list[str]]):
+    def print_formatted_lines(self, phase: dict[str, list[str]]) -> None:
         """Print formatted metric data for a phase.
 
         Args:
@@ -240,7 +239,7 @@ class Report:
         separator = "|" + "-" * (self._report_width + 2) + "|"
         return separator
 
-    def print_metadata(self):
+    def print_metadata(self) -> None:
         """Print formatted benchmark metadata.
 
         Example:
@@ -311,7 +310,7 @@ class Report:
 
         return logs
 
-    def create_report(self):
+    def create_report(self) -> None:
         """Print the full summary report.
 
         Example:

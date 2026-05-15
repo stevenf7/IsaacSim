@@ -22,6 +22,7 @@ import shutil
 import tempfile
 from datetime import datetime as dt
 from pathlib import Path
+from typing import Any
 
 import carb
 import omni.kit.app
@@ -51,7 +52,7 @@ class MetricsBackendInterface:
             backend.add_metrics(test_phase)
         """
 
-    def finalize(self, metrics_output_folder: str, randomize_filename_prefix: bool = False, **kwargs) -> None:
+    def finalize(self, metrics_output_folder: str, randomize_filename_prefix: bool = False, **kwargs: Any) -> None:
         """Write metrics data to files and clear state.
 
         Args:
@@ -136,7 +137,7 @@ class KitGenericTelemetry(MetricsBackendInterface):
             event_type=event_type, duration=0.0, data1="", data2=1, value1=0.0, value2=0.0
         )
 
-    def finalize(self, metrics_output_folder: str, randomize_filename_prefix: bool = False, **kwargs) -> None:
+    def finalize(self, metrics_output_folder: str, randomize_filename_prefix: bool = False, **kwargs: Any) -> None:
         """Finalize telemetry backend resources.
 
         Args:
@@ -192,7 +193,7 @@ class JSONFileMetrics(MetricsBackendInterface):
         """
         self.data.append(copy.deepcopy(test_phase))
 
-    def finalize(self, metrics_output_folder: str, randomize_filename_prefix: bool = False, **kwargs) -> None:
+    def finalize(self, metrics_output_folder: str, randomize_filename_prefix: bool = False, **kwargs: Any) -> None:
         """Write metrics data to a JSON file.
 
         Args:
@@ -270,7 +271,7 @@ class OsmoKPIFile(MetricsBackendInterface):
         """
         self._test_phases.append(test_phase)
 
-    def finalize(self, metrics_output_folder: str, randomize_filename_prefix: bool = False, **kwargs) -> None:
+    def finalize(self, metrics_output_folder: str, randomize_filename_prefix: bool = False, **kwargs: Any) -> None:
         """Write metrics to output file(s).
 
         Each test phase's SingleMeasurement metrics and metadata are written to an output JSON file, at path
@@ -340,7 +341,7 @@ class OmniPerfKPIFile(MetricsBackendInterface):
         """
         self._test_phases.append(test_phase)
 
-    def finalize(self, metrics_output_folder: str, randomize_filename_prefix: bool = False, **kwargs) -> None:
+    def finalize(self, metrics_output_folder: str, randomize_filename_prefix: bool = False, **kwargs: Any) -> None:
         """Write metrics to output file(s).
 
         Measurement metrics and metadata are written to an output JSON file, at path

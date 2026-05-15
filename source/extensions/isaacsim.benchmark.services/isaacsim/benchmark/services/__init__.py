@@ -24,4 +24,4 @@ from .base_benchmark import (
     BaseIsaacBenchmarkAsync,
 )
 
-__all__ = ["BaseIsaacBenchmarkAsync", "BaseIsaacBenchmark"]
+__all__ = ["BaseIsaacBenchmarkAsync", "BaseIsaacBenchmark", "DEFAULT_RECORDERS"]

@@ -30,8 +30,6 @@ from .. import utils
 
 logger = utils.set_up_logging(__name__)
 
-from .. import utils
-
 
 def get_execution_environment() -> tuple[str, str]:
     """Create a source and build id for the metrics API.
@@ -175,7 +173,7 @@ def get_package_info_yaml(yaml_path: str | None = None) -> dict:
     yaml_contents = {}
     try:
         logger.info(f"PACKAGE-INFO.yaml path = {yaml_path}")
-        with open(yaml_path, "r") as f:
+        with open(yaml_path, encoding="utf-8") as f:
             yaml_contents = yaml.safe_load(f)
             logger.info(f"PACKAGE-INFO.yaml contents: {yaml_contents}")
     except Exception as e:
