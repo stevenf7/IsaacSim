@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.3] - 2026-05-14
+### Fixed
+- Show a Kit warning notification when VS Code cannot be launched because `code` is not available on the system
+
 ## [1.2.2] - 2026-04-23
 ### Fixed
 - Eliminated shell injection risk by resolving `code` via `shutil.which()` and removing `shell=True`
