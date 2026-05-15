@@ -87,6 +87,31 @@ class UIBuilder:
             pass
         self._menu_items = []
 
+    def _post_notification(self, notification: str, warning: bool, hide_after_timeout: bool) -> None:
+        """Show a Kit notification when the notification manager extension is available.
+
+        Args:
+            notification: The notification message to display.
+            warning: Whether to display the notification as a warning.
+            hide_after_timeout: Whether to hide the notification after a timeout.
+        """
+        try:
+            import omni.kit.notification_manager as notification_manager
+        except ImportError:
+            pass
+        else:
+            if warning:
+                status = notification_manager.NotificationStatus.WARNING
+            else:
+                status = notification_manager.NotificationStatus.INFO
+            notification_manager.post_notification(
+                notification,
+                hide_after_timeout=hide_after_timeout,
+                duration=3,
+                status=status,
+                button_infos=[notification_manager.NotificationButtonInfo("OK", on_complete=None)],
+            )
+
     def _launch(self, *args: object, **kwargs: object) -> None:
         """Launch a new VS Code window pointed at the application directory.
 
@@ -96,9 +121,12 @@ class UIBuilder:
         """
         code_executable = shutil.which("code")
         if code_executable is None:
-            carb.log_warn(
-                "Unable to launch VS Code.\nMake sure VS Code is installed and accessible on the system via the command 'code'"
+            notification = (
+                "Unable to find VS Code executable.\n\n"
+                "Make sure VS Code is installed and accessible on the system via the command 'code'"
             )
+            carb.log_warn(notification)
+            self._post_notification(notification, warning=True, hide_after_timeout=False)
             return
         command = [code_executable, "-n", self._app_folder]
         carb.log_info(f"Launching VS Code: {command}")
@@ -111,19 +139,4 @@ class UIBuilder:
                 notification += ".\nMake sure VS Code is installed and accessible on the system via the command 'code'"
             carb.log_warn(notification)
 
-        try:
-            import omni.kit.notification_manager as notification_manager
-        except ImportError:
-            pass
-        else:
-            if result.returncode:
-                status = notification_manager.NotificationStatus.WARNING
-            else:
-                status = notification_manager.NotificationStatus.INFO
-            notification_manager.post_notification(
-                notification,
-                hide_after_timeout=not result.returncode,
-                duration=3,
-                status=status,
-                button_infos=[notification_manager.NotificationButtonInfo("OK", on_complete=None)],
-            )
+        self._post_notification(notification, warning=bool(result.returncode), hide_after_timeout=not result.returncode)
