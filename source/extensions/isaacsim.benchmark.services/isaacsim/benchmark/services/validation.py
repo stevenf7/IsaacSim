@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Validation helpers for benchmark captures and coordinate checks."""
+
 import json
 import os
 import re
@@ -20,7 +22,7 @@ import shutil
 import statistics
 import tempfile
 import time
-from typing import Dict, List, Tuple
+from typing import Any
 
 import numpy as np
 
@@ -75,13 +77,13 @@ class Validator:
         """Create a new *Validator* instance.
 
         Args:
-            param tolerance: Mean-difference threshold used during validation.
-            param blur_kernel: Gaussian-blur kernel size (0 disables blurring).
-            param regenerate_golden: Replace the golden reference images instead of
+            tolerance: Mean-difference threshold used during validation.
+            blur_kernel: Gaussian-blur kernel size (0 disables blurring).
+            regenerate_golden: Replace the golden reference images instead of
                 validating against them.
-            param output_root: Base directory where capture folders are created.
-            param golden_root: Base directory storing golden reference images.
-            param auto_cleanup: If *True* the last capture folder is deleted
+            output_root: Base directory where capture folders are created.
+            golden_root: Base directory storing golden reference images.
+            auto_cleanup: If *True* the last capture folder is deleted
                 automatically after :py:meth:`validate_images` completes.
         """
         self.tolerance: float = tolerance
@@ -99,7 +101,7 @@ class Validator:
 
     def build_render_product_map(
         self,
-        stage,
+        stage: Any,
         root_prim_path: str = "/Render/OmniverseKit/HydraTextures",
     ) -> dict[str, str]:
         """Populate *self.render_product_map* by scanning *stage*.
@@ -108,8 +110,8 @@ class Validator:
         ``ViewportManager.get_camera``.  Prims that fail the check are silently ignored.
 
         Args:
-            param stage: USD stage to inspect.
-            param root_prim_path: Path whose subtree is searched for render-products.
+            stage: USD stage to inspect.
+            root_prim_path: Path whose subtree is searched for render-products.
 
         Returns:
             Mapping from render-product USD path → human-readable folder name.
@@ -165,7 +167,7 @@ class Validator:
 
     def capture_images(
         self,
-        stage,
+        stage: Any,
         *,
         benchmark_name: str,
         output_root: str | None = None,
@@ -369,7 +371,7 @@ class Validator:
 
         sets = []
         for root in roots:
-            sets.append(set(d for d in os.listdir(root) if os.path.isdir(os.path.join(root, d))))
+            sets.append({d for d in os.listdir(root) if os.path.isdir(os.path.join(root, d))})
         common = sets[0]
         for s in sets[1:]:
             common &= s
@@ -419,7 +421,7 @@ class Validator:
         common_rps = self._get_render_product_names(captured_run_dir, golden_benchmark_dir)
 
         if not common_rps:
-            print(f"No common render product directories found between captured and golden data")
+            print("No common render product directories found between captured and golden data")
             return {"render_products": {}, "total": 0, "passed": 0, "failed": 0}
 
         rp_results = {}
@@ -515,7 +517,7 @@ class Validator:
             return None
         return float(m.group(2))
 
-    def rename_captured_frames_to_timestamps(self, run_dir: str, frame_timestamps: List[float]) -> None:
+    def rename_captured_frames_to_timestamps(self, run_dir: str, frame_timestamps: list[float]) -> None:
         """Rename index-based PNGs to timestamp-based filenames under *run_dir*.
 
         Walks all subdirs and renames files matching ``<prefix>_<index>.png`` to
@@ -564,7 +566,7 @@ class Validator:
         print("VALIDATING FRAMES BY TIMESTAMP")
         print(f"{'='*80}\n")
 
-        def _collect_pngs_with_timestamps(root: str) -> List[Tuple[str, float]]:
+        def _collect_pngs_with_timestamps(root: str) -> list[tuple[str, float]]:
             out = []
             for r, _, files in os.walk(root):
                 for f in files:
@@ -702,7 +704,7 @@ class Validator:
         }
 
     @staticmethod
-    def _ensure_rgb(arr):
+    def _ensure_rgb(arr: np.ndarray) -> np.ndarray:
         """Return a three-channel RGB *view* of *arr* (H×W×C)."""
         import cv2
 
@@ -713,7 +715,7 @@ class Validator:
         return arr
 
     @staticmethod
-    def _write_png(path: str, rgb) -> None:
+    def _write_png(path: str, rgb: np.ndarray) -> None:
         """Write *rgb* (RGB) to *path* as PNG using cv2 (expects BGR)."""
         import cv2
 
@@ -723,7 +725,7 @@ class Validator:
     # e2e runner
     def run(
         self,
-        stage,
+        stage: Any,
         *,
         benchmark_name: str,
     ) -> bool:
@@ -745,7 +747,7 @@ class Validator:
     @classmethod
     def from_cli_args(
         cls,
-        args,
+        args: Any,
         *,
         auto_cleanup: bool | None = None,
     ) -> "Validator":
@@ -792,19 +794,19 @@ class CoordinateValidator:
     def __init__(
         self,
         historical_data_path: str = "standalone_examples/benchmarks/validation/golden_data/benchmark_robots_nova_carter_ros2/historical_coordinates_data.json",
-    ):
+    ) -> None:
         """Create a new CoordinateValidator instance.
 
         Args:
-            param historical_data_path: Path to the JSON file containing historical
+            historical_data_path: Path to the JSON file containing historical
                 coordinate data for statistical validation.
         """
         self.historical_data_path = historical_data_path
-        self.historical_positions: List[List[float]] = []
-        self.historical_rotations: List[List[float]] = []
+        self.historical_positions: list[list[float]] = []
+        self.historical_rotations: list[list[float]] = []
         self._load_historical_data()
 
-    def calculate_bounds_from_historical_data(self) -> Dict[str, List[float]]:
+    def calculate_bounds_from_historical_data(self) -> dict[str, list[float]]:
         """Calculate min/max bounds from historical coordinate data.
 
         Returns:
@@ -847,7 +849,7 @@ class CoordinateValidator:
     def _load_historical_data(self) -> None:
         """Load historical coordinate data for statistical validation."""
         if os.path.exists(self.historical_data_path):
-            with open(self.historical_data_path, "r") as f:
+            with open(self.historical_data_path, encoding="utf-8") as f:
                 historical_data = json.load(f)
                 for record in historical_data["data"]:
                     self.historical_positions.append(record["final_position"])
@@ -857,15 +859,15 @@ class CoordinateValidator:
             print("Warning: No historical data found. Statistical methods will be skipped.")
 
     def within_bounds_with_tolerance(
-        self, val: List[float], min_bounds: List[float], max_bounds: List[float], tolerance_percent: float = 0.05
-    ) -> Tuple[bool, List[float]]:
+        self, val: list[float], min_bounds: list[float], max_bounds: list[float], tolerance_percent: float = 0.05
+    ) -> tuple[bool, list[float]]:
         """Check if a value is within bounds with additional tolerance.
 
         Args:
-            param val: The values to check against bounds.
-            param min_bounds: Minimum acceptable values for each component.
-            param max_bounds: Maximum acceptable values for each component.
-            param tolerance_percent: Additional tolerance as a percentage of the range.
+            val: The values to check against bounds.
+            min_bounds: Minimum acceptable values for each component.
+            max_bounds: Maximum acceptable values for each component.
+            tolerance_percent: Additional tolerance as a percentage of the range.
 
         Returns:
             Tuple containing a boolean indicating if all values are within bounds
@@ -909,14 +911,14 @@ class CoordinateValidator:
         return all_within_bounds, exceedance_percentages
 
     def three_sigma_outlier_detection(
-        self, val: List[float], historical_data: List[List[float]], component_names: List[str]
-    ) -> Tuple[bool, List[float], Dict]:
+        self, val: list[float], historical_data: list[list[float]], component_names: list[str]
+    ) -> tuple[bool, list[float], dict[str, Any]]:
         """Detect outliers using the 3-Sigma rule.
 
         Args:
-            param val: The values to check for outliers.
-            param historical_data: Historical data points for comparison.
-            param component_names: Names of the components being validated.
+            val: The values to check for outliers.
+            historical_data: Historical data points for comparison.
+            component_names: Names of the components being validated.
 
         Returns:
             Tuple containing a boolean indicating if all values pass the 3-Sigma test,
@@ -970,14 +972,14 @@ class CoordinateValidator:
         return all_within_3sigma, z_scores, stats_info
 
     def iqr_outlier_detection(
-        self, val: List[float], historical_data: List[List[float]], component_names: List[str]
-    ) -> Tuple[bool, List[float], Dict]:
+        self, val: list[float], historical_data: list[list[float]], component_names: list[str]
+    ) -> tuple[bool, list[float], dict[str, Any]]:
         """Detect outliers using the Interquartile Range (IQR) method.
 
         Args:
-            param val: The values to check for outliers.
-            param historical_data: Historical data points for comparison.
-            param component_names: Names of the components being validated.
+            val: The values to check for outliers.
+            historical_data: Historical data points for comparison.
+            component_names: Names of the components being validated.
 
         Returns:
             Tuple containing a boolean indicating if all values pass the IQR test,
@@ -1045,25 +1047,25 @@ class CoordinateValidator:
 
     def voting_validation_system(
         self,
-        val: List[float],
-        min_bounds: List[float],
-        max_bounds: List[float],
-        historical_data: List[List[float]],
-        component_names: List[str],
+        val: list[float],
+        min_bounds: list[float],
+        max_bounds: list[float],
+        historical_data: list[list[float]],
+        component_names: list[str],
         tolerance_percent: float = 0.05,
-    ) -> Tuple[bool, Dict]:
+    ) -> tuple[bool, dict[str, Any]]:
         """Voting system combining 5% rule, 3-Sigma, and IQR methods.
 
         This method applies three different validation techniques and uses a voting
         system where at least 2 out of 3 methods must pass for overall validation success.
 
         Args:
-            param val: The values to validate.
-            param min_bounds: Minimum acceptable values for each component.
-            param max_bounds: Maximum acceptable values for each component.
-            param historical_data: Historical data points for statistical comparison.
-            param component_names: Names of the components being validated.
-            param tolerance_percent: Additional tolerance as a percentage of the range.
+            val: The values to validate.
+            min_bounds: Minimum acceptable values for each component.
+            max_bounds: Maximum acceptable values for each component.
+            historical_data: Historical data points for statistical comparison.
+            component_names: Names of the components being validated.
+            tolerance_percent: Additional tolerance as a percentage of the range.
 
         Returns:
             Tuple containing a boolean indicating overall validation success
@@ -1105,12 +1107,12 @@ class CoordinateValidator:
 
         return overall_pass, results
 
-    def validate_robot_coordinates(self, robots: List, golden_data: Dict[str, List[float]]) -> bool:
+    def validate_robot_coordinates(self, robots: list[Any], golden_data: dict[str, list[float]]) -> bool:
         """Validate coordinates for all robots using the voting system.
 
         Args:
-            param robots: List of robot objects with get_world_pose() method.
-            param golden_data: Dictionary containing coordinate bounds and validation data.
+            robots: List of robot objects with get_world_pose() method.
+            golden_data: Dictionary containing coordinate bounds and validation data.
 
         Returns:
             Boolean indicating whether all robots passed coordinate validation.
@@ -1158,25 +1160,25 @@ class CoordinateValidator:
     def _print_validation_results(
         self,
         robot_idx: int,
-        final_position: List[float],
-        final_rotation: List[float],
+        final_position: list[float],
+        final_rotation: list[float],
         pos_pass: bool,
-        pos_results: Dict,
+        pos_results: dict[str, Any],
         rot_pass: bool,
-        rot_results: Dict,
+        rot_results: dict[str, Any],
         robot_voting_pass: bool,
     ) -> None:
         """Print detailed validation results for a robot.
 
         Args:
-            param robot_idx: Index of the robot being validated.
-            param final_position: Final position coordinates of the robot.
-            param final_rotation: Final rotation coordinates of the robot.
-            param pos_pass: Whether position validation passed.
-            param pos_results: Detailed position validation results.
-            param rot_pass: Whether rotation validation passed.
-            param rot_results: Detailed rotation validation results.
-            param robot_voting_pass: Whether overall robot validation passed.
+            robot_idx: Index of the robot being validated.
+            final_position: Final position coordinates of the robot.
+            final_rotation: Final rotation coordinates of the robot.
+            pos_pass: Whether position validation passed.
+            pos_results: Detailed position validation results.
+            rot_pass: Whether rotation validation passed.
+            rot_results: Detailed rotation validation results.
+            robot_voting_pass: Whether overall robot validation passed.
         """
         print(f"\n{'='*60}")
         print(f"Robot {robot_idx} Validation Results:")
@@ -1208,12 +1210,12 @@ class CoordinateValidator:
                 print(f"    - Rotation validation failed ({rot_results['methods_passed']}/3 methods passed)")
         print(f"{'='*60}")
 
-    def _print_method_results(self, coord_type: str, results: Dict) -> None:
+    def _print_method_results(self, coord_type: str, results: dict[str, Any]) -> None:
         """Print results for individual validation methods.
 
         Args:
-            param coord_type: Type of coordinate being validated (Position or Rotation).
-            param results: Dictionary containing validation results from all methods.
+            coord_type: Type of coordinate being validated (Position or Rotation).
+            results: Dictionary containing validation results from all methods.
         """
         # 5% Tolerance Method
         tolerance_result = results["tolerance_method"]

@@ -37,7 +37,7 @@ class AppFrametimeRecorder(MeasurementDataRecorder):
         context: Input context for the recorder.
     """
 
-    def __init__(self, context: InputContext | None = None):
+    def __init__(self, context: InputContext | None = None) -> None:
         self.context = context
         self._samples: list[float] = []
         self._last_timestamp_ns: int = 0
@@ -47,7 +47,7 @@ class AppFrametimeRecorder(MeasurementDataRecorder):
         self._subscription = None
         self._phase: str | None = None
 
-    def start_collecting(self):
+    def start_collecting(self) -> None:
         """Start collecting app frametime data.
 
         Example:
@@ -72,7 +72,7 @@ class AppFrametimeRecorder(MeasurementDataRecorder):
         )
         logger.info("AppFrametimeRecorder: Started collecting")
 
-    def stop_collecting(self):
+    def stop_collecting(self) -> None:
         """Stop collecting app frametime data.
 
         Example:
@@ -122,7 +122,7 @@ class AppFrametimeRecorder(MeasurementDataRecorder):
         """
         return self._samples
 
-    def _on_app_update(self, event: Any):
+    def _on_app_update(self, event: Any) -> None:
         """Callback for app update events.
 
         Args:

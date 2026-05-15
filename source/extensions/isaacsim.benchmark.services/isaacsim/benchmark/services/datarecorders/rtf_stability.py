@@ -90,7 +90,7 @@ class RtfStabilityRecorder(MeasurementDataRecorder):
     streak of consecutive windows outside the ±0.01 band.
     """
 
-    def __init__(self, context: InputContext | None = None):
+    def __init__(self, context: InputContext | None = None) -> None:
         self.context = context
         self._subscription = None
         self._phase: str | None = None
@@ -102,6 +102,7 @@ class RtfStabilityRecorder(MeasurementDataRecorder):
         self._logged_timeline_fallback: bool = False
 
     def start_collecting(self) -> None:
+        """Start recording windowed real-time factor samples."""
         if self.context:
             self._phase = self.context.phase
 
@@ -120,6 +121,7 @@ class RtfStabilityRecorder(MeasurementDataRecorder):
         logger.info("RtfStabilityRecorder: Started collecting")
 
     def stop_collecting(self) -> None:
+        """Stop recording windowed real-time factor samples."""
         self._subscription = None
         self._flush_window(force=True)
         logger.info("RtfStabilityRecorder: Stopped collecting. Collected %d window samples", len(self._rtf_samples))
@@ -173,6 +175,7 @@ class RtfStabilityRecorder(MeasurementDataRecorder):
         self._window_sim_ms = 0.0
 
     def get_data(self) -> MeasurementData:
+        """Return real-time factor stability measurements."""
         if self.context and self._phase != self.context.phase:
             return MeasurementData()
 

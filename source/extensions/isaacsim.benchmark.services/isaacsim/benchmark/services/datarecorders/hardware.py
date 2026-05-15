@@ -34,7 +34,7 @@ class HardwareSpecRecorder(MeasurementDataRecorder):
         context: Input context for the recorder.
     """
 
-    def __init__(self, context: InputContext | None = None):
+    def __init__(self, context: InputContext | None = None) -> None:
         self.context = context
 
     def get_data(self) -> MeasurementData:

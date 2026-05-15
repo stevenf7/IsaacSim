@@ -60,7 +60,7 @@ DEFAULT_RECORDERS = [
 ]
 
 
-def set_sync_mode():
+def set_sync_mode() -> None:
     """Enable synchronous USD and material loading.
 
     This adjusts Kit settings to block until assets and materials are fully
@@ -90,7 +90,7 @@ class _BaseIsaacBenchmarkCore:
         report_generation: bool,
         workflow_metadata: dict | None,
         recorders: list[str] | None,
-    ):
+    ) -> None:
         """Initialize common benchmark state and recorders.
 
         Args:
@@ -163,7 +163,7 @@ class _BaseIsaacBenchmarkCore:
         self.test_mode = os.getenv("ISAAC_TEST_MODE") == "1"
         logger.info("Test mode = %s", self.test_mode)
 
-    def _run_warmup_sync(self, n_frames: int):
+    def _run_warmup_sync(self, n_frames: int) -> None:
         """Run warmup frames synchronously without recording.
 
         Args:
@@ -174,7 +174,7 @@ class _BaseIsaacBenchmarkCore:
         for _ in range(n_frames):
             app.update()
 
-    async def _run_warmup_async(self, n_frames: int):
+    async def _run_warmup_async(self, n_frames: int) -> None:
         """Run warmup frames asynchronously without recording.
 
         Args:
@@ -191,7 +191,7 @@ class _BaseIsaacBenchmarkCore:
         start_recording_frametime: bool = True,
         start_recording_runtime: bool = True,
         warmup_frames: int = 0,
-    ):
+    ) -> None:
         """Set the active benchmarking phase and start recorders.
 
         Args:
@@ -227,7 +227,7 @@ class _BaseIsaacBenchmarkCore:
 
         self._start_recorders(start_recording_frametime, start_recording_runtime, phase)
 
-    def _start_recorders(self, start_recording_frametime: bool, start_recording_runtime: bool, phase: str):
+    def _start_recorders(self, start_recording_frametime: bool, start_recording_runtime: bool, phase: str) -> None:
         """Activate and start the appropriate recorders for the current phase."""
         recorders = self.recorders
         if recorders is None:
@@ -295,7 +295,7 @@ class _BaseIsaacBenchmarkCore:
                     logger.debug("Activated stateless recorder %s for phase '%s'", recorder_name, phase)
                 self._active_recorders.add(recorder)
 
-    def _store_measurements_impl(self):
+    def _store_measurements_impl(self) -> None:
         """Stop active recorders and collect their data."""
         context = self.context
         if context is None:
@@ -362,7 +362,7 @@ class _BaseIsaacBenchmarkCore:
         self.recorders = None
         self.context = None
 
-    def _store_custom_measurement_impl(self, phase_name: str, custom_measurement: measurements):
+    def _store_custom_measurement_impl(self, phase_name: str, custom_measurement: measurements.Measurement) -> None:
         """Store a custom measurement for a specific phase.
 
         Args:
@@ -422,7 +422,7 @@ class BaseIsaacBenchmark(_BaseIsaacBenchmarkCore):
         report_generation: bool = True,
         workflow_metadata: dict | None = None,
         recorders: list[str] | None = None,
-    ):
+    ) -> None:
         set_sync_mode()
 
         self.assets_root_path = get_assets_root_path()
@@ -438,7 +438,7 @@ class BaseIsaacBenchmark(_BaseIsaacBenchmarkCore):
             recorders=recorders,
         )
 
-    def run_warmup(self, n_frames: int):
+    def run_warmup(self, n_frames: int) -> None:
         """Run warmup frames without recording any metrics.
 
         Call before ``set_phase`` to let the renderer, physics, and JIT
@@ -457,7 +457,7 @@ class BaseIsaacBenchmark(_BaseIsaacBenchmarkCore):
         """
         self._run_warmup_sync(n_frames)
 
-    def stop(self):
+    def stop(self) -> None:
         """Stop benchmarking and write accumulated metrics to file.
 
         Example:
@@ -468,7 +468,7 @@ class BaseIsaacBenchmark(_BaseIsaacBenchmarkCore):
         """
         self._finalize_impl()
 
-    def store_measurements(self):
+    def store_measurements(self) -> None:
         """Store measurements and metadata collected during the previous phase.
 
         Example:
@@ -479,7 +479,7 @@ class BaseIsaacBenchmark(_BaseIsaacBenchmarkCore):
         """
         self._store_measurements_impl()
 
-    def fully_load_stage(self, usd_path: str):
+    def fully_load_stage(self, usd_path: str) -> None:
         """Load a USD stage and block until it is fully loaded.
 
         Args:
@@ -494,7 +494,7 @@ class BaseIsaacBenchmark(_BaseIsaacBenchmarkCore):
         stage_utils.open_stage(usd_path)
         wait_until_stage_is_fully_loaded()
 
-    def store_custom_measurement(self, phase_name: str, custom_measurement: measurements):
+    def store_custom_measurement(self, phase_name: str, custom_measurement: measurements.Measurement) -> None:
         """Store a custom measurement for the current benchmark.
 
         Args:
@@ -570,7 +570,7 @@ class BaseIsaacBenchmarkAsync(_BaseIsaacBenchmarkCore, omni.kit.test.AsyncTestCa
             recorders=recorders,
         )
 
-    async def run_warmup(self, n_frames: int):
+    async def run_warmup(self, n_frames: int) -> None:
         """Run warmup frames asynchronously without recording any metrics.
 
         Args:
@@ -590,7 +590,7 @@ class BaseIsaacBenchmarkAsync(_BaseIsaacBenchmarkCore, omni.kit.test.AsyncTestCa
         start_recording_frametime: bool = True,
         start_recording_runtime: bool = True,
         warmup_frames: int = 0,
-    ):
+    ) -> None:
         """Set the active benchmarking phase and start recorders (async).
 
         Args:
@@ -622,7 +622,7 @@ class BaseIsaacBenchmarkAsync(_BaseIsaacBenchmarkCore, omni.kit.test.AsyncTestCa
         # Delegate to the shared recorder-start logic (skip the sync warmup path)
         self._start_recorders(start_recording_frametime, start_recording_runtime, phase)
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down the benchmark and finalize metrics."""
         # Wait for stage to finish loading
         while stage_utils.is_stage_loading():
@@ -634,7 +634,7 @@ class BaseIsaacBenchmarkAsync(_BaseIsaacBenchmarkCore, omni.kit.test.AsyncTestCa
 
         await omni.kit.app.get_app().next_update_async()
 
-    async def store_measurements(self):
+    async def store_measurements(self) -> None:
         """Store measurements and metadata collected during the previous phase.
 
         Example:
@@ -645,7 +645,7 @@ class BaseIsaacBenchmarkAsync(_BaseIsaacBenchmarkCore, omni.kit.test.AsyncTestCa
         """
         self._store_measurements_impl()
 
-    async def fully_load_stage(self, usd_path: str):
+    async def fully_load_stage(self, usd_path: str) -> None:
         """Open a stage and wait for it to fully load.
 
         Args:
@@ -660,7 +660,7 @@ class BaseIsaacBenchmarkAsync(_BaseIsaacBenchmarkCore, omni.kit.test.AsyncTestCa
         stage_utils.open_stage(usd_path)
         await wait_until_stage_is_fully_loaded_async()
 
-    async def store_custom_measurement(self, phase_name: str, custom_measurement: measurements):
+    async def store_custom_measurement(self, phase_name: str, custom_measurement: measurements.Measurement) -> None:
         """Store a custom measurement for the current benchmark.
 
         Args:

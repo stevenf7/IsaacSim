@@ -46,7 +46,7 @@ class PhysicsStepIntervalRecorder(MeasurementDataRecorder):
         context: Input context for the recorder.
     """
 
-    def __init__(self, context: InputContext | None = None):
+    def __init__(self, context: InputContext | None = None) -> None:
         self.context = context
         self._samples: list[float] = []
         self._last_step_ns: int = 0
@@ -60,6 +60,7 @@ class PhysicsStepIntervalRecorder(MeasurementDataRecorder):
             logger.warning("PhysicsStepIntervalRecorder: Failed to get physics simulation interface: %s", e)
 
     def start_collecting(self) -> None:
+        """Start recording intervals between physics step callbacks."""
         if self.context:
             self._phase = self.context.phase
 
@@ -77,6 +78,7 @@ class PhysicsStepIntervalRecorder(MeasurementDataRecorder):
             logger.warning("PhysicsStepIntervalRecorder: Physics simulation interface not available")
 
     def stop_collecting(self) -> None:
+        """Stop recording physics step intervals."""
         self._subscription = None
 
         # Drop the first sample -- the interval from start_collecting() to the
@@ -88,10 +90,12 @@ class PhysicsStepIntervalRecorder(MeasurementDataRecorder):
 
     @property
     def sample_count(self) -> int:
+        """Return the number of collected interval samples."""
         return len(self._samples)
 
     @property
     def samples(self) -> list[float]:
+        """Return collected interval samples in milliseconds."""
         return self._samples
 
     def _on_physics_step(self, _step_dt: float, _context: Any) -> None:
@@ -101,6 +105,7 @@ class PhysicsStepIntervalRecorder(MeasurementDataRecorder):
         self._samples.append(round(interval_ms, 6))
 
     def get_data(self) -> MeasurementData:
+        """Return physics step interval measurements."""
         if self.context and self._phase != self.context.phase:
             return MeasurementData()
 

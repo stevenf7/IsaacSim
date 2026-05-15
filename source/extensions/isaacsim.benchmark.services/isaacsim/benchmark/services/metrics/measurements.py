@@ -21,6 +21,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol, cast
 
+from .. import utils
+
 
 class _MetadataWithData(Protocol):
     """Protocol for metadata objects that contain a name and data.
@@ -39,8 +41,6 @@ class _MetadataWithData(Protocol):
     name: str
     data: Any
 
-
-from .. import utils
 
 logger = utils.set_up_logging(__name__)
 
@@ -335,7 +335,7 @@ class TestPhase(object):
             metric_path = os.path.join(json_folder_path, f)
             if os.path.isfile(metric_path):
                 if f.startswith("metrics") and f.endswith(".json"):
-                    with open(metric_path, "r") as json_file:
+                    with open(metric_path, encoding="utf-8") as json_file:
                         try:
                             test_run_json_list = json.load(json_file)
                             for m in test_run_json_list:
