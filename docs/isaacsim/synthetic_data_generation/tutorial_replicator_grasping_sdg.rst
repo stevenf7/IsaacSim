@@ -272,6 +272,7 @@ To run the standalone example from the terminal (on Windows, use ``python.bat`` 
         .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.grasping/grasping_workflow_sdg.py
             :language: python
             :lines: 16-
+            :end-before: # <start-grasping-workflow-sdg-test>
 
         .. raw:: html
 

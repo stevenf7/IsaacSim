@@ -114,4 +114,37 @@ sem_annot.detach()
 writer.detach()
 rp.destroy()
 
+# <start-simulation-get-data-test>
+import argparse
+import sys
+
+from isaacsim.core.utils.extensions import enable_extension
+
+enable_extension("isaacsim.test.utils")
+from isaacsim.test.utils.file_validation import validate_folder_contents
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--test",
+    action="store_true",
+    help="Validate captured output files against expected counts and exit.",
+)
+args, _ = parser.parse_known_args()
+
+if args.test:
+    # 5 cubes, each captured once: BasicWriter writes rgb + colorized sem_seg + json (2 png + 1 json),
+    # annotator branch writes rgb + sem_seg pngs + sem_seg json (2 png + 1 json).
+    num_captures = 5
+    expected = {"png": num_captures * 4, "json": num_captures * 2}
+    if not validate_folder_contents(
+        path=out_dir,
+        recursive=True,
+        expected_counts=expected,
+        fail_on_empty_files=True,
+    ):
+        print(f"[SDG][Test][FAIL] Output validation failed for {out_dir}")
+        sys.exit(1)
+    print(f"[SDG][Test][PASS] Output validation succeeded for {out_dir}")
+# <end-simulation-get-data-test>
+
 simulation_app.close()

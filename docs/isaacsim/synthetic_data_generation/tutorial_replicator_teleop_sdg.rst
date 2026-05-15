@@ -1602,6 +1602,7 @@ stage.
         .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.teleop/sdg_teleop_replay.py
             :language: python
             :lines: 16-
+            :end-before: # <start-sdg-teleop-replay-test>
 
         .. raw:: html
 

@@ -123,4 +123,39 @@ def run_example():
 # Run the example
 run_example()
 
+# <start-sdg-getting-started-04-test>
+import argparse
+import sys
+
+from isaacsim.core.utils.extensions import enable_extension
+
+enable_extension("isaacsim.test.utils")
+from isaacsim.test.utils.file_validation import validate_folder_contents
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--test",
+    action="store_true",
+    help="Validate captured output files against expected counts and exit.",
+)
+args, _ = parser.parse_known_args()
+
+if args.test:
+    # The cube falls ~2 m and is captured every 0.5 m drop with 2 captures per trigger
+    # (visible + hidden), yielding 6 captures. BasicWriter writes 1 rgb png + 1 colorized
+    # semantic_segmentation png + 1 labels json per capture, plus a single metadata.txt.
+    num_captures = 6
+    out_dir = os.path.join(os.getcwd(), "_out_basic_writer_sim")
+    ok = validate_folder_contents(
+        path=out_dir,
+        recursive=True,
+        expected_counts={"png": num_captures * 2, "json": num_captures, "txt": 1},
+        fail_on_empty_files=True,
+    )
+    if not ok:
+        print(f"[SDG][Test][FAIL] Output validation failed for {out_dir}")
+        sys.exit(1)
+    print(f"[SDG][Test][PASS] Output validation succeeded for {out_dir}")
+# <end-sdg-getting-started-04-test>
+
 simulation_app.close()

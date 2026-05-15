@@ -138,4 +138,36 @@ def run_custom_fps_example(duration_seconds):
 duration = (NUM_CAPTURES * SENSOR_DT) + (5.0 / STAGE_FPS)
 run_custom_fps_example(duration_seconds=duration)
 
+# <start-custom-fps-writer-annotator-test>
+import argparse
+import sys
+
+from isaacsim.core.utils.extensions import enable_extension
+
+enable_extension("isaacsim.test.utils")
+from isaacsim.test.utils.file_validation import validate_folder_contents
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--test",
+    action="store_true",
+    help="Validate captured output files against expected counts and exit.",
+)
+args, _ = parser.parse_known_args()
+
+if args.test:
+    # BasicWriter rgb-only writes 1 png per sensor capture.
+    out_dir = os.path.join(os.getcwd(), "_out_writer_fps_rgb")
+    ok = validate_folder_contents(
+        path=out_dir,
+        recursive=True,
+        expected_counts={"png": NUM_CAPTURES},
+        fail_on_empty_files=True,
+    )
+    if not ok:
+        print(f"[SDG][Test][FAIL] Output validation failed for {out_dir}")
+        sys.exit(1)
+    print(f"[SDG][Test][PASS] Output validation succeeded for {out_dir}")
+# <end-custom-fps-writer-annotator-test>
+
 simulation_app.close()

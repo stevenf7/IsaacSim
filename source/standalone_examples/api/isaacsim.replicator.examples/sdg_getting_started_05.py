@@ -111,4 +111,41 @@ run_example(wait_for_render=True, write_to_fabric=False)
 run_example(wait_for_render=False, write_to_fabric=False)
 run_example(wait_for_render=False, write_to_fabric=True)
 
+# <start-sdg-getting-started-05-test>
+import argparse
+import sys
+
+from isaacsim.core.utils.extensions import enable_extension
+
+enable_extension("isaacsim.test.utils")
+from isaacsim.test.utils.file_validation import validate_folder_contents
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--test",
+    action="store_true",
+    help="Validate captured output files against expected counts and exit.",
+)
+args, _ = parser.parse_known_args()
+
+if args.test:
+    # BasicWriter rgb-only writes 1 png per capture, one output dir per configuration.
+    configurations = [
+        (True, False),
+        (False, False),
+        (False, True),
+    ]
+    for wait_for_render, write_to_fabric in configurations:
+        out_dir = os.path.join(os.getcwd(), f"_out_fabric_{write_to_fabric}_wait_{wait_for_render}")
+        if not validate_folder_contents(
+            path=out_dir,
+            recursive=True,
+            expected_counts={"png": NUM_CAPTURES},
+            fail_on_empty_files=True,
+        ):
+            print(f"[SDG][Test][FAIL] Output validation failed for {out_dir}")
+            sys.exit(1)
+        print(f"[SDG][Test][PASS] Output validation succeeded for {out_dir}")
+# <end-sdg-getting-started-05-test>
+
 simulation_app.close()

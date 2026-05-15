@@ -87,4 +87,37 @@ def run_example():
 # Run the example
 run_example()
 
+# <start-sdg-getting-started-03-test>
+import argparse
+import sys
+
+from isaacsim.core.utils.extensions import enable_extension
+
+enable_extension("isaacsim.test.utils")
+from isaacsim.test.utils.file_validation import validate_folder_contents
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--test",
+    action="store_true",
+    help="Validate captured output files against expected counts and exit.",
+)
+args, _ = parser.parse_known_args()
+
+if args.test:
+    # BasicWriter with rgb + colorized semantic_segmentation writes 2 png + 1 json per capture.
+    num_captures = 3
+    out_dir = os.path.join(os.getcwd(), "_out_basic_writer_rand")
+    ok = validate_folder_contents(
+        path=out_dir,
+        recursive=True,
+        expected_counts={"png": num_captures * 2, "json": num_captures},
+        fail_on_empty_files=True,
+    )
+    if not ok:
+        print(f"[SDG][Test][FAIL] Output validation failed for {out_dir}")
+        sys.exit(1)
+    print(f"[SDG][Test][PASS] Output validation succeeded for {out_dir}")
+# <end-sdg-getting-started-03-test>
+
 simulation_app.close()

@@ -60,6 +60,11 @@ isaacsim.replicator.behavior
 
 * ``behaviors.py``
 
+isaacsim.replicator.episode_recorder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``episode_record_replay.py``
+
 isaacsim.replicator.examples
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -402,11 +407,6 @@ augmentation
 
 * ``annotator_augmentation.py``
 * ``writer_augmentation.py``
-
-episode_record_replay
-~~~~~~~~~~~~~~~~~~~~~
-
-* ``episode_record_replay.py``
 
 infinigen
 ~~~~~~~~~

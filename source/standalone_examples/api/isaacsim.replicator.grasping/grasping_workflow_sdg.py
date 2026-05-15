@@ -143,5 +143,48 @@ output_dir = os.path.join(os.getcwd(), "xarm_antipodal")
 
 run_example(stage_path=stage_path, config_path=config_path, output_dir=output_dir)
 
+# <start-grasping-workflow-sdg-test>
+import argparse
+import sys
+
+from isaacsim.core.utils.extensions import enable_extension
+
+enable_extension("isaacsim.test.utils")
+from isaacsim.test.utils.file_validation import validate_folder_contents
+
+test_parser = argparse.ArgumentParser()
+test_parser.add_argument(
+    "--test",
+    action="store_true",
+    help="Validate captured output files against expected counts and exit.",
+)
+test_args, _ = test_parser.parse_known_args()
+
+if test_args.test:
+    # Pose generation requires the optional rtree dependency; skip validation if it is missing
+    # to match the behavior of the in-extension test (test_grasping_workflow.py).
+    try:
+        import rtree  # noqa: F401
+
+        rtree_available = True
+    except Exception as e:
+        print(f"[SDG][Test] Skipping validation - 'rtree' dependency not available: {e}")
+        rtree_available = False
+
+    if rtree_available:
+        # The xarm_antipodal_soup_can.yaml sampler config produces 4 evaluated grasp poses,
+        # each written as capture_<i>.yaml (matches the in-extension test's expected count).
+        expected_yaml_count = 4
+        ok = validate_folder_contents(
+            path=output_dir,
+            recursive=True,
+            expected_counts={"yaml": expected_yaml_count},
+            fail_on_empty_files=True,
+        )
+        if not ok:
+            print(f"[SDG][Test][FAIL] Output validation failed for {output_dir}")
+            sys.exit(1)
+        print(f"[SDG][Test][PASS] Output validation succeeded for {output_dir}")
+# <end-grasping-workflow-sdg-test>
 
 simulation_app.close()

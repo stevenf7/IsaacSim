@@ -41,7 +41,7 @@ BOX_URLS = [
     "/Isaac/Environments/Simple_Warehouse/Props/SM_CardBoxD_01.usd",
 ]
 
-TOTAL_CAPTURES = 10
+TOTAL_CAPTURES = 5
 CAPTURES_PER_SCENE = 3
 RESOLUTION = (1280, 720)
 RT_SUBFRAMES = 8

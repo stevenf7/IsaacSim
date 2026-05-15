@@ -52,6 +52,7 @@ Example on how to access data from multiple cameras in a scene using annotators 
         .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/multi_camera.py
             :language: python
             :lines: 16-
+            :end-before: # <start-multi-camera-test>
 
         .. raw:: html
 
@@ -94,6 +95,7 @@ Example on how to access synthetic data (RGB, semantic segmentation) from multip
         .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/simulation_get_data.py
             :language: python
             :lines: 16-
+            :end-before: # <start-simulation-get-data-test>
 
         .. raw:: html
 
@@ -139,6 +141,7 @@ The following example showcases the use of custom events to trigger randomizatio
         .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/custom_event_and_write.py
             :language: python
             :lines: 16-
+            :end-before: # <start-custom-event-and-write-test>
 
         .. raw:: html
 
@@ -186,6 +189,7 @@ The standalone example can also be run directly (on Windows use ``python.bat`` i
         .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/motion_blur.py
             :language: python
             :lines: 16-
+            :end-before: # <start-motion-blur-test>
 
         .. raw:: html
 
@@ -275,6 +279,7 @@ Example of how to trigger a writer and access annotator data at a custom FPS, wi
         .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/custom_fps_writer_annotator.py
             :language: python
             :lines: 16-
+            :end-before: # <start-custom-fps-writer-annotator-test>
 
         .. raw:: html
 
@@ -321,6 +326,7 @@ The standalone example can also be run directly (on Windows use ``python.bat`` i
         .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/cosmos_writer_simple.py
             :language: python
             :lines: 16-
+            :end-before: # <start-cosmos-writer-simple-test>
 
         .. raw:: html
 
@@ -367,6 +373,7 @@ The standalone example can also be run directly (on Windows use ``python.bat`` i
         .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/sdg_deformables.py
             :language: python
             :lines: 16-
+            :end-before: # <start-sdg-deformables-test>
 
         .. raw:: html
 

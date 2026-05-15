@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.4] - 2026-05-15
+### Added
+- golden teleop episode HDF5 (`tests/data/_episode_recorder/episode_floating_xarm_dex3.hdf5`) as a default example for the teleop replay examples
+
 ## [0.3.3] - 2026-05-07
 ### Fixed
 - `test_teleop_sdg_pick_and_place.py` split into two independent writers for live and replay

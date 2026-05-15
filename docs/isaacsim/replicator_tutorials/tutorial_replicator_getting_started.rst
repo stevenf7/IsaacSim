@@ -195,6 +195,7 @@ This example demonstrates how to use the ``BasicWriter`` for data capture with R
         .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_01.py
             :language: python
             :lines: 16-
+            :end-before: # <start-sdg-getting-started-01-test>
 
 The output directory will contain the captured data, including RGB images and bounding box annotations in ``.npy`` and ``.json`` formats:
 
@@ -224,6 +225,7 @@ This example demonstrates data capture by creating a custom writer to access ann
         .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_02.py
             :language: python
             :lines: 16-
+            :end-before: # <start-sdg-getting-started-02-test>
 
 The output directory will contain the captured data, including RGB with the 3D bounding box annotations as overlays together with ``.json`` files with the frame data. The annotator and custom writer data is printed to the terminal.
 
@@ -253,6 +255,7 @@ This example demonstrates creating a custom randomization using Replicator's gra
         .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_03.py
             :language: python
             :lines: 16-
+            :end-before: # <start-sdg-getting-started-03-test>
 
 The output directory will contain the RGB and semantic segmentation images with the captured data. The cube is randomized each capture, while the dome light color is randomized every second capture.
 
@@ -282,6 +285,7 @@ This example shows how to capture simulation data when specific conditions are m
         .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_04.py
             :language: python
             :lines: 16-
+            :end-before: # <start-sdg-getting-started-04-test>
 
 The output directory will contain the RGB and semantic segmentation images with the captured data at specific simulation times (cube drop height intervals) and the cube hidden during capture. During every second capture with the cube hidden, the timeline will not advance (``delta_time=0.0``) ensuring the same simulation state can be captured multiple times.
 
@@ -311,6 +315,7 @@ This example demonstrates batch creation and randomization of 100 cubes using th
         .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_05.py
             :language: python
             :lines: 16-
+            :end-before: # <start-sdg-getting-started-05-test>
 
 Each configuration writes its output to a separate directory. The terminal output shows per-step randomization and capture durations (in milliseconds) and total time, allowing direct comparison of the three modes.
 
