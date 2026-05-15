@@ -1,5 +1,5 @@
 [package]
-version = "0.2.3"
+version = "0.2.4"
 category = "Simulation"
 title = "MobilityGen"
 description = "A toolset for generating mobility data for robots."

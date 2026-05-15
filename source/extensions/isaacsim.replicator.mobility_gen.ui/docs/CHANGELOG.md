@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.4] - 2026-05-13
+### Changed
+- Clarified the `_cache_stage` docstring around what `export_as_stage` actually inlines.
+
 ## [0.4.3] - 2026-04-23
 ### Removed
 - Remove the `omni.isaac.ml_archive` test dependency
