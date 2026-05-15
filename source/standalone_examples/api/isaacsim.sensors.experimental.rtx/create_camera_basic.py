@@ -74,7 +74,9 @@ cam = RtxCamera(
     "/World/camera",
     tick_rate=30.0,
     translations=np.array([0.0, 0.0, 1.5]),
-    orientations=np.array([0.5, 0.5, -0.5, 0.5]),  # wxyz, facing forward
+    # wxyz; 90 deg about world +X. Looking direction is world +Y (forward
+    # into the warehouse), image up is world +Z, image right is world +X.
+    orientations=np.array([1.0, 1.0, 0.0, 0.0]) / np.sqrt(2.0),
 )
 
 # Configure optical parameters via the Camera wrapper

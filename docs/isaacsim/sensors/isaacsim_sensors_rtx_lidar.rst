@@ -67,6 +67,16 @@ Review the `OmniSensorGenericLidarCoreAPI <https://docs.omniverse.nvidia.com/kit
 schema and `OmniSensorGenericLidarCoreEmitterStateAPI <https://docs.omniverse.nvidia.com/kit/docs/omni.usd.schema.omni_sensors/107.3.1/omni_sensors_schema.html#omnisensorgenericlidarcoreemitterstateapi>`_
 schema in the ``omni.usd.schema.omni_sensors`` extension to learn what attributes can be set on the ``OmniLidar`` prim.
 
+.. note::
+
+   ``Lidar.create()`` accepts either ``config`` (a registered configuration name from
+   ``isaacsim.sensors.experimental.rtx.SUPPORTED_LIDAR_CONFIGS``) **or** ``usd_path`` (a direct path
+   to an ``OmniLidar`` USD asset) — the two are mutually exclusive. Both ``Lidar.create()`` and
+   ``Lidar(...)`` accept ``schemas`` (a list of additional USD schemas to apply) and ``attributes``
+   (a dict of prim attributes to author). Transforms are passed as plural arrays
+   (``positions=[[...]]`` / ``translations=[[...]]`` / ``orientations=[[...]]`` / ``scales=[[...]]``);
+   only ``N=1`` is supported per sensor.
+
 Tick Rate
 ^^^^^^^^^
 
