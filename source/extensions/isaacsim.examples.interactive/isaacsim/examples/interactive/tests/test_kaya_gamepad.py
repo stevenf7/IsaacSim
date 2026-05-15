@@ -34,7 +34,7 @@ class TestKayaGamepadSample(omni.kit.test.AsyncTestCase):
     """Test cases for the Kaya gamepad sample."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up the gamepad provider and Kaya sample."""
         self._provider = carb.input.acquire_input_provider()
         self._gamepad = self._provider.create_gamepad("test", "0")
@@ -45,7 +45,7 @@ class TestKayaGamepadSample(omni.kit.test.AsyncTestCase):
         await self._sample.load_world_async()
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down by stopping timeline and cleaning up resources."""
         # Stop timeline if running
         if app_utils.is_playing():
@@ -63,7 +63,7 @@ class TestKayaGamepadSample(omni.kit.test.AsyncTestCase):
         await get_app().next_update_async()
 
     # Run all functions with simulation enabled
-    async def test_simulation(self):
+    async def test_simulation(self) -> None:
         """Test that gamepad input moves the Kaya robot forward."""
         await get_app().next_update_async()
 

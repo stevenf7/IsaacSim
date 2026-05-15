@@ -36,7 +36,7 @@ class BrowserWidget(TreeFolderBrowserWidgetEx):
     visible across different thumbnail sizes to maintain usability in the examples browser interface.
     """
 
-    def _on_thumbnail_size_changed(self, thumbnail_size: int):
+    def _on_thumbnail_size_changed(self, thumbnail_size: int) -> None:
         """Handles changes to the thumbnail size in the browser widget.
 
         Updates the delegate to keep labels visible and refreshes the item display.
@@ -60,7 +60,7 @@ class ExampleBrowserWindow(ui.Window):
     WINDOW_TITLE = "Robotics Examples"
     """Window title displayed for the robotics examples browser."""
 
-    def __init__(self, model: ExampleBrowserModel, visible: bool = True):
+    def __init__(self, model: ExampleBrowserModel, visible: bool = True) -> None:
         super().__init__(self.WINDOW_TITLE, visible=visible)
 
         self.frame.set_build_fn(self._build_ui)
@@ -72,7 +72,7 @@ class ExampleBrowserWindow(ui.Window):
         # Dock it to the same space where Stage is docked.
         self.deferred_dock_in("Content")
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         """Builds the user interface for the example browser window.
 
         Creates the main UI layout with a BrowserWidget that displays robotics examples using thumbnail view and

@@ -65,7 +65,7 @@ class BaseSample(object):
         if device is not None:
             self._world_settings["device"] = device
 
-    async def load_world_async(self):
+    async def load_world_async(self) -> None:
         """Function called when clicking load button."""
         await stage_utils.create_new_stage_async()
 
@@ -89,7 +89,7 @@ class BaseSample(object):
 
         await self.setup_post_load()
 
-    async def reset_async(self):
+    async def reset_async(self) -> None:
         """Function called when clicking reset button."""
         await self.setup_pre_reset()
 
@@ -103,7 +103,7 @@ class BaseSample(object):
 
         await self.setup_post_reset()
 
-    def _reapply_physics_device(self):
+    def _reapply_physics_device(self) -> None:
         """Re-apply physics device settings on physics scene prims before play.
 
         In complex scenes with multiple USD references (e.g. robo_party), physics scene
@@ -128,29 +128,29 @@ class BaseSample(object):
         carb.settings.get_settings().set_bool("/physics/suppressReadback", not is_cpu)
 
     @abstractmethod
-    def setup_scene(self):
+    def setup_scene(self) -> None:
         """Used to setup anything in the world, adding tasks happen here for instance."""
 
     @abstractmethod
-    async def setup_post_load(self):
+    async def setup_post_load(self) -> None:
         """Called after first reset of the world when pressing load,.
 
         intializing private variables happen here.
         """
 
     @abstractmethod
-    async def setup_pre_reset(self):
+    async def setup_pre_reset(self) -> None:
         """Called in reset button before resetting the world.
 
         to remove a physics callback for instance or a controller reset.
         """
 
     @abstractmethod
-    async def setup_post_reset(self):
+    async def setup_post_reset(self) -> None:
         """Called in reset button after resetting the world which includes one step with rendering."""
 
     @abstractmethod
-    async def setup_post_clear(self):
+    async def setup_post_clear(self) -> None:
         """Called after clicking clear button.
 
         or after creating a new stage and clearing the instance of the world with its callbacks.
@@ -164,16 +164,16 @@ class BaseSample(object):
         """
         self._logging_info += str(info) + "\n"
 
-    def _physics_cleanup(self):
+    def _physics_cleanup(self) -> None:
         """Cleanup physics resources."""
         if app_utils.is_playing():
             app_utils.stop()
         self.physics_cleanup()
 
-    def physics_cleanup(self):
+    def physics_cleanup(self) -> None:
         """Function called when extension shutdowns and starts again, (hot reloading feature)."""
 
-    async def clear_async(self):
+    async def clear_async(self) -> None:
         """Function called when clicking clear button."""
         await stage_utils.create_new_stage_async()
         self._physics_cleanup()

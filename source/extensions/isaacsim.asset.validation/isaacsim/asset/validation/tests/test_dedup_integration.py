@@ -17,7 +17,6 @@
 
 from __future__ import annotations
 
-import omni.asset_validator.core as av_core
 import omni.kit.test
 from isaacsim.asset.validation.physics_rules import RigidBodyHasCollider
 from omni.asset_validator.core import IssueSeverity, ValidationEngine

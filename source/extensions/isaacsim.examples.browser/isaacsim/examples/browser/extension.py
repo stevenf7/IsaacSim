@@ -66,7 +66,7 @@ class ExampleBrowserExtension(omni.ext.IExt):
         """
         return self._window._widget
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Called when the extension starts up.
 
         Sets up the example browser model, window registration, menu items, and visibility based on settings.
@@ -90,7 +90,7 @@ class ExampleBrowserExtension(omni.ext.IExt):
         global _extension_instance
         _extension_instance = self
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Called when the extension shuts down.
 
         Cleans up menu items, actions, browser model, and destroys the window if it exists.
@@ -109,7 +109,7 @@ class ExampleBrowserExtension(omni.ext.IExt):
         global _extension_instance
         _extension_instance = None
 
-    def register_example(self, **kwargs: object):
+    def register_example(self, **kwargs: object) -> None:
         """Register an example to the browser.
 
         Args:
@@ -125,7 +125,7 @@ class ExampleBrowserExtension(omni.ext.IExt):
             raise ValueError("Missing required parameter 'category' for register_example")
         self._browser_model.register_example(**kwargs)
 
-    def deregister_example(self, **kwargs: object):
+    def deregister_example(self, **kwargs: object) -> None:
         """Deregister an example from the browser.
 
         Args:
@@ -162,7 +162,7 @@ class ExampleBrowserExtension(omni.ext.IExt):
         # If all validations pass, call the inner deregister_example function
         self._browser_model.deregister_example(**kwargs)
 
-    def _show_window(self, visible: bool):
+    def _show_window(self, visible: bool) -> None:
         """Shows or hides the example browser window.
 
         Creates the window if it doesn't exist when showing, or toggles visibility of existing window.
@@ -179,11 +179,11 @@ class ExampleBrowserExtension(omni.ext.IExt):
         else:
             self._window.visible = False
 
-    def _toggle_window(self):
+    def _toggle_window(self) -> None:
         """Toggles the visibility of the example browser window."""
         self._show_window(not self._is_visible())
 
-    def _register_menuitem(self):
+    def _register_menuitem(self) -> None:
         """Registers menu items and actions for the example browser.
 
         Creates actions for opening and toggling the browser window, and adds menu entries under Window > Examples.
@@ -218,7 +218,7 @@ class ExampleBrowserExtension(omni.ext.IExt):
         ]
         omni.kit.menu.utils.add_menu_items(self._menu_entry, BROWSER_MENU_ROOT)
 
-    def _is_visible(self):
+    def _is_visible(self) -> bool:
         """Checks if the example browser window is currently visible.
 
         Returns:
@@ -226,7 +226,7 @@ class ExampleBrowserExtension(omni.ext.IExt):
         """
         return self._window.visible if self._window else False
 
-    def _on_visibility_changed(self, visible: bool):
+    def _on_visibility_changed(self, visible: bool) -> None:
         """Handles visibility changes of the example browser window.
 
         Refreshes menu items when the window visibility state changes to ensure menu indicators

@@ -34,7 +34,7 @@ class TestUITemplate(omni.kit.test.AsyncTestCase):
     """
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Sets up the test environment before each test case.
 
         Waits for the next application update to ensure proper initialization.
@@ -42,7 +42,7 @@ class TestUITemplate(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Cleans up the test environment after each test case.
 
         Waits for the next application update to ensure proper cleanup.
@@ -50,7 +50,7 @@ class TestUITemplate(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     # Run for 60 frames and make sure there were no errors loading
-    async def test_template(self):
+    async def test_template(self) -> None:
         """Tests the UI template by running for 60 frames.
 
         Verifies that no errors occur during loading and rendering over 60 application update cycles.

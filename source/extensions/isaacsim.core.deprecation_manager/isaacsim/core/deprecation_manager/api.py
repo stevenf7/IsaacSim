@@ -36,7 +36,7 @@ class _StubModule:
     def __getattr__(self, _name: str) -> _StubModule:
         return _StubModule()
 
-    def __call__(self, *args, **kwargs):  # noqa: ANN002, ANN003, ANN201
+    def __call__(self, *args, **kwargs) -> object:  # noqa: ANN002, ANN003
         if args and callable(args[0]):
             return args[0]
         return _StubModule()

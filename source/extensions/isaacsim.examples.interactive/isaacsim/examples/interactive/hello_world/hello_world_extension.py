@@ -35,7 +35,7 @@ class HelloWorldExtension(omni.ext.IExt):
     through practical demonstrations and hands-on interaction.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the Hello World extension.
 
         Sets up the example UI template and registers it with the examples browser.
@@ -64,7 +64,7 @@ class HelloWorldExtension(omni.ext.IExt):
             category=self.category,
         )
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up the Hello World extension.
 
         Deregisters the example from the examples browser.

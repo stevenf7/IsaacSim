@@ -15,6 +15,8 @@
 
 """Test loop runner functionality."""
 
+from typing import Any
+
 import carb
 import omni.kit.test
 
@@ -22,7 +24,7 @@ import omni.kit.test
 class TestLoopRunner(omni.kit.test.AsyncTestCase):
     """Test cases for the Isaac run loop runner functionality."""
 
-    async def test_manual_mode(self):
+    async def test_manual_mode(self) -> None:
         """Test enabling and disabling manual stepping mode and verifying dt behavior."""
         from omni.kit.loop import _loop as omni_loop
 
@@ -44,7 +46,7 @@ class TestLoopRunner(omni.kit.test.AsyncTestCase):
         # Test that the manual mode is working
         current_dt = 0
 
-        def _render_callback(event):
+        def _render_callback(event: Any) -> None:
             nonlocal current_dt
             current_dt = event.payload["dt"]
             print("render callback", event.payload["dt"])

@@ -51,7 +51,7 @@ class OmnigraphKeyboard(BaseSample):
     and graph-based logic systems.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._gamepad_gains = (40.0, 40.0, 2.0)
         self._gamepad_deadzone = 0.15
@@ -59,7 +59,7 @@ class OmnigraphKeyboard(BaseSample):
         self._initial_position = [0, 0, 1.0]
         self._initial_size = 1.0
 
-    def setup_scene(self):
+    def setup_scene(self) -> None:
         """Sets up the scene with a controllable cube and keyboard input graph.
 
         Creates a cyan cube that can be resized using A and D keys through an Omni Graph action graph.
@@ -133,19 +133,19 @@ class OmnigraphKeyboard(BaseSample):
             },
         )
 
-    async def setup_post_load(self):
+    async def setup_post_load(self) -> None:
         """Called after the scene is loaded."""
 
-    async def setup_pre_reset(self):
+    async def setup_pre_reset(self) -> None:
         """Called before world reset."""
 
-    async def setup_post_reset(self):
+    async def setup_post_reset(self) -> None:
         """Called after world reset to restore cube to initial state."""
         if self._cube:
             # Reset cube position and size to initial values
             self._cube.set_world_poses(positions=self._initial_position)
             self._cube.set_sizes(sizes=[self._initial_size])
 
-    async def setup_post_clear(self):
+    async def setup_post_clear(self) -> None:
         """Called after clearing the scene."""
         self._cube = None

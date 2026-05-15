@@ -17,7 +17,6 @@
 
 from __future__ import annotations
 
-import omni.asset_validator.core as av_core
 from omni.asset_validator.core import registerRule
 from pxr import PhysxSchema, Usd, UsdPhysics
 

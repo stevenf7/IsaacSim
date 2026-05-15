@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import annotations
-
 """Robot asset validation rules for ensuring proper structure, naming, and physics layer organization."""
+
+from __future__ import annotations
 
 import re
 
@@ -320,7 +320,7 @@ class CheckRobotRelationships(DedupBaseRuleChecker):
             stage: The USD stage containing the prim.
             prim: The prim to create the relationship on.
         """
-        relationship = prim.CreateRelationship(robot_schema.Relations.ROBOT_LINKS.name)
+        prim.CreateRelationship(robot_schema.Relations.ROBOT_LINKS.name)
 
     @classmethod
     def create_joint_relationship(cls, stage: object, prim: object) -> None:
@@ -330,7 +330,7 @@ class CheckRobotRelationships(DedupBaseRuleChecker):
             stage: The USD stage containing the prim.
             prim: The prim to create the relationship on.
         """
-        relationship = prim.CreateRelationship(robot_schema.Relations.ROBOT_JOINTS.name)
+        prim.CreateRelationship(robot_schema.Relations.ROBOT_JOINTS.name)
 
     @classmethod
     def make_joint_relationship_prepended(cls, stage: object, prim: object) -> None:

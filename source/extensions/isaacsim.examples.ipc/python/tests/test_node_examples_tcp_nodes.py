@@ -38,7 +38,8 @@ def _llround_seconds_to_ns(sec: float) -> int:
     return int(math.ceil(x - 0.5))
 
 
-def _pick_free_port():
+def _pick_free_port() -> int:
+    """Pick an available localhost TCP port."""
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind(("127.0.0.1", 0))
@@ -47,7 +48,9 @@ def _pick_free_port():
     return port
 
 
-def _tcp_listen_int64(port_holder, received_holder, started):
+def _tcp_listen_int64(
+    port_holder: list[int | None], received_holder: list[bytes | None], started: threading.Event
+) -> None:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind(("127.0.0.1", 0))
@@ -62,7 +65,7 @@ def _tcp_listen_int64(port_holder, received_holder, started):
         s.close()
 
 
-def _tcp_client_send_uint32(port, value, delay_s):
+def _tcp_client_send_uint32(port: int, value: int, delay_s: float) -> None:
     time.sleep(delay_s)
     c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -73,24 +76,29 @@ def _tcp_client_send_uint32(port, value, delay_s):
 
 
 class TestNodeExamplesTcpNodes(omni.kit.test.AsyncTestCase):
+    """Integration tests for TCP clock and external-step OmniGraph nodes."""
+
     graph_path = "/ActionGraph"
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Create a new stage before each test."""
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Stop playback and clear the stage after each test."""
         timeline = omni.timeline.get_timeline_interface()
         if timeline.is_playing():
             timeline.stop()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def _trigger_impulse(self):
+    async def _trigger_impulse(self) -> None:
         og.Controller.attribute(f"{self.graph_path}/OnImpulse.state:enableImpulse").set(True)
         await omni.kit.app.get_app().next_update_async()
 
-    async def test_cpp_send_simulation_clock_tcp(self):
+    async def test_cpp_send_simulation_clock_tcp(self) -> None:
+        """Send one simulation clock value through the C++ TCP node."""
         port_holder = [None]
         received_holder = [None]
         started = threading.Event()
@@ -137,7 +145,7 @@ class TestNodeExamplesTcpNodes(omni.kit.test.AsyncTestCase):
         self.assertEqual(len(received_holder[0]), 8)
         self.assertEqual(received_holder[0], expected)
 
-    async def test_cpp_send_clock_wired_from_isaac_read_simulation_time(self):
+    async def test_cpp_send_clock_wired_from_isaac_read_simulation_time(self) -> None:
         """``IsaacReadSimulationTime.simulationTime`` → ``SimpleSendSimulationClockCpp.simulationTime``."""
         port_holder = [None]
         received_holder = [None]
@@ -187,7 +195,8 @@ class TestNodeExamplesTcpNodes(omni.kit.test.AsyncTestCase):
         expected_ns = _llround_seconds_to_ns(sim_s)
         self.assertEqual(got_ns, expected_ns)
 
-    async def test_py_send_simulation_clock_tcp(self):
+    async def test_py_send_simulation_clock_tcp(self) -> None:
+        """Send one simulation clock value through the Python TCP node."""
         port_holder = [None]
         received_holder = [None]
         started = threading.Event()
@@ -232,7 +241,7 @@ class TestNodeExamplesTcpNodes(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(received_holder[0])
         self.assertEqual(received_holder[0], expected)
 
-    async def test_py_send_clock_wired_from_isaac_read_simulation_time(self):
+    async def test_py_send_clock_wired_from_isaac_read_simulation_time(self) -> None:
         """``IsaacReadSimulationTime.simulationTime`` → ``SimpleSendSimulationClockPy.simulationTime``."""
         port_holder = [None]
         received_holder = [None]
@@ -281,7 +290,7 @@ class TestNodeExamplesTcpNodes(omni.kit.test.AsyncTestCase):
         expected_ns = int(round(sim_s * 1e9))
         self.assertEqual(got_ns, expected_ns)
 
-    async def _run_receive_step_test(self, node_type_name: str, step_value: int):
+    async def _run_receive_step_test(self, node_type_name: str, step_value: int) -> None:
         port = _pick_free_port()
         uri = f"127.0.0.1:{port}"
 
@@ -327,8 +336,10 @@ class TestNodeExamplesTcpNodes(omni.kit.test.AsyncTestCase):
         client.join(timeout=5.0)
         self.assertFalse(client.is_alive())
 
-    async def test_cpp_receive_external_step_tcp(self):
+    async def test_cpp_receive_external_step_tcp(self) -> None:
+        """Receive one external step value through the C++ TCP node."""
         await self._run_receive_step_test("SimpleReceiveExternalStepCpp", 12345)
 
-    async def test_py_receive_external_step_tcp(self):
+    async def test_py_receive_external_step_tcp(self) -> None:
+        """Receive one external step value through the Python TCP node."""
         await self._run_receive_step_test("SimpleReceiveExternalStepPy", 4294967290)

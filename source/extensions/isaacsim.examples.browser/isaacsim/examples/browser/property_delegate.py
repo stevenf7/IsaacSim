@@ -17,7 +17,7 @@
 
 
 import asyncio
-from typing import List, Optional
+from typing import Optional
 
 import omni.kit.app
 import omni.ui as ui
@@ -27,7 +27,7 @@ from omni.kit.browser.folder.core import BrowserPropertyDelegate, FileDetailItem
 class PropAssetPropertyDelegate(BrowserPropertyDelegate):
     """A delegate to show properties of assets of type Prop."""
 
-    def accepted(self, items: List[FileDetailItem]) -> bool:
+    def accepted(self, items: list[FileDetailItem]) -> bool:
         """Determines if this delegate can handle the provided items.
 
         This delegate accepts only single item selections.
@@ -40,7 +40,7 @@ class PropAssetPropertyDelegate(BrowserPropertyDelegate):
         """
         return len(items) == 1
 
-    def build_widgets(self, items: List[FileDetailItem]):
+    def build_widgets(self, items: list[FileDetailItem]) -> None:
         """Builds the UI widgets to display prop asset properties.
 
         Creates a vertical stack containing the asset thumbnail (if available) and name label.
@@ -59,7 +59,7 @@ class PropAssetPropertyDelegate(BrowserPropertyDelegate):
                 ui.Spacer()
             item.ui_hook()
 
-    def _build_thumbnail(self, item: FileDetailItem):
+    def _build_thumbnail(self, item: FileDetailItem) -> None:
         """Builds thumbnail frame and resizes.
 
         Creates a thumbnail image widget within a frame that automatically resizes based on the frame width.
@@ -81,14 +81,14 @@ class PropAssetPropertyDelegate(BrowserPropertyDelegate):
                         alignment=ui.Alignment.CENTER_TOP,
                     )
 
-    def _on_thumbnail_frame_size_changed(self):
+    def _on_thumbnail_frame_size_changed(self) -> None:
         """Handles thumbnail frame size changes.
 
         Dynamically adjusts the thumbnail image height to be half of the frame width when the frame size changes.
         """
 
         # Dynamic change thumbnail size to be half of frame width
-        async def __change_thumbnail_size_async():
+        async def __change_thumbnail_size_async() -> None:
             await omni.kit.app.get_app().next_update_async()
             image_size = self._thumbnail_frame.computed_width / 2
             self._thumbnail_img.height = ui.Pixel(image_size)
@@ -112,7 +112,7 @@ class EmptyPropertyDelegate(BrowserPropertyDelegate):
         """
         return len(items) == 0
 
-    def build_widgets(self, items: Optional[FileDetailItem]):
+    def build_widgets(self, items: Optional[FileDetailItem]) -> None:
         """BrowserPropertyDelegate method override.
 
         Builds the UI widgets to display when no asset is selected.
@@ -126,7 +126,7 @@ class EmptyPropertyDelegate(BrowserPropertyDelegate):
 class MultiPropertyDelegate(BrowserPropertyDelegate):
     """A delegate to show when multiple items are selected."""
 
-    def accepted(self, items: List[FileDetailItem]) -> bool:
+    def accepted(self, items: list[FileDetailItem]) -> bool:
         """Determines if this delegate can handle the selected file items.
 
         Args:
@@ -137,7 +137,7 @@ class MultiPropertyDelegate(BrowserPropertyDelegate):
         """
         return len(items) > 1
 
-    def build_widgets(self, items: List[FileDetailItem]):
+    def build_widgets(self, items: list[FileDetailItem]) -> None:
         """Builds the UI widgets to display when multiple items are selected.
 
         Args:

@@ -51,14 +51,14 @@ class BaseSampleUITemplate:
         self._overview = kwargs.get("overview", "")
         self._sample = kwargs.get("sample", BaseSample())
 
-        self._buttons = dict()
+        self._buttons = {}
         self._extra_stacks = None
         self._timeline = omni.timeline.get_timeline_interface()
         self._stage_event_subscription = None
         self._timeline_event_subscription = None
 
     @property
-    def sample(self):
+    def sample(self) -> BaseSample:
         """The base sample instance associated with this UI template.
 
         Returns:
@@ -67,10 +67,10 @@ class BaseSampleUITemplate:
         return self._sample
 
     @sample.setter
-    def sample(self, sample):
+    def sample(self, sample: BaseSample) -> None:
         self._sample = sample
 
-    def build_ui(self):
+    def build_ui(self) -> None:
         """Constructs the complete UI layout for the sample template.
 
         Creates both the default frame containing world controls and any additional frames specific to the sample.
@@ -79,7 +79,7 @@ class BaseSampleUITemplate:
         self.build_default_frame()
         self.build_extra_frames()
 
-    def build_default_frame(self):
+    def build_default_frame(self) -> None:
         """Builds the default UI frame containing standard world control buttons.
 
         Creates the main stack layout with headers, world controls frame, and Load World/Reset buttons.
@@ -121,7 +121,7 @@ class BaseSampleUITemplate:
                 self._buttons["Reset"] = btn_builder(**dict)
                 self._buttons["Reset"].enabled = False
 
-    def get_extra_frames_handle(self):
+    def get_extra_frames_handle(self) -> object:
         """Retrieves the UI container for additional sample-specific frames.
 
         Returns:
@@ -130,19 +130,19 @@ class BaseSampleUITemplate:
         return self._extra_stacks
 
     @abstractmethod
-    def build_extra_frames(self):
+    def build_extra_frames(self) -> None:
         """Builds additional UI frames specific to the sample implementation.
 
         This abstract method must be implemented by subclasses to add sample-specific UI elements.
         """
 
-    def _on_load_world(self):
+    def _on_load_world(self) -> None:
         """Handles the Load World button click event.
 
         Asynchronously loads the sample world, sets up event subscriptions, and updates button states.
         """
 
-        async def _on_load_world_async():
+        async def _on_load_world_async() -> None:
             await self._sample.load_world_async()
             await omni.kit.app.get_app().next_update_async()
 
@@ -167,13 +167,13 @@ class BaseSampleUITemplate:
 
         asyncio.ensure_future(_on_load_world_async())
 
-    def _on_reset(self):
+    def _on_reset(self) -> None:
         """Handles the Reset button click event.
 
         Asynchronously resets the sample and triggers post-reset event handling.
         """
 
-        async def _on_reset_async():
+        async def _on_reset_async() -> None:
             await self._sample.reset_async()
             await omni.kit.app.get_app().next_update_async()
             self.post_reset_button_event()
@@ -181,27 +181,27 @@ class BaseSampleUITemplate:
         asyncio.ensure_future(_on_reset_async())
 
     @abstractmethod
-    def post_reset_button_event(self):
+    def post_reset_button_event(self) -> None:
         """Handles actions to perform after the Reset button is clicked.
 
         This abstract method must be implemented by subclasses to define sample-specific reset behavior.
         """
 
     @abstractmethod
-    def post_load_button_event(self):
+    def post_load_button_event(self) -> None:
         """Handles actions to perform after the Load World button is clicked.
 
         This abstract method must be implemented by subclasses to define sample-specific loading behavior.
         """
 
     @abstractmethod
-    def post_clear_button_event(self):
+    def post_clear_button_event(self) -> None:
         """Handles actions to perform after the timeline stop event clears the world.
 
         This abstract method must be implemented by subclasses to define sample-specific cleanup behavior.
         """
 
-    def _enable_all_buttons(self, flag: bool):
+    def _enable_all_buttons(self, flag: bool) -> None:
         """Enables or disables all UI buttons in the widget.
 
         Args:
@@ -211,7 +211,7 @@ class BaseSampleUITemplate:
             if isinstance(btn, omni.ui._ui.Button):
                 btn.enabled = flag
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleans up resources and subscriptions when the widget is shut down."""
         # Clean up subscriptions
         self._stage_event_subscription = None

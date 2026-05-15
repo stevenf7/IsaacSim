@@ -18,7 +18,6 @@
 
 from collections.abc import Iterator
 
-import omni.asset_validator.core as av_core
 from omni.asset_validator.core import registerRule
 from pxr import Usd, UsdShade
 

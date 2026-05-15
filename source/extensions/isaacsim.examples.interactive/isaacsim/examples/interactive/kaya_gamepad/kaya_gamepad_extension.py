@@ -35,7 +35,7 @@ class KayaGamepadExtension(omni.ext.IExt):
     the gamepad control implementation for their own robotic applications.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initializes the Kaya Gamepad extension and registers it with the examples browser.
 
         Sets up the UI template for the NVIDIA Kaya robot gamepad control example and makes it available
@@ -69,6 +69,6 @@ class KayaGamepadExtension(omni.ext.IExt):
             category=self.category,
         )
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleans up the extension by deregistering the Kaya Gamepad example from the examples browser."""
         get_browser_instance().deregister_example(name=self.example_name, category=self.category)

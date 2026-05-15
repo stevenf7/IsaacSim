@@ -94,7 +94,7 @@ class _ErrorCapturingChecker(JointHasCorrectTransformAndState):
         super().__init__()
         self.errors: list[str] = []
 
-    def _AddError(self, message: str, **kwargs) -> None:
+    def _AddError(self, message: str, **kwargs: object) -> None:  # noqa: N802
         self.errors.append(message)
         super()._AddError(message, **kwargs)
 

@@ -72,6 +72,7 @@ def _recv_exact(conn: socket.socket, n: int) -> bytes:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the tutorial TCP playback bridge."""
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
         "--clock-host",

@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Python implementation of the SimpleReceiveExternalStep OmniGraph node."""
 
 import socket
 import struct
@@ -21,14 +22,17 @@ from isaacsim.core.nodes import BaseResetNode
 
 
 class OgnSimpleReceiveExternalStepPyInternalState(BaseResetNode):
-    def __init__(self):
+    """Per-instance TCP server state for receiving external step values."""
+
+    def __init__(self) -> None:
         self.listen_sock = None
         self.client_sock = None
         self.buf = bytearray()
         self.uri = ""
         super().__init__(initialize=False)
 
-    def custom_reset(self):
+    def custom_reset(self) -> None:
+        """Close sockets and clear buffered input."""
         if self.client_sock is not None:
             try:
                 self.client_sock.close()
@@ -46,12 +50,16 @@ class OgnSimpleReceiveExternalStepPyInternalState(BaseResetNode):
 
 
 class OgnSimpleReceiveExternalStepPy:
+    """Receive a uint32 simulation step over TCP."""
+
     @staticmethod
-    def internal_state():
+    def internal_state() -> OgnSimpleReceiveExternalStepPyInternalState:
+        """Create per-instance state for the node."""
         return OgnSimpleReceiveExternalStepPyInternalState()
 
     @staticmethod
-    def compute(db) -> bool:
+    def compute(db: object) -> bool:
+        """Accept and read one external step value without blocking."""
         state = db.per_instance_state
         uri = db.inputs.uri
         if state.listen_sock is not None and state.uri != uri:
