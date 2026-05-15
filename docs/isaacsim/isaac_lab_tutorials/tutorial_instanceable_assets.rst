@@ -110,7 +110,7 @@ It is worth noting that any `USD Relationships <https://graphics.pixar.com/usd/d
 
 The above method can also be run as part of an overall conversion process, which is defined in the utility below. This utility will first insert new parent prims if `create_xforms=True` is specified, and generate a new USD file that is used for referencing. It will then traverse through the asset tree and mark the parent prim of any mesh or primitive type prims as instanceable, along with inserting a reference to the mesh USD stage.
 
-.. literalinclude:: ../snippets/isaac_lab_tutorials/tutorial_instanceable_assets/save_as_path_str_usd_file_path_for_modified_usd_st.py
+.. literalinclude:: ../snippets/isaac_lab_tutorials/tutorial_instanceable_assets/save_as_path_str_usd_file_path_for_modified_usd_st_1.py
     :language: python
 
 Summary

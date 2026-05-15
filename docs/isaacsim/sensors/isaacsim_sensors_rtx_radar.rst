@@ -77,6 +77,16 @@ The snippet above creates an ``OmniRadar`` prim at path ``/World/radar`` with ``
 Review the `OmniSensorGenericRadarWpmDmatAPI <https://docs.omniverse.nvidia.com/kit/docs/omni.usd.schema.omni_sensors/107.3.1/omni_sensors_schema.html#omnisensorgenericradarwpmdmatapi>`_
 schema in the ``omni.usd.schema.omni_sensors`` extension to learn which attributes can be set on the ``OmniRadar`` prim.
 
+.. note::
+
+   ``Radar.create()`` accepts ``config`` (from
+   ``isaacsim.sensors.experimental.rtx.SUPPORTED_RADAR_CONFIGS``) or ``usd_path`` (mutually
+   exclusive), plus ``attributes`` for prim-attribute overrides and the plural transform arrays
+   (``positions=[[...]]`` / ``translations=[[...]]`` / ``orientations=[[...]]`` / ``scales=[[...]]``;
+   ``N=1``). Additional USD schemas via ``schemas=[...]`` are accepted by the ``Radar(...)``
+   constructor — pass them through ``Radar(...)`` directly if you need them, since
+   ``Radar.create()`` does not currently forward ``schemas``.
+
 .. image:: /images/isim_5.0_full_ext-isaacsim.sensors.rtx-15.1.1_gui_rtx_radar_create_command.png
     :align: center
     :width: 800

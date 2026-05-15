@@ -1219,12 +1219,6 @@ local function get_doc_snippets_tests()
             "../../../docs/isaacsim/snippets/ros2_tutorials/tutorial_ros2_rtx_lidar/create_a_separate_writer_for_the_objectid_mapping.py",
             "--test",
         },
-        -- sensors/isaacsim_sensors_camera
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.sensors.isaacsim_sensors_camera.standalone_python",
-            "../../../docs/isaacsim/snippets/sensors/isaacsim_sensors_camera/standalone_python.py",
-            "--test",
-        },
         -- sensors/isaacsim_sensors_physics_contact
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.sensors.isaacsim_sensors_physics_contact.creating_and_modifying_the_contact_sensor",

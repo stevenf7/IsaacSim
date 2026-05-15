@@ -28,6 +28,15 @@ schema applied. After attaching a render product to the ``OmniAcoustic`` prim, a
 ``GenericModelOutput`` AOV on the render product, the RTXSensor renderer writes acoustic simulation
 results to the AOV.
 
+For complete documentation on all acoustic schema attributes and the underlying Wave Propagation Model (WPM),
+see the `Omniverse Acoustic Extension documentation <https://docs.omniverse.nvidia.com/kit/docs/omni.sensors.nv.acoustic/3.0.0/acoustic_extension.html>`_.
+
+.. note::
+   Earlier releases referred to this sensor as the "Ultrasonic" sensor (or "USS"). The Omniverse plugin
+   has been renamed to "Acoustic"; if you previously used ``omni.kit.commands.execute("IsaacSensorCreateRtxUltrasonic", ...)``
+   in ``isaacsim.sensors.rtx``, see :ref:`isaacsim_sensors_rtx_migration` for the migration to
+   ``Acoustic`` / ``AcousticSensor``.
+
 Unlike Lidar and Radar sensors, acoustic sensors do not produce a 3D point cloud. Instead, they produce
 **signal ways** — amplitude samples for each transmitter–receiver pair on each channel. The
 ``GenericModelOutput`` element fields have the following meaning for acoustic sensors:
@@ -98,6 +107,18 @@ The snippet above creates an ``OmniAcoustic`` prim at ``/World/acoustic`` with:
 - A center frequency of 40,000 Hz (ultrasonic)
 - Two sensor mounts at positions ``(0, 0, 0)`` and ``(0.1, 0, 0)``
 - A receiver group combining both mounts
+
+.. note::
+
+   ``Acoustic.create()`` accepts ``config`` (from
+   ``isaacsim.sensors.experimental.rtx.SUPPORTED_ACOUSTIC_CONFIGS``) or ``usd_path`` (mutually
+   exclusive), plus ``attributes`` for prim-attribute overrides — including the multi-apply
+   ``OmniSensorWpmAcousticSensorMountAPI`` / ``OmniSensorWpmAcousticRxGroupAPI`` /
+   ``OmniSensorWpmAcousticFiringSeqAPI`` schema attributes — and the plural transform arrays
+   (``positions=[[...]]`` / ``translations=[[...]]`` / ``orientations=[[...]]`` / ``scales=[[...]]``;
+   ``N=1``). Additional USD schemas via ``schemas=[...]`` are accepted by the ``Acoustic(...)``
+   constructor — pass them through ``Acoustic(...)`` directly if you need them, since
+   ``Acoustic.create()`` does not currently forward ``schemas``.
 
 Tick Rate
 ^^^^^^^^^

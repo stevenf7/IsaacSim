@@ -83,84 +83,12 @@ applied to the cube.
 
 .. note:: If you modify non-visual material attributes on a material prim, you must save and reload the stage for the changes to take effect.
 
-Mapping Visual Materials to RTX Sensor Non-Visual Materials (Deprecated)
--------------------------------------------------------------------------
+Mapping Visual Materials to RTX Sensor Non-Visual Materials (Removed)
+----------------------------------------------------------------------
 
-.. warning:: Mapping Visual Materials to RTX Sensor non-visual materials via a CSV specification is deprecated as of |isaac-sim_short| 5.1. By default, RTX Sensor non-visual materials will
-    now be specified and rendered via USD attributes (review above).
-
-There are 21 sensor materials that are rendered in the visual spectrum, and more can not be added at this time.  Their properties are stored in JSON files by the same name, located in
-the ``./data/material_files/`` folder.
-
-======  ======================
-Index   Sensor Material Type
-======  ======================
-0       Default
-1       AsphaltStandard
-2       AsphaltWeathered
-3       VegetationGrass
-4       WaterStandard
-5       GlassStandard
-6       FiberGlass
-7       MetalAlloy
-8       MetalAluminum
-9       MetalAluminumOxidized
-10      PlasticStandard
-11      RetroMarkings
-12      RetroSign
-13      RubberStandard
-14      SoilClay
-15      ConcreteRough
-16      ConcreteSmooth
-17      OakTreeBark
-18      FabricStandard
-19      PlexiGlassStandard
-20      MetalSilver
-31      INVALID
-======  ======================
-
-Using Sensor Material Mapping
-#############################
-
-In the legacy system, |isaac-sim_short| must know how to map material IDs to the sensor material type
-in the table above.  This is done by setting the following ``carb`` setting on the command line:
-
-.. code-block:: bash
-
-    --/rtx/materialDb/rtSensorNameToIdMap="DefaultMaterial:0;AsphaltStandardMaterial:1;AsphaltWeatheredMaterial:2;VegetationGrassMaterial:3;WaterStandardMaterial:4;GlassStandardMaterial:5;FiberGlassMaterial:6;MetalAlloyMaterial:7;MetalAluminumMaterial:8;MetalAluminumOxidizedMaterial:9;PlasticStandardMaterial:10;RetroMarkingsMaterial:11;RetroSignMaterial:12;RubberStandardMaterial:13;SoilClayMaterial:14;ConcreteRoughMaterial:15;ConcreteSmoothMaterial:16;OakTreeBarkMaterial:17;FabricStandardMaterial:18;PlexiGlassStandardMaterial:19;MetalSilverMaterial:20"
-
-Having set ``rtx.materialDb.rtSensorNameToIdMap``, edit ``kit/rendering-data/runtime/RtxSensorMaterialMap.csv`` to map exact material name tokens to sensor material types.
-
-The ``RtxSensorMaterialMap.csv`` file contains a material prim partial names to sensor material type pairs.  The ones that come with  |isaac-sim_short| by default can be deleted as they may clash with names you wish to set.
-There is only one CSV file.  It controls the material mapping for all of the content.  It is read at  |isaac-sim_short| startup and any changes made during runtime will not appear until |isaac-sim_short| is restarted.
-
-As an example, consider this scene:
-
-.. figure:: /images/isaacsim_sensors_rtx_material_map.png
-    :align: center
-    :width: 400
-
-The ``/Root/SM_floor29/SM_floor02/SM_floor02`` prim has a material prim assigned to it whose path is ``/Root/SM_floor29/Looks/MI_Floor_02b``.  If you want to add
-an entry to the CSV file so that the ``SM_floor02`` prim looks like rough concrete to the RTX sensors, you would add the entry:
-
-
-.. code-block:: bash
-
-    mi_floor_02b,ConcreteRoughMaterial
-
-In the CSV mapping file, the first token after the first appearance of ``/Looks/`` in the material prim name attached to the mesh is used, and it must
-always be lowercase in the CSV file, no matter what the case is on the stage. Also note how the word Material is concatenated onto the sensor material type from
-the table above.
-
-Debugging
-#########
-
-The carb parameter:
-
-.. code-block:: bash
-
-    [settings]
-    rtx.materialDb.rtSensorMaterialLogs=true
-
-can help.  If set to true, it will output a list of all the materials in the scene that are NOT mapped to a sensor material.  This
-list outputs to the terminal and the log at |isaac-sim_short| startup.
+.. deprecated:: 5.1
+   Mapping visual materials to RTX Sensor non-visual materials via a CSV specification (the
+   ``RtxSensorMaterialMap.csv`` workflow paired with the ``rtx.materialDb.rtSensorNameToIdMap``
+   and ``rtx.materialDb.rtSensorMaterialLogs`` carb settings) is no longer supported — those
+   settings and the CSV file are now ignored. Specify non-visual materials via USD attributes
+   instead — see `Specifying Non-Visual Material Attributes`_ above.

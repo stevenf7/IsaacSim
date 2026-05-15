@@ -22,8 +22,6 @@ Sensors
    :maxdepth: 2
 
    ./isaacsim_sensors_camera
-   ./isaacsim_sensors_camera_depth
-   ./isaacsim_sensors_camera_structured_light
    ./isaacsim_sensors_rtx
    ./isaacsim_sensors_physics
    ./isaacsim_sensors_physx

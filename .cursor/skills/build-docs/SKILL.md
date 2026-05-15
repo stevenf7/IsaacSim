@@ -37,12 +37,15 @@ Use these when only part of the docs changed. All commands run from the repo roo
 For changes to RST/MD files under `docs/`:
 
 ```bash
-# Linux
-./repo.sh docs --project isaac-sim -c release --warn-as-error=0
+# Linux — capture full log to a file, then pull warnings/errors from it (single build)
+./repo.sh docs --project isaac-sim -c release --warn-as-error=0 2>&1 | tee /tmp/docs_build.log | tail -5
+grep -nE "WARNING|ERROR" /tmp/docs_build.log
 
 # Windows
 repo.bat docs --project isaac-sim -c release --warn-as-error=0
 ```
+
+DO NOT run the build twice just to filter warnings — pipe to `tee` and grep the saved log. Builds take ~2-3 minutes; rerunning wastes time.
 
 ### API Docs Only
 
@@ -53,7 +56,8 @@ For changes to extension API docstrings or `docs/api/`:
 ./repo.sh generate_doxygen_input
 ./repo.sh extension_docs --error-as-warn
 ./repo.sh extension_toc --error-as-warn
-./repo.sh docs --project api -c release --warn-as-error=0
+./repo.sh docs --project api -c release --warn-as-error=0 2>&1 | tee /tmp/api_docs_build.log | tail -5
+grep -nE "WARNING|ERROR" /tmp/api_docs_build.log
 
 # Windows
 repo.bat extension_docs --error-as-warn
@@ -114,6 +118,7 @@ When a developer asks to build or preview docs:
 
 1. **Check prerequisites** — confirm `./build.sh` has been run
 2. **Determine scope** — ask what changed to pick full vs partial build
-3. **Run the build** — use the appropriate command(s) above
-4. **Start the preview server** — background it and share the URL
-5. **Remind about formatting** — before any commit, run the formatter
+3. **Run the build** — use the appropriate command(s) above; pipe to `tee` and grep the saved log for warnings (single build, no double-run)
+4. **Read built HTML to verify edits** — the docs output dir (`_build/docs/...`) is owned by the user account and lives outside Cursor's default sandbox read scope. Reading it from the agent requires elevated permissions (`required_permissions: ["all"]`); plain `ls` / `grep` will report "No such file or directory" without those permissions. The directory exists; trust the build success message rather than re-running the build.
+5. **Start the preview server** — background it and share the URL
+6. **Remind about formatting** — before any commit, run the formatter
