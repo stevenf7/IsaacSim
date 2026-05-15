@@ -43,7 +43,7 @@ BOX_URLS = [
     "/Isaac/Environments/Simple_Warehouse/Props/SM_CardBoxD_01.usd",
 ]
 
-TOTAL_CAPTURES = 10
+TOTAL_CAPTURES = 5
 CAPTURES_PER_SCENE = 3
 RESOLUTION = (1280, 720)
 RT_SUBFRAMES = 8
@@ -340,5 +340,39 @@ def run_workflow():
 
 
 run_workflow()
+
+# <start-sdg-workflow-02-test>
+import argparse
+import sys
+
+from isaacsim.core.utils.extensions import enable_extension
+
+enable_extension("isaacsim.test.utils")
+from isaacsim.test.utils.file_validation import validate_folder_contents
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--test",
+    action="store_true",
+    help="Validate captured output files against expected counts and exit.",
+)
+args, _ = parser.parse_known_args()
+
+if args.test:
+    # BasicWriter with rgb + colorized semantic_segmentation writes 2 png + 1 json per capture.
+    expected_json_count = TOTAL_CAPTURES
+    expected_png_count = TOTAL_CAPTURES * 2
+    out_dir = os.path.join(os.getcwd(), "_out_workflow_02")
+    ok = validate_folder_contents(
+        path=out_dir,
+        recursive=True,
+        expected_counts={"png": expected_png_count, "json": expected_json_count},
+        fail_on_empty_files=True,
+    )
+    if not ok:
+        print(f"[SDG][Test][FAIL] Output validation failed for {out_dir}")
+        sys.exit(1)
+    print(f"[SDG][Test][PASS] Output validation succeeded for {out_dir}")
+# <end-sdg-workflow-02-test>
 
 simulation_app.close()

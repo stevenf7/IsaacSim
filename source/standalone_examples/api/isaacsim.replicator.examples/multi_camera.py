@@ -134,4 +134,44 @@ for annot in rgb_annotators:
 for rp in [rp_top, rp_side, rp_persp]:
     rp.destroy()
 
+# <start-multi-camera-test>
+import argparse
+import sys
+
+from isaacsim.core.utils.extensions import enable_extension
+
+enable_extension("isaacsim.test.utils")
+from isaacsim.test.utils.file_validation import validate_folder_contents
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--test",
+    action="store_true",
+    help="Validate captured output files against expected counts and exit.",
+)
+args, _ = parser.parse_known_args()
+
+if args.test:
+    # 3 render products x NUM_FRAMES captures each, both writer and annotator dirs.
+    expected_png_count = 3 * NUM_FRAMES
+    output_dir_writer = os.path.join(os.getcwd(), "_out_mc_writer")
+    if not validate_folder_contents(
+        path=output_dir_writer,
+        recursive=True,
+        expected_counts={"png": expected_png_count},
+        fail_on_empty_files=True,
+    ):
+        print(f"[SDG][Test][FAIL] Output validation failed for {output_dir_writer}")
+        sys.exit(1)
+    if not validate_folder_contents(
+        path=output_dir_annot,
+        recursive=True,
+        expected_counts={"png": expected_png_count},
+        fail_on_empty_files=True,
+    ):
+        print(f"[SDG][Test][FAIL] Output validation failed for {output_dir_annot}")
+        sys.exit(1)
+    print(f"[SDG][Test][PASS] Output validation succeeded for {output_dir_writer} and {output_dir_annot}")
+# <end-multi-camera-test>
+
 simulation_app.close()

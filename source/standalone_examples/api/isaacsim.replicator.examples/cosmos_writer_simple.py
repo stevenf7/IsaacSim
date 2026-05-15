@@ -95,4 +95,38 @@ def run_cosmos_example(num_frames, segmentation_mapping=None):
 
 run_cosmos_example(num_frames=NUM_FRAMES, segmentation_mapping=SEGMENTATION_MAPPING)
 
+# <start-cosmos-writer-simple-test>
+import argparse
+import sys
+
+from isaacsim.core.utils.extensions import enable_extension
+
+enable_extension("isaacsim.test.utils")
+from isaacsim.test.utils.file_validation import validate_folder_contents
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--test",
+    action="store_true",
+    help="Validate captured output files against expected counts and exit.",
+)
+args, _ = parser.parse_known_args()
+
+if args.test:
+    # CosmosWriter writes one PNG per frame and one MP4 video per modality
+    # (rgb, shaded_seg, segmentation, depth, edges) under clip_0000/.
+    out_dir = os.path.join(os.getcwd(), "_out_cosmos_simple")
+    num_modalities = 5
+    ok = validate_folder_contents(
+        path=out_dir,
+        recursive=True,
+        expected_counts={"png": NUM_FRAMES * num_modalities, "mp4": num_modalities},
+        fail_on_empty_files=True,
+    )
+    if not ok:
+        print(f"[SDG][Test][FAIL] Output validation failed for {out_dir}")
+        sys.exit(1)
+    print(f"[SDG][Test][PASS] Output validation succeeded for {out_dir}")
+# <end-cosmos-writer-simple-test>
+
 simulation_app.close()

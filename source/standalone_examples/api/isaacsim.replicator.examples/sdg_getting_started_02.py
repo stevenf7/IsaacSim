@@ -115,4 +115,38 @@ def run_example():
 
 run_example()
 
+# <start-sdg-getting-started-02-test>
+import argparse
+import sys
+
+from isaacsim.core.utils.extensions import enable_extension
+
+enable_extension("isaacsim.test.utils")
+from isaacsim.test.utils.file_validation import validate_folder_contents
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--test",
+    action="store_true",
+    help="Validate captured output files against expected counts and exit.",
+)
+args, _ = parser.parse_known_args()
+
+if args.test:
+    # PoseWriter with write_debug_images=True writes 1 json + 1 png + 1 _overlay.png per capture,
+    # plus a single metadata.txt for the run. 3 steps x 2 render products = 6 captures.
+    num_captures = 3 * 2
+    out_dir = os.path.join(os.getcwd(), "_out_pose_writer")
+    ok = validate_folder_contents(
+        path=out_dir,
+        recursive=True,
+        expected_counts={"json": num_captures, "png": num_captures * 2, "txt": 1},
+        fail_on_empty_files=True,
+    )
+    if not ok:
+        print(f"[SDG][Test][FAIL] Output validation failed for {out_dir}")
+        sys.exit(1)
+    print(f"[SDG][Test][PASS] Output validation succeeded for {out_dir}")
+# <end-sdg-getting-started-02-test>
+
 simulation_app.close()

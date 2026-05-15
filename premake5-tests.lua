@@ -931,10 +931,12 @@ local function get_replicator_tests()
         {
             "tests-nativepython-isaacsim.replicator.examples.cosmos_writer_simple",
             "standalone_examples/api/isaacsim.replicator.examples/cosmos_writer_simple.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.sdg_deformables",
             "standalone_examples/api/isaacsim.replicator.examples/sdg_deformables.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.sdg_geomsubset_per_subset_true",
@@ -949,6 +951,7 @@ local function get_replicator_tests()
         {
             "tests-nativepython-isaacsim.replicator.examples.custom_event_and_write",
             "/standalone_examples/api/isaacsim.replicator.examples/custom_event_and_write.py",
+            "--test",
         },
         {
             "tests-nativepython-testing-isaacsim.replicator.examples.ar_capture_pipeline",
@@ -962,7 +965,7 @@ local function get_replicator_tests()
         {
             "tests-nativepython-testing-isaacsim.replicator.examples.motion_blur_short",
             "/standalone_examples/api/isaacsim.replicator.examples/motion_blur.py",
-            "--delta_times None 0.00416666666 --samples_per_pixel 32 --motion_blur_subsamples 4",
+            "--delta_times None 0.00416666666 --samples_per_pixel 32 --motion_blur_subsamples 4 --test",
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.subscribers_and_events",
@@ -971,26 +974,32 @@ local function get_replicator_tests()
         {
             "tests-nativepython-isaacsim.replicator.examples.custom_fps_writer_annotator",
             "/standalone_examples/api/isaacsim.replicator.examples/custom_fps_writer_annotator.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.sdg_getting_started_01",
             "standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_01.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.sdg_getting_started_02",
             "standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_02.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.sdg_getting_started_03",
             "standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_03.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.sdg_getting_started_04",
             "standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_04.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.sdg_getting_started_05",
             "standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_05.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.sdg_workflow_01",
@@ -1000,23 +1009,27 @@ local function get_replicator_tests()
         {
             "tests-nativepython-isaacsim.replicator.examples.sdg_workflow_02",
             "standalone_examples/api/isaacsim.replicator.examples/sdg_workflow_02.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.simready_assets_sdg",
             "standalone_examples/api/isaacsim.replicator.examples/simready_assets_sdg.py",
-            "--num_scenarios 2",
+            "--num_scenarios 2 --test",
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.multi_camera",
             "standalone_examples/api/isaacsim.replicator.examples/multi_camera.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.replicator.examples.simulation_get_data",
             "standalone_examples/api/isaacsim.replicator.examples/simulation_get_data.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.replicator.grasping.grasping_workflow_sdg",
             "standalone_examples/api/isaacsim.replicator.grasping/grasping_workflow_sdg.py",
+            "--test",
         },
         {
             "tests-nativepython-isaacsim.replicator.experimental.domain_randomization",
@@ -1029,13 +1042,15 @@ local function get_replicator_tests()
         },
         -- Episode Recorder
         {
-            "tests-nativepython-replicator.episode_record_replay",
-            "standalone_examples/replicator/episode_record_replay/episode_record_replay.py",
+            "tests-nativepython-isaacsim.replicator.episode_recorder.episode_record_replay",
+            "standalone_examples/api/isaacsim.replicator.episode_recorder/episode_record_replay.py",
+            "--replay --test",
         },
         -- Teleop Replay
         {
             "tests-nativepython-isaacsim.replicator.teleop.sdg_teleop_replay",
             "standalone_examples/api/isaacsim.replicator.teleop/sdg_teleop_replay.py",
+            "--test",
         },
         -- Deprecated Domain Randomization
         {

@@ -27,9 +27,8 @@ This script demonstrates the two-phase SDG recording workflow:
 
 Usage::
 
-    ./python.sh source/standalone_examples/replicator/episode_record_replay/episode_record_replay.py \\
-        --record_seconds 3.0 \\
-        --output_dir /tmp/episode_demo \\
+    ./python.sh source/standalone_examples/api/isaacsim.replicator.episode_recorder/episode_record_replay.py \\
+        --record_steps 180 \\
         --replay
 
 Pass ``--render`` to additionally attach a :class:`BasicWriter` during replay to demonstrate the
@@ -38,22 +37,19 @@ Pass ``--render`` to additionally attach a :class:`BasicWriter` during replay to
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp(
-    launch_config={
-        "headless": True,
-        "extra_args": ["--enable", "isaacsim.replicator.episode_recorder"],
-    }
-)
+simulation_app = SimulationApp(launch_config={"headless": False})
 
 import argparse
 import os
-import time
 
 import numpy as np
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
 from isaacsim.core.experimental.prims import Articulation
+from isaacsim.core.utils.extensions import enable_extension
+
+enable_extension("isaacsim.replicator.episode_recorder")
 from isaacsim.replicator.episode_recorder import (
     ArticulationRecordable,
     EpisodeRecorder,
@@ -66,6 +62,26 @@ from isaacsim.replicator.episode_recorder import (
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Gf, UsdGeom, UsdPhysics
 
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--output_dir",
+    default=os.path.join(os.getcwd(), "_out_episode_record_replay"),
+    help="Where to write the HDF5 session + snapshot.",
+)
+parser.add_argument(
+    "--record_steps",
+    type=int,
+    default=120,
+    help="Number of simulation steps to record (deterministic across hardware; ~2s at 60Hz).",
+)
+parser.add_argument("--replay", action="store_true", help="After recording, load the session and replay it.")
+parser.add_argument("--render", action="store_true", help="Attach a BasicWriter during replay and dump RGB frames.")
+parser.add_argument("--existing_hdf5", default=None, help="Skip recording; replay this HDF5 file instead.")
+args, _ = parser.parse_known_args()
+
+
+FRANKA_USD_REL_PATH = "Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
+
 
 def build_scene() -> None:
     """Populate the default stage with a Franka articulation and a rigid cube."""
@@ -73,7 +89,7 @@ def build_scene() -> None:
     stage.DefinePrim("/World", "Xform")
     stage.DefinePrim("/World/PhysicsScene", "PhysicsScene")
 
-    usd_path = f"{get_assets_root_path()}/Isaac/Robots/Franka/franka.usd"
+    usd_path = f"{get_assets_root_path()}/{FRANKA_USD_REL_PATH}"
     robot_prim = stage.DefinePrim("/World/Franka", "Xform")
     robot_prim.GetReferences().AddReference(usd_path)
 
@@ -83,33 +99,42 @@ def build_scene() -> None:
     UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
 
 
-def drive_dofs(articulation: Articulation, seconds: float, target_amplitude: float = 0.3) -> None:
+def drive_dofs(articulation: Articulation, num_steps: int, target_amplitude: float = 0.3) -> None:
     """Drive the Franka DOFs with a smooth sinusoid so the recording contains motion.
 
     Uses ``set_dof_position_targets`` on the underlying physics view so the PD drives honor the
-    target, yielding realistic DOF trajectories the replayer can roundtrip.
+    target, yielding realistic DOF trajectories the replayer can roundtrip. Driven by a fixed
+    number of simulation steps (rather than wall-clock time) so the recording is deterministic
+    across hardware.
     """
-    timeline = omni.timeline.get_timeline_interface()
-    dt = 1.0 / 60.0
     n_dofs = int(articulation.num_dofs)
     target_freq_hz = 0.5
-    start_time = time.time()
-    while time.time() - start_time < seconds:
-        t = time.time() - start_time
+    dt = 1.0 / 60.0
+    for i in range(num_steps):
+        t = i * dt
         pattern = target_amplitude * np.sin(2.0 * np.pi * target_freq_hz * t + np.arange(n_dofs))
         articulation.set_dof_position_targets(pattern[np.newaxis, :].astype(np.float32))
         simulation_app.update()
-        _ = timeline
 
 
-def record_one_episode(output_dir: str, record_seconds: float) -> str:
+def record_one_episode(output_dir: str, record_steps: int) -> str:
     """Record one episode of a short scripted motion; return the HDF5 session path."""
     build_scene()
-    for _ in range(2):
-        simulation_app.update()
 
-    articulations, prims = target_discovery.discover_all_under("/World")
+    # Pump updates until the Franka USD reference resolves and exposes its ArticulationRootAPI.
+    max_load_updates = 200
+    articulations: dict = {}
+    prims: dict = {}
+    for _ in range(max_load_updates):
+        simulation_app.update()
+        articulations, prims = target_discovery.discover_all_under("/World")
+        if articulations:
+            break
     print(f"[Record] Discovered articulations={articulations}, prims={prims}")
+    if not articulations:
+        raise RuntimeError("No articulation roots discovered under /World; cannot drive DOFs.")
+    # Use the discovered path with ArticulationRootAPI; /World/Franka is only the reference Xform.
+    franka_path = next(iter(articulations.values()))
 
     os.makedirs(output_dir, exist_ok=True)
     snapshot_path = export_stage_snapshot(output_dir)
@@ -133,8 +158,8 @@ def record_one_episode(output_dir: str, record_seconds: float) -> str:
         simulation_app.update()
 
     recorder.start_episode()
-    articulation = Articulation("/World/Franka")
-    drive_dofs(articulation, seconds=record_seconds)
+    articulation = Articulation(franka_path)
+    drive_dofs(articulation, num_steps=record_steps)
     recorder.end_episode(success=True)
 
     timeline.stop()
@@ -197,26 +222,60 @@ def replay_episode(hdf5_path: str, *, attach_writer: bool) -> None:
     print("[Replay] Done.")
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--output_dir", default="/tmp/episode_demo", help="Where to write the HDF5 session + snapshot.")
-    parser.add_argument("--record_seconds", type=float, default=2.0, help="Length of the recorded motion in seconds.")
-    parser.add_argument("--replay", action="store_true", help="After recording, load the session and replay it.")
-    parser.add_argument("--render", action="store_true", help="Attach a BasicWriter during replay and dump RGB frames.")
-    parser.add_argument("--existing_hdf5", default=None, help="Skip recording; replay this HDF5 file instead.")
-    args, _ = parser.parse_known_args()
+hdf5_path = args.existing_hdf5
+if hdf5_path is None:
+    os.makedirs(args.output_dir, exist_ok=True)
+    hdf5_path = record_one_episode(args.output_dir, args.record_steps)
 
-    hdf5_path = args.existing_hdf5
-    if hdf5_path is None:
-        os.makedirs(args.output_dir, exist_ok=True)
-        hdf5_path = record_one_episode(args.output_dir, args.record_seconds)
+if args.replay or args.render:
+    replay_episode(hdf5_path, attach_writer=args.render)
 
-    if args.replay or args.render:
-        replay_episode(hdf5_path, attach_writer=args.render)
+# <start-episode-record-replay-test>
+import sys
 
+from isaacsim.core.utils.extensions import enable_extension
 
-if __name__ == "__main__":
-    try:
-        main()
-    finally:
-        simulation_app.close()
+enable_extension("isaacsim.test.utils")
+from isaacsim.test.utils.file_validation import validate_folder_contents
+
+test_parser = argparse.ArgumentParser()
+test_parser.add_argument(
+    "--test",
+    action="store_true",
+    help="Validate captured output files against expected counts and exit.",
+)
+test_args, _ = test_parser.parse_known_args()
+
+if test_args.test:
+    # Recording produces:
+    #   - 1 stage_snapshot.usd (from export_stage_snapshot)
+    #   - 1 stage_snapshot.sidecar.json (sidecar, include_sidecar=True by default)
+    #   - 1 episode_<timestamp>.hdf5 (from EpisodeRecorder.open_session)
+    expected_counts = {"usd": 1, "json": 1, "hdf5": 1}
+    out_dir = args.output_dir
+    if not validate_folder_contents(
+        path=out_dir,
+        recursive=False,
+        expected_counts=expected_counts,
+        fail_on_empty_files=True,
+    ):
+        print(f"[SDG][Test][FAIL] Output validation failed for {out_dir}")
+        sys.exit(1)
+    print(f"[SDG][Test][PASS] Output validation succeeded for {out_dir}")
+
+    # When --render is set, replay attaches a BasicWriter that writes rgb pngs into replay_frames/.
+    if args.render:
+        render_dir = os.path.join(args.output_dir, "replay_frames")
+        if not validate_folder_contents(
+            path=render_dir,
+            recursive=True,
+            expected_counts={"png": 1},
+            fail_on_empty_files=True,
+            exact_match=False,
+        ):
+            print(f"[SDG][Test][FAIL] Output validation failed for {render_dir}")
+            sys.exit(1)
+        print(f"[SDG][Test][PASS] Output validation succeeded for {render_dir}")
+# <end-episode-record-replay-test>
+
+simulation_app.close()

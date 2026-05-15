@@ -20,19 +20,40 @@ import carb.settings
 import omni.kit.app
 import omni.replicator.core as rep
 import omni.usd
+from isaacsim.core.utils.extensions import enable_extension
+
+# Enable the teleop extension before importing modules it owns and before resolving its data path.
+# It also transitively pulls in `isaacsim.replicator.episode_recorder`, which is not part of the base kit.
+enable_extension("isaacsim.replicator.teleop")
+
 from isaacsim.replicator.episode_recorder import EpisodeReplayer
 from isaacsim.storage.native import get_assets_root_path_async
 from pxr import UsdGeom
 
+# Resolve the bundled golden HDF5 episode shipped with the isaacsim.replicator.teleop extension tests.
+_TELEOP_EXT_PATH = (
+    omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module("isaacsim.replicator.teleop")
+)
+
 # Path to the USD stage to replay against; every prim path in the HDF5 must resolve on this stage.
 STAGE_URL = "/Isaac/Samples/Replicator/Teleop/teleop_scenario_floating_xarm_dex3.usd"
-HDF5_PATH = "/tmp/demos/episode_20260417T120000Z.hdf5"
+HDF5_PATH = os.path.join(
+    _TELEOP_EXT_PATH,
+    "isaacsim",
+    "replicator",
+    "teleop",
+    "tests",
+    "data",
+    "_episode_recorder",
+    "episode_floating_xarm_dex3.hdf5",
+)
 CAMERA_PATHS = [
     "/World/teleop_xarm_dex3/gripper_origin_xform/xarm_gripper_root_xform/xarm_gripper/xarm_gripper_base_link/xarm_view_cam",
     "/World/teleop_xarm_dex3/gripper_origin_xform/dex3_1_r_root_xform/dex3_1_r/right_hand_palm_link/dex3_view_cam",
 ]
 EPISODE_INDEX = 0
 RESOLUTION = (512, 512)
+NUM_CAPTURES = 10  # Number of frames to capture, evenly distributed across the episode
 
 
 async def run_example_async():
@@ -88,16 +109,16 @@ async def run_example_async():
         render_products.append(rep.create.render_product(cam, RESOLUTION, name="ReplayRP"))
     print(f"[TeleopReplay] Created {len(render_products)} render product(s) at resolution {RESOLUTION}")
 
-    # BasicWriter for RGB PNGs with its own DiskBackend / output subdir.
-    out_root = os.path.join(os.getcwd(), "_out_teleop_replay")
-    print(f"[TeleopReplay] Output root: {out_root}")
+    # BasicWriter for RGB PNGs writing straight into the output directory.
+    out_dir = os.path.join(os.getcwd(), "_out_sdg_teleop_replay")
+    print(f"[TeleopReplay] Output directory: {out_dir}")
 
     basic_backend = rep.backends.get("DiskBackend")
-    basic_backend.initialize(output_dir=os.path.join(out_root, "basic"))
+    basic_backend.initialize(output_dir=out_dir)
     basic_writer = rep.writers.get("BasicWriter")
     basic_writer.initialize(backend=basic_backend, rgb=True)
     basic_writer.attach(render_products)
-    print(f"[TeleopReplay] BasicWriter attached -> {os.path.join(out_root, 'basic')}")
+    print(f"[TeleopReplay] BasicWriter attached -> {out_dir}")
 
     # Prepare the episode and capture one RGB frame per recorded frame.
     print(f"[TeleopReplay] Preparing episode {EPISODE_INDEX}")
@@ -114,15 +135,23 @@ async def run_example_async():
         print(f"[TeleopReplay] Episode {EPISODE_INDEX} has no frames in '{HDF5_PATH}', exiting")
         replayer.close()
         return
-    print(f"[TeleopReplay] Replaying episode {EPISODE_INDEX} ({num_frames} frames)")
+    # Replay every frame so the user can watch the full episode, but only trigger a writer capture
+    # on NUM_CAPTURES indices evenly distributed across the episode (e.g. every 10% for NUM_CAPTURES=10).
+    num_captures = min(NUM_CAPTURES, num_frames)
+    capture_set = {(i * num_frames) // num_captures for i in range(num_captures)}
+    print(f"[TeleopReplay] Replaying episode {EPISODE_INDEX}: capturing {len(capture_set)} of {num_frames} frames")
 
-    progress_every = max(1, num_frames // 10)
+    app = omni.kit.app.get_app()
+    capture_count = 0
     for f in range(num_frames):
         if f > 0:
             replayer.step_frame(1)
-        await rep.orchestrator.step_async(delta_time=0.0, pause_timeline=False)
-        if (f + 1) % progress_every == 0 or (f + 1) == num_frames:
-            print(f"[TeleopReplay] Captured frame {f + 1} / {num_frames}")
+        if f in capture_set:
+            await rep.orchestrator.step_async(delta_time=0.0, pause_timeline=False)
+            capture_count += 1
+            print(f"[TeleopReplay] Captured {capture_count}/{len(capture_set)} (frame {f + 1}/{num_frames})")
+        else:
+            await app.next_update_async()
 
     # Wait for the data to be written to disk and clean up resources.
     print("[TeleopReplay] Waiting for writers to flush...")
@@ -131,7 +160,7 @@ async def run_example_async():
     for rp in render_products:
         rp.destroy()
     replayer.close()
-    print(f"[TeleopReplay] Done. Output: {out_root}")
+    print(f"[TeleopReplay] Done. Output: {out_dir}")
 
 
 # Run the example

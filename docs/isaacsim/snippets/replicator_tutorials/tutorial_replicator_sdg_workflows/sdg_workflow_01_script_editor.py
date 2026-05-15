@@ -31,7 +31,7 @@ import omni.usd
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Usd, UsdGeom, UsdPhysics
 
-NUM_CAPTURES = 10
+NUM_CAPTURES = 5
 RESOLUTION = (1280, 720)
 RT_SUBFRAMES = 8
 NUM_DROP_BOXES = 10
