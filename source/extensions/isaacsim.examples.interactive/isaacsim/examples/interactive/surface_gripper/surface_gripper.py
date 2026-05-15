@@ -163,7 +163,7 @@ class Extension(omni.ext.IExt):
         self._window = None
         get_browser_instance().deregister_example(name=EXTENSION_NAME, category="Manipulation")
 
-    def _on_update_ui(self, widget) -> None:
+    def _on_update_ui(self, widget: object) -> None:
         self._models["create_button"].enabled = app_utils.is_playing()
         self._models["toggle_button"].enabled = app_utils.is_playing()
         # If the scene has been reloaded, reset UI to create Scenario
@@ -184,7 +184,7 @@ class Extension(omni.ext.IExt):
         else:
             self._models["toggle_button"].text = "CLOSED"
 
-    def _on_simulation_step(self, step, context) -> None:
+    def _on_simulation_step(self, step: float, context: object) -> None:
         # Checks if the simulation is playing, and if the stage has been loaded
         if app_utils.is_playing() and self._stage_id != -1:
             self._toggle_gripper_button_ui()
@@ -197,7 +197,7 @@ class Extension(omni.ext.IExt):
             self._physics_callback_id = None
         self._on_create_scenario_button_clicked()
 
-    async def _create_scenario(self, task) -> None:
+    async def _create_scenario(self, task: asyncio.Task[object]) -> None:
         done, pending = await asyncio.wait({task})
         if task in done:
             # Repurpose button to reset Scene

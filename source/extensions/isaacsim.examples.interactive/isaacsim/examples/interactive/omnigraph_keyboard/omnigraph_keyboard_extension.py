@@ -36,7 +36,7 @@ class OmnigraphKeyboardExtension(omni.ext.IExt):
     and provides an interactive UI for running the demonstration.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initializes the Omnigraph Keyboard extension.
 
         Sets up the UI template and registers the example with the examples browser. The example demonstrates how to control cube size using keyboard input through Omnigraph programming.
@@ -72,7 +72,7 @@ class OmnigraphKeyboardExtension(omni.ext.IExt):
             category=self.category,
         )
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleans up the Omnigraph Keyboard extension.
 
         Deregisters the example from the examples browser.

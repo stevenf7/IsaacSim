@@ -18,7 +18,7 @@
 import omni.asset_validator.core as _av_core
 
 
-def _resolve_at(at) -> str:
+def _resolve_at(at: object) -> str:
     """Resolve a USD object reference to a stable string key for dedup purposes.
 
     Uses duck-typing so this module never imports pxr, keeping the companion
@@ -47,23 +47,23 @@ class DedupMixin:
     Dedup key: ``(rule_class_name, resolved_at, severity, message)``
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
-        self._seen: set = set()
+        self._seen: set[tuple[str, str, str, str]] = set()
 
-    def _AddError(self, message: str, **kwargs):
+    def _AddError(self, message: str, **kwargs: object) -> None:  # noqa: N802
         key = (type(self).__name__, _resolve_at(kwargs.get("at")), "error", message)
         if key not in self._seen:
             self._seen.add(key)
             super()._AddError(message, **kwargs)
 
-    def _AddWarning(self, message: str, **kwargs):
+    def _AddWarning(self, message: str, **kwargs: object) -> None:  # noqa: N802
         key = (type(self).__name__, _resolve_at(kwargs.get("at")), "warning", message)
         if key not in self._seen:
             self._seen.add(key)
             super()._AddWarning(message, **kwargs)
 
-    def _AddInfo(self, message: str, **kwargs):
+    def _AddInfo(self, message: str, **kwargs: object) -> None:  # noqa: N802
         key = (type(self).__name__, _resolve_at(kwargs.get("at")), "info", message)
         if key not in self._seen:
             self._seen.add(key)
@@ -81,8 +81,6 @@ class DedupBaseRuleChecker(DedupMixin, _av_core.BaseRuleChecker):
     intent explicit and avoids repeating the multi-inheritance boilerplate in
     every rule module.
     """
-
-    pass
 
 
 def is_relationship_prepended(relationship: object) -> bool:

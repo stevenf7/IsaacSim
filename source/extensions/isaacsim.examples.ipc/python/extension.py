@@ -23,12 +23,14 @@ from .bindings._isaacsim_examples_ipc import acquire_example_ipc_interface, rele
 class ExamplesIpcExtension(omni.ext.IExt):
     """Extension entry point for isaacsim.examples.ipc."""
 
-    def on_startup(self, ext_id) -> None:
+    def on_startup(self, ext_id: str) -> None:
+        """Acquire the native IPC plugin interface."""
         carb.log_info("isaacsim.examples.ipc starting up")
         self._interface = acquire_example_ipc_interface()
         carb.log_info("isaacsim.examples.ipc started")
 
     def on_shutdown(self) -> None:
+        """Release the native IPC plugin interface."""
         carb.log_info("isaacsim.examples.ipc shutting down")
         if getattr(self, "_interface", None) is not None:
             release_example_ipc_interface(self._interface)

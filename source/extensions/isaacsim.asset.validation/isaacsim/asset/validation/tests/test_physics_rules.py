@@ -50,13 +50,13 @@ class _ErrorCapturingRigidBodyChecker(RigidBodyHasMassAPI):
         self.warnings: list[str] = []
 
     # BaseRuleChecker emission hooks — accept arbitrary kwargs for compatibility.
-    def _AddError(self, message, **kwargs):  # type: ignore[override]  # noqa: N802
+    def _AddError(self, message: str, **kwargs: object) -> None:  # type: ignore[override]  # noqa: N802
         self.errors.append(message)
 
-    def _AddInfo(self, message, **kwargs):  # type: ignore[override]  # noqa: N802
+    def _AddInfo(self, message: str, **kwargs: object) -> None:  # type: ignore[override]  # noqa: N802
         self.infos.append(message)
 
-    def _AddWarning(self, message, **kwargs):  # type: ignore[override]  # noqa: N802
+    def _AddWarning(self, message: str, **kwargs: object) -> None:  # type: ignore[override]  # noqa: N802
         self.warnings.append(message)
 
 
@@ -205,13 +205,15 @@ class _NonAdjacentChecker(NonAdjacentCollisionMeshesDoNotClash):
         super().__init__()
         self.errors: list[str] = []
 
-    def _AddError(self, message, **kwargs):  # type: ignore[override]  # noqa: N802
+    def _AddError(self, message: str, **kwargs: object) -> None:  # type: ignore[override]  # noqa: N802
         self.errors.append(message)
 
 
 class TestNonAdjacentCollisionMeshesDoNotClash(omni.kit.test.AsyncTestCase):
-    """Regression tests for the pair-filter loop: defaultPrim scoping and
-    rigid-body-ancestor adjacency lookup."""
+    """Regression tests for the pair-filter loop.
+
+    Covers defaultPrim scoping and rigid-body-ancestor adjacency lookup.
+    """
 
     def _build_robot_with_ground_plane(self) -> Usd.Stage:
         """Build a stage whose defaultPrim is /Robot, with a sibling /GroundPlane.
@@ -309,6 +311,7 @@ class TestFindRigidBodyAncestor(omni.kit.test.AsyncTestCase):
     """Unit tests for the ``_find_rigid_body_ancestor`` helper."""
 
     async def test_direct_rigid_body(self) -> None:
+        """A direct rigid body prim resolves to its own path."""
         stage = Usd.Stage.CreateInMemory()
         link = stage.DefinePrim("/Robot/link", "Xform")
         UsdPhysics.RigidBodyAPI.Apply(link)
@@ -316,6 +319,7 @@ class TestFindRigidBodyAncestor(omni.kit.test.AsyncTestCase):
         self.assertEqual(result, Sdf.Path("/Robot/link"))
 
     async def test_nested_collider_finds_ancestor(self) -> None:
+        """A nested collider resolves to its rigid body ancestor."""
         stage = Usd.Stage.CreateInMemory()
         link = stage.DefinePrim("/Robot/link", "Xform")
         UsdPhysics.RigidBodyAPI.Apply(link)
@@ -324,6 +328,7 @@ class TestFindRigidBodyAncestor(omni.kit.test.AsyncTestCase):
         self.assertEqual(result, Sdf.Path("/Robot/link"))
 
     async def test_no_rigid_body_returns_empty(self) -> None:
+        """A prim without a rigid body ancestor resolves to an empty path."""
         stage = Usd.Stage.CreateInMemory()
         prim = stage.DefinePrim("/GroundPlane", "Xform")
         # No RigidBodyAPI applied anywhere up the chain.
@@ -343,7 +348,7 @@ class _HasArticulationRootChecker(HasArticulationRoot):
         super().__init__()
         self.errors: list[str] = []
 
-    def _AddError(self, message, **kwargs):  # type: ignore[override]  # noqa: N802
+    def _AddError(self, message: str, **kwargs: object) -> None:  # type: ignore[override]  # noqa: N802
         self.errors.append(message)
 
 

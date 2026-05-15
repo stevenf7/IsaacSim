@@ -19,4 +19,4 @@
 from isaacsim.examples.interactive.kaya_gamepad.kaya_gamepad import KayaGamepad
 from isaacsim.examples.interactive.kaya_gamepad.kaya_gamepad_extension import KayaGamepadExtension
 
-__all__ = ["KayaGamepad"]
+__all__ = ["KayaGamepad", "KayaGamepadExtension"]

@@ -309,6 +309,7 @@ class SimulationManager:
         """Handle simulation registry events to keep _engine in sync.
 
         Args:
+            event_type: Type of simulation registry event.
             simulation_id: ID of the simulation.
             name: Name of the simulation.
         """
@@ -586,7 +587,7 @@ class SimulationManager:
         )
 
     @staticmethod
-    def _on_play(event) -> None:
+    def _on_play(event: Any) -> None:
         """Handle timeline play events to initialize physics simulation."""
         if SimulationManager._carb_settings.get_as_bool(_SETTING_PLAY_SIMULATION):
             # Verify the stage is valid before attempting any physics operations

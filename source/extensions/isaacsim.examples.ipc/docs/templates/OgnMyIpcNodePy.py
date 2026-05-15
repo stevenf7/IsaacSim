@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Template Python implementation for an Isaac Sim IPC OmniGraph node."""
 
 # TEMPLATE-START
 import omni.graph.core as og
@@ -19,7 +20,9 @@ from isaacsim.core.nodes import BaseResetNode
 
 
 class OgnMyIpcNodePyState(BaseResetNode):
-    def __init__(self):
+    """Per-instance state for the template IPC node."""
+
+    def __init__(self) -> None:
         # Declare all attributes BEFORE calling super().__init__,
         # because BaseResetNode.__init__ calls custom_reset() immediately.
         self.handle = None  # replace with your transport handle
@@ -27,6 +30,7 @@ class OgnMyIpcNodePyState(BaseResetNode):
         super().__init__(initialize=False)
 
     def custom_reset(self) -> None:
+        """Reset transport state when timeline or inputs change."""
         # Called on timeline stop and when inputs change.
         if self.handle is not None:
             self.handle.close()
@@ -35,12 +39,16 @@ class OgnMyIpcNodePyState(BaseResetNode):
 
 
 class OgnMyIpcNodePy:
+    """Template OmniGraph node for custom IPC transports."""
+
     @staticmethod
-    def internal_state():
+    def internal_state() -> OgnMyIpcNodePyState:
+        """Create per-instance state for the node."""
         return OgnMyIpcNodePyState()
 
     @staticmethod
-    def compute(db) -> bool:
+    def compute(db: object) -> bool:
+        """Evaluate one non-blocking IPC transfer step."""
         state = db.per_instance_state
 
         uri = db.inputs.uri

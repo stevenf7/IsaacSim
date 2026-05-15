@@ -21,4 +21,4 @@ from isaacsim.examples.interactive.getting_started.getting_started_extension imp
 from isaacsim.examples.interactive.getting_started.start_with_robot import GettingStartedRobot
 from isaacsim.examples.interactive.getting_started.start_with_robot_extension import GettingStartedRobotExtension
 
-__all__ = ["GettingStarted", "GettingStartedRobot"]
+__all__ = ["GettingStarted", "GettingStartedExtension", "GettingStartedRobot", "GettingStartedRobotExtension"]

@@ -20,7 +20,6 @@ from __future__ import annotations
 from typing import Any
 
 import carb
-import omni.asset_validator.core as av_core
 import usdrt
 from omni.asset_validator.core import registerRule
 from omni.physics.core import ContactEventType, get_physics_simulation_interface
@@ -345,8 +344,10 @@ class NonAdjacentCollisionMeshesDoNotClash(DedupBaseRuleChecker):
         self._check_pairs(stage)
 
     def _check_pairs(self, stage: Usd.Stage) -> None:
-        """Inner pair-filter loop. Factored out of :meth:`CheckStage` so tests
-        can inject collision pairs without running a live PhysX simulation step.
+        """Run the inner pair-filter loop.
+
+        Factored out of :meth:`CheckStage` so tests can inject collision pairs
+        without running a live PhysX simulation step.
 
         Two filters:
 
@@ -458,6 +459,6 @@ class HasArticulationRoot(DedupBaseRuleChecker):
             if prim.HasAPI(UsdPhysics.ArticulationRootAPI):
                 return
         self._AddError(
-            message=f"Articulation Root API is not set on any prim in the stage",
+            message="Articulation Root API is not set on any prim in the stage",
             at=stage,
         )

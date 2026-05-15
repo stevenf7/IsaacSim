@@ -34,7 +34,7 @@ class _WarningCapturingJointsExist(JointsExist):
         super().__init__()
         self.warnings: list[str] = []
 
-    def _AddWarning(self, message, **kwargs):  # type: ignore[override]  # noqa: N802
+    def _AddWarning(self, message: str, **kwargs: object) -> None:  # type: ignore[override]  # noqa: N802
         self.warnings.append(message)
 
 
@@ -45,7 +45,7 @@ class _WarningCapturingLinksExist(LinksExist):
         super().__init__()
         self.warnings: list[str] = []
 
-    def _AddWarning(self, message, **kwargs):  # type: ignore[override]  # noqa: N802
+    def _AddWarning(self, message: str, **kwargs: object) -> None:  # type: ignore[override]  # noqa: N802
         self.warnings.append(message)
 
 

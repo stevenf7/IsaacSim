@@ -19,4 +19,4 @@
 from isaacsim.examples.interactive.robo_party.robo_party import RoboParty
 from isaacsim.examples.interactive.robo_party.robo_party_extension import RoboPartyExtension
 
-__all__ = ["RoboParty"]
+__all__ = ["RoboParty", "RoboPartyExtension"]

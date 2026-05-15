@@ -35,10 +35,10 @@ class HelloWorld(BaseSample):
     methods used in Isaac Sim samples for initialization, loading, resetting, and cleanup operations.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-    def setup_scene(self):
+    def setup_scene(self) -> None:
         """Set up the scene by adding a ground plane environment for physics simulation."""
         # Add ground plane environment for physics simulation
         ground_plane = stage_utils.add_reference_to_stage(
@@ -46,14 +46,14 @@ class HelloWorld(BaseSample):
             path="/World/ground",
         )
 
-    async def setup_post_load(self):
+    async def setup_post_load(self) -> None:
         """Set up operations to be performed after the world is loaded."""
 
-    async def setup_pre_reset(self):
+    async def setup_pre_reset(self) -> None:
         """Set up operations to be performed before the world is reset."""
 
-    async def setup_post_reset(self):
+    async def setup_post_reset(self) -> None:
         """Set up operations to be performed after the world is reset."""
 
-    def world_cleanup(self):
+    def world_cleanup(self) -> None:
         """Clean up the world and release resources."""

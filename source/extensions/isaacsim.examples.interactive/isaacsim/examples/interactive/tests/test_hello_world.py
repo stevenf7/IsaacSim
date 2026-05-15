@@ -34,7 +34,7 @@ class TestHelloWorldExampleExtension(omni.kit.test.AsyncTestCase):
     """Test cases for the hello world example."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up the hello world sample and load the world."""
         self._sample = HelloWorld()
         self._sample.set_world_settings(physics_dt=1.0 / 60.0, stage_units_in_meters=1.0)
@@ -44,7 +44,7 @@ class TestHelloWorldExampleExtension(omni.kit.test.AsyncTestCase):
             await app_utils.update_app_async()
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down by waiting for assets and clearing the sample."""
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while stage_utils.is_stage_loading():
@@ -54,7 +54,7 @@ class TestHelloWorldExampleExtension(omni.kit.test.AsyncTestCase):
         await app_utils.update_app_async()
         self._sample = None
 
-    async def test_reset(self):
+    async def test_reset(self) -> None:
         """Test that resetting the sample twice works without errors."""
         await self._sample.reset_async()
         await app_utils.update_app_async()

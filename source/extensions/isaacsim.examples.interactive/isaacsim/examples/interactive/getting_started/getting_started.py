@@ -38,24 +38,24 @@ class GettingStarted(BaseSample):
     - Getting familiar with basic camera positioning and viewport management
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-    def setup_scene(self):
+    def setup_scene(self) -> None:
         """Sets up the scene for the getting started sample."""
 
-    async def setup_post_load(self):
+    async def setup_post_load(self) -> None:
         """Sets up the scene after loading by configuring the camera view position."""
         ViewportManager.set_camera_view(eye=[5.0, 2.0, 2.5], target=[0.00, 0.00, 0.00], camera="/OmniverseKit_Persp")
 
-    async def setup_pre_reset(self):
+    async def setup_pre_reset(self) -> None:
         """Performs setup tasks before the scene is reset."""
 
-    async def setup_post_reset(self):
+    async def setup_post_reset(self) -> None:
         """Performs setup tasks after the scene is reset."""
 
-    async def setup_post_clear(self):
+    async def setup_post_clear(self) -> None:
         """Performs setup tasks after the scene is cleared."""
 
-    def physics_cleanup(self):
+    def physics_cleanup(self) -> None:
         """Cleans up physics-related resources."""

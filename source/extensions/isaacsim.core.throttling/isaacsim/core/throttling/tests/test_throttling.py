@@ -18,6 +18,7 @@
 import contextlib
 import sys
 import types
+from collections.abc import Generator
 
 import carb
 import carb.settings
@@ -26,7 +27,9 @@ import omni.kit.test
 
 
 @contextlib.contextmanager
-def _fake_replicator_capture(status: str = "STARTED", has_attached_annotators: bool = True):
+def _fake_replicator_capture(
+    status: str = "STARTED", has_attached_annotators: bool = True
+) -> Generator[None, None, None]:
     module_names = [
         "omni.replicator",
         "omni.replicator.core",
@@ -46,12 +49,12 @@ def _fake_replicator_capture(status: str = "STARTED", has_attached_annotators: b
         Status = FakeStatus
 
         @staticmethod
-        def get_status():
+        def get_status() -> str:
             return status
 
     class FakeAnnotatorRegistry:
         @staticmethod
-        def has_attached_annotators():
+        def has_attached_annotators() -> bool:
             return has_attached_annotators
 
     replicator_module = types.ModuleType("omni.replicator")

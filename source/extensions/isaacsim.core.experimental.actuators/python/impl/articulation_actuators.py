@@ -501,7 +501,6 @@ class ArticulationActuators:
             ...     dof_indices=[0, 1],
             ... )
         """
-
         indices = ops_utils.resolve_indices(indices, count=len(self._articulation), device="cpu")
         dof_indices = ops_utils.resolve_indices(dof_indices, count=self._articulation.num_dofs, device="cpu")
         target_feedforward_efforts = ops_utils.broadcast_to(

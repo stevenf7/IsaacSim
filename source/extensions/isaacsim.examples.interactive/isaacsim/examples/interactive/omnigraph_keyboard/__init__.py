@@ -19,4 +19,4 @@
 from isaacsim.examples.interactive.omnigraph_keyboard.omnigraph_keyboard import OmnigraphKeyboard
 from isaacsim.examples.interactive.omnigraph_keyboard.omnigraph_keyboard_extension import OmnigraphKeyboardExtension
 
-__all__ = ["OmnigraphKeyboard"]
+__all__ = ["OmnigraphKeyboard", "OmnigraphKeyboardExtension"]

@@ -29,7 +29,7 @@ class TestRoboPartyExampleExtension(omni.kit.test.AsyncTestCase):
     """Test cases for the robo party example."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up the robo party sample and load the world."""
         self._sample = RoboParty()
         self._sample.set_world_settings(physics_dt=1.0 / 60.0, stage_units_in_meters=1.0)
@@ -40,7 +40,7 @@ class TestRoboPartyExampleExtension(omni.kit.test.AsyncTestCase):
         return
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down by waiting for assets and clearing the sample."""
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
         while stage_utils.is_stage_loading():
@@ -51,7 +51,7 @@ class TestRoboPartyExampleExtension(omni.kit.test.AsyncTestCase):
         self._sample = None
 
     # Run all functions with simulation enabled
-    async def test_stacking(self):
+    async def test_stacking(self) -> None:
         """Test the stacking and wheeled robot behaviors."""
         await self._sample.reset_async()
         await app_utils.update_app_async()
@@ -61,7 +61,7 @@ class TestRoboPartyExampleExtension(omni.kit.test.AsyncTestCase):
         for i in range(500):
             await app_utils.update_app_async()
 
-    async def test_reset(self):
+    async def test_reset(self) -> None:
         """Test that resetting the sample twice works without errors."""
         await self._sample.reset_async()
         await app_utils.update_app_async()
@@ -70,7 +70,7 @@ class TestRoboPartyExampleExtension(omni.kit.test.AsyncTestCase):
         await app_utils.update_app_async()
         await app_utils.update_app_async()
 
-    async def test_cpu_device_preserved_after_reset(self):
+    async def test_cpu_device_preserved_after_reset(self) -> None:
         """After reset with device='cpu', all physics scenes must remain in CPU mode."""
         await self._sample.reset_async()
         await app_utils.update_app_async()

@@ -40,7 +40,7 @@ class AssetDetailDelegate(FolderDetailDelegate):
         model: Example browser model
     """
 
-    def __init__(self, model: ExampleBrowserModel):
+    def __init__(self, model: ExampleBrowserModel) -> None:
         super().__init__(model=model)
 
         self._dragging_url = None
@@ -57,7 +57,7 @@ class AssetDetailDelegate(FolderDetailDelegate):
                 on_drop_fn=self._on_drop,
             )
 
-    def destroy(self):
+    def destroy(self) -> None:
         """Cleans up the delegate by destroying the drop helper and calling parent cleanup."""
         self._drop_helper = None
         super().destroy()
@@ -107,7 +107,7 @@ class AssetDetailDelegate(FolderDetailDelegate):
                     break
         return item.url
 
-    def _on_drop_accepted(self, url: str):
+    def _on_drop_accepted(self, url: str) -> bool:
         """Determines if a drop operation should be accepted.
 
         Args:
@@ -119,7 +119,9 @@ class AssetDetailDelegate(FolderDetailDelegate):
         # Only handle dragging from asset browser
         return url == self._dragging_url
 
-    def _on_drop(self, url: str, target: str, viewport_name: str, context_name: str):  # pylint: disable=useless-return
+    def _on_drop(
+        self, url: str, target: str, viewport_name: str, context_name: str
+    ) -> None:  # pylint: disable=useless-return
         """Handles the drop operation by temporarily enabling instanceable references for specific categories.
 
         Args:
@@ -136,7 +138,7 @@ class AssetDetailDelegate(FolderDetailDelegate):
             # Enable instanceable for viewport asset drop handler
             self._settings.set_bool("/persistent/app/stage/instanceableOnCreatingReference", True)
 
-            async def __restore_instanceable_flag():
+            async def __restore_instanceable_flag() -> None:
                 # Waiting for viewport asset dropper handler completed
                 await omni.kit.app.get_app().next_update_async()
                 self._settings.set("/persistent/app/stage/instanceableOnCreatingReference", saved_instanceable)
@@ -147,7 +149,7 @@ class AssetDetailDelegate(FolderDetailDelegate):
         # Let viewport do asset dropping
         return None  # noqa: R501
 
-    def on_right_click(self, item: DetailItem):
+    def on_right_click(self, item: DetailItem) -> None:
         """Show context menu.
 
         Args:

@@ -54,7 +54,7 @@ class Example:
         ui_hook: callable = None,
         category: str = "",
         thumbnail: Optional[str] = None,
-    ):
+    ) -> None:
         self.name = name
         self.category = category if category else "General"
         self.execute_entrypoint = execute_entrypoint
@@ -73,12 +73,12 @@ class ExampleCategoryItem(CategoryItem):
         name: The name of the category.
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         super().__init__(name)
         # Examples registered directly at this category (excluding descendants).
         self.examples: List["ExampleDetailItem"] = []
 
-    def add_child(self, child_name: str):
+    def add_child(self, child_name: str) -> "ExampleCategoryItem":
         """Adds a child category item to the current category.
 
         Creates a new child category with the specified name if it doesn't already exist,
@@ -120,7 +120,7 @@ class ExampleDetailItem(DetailItem):
         example: The Example object containing the example's metadata and execution details.
     """
 
-    def __init__(self, example: Example):
+    def __init__(self, example: Example) -> None:
         super().__init__(example.name, "", example.thumbnail)
         self.example = example
         self.ui_hook = example.ui_hook
@@ -154,7 +154,7 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
         **kwargs: Additional keyword arguments passed to the parent class.
     """
 
-    def __init__(self, *args: object, **kwargs: object):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         settings = carb.settings.get_settings()
         self._examples = {}
         # Set by `set_widget()` once the BrowserWidget is constructed; used by `execute()` to drive
@@ -192,7 +192,7 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
         self.refresh_browser()
         return
 
-    def get_category_items(self, item: CollectionItem) -> List[CategoryItem]:
+    def get_category_items(self, item: CollectionItem) -> list[CategoryItem]:
         """Override to get list of category items.
 
         Args:
@@ -251,7 +251,7 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
         self.sort_items(detail_items)
         return detail_items
 
-    def execute(self, item: DetailItem):
+    def execute(self, item: DetailItem) -> None:
         """Execute a detail item.
 
         For a regular example tile, runs the example's entrypoint. For a folder tile, navigates the tree
@@ -304,7 +304,7 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
             )
         return current
 
-    def deregister_example(self, name: str, category: str):
+    def deregister_example(self, name: str, category: str) -> None:
         """Removes an example from the browser.
 
         Args:

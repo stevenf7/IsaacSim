@@ -51,7 +51,7 @@ from .xform_prim import XformPrim
 _XYZW_WXYZ_REORDER_INDICES: dict[str, wp.array] = {}
 
 
-def _get_xyzw_wxyz_reorder_indices(device) -> wp.array:
+def _get_xyzw_wxyz_reorder_indices(device: Any) -> wp.array:
     key = str(device)
     indices = _XYZW_WXYZ_REORDER_INDICES.get(key)
     if indices is None:

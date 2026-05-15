@@ -20,7 +20,10 @@ from isaacsim.examples.ipc.bindings._isaacsim_examples_ipc import acquire_exampl
 
 
 class TestNodeExamplesPlugin(omni.kit.test.AsyncTestCase):
-    async def test_acquire_plugin_interface(self):
+    """Smoke tests for the native IPC plugin interface."""
+
+    async def test_acquire_plugin_interface(self) -> None:
+        """Acquire the native plugin interface."""
         # Verify the Carbonite plugin loaded successfully and returns a valid interface.
         # The extension owns the plugin lifecycle; releasing from a test context would
         # decrement the shared per-client refcount to zero and unload the plugin for all
