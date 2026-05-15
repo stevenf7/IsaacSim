@@ -82,6 +82,11 @@ Unitree Go2 Quadruped Example
 
 This example uses a Go2 Flat Terrain Policy trained in Isaac Lab to control the quadruped's locomotion. Both PhysX and Newton policies are provided so you can compare locomotion behavior across physics engines.
 
+.. image:: /images/isim_6.0_full_ext-isaacsim.robot.policy.examples_go2_locomotion.webp
+    :alt: Unitree Go2 quadruped following keyboard locomotion commands using the Go2 flat terrain policy.
+    :align: center
+    :width: 100%
+
 Controls:
 
 - Forward: UP ARROW / NUM 8
