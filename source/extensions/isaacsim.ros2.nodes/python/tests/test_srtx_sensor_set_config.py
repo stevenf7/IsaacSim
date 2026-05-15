@@ -65,6 +65,9 @@ def _parse_extension_version(version: str) -> tuple[int, int, int]:
 def _get_srtx_extension_version() -> str | None:
     """Return the enabled SRTX extension version, enabling it first if available."""
 
+    if not ros2_common.is_srtx_supported_platform():
+        return None
+
     ext_manager = omni.kit.app.get_app().get_extension_manager()
     ext_id = ext_manager.get_enabled_extension_id("omni.replicator.srtx")
     if ext_id is None:

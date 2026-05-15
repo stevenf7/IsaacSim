@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.5] - 2026-05-14
+### Fixed
+- Fixed Windows UI test flakiness for the ROS 2 URDF import menu by aligning test dependencies and window scaling arguments with other UI menu tests.
+
 ## [2.3.4] - 2026-04-27
 ### Removed
 - Remove the `omni.isaac.ml_archive` dependency

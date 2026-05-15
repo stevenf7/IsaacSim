@@ -1,4 +1,8 @@
 # Changelog
+## [1.18.5] - 2026-05-14
+### Fixed
+- SRTX configured sensor-set tests now skip on unsupported platforms before trying to enable `omni.replicator.srtx`, avoiding noisy Kit dependency resolution errors on Windows.
+
 ## [1.18.4] - 2026-05-13
 ### Fixed
 - `OgnROS2RtxLidarHelper`: 2D lidar (`LaserScan`) publishing failed because the laser-scan metadata dict carried a `max_points` key that `create_laser_scan_publisher_capsule` does not accept. Pass the laser-scan parameters by explicit keyword and stop computing `max_points` (and the unused `num_channels` / `max_returns` reads) on this path.

@@ -1,5 +1,5 @@
 [package]
-version = "2.3.4"
+version = "2.3.5"
 category = "Simulation"
 title = "Ros2 Robot Description URDF Importer"
 description = "This extensions expands the URDF Importer by enabling importing the robot description from a given ROS node"
@@ -30,11 +30,9 @@ args = [
 ]
 
 [[test]]
-stdoutFailPatterns.exclude = [
-    '*The NumPy module was reloaded*',
-]
 dependencies = [
     "isaacsim.test.utils",
+    "omni.kit.ui_test",
 ]
 args = [
     "--enable",
@@ -82,6 +80,12 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/rendering/perSensorTickTlas=true",
     "--/rtx/reservedDescriptors=900000",
+    ### Extension specific args
+    "--/app/window/dpiScaleOverride=1.0",
+    "--/app/window/scaleToMonitor=false",
+]
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
 ]
 
 [documentation]
