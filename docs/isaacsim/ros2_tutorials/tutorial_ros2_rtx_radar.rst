@@ -18,10 +18,13 @@ RTX Radar Sensors
 |isaac-sim_short| supports RTX Radar sensors that simulate radar detections including per-point radial velocity.
 RTX Radar requires Motion BVH to be enabled for Doppler velocity estimation.
 
+.. warning::
+
+    In Isaac Sim 6.0 GA, RTX Radar autotriggers regardless of ``omni:sensor:tickRate`` attribute. This will be corrected in a future release.
+
 .. note::
 
-    In |isaac-sim_short| 6.0, RTX Radar publish rates are governed by the ``omni:sensor:tickRate``
-    attribute on the ``OmniRadar`` prim. The ``ROS2 RTX Radar Helper`` node does not expose a
+    The ``ROS2 RTX Radar Helper`` node does not expose a
     ``frameSkipCount`` input. See :ref:`isaac_sim_sensors_multitick_rendering` for the multi-tick
     migration guide.
 
