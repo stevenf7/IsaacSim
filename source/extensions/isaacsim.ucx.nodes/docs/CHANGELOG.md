@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.2] - 2026-05-14
+### Fixed
+- `test_camera.py`: `receive_image_message` now performs the second `tag_recv` required by the GPU-direct two-message protocol (`sendCudaBuffer=True`, the camera helper default). Previously the test only consumed the metadata FlatBuffer, leaving `image_data` empty and `step = 0`; this caused `test_camera_rgb` and `test_camera_multiple_resolutions` to fail with `0 != width * 3` and silently masked the pixel-data validation in `test_camera_system_time` and `test_camera_frame_skip`. Added matching `step` and `len(image_data)` asserts to the latter two so the CPU-/GPU-direct pixel payload is actually verified in all four tests.
+- `tests/common.py`: added `cuda_copy` to `UCX_TLS`. The previous `tcp,self` value had no CUDA memtype module, so the new GPU-direct recv aborted with `UCX ERROR cannot find remote protocol for ... rndv_recv into host memory from cuda/dev[0]` and crashed the test process during shutdown. `cuda_copy` lets UCX stage GPU buffers through host memory before transmitting over TCP.
+
+### Added
+- `get_image_pixel_data_size` helper in `tests/common.py` that returns the expected pixel byte count from the Image FlatBuffer's `Tensor.shape[0]`. Used by receivers to detect the GPU-direct two-message protocol and size the follow-up pixel recv.
+
 ## [1.6.1] - 2026-05-13
 ### Changed
 - `frameSkipCount` deprecation message in UCXCameraHelper directs users to set input to 0.
