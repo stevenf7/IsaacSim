@@ -822,23 +822,29 @@ build-windows-x86_64-debug:
 # ==============================================================================================================
 # Specifies 1xGpu for linux-x86_64
 .kit-runner-test-linux-x86_64-1x-gpu:
+  variables:
+      FF_KUBERNETES_HONOR_ENTRYPOINT: true
+      IPP_RUNNER_GPU_DRIVER_VERSION: "570.158.01"  # GPU jobs inherit driver defined here
   image:
-    name: gitlab-master.nvidia.com:5005/omniverse/devplat/terraform/nvks/runners/gpu/nvks-gstreamer:2.1.5
-    entrypoint: [""]
+    name: urm.nvidia.com/ct-omniverse-docker/ci-jammy-gpu-x86_64-tester:3.0.0
 
 # ==============================================================================================================
 # Specifies 2xGpu tags for linux-x86_64
 .kit-runner-test-linux-x86_64-2x-gpu:
+  variables:
+      FF_KUBERNETES_HONOR_ENTRYPOINT: true
+      IPP_RUNNER_GPU_DRIVER_VERSION: "570.158.01"  # GPU jobs inherit driver defined here
   image:
-    name: gitlab-master.nvidia.com:5005/omniverse/devplat/terraform/nvks/runners/gpu/nvks-gstreamer:2.1.5
-    entrypoint: [""]
+    name: urm.nvidia.com/ct-omniverse-docker/ci-jammy-gpu-x86_64-tester:3.0.0
 
 # ==============================================================================================================
 # Specifies 4xGpu tags for linux-x86_64
 .kit-runner-test-linux-x86_64-4x-gpu:
+  variables:
+      FF_KUBERNETES_HONOR_ENTRYPOINT: true
+      IPP_RUNNER_GPU_DRIVER_VERSION: "570.158.01"  # GPU jobs inherit driver defined here
   image:
-    name: gitlab-master.nvidia.com:5005/omniverse/devplat/terraform/nvks/runners/gpu/nvks-gstreamer:2.1.5
-    entrypoint: [""]
+    name: urm.nvidia.com/ct-omniverse-docker/ci-jammy-gpu-x86_64-tester:3.0.0
 
 # ==============================================================================================================
 
