@@ -65,7 +65,7 @@ class PhysicsContext(object):
     ) -> None:
         self._prim_path = prim_path
         if not Sdf.Path(self._prim_path).IsAbsolutePath():
-            raise Exception(f"Input prim path is not absolute: {self._path}")
+            raise Exception(f"Input prim path is not absolute: {self._prim_path}")
         # check if there is a current physics scene defined already in the scene
         current_physics_prim = self.get_current_physics_scene_prim()
         self._physx_scene_api = None

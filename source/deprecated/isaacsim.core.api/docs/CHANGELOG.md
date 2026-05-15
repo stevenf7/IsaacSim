@@ -1,5 +1,11 @@
 # Changelog
 
+## [5.2.12] - 2026-05-14
+### Fixed
+- `SceneRegistry` direct `add_*` methods reject duplicate names before mutating registry state, matching `Scene.add()` behavior and preventing silent object replacement
+- `BaseTask` raises a `RuntimeError` when constructed without a valid USD stage or USD stage meters-to-unit conversion factor
+- Fix the access to the `prim_path` variable in `PhysicsContext` exception message
+
 ## [5.2.11] - 2026-05-12
 ### Fixed
 - `ArticulationController.get_applied_action`, `switch_control_mode`, and `switch_dof_control_mode` now raise the documented `RuntimeError` when called before `initialize()` instead of leaking `AttributeError: 'NoneType' object has no attribute ...` (added shared `_require_initialized()` helper, also reused by `apply_action`) (6132508)

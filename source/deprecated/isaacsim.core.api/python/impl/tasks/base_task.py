@@ -20,6 +20,7 @@ from __future__ import annotations
 import numpy as np
 from isaacsim.core.api.scenes.scene import Scene
 from isaacsim.core.api.simulation_context import SimulationContext
+from isaacsim.core.utils.stage import get_current_stage, get_stage_units
 
 
 class BaseTask(object):
@@ -34,6 +35,8 @@ class BaseTask(object):
         name: needs to be unique if added to the World.
         offset: offset applied to all assets of the task.
 
+    Raises:
+        RuntimeError: If the current USD stage or USD stage meters-to-unit conversion factor is not valid.
     """
 
     def __init__(self, name: str, offset: np.ndarray | None = None) -> None:
@@ -43,6 +46,15 @@ class BaseTask(object):
         self._task_objects = {}
         if self._offset is None:
             self._offset = np.array([0.0, 0.0, 0.0])
+
+        if not get_current_stage():
+            raise RuntimeError(
+                f"Cannot create task '{self._name}' because no USD stage is currently open. "
+                "Create or open a stage before constructing a task."
+            )
+        stage_units = get_stage_units()
+        if not stage_units or stage_units <= 0.0:
+            raise RuntimeError(f"Invalid USD stage meters-to-unit conversion factor: {stage_units}")
 
         self._device = None
         if SimulationContext.instance() is not None:

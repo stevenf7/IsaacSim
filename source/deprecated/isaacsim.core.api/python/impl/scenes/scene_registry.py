@@ -317,7 +317,22 @@ class SceneRegistry(object):
         """
         return self._particle_material_views
 
-    # TODO: add if name exists check uniqueness
+    def _register_object(self, name: str, obj: object, object_dict: dict) -> None:
+        """Register an object in the registry.
+
+        Args:
+            name: Object name.
+            obj: Object.
+            object_dict: Dictionary to register the object in.
+
+        Raises:
+            ValueError: If the object name is not unique.
+        """
+        if self.name_exists(name):
+            raise ValueError(f"Cannot add the object {name} to the scene since its name is not unique")
+        object_dict[name] = obj
+        return
+
     def add_rigid_object(self, name: str, rigid_object: SingleRigidPrim) -> None:
         """Register a ``SingleRigidPrim`` (or subclass) object.
 
@@ -326,7 +341,7 @@ class SceneRegistry(object):
             rigid_object: Object.
 
         """
-        self._rigid_objects[name] = rigid_object
+        self._register_object(name, rigid_object, self._rigid_objects)
         return
 
     def add_rigid_prim_view(self, name: str, rigid_prim_view: RigidPrim) -> None:
@@ -337,7 +352,7 @@ class SceneRegistry(object):
             rigid_prim_view: Object.
 
         """
-        self._rigid_prim_views[name] = rigid_prim_view
+        self._register_object(name, rigid_prim_view, self._rigid_prim_views)
         return
 
     def add_rigid_contact_view(self, name: str, rigid_contact_view: RigidContactView) -> None:
@@ -348,7 +363,7 @@ class SceneRegistry(object):
             rigid_contact_view: Object.
 
         """
-        self._rigid_contact_views[name] = rigid_contact_view
+        self._register_object(name, rigid_contact_view, self._rigid_contact_views)
         return
 
     def add_articulated_system(self, name: str, articulated_system: SingleArticulation) -> None:
@@ -359,7 +374,7 @@ class SceneRegistry(object):
             articulated_system: Object.
 
         """
-        self._articulated_systems[name] = articulated_system
+        self._register_object(name, articulated_system, self._articulated_systems)
         return
 
     def add_articulated_view(self, name: str, articulated_view: Articulation) -> None:
@@ -370,7 +385,7 @@ class SceneRegistry(object):
             articulated_view: Object.
 
         """
-        self._articulated_views[name] = articulated_view
+        self._register_object(name, articulated_view, self._articulated_views)
         return
 
     def add_geometry_object(self, name: str, geometry_object: SingleGeometryPrim) -> None:
@@ -381,7 +396,7 @@ class SceneRegistry(object):
             geometry_object: Object.
 
         """
-        self._geometry_objects[name] = geometry_object
+        self._register_object(name, geometry_object, self._geometry_objects)
         return
 
     def add_geometry_prim_view(self, name: str, geometry_prim_view: GeometryPrim) -> None:
@@ -392,7 +407,7 @@ class SceneRegistry(object):
             geometry_prim_view: Object.
 
         """
-        self._geometry_prim_views[name] = geometry_prim_view
+        self._register_object(name, geometry_prim_view, self._geometry_prim_views)
         return
 
     def add_robot(self, name: str, robot: Robot) -> None:
@@ -403,7 +418,7 @@ class SceneRegistry(object):
             robot: Object.
 
         """
-        self._robots[name] = robot
+        self._register_object(name, robot, self._robots)
         return
 
     def add_robot_view(self, name: str, robot_view: RobotView) -> None:
@@ -414,7 +429,7 @@ class SceneRegistry(object):
             robot_view: Object.
 
         """
-        self._robot_views[name] = robot_view
+        self._register_object(name, robot_view, self._robot_views)
         return
 
     def add_xform_view(self, name: str, xform_prim_view: XFormPrim) -> None:
@@ -425,7 +440,7 @@ class SceneRegistry(object):
             xform_prim_view: Object
 
         """
-        self._xform_prim_views[name] = xform_prim_view
+        self._register_object(name, xform_prim_view, self._xform_prim_views)
         return
 
     def add_deformable(self, name: str, deformable: SingleDeformablePrim) -> None:
@@ -436,7 +451,7 @@ class SceneRegistry(object):
             deformable: Object
 
         """
-        self._deformable_prims[name] = deformable
+        self._register_object(name, deformable, self._deformable_prims)
         return
 
     def add_deformable_view(self, name: str, deformable_prim_view: DeformablePrim) -> None:
@@ -447,7 +462,7 @@ class SceneRegistry(object):
             deformable_prim_view: Object
 
         """
-        self._deformable_prim_views[name] = deformable_prim_view
+        self._register_object(name, deformable_prim_view, self._deformable_prim_views)
         return
 
     def add_deformable_material(self, name: str, deformable_material: DeformableMaterial) -> None:
@@ -458,7 +473,7 @@ class SceneRegistry(object):
             deformable_material: Object
 
         """
-        self._deformable_materials[name] = deformable_material
+        self._register_object(name, deformable_material, self._deformable_materials)
         return
 
     def add_deformable_material_view(self, name: str, deformable_material_view: DeformableMaterialView) -> None:
@@ -469,7 +484,7 @@ class SceneRegistry(object):
             deformable_material_view: Object
 
         """
-        self._deformable_material_views[name] = deformable_material_view
+        self._register_object(name, deformable_material_view, self._deformable_material_views)
         return
 
     def add_cloth(self, name: str, cloth: SingleClothPrim) -> None:
@@ -480,7 +495,7 @@ class SceneRegistry(object):
             cloth: Object
 
         """
-        self._cloth_prims[name] = cloth
+        self._register_object(name, cloth, self._cloth_prims)
         return
 
     def add_cloth_view(self, name: str, cloth_prim_view: ClothPrim) -> None:
@@ -491,7 +506,7 @@ class SceneRegistry(object):
             cloth_prim_view: Object
 
         """
-        self._cloth_prim_views[name] = cloth_prim_view
+        self._register_object(name, cloth_prim_view, self._cloth_prim_views)
         return
 
     def add_particle_system(self, name: str, particle_system: SingleParticleSystem) -> None:
@@ -502,7 +517,7 @@ class SceneRegistry(object):
             particle_system: Object
 
         """
-        self._particle_systems[name] = particle_system
+        self._register_object(name, particle_system, self._particle_systems)
         return
 
     def add_particle_system_view(self, name: str, particle_system_view: ParticleSystem) -> None:
@@ -513,7 +528,7 @@ class SceneRegistry(object):
             particle_system_view: Object
 
         """
-        self._particle_system_views[name] = particle_system_view
+        self._register_object(name, particle_system_view, self._particle_system_views)
         return
 
     def add_particle_material(self, name: str, particle_material: ParticleMaterial) -> None:
@@ -524,7 +539,7 @@ class SceneRegistry(object):
             particle_material: Object
 
         """
-        self._particle_materials[name] = particle_material
+        self._register_object(name, particle_material, self._particle_materials)
         return
 
     def add_particle_material_view(self, name: str, particle_material_view: ParticleMaterialView) -> None:
@@ -535,7 +550,7 @@ class SceneRegistry(object):
             particle_material_view: Object
 
         """
-        self._particle_material_views[name] = particle_material_view
+        self._register_object(name, particle_material_view, self._particle_material_views)
         return
 
     def add_xform(self, name: str, xform: SingleXFormPrim) -> None:
@@ -546,7 +561,7 @@ class SceneRegistry(object):
             xform: Object
 
         """
-        self._xforms[name] = xform
+        self._register_object(name, xform, self._xforms)
         return
 
     def add_sensor(self, name: str, sensor: BaseSensor) -> None:
@@ -557,7 +572,7 @@ class SceneRegistry(object):
             sensor: Object
 
         """
-        self._sensors[name] = sensor
+        self._register_object(name, sensor, self._sensors)
 
         return
 
