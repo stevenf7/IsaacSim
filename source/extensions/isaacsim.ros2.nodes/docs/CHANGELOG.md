@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.18.6] - 2026-05-15
+### Changed
+- `OgnROS2CameraHelper`: renamed `compressionType` input to `srtxCompressionType` and marked it as hidden.
+
 ## [1.18.5] - 2026-05-14
 ### Fixed
 - SRTX configured sensor-set tests now skip on unsupported platforms before trying to enable `omni.replicator.srtx`, avoiding noisy Kit dependency resolution errors on Windows.
