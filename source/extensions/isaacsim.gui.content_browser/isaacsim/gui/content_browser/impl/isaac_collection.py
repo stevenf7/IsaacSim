@@ -42,7 +42,7 @@ class IsaacConnectionItem(NucleusItem):
         path: Path of the item.
     """
 
-    def __init__(self, name: str, path: str):
+    def __init__(self, name: str, path: str) -> None:
         access = omni.client.AccessFlags.READ
         fields = FileBrowserItemFields(name, datetime.now(), 0, access)
         super().__init__(path, fields, is_folder=True)
@@ -62,7 +62,7 @@ class IsaacCollection(CollectionItem):
     asynchronously from the application settings and displayed as browsable items in the file browser.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         settings = carb.settings.get_settings()
         self._asset_root = settings.get_as_string(SETTING_ASSET_ROOT).rstrip("/")
 

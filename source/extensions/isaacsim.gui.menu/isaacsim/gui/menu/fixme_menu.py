@@ -43,7 +43,7 @@ class FixmeMenuExtension:
             return MenuAlignment.RIGHT
 
         # override build fn to not show menu item...
-        def build_item(self, item: ui.MenuHelper):
+        def build_item(self, item: ui.MenuHelper) -> None:
             """Override item rendering to hide the menu item.
 
             Args:
@@ -56,7 +56,7 @@ class FixmeMenuExtension:
                     delegate.build_item(item)
             """
 
-    def __init__(self, ext_id: str):
+    def __init__(self, ext_id: str) -> None:
         self._menu_placeholder = [MenuItemDescription(name="FixMe!!!", show_fn=lambda: False)]
         omni.kit.menu.utils.add_menu_items(self._menu_placeholder, "FixMe", delegate=FixmeMenuExtension.MenuDelegate())
 
@@ -106,7 +106,7 @@ class FixmeMenuExtension:
         ]
         omni.kit.menu.utils.add_layout(self.__menu_layout)
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Remove menu layouts and placeholders.
 
         Example:

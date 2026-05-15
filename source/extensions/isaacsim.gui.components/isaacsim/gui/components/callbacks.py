@@ -42,7 +42,7 @@ def on_copy_to_clipboard(to_copy: str) -> None:
         return
 
 
-def on_open_IDE_clicked(ext_path: str, file_path: str):
+def on_open_IDE_clicked(ext_path: str, file_path: str) -> None:  # noqa: N802
     """Opens the current directory and file in VSCode.
 
     Args:
@@ -63,7 +63,7 @@ def on_open_IDE_clicked(ext_path: str, file_path: str):
         )
 
 
-def on_open_folder_clicked(file_path: str):
+def on_open_folder_clicked(file_path: str) -> None:
     """Opens the current directory in a file browser.
 
     Args:
@@ -82,7 +82,7 @@ def on_open_folder_clicked(file_path: str):
             carb.log_warn("could not open file browser")
 
 
-def on_docs_link_clicked(doc_link: str):
+def on_docs_link_clicked(doc_link: str) -> None:
     """Opens an extension's documentation in a web browser.
 
     Args:

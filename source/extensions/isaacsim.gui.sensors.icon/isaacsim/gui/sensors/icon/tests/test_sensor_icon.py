@@ -37,7 +37,7 @@ TEST_OBJECT_PRIM_PATH = "/test_obj"
 
 
 # -- TRANSITION FOR SUPPORTING BOTH VP1 AND VP2
-def is_viewport_legacy():
+def is_viewport_legacy() -> bool:
     """Check if the active viewport is a legacy viewport."""
     viewport_api = get_active_viewport()
     return hasattr(viewport_api, "legacy_window")
@@ -49,7 +49,7 @@ def is_viewport_legacy():
 class TestSensorIcon(OmniUiTest):
     """Test suite for sensor icon functionality."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures before each test."""
         await super().setUp()
         usd_context = omni.usd.get_context()
@@ -66,7 +66,7 @@ class TestSensorIcon(OmniUiTest):
         self._settings.set(VISIBLE_SETTING, True)
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures after each test."""
         usd_context = omni.usd.get_context()
         await usd_context.close_stage_async()
@@ -74,7 +74,7 @@ class TestSensorIcon(OmniUiTest):
         self._icon_scene.destroy()
         await super().tearDown()
 
-    async def _dock_viewport(self, width: int = 1200, height: int = 900, block_device: bool = False):
+    async def _dock_viewport(self, width: int = 1200, height: int = 900, block_device: bool = False) -> None:
         """Utility function to dock viewport window and focus on turntable panel.
 
         Args:
@@ -86,7 +86,7 @@ class TestSensorIcon(OmniUiTest):
         await self.docked_test_window(window=viewport, width=width, height=height, block_devices=block_device)
         await ui_test.wait_n_updates()
 
-    async def test_sensoricon_default(self):
+    async def test_sensoricon_default(self) -> None:
         """Test default sensor icon creation and manipulation."""
         create_test_object()
         self._settings.set(SHOW_TITLE_PATH, True)
@@ -113,7 +113,7 @@ class TestSensorIcon(OmniUiTest):
         sensor_item = model._icons.get(sdf_path)
         self.assertFalse(sensor_item.visible)
 
-        def click_fn(*_):
+        def click_fn(*_: object) -> None:
             pass
 
         self._icon_scene.set_icon_click_fn(TEST_OBJECT_PRIM_PATH, click_fn)
@@ -124,7 +124,7 @@ class TestSensorIcon(OmniUiTest):
         self._icon_scene.destroy()
         await ui_test.wait_n_updates(30)
 
-    async def test_sensoricon_saved_stage(self):
+    async def test_sensoricon_saved_stage(self) -> None:
         """Test sensor icon persistence across stage saves."""
         create_test_object()
         self._settings.set(SHOW_TITLE_PATH, True)
@@ -146,7 +146,7 @@ class TestSensorIcon(OmniUiTest):
         retrieved_path = new_model.get_icon_url(TEST_OBJECT_PRIM_PATH)
         self.assertEqual(retrieved_path, str(path))
 
-    async def test_sensoricon_path_types(self):
+    async def test_sensoricon_path_types(self) -> None:
         """Tests handling of str and Sdf.Path for prim_path arguments."""
         create_test_object()
         self._settings.set(SHOW_TITLE_PATH, True)
@@ -194,7 +194,7 @@ class TestSensorIcon(OmniUiTest):
         self.assertTrue(model.get_item(prim_path_sdf).visible)
 
         # Test set_icon_click_fn - unused
-        def click_fn_1(*_):
+        def click_fn_1(*_: object) -> None:
             pass
 
         self._icon_scene.set_icon_click_fn(prim_path_str, click_fn_1)
@@ -226,7 +226,7 @@ class TestSensorIcon(OmniUiTest):
         self.assertEqual(model.get_icon_url(prim_path_sdf), "")
         self.assertIsNone(model.get_item(prim_path_str))
 
-    async def test_sensoricon_usd_listening(self):
+    async def test_sensoricon_usd_listening(self) -> None:
         """Tests USD listening and icon visibility."""
         create_test_object()
         self._settings.set(SHOW_TITLE_PATH, True)
@@ -258,7 +258,11 @@ class TestSensorIcon(OmniUiTest):
         self.assertTrue(model.get_item(TEST_OBJECT_PRIM_PATH).visible)
 
 
-def create_test_object(prim_path=TEST_OBJECT_PRIM_PATH, prim_type="IsaacContactSensor", attrs=None):
+def create_test_object(
+    prim_path: str | Sdf.Path = TEST_OBJECT_PRIM_PATH,
+    prim_type: str = "IsaacContactSensor",
+    attrs: dict[str, object] | None = None,
+) -> None:
     """Create a test object prim with an icon position attribute."""
     kwargs = {"prim_type": prim_type, "prim_path": prim_path}
     if attrs:

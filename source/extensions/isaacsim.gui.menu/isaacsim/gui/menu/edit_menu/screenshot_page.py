@@ -26,7 +26,7 @@ __all__ = ["ScreenshotPreferences"]
 class ScreenshotPreferences(PreferenceBuilder):
     """Preferences page for configuring screenshot capture."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("Capture Screenshot")
 
         self._settings = carb.settings.get_settings()
@@ -59,7 +59,7 @@ class ScreenshotPreferences(PreferenceBuilder):
                 carb.log_error(f"Failed to create directory {template_path}")
         os.umask(original_umask)
 
-    def build(self):
+    def build(self) -> None:
         """Build the screenshot preferences UI.
 
         Example:
@@ -124,7 +124,7 @@ class ScreenshotPreferences(PreferenceBuilder):
         """
         return self._settings.get("/exts/omni.ansel/enable")
 
-    def _on_browse_button_fn(self, owner: ui.Widget):
+    def _on_browse_button_fn(self, owner: ui.Widget) -> None:
         """Handle Browse button clicks for selecting a directory.
 
         Args:

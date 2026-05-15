@@ -39,7 +39,7 @@ class IconScene:  # pragma: no cover
         **kwargs: Additional keyword arguments passed to the parent class.
     """
 
-    def __init__(self, title: str = None, icon_scale: float = 1.0, **kwargs):
+    def __init__(self, title: str | None = None, icon_scale: float = 1.0, **kwargs: object) -> None:
         self._sensor_icon = SensorIcon.get_instance()
         self._manipulater = IconManipulator(
             model=self._sensor_icon.get_model(),
@@ -93,12 +93,12 @@ class IconScene:  # pragma: no cover
         return self._manipulater.visible
 
     @visible.setter
-    def visible(self, value: bool):
+    def visible(self, value: bool) -> None:
         value = bool(value)
         # self._model.beam_visible = value
         self._manipulater.visible = value
 
-    def destroy(self):
+    def destroy(self) -> None:
         """Destroys the icon scene and releases all resources.
 
         Clears all icons and sets the manipulator to None to prevent further operations.
@@ -115,7 +115,7 @@ class IconScene:  # pragma: no cover
             return
         self._manipulater.clear()
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Destructor that ensures proper cleanup when the object is garbage collected.
 
         Calls destroy() to release all resources and prevent memory leaks.
@@ -145,7 +145,7 @@ class SensorIcon:
     _instance = None
     """Singleton instance of the SensorIcon class."""
 
-    def __init__(self, test: bool = False):
+    def __init__(self, test: bool = False) -> None:
         self.model = IconModel()
         self._settings = carb.settings.get_settings()
         self._visible_sub = self._settings.subscribe_to_node_change_events(VISIBLE_SETTING, self._on_visible_changed)
@@ -214,14 +214,14 @@ class SensorIcon:
             SensorIcon._instance = SensorIcon()
         return SensorIcon._instance
 
-    def destroy(self):
+    def destroy(self) -> None:
         """Destroys the SensorIcon instance and cleans up resources."""
         self.timeline_event_sub = None
         self.clear()
         self.model = None
         SensorIcon._instance = None
 
-    def get_model(self):
+    def get_model(self) -> IconModel | None:
         """The IconModel instance used by this SensorIcon.
 
         Returns:

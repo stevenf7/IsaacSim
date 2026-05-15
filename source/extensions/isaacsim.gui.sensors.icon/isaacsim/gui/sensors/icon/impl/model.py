@@ -18,8 +18,8 @@
 
 __all__ = ["IconModel"]
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 import carb
 import omni.kit.app
@@ -70,7 +70,7 @@ class IconModel(sc.AbstractManipulatorModel):
             icon_url: The file path or URL to the icon image to display for this sensor.
         """
 
-        def __init__(self, prim_path: object, icon_url: str):
+        def __init__(self, prim_path: object, icon_url: str) -> None:
             super().__init__()
             self.icon_url = icon_url
             self.prim_path = prim_path
@@ -78,7 +78,7 @@ class IconModel(sc.AbstractManipulatorModel):
             self.removed = False
             self.visible = True
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._usd_listening_active = True
         self._sensor_icon_dir = omni.kit.app.get_app().get_extension_manager().get_extension_path_by_module(__name__)
@@ -108,7 +108,7 @@ class IconModel(sc.AbstractManipulatorModel):
 
         self._connect_to_stage()
 
-    def _connect_to_stage(self):
+    def _connect_to_stage(self) -> None:
         """Connects the icon model to the current USD stage and initializes icon population."""
         stage = self._usd_context.get_stage()
         if stage:
@@ -220,14 +220,14 @@ class IconModel(sc.AbstractManipulatorModel):
         """
         return max(self._world_unit, 0.1)
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Destructor that cleans up event subscriptions and destroys the model."""
         self._stage_open_sub = None
         self._stage_close_sub = None
         self._frame_sub = None
         self.destroy()
 
-    def destroy(self):
+    def destroy(self) -> None:
         """Destroys the icon model and cleans up resources."""
         self._icons = {}
         if self._frame_sub:
@@ -379,7 +379,7 @@ class IconModel(sc.AbstractManipulatorModel):
 
             self._item_changed(item)
 
-    def clear(self):
+    def clear(self) -> None:
         """Clears all sensor icons from the model and notifies observers of the change."""
         if self._icons:
             self._icons = {}
@@ -516,7 +516,7 @@ class IconModel(sc.AbstractManipulatorModel):
             item.visible = False
             self._item_changed(item)
 
-    def show_all(self):
+    def show_all(self) -> None:
         """Shows all sensor icons by activating USD listening and repopulating icons from the current stage state."""
         # Activate USD listening
         self._usd_listening_active = True
@@ -533,7 +533,7 @@ class IconModel(sc.AbstractManipulatorModel):
         # Refresh all icons from the current USD state
         self._populate_initial_icons()
 
-    def hide_all(self):
+    def hide_all(self) -> None:
         """Hides all sensor icons by deactivating USD listening and clearing the icon model."""
         # Deactivate USD listening
         self._usd_listening_active = False

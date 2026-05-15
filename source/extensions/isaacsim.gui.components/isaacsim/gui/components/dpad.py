@@ -15,8 +15,8 @@
 
 """Directional pad (D-Pad) UI widget for controlling movement in Isaac Sim."""
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 import omni.appwindow
 import omni.ext
@@ -85,7 +85,7 @@ class Dpad:
         mouse_released_fn_ccw: Callable = None,
         width: int = 210,
         height: int = 210,
-    ):
+    ) -> None:
         self.name = name
 
         self.clicked_fn_up = clicked_fn_up
@@ -117,7 +117,7 @@ class Dpad:
         self._build_ui()
         return
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         self._window = ui.Window(
             title=self.name,
             width=self.width,
@@ -129,7 +129,6 @@ class Dpad:
         with self._window.frame:
             padding = 6
             h_spacing = self.width / 3.0 - padding
-            v_spacing = h_spacing
             with ui.VStack(spacing=0, height=self.height, width=self.width):
                 with ui.HStack():
                     if self.clicked_fn_ccw or self.mouse_pressed_fn_ccw or self.mouse_released_fn_ccw:
@@ -199,7 +198,7 @@ class Dpad:
                     ui.Spacer()
         return
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Clean up the D-Pad window and release resources."""
         self._window = None
         self.name = None

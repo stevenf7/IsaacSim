@@ -59,7 +59,7 @@ class TestRobotMenuAssets(MenuUITestCase):
 
         self.assertTrue(has_robot, f"Failed to find articulation root for {test_path}")
 
-    async def test_robot_menu_items(self):
+    async def test_robot_menu_items(self) -> None:
         """Test all robot menu items."""
         # Get menu dict at runtime instead of module load time
         window = get_main_window()
@@ -89,7 +89,7 @@ ENVIRONMENT_SKIP_LIST = ["Create/Environments/Asset Browser"]
 class TestEnvironmentMenuAssets(MenuUITestCase):
     """Test class for verifying environment menu asset loading functionality."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment before each test method."""
         await super().setUp()
 
@@ -114,7 +114,7 @@ class TestEnvironmentMenuAssets(MenuUITestCase):
         prim_list = self._get_prims(omni.usd.get_context().get_stage())
         self.assertTrue(prim_roots[test_path] in prim_list, f"{prim_roots[test_path]} not found in {prim_list}")
 
-    async def test_environment_menu_items(self):
+    async def test_environment_menu_items(self) -> None:
         """Test all environment menu items."""
         # Get menu dict at runtime instead of module load time
         window = get_main_window()
@@ -132,7 +132,7 @@ class TestEnvironmentMenuAssets(MenuUITestCase):
                     # Reset stage for next iteration
                     await self.new_stage()
 
-    def _get_prims(self, stage: object, exclude_list: list = []) -> list[str]:
+    def _get_prims(self, stage: object, exclude_list: list | None = None) -> list[str]:
         """Retrieve prims by traversing the stage and excluding specified prims.
 
         Args:
@@ -142,6 +142,8 @@ class TestEnvironmentMenuAssets(MenuUITestCase):
         Returns:
             A list of prims found during traversal.
         """
+        if exclude_list is None:
+            exclude_list = []
         prims = []
         for p in stage.Traverse(
             Usd.TraverseInstanceProxies(Usd.PrimIsActive and Usd.PrimIsDefined and Usd.PrimIsLoaded)
@@ -159,7 +161,7 @@ class TestEnvironmentMenuAssets(MenuUITestCase):
 class TestAprilTagMenu(MenuUITestCase):
     """Test class for verifying April Tag menu functionality."""
 
-    async def test_apriltag_menu(self):
+    async def test_apriltag_menu(self) -> None:
         """Test that April Tags menu creates material that can be bound to a mesh."""
         apriltag_path = "Create/April Tags"
 

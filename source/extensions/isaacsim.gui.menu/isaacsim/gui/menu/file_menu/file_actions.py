@@ -23,7 +23,7 @@ import omni.kit.window.file
 import omni.usd
 
 
-def post_notification(message: str, info: bool = False, duration: int = 3):
+def post_notification(message: str, info: bool = False, duration: int = 3) -> None:
     """Post a notification with a message.
 
     Args:
@@ -48,7 +48,7 @@ def post_notification(message: str, info: bool = False, duration: int = 3):
         carb.log_warn(message)
 
 
-def quit_kit(fast: bool = False):
+def quit_kit(fast: bool = False) -> None:
     """Request the application to quit.
 
     Args:
@@ -82,7 +82,7 @@ def open_stage_with_new_edit_layer() -> None:
     omni.kit.window.file.open_with_new_edit_layer(stage.GetRootLayer().identifier)
 
 
-def register_actions(extension_id: str):
+def register_actions(extension_id: str) -> None:
     """Register file-related actions within an extension.
 
     Args:
@@ -123,7 +123,7 @@ def register_actions(extension_id: str):
     )
 
 
-def deregister_actions(extension_id: str):
+def deregister_actions(extension_id: str) -> None:
     """Remove all registered actions for an extension.
 
     Args:

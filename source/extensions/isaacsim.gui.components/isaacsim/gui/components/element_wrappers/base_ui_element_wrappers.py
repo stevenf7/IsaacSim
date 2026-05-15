@@ -28,7 +28,7 @@ class UIWidgetWrapper:
         container_frame: The Omni UI frame that contains the widget.
     """
 
-    def __init__(self, container_frame: ui.Frame):
+    def __init__(self, container_frame: ui.Frame) -> None:
         self._container_frame = container_frame
 
     @property
@@ -50,7 +50,7 @@ class UIWidgetWrapper:
         return self.container_frame.enabled
 
     @enabled.setter
-    def enabled(self, value: bool):
+    def enabled(self, value: bool) -> None:
         self.container_frame.enabled = value
 
     @property
@@ -63,8 +63,8 @@ class UIWidgetWrapper:
         return self.container_frame.visible
 
     @visible.setter
-    def visible(self, value: bool):
+    def visible(self, value: bool) -> None:
         self.container_frame.visible = value
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Perform any necessary cleanup."""

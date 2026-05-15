@@ -50,7 +50,7 @@ class AssetCheck:
         # Run initial check (skips on first startup)
         self._await_new_scene = asyncio.ensure_future(self._assets_check_window())
 
-    def destroy(self):
+    def destroy(self) -> None:
         """Release UI resources."""
         self._server_window = None
         self._check_success = None
@@ -119,7 +119,7 @@ class AssetCheck:
             # use native system level open, handles snap based browsers better
             subprocess.Popen(["xdg-open", path])
 
-    async def _assets_check_success_window(self):
+    async def _assets_check_success_window(self) -> None:
         """Show a small pop-up confirming that assets were found."""
         self._check_success = ui.Window(
             "Isaac Sim Assets Check Successful",
@@ -134,7 +134,7 @@ class AssetCheck:
         )
         self._check_success.set_visibility_changed_fn(self._notify_visibility_changed)
 
-        def hide(w):
+        def hide(w: ui.Window) -> None:
             w.visible = False
 
         with self._check_success.frame:

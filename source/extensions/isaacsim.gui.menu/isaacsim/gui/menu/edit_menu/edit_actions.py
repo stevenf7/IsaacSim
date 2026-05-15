@@ -25,7 +25,7 @@ from typing import Any
 import omni.kit.actions.core
 
 
-def register_actions(extension_id: str, cls: type[Any], get_self_fn: Callable[[], Any]):
+def register_actions(extension_id: str, cls: type[Any], get_self_fn: Callable[[], Any]) -> None:
     """Register edit-related actions for an extension.
 
     Args:
@@ -67,7 +67,7 @@ def register_actions(extension_id: str, cls: type[Any], get_self_fn: Callable[[]
         """
         old_selection = omni.usd.get_context().get_selection().get_selected_prim_paths()
 
-        async def select_func():
+        async def select_func() -> None:
             await omni.kit.app.get_app().next_update_async()
             omni.kit.actions.core.execute_action("omni.kit.selection", select_name)
             last_description = f"{description} {old_selection}"
@@ -308,7 +308,7 @@ def register_actions(extension_id: str, cls: type[Any], get_self_fn: Callable[[]
     )
 
 
-def deregister_actions(extension_id: str):
+def deregister_actions(extension_id: str) -> None:
     """Deregister all actions for an extension.
 
     Args:

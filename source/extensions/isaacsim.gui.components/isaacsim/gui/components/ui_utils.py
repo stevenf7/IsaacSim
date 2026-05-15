@@ -99,7 +99,7 @@ def state_btn_builder(
         The created button widget.
     """
 
-    def toggle():
+    def toggle() -> None:
         if btn.text == a_text.upper():
             btn.text = b_text.upper()
             on_clicked_fn(True)
@@ -160,9 +160,9 @@ def multi_btn_builder(
     label: str = "",
     type: str = "multi_button",
     count: int = 2,
-    text: list = ["button", "button"],
-    tooltip: list = ["", "", ""],
-    on_clicked_fn: list = [None, None],
+    text: list = None,
+    tooltip: list = None,
+    on_clicked_fn: list = None,
 ) -> list[ui.Button]:
     """Creates a Row of Stylized Buttons.
 
@@ -177,6 +177,12 @@ def multi_btn_builder(
     Returns:
         List of Buttons
     """
+    if on_clicked_fn is None:
+        on_clicked_fn = [None, None]
+    if tooltip is None:
+        tooltip = ["", "", ""]
+    if text is None:
+        text = ["button", "button"]
     btns = []
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip[0]))
@@ -201,10 +207,10 @@ def multi_cb_builder(
     label: str = "",
     type: str = "multi_checkbox",
     count: int = 2,
-    text: list = [" ", " "],
-    default_val: list = [False, False],
-    tooltip: list = ["", "", ""],
-    on_clicked_fn: list = [None, None],
+    text: list = None,
+    default_val: list = None,
+    tooltip: list = None,
+    on_clicked_fn: list = None,
 ) -> list[ui.SimpleBoolModel]:
     """Creates a Row of Stylized Checkboxes.
 
@@ -220,6 +226,14 @@ def multi_cb_builder(
     Returns:
         List of models
     """
+    if on_clicked_fn is None:
+        on_clicked_fn = [None, None]
+    if tooltip is None:
+        tooltip = ["", "", ""]
+    if default_val is None:
+        default_val = [False, False]
+    if text is None:
+        text = [" ", " "]
     cbs = []
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH - 12, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip[0]))
@@ -295,7 +309,7 @@ def str_builder(
 
         if use_folder_picker:
 
-            def update_field(filename, path):
+            def update_field(filename: object, path: object) -> None:
                 if filename == "":
                     val = path
                 elif filename[0] != "/" and path[-1] != "/":
@@ -359,7 +373,7 @@ def float_builder(
     max: float = inf,
     step: float = 0.1,
     format: str = "%.2f",
-):
+) -> object:
     """Creates a Stylized Floatfield Widget.
 
     Args:
@@ -395,14 +409,14 @@ def float_builder(
 def combo_cb_str_builder(
     label: str = "",
     type: str = "checkbox_stringfield",
-    default_val: list = [False, " "],
+    default_val: list = None,
     tooltip: str = "",
     on_clicked_fn: object = lambda x: None,
     use_folder_picker: bool = False,
     read_only: bool = False,
     folder_dialog_title: str = "Select Output Folder",
     folder_button_title: str = "Select Folder",
-):
+) -> object:
     """Creates a Stylized Checkbox + Stringfield Widget.
 
     Args:
@@ -419,6 +433,8 @@ def combo_cb_str_builder(
     Returns:
         (cb_model, str_field_model)
     """
+    if default_val is None:
+        default_val = [False, " "]
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH - 12, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         cb = ui.SimpleBoolModel(default_value=default_val[0])
@@ -430,7 +446,7 @@ def combo_cb_str_builder(
 
         if use_folder_picker:
 
-            def update_field(val):
+            def update_field(val: object) -> None:
                 str_field.set_value(val)
 
             add_folder_picker_icon(update_field, dialog_title=folder_dialog_title, button_title=folder_button_title)
@@ -485,7 +501,7 @@ def dropdown_builder(
         if show_flourish:
             add_line_rect_flourish(False)
 
-        def on_clicked_wrapper(model, val):
+        def on_clicked_wrapper(model: object, val: object) -> None:
             on_clicked_fn(items[model.get_item_value_model().as_int])
 
         if on_clicked_fn is not None:
@@ -528,7 +544,7 @@ def checkbox_builder(
 
         if on_clicked_fn is not None:
 
-            def on_click(value_model, cb=on_clicked_fn):
+            def on_click(value_model: object, cb: object = on_clicked_fn) -> None:
                 cb(value_model.get_value_as_bool())
 
             check_box.model.add_value_changed_fn(on_click)
@@ -585,7 +601,7 @@ def string_filed_builder(
         str_field.model.set_value(default_val)
         if use_folder_picker:
 
-            def update_field(filename, path):
+            def update_field(filename: object, path: object) -> None:
                 if filename == "":
                     val = path
                 elif filename[0] != "/" and path[-1] != "/":
@@ -618,8 +634,8 @@ def combo_intfield_slider_builder(
     min: int = 0,
     max: int = 1,
     step: float = 0.01,
-    tooltip: list = ["", ""],
-):
+    tooltip: list = None,
+) -> object:
     """Creates a Stylized IntField + Stringfield Widget.
 
     Args:
@@ -634,6 +650,8 @@ def combo_intfield_slider_builder(
     Returns:
         Tuple(AbstractValueModel, IntSlider): (flt_field_model, flt_slider_model)
     """
+    if tooltip is None:
+        tooltip = ["", ""]
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip[0]))
         ff = ui.IntDrag(
@@ -656,8 +674,8 @@ def combo_floatfield_slider_builder(
     min: int = 0,
     max: int = 1,
     step: float = 0.01,
-    tooltip: list = ["", ""],
-):
+    tooltip: list = None,
+) -> object:
     """Creates a Stylized FloatField + FloatSlider Widget.
 
     Args:
@@ -672,6 +690,8 @@ def combo_floatfield_slider_builder(
     Returns:
         (flt_field_model, flt_slider_model)
     """
+    if tooltip is None:
+        tooltip = ["", ""]
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip[0]))
         ff = ui.FloatField(
@@ -691,11 +711,11 @@ def multi_dropdown_builder(
     label: str = "",
     type: str = "multi_dropdown",
     count: int = 2,
-    default_val: list = [0, 0],
-    items: list = [["Option 1", "Option 2", "Option 3"], ["Option A", "Option B", "Option C"]],
+    default_val: list = None,
+    items: list = None,
     tooltip: str = "",
-    on_clicked_fn: list = [None, None],
-):
+    on_clicked_fn: list = None,
+) -> object:
     """Creates a Stylized Multi-Dropdown Combobox.
 
     Args:
@@ -710,6 +730,12 @@ def multi_dropdown_builder(
     Returns:
         list(AbstractItemModel): list(models)
     """
+    if on_clicked_fn is None:
+        on_clicked_fn = [None, None]
+    if items is None:
+        items = [["Option 1", "Option 2", "Option 3"], ["Option A", "Option B", "Option C"]]
+    if default_val is None:
+        default_val = [0, 0]
     elems = []
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
@@ -718,7 +744,7 @@ def multi_dropdown_builder(
                 default_val[i], *items[i], name="ComboBox", width=ui.Fraction(1), alignment=ui.Alignment.LEFT_CENTER
             )
 
-            def on_clicked_wrapper(model, val, index):
+            def on_clicked_wrapper(model: object, val: object, index: object) -> None:
                 on_clicked_fn[index](items[index][model.get_item_value_model().as_int])
 
             elem.model.add_item_changed_fn(lambda m, v, index=i: on_clicked_wrapper(m, v, index))
@@ -732,11 +758,11 @@ def multi_dropdown_builder(
 def combo_cb_dropdown_builder(
     label: str = "",
     type: str = "checkbox_dropdown",
-    default_val: list = [False, 0],
-    items: list = ["Option 1", "Option 2", "Option 3"],
+    default_val: list = None,
+    items: list = None,
     tooltip: str = "",
-    on_clicked_fn: list = [lambda x: None, None],
-):
+    on_clicked_fn: list = None,
+) -> object:
     """Creates a Stylized Dropdown Combobox with an Enable Checkbox.
 
     Args:
@@ -750,6 +776,12 @@ def combo_cb_dropdown_builder(
     Returns:
         (cb_model, combobox)
     """
+    if on_clicked_fn is None:
+        on_clicked_fn = [lambda x: None, None]
+    if items is None:
+        items = ["Option 1", "Option 2", "Option 3"]
+    if default_val is None:
+        default_val = [False, 0]
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH - 12, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         cb = ui.SimpleBoolModel(default_value=default_val[0])
@@ -758,7 +790,7 @@ def combo_cb_dropdown_builder(
             default_val[1], *items, name="ComboBox", width=ui.Fraction(1), alignment=ui.Alignment.LEFT_CENTER
         )
 
-        def on_clicked_wrapper(model, val):
+        def on_clicked_wrapper(model: object, val: object) -> None:
 
             on_clicked_fn[1](items[model.get_item_value_model().as_int])
 
@@ -771,7 +803,7 @@ def combo_cb_dropdown_builder(
 
 def scrolling_frame_builder(
     label: str = "", type: str = "scrolling_frame", default_val: str = "No Data", tooltip: str = ""
-):
+) -> object:
     """Creates a Labeled Scrolling Frame with CopyToClipboard button.
 
     Args:
@@ -814,10 +846,10 @@ def scrolling_frame_builder(
 def combo_cb_scrolling_frame_builder(
     label: str = "",
     type: str = "cb_scrolling_frame",
-    default_val: list = [False, "No Data"],
+    default_val: list = None,
     tooltip: str = "",
     on_clicked_fn: object = lambda x: None,
-):
+) -> object:
     """Creates a Labeled, Checkbox-enabled Scrolling Frame with CopyToClipboard button.
 
     Args:
@@ -830,6 +862,8 @@ def combo_cb_scrolling_frame_builder(
     Returns:
         (model, label)
     """
+    if default_val is None:
+        default_val = [False, "No Data"]
     with ui.VStack(style=get_style(), spacing=5):
         with ui.HStack():
             ui.Label(label, width=LABEL_WIDTH - 12, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
@@ -867,11 +901,11 @@ def xyz_builder(
     label: str = "",
     tooltip: str = "",
     axis_count: int = 3,
-    default_val: list[float] = [0.0, 0.0, 0.0, 0.0],
+    default_val: list[float] = None,
     min: float = float("-inf"),
     max: float = float("inf"),
     step: float = 0.001,
-    on_value_changed_fn: list = [None, None, None, None],
+    on_value_changed_fn: list = None,
 ) -> list:
     """Create a multi-axis float drag widget with X, Y, Z, W labels.
 
@@ -889,6 +923,10 @@ def xyz_builder(
         List of value models for each axis.
     """
     # These styles & colors are taken from omni.kit.property.transform_builder.py _create_multi_float_drag_matrix_with_labels
+    if on_value_changed_fn is None:
+        on_value_changed_fn = [None, None, None, None]
+    if default_val is None:
+        default_val = [0.0, 0.0, 0.0, 0.0]
     if axis_count <= 0 or axis_count > 4:
         import builtins
 
@@ -934,8 +972,8 @@ def xyz_builder(
 
 
 def color_picker_builder(
-    label: str = "", type: str = "color_picker", default_val: list = [1.0, 1.0, 1.0, 1.0], tooltip: str = "Color Picker"
-):
+    label: str = "", type: str = "color_picker", default_val: list = None, tooltip: str = "Color Picker"
+) -> object:
     """Creates a Color Picker Widget.
 
     Args:
@@ -947,6 +985,8 @@ def color_picker_builder(
     Returns:
         ui.ColorWidget.model
     """
+    if default_val is None:
+        default_val = [1.0, 1.0, 1.0, 1.0]
     with ui.HStack():
         ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_CENTER, tooltip=format_tt(tooltip))
         model = ui.ColorWidget(*default_val, width=BUTTON_WIDTH).model
@@ -957,7 +997,7 @@ def color_picker_builder(
 
 def progress_bar_builder(
     label: str = "", type: str = "progress_bar", default_val: float = 0, tooltip: str = "Progress"
-):
+) -> object:
     """Creates a Progress Bar Widget.
 
     Args:
@@ -986,7 +1026,7 @@ def plot_builder(
     value_stride: int = 1,
     color: object = None,
     tooltip: str = "",
-):
+) -> object:
     """Creates a stylized static plot.
 
     Args:
@@ -1023,10 +1063,10 @@ def plot_builder(
                     style={"color": color, "background_color": 0x0},
                 )
 
-            def update_min(model):
+            def update_min(model: object) -> None:
                 plot.scale_min = model.as_float
 
-            def update_max(model):
+            def update_max(model: object) -> None:
                 plot.scale_max = model.as_float
 
             ui.Spacer(width=5)
@@ -1050,7 +1090,9 @@ def plot_builder(
     return plot
 
 
-def xyz_plot_builder(label: str = "", data: list = [], min: int = -1, max: int = 1, tooltip: str = "") -> list[ui.Plot]:
+def xyz_plot_builder(
+    label: str = "", data: list = None, min: int = -1, max: int = 1, tooltip: str = ""
+) -> list[ui.Plot]:
     """Creates a stylized static XYZ plot.
 
     Args:
@@ -1063,6 +1105,8 @@ def xyz_plot_builder(label: str = "", data: list = [], min: int = -1, max: int =
     Returns:
         list(x_plot, y_plot, z_plot)
     """
+    if data is None:
+        data = []
     with ui.VStack(spacing=5):
         with ui.HStack():
             ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
@@ -1100,12 +1144,12 @@ def xyz_plot_builder(label: str = "", data: list = [], min: int = -1, max: int =
                     style=get_style()["PlotLabel::Z"],
                 )
 
-            def update_min(model):
+            def update_min(model: object) -> None:
                 plot_0.scale_min = model.as_float
                 plot_1.scale_min = model.as_float
                 plot_2.scale_min = model.as_float
 
-            def update_max(model):
+            def update_max(model: object) -> None:
                 plot_0.scale_max = model.as_float
                 plot_1.scale_max = model.as_float
                 plot_2.scale_max = model.as_float
@@ -1141,7 +1185,7 @@ def combo_cb_plot_builder(
     value_stride: int = 1,
     color: object = None,
     tooltip: str = "",
-):
+) -> object:
     """Creates a Checkbox-Enabled dyanamic plot.
 
     Args:
@@ -1189,10 +1233,10 @@ def combo_cb_plot_builder(
                 )
 
             # Min/Max Helpers
-            def update_min(model):
+            def update_min(model: object) -> None:
                 plot.scale_min = model.as_float
 
-            def update_max(model):
+            def update_max(model: object) -> None:
                 plot.scale_max = model.as_float
 
             ui.Spacer(width=5)
@@ -1230,13 +1274,13 @@ def combo_cb_xyz_plot_builder(
     label: str = "",
     default_val: bool = False,
     on_clicked_fn: object = lambda x: None,
-    data: list = [],
+    data: list = None,
     min: int = -1,
     max: int = 1,
     type: object = ui.Type.LINE,
     value_stride: int = 1,
     tooltip: str = "",
-):
+) -> object:
     """Create a checkbox-enabled XYZ plot widget.
 
     Args:
@@ -1253,6 +1297,8 @@ def combo_cb_xyz_plot_builder(
     Returns:
         Tuple of plot list and value model list.
     """
+    if data is None:
+        data = []
     with ui.VStack(spacing=5):
         with ui.HStack():
             ui.Label(label, width=LABEL_WIDTH, alignment=ui.Alignment.LEFT_TOP, tooltip=format_tt(tooltip))
@@ -1300,12 +1346,12 @@ def combo_cb_xyz_plot_builder(
                     style=get_style()["PlotLabel::Z"],
                 )
 
-            def update_min(model):
+            def update_min(model: object) -> None:
                 plot_0.scale_min = model.as_float
                 plot_1.scale_min = model.as_float
                 plot_2.scale_min = model.as_float
 
-            def update_max(model):
+            def update_max(model: object) -> None:
                 plot_0.scale_max = model.as_float
                 plot_1.scale_max = model.as_float
                 plot_2.scale_max = model.as_float
@@ -1381,7 +1427,7 @@ def combo_cb_xyz_plot_builder(
         return [plot_0, plot_1, plot_2], [val_model_x, val_model_y, val_model_z]
 
 
-def add_line_rect_flourish(draw_line: bool = True):
+def add_line_rect_flourish(draw_line: bool = True) -> None:
     """Aesthetic element that adds a Line + Rectangle after all UI elements in the row.
 
     Args:
@@ -1397,7 +1443,7 @@ def add_line_rect_flourish(draw_line: bool = True):
     ui.Spacer(width=5)
 
 
-def add_separator():
+def add_separator() -> None:
     """Aesthetic element to adds a Line Separator."""
     with ui.VStack(spacing=5):
         ui.Spacer()
@@ -1416,7 +1462,7 @@ def add_folder_picker_icon(
     dialog_title: str = "Select Output Folder",
     button_title: str = "Select Folder",
     size: int = 24,
-):
+) -> object:
     """Creates a folder picker icon button that opens a file dialog with advanced options.
 
     Args:
@@ -1433,12 +1479,12 @@ def add_folder_picker_icon(
         Callable that opens the file picker when invoked.
     """
 
-    def open_file_picker():
-        def on_selected(filename, path):
+    def open_file_picker() -> None:
+        def on_selected(filename: object, path: object) -> None:
             on_click_fn(filename, path)
             file_picker.hide()
 
-        def on_canceled(a, b):
+        def on_canceled(a: object, b: object) -> None:
             file_picker.hide()
 
         file_picker = FilePickerDialog(
@@ -1468,7 +1514,7 @@ def add_folder_picker_icon(
     return open_file_picker
 
 
-def add_folder_picker_btn(on_click_fn: object):
+def add_folder_picker_btn(on_click_fn: object) -> None:
     """Creates a folder picker button that opens a file dialog.
 
     Args:
@@ -1476,12 +1522,12 @@ def add_folder_picker_btn(on_click_fn: object):
             Receives (filename, path) parameters.
     """
 
-    def open_folder_picker():
-        def on_selected(a, b):
+    def open_folder_picker() -> None:
+        def on_selected(a: object, b: object) -> None:
             on_click_fn(a, b)
             folder_picker.hide()
 
-        def on_canceled(a, b):
+        def on_canceled(a: object, b: object) -> None:
             folder_picker.hide()
 
         folder_picker = FilePickerDialog(
@@ -1496,7 +1542,7 @@ def add_folder_picker_btn(on_click_fn: object):
         ui.Button("SELECT", width=BUTTON_WIDTH, clicked_fn=open_folder_picker, tooltip="Select Folder")
 
 
-def format_tt(tt: str):
+def format_tt(tt: str) -> object:
     """Format tooltip text by capitalizing words appropriately.
 
     Converts all-uppercase words to title case, capitalizes longer words and the first word,
@@ -1530,7 +1576,7 @@ def setup_ui_headers(
     doc_link: str = "https://docs.isaacsim.omniverse.nvidia.com/latest/index.html",
     overview: str = "",
     info_collapsed: bool = True,
-):
+) -> None:
     """Creates the Standard UI Elements at the top of each Isaac Extension.
 
     Args:
@@ -1553,7 +1599,7 @@ def build_header(
     file_path: str,
     title: str = "My Custom Extension",
     doc_link: str = "https://docs.isaacsim.omniverse.nvidia.com/latest/index.html",
-):
+) -> None:
     """Title Header with Quick Access Utility Buttons.
 
     Args:
@@ -1563,7 +1609,7 @@ def build_header(
         doc_link: Hyperlink to Documentation.
     """
 
-    def build_icon_bar():
+    def build_icon_bar() -> None:
         """Adds the Utility Buttons to the Title Header."""
         with ui.Frame(style=get_style(), width=0):
             with ui.VStack():
@@ -1715,7 +1761,7 @@ class SearchListItem(ui.AbstractItem):
         text: The text content of the search list item.
     """
 
-    def __init__(self, text: str):
+    def __init__(self, text: str) -> None:
         super().__init__()
         self.name_model = ui.SimpleStringModel(text)
 
@@ -1769,12 +1815,12 @@ class SearchListItemModel(ui.AbstractItemModel):
         *args: String items to populate the list model.
     """
 
-    def __init__(self, *args: str):
+    def __init__(self, *args: str) -> None:
         super().__init__()
         self._children = [SearchListItem(t) for t in args]
         self._filtered = [SearchListItem(t) for t in args]
 
-    def get_item_children(self, item: object):
+    def get_item_children(self, item: object) -> object:
         """Returns all the children when the widget asks it.
 
         Args:
@@ -1818,7 +1864,7 @@ class SearchListItemModel(ui.AbstractItemModel):
         # This tells the Delegate to update the TreeView
         self._item_changed(None)
 
-    def get_item_value_model_count(self, item: object):
+    def get_item_value_model_count(self, item: object) -> int:
         """The number of columns.
 
         Args:
@@ -1829,7 +1875,7 @@ class SearchListItemModel(ui.AbstractItemModel):
         """
         return 1
 
-    def get_item_value_model(self, item: object, column_id: int):
+    def get_item_value_model(self, item: object, column_id: int) -> object:
         """Return value model.
 
         It's the object that tracks the specific value.
@@ -1854,11 +1900,11 @@ class SearchListItemDelegate(ui.AbstractItemDelegate):
         on_double_click_fn: Callback function for double-click events.
     """
 
-    def __init__(self, on_double_click_fn: object = None):
+    def __init__(self, on_double_click_fn: object = None) -> None:
         super().__init__()
         self._on_double_click_fn = on_double_click_fn
 
-    def build_branch(self, model: object, item: object, column_id: int, level: int, expanded: bool):
+    def build_branch(self, model: object, item: object, column_id: int, level: int, expanded: bool) -> None:
         """Create a branch widget that opens or closes subtree.
 
         Args:
@@ -1869,7 +1915,7 @@ class SearchListItemDelegate(ui.AbstractItemDelegate):
             expanded: Whether the branch is currently expanded.
         """
 
-    def build_widget(self, model: object, item: object, column_id: int, level: int, expanded: bool):
+    def build_widget(self, model: object, item: object, column_id: int, level: int, expanded: bool) -> None:
         """Create a widget per column per item.
 
         Args:
@@ -1890,7 +1936,9 @@ class SearchListItemDelegate(ui.AbstractItemDelegate):
             self._on_double_click_fn = self.on_double_click
 
         # Set a double click function
-        stack.set_mouse_double_clicked_fn(lambda x, y, b, m, l=label: self._on_double_click_fn(b, m, l))
+        stack.set_mouse_double_clicked_fn(
+            lambda x, y, b, m, item_label=label: self._on_double_click_fn(b, m, item_label)
+        )
 
     def on_double_click(self, button: int, model: object, label: object) -> None:
         """Called when the user double-clicked the item in TreeView.
@@ -1928,7 +1976,7 @@ def build_simple_search(
 
         with ui.VStack(spacing=5):
 
-            def filter_text(item):
+            def filter_text(item: object) -> None:
                 model.filter_text(item)
 
             from omni.kit.window.extensions.ext_components import SearchWidget
