@@ -43,13 +43,13 @@ ObstacleConfiguration Structure
 ###############################
 An :class:`ObstacleConfiguration` is a structure containing two components:
 
-* **Representation** - How the obstacle is represented in your planning library (e.g., sphere, mesh, oriented bounding box)
+* **Representation** - How the obstacle is represented in your planning library (for example, sphere, mesh, oriented bounding box)
 * **Safety tolerance** - A padding distance applied around the obstacle for collision avoidance
 
 Valid Representations per USD Type
 ##################################
 
-Each USD shape type (Sphere, Cube, Mesh, etc.) has its own set of valid representations it can use:
+Each USD shape type (Sphere, Cube, Mesh) has its own set of valid representations it can use:
 
 * **Sphere** - Can be represented as ``SPHERE`` or ``OBB``
 * **Cube** - Can be represented as ``CUBE`` or ``OBB``
@@ -96,17 +96,17 @@ WorldInterface: Connecting to Motion Planning Libraries
 motion planning library. 
 
 Different motion planning libraries have their own world representations.
-The :class:`WorldInterface` lets you translate obstacle data (positions, orientations, shapes, etc.) into whatever format your 
+The :class:`WorldInterface` lets you translate obstacle data (positions, orientations, shapes) into whatever format your 
 planning library expects.
 
 You implement :class:`WorldInterface` by creating a class that:
 
 * Takes obstacle data as warp arrays and data structures (not USD objects directly)
-* Implements methods for adding obstacles (spheres, boxes, meshes, etc.) to your planning library
+* Implements methods for adding obstacles (spheres, boxes, meshes) to your planning library
 * Implements methods for updating obstacle transforms and properties
 
 Think of :class:`WorldInterface` as an adapter: it receives obstacle data as warp arrays and converts it into the format your specific motion planning library needs. 
-The simplest way to get obstacle data is via :class:`WorldBinding`, which handles USD scene extraction and outputs warp arrays. 
+To get obstacle data, you can use :class:`WorldBinding`, which handles USD scene extraction and outputs warp arrays. 
 Because both :class:`WorldBinding` outputs and :class:`WorldInterface` inputs are warp arrays, the system is modular; you can insert intermediate processing steps between them, 
 such as perception algorithms, noise injection, filtering, or any other data transformation you need.
 
@@ -140,12 +140,12 @@ WorldBinding: Synchronizing the Planning Library
 
 1. Tracks specified prims in the USD scene
 2. Uses :class:`ObstacleStrategy` to determine how they should be represented
-3. Extracts obstacle data (positions, orientations, shapes, etc.) from USD
-4. Calls your :class:`WorldInterface` implementation with this data to add/update obstacles in your planning library world representation
+3. Extracts obstacle data (positions, orientations, shapes) from USD
+4. Calls your :class:`WorldInterface` implementation with this data to add or update obstacles in your planning library world representation
 
-This keeps your planning library's world representation in sync with the simulation scene. The :class:`WorldBinding` handles all the USD interaction - your :class:`WorldInterface` only needs to work with the extracted data.
+This keeps your planning library's world representation in sync with the simulation scene. The :class:`WorldBinding` handles all the USD interaction, your :class:`WorldInterface` only needs to work with the extracted data.
 
-Here's how to use :class:`WorldBinding` with your :class:`WorldInterface` implementation:
+To use :class:`WorldBinding` with your :class:`WorldInterface` implementation:
 
 .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/scene_interaction_example.py
    :start-after: <start-world-binding-snippet>
@@ -153,7 +153,7 @@ Here's how to use :class:`WorldBinding` with your :class:`WorldInterface` implem
    :language: python
 
 
-The :class:`WorldBinding` uses USDRT change tracking for efficient updates - it only updates objects properties that have actually changed.
+The :class:`WorldBinding` uses USDRT change tracking for efficient updates. It only updates objects properties that have actually changed.
 
 .. note::
    **Scene Validation During Initialization**
@@ -184,7 +184,7 @@ Synchronization Methods
 * :meth:`WorldBinding.synchronize_properties` - Can be slow, updates shape properties (collision enables, shape-specific 
   attributes) using USDRT change tracking. Only objects with property changes are updated. Use this when 
   obstacle properties (like collision enable state or shape attributes) may have changed. This method will return
-  very quickly if no properties have changed.
+  quickly if no properties have changed.
 
 * :meth:`WorldBinding.synchronize` - Convenience method that calls both :meth:`WorldBinding.synchronize_transforms` and :meth:`WorldBinding.synchronize_properties`. 
   Use this when you need full synchronization and don't need to optimize for performance.
@@ -219,7 +219,7 @@ The scene interaction components work in two separate workflows:
 Complete Workflow
 -----------------
 
-Here's the complete example showing how all the pieces fit together. Note that the scene setup function creates a simple example scene, but emphasizes that the scene could come from anywhere:
+Here's the complete example showing how all the pieces fit together. Notice that the scene setup function creates a basic example scene, but emphasizes that the scene could come from anywhere:
 
 .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot_motion.experimental.motion_generation/scene_interaction_example.py
    :start-after: <start-setup-scene-snippet>
@@ -237,7 +237,7 @@ The main function demonstrates the complete workflow, including the use of diffe
 Running the Example
 -------------------
 
-When you run the standalone example, you should see a group of objects falling in the simulation. The example demonstrates how :class:`WorldBinding` synchronizes obstacle data from the USD scene to your planning library as the objects move.
+When you run the standalone example, verify that you receive a group of objects falling in the simulation. The example demonstrates how :class:`WorldBinding` synchronizes obstacle data from the USD scene to your planning library as the objects move.
 
 .. figure:: images/isim_6.0_full_tut_viewport_falling_objects_capture.webp
    :align: center
@@ -331,7 +331,7 @@ Summary
 
 The scene interaction components work together in this order:
 
-1. :class:`SceneQuery` - Searches the USD scene for objects matching specific criteria (e.g., collision objects, robots)
+1. :class:`SceneQuery` - Searches the USD scene for objects matching specific criteria (for example, collision objects, robots)
 2. :class:`ObstacleStrategy` - Configures how USD objects are represented when passed to your planning library (representation type and safety tolerance)
 3. :class:`WorldInterface` - Defines the interface you implement to translate obstacle data (as warp arrays) into your planning library's format
 4. :class:`WorldBinding` - Extracts obstacle data from USD, applies :class:`ObstacleStrategy` configurations, and calls your :class:`WorldInterface` implementation to keep your planning library synchronized
