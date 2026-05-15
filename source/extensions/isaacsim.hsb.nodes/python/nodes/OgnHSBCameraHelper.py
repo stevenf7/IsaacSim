@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""OmniGraph node for publishing camera images over HSB."""
+
+from __future__ import annotations
+
 import traceback
 
 import carb
@@ -26,14 +30,17 @@ from pxr import Usd
 
 
 class OgnHSBCameraHelperInternalState(BaseWriterNode):
-    def __init__(self):
+    """Internal state for the HSB camera helper OmniGraph node."""
+
+    def __init__(self) -> None:
         self.rv = ""
         self.resetSimulationTimeOnStop = True
         self.publishStepSize = 1
 
         super().__init__(initialize=False)
 
-    def post_attach(self, writer, render_product):
+    def post_attach(self, writer: rep.Writer, render_product: str | list[str]) -> None:
+        """Configure node attributes after attaching a writer to a render product."""
         try:
             if self.rv != "":
                 omni.syntheticdata.SyntheticData.Get().set_node_attributes(
@@ -49,12 +56,16 @@ class OgnHSBCameraHelperInternalState(BaseWriterNode):
 
 
 class OgnHSBCameraHelper:
+    """OmniGraph node that publishes camera images over HSB."""
+
     @staticmethod
-    def internal_state():
+    def internal_state() -> OgnHSBCameraHelperInternalState:
+        """Return a new internal state instance."""
         return OgnHSBCameraHelperInternalState()
 
     @staticmethod
-    def compute(db) -> bool:
+    def compute(db: og.Database) -> bool:
+        """Compute the node output by initializing and attaching HSB writers."""
         if db.per_instance_state.initialized is False:
             db.per_instance_state.initialized = True
             stage = omni.usd.get_context().get_stage()
@@ -104,12 +115,12 @@ class OgnHSBCameraHelper:
                         db.per_instance_state.initialized = False
                         return False
 
-                    init_kwargs = dict(
-                        ipAddress=db.inputs.ipAddress,
-                        dataPlaneType=db.inputs.dataPlaneType,
-                        dataPlaneId=db.inputs.dataPlaneId,
-                        sensorId=db.inputs.sensorId,
-                    )
+                    init_kwargs = {
+                        "ipAddress": db.inputs.ipAddress,
+                        "dataPlaneType": db.inputs.dataPlaneType,
+                        "dataPlaneId": db.inputs.dataPlaneId,
+                        "sensorId": db.inputs.sensorId,
+                    }
                     writer.initialize(**init_kwargs)
 
                     db.per_instance_state.append_writer(writer)
@@ -123,7 +134,8 @@ class OgnHSBCameraHelper:
         return True
 
     @staticmethod
-    def release_instance(node, graph_instance_id):
+    def release_instance(node: object, graph_instance_id: int) -> None:
+        """Release resources when a node instance is destroyed."""
         try:
             state = OgnHSBCameraHelperInternalState.per_instance_internal_state(node)
         except Exception:

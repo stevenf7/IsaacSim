@@ -42,7 +42,7 @@ from ucxx._lib.arr import Array
 class TestUCXCamera(UCXTestCase):
     """Test UCX Camera Helper node."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test stage, assets, and viewport."""
         await super().setUp()
 
@@ -62,7 +62,7 @@ class TestUCXCamera(UCXTestCase):
         viewport_api.set_texture_resolution((1280, 720))
         await omni.kit.app.get_app().next_update_async()
 
-    async def setup_ucx_client_with_listener(self, port: int):
+    async def setup_ucx_client_with_listener(self, port: int) -> None:
         """Setup UCX client.
 
         Args:
@@ -73,7 +73,7 @@ class TestUCXCamera(UCXTestCase):
 
         self.create_ucx_client(port)
 
-    async def _await_request(self, request, timeout_frames: int) -> bool:
+    async def _await_request(self, request: object, timeout_frames: int) -> bool:
         """Wait for a ucxx request to complete, ticking the app between checks.
 
         Args:
@@ -90,7 +90,7 @@ class TestUCXCamera(UCXTestCase):
             await omni.kit.app.get_app().next_update_async()
         return bool(request.completed)
 
-    async def receive_image_message(self, tag: int = 10, timeout_frames: int = 1000, retry_count: int = 15):
+    async def receive_image_message(self, tag: int = 10, timeout_frames: int = 1000, retry_count: int = 15) -> tuple:
         """Receive and unpack an image message.
 
         Transparently handles both transport modes of the ``UCXCameraHelper`` /
@@ -170,7 +170,7 @@ class TestUCXCamera(UCXTestCase):
 
         self.fail("Failed to receive valid image message after all retries")
 
-    async def test_camera_rgb(self):
+    async def test_camera_rgb(self) -> None:
         """Test RGB camera publishing from render product."""
         scene_path = "/Isaac/Environments/Grid/default_environment.usd"
         await stage_utils.open_stage_async(self._assets_root_path + scene_path)
@@ -230,7 +230,7 @@ class TestUCXCamera(UCXTestCase):
         # Verify timestamp is reasonable (simulation time)
         self.assertGreater(timestamp, 0.0)
 
-    async def test_camera_system_time(self):
+    async def test_camera_system_time(self) -> None:
         """Test camera publishing with system time."""
         scene_path = "/Isaac/Environments/Grid/default_environment.usd"
         await stage_utils.open_stage_async(self._assets_root_path + scene_path)
@@ -301,7 +301,7 @@ class TestUCXCamera(UCXTestCase):
             time_diff, 5.0, f"Timestamp {timestamp} too far from system time {system_time} (diff: {time_diff}s)"
         )
 
-    async def test_camera_frame_skip(self):
+    async def test_camera_frame_skip(self) -> None:
         """Test camera publishing with frame skip."""
         scene_path = "/Isaac/Environments/Grid/default_environment.usd"
         await stage_utils.open_stage_async(self._assets_root_path + scene_path)
@@ -357,7 +357,7 @@ class TestUCXCamera(UCXTestCase):
         self.assertEqual(step, 640 * 3)  # RGB = 3 channels
         self.assertEqual(len(image_data), height * step)
 
-    async def test_camera_multiple_resolutions(self):
+    async def test_camera_multiple_resolutions(self) -> None:
         """Test camera publishing with different resolutions."""
         scene_path = "/Isaac/Environments/Grid/default_environment.usd"
         await stage_utils.open_stage_async(self._assets_root_path + scene_path)

@@ -24,16 +24,16 @@ import omni.timeline
 class TestOgnRGBToVB1940(omni.kit.test.AsyncTestCase):
     """Test the RGB to Bayer OGN node."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up test environment."""
         await omni.kit.stage_templates.new_stage_async()
 
-    async def test_node_creation(self):
+    async def test_node_creation(self) -> None:
         """Test that the node can be created."""
         graph_path = "/TestGraph"
 
@@ -51,7 +51,7 @@ class TestOgnRGBToVB1940(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(test_graph, "Graph should be created")
         self.assertEqual(len(new_nodes), 1, "Should create one node")
 
-    async def test_node_with_cpu_array_input(self):
+    async def test_node_with_cpu_array_input(self) -> None:
         """Test node with CPU array input (most common case)."""
         graph_path = "/TestGraph"
         width, height = 640, 480
@@ -109,7 +109,7 @@ class TestOgnRGBToVB1940(omni.kit.test.AsyncTestCase):
         expected_size = expected_line_bytes * (height + 3)
         self.assertEqual(len(output_data), expected_size, f"Output size should be CSI frame size {expected_size}")
 
-    async def test_node_with_rgba_input(self):
+    async def test_node_with_rgba_input(self) -> None:
         """Test node with RGBA input (should extract RGB)."""
         graph_path = "/TestGraph"
         width, height = 320, 240
@@ -164,7 +164,7 @@ class TestOgnRGBToVB1940(omni.kit.test.AsyncTestCase):
         expected_size = expected_line_bytes * (height + 3)
         self.assertEqual(len(output_data), expected_size, f"Output size should be CSI frame size {expected_size}")
 
-    async def test_node_invalid_dimensions(self):
+    async def test_node_invalid_dimensions(self) -> None:
         """Test node behavior with invalid dimensions."""
         graph_path = "/TestGraph"
 
@@ -204,7 +204,7 @@ class TestOgnRGBToVB1940(omni.kit.test.AsyncTestCase):
         # Test passes if we get here without crashing
         self.assertTrue(True, "Node should handle invalid dimensions gracefully")
 
-    async def test_node_unsupported_encoding(self):
+    async def test_node_unsupported_encoding(self) -> None:
         """Test node with unsupported encoding."""
         graph_path = "/TestGraph"
         width, height = 100, 100
@@ -249,7 +249,7 @@ class TestOgnRGBToVB1940(omni.kit.test.AsyncTestCase):
         # Test passes if we get here without crashing
         self.assertTrue(True, "Node should handle unsupported encoding gracefully")
 
-    async def test_bayer_pattern_correctness(self):
+    async def test_bayer_pattern_correctness(self) -> None:
         """Test that the GBRG pattern is correctly applied."""
         graph_path = "/TestGraph"
         width, height = 4, 4

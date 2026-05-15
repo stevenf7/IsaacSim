@@ -33,7 +33,7 @@ import omni.timeline
 import ucxx._lib.libucxx as ucx_api
 
 
-def _read_tensor_f32(tensor) -> list:
+def _read_tensor_f32(tensor: object) -> list:
     """Read float32 values from a FlatBuffers Tensor's ubyte data vector."""
     n_bytes = tensor.DataLength()
     raw = bytes(tensor.Data(i) for i in range(n_bytes))
@@ -67,7 +67,7 @@ def find_available_port() -> int:
 class UCXTestCase(TimedAsyncTestCase):
     """Base class for UCX node tests."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up UCX test environment and find an available port."""
         await super().setUp()
 
@@ -88,7 +88,7 @@ class UCXTestCase(TimedAsyncTestCase):
         self.client_worker = None
         self.client_endpoint = None
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up UCX client resources and stop the timeline."""
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
@@ -110,7 +110,7 @@ class UCXTestCase(TimedAsyncTestCase):
 
         await super().tearDown()
 
-    def create_ucx_client(self, port: int):
+    def create_ucx_client(self, port: int) -> tuple:
         """Create a UCX client connection to the specified port.
 
         Args:
@@ -150,7 +150,7 @@ _ENCODING_MAP = {
 }
 
 
-def unpack_image_message(buffer: object):
+def unpack_image_message(buffer: object) -> tuple:
     """Unpack a UCX image FlatBuffers message.
 
     Args:

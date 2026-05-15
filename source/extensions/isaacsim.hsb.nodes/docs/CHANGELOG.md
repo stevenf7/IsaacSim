@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.2] - 2026-05-14
+### Changed
+- Address ruff lint errors: add type annotations and docstrings to `OgnHSBCameraHelper`, extension lifecycle methods, and tests; rewrite `dict()` call as a dict literal.
+
 ## [1.0.1] - 2026-05-05
 ### Removed
 - Enabled multitick, removed `frameSkipCount` input as it's controlled directly on sensor prim.

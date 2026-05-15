@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""HSB Bridge extension entry point."""
+
 import omni.ext
 
 
@@ -20,7 +22,11 @@ class HsbBridgeExtension(omni.ext.IExt):
     """HSB Bridge Extension — umbrella extension that depends on isaacsim.hsb.core and isaacsim.hsb.nodes."""
 
     def on_startup(self, ext_id: str) -> None:
-        pass
+        """Initialize the extension when it is loaded.
+
+        Args:
+            ext_id: Extension identifier provided by the extension manager.
+        """
 
     def on_shutdown(self) -> None:
-        pass
+        """Clean up resources when the extension is unloaded."""

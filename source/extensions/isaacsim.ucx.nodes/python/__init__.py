@@ -22,6 +22,6 @@ simulation scenarios.
 from .bindings import _ucx_nodes  # noqa: F401
 
 # Import the extension class to ensure it's registered
-from .extension import UCXBridgeExtension
+from .extension import UCXBridgeExtension  # noqa: F401
 
 __all__ = []

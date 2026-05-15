@@ -24,16 +24,16 @@ import omni.timeline
 class TestOgnHSBSend(omni.kit.test.AsyncTestCase):
     """Test the HSB Send Image OGN node."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up test environment."""
         await omni.kit.stage_templates.new_stage_async()
 
-    async def test_node_creation(self):
+    async def test_node_creation(self) -> None:
         """Test that the HSB sender node can be created."""
         graph_path = "/TestGraph"
 
@@ -51,7 +51,7 @@ class TestOgnHSBSend(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(test_graph, "Graph should be created")
         self.assertEqual(len(new_nodes), 1, "Should create one node")
 
-    async def test_node_default_values(self):
+    async def test_node_default_values(self) -> None:
         """Test that node has correct default values."""
         graph_path = "/TestGraph"
 
@@ -74,7 +74,7 @@ class TestOgnHSBSend(omni.kit.test.AsyncTestCase):
         self.assertEqual(data_plane_id, 0, "Default data plane ID should be 0")
         self.assertEqual(sensor_id, 0, "Default sensor ID should be 0")
 
-    async def test_node_with_cpu_data(self):
+    async def test_node_with_cpu_data(self) -> None:
         """Test node with CPU array data input."""
         graph_path = "/TestGraph"
         width, height = 640, 480
@@ -119,7 +119,7 @@ class TestOgnHSBSend(omni.kit.test.AsyncTestCase):
         # Test passes if we get here without crashing
         self.assertTrue(True, "Graph evaluation should complete without crashing")
 
-    async def test_pipeline_bayer_to_hsb(self):
+    async def test_pipeline_bayer_to_hsb(self) -> None:
         """Test complete pipeline: Bayer conversion -> HSB publish."""
         graph_path = "/TestGraph"
         width, height = 320, 240
@@ -185,7 +185,7 @@ class TestOgnHSBSend(omni.kit.test.AsyncTestCase):
         expected_size = expected_line_bytes * (height + 3)
         self.assertEqual(len(output_data), expected_size, "Output should be VB1940 CSI frame size")
 
-    async def test_node_with_invalid_dimensions(self):
+    async def test_node_with_invalid_dimensions(self) -> None:
         """Test node behavior with invalid image dimensions."""
         graph_path = "/TestGraph"
 
@@ -218,7 +218,7 @@ class TestOgnHSBSend(omni.kit.test.AsyncTestCase):
         # Test passes if we get here without crashing
         self.assertTrue(True, "Node should handle invalid dimensions gracefully")
 
-    async def test_node_configuration_parameters(self):
+    async def test_node_configuration_parameters(self) -> None:
         """Test that configuration parameters can be set."""
         graph_path = "/TestGraph"
 
@@ -246,7 +246,7 @@ class TestOgnHSBSend(omni.kit.test.AsyncTestCase):
         self.assertEqual(data_plane_id, 5, "Custom data plane ID should be set")
         self.assertEqual(sensor_id, 10, "Custom sensor ID should be set")
 
-    async def test_data_plane_type_coe(self):
+    async def test_data_plane_type_coe(self) -> None:
         """Test that dataPlaneType can be set to 'coe' and is readable."""
         graph_path = "/TestGraph"
 
@@ -267,7 +267,7 @@ class TestOgnHSBSend(omni.kit.test.AsyncTestCase):
         data_plane_type = og.Controller.attribute(f"{graph_path}/HSBNode.inputs:dataPlaneType").get()
         self.assertEqual(data_plane_type, "coe", "dataPlaneType should be 'coe'")
 
-    async def test_multiple_sensors(self):
+    async def test_multiple_sensors(self) -> None:
         """Test publishing from multiple sensors with different IDs."""
         graph_path = "/TestGraph"
         width, height = 160, 120
@@ -314,7 +314,7 @@ class TestOgnHSBSend(omni.kit.test.AsyncTestCase):
         # Test passes if we get here without crashing
         self.assertTrue(True, "Multiple sensor nodes should execute without crashing")
 
-    async def test_pipeline_vb1940_csi_linux_to_hsb(self):
+    async def test_pipeline_vb1940_csi_linux_to_hsb(self) -> None:
         """Test pipeline: RGBToVB1940 (outputMode=vb1940_csi_linux) -> HSBSend (buffer mode)."""
         graph_path = "/TestGraph"
         width, height = 64, 48
@@ -367,7 +367,7 @@ class TestOgnHSBSend(omni.kit.test.AsyncTestCase):
         output_data = og.Controller.attribute(f"{graph_path}/BayerConvert.outputs:data").get()
         self.assertGreater(len(output_data), 0)
 
-    async def test_pipeline_vb1940_csi_coe_to_hsb(self):
+    async def test_pipeline_vb1940_csi_coe_to_hsb(self) -> None:
         """Test pipeline: RGBToVB1940 (outputMode=vb1940_csi_coe) -> HSBSend (dataPlaneType=coe, buffer)."""
         graph_path = "/TestGraph"
         width, height = 64, 48

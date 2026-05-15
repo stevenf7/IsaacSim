@@ -33,7 +33,7 @@ CONNECTION_WAIT_FRAMES = 60  # Frames to wait for node listener to initialize
 CONNECTION_ESTABLISH_FRAMES = 20  # Additional frames for connection to establish
 
 
-async def add_cube(path: str, size: float, offset: list):
+async def add_cube(path: str, size: float, offset: list) -> object:
     """Create a cube using experimental API.
 
     Args:
@@ -63,7 +63,7 @@ async def add_cube(path: str, size: float, offset: list):
     return cube
 
 
-def unpack_odometry_message(buffer: object):
+def unpack_odometry_message(buffer: object) -> tuple:
     """Unpack a UCX odometry FlatBuffers message.
 
     Args:
@@ -107,7 +107,7 @@ def unpack_odometry_message(buffer: object):
 class TestUCXPublishOdometry(UCXTestCase):
     """Test UCX odometry publishing."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up a new stage for odometry publishing tests."""
         await super().setUp()
         await omni.usd.get_context().new_stage_async()
@@ -115,7 +115,7 @@ class TestUCXPublishOdometry(UCXTestCase):
 
         self.CUBE_SCALE = 0.5
 
-    async def setup_ucx_client_with_listener(self):
+    async def setup_ucx_client_with_listener(self) -> None:
         """Setup UCX client to connect to the OmniGraph node's listener.
 
         The OmniGraph nodes create their own internal listeners automatically.
@@ -133,7 +133,7 @@ class TestUCXPublishOdometry(UCXTestCase):
         for _ in range(CONNECTION_ESTABLISH_FRAMES):
             await omni.kit.app.get_app().next_update_async()
 
-    async def receive_odometry_message(self, tag: int = 7, timeout_frames: int = 1000, retry_count: int = 3):
+    async def receive_odometry_message(self, tag: int = 7, timeout_frames: int = 1000, retry_count: int = 3) -> tuple:
         """Receive and unpack an odometry message from the client endpoint.
 
         Args:
@@ -190,7 +190,7 @@ class TestUCXPublishOdometry(UCXTestCase):
             "This may indicate a connection issue or the node is not publishing."
         )
 
-    async def test_odometry_input_mode(self):
+    async def test_odometry_input_mode(self) -> None:
         """Test odometry publishing with direct inputs (ROS2-aligned mode)."""
         # Create graph with input-based odometry node
         try:
@@ -248,7 +248,7 @@ class TestUCXPublishOdometry(UCXTestCase):
         self.assertAlmostEqual(position[1], 0.0, places=2)
         self.assertAlmostEqual(position[2], 0.0, places=2)
 
-    async def test_odometry_with_cube(self):
+    async def test_odometry_with_cube(self) -> None:
         """Test odometry publishing with a dynamic cube (input mode)."""
         # Create a dynamic cube with physics enabled
         await add_cube("/World/Cube", 1.0, (0, 0, 1.0))
@@ -315,7 +315,7 @@ class TestUCXPublishOdometry(UCXTestCase):
         self.assertIsNotNone(position)
         self.assertEqual(len(position), 3, "Position should be a 3D vector")
 
-    async def test_odometry_multiple_messages(self):
+    async def test_odometry_multiple_messages(self) -> None:
         """Test receiving multiple odometry messages over time."""
         # Create simple test setup
         try:
