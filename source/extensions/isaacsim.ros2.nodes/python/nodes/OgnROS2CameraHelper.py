@@ -296,7 +296,7 @@ class OgnROS2CameraHelper:
             if not validate_srtx_platform():
                 return False
             if not OgnROS2CameraHelper._setup_srtx(
-                config, init_params, render_product_path, sensor_type, state, db.inputs.compressionType
+                config, init_params, render_product_path, sensor_type, state, db.inputs.srtxCompressionType
             ):
                 db.log_error("Failed to setup SRTX for camera helper")
                 return False

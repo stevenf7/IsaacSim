@@ -105,10 +105,13 @@
                 "default": 0,
                 "deprecated": "Frame skipping is deprecated. Control publish rate by setting omni:sensor:tickRate on the sensor prim instead."
             },
-            "compressionType": {
+            "srtxCompressionType": {
                 "type": "string",
-                "description": "Compression type for the sensor data",
-                "default": "hevc"
+                "description": "SRTX compression type for the sensor data",
+                "default": "hevc",
+                "metadata": {
+                    "hidden": "true"
+                }
             }
         }
     }
