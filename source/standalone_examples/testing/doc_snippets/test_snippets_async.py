@@ -158,6 +158,29 @@ def group_files_by_experience(files, experience_map):
     return groups
 
 
+def resolve_experience_path(experience):
+    """Resolve an experience name from the CSV to a Kit app path."""
+    if not experience:
+        return ""
+
+    experience_path = Path(experience)
+    candidates = []
+    if experience_path.is_absolute():
+        candidates.append(experience_path)
+    else:
+        exp_root = os.environ.get("EXP_PATH")
+        if exp_root:
+            candidates.append(Path(exp_root) / experience_path)
+        candidates.append(experience_path)
+
+    for candidate in candidates:
+        if candidate.is_file():
+            return str(candidate)
+
+    print(f"Warning: Experience file not found for {experience!r}; passing value through unchanged")
+    return experience
+
+
 def parse_expected_failures_csv(csv_path, base_dir, snippets_root=None):
     """Parse expected failures CSV and return a list of (abs_path, compiled_pattern|None) tuples.
 
@@ -839,7 +862,10 @@ for _exp_idx, _experience in enumerate(experience_names):
                 from isaacsim import SimulationApp
 
                 launch_config = {"headless": True}
-                _simulation_app = SimulationApp(launch_config=launch_config)
+                experience_path = resolve_experience_path(exp_value)
+                if experience_path:
+                    print(f"Launching SimulationApp with experience: {experience_path}")
+                _simulation_app = SimulationApp(launch_config=launch_config, experience=experience_path)
 
                 # Override asset root if requested (e.g. when Nucleus is unreachable)
                 if args.asset_root:
