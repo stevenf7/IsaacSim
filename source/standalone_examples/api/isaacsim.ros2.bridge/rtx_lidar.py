@@ -5,14 +5,14 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Demonstrate RTX lidar sensor with ROS 2 PointCloud2 publishing."""
+"""Demonstrate RTX lidar sensor with ROS 2 PointCloud2 and LaserScan publishing."""
 
 import argparse
 import sys
@@ -23,15 +23,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--test", default=False, action="store_true", help="Run in test mode")
 args, _ = parser.parse_known_args()
 
-# Example for creating a RTX lidar sensor and publishing PointCloud2 data
+# Example for creating RTX lidar sensors and publishing PointCloud2 / LaserScan data
 simulation_app = SimulationApp({"headless": False})
 import carb
 import isaacsim.core.experimental.utils.app as app_utils
+import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
-import omni
-import omni.replicator.core as rep
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.sensors.experimental.rtx import Lidar
+from isaacsim.sensors.experimental.rtx import Lidar, LidarSensor
 from isaacsim.storage.native import get_assets_root_path
 
 # Enable the ROS 2 bridge so the RtxLidar*ROS2Publish* writers are registered.
@@ -51,6 +50,29 @@ stage_utils.add_reference_to_stage(
 )
 simulation_app.update()
 
+
+def _read_laser_scan_metadata(prim) -> dict:
+    """Read scan configuration from a rotary OmniLidar prim for LaserScan publishing.
+
+    Mirrors the metadata extraction performed by ``OgnROS2RtxLidarHelper`` so the
+    LaserScan writer can be initialized directly from the prim authored by
+    ``Lidar.create()``.
+    """
+    rotation_rate = float(prim.GetAttribute("omni:sensor:Core:scanRateBaseHz").Get() or 0)
+    near_range = float(prim.GetAttribute("omni:sensor:Core:nearRangeM").Get() or 0)
+    far_range = float(prim.GetAttribute("omni:sensor:Core:farRangeM").Get() or 0)
+    firing_rate = int(prim.GetAttribute("omni:sensor:Core:patternFiringRateHz").Get() or 0)
+    if rotation_rate <= 0 or firing_rate <= 0:
+        raise RuntimeError("LaserScan: scanRateBaseHz or patternFiringRateHz is 0 on the lidar prim")
+    return dict(
+        horizontalFov=360.0,
+        horizontalResolution=360.0 * rotation_rate / firing_rate,
+        depthRange=[near_range, far_range],
+        rotationRate=rotation_rate,
+        azimuthRange=[-180.0, 180.0],
+    )
+
+
 # Create the 3D rotating RTX Lidar. Example_Rotary scans at 10 Hz, so tick_rate must be 10
 # (see isaac_sim_sensors_multitick_lidar_tickrate_must_match_scanrate).
 lidar = Lidar.create(
@@ -60,38 +82,54 @@ lidar = Lidar.create(
     translations=[[0.0, 0.0, 1.0]],
 )
 
-# RTX sensors are cameras and must be assigned to their own render product.
-hydra_texture = rep.create.render_product(lidar.paths[0], [1, 1], name="Isaac")
-
-# Create a 2D solid-state-style RTX Lidar with the Example_Rotary_2D config.
+# Create a 2D rotary RTX Lidar with the Example_Rotary_2D config.
 lidar_2D = Lidar.create(
     path="/sensor_2D",
     config="Example_Rotary_2D",
     tick_rate=10.0,
     translations=[[0.0, 0.0, 1.0]],
 )
-hydra_texture_2D = rep.create.render_product(lidar_2D.paths[0], [1, 1], name="Isaac")
 
 SimulationManager.setup_simulation(dt=1.0 / 60.0, device="cpu")
 simulation_app.update()
 
-# Create the PointCloud2 publisher pipeline for the 3D Lidar.
-writer = rep.writers.get("RtxLidarROS2PublishPointCloud")
-writer.initialize(topicName="point_cloud", frameId="base_scan")
-writer.attach([hydra_texture])
+# LidarSensor wraps the authoring prim, creates the render product, and exposes
+# attach_writer() for both registered short names ("draw-point-cloud") and any
+# Replicator writer registry name (the ROS 2 publishers).
+sensor_3d = LidarSensor(lidar, annotators=[])
+sensor_2d = LidarSensor(lidar_2D, annotators=[])
 
-# Visualize the 3D Lidar point cloud in the viewport.
-debug_writer = rep.writers.get("RtxLidarDebugDrawPointCloud")
-debug_writer.attach([hydra_texture])
+# 3D Lidar -> ROS 2 PointCloud2 publisher.
+sensor_3d.attach_writer(
+    "RtxLidarROS2PublishPointCloud",
+    topicName="point_cloud",
+    frameId="base_scan",
+)
 
-# Create the LaserScan publisher pipeline for the 2D Lidar.
-writer = rep.writers.get("RtxLidarROS2PublishLaserScan")
-writer.initialize(topicName="scan", frameId="base_scan")
-writer.attach([hydra_texture_2D])
+# 2D Lidar -> ROS 2 LaserScan publisher. The writer requires scan geometry
+# (horizontal FOV/resolution, depth range, rotation rate, azimuth range), which
+# OgnROS2RtxLidarHelper normally reads from the lidar prim. Replicate that here
+# so the standalone API matches the OG node's behaviour.
+laser_scan_meta = _read_laser_scan_metadata(prim_utils.get_prim_at_path(lidar_2D.paths[0]))
+sensor_2d.attach_writer(
+    "RtxLidarROS2PublishLaserScan",
+    topicName="scan",
+    frameId="base_scan",
+    **laser_scan_meta,
+)
 
-# Visualize the 2D Lidar scan in the viewport.
-debug_writer = rep.writers.get("RtxLidarDebugDrawPointCloud")
-debug_writer.attach([hydra_texture_2D])
+# Visualize both point clouds in the viewport with distinct colors so the 3D and
+# 2D scans are easy to tell apart (RGBA in [0, 1]).
+sensor_3d.attach_writer(
+    "draw-point-cloud",
+    color=[0.0, 1.0, 0.5, 1.0],  # bright green
+    size=0.05,
+)
+sensor_2d.attach_writer(
+    "draw-point-cloud",
+    color=[1.0, 0.2, 0.8, 1.0],  # bright magenta
+    size=0.08,
+)
 
 simulation_app.update()
 
