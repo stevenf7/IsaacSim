@@ -540,6 +540,19 @@ class TestDofEffortsMovement(NewtonTensorTestBase):
 
     async def _setup_cartpole_no_drives(self):
         """Set up cartpoles with zero PD gains so only applied forces drive motion."""
+        try:
+            import newton
+
+            print(f"[DIAG] newton version={getattr(newton, '__version__', '?')} path={newton.__file__}")
+        except Exception as e:
+            print(f"[DIAG] newton import failed: {e}")
+        try:
+            import mujoco_warp
+
+            print(f"[DIAG] mujoco_warp version={getattr(mujoco_warp, '__version__', '?')} path={mujoco_warp.__file__}")
+        except Exception as e:
+            print(f"[DIAG] mujoco_warp import failed: {e}")
+
         num_envs = self.setup_cartpole_grid()
         sim = await self.create_sim()
         self.start_playing()
@@ -555,6 +568,23 @@ class TestDofEffortsMovement(NewtonTensorTestBase):
 
         zero_vel = np.zeros((cartpoles.count, cartpoles.max_dofs), dtype=np.float32)
         cartpoles.set_dof_velocities(self.to_warp(zero_vel), all_indices)
+
+        try:
+            f_arr = cartpoles.get_dof_actuation_forces()
+            print(
+                f"[DIAG] joint_f buffer: device={f_arr.device} dtype={f_arr.dtype} "
+                f"shape={f_arr.shape} ptr={hex(f_arr.ptr) if f_arr.ptr else 'None'}"
+            )
+        except Exception as e:
+            print(f"[DIAG] joint_f buffer query failed: {e}")
+
+        try:
+            masses = cartpoles.get_masses().numpy().reshape(cartpoles.count, cartpoles.max_links)
+            inertias = cartpoles.get_inertias().numpy().reshape(cartpoles.count, cartpoles.max_links, 9)
+            print(f"[DIAG] masses[0]={masses[0]}")
+            print(f"[DIAG] inertias[0] diag=[{inertias[0, :, 0]} {inertias[0, :, 4]} {inertias[0, :, 8]}]")
+        except Exception as e:
+            print(f"[DIAG] mass/inertia query failed: {e}")
 
         return sim, cartpoles, all_indices
 
@@ -577,16 +607,45 @@ class TestDofEffortsMovement(NewtonTensorTestBase):
     async def test_effort_causes_position_change(self):
         sim, cartpoles, all_indices = await self._setup_cartpole_no_drives()
 
+        dt = self.get_sim_dt()
+        print(f"[DIAG] SIM_DEVICE={self.SIM_DEVICE} DEVICE={self.DEVICE} sim_dt={dt}")
+
+        stiff = cartpoles.get_dof_stiffnesses().numpy().reshape(cartpoles.count, cartpoles.max_dofs)
+        damp = cartpoles.get_dof_dampings().numpy().reshape(cartpoles.count, cartpoles.max_dofs)
+        max_f = cartpoles.get_dof_max_forces().numpy().reshape(cartpoles.count, cartpoles.max_dofs)
+        armature = cartpoles.get_dof_armatures().numpy().reshape(cartpoles.count, cartpoles.max_dofs)
+        print(
+            f"[DIAG] stiffness[0]={stiff[0]} damping[0]={damp[0]} " f"max_force[0]={max_f[0]} armature[0]={armature[0]}"
+        )
+
         pos_before = cartpoles.get_dof_positions().numpy().reshape(cartpoles.count, cartpoles.max_dofs).copy()
+        print(f"[DIAG] pos_before:\n{pos_before}")
 
         torques = np.zeros((cartpoles.count, cartpoles.max_dofs), dtype=np.float32)
         torques[:, 1] = 20.0
-        for _ in range(10):
+        num_steps = max(10, int(0.1 / dt))
+        print(f"[DIAG] num_steps={num_steps} torque[0]={torques[0]}")
+
+        for s in range(num_steps):
             cartpoles.set_dof_actuation_forces(self.to_warp(torques), all_indices)
+            if s < 2:
+                applied_pre = cartpoles.get_dof_actuation_forces().numpy().reshape(cartpoles.count, cartpoles.max_dofs)
+                print(f"[DIAG] step {s} actuation_pre_step[0]={applied_pre[0]}")
             self.step(1)
+            if s < 2:
+                applied_post = cartpoles.get_dof_actuation_forces().numpy().reshape(cartpoles.count, cartpoles.max_dofs)
+                pos_now = cartpoles.get_dof_positions().numpy().reshape(cartpoles.count, cartpoles.max_dofs)
+                vel_now = cartpoles.get_dof_velocities().numpy().reshape(cartpoles.count, cartpoles.max_dofs)
+                print(
+                    f"[DIAG] after step {s} actuation_post_step[0]={applied_post[0]} "
+                    f"pos[0]={pos_now[0]} vel[0]={vel_now[0]}"
+                )
 
         pos_after = cartpoles.get_dof_positions().numpy().reshape(cartpoles.count, cartpoles.max_dofs)
         delta = np.abs(pos_after[:, 1] - pos_before[:, 1])
+        print(f"[DIAG] pos_after:\n{pos_after}")
+        print(f"[DIAG] delta (DOF 1): {delta}")
+
         for i in range(cartpoles.count):
             self.assertGreater(delta[i], 0.001, f"Env {i}: DOF 1 position should change after applying effort")
 

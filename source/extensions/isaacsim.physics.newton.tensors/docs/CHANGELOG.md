@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.5] - 2026-05-14
+### Changed
+- Updated newton pip dependencies to newton 1.2.0rc4, mujoco-warp 3.8.0.2, newton-usd-schemas 0.2.0
+
 ## [0.1.4] - 2026-05-05
 ### Added
 - Log Python exceptions in C++ articulation view bridge calls (`_notifyJointDofPropertiesChanged`, `_syncCtrlDirectActuatorGains`, `_syncCtrlDirectPositionTargets`) instead of silently swallowing them
