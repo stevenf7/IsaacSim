@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
-from pxr import Gf, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
 
 from .. import _simulation_manager
 
@@ -162,7 +162,7 @@ class PhysicsScene:
         """Get the Physics Scene's delta time (DT).
 
         Returns:
-            Physics Scene's delta time (DT).
+            Physics Scene's delta time (DT) for the active physics engine.
 
         Example:
 
@@ -171,6 +171,13 @@ class PhysicsScene:
             >>> physics_scene.get_dt()
             0.001
         """
+        from .simulation_manager import SimulationManager
+
+        if SimulationManager.get_active_physics_engine() == "physx":
+            physx_scene_api = prim_utils.ensure_api(self._prim, PhysxSchema.PhysxSceneAPI)
+            steps_per_second = physx_scene_api.GetTimeStepsPerSecondAttr().Get()
+            return 1.0 / steps_per_second if steps_per_second else 0.0
+
         attr = self._prim.GetAttribute("newton:timeStepsPerSecond")
         steps_per_second = attr.Get() if attr else 1000
         return 1.0 / steps_per_second if steps_per_second else 0.0
@@ -179,7 +186,7 @@ class PhysicsScene:
         """Set the Physics Scene's delta time (DT).
 
         Args:
-            dt: Physics Scene's delta time (DT).
+            dt: Physics Scene's delta time (DT) for the active physics engine.
 
         Raises:
             ValueError: If the delta time (DT) is less than 0 or greater than 1.0.
@@ -193,6 +200,13 @@ class PhysicsScene:
         if dt < 0.0 or dt > 1.0:
             raise ValueError(f"The delta time (DT) must be in the range [0.0, 1.0], got {dt}")
         steps_per_second = int(1.0 / dt) if dt else 0
+        from .simulation_manager import SimulationManager
+
+        if SimulationManager.get_active_physics_engine() == "physx":
+            physx_scene_api = prim_utils.ensure_api(self._prim, PhysxSchema.PhysxSceneAPI)
+            physx_scene_api.GetTimeStepsPerSecondAttr().Set(steps_per_second)
+            return
+
         attr = self._prim.GetAttribute("newton:timeStepsPerSecond")
         if attr:
             attr.Set(steps_per_second)

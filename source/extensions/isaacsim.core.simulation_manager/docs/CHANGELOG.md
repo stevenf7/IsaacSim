@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.1] - 2026-05-15
+### Fixed
+- Route base `PhysicsScene` timestep updates to the active physics engine so PhysX scenes do not author Newton timestep values that can hang playback.
+
 ## [1.15.0] - 2026-05-05
 ### Removed
 - Removed non-multitick code path.
