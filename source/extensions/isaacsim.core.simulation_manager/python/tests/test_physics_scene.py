@@ -15,13 +15,16 @@
 
 """Test for physics scene."""
 
+import asyncio
 import dataclasses
 
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
-from isaacsim.core.simulation_manager import PhysicsScene, PhysxGpuCfg, PhysxScene
+import omni.timeline
+from isaacsim.core.simulation_manager import PhysicsScene, PhysxGpuCfg, PhysxScene, SimulationManager
 from isaacsim.core.simulation_manager.impl.mjc_scene import NewtonMjcScene
-from pxr import Gf
+from omni.kit.app import get_app
+from pxr import Gf, PhysxSchema
 
 
 class TestPhysicsScene(omni.kit.test.AsyncTestCase):
@@ -47,16 +50,34 @@ class TestPhysicsScene(omni.kit.test.AsyncTestCase):
         self.assertEqual(physics_scene.prim.GetPath().pathString, path)
         self.assertTrue(physics_scene.prim.HasAPI("NewtonSceneAPI"))
 
+    async def test_physics_scene_constructor_applies_default_engine_api(self):
+        """Test base PhysicsScene is compatible with the default PhysX engine."""
+        physics_scene = PhysicsScene("/World/physicsScene")
+
+        self.assertTrue(physics_scene.prim.HasAPI("NewtonSceneAPI"))
+        self.assertTrue(physics_scene.prim.HasAPI(PhysxSchema.PhysxSceneAPI))
+
     async def test_dt(self):
         """Test dt."""
-        # Test Newton dt on base PhysicsScene
         physics_scene = PhysicsScene("/World/physicsScene")
-        # default: 1000 steps/sec = 0.001 dt (from NewtonSceneAPI)
-        self.assertAlmostEqual(physics_scene.get_dt(), 0.001, places=5)
-        # set dt
-        for dt in [0.01, 0.005, 0.002]:
-            physics_scene.set_dt(dt)
-            self.assertAlmostEqual(physics_scene.get_dt(), dt, places=5)
+        if SimulationManager.get_active_physics_engine() == "physx":
+            self.assertAlmostEqual(physics_scene.get_dt(), 1.0 / 60.0, places=5)
+            newton_attr = physics_scene.prim.GetAttribute("newton:timeStepsPerSecond")
+            self.assertEqual(newton_attr.Get(), 1000)
+
+            for dt in [0.01, 0.005, 0.002]:
+                physics_scene.set_dt(dt)
+                self.assertAlmostEqual(physics_scene.get_dt(), dt, places=5)
+                physx_scene_api = PhysxSchema.PhysxSceneAPI(physics_scene.prim)
+                self.assertEqual(physx_scene_api.GetTimeStepsPerSecondAttr().Get(), int(1.0 / dt))
+                self.assertEqual(newton_attr.Get(), 1000)
+        else:
+            # default: 1000 steps/sec = 0.001 dt (from NewtonSceneAPI)
+            self.assertAlmostEqual(physics_scene.get_dt(), 0.001, places=5)
+            for dt in [0.01, 0.005, 0.002]:
+                physics_scene.set_dt(dt)
+                self.assertAlmostEqual(physics_scene.get_dt(), dt, places=5)
+
         # exceptions
         self.assertRaises(ValueError, physics_scene.set_dt, -1.0)
         self.assertRaises(ValueError, physics_scene.set_dt, 1.1)
@@ -394,3 +415,21 @@ class TestNewtonMjcScene(omni.kit.test.AsyncTestCase):
         for viscosity in [0.001, 1.0, 0.0001]:
             mjc_scene.set_viscosity(viscosity)
             self.assertAlmostEqual(mjc_scene.get_viscosity(), viscosity, places=5)
+
+    async def test_physics_scene_set_dt_play_does_not_hang(self):
+        if SimulationManager.get_active_physics_engine() != "physx":
+            self.skipTest("Skipping test for non-physx engine")
+
+        self._timeline = omni.timeline.get_timeline_interface()
+
+        PhysicsScene("/physicsScene").set_dt(1.0 / 60.0)
+        await get_app().next_update_async()
+
+        self._timeline.play()
+
+        try:
+            await asyncio.wait_for(get_app().next_update_async(), timeout=10.0)
+        except asyncio.TimeoutError:
+            self.fail("Timed out after playing a stage configured with PhysicsScene.set_dt().")
+
+        self.assertTrue(self._timeline.is_playing())
