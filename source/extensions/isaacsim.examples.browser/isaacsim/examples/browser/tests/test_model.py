@@ -109,7 +109,9 @@ class TestExampleBrowserModel(omni.kit.test.AsyncTestCase):
         model.execute(tile)
 
         # `execute()` defers the selection change to the next update to avoid mutating the widget
-        # tree during the double-click event chain. Pump a frame so the deferred task runs.
+        # tree during the double-click event chain. Pump two frames: the first satisfies the coroutine's
+        # internal `next_update_async()` await, the second ensures its continuation has executed.
+        await omni.kit.app.get_app().next_update_async()
         await omni.kit.app.get_app().next_update_async()
 
         self.assertEqual(fake_widget.category_selection, [navigation_target])

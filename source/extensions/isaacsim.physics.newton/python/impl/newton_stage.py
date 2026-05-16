@@ -206,7 +206,7 @@ class NewtonStage:
                     self._kernels_compiled = True
                     self.simulate(dt=dt)
                 elif self.graph is None:
-                    wp.capture_begin(force_module_load=True)
+                    wp.capture_begin()
                     try:
                         self.simulate(dt=dt)
                     finally:
