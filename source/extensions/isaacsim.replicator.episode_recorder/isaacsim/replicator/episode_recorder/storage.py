@@ -45,6 +45,7 @@ one contiguous write. ``flush`` / ``end_episode`` / ``close`` force a flush.
 from __future__ import annotations
 
 import json
+import warnings
 from collections.abc import Mapping
 from datetime import datetime, timezone
 from typing import Any
@@ -61,7 +62,14 @@ EPISODES_GROUP = "episodes"
 
 def _require_h5py() -> Any:
     try:
-        import h5py
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r"h5py is running against HDF5 .* when it was built against .*",
+                category=UserWarning,
+                module=r"h5py",
+            )
+            import h5py
 
         return h5py
     except ImportError as exc:

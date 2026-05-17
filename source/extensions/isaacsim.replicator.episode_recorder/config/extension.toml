@@ -1,5 +1,5 @@
 [package]
-version = "0.1.2"
+version = "0.1.3"
 category = "Simulation"
 title = "Isaac Sim Episode Recorder"
 description = "Manifest-first HDF5 recorder / replayer for capturing simulation state (articulations, rigid bodies, xforms, cameras, USD attributes, sim time) per-episode and replaying it back onto a live stage. Plugin-based via the Recordable protocol."
