@@ -76,6 +76,6 @@ async def run_ira_data_generation(setup_simulation: bool = False, run_data_gener
 
 from omni.kit.async_engine import run_coroutine
 
-task = run_coroutine(run_ira_data_generation(setup_simulation=True, run_data_generation=True))
+task = run_coroutine(run_ira_data_generation(setup_simulation=False, run_data_generation=False))
 while not task.done():
     simulation_app.update()
