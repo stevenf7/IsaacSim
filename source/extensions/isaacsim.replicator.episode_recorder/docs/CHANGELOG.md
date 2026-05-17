@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.3] - 2026-05-17
+### Fixed
+- Suppressed the known `h5py` HDF5 ABI warning during recorder storage import so Windows native Python tests do not treat the warning stderr as a failure.
+- The episode record/replay standalone example test now removes its own generated artifacts before recording, keeping output validation repeatable across local reruns.
+
 ## [0.1.2] - 2026-05-05
 ### Changed
 - `ArticulationRecordable._discover_link_paths` now returns rigid-body link paths only when any are tagged with `UsdPhysics.RigidBodyAPI`, skipping visual / collision Xformable containers; falls back to all Xformable descendants when no rigid bodies are present. Recorded `link_paths` for the same articulation may shrink accordingly.

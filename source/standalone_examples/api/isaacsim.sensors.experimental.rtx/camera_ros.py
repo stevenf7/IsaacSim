@@ -81,8 +81,8 @@ RigidPrim("/new_cube_1")
 # CREATE CAMERA FROM ROS PARAMETERS
 # =============================================================================
 # Map ROS distortion_model to the appropriate lens distortion schema.
-# - "plumb_bob" / "rational_polynomial" → OmniLensDistortionOpenCvPinholeAPI
-# - "equidistant" → OmniLensDistortionOpenCvFisheyeAPI
+# - "plumb_bob" / "rational_polynomial" -> OmniLensDistortionOpenCvPinholeAPI
+# - "equidistant" -> OmniLensDistortionOpenCvFisheyeAPI
 
 if DISTORTION_MODEL in ("plumb_bob", "rational_polynomial"):
     schema = "OmniLensDistortionOpenCvPinholeAPI"
@@ -124,7 +124,7 @@ cam.prims[0].GetAttribute("omni:lensdistortion:model").Set(model_name)
 print(f"Created camera from ROS camera_info:")
 print(f"  Resolution: {IMAGE_WIDTH}x{IMAGE_HEIGHT}")
 print(f"  Intrinsics: fx={fx}, fy={fy}, cx={cx}, cy={cy}")
-print(f"  Distortion model: {DISTORTION_MODEL} → {schema}")
+print(f"  Distortion model: {DISTORTION_MODEL} -> {schema}")
 print(f"  D: {D}")
 
 # =============================================================================

@@ -41,6 +41,8 @@ simulation_app = SimulationApp(launch_config={"headless": False})
 
 import argparse
 import os
+import shutil
+from pathlib import Path
 
 import numpy as np
 import omni.replicator.core as rep
@@ -77,6 +79,9 @@ parser.add_argument(
 parser.add_argument("--replay", action="store_true", help="After recording, load the session and replay it.")
 parser.add_argument("--render", action="store_true", help="Attach a BasicWriter during replay and dump RGB frames.")
 parser.add_argument("--existing_hdf5", default=None, help="Skip recording; replay this HDF5 file instead.")
+parser.add_argument(
+    "--test", action="store_true", help="Validate captured output files against expected counts and exit."
+)
 args, _ = parser.parse_known_args()
 
 
@@ -222,8 +227,24 @@ def replay_episode(hdf5_path: str, *, attach_writer: bool) -> None:
     print("[Replay] Done.")
 
 
+def clean_test_output(output_dir: str, *, include_render: bool) -> None:
+    """Remove artifacts this example creates so test validation is repeatable."""
+    out_path = Path(output_dir)
+    if not out_path.exists():
+        return
+    for pattern in ("stage_snapshot.usd", "stage_snapshot.sidecar.json", "episode_*.hdf5"):
+        for path in out_path.glob(pattern):
+            if path.is_file():
+                path.unlink()
+    render_dir = out_path / "replay_frames"
+    if include_render and render_dir.exists():
+        shutil.rmtree(render_dir)
+
+
 hdf5_path = args.existing_hdf5
 if hdf5_path is None:
+    if args.test:
+        clean_test_output(args.output_dir, include_render=args.render)
     os.makedirs(args.output_dir, exist_ok=True)
     hdf5_path = record_one_episode(args.output_dir, args.record_steps)
 
@@ -238,15 +259,7 @@ from isaacsim.core.utils.extensions import enable_extension
 enable_extension("isaacsim.test.utils")
 from isaacsim.test.utils.file_validation import validate_folder_contents
 
-test_parser = argparse.ArgumentParser()
-test_parser.add_argument(
-    "--test",
-    action="store_true",
-    help="Validate captured output files against expected counts and exit.",
-)
-test_args, _ = test_parser.parse_known_args()
-
-if test_args.test:
+if args.test:
     # Recording produces:
     #   - 1 stage_snapshot.usd (from export_stage_snapshot)
     #   - 1 stage_snapshot.sidecar.json (sidecar, include_sidecar=True by default)

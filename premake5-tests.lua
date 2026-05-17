@@ -273,7 +273,7 @@ local function get_core_tests()
 end
 
 local function get_sensor_tests()
-    return {
+    local tests = {
         -- RTX Sensors (Experimental)
         {
             "tests-nativepython-isaacsim.sensors.experimental.rtx.create_camera_basic",
@@ -313,11 +313,6 @@ local function get_sensor_tests()
         {
             "tests-nativepython-isaacsim.sensors.experimental.rtx.camera_ros",
             "standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_ros.py",
-            "--test",
-        },
-        {
-            "tests-nativepython-isaacsim.sensors.experimental.rtx.camera_isp_pipeline",
-            "standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_isp_pipeline.py",
             "--test",
         },
         {
@@ -501,6 +496,17 @@ local function get_sensor_tests()
             "--test",
         },
     }
+
+    local platform_target = _OPTIONS["platform-target"] or "linux-x86_64"
+    if os.target() == "linux" and platform_target == "linux-x86_64" then
+        table.insert(tests, {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.camera_isp_pipeline",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_isp_pipeline.py",
+            "--test",
+        })
+    end
+
+    return tests
 end
 
 local function get_robot_tests()
@@ -835,7 +841,7 @@ local function get_asset_tests()
 end
 
 local function get_replicator_tests()
-    return {
+    local tests = {
         {
             "tests-nativepython-replicator.infinigen_sdg_default",
             "standalone_examples/replicator/infinigen/infinigen_sdg.py",
@@ -1046,12 +1052,6 @@ local function get_replicator_tests()
             "standalone_examples/api/isaacsim.replicator.episode_recorder/episode_record_replay.py",
             "--replay --test",
         },
-        -- Teleop Replay
-        {
-            "tests-nativepython-isaacsim.replicator.teleop.sdg_teleop_replay",
-            "standalone_examples/api/isaacsim.replicator.teleop/sdg_teleop_replay.py",
-            "--test",
-        },
         -- Deprecated Domain Randomization
         {
             "tests-nativepython-deprecated-isaacsim.replicator.domain_randomization.randomization_demo",
@@ -1059,6 +1059,17 @@ local function get_replicator_tests()
             "--test",
         },
     }
+
+    local platform_target = _OPTIONS["platform-target"] or "linux-x86_64"
+    if os.target() == "linux" and platform_target == "linux-x86_64" then
+        table.insert(tests, {
+            "tests-nativepython-isaacsim.replicator.teleop.sdg_teleop_replay",
+            "standalone_examples/api/isaacsim.replicator.teleop/sdg_teleop_replay.py",
+            "--test",
+        })
+    end
+
+    return tests
 end
 
 local function get_ros_tests()
