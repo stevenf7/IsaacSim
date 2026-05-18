@@ -36,12 +36,14 @@ class ConfigSelectorDirective(Directive):
     option_spec = {
         "options": directives.unchanged_required,
         "dependencies": directives.unchanged,
+        "title": directives.unchanged,
     }
 
     def run(self):
         # Parse the options string
         options_str = self.options.get("options", "")
         deps_str = self.options.get("dependencies", "")
+        title = self.options.get("title", "Configuration").strip()
         config_options = {}
         config_deps = {}
 
@@ -60,7 +62,7 @@ class ConfigSelectorDirective(Directive):
                     dep_key, dep_value = dep.split(":", 1)
                     config_deps[key.strip()] = {dep_key.strip(): dep_value.strip()}
 
-        return [config_selector(config_options=config_options, config_deps=config_deps)]
+        return [config_selector(config_options=config_options, config_deps=config_deps, title=title)]
 
 
 class ConfigContentDirective(Directive):
@@ -104,10 +106,10 @@ def visit_config_selector_html(self, node):
     """Render the configuration selector as HTML"""
     config_options = node.get("config_options", {})
     config_deps = node.get("config_deps", {})
+    title = node.get("title", "Configuration")
 
-    # Generate unique IDs for the selectors
-    selector_html = ['<div class="config-selector" id="config-selector">']
-    selector_html.append("<h3>Configuration</h3>")
+    selector_html = [f'<div class="config-selector" id="config-selector" role="region" aria-label="{title} selector">']
+    selector_html.append(f"<h3>{title}</h3>")
     selector_html.append('<div class="config-options">')
 
     for key, values in config_options.items():
@@ -137,51 +139,67 @@ def visit_config_selector_html(self, node):
     css = """
     <style>
     .config-selector {
-        background-color: var(--pst-color-surface, var(--color-background-secondary, #f8f9fa));
-        border: 1px solid var(--pst-color-border, var(--color-border, #dee2e6));
-        border-radius: 6px;
-        padding: 16px;
-        margin: 16px 0;
-        box-shadow: 0 2px 8px var(--pst-color-shadow, rgba(0,0,0,0.1));
+        position: fixed;
+        top: var(--pst-header-height, 60px);
+        left: 0;
+        right: 0;
+        z-index: 1020;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 12px 18px;
+        background-color: var(--pst-color-surface, rgba(248, 249, 250, 0.95));
+        border-bottom: 1px solid var(--pst-color-border, var(--color-border, #dee2e6));
+        border-radius: 0;
+        padding: 10px 24px;
+        margin: 0;
+        box-shadow: 0 4px 12px var(--pst-color-shadow, rgba(0,0,0,0.08));
+        backdrop-filter: saturate(180%) blur(6px);
+        -webkit-backdrop-filter: saturate(180%) blur(6px);
     }
-    
+
     [data-theme="dark"] .config-selector {
-        background-color: var(--pst-color-surface, #1e1e1e);
+        background-color: var(--pst-color-surface, rgba(30, 30, 30, 0.92));
         border-color: var(--pst-color-border, #404040);
         box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
-    
+
     .config-selector h3 {
-        margin-top: 0;
-        margin-bottom: 12px;
+        display: inline-block;
+        margin: 0 16px 0 0;
         color: var(--pst-color-text-base, var(--color-foreground-primary, #212529));
-        font-size: 1.1em;
+        font-size: 0.95em;
         font-weight: 600;
+        vertical-align: middle;
     }
-    
+
     [data-theme="dark"] .config-selector h3 {
         color: var(--pst-color-text-base, #ffffff);
     }
-    
+
     .config-options {
         display: flex;
-        flex-direction: column;
-        gap: 16px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 10px 18px;
+        align-items: center;
     }
-    
+
     .config-row {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
+        align-items: center;
         gap: 8px;
     }
-    
+
     .config-label {
         font-weight: 600;
         color: var(--pst-color-text-base, var(--color-foreground-primary, #212529));
-        font-size: 14px;
-        margin-bottom: 2px;
+        font-size: 13px;
+        white-space: nowrap;
     }
-    
+
     [data-theme="dark"] .config-label {
         color: var(--pst-color-text-base, #ffffff);
     }
@@ -193,12 +211,12 @@ def visit_config_selector_html(self, node):
     }
     
     .config-btn {
-        padding: 8px 12px;
+        padding: 5px 10px;
         border: 2px solid var(--pst-color-border, var(--color-border, #dee2e6));
         border-radius: 6px;
         background-color: var(--pst-color-surface, var(--color-background-primary, #ffffff));
         color: var(--pst-color-text-base, var(--color-foreground-primary, #212529));
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 500;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
         cursor: pointer;
@@ -253,25 +271,20 @@ def visit_config_selector_html(self, node):
     
     @media (max-width: 768px) {
         .config-selector {
-            padding: 12px;
-            margin: 12px 0;
+            padding: 8px 10px;
         }
-        
+
         .config-options {
-            gap: 14px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
         }
-        
-        .config-row {
-            gap: 6px;
-        }
-        
-        .config-label {
-            font-size: 13px;
-        }
-        
-        .config-btn {
-            padding: 6px 10px;
-            font-size: 12px;
+    }
+
+    @media print {
+        .config-selector {
+            position: static;
+            backdrop-filter: none;
         }
     }
     </style>
@@ -360,10 +373,61 @@ def visit_config_selector_html(self, node):
             });
         });
 
+        const banner = document.querySelector('.config-selector');
+
+        // Position the banner just below whatever is currently pinned to
+        // the top of the viewport (PyData navbar + version-warning + any
+        // announcement). Recomputed on scroll/resize so the banner shifts
+        // down when the version-warning is visible and up after it scrolls
+        // out of view.
+        const topElements = [
+            document.querySelector('.bd-header-announcement'),
+            document.querySelector('#bd-header-version-warning'),
+            document.querySelector('.bd-header.navbar'),
+        ].filter(Boolean);
+
+        // Element that holds article content; padded down so its content
+        // is never overlapped by the fixed banner regardless of wrap.
+        const contentRoot = document.querySelector('.bd-main') ||
+                            document.querySelector('main') ||
+                            document.body;
+
+        function updateBannerTop() {
+            if (!banner) return;
+            let bottom = 0;
+            topElements.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                if (rect.bottom > bottom) bottom = rect.bottom;
+            });
+            banner.style.top = Math.max(0, bottom) + 'px';
+        }
+
+        function updateContentOffset() {
+            if (!banner || !contentRoot) return;
+            const h = banner.offsetHeight;
+            contentRoot.style.paddingTop = h + 'px';
+            // Anchor links should land below the banner, not behind it.
+            document.documentElement.style.scrollPaddingTop = (h + 16) + 'px';
+        }
+
+        if (banner && 'ResizeObserver' in window) {
+            new ResizeObserver(() => {
+                updateContentOffset();
+                updateBannerTop();
+            }).observe(banner);
+        }
+        window.addEventListener('resize', () => {
+            updateContentOffset();
+            updateBannerTop();
+        });
+        window.addEventListener('scroll', updateBannerTop, { passive: true });
+
         // Initial update
         setTimeout(function() {
             updateRowVisibility();
             updateVisibility();
+            updateContentOffset();
+            updateBannerTop();
         }, 100);
 
         // Watch for theme changes

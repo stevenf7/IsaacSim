@@ -45,6 +45,7 @@ For the ROS 2 bridge, |isaac-sim_short| is compatible with **ROS 2 Humble** and 
 ROS 2 Jazzy on Ubuntu 24.04 is recommended. Refer to :ref:`isaac_sim_app_install_ros`, if that is your mode of installation. Otherwise, verify or choose your configuration to continue:
 
 .. config-selector::
+   :title: ROS 2 Setup
    :options: platform=Ubuntu 22.04|Windows,ros_distro=Humble|Jazzy,package_type=Default ROS Interfaces|Custom ROS Interfaces,install_method=Pixi|WSL2 (Deprecated)
    :dependencies: install_method=platform:Windows
 
