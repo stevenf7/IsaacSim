@@ -36,6 +36,8 @@ Add a configuration selector at the top of your page:
 - Multiple keys separated by commas
 - Values separated by pipes (`|`)
 
+The selector renders as a sticky banner that pins to the top of the viewport as the user scrolls, with a compact horizontal layout and a collapse toggle.
+
 ### Conditional Content
 
 Wrap content that should be conditionally displayed:
