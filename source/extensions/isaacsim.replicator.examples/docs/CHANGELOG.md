@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.2] - 2026-05-18
+### Added
+- Added multiple captures with toggled render product while timeline is running test
+
 ## [1.11.1] - 2026-05-05
 ### Changed
 - Enable multitick in all tests
