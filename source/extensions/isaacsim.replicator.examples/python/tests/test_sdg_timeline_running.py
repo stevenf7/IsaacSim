@@ -75,3 +75,47 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         # Validate the output directory contents
         folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": num_frame_captures})
         self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
+
+    async def test_toggled_render_product_captures_with_timeline_running(self):
+        num_captures = 5
+        num_iterations = 4
+        app_updates_per_capture = 20
+
+        for iteration in range(num_iterations):
+            await omni.usd.get_context().new_stage_async()
+            rep.orchestrator.set_capture_on_play(False)
+
+            camera = rep.functional.create.camera(position=(2.0, 2.0, 2.0), look_at=(0.0, 0.0, 0.0))
+            render_product = rep.create.render_product(camera, (400, 400), name="rp_camera", force_new=True)
+            render_product.hydra_texture.set_updates_enabled(False)
+
+            out_dir = tempfile.mkdtemp(prefix=f"test_sdg_toggled_rp_{iteration}_")
+            print(f"output_directory[{iteration}]: {out_dir}")
+            backend = rep.backends.get("DiskBackend")
+            backend.initialize(output_dir=out_dir)
+            writer = rep.writers.get("BasicWriter")
+            writer.initialize(backend=backend, rgb=True)
+            writer.attach([render_product])
+
+            timeline = omni.timeline.get_timeline_interface()
+            timeline.play()
+
+            try:
+                for _ in range(num_captures):
+                    for _ in range(app_updates_per_capture):
+                        await omni.kit.app.get_app().next_update_async()
+
+                    render_product.hydra_texture.set_updates_enabled(True)
+                    await rep.orchestrator.step_async()
+                    render_product.hydra_texture.set_updates_enabled(False)
+
+                await rep.orchestrator.wait_until_complete_async()
+                folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": num_captures})
+                self.assertTrue(
+                    folder_contents_success,
+                    f"Output directory contents validation failed for iteration {iteration}: {out_dir}",
+                )
+            finally:
+                writer.detach()
+                timeline.stop()
+                render_product.destroy()
