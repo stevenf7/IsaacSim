@@ -126,27 +126,27 @@ Depending on the component(s) created, the following can be expected (without ad
 Extensions Requiring a Kit-based Build System
 ---------------------------------------------
 
-Extensions (**C++** and/or **Python**) requiring Kit-based build system, as the name suggests, need to be configured as part of a Kit SDK-based application (such as the `Isaac Sim App Template <https://github.com/isaac-sim/isaacsim-app-template>`_ or the `Omniverse Kit App Template <https://github.com/NVIDIA-Omniverse/kit-app-template>`_) in order to be compiled.
+Extensions (**C++** and/or **Python**) requiring Kit-based build system, as the name suggests, need to be configured as part of a Kit SDK-based application (such as the `Isaac Sim Open-Source Application <https://github.com/isaac-sim/IsaacSim>`_ or the `Omniverse Kit App Template <https://github.com/NVIDIA-Omniverse/kit-app-template>`_) in order to be compiled.
 
 The subsequent subsections describe how to generate and run this type of extensions.
 
-Building the App Template
-"""""""""""""""""""""""""
+Building the Open-Source Application
+""""""""""""""""""""""""""""""""""""
 
-Get the `Isaac Sim App Template <https://github.com/isaac-sim/isaacsim-app-template>`_, and setup and build it according to its documentation.
+Get the `Isaac Sim Open-Source Application <https://github.com/isaac-sim/IsaacSim>`_, and setup and build it according to its documentation.
 
 Creating the Extension
 """"""""""""""""""""""
 
 .. hint::
 
-    For convenience, the ``source/extensions`` folder at the root of the Isaac Sim App Template is configured, in the build system, as a place to search for the extensions' source code.
+    For convenience, the ``source/extensions`` folder at the root of the Isaac Sim Open-Source Application is configured, in the build system, as a place to search for the extensions' source code.
     Therefore, it is recommended to create the extension there. **Create it if the folder doesn't exist**. 
 
 Open, in the VS Code Editor, the *Isaac Sim VS Code Edition*'s extension template generator wizard (*Templates > Extension*) and fill/check, at least, the following fields:
 
 * **Ext. name**: Given extension name. E.g. ``my.custom.extension``.
-* **Ext. path**: Folder path that will contain the extension source code. E.g.: ``PATH_TO_ISAAC_SIM_APP_TEMPLATE/source/extensions``.
+* **Ext. path**: Folder path that will contain the extension source code. E.g.: ``PATH_TO_ISAAC_SIM_APPLICATION/source/extensions``.
 * Disable the *Ready-to-use extension* checkbox (if it is already enabled).
 * Enable the specific component(s) to generate.
 
@@ -157,7 +157,7 @@ Configuring the Build System
 
 Depending on the component(s) created, the following configuration is necessary:
 
-* OmniGraph: Edit the ``tools/deps/kit-sdk-deps.packman.xml`` file to include the USD dependency:
+* OmniGraph: Edit the ``kit-sdk-deps.packman.xml`` file (in the ``deps/`` or ``tools/deps/`` folder, according to the application) to include the USD dependency, if it is not already present:
 
     .. code-block:: xml
 
@@ -167,9 +167,10 @@ Depending on the component(s) created, the following configuration is necessary:
         </import>
 
         <!-- JUST ADD THE NEXT LINE -->
-        <dependency name="usd-${config}" linkPath="../../_build/target-deps/usd/${config}"/>
+        <!-- use ../ for deps/ folder, or ../../ for tools/deps/ folder -->
+        <dependency name="usd-${config}" linkPath="../_build/target-deps/usd/${config}"/>
 
-* Tests: Edit the ``tools/deps/kit-sdk-deps.packman.xml`` file to include the ``doctest`` dependency:
+* Tests: Edit the ``kit-sdk-deps.packman.xml`` file (in the ``deps/`` or ``tools/deps/`` folder, according to the application) to include the ``doctest`` dependency, if it is not already present:
 
     .. code-block:: xml
 
@@ -179,12 +180,15 @@ Depending on the component(s) created, the following configuration is necessary:
         </import>
 
         <!-- JUST ADD THE NEXT LINE -->
-        <dependency name="doctest" linkPath="../../_build/target-deps/doctest"/>
+        <!-- use ../ for deps/ folder, or ../../ for tools/deps/ folder -->
+        <dependency name="doctest" linkPath="../_build/target-deps/doctest">
+            <package name="doctest" version="2.4.5+nv1-3" />
+        </dependency>
 
 Building the Extension
 """"""""""""""""""""""
 
-To build the extension, simply run the following command from an opened terminal in the root directory of the Isaac Sim App Template:
+To build the extension, simply run the following command from an opened terminal in the root directory of the Isaac Sim Open-Source Application:
 
 .. tab-set::
 
@@ -193,14 +197,14 @@ To build the extension, simply run the following command from an opened terminal
 
         .. code-block:: bash
 
-            ./repo.sh build
+            ./build.sh  # or ./repo.sh build
 
     .. tab-item:: Windows
         :sync: windows
 
         .. code-block:: batch
 
-            .\repo.bat build
+            build.bat  :: or .\repo.bat build
 
 Running the Extension
 """""""""""""""""""""
@@ -218,7 +222,7 @@ Depending on the component(s) created, the following can be expected (without ad
         :language: python
 
 * UI (Python only): A sample window can be opened when clicking on the *Window > My Custom Extension* menu.
-* Tests: The tests can be run from an opened terminal in the root directory of the Isaac Sim App Template as follows:
+* Tests: The tests can be run from an opened terminal in the root directory of the Isaac Sim Open-Source Application as follows:
 
     .. tab-set::
 
