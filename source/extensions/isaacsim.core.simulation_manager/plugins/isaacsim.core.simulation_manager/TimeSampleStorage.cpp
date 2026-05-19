@@ -51,10 +51,9 @@ omni::fabric::RationalTime TimeSampleStorage::getCurrentTime()
 {
     using namespace omni::fabric;
 
-    // Only use StageReaderWriter frame time - this provides the correct frame time
-    // that corresponds to when we are reading/writing time data
-
-    // Get frame time from StageReaderWriter if available
+    // Returns the rational time that storage entries should be keyed by. The chosen time-base
+    // must match what the rendering pipeline publishes as rpFabricTime so that subsequent
+    // getSimulationTimeAt() lookups against rpFabricTime resolve to the right sample.
     if (m_usdStageId.id != 0 && m_iStageReaderWriter)
     {
         StageReaderWriterId stageReaderWriterId = m_iStageReaderWriter->get(m_usdStageId);
@@ -62,9 +61,22 @@ omni::fabric::RationalTime TimeSampleStorage::getCurrentTime()
         {
             FabricTime frameTime{};
 
-            // Read the simulation time from the Fabric prim /ExternalSimulationTime.
-            // The rendering uses this time to trigger sensor rendering and outputs will be tagged with
-            // times between the previous simulation time and this one.
+            // Time-base depends on whether multitick rendering is enabled.
+            //
+            // Multitick: simulation_manager writes the current sim time to the Fabric prim
+            // /ExternalSimulationTime in onPhysicsStep, and the renderer consumes that value
+            // to derive each frame's rational time (which then flows through to rpFabricTime
+            // in the post-render synthdata graph). Storing samples keyed at the same rational
+            // time means lookups by rpFabricTime hit an exact match.
+            //
+            // Non-multitick: the renderer ignores /ExternalSimulationTime and tags frames
+            // with its own free-running Hydra frame counter (m_frameNumber * simPeriod).
+            // To keep storage keys aligned with what rpFabricTime carries, we read the
+            // StageReaderWriter's frame time directly. Lookups for past frames then resolve
+            // via exact match / adjacent-sample interpolation in getSimulationTimeAt().
+            carb::settings::ISettings* iSettings = carb::getCachedInterface<carb::settings::ISettings>();
+            const bool multiTickRateEnabled = iSettings && iSettings->getAsBool("/rtx/hydra/supportMultiTickRate");
+            if (multiTickRateEnabled)
             {
                 static const omni::fabric::Path externalTimePrim =
                     omni::fabric::Path::createImmortal("/ExternalSimulationTime");
@@ -80,6 +92,10 @@ omni::fabric::RationalTime TimeSampleStorage::getCurrentTime()
                     return kInvalidRationalTime;
                 }
                 frameTime = omni::fabric::FabricTime(*externalSimTimeAttr);
+            }
+            else
+            {
+                frameTime = m_iStageReaderWriter->getFrameTime(stageReaderWriterId);
             }
 
             // Check if we got a valid rational time
@@ -172,9 +188,37 @@ std::optional<double> TimeSampleStorage::getSimulationTimeAt(const omni::fabric:
         return std::nullopt;
     }
 
-    // Simulation time was passed directly to the renderer via /ExternalSimulationTime,
-    // so sensor render time is based on the simulation time.
-    return double(time);
+    // Multitick path: simulation time was passed directly to the renderer via
+    // /ExternalSimulationTime, so the rational time we are being asked about *is* the
+    // simulation time at frame submission. Avoid the storage lookup and return it as-is.
+    carb::settings::ISettings* iSettings = carb::getCachedInterface<carb::settings::ISettings>();
+    const bool multiTickRateEnabled = iSettings && iSettings->getAsBool("/rtx/hydra/supportMultiTickRate");
+    if (multiTickRateEnabled)
+    {
+        return double(time);
+    }
+
+    // Non-multitick path: the rational time comes from the renderer's free-running
+    // Hydra frame counter, not from sim time. Resolve it against the per-frame samples
+    // authored in storeSample()/getCurrentTime() (which on this path read the renderer's
+    // own frame time via IStageReaderWriter::getFrameTime).
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
+
+    auto exactMatch = findExactMatch(time);
+    if (exactMatch.has_value())
+    {
+        return exactMatch->simTime;
+    }
+
+    auto adjacent = findAdjacentSamples(time);
+    if (!adjacent.has_value())
+    {
+        CARB_LOG_INFO("No adjacent samples found for interpolation at time %s", time.toString().c_str());
+        return std::nullopt;
+    }
+
+    auto interpolated = performInterpolation(time, adjacent->first, adjacent->second);
+    return interpolated.simTime;
 }
 
 std::optional<double> TimeSampleStorage::getMonotonicSimulationTimeAt(const omni::fabric::RationalTime& time)
