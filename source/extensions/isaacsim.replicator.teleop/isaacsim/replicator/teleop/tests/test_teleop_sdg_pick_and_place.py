@@ -771,13 +771,11 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
             recorder.pause()
         for render_product in render_products:
             render_product.hydra_texture.set_updates_enabled(True)
-        try:
-            await rep.orchestrator.step_async(delta_time=0.0, pause_timeline=False, rt_subframes=rt_subframes)
-        finally:
-            for render_product in render_products:
-                render_product.hydra_texture.set_updates_enabled(False)
-            if recorder is not None:
-                recorder.resume()
+        await rep.orchestrator.step_async(delta_time=0.0, pause_timeline=False, rt_subframes=rt_subframes)
+        for render_product in render_products:
+            render_product.hydra_texture.set_updates_enabled(False)
+        if recorder is not None:
+            recorder.resume()
         if recorded_frame_index is not None:
             replay_capture_points.append(
                 SdgReplayCapture(
@@ -1283,7 +1281,7 @@ class TestTeleopSDGPickAndPlace(omni.kit.test.AsyncTestCase):
     # Per-pixel mean tolerance when comparing captured frames against golden
     # images. Scenes are deterministic but RTX denoising / lighting jitter can
     # introduce small per-pixel variation, so a moderate budget is used.
-    MEAN_DIFF_TOLERANCE = 25
+    MEAN_DIFF_TOLERANCE = 10
 
     async def setUp(self):
         await omni.kit.app.get_app().next_update_async()
@@ -1382,7 +1380,7 @@ class TestTeleopSDGPickAndPlace(omni.kit.test.AsyncTestCase):
                 "right": {
                     "asset_path": "/World/teleop_env/teleop_assets/Assets/_05_tomato_soup_can",
                     "drop_target_path": "/World/teleop_env/teleop_tables/TableMain/SM_Crate_A07_Yellow_01_physics",
-                    "tcp_offset_world": (-0.15, 0.0, 0.0),
+                    "tcp_offset_world": (-0.05, 0.0, 0.0),
                     "start_offset": (0.0, 0.0, 0.5),
                     "reach_offset": (-0.5, 0.0, 0.0),
                     "pre_grasp_offset": (0.0, 0.0, 0.0),
