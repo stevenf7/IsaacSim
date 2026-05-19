@@ -27,7 +27,7 @@ simulation_app = SimulationApp({"renderer": "RealTimePathTracing", "headless": F
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni
-from isaacsim.core.experimental.objects import Cube, GroundPlane
+from isaacsim.core.experimental.objects import Cube, DistantLight, GroundPlane
 from isaacsim.core.simulation_manager import SimulationManager
 
 # enable ROS2 bridge extension
@@ -52,15 +52,16 @@ class Subscriber(Node):
         # setting up the world with a cube
         stage_utils.set_stage_units(meters_per_unit=1.0)
         GroundPlane("/World/GroundPlane")
+        DistantLight("/World/DistantLight").set_intensities(intensities=[3000])
 
         # add a cube in the world
         self.cube = Cube(
             paths="/cube",
-            positions=np.array([[0, 0, 10]]),
+            positions=np.array([[0, 0, 0.10]]),
             sizes=0.2,
             colors="red",
         )
-        self._cube_position = np.array([[0, 0, 0]])
+        self._cube_position = np.array([[0, 0, 0.10]])
 
         # setup the ROS2 subscriber here
         self.ros_sub = self.create_subscription(Empty, "move_cube", self.move_cube_callback, 10)
