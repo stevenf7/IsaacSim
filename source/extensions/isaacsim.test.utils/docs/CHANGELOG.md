@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.14.5] - 2026-05-18
+### Changed
+- `compare_images_in_directories` prints the golden and test directory paths in its header and the full file paths on each failure to make per-image failures unambiguous.
+
 ## [0.14.4] - 2026-05-12
 ### Changed
 - `compare_usd_files` articulation check will check if the asset contains newton articulation root api or physx articulation root api and test the attributes accordingly

@@ -527,6 +527,8 @@ def compare_images_in_directories(
         tolerance_str = ", ".join(tolerance_info) if tolerance_info else "default allclose"
         pattern_desc = f"pattern '{path_pattern}'" if path_pattern is not None else "all files"
         print(f"Comparing images matching {pattern_desc} with {tolerance_str}")
+        print(f"  Golden dir: {golden_dir}")
+        print(f"  Test dir:   {test_dir}")
 
     for file_name in common_files:
         golden_file_path = os.path.join(golden_dir, file_name)
@@ -560,6 +562,8 @@ def compare_images_in_directories(
             if print_per_file_results:
                 metrics = result["metrics"]
                 print(f"\t'{file_name}': FAILED")
+                print(f"\t  Golden: {golden_file_path}")
+                print(f"\t  Test:   {test_file_path}")
                 if mean_tolerance is not None:
                     print(f"\t  Expected mean_diff <= {mean_tolerance}, got {metrics['mean_abs']:.3f}")
                 if max_tolerance is not None:

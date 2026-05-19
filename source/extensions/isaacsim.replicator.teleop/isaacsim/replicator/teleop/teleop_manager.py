@@ -636,6 +636,24 @@ class TeleopManager:
             "[Teleop][Session] Info: See `source/extensions/isaacsim.replicator.teleop/docs/Overview.md` for setup steps."
         )
 
+    def _ensure_update_subscription(self) -> None:
+        """Ensure a single subscription fires :meth:`_on_update` each app frame."""
+        if self._update_subscription is not None:
+            return
+        self._update_subscription = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            event_name=omni.kit.app.GLOBAL_EVENT_UPDATE,
+            on_event=self._on_update,
+            observer_name="isaacsim.replicator.teleop.TeleopManager.update",
+        )
+
+    def _release_update_subscription(self) -> None:
+        """Unregister the app-frame update observer."""
+        sub = self._update_subscription
+        if sub is None:
+            return
+        sub.reset()
+        self._update_subscription = None
+
     def connect(self, on_status_changed: Callable[[str], None] | None = None) -> bool:
         """Connect to the teleop session via OpenXR.
 
@@ -708,10 +726,7 @@ class TeleopManager:
 
         self._session_stack = stack
 
-        app = omni.kit.app.get_app()
-        self._update_subscription = app.get_update_event_stream().create_subscription_to_pop(
-            self._on_update, name="TeleopManager_update"
-        )
+        self._ensure_update_subscription()
 
         self._is_connected = True
         self._frame_count = 0
@@ -727,7 +742,7 @@ class TeleopManager:
             return
 
         if not self._debug_tracking_enabled:
-            self._update_subscription = None
+            self._release_update_subscription()
         if self._session_stack is not None:
             try:
                 self._session_stack.close()
@@ -778,16 +793,12 @@ class TeleopManager:
             return
         self._debug_tracking_enabled = enabled
         if enabled:
-            if self._update_subscription is None:
-                app = omni.kit.app.get_app()
-                self._update_subscription = app.get_update_event_stream().create_subscription_to_pop(
-                    self._on_update, name="TeleopManager_update"
-                )
+            self._ensure_update_subscription()
             self._reapply_tracking_space()
             print("[Teleop][Debug] Tracking enabled - reading poses from markers.")
         else:
             if not self._is_connected:
-                self._update_subscription = None
+                self._release_update_subscription()
             print("[Teleop][Debug] Tracking disabled.")
 
     def set_debug_trigger(self, side: str, value: float) -> None:
