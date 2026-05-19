@@ -42,15 +42,15 @@ _dof_map_model_id: int | None = None
 
 @wp.kernel(enable_backward=False)
 def _sync_ctrl_direct_targets(
-    dof_to_act: wp.array(dtype=wp.int32),
-    joint_target_pos: wp.array(dtype=wp.float32),
+    dof_to_act: wp.array(dtype=wp.int32),  # type: ignore[valid-type]
+    joint_target_pos: wp.array(dtype=wp.float32),  # type: ignore[valid-type]
     dofs_per_world: wp.int32,
     ctrls_per_world: wp.int32,
     # output
-    mujoco_ctrl: wp.array(dtype=wp.float32),
+    mujoco_ctrl: wp.array(dtype=wp.float32),  # type: ignore[valid-type]
 ) -> None:
     """Sync joint_target_pos to control.mujoco.ctrl for CTRL_DIRECT joint actuators."""
-    world, dof = wp.tid()
+    world, dof = wp.tid()  # type: ignore[misc]
     act_idx = dof_to_act[dof]
     if act_idx < 0:
         return
@@ -61,12 +61,12 @@ def _sync_ctrl_direct_targets(
 
 @wp.kernel(enable_backward=False)
 def _sync_ctrl_direct_gains(
-    dof_to_act: wp.array(dtype=wp.int32),
-    joint_target_ke: wp.array(dtype=wp.float32),
-    joint_target_kd: wp.array(dtype=wp.float32),
+    dof_to_act: wp.array(dtype=wp.int32),  # type: ignore[valid-type]
+    joint_target_ke: wp.array(dtype=wp.float32),  # type: ignore[valid-type]
+    joint_target_kd: wp.array(dtype=wp.float32),  # type: ignore[valid-type]
     # output
-    actuator_gainprm: wp.array(dtype=vec10),
-    actuator_biasprm: wp.array(dtype=vec10),
+    actuator_gainprm: wp.array(dtype=vec10),  # type: ignore[valid-type]
+    actuator_biasprm: wp.array(dtype=vec10),  # type: ignore[valid-type]
 ) -> None:
     """Sync joint_target_ke/kd to actuator gainprm/biasprm for CTRL_DIRECT joint actuators."""
     dof = wp.tid()

@@ -39,16 +39,16 @@ import warp as wp
 @wp.kernel
 def populate_contact_points_kernel(
     # inputs - from Newton's contacts
-    contact_count: wp.array(dtype=int),
-    contact_shape0: wp.array(dtype=int),
-    contact_shape1: wp.array(dtype=int),
-    mj_contact_pos: wp.array(dtype=wp.vec3),  # world-space contact position from MuJoCo
+    contact_count: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_shape0: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_shape1: wp.array(dtype=int),  # type: ignore[valid-type]
+    mj_contact_pos: wp.array(dtype=wp.vec3),  # type: ignore[valid-type]
     # model data
-    shape_body: wp.array(dtype=int),
-    body_q: wp.array(dtype=wp.transform),
+    shape_body: wp.array(dtype=int),  # type: ignore[valid-type]
+    body_q: wp.array(dtype=wp.transform),  # type: ignore[valid-type]
     # outputs
-    contact_point0: wp.array(dtype=wp.vec3),  # body-local contact point on first shape
-    contact_point1: wp.array(dtype=wp.vec3),  # body-local contact point on second shape
+    contact_point0: wp.array(dtype=wp.vec3),  # type: ignore[valid-type]
+    contact_point1: wp.array(dtype=wp.vec3),  # type: ignore[valid-type]
 ) -> None:
     """Populate body-local contact points from MuJoCo world-space contact positions.
 
@@ -94,17 +94,17 @@ def populate_contact_points_kernel(
 @wp.kernel
 def count_contacts_per_pair_kernel(
     # inputs - from Newton's contacts
-    contact_count_total: wp.array(dtype=int),
-    contact_shape0: wp.array(dtype=int),
-    contact_shape1: wp.array(dtype=int),
+    contact_count_total: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_shape0: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_shape1: wp.array(dtype=int),  # type: ignore[valid-type]
     # model data
-    shape_body: wp.array(dtype=int),
+    shape_body: wp.array(dtype=int),  # type: ignore[valid-type]
     # sensor mapping
-    body_sensor_map: wp.array(dtype=int),  # maps body index -> sensor index (-1 if not a sensor)
-    body_filter_map: wp.array2d(dtype=int),  # maps (sensor_idx, body_idx) -> filter_idx (-1 if no filter)
+    body_sensor_map: wp.array(dtype=int),  # type: ignore[valid-type]
+    body_filter_map: wp.array2d(dtype=int),  # type: ignore[valid-type]
     world_body_idx: int,
     # outputs
-    contact_counts: wp.array2d(dtype=wp.uint32),  # per sensor-filter pair (uint32 to match PhysX API)
+    contact_counts: wp.array2d(dtype=wp.uint32),  # type: ignore[valid-type]
 ) -> None:
     """Count how many contacts exist for each sensor-filter pair (for prefix scan).
 
@@ -167,18 +167,18 @@ def count_contacts_per_pair_kernel(
 @wp.kernel
 def net_contact_forces_kernel(
     # inputs - from Newton's contacts (pre-computed by solver)
-    contact_count: wp.array(dtype=int),
-    contact_shape0: wp.array(dtype=int),
-    contact_shape1: wp.array(dtype=int),
-    contact_force: wp.array(dtype=wp.vec3),  # pre-computed force vector from solver
+    contact_count: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_shape0: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_shape1: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_force: wp.array(dtype=wp.vec3),  # type: ignore[valid-type]
     # model data
-    shape_body: wp.array(dtype=int),
+    shape_body: wp.array(dtype=int),  # type: ignore[valid-type]
     # sensor mapping
-    body_sensor_map: wp.array(dtype=int),  # maps body index -> sensor index
+    body_sensor_map: wp.array(dtype=int),  # type: ignore[valid-type]
     world_body_idx: int,
     dt: float,
     # outputs
-    net_forces: wp.array2d(dtype=wp.float32),  # shape: (sensor_count, 3)
+    net_forces: wp.array2d(dtype=wp.float32),  # type: ignore[valid-type]
 ) -> None:
     """Compute net contact force per sensor (force * dt) with PhysX sign convention.
 
@@ -246,20 +246,20 @@ def net_contact_forces_kernel(
 @wp.kernel
 def contact_force_matrix_kernel(
     # inputs - from Newton's contacts (pre-computed by solver)
-    contact_count: wp.array(dtype=int),
-    contact_shape0: wp.array(dtype=int),
-    contact_shape1: wp.array(dtype=int),
-    contact_force: wp.array(dtype=wp.vec3),  # pre-computed force vector from solver
+    contact_count: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_shape0: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_shape1: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_force: wp.array(dtype=wp.vec3),  # type: ignore[valid-type]
     # model data
-    shape_body: wp.array(dtype=int),
+    shape_body: wp.array(dtype=int),  # type: ignore[valid-type]
     # sensor mapping
-    body_sensor_map: wp.array(dtype=int),  # maps body index -> sensor index
-    body_filter_map: wp.array2d(dtype=int),  # maps (sensor_idx, body_idx) -> filter_idx (-1 if no filter)
+    body_sensor_map: wp.array(dtype=int),  # type: ignore[valid-type]
+    body_filter_map: wp.array2d(dtype=int),  # type: ignore[valid-type]
     world_body_idx: int,
     dt: float,
     filter_count: int,
     # outputs
-    force_matrix: wp.array3d(dtype=wp.float32),  # shape: (sensor_count, filter_count, 3)
+    force_matrix: wp.array3d(dtype=wp.float32),  # type: ignore[valid-type]
 ) -> None:
     """Compute per-filter contact force matrix (force * dt) with PhysX sign convention.
 
@@ -332,31 +332,31 @@ def contact_force_matrix_kernel(
 @wp.kernel
 def contact_data_kernel(
     # inputs - from Newton's contacts (pre-computed by solver)
-    contact_count: wp.array(dtype=int),
-    contact_shape0: wp.array(dtype=int),
-    contact_shape1: wp.array(dtype=int),
-    contact_point0: wp.array(dtype=wp.vec3),  # body-local contact point on first shape
-    contact_point1: wp.array(dtype=wp.vec3),  # body-local contact point on second shape
-    contact_normal: wp.array(dtype=wp.vec3),
-    contact_force: wp.array(dtype=wp.vec3),  # pre-computed force vector from solver
-    contact_thickness0: wp.array(dtype=wp.float32),
-    contact_thickness1: wp.array(dtype=wp.float32),
+    contact_count: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_shape0: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_shape1: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_point0: wp.array(dtype=wp.vec3),  # type: ignore[valid-type]
+    contact_point1: wp.array(dtype=wp.vec3),  # type: ignore[valid-type]
+    contact_normal: wp.array(dtype=wp.vec3),  # type: ignore[valid-type]
+    contact_force: wp.array(dtype=wp.vec3),  # type: ignore[valid-type]
+    contact_thickness0: wp.array(dtype=wp.float32),  # type: ignore[valid-type]
+    contact_thickness1: wp.array(dtype=wp.float32),  # type: ignore[valid-type]
     # model data
-    shape_body: wp.array(dtype=int),
-    body_q: wp.array(dtype=wp.transform),
+    shape_body: wp.array(dtype=int),  # type: ignore[valid-type]
+    body_q: wp.array(dtype=wp.transform),  # type: ignore[valid-type]
     # sensor mapping
-    body_sensor_map: wp.array(dtype=int),  # maps body index -> sensor index
-    body_filter_map: wp.array2d(dtype=int),  # maps (sensor_idx, body_idx) -> filter_idx (-1 if no filter)
+    body_sensor_map: wp.array(dtype=int),  # type: ignore[valid-type]
+    body_filter_map: wp.array2d(dtype=int),  # type: ignore[valid-type]
     world_body_idx: int,
     dt: float,
     max_contact_data_count: int,
     # outputs
-    contact_forces: wp.array2d(dtype=wp.float32),  # force magnitudes (N, 1)
-    contact_points: wp.array2d(dtype=wp.float32),  # contact points (N, 3)
-    contact_normals: wp.array2d(dtype=wp.float32),  # contact normals (N, 3)
-    contact_separations: wp.array2d(dtype=wp.float32),  # penetration depth (N, 1)
-    contact_counts: wp.array2d(dtype=wp.uint32),  # per sensor-filter pair (uint32 to match PhysX API)
-    contact_start_indices: wp.array2d(dtype=wp.uint32),  # start index per sensor-filter pair
+    contact_forces: wp.array2d(dtype=wp.float32),  # type: ignore[valid-type]
+    contact_points: wp.array2d(dtype=wp.float32),  # type: ignore[valid-type]
+    contact_normals: wp.array2d(dtype=wp.float32),  # type: ignore[valid-type]
+    contact_separations: wp.array2d(dtype=wp.float32),  # type: ignore[valid-type]
+    contact_counts: wp.array2d(dtype=wp.uint32),  # type: ignore[valid-type]
+    contact_start_indices: wp.array2d(dtype=wp.uint32),  # type: ignore[valid-type]
 ) -> None:
     """Gather detailed contact data per sensor-filter pair using pre-computed forces.
 
@@ -489,16 +489,16 @@ def contact_data_kernel(
 @wp.kernel
 def count_raw_contacts_per_sensor_kernel(
     # inputs - from Newton's contacts
-    contact_count_total: wp.array(dtype=int),
-    contact_shape0: wp.array(dtype=int),
-    contact_shape1: wp.array(dtype=int),
+    contact_count_total: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_shape0: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_shape1: wp.array(dtype=int),  # type: ignore[valid-type]
     # model data
-    shape_body: wp.array(dtype=int),
+    shape_body: wp.array(dtype=int),  # type: ignore[valid-type]
     # sensor mapping
-    body_sensor_map: wp.array(dtype=int),  # maps body index -> sensor index (-1 if not a sensor)
+    body_sensor_map: wp.array(dtype=int),  # type: ignore[valid-type]
     world_body_idx: int,
     # outputs
-    contact_counts: wp.array(dtype=wp.uint32),  # per sensor (1D, no filter dimension)
+    contact_counts: wp.array(dtype=wp.uint32),  # type: ignore[valid-type]
 ) -> None:
     """Count contacts per sensor without filter matching (for raw contact data prefix scan).
 
@@ -556,31 +556,31 @@ def count_raw_contacts_per_sensor_kernel(
 @wp.kernel
 def raw_contact_data_kernel(
     # inputs - from Newton's contacts (pre-computed by solver)
-    contact_count: wp.array(dtype=int),
-    contact_shape0: wp.array(dtype=int),
-    contact_shape1: wp.array(dtype=int),
-    contact_point0: wp.array(dtype=wp.vec3),  # body-local contact point on first shape
-    contact_point1: wp.array(dtype=wp.vec3),  # body-local contact point on second shape
-    contact_normal: wp.array(dtype=wp.vec3),
-    contact_force: wp.array(dtype=wp.vec3),  # pre-computed force vector from solver
-    contact_thickness0: wp.array(dtype=wp.float32),
-    contact_thickness1: wp.array(dtype=wp.float32),
+    contact_count: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_shape0: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_shape1: wp.array(dtype=int),  # type: ignore[valid-type]
+    contact_point0: wp.array(dtype=wp.vec3),  # type: ignore[valid-type]
+    contact_point1: wp.array(dtype=wp.vec3),  # type: ignore[valid-type]
+    contact_normal: wp.array(dtype=wp.vec3),  # type: ignore[valid-type]
+    contact_force: wp.array(dtype=wp.vec3),  # type: ignore[valid-type]
+    contact_thickness0: wp.array(dtype=wp.float32),  # type: ignore[valid-type]
+    contact_thickness1: wp.array(dtype=wp.float32),  # type: ignore[valid-type]
     # model data
-    shape_body: wp.array(dtype=int),
-    body_q: wp.array(dtype=wp.transform),
+    shape_body: wp.array(dtype=int),  # type: ignore[valid-type]
+    body_q: wp.array(dtype=wp.transform),  # type: ignore[valid-type]
     # sensor mapping
-    body_sensor_map: wp.array(dtype=int),  # maps body index -> sensor index
+    body_sensor_map: wp.array(dtype=int),  # type: ignore[valid-type]
     world_body_idx: int,
     dt: float,
     max_contact_data_count: int,
     # outputs
-    contact_forces: wp.array2d(dtype=wp.float32),  # force magnitudes (N, 1)
-    contact_points: wp.array2d(dtype=wp.float32),  # contact points (N, 3)
-    contact_normals: wp.array2d(dtype=wp.float32),  # contact normals (N, 3)
-    contact_separations: wp.array2d(dtype=wp.float32),  # penetration depth (N, 1)
-    contact_counts: wp.array(dtype=wp.uint32),  # per sensor (1D)
-    contact_start_indices: wp.array(dtype=wp.uint32),  # start index per sensor (1D)
-    other_actor_ids: wp.array(dtype=wp.uint64),  # body index of the other body in the pair
+    contact_forces: wp.array2d(dtype=wp.float32),  # type: ignore[valid-type]
+    contact_points: wp.array2d(dtype=wp.float32),  # type: ignore[valid-type]
+    contact_normals: wp.array2d(dtype=wp.float32),  # type: ignore[valid-type]
+    contact_separations: wp.array2d(dtype=wp.float32),  # type: ignore[valid-type]
+    contact_counts: wp.array(dtype=wp.uint32),  # type: ignore[valid-type]
+    contact_start_indices: wp.array(dtype=wp.uint32),  # type: ignore[valid-type]
+    other_actor_ids: wp.array(dtype=wp.uint64),  # type: ignore[valid-type]
 ) -> None:
     """Gather raw contact data per sensor without filter matching.
 

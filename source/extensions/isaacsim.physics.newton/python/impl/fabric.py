@@ -29,11 +29,11 @@ if TYPE_CHECKING:
 
 @wp.kernel(enable_backward=False)
 def set_fabric_transforms(
-    fabric_transforms: wp.fabricarray(dtype=wp.mat44d),
-    newton_indices: wp.fabricarray(dtype=wp.uint32),
-    newton_body_q: wp.array(ndim=1, dtype=wp.transformf),
+    fabric_transforms: wp.fabricarray(dtype=wp.mat44d),  # type: ignore[valid-type]
+    newton_indices: wp.fabricarray(dtype=wp.uint32),  # type: ignore[valid-type]
+    newton_body_q: wp.array(ndim=1, dtype=wp.transformf),  # type: ignore[valid-type]
     body_count: int,
-):
+) -> None:
     """Write Newton body transforms to Fabric world matrices.
 
     Args:
@@ -42,11 +42,11 @@ def set_fabric_transforms(
         newton_body_q: Newton body transforms.
         body_count: Number of valid bodies in newton_body_q for bounds checking.
     """
-    i = int(wp.tid())
+    i = int(wp.tid())  # type: ignore[arg-type]
     idx = int(newton_indices[i])
     if idx < body_count:
         transform = newton_body_q[idx]
-        fabric_transforms[i] = wp.transpose(wp.mat44d(wp.transform_to_matrix(transform)))
+        fabric_transforms[i] = wp.transpose(wp.mat44d(wp.transform_to_matrix(transform)))  # type: ignore[call-overload]
 
 
 class FabricManager:
@@ -56,7 +56,7 @@ class FabricManager:
         usdrt_stage: The USDRT stage instance to synchronize with.
     """
 
-    def __init__(self, usdrt_stage: usdrt.Usd.Stage):
+    def __init__(self, usdrt_stage: usdrt.Usd.Stage) -> None:
         self.stage = usdrt_stage
         self.newton_index_attr = "newton:index"
         self._first_update_done = False
@@ -123,8 +123,8 @@ class FabricManager:
             )
 
         try:
-            fabric_transforms = wp.fabricarray(selection, "omni:fabric:worldMatrix")
-            newton_indices = wp.fabricarray(selection, self.newton_index_attr)
+            fabric_transforms = wp.fabricarray(selection, "omni:fabric:worldMatrix")  # type: ignore[var-annotated]
+            newton_indices = wp.fabricarray(selection, self.newton_index_attr)  # type: ignore[var-annotated]
             self._first_update_done = True
         except Exception as e:
             carb.log_error(

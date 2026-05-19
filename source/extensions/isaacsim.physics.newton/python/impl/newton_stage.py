@@ -37,7 +37,7 @@ class NewtonStage:
         device: Device to run simulation on.
     """
 
-    def __init__(self, cfg: NewtonConfig | None = None, device: str | None = None):
+    def __init__(self, cfg: NewtonConfig | None = None, device: str | None = None) -> None:
         # Default to a generic NewtonConfig unless provided
         self.cfg = cfg or NewtonConfig()
 
@@ -63,14 +63,14 @@ class NewtonStage:
         self.sim_time = 0
         self.sim_dt = 1.0 / self.cfg.physics_frequency
         self.time_code_per_second = 24
-        self.physics_callbacks = []
+        self.physics_callbacks: list = []
 
         # Simulation tracking for unified physics interface
         self.simulation_timestamp = 0
         self.simulation_step_count = 0
         self.stage_id = None
 
-    def init(self):
+    def init(self) -> None:
         """Reset simulation state to initial values."""
         self.initialized = False
         self._initializing = False  # Reentrant guard
@@ -90,7 +90,7 @@ class NewtonStage:
         self.simulation_timestamp = 0
         self.simulation_step_count = 0
 
-    def on_timeline_event(self, e: omni.timeline.TimelineEventType):
+    def on_timeline_event(self, e: omni.timeline.TimelineEventType) -> None:
         """Handle timeline events (play, stop, pause).
 
         Args:
@@ -112,7 +112,7 @@ class NewtonStage:
 
     @classmethod
     def _get_solver(
-        cls, model: newton.Model, solver_cfg: "NewtonConfig.Solver"
+        cls, model: newton.Model, solver_cfg: "NewtonConfig.Solver"  # type: ignore[name-defined]
     ) -> newton.solvers.SolverXPBD | newton.solvers.SolverMuJoCo:
         """Get solver instance from configuration.
 
@@ -184,10 +184,10 @@ class NewtonStage:
         if not self.initialized:
             if not self.playing and not omni.timeline.get_timeline_interface().is_playing():
                 return
-            self.initialize_newton(self.device)
+            self.initialize_newton(self.device)  # type: ignore[arg-type]
 
-        self.sim_time += dt
-        self.simulation_timestamp += 1
+        self.sim_time += dt  # type: ignore[assignment]
+        self.simulation_timestamp += 1  # type: ignore[assignment]
         self.simulation_step_count += 1
         if self.playing:
             use_cuda_graph = (
@@ -210,8 +210,8 @@ class NewtonStage:
                     try:
                         self.simulate(dt=dt)
                     finally:
-                        self.graph = wp.capture_end()
-                    wp.capture_launch(self.graph)
+                        self.graph = wp.capture_end()  # type: ignore[assignment]
+                    wp.capture_launch(self.graph)  # type: ignore[arg-type]
                 else:
                     wp.capture_launch(self.graph)
             else:
@@ -221,7 +221,7 @@ class NewtonStage:
                 if callback is not None:
                     callback(dt)
 
-    def update_fabric(self):
+    def update_fabric(self) -> None:
         """Update Fabric attributes with current simulation state."""
         if self.playing and self.initialized:
             if self.cfg.disable_physx_fabric_tracker:
@@ -234,12 +234,12 @@ class NewtonStage:
                     pass
             self.update_fabric_attrs()
 
-    def on_detach(self):
+    def on_detach(self) -> None:
         """Handle stage detach event."""
         self._in_stage_transition = True
         self.init()
 
-    def on_attach(self, stage_id: int, meters_per_unit: float):
+    def on_attach(self, stage_id: int, meters_per_unit: float) -> None:
         """Handle stage attach event.
 
         Args:
@@ -259,16 +259,16 @@ class NewtonStage:
         self._in_stage_transition = False
         self.simulation_timestamp = 0
         self.simulation_step_count = 0
-        self.sim_time = 0.0
+        self.sim_time = 0.0  # type: ignore[assignment]
 
-    def on_resume(self, currentTime: float):
+    def on_resume(self, currentTime: float) -> None:
         """Handle simulation resume event.
 
         Args:
             currentTime: Current simulation time.
         """
 
-    def on_change(self, path: str):
+    def on_change(self, path: str) -> None:
         """Handle USD prim change event.
 
         Args:
@@ -276,13 +276,13 @@ class NewtonStage:
         """
         self.initialized = False
 
-    def update_fabric_attrs(self):
+    def update_fabric_attrs(self) -> None:
         """Update Fabric attributes from Newton state."""
         if self.cfg.update_fabric and self.model:
-            self.fabric_manager.update_fabric(
+            self.fabric_manager.update_fabric(  # type: ignore[has-type]
                 self.model,
                 self.state_0,
-                self.scene_scale,
+                self.scene_scale,  # type: ignore[has-type]
                 self.device,
             )
 
@@ -404,14 +404,14 @@ class NewtonStage:
             newton.solvers.SolverXPBD.register_custom_attributes(self.builder)
 
         # Parse USD using Newton API
-        add_usd_kwargs = dict(
-            verbose=False,
-            collapse_fixed_joints=self.cfg.collapse_fixed_joints,
-            joint_drive_gains_scaling=self.cfg.pd_scale,
-            only_load_enabled_rigid_bodies=True,
-            schema_resolvers=[SchemaResolverNewton(), SchemaResolverMjc(), SchemaResolverPhysx()],
-            force_position_velocity_actuation=True,
-        )
+        add_usd_kwargs = {
+            "verbose": False,
+            "collapse_fixed_joints": self.cfg.collapse_fixed_joints,
+            "joint_drive_gains_scaling": self.cfg.pd_scale,
+            "only_load_enabled_rigid_bodies": True,
+            "schema_resolvers": [SchemaResolverNewton(), SchemaResolverMjc(), SchemaResolverPhysx()],
+            "force_position_velocity_actuation": True,
+        }
         try:
             self.parsing_results = self.builder.add_usd(source=current_stage, **add_usd_kwargs)
         except RuntimeError as e:
@@ -508,7 +508,7 @@ class NewtonStage:
         if self.model is None or self.state_0 is None or self.state_1 is None:
             return
 
-        if not hasattr(self, "solver") or self.solver is None:
+        if not hasattr(self, "solver") or self.solver is None:  # type: ignore[has-type]
             return
 
         state_0_dict = None
@@ -526,28 +526,28 @@ class NewtonStage:
         if solver_type == "mujoco":
             use_mujoco_native_contacts = getattr(self.cfg.solver_cfg, "use_mujoco_contacts", False)
             if not use_mujoco_native_contacts:
-                self.contacts = self.model.collide(self.state_0, self.contacts)
-            contacts = self.contacts
+                self.contacts = self.model.collide(self.state_0, self.contacts)  # type: ignore[has-type]
+            contacts = self.contacts  # type: ignore[has-type]
         else:
             contacts = self.model.collide(self.state_0)
-            self.contacts = contacts
+            self.contacts = contacts  # type: ignore[has-type]
 
         for i in range(num_substeps):
-            self.solver.step(self.state_0, self.state_1, self.control, contacts, step_dt / float(num_substeps))
+            self.solver.step(self.state_0, self.state_1, self.control, contacts, step_dt / float(num_substeps))  # type: ignore[has-type]
 
             if i == num_substeps - 1 and self.cfg.use_cuda_graph and state_0_dict is not None:
                 for key, value in state_0_dict.items():
                     if isinstance(value, wp.array):
-                        state_temp_dict[key].assign(value)
-                        state_0_dict[key].assign(state_1_dict[key])
-                        state_1_dict[key].assign(state_temp_dict[key])
+                        state_temp_dict[key].assign(value)  # type: ignore[index]
+                        state_0_dict[key].assign(state_1_dict[key])  # type: ignore[index]
+                        state_1_dict[key].assign(state_temp_dict[key])  # type: ignore[index]
             else:
                 self.state_0, self.state_1 = self.state_1, self.state_0
 
             self.state_0.clear_forces()
 
-        if solver_type == "mujoco" and self.contacts is not None and not getattr(self.solver, "use_mujoco_cpu", False):
-            self.solver.update_contacts(self.contacts, self.state_0)
+        if solver_type == "mujoco" and self.contacts is not None and not getattr(self.solver, "use_mujoco_cpu", False):  # type: ignore[has-type]
+            self.solver.update_contacts(self.contacts, self.state_0)  # type: ignore[has-type]
 
         self.q_ik = self.model.joint_q
         self.qd_ik = self.model.joint_qd

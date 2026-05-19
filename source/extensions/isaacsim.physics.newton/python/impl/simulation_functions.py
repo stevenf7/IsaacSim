@@ -38,7 +38,7 @@ class NewtonSimulationFunctions:
         newton_stage: NewtonStage instance that manages the Newton simulation.
     """
 
-    def __init__(self, newton_stage: NewtonStage):
+    def __init__(self, newton_stage: NewtonStage) -> None:
         self.newton_stage = newton_stage
         self.contact_callbacks: dict[int, Callable] = {}
         self._next_contact_cb_id = 0
@@ -60,14 +60,14 @@ class NewtonSimulationFunctions:
             True if stage was successfully initialized.
         """
         try:
-            self.newton_stage.stage_id = stage_id
+            self.newton_stage.stage_id = stage_id  # type: ignore[assignment]
             self.newton_stage.on_attach(stage_id, meters_per_unit=1.0)
             return True
         except Exception as e:
             carb.log_error(f"[Newton] Failed to initialize stage: {e}")
             return False
 
-    def close(self):
+    def close(self) -> None:
         """Close the simulation, removing all objects from the simulation."""
         try:
             self.newton_stage.on_detach()
@@ -85,7 +85,7 @@ class NewtonSimulationFunctions:
             self.newton_stage.stage_id if hasattr(self.newton_stage, "stage_id") and self.newton_stage.stage_id else 0
         )
 
-    def simulate(self, elapsed_time: float, current_time: float):
+    def simulate(self, elapsed_time: float, current_time: float) -> None:
         """Execute physics simulation.
 
         The simulation will simulate the exact elapsedTime passed. No substepping will happen.
@@ -131,7 +131,7 @@ class NewtonSimulationFunctions:
         except Exception as e:
             carb.log_error(f"[Newton] Simulation step error: {e}")
 
-    def start_simulation(self):
+    def start_simulation(self) -> None:
         """Start simulation.
 
         This method is called at the beginning of simulation to allow the physics engine
@@ -141,7 +141,7 @@ class NewtonSimulationFunctions:
         # PhysX uses this to store initial transformations for reset
         # Newton doesn't need to do anything here - initialization happens lazily in step_sim
 
-    def fetch_results(self):
+    def fetch_results(self) -> None:
         """Fetch simulation results.
 
         Writing out simulation results based on physics settings.
@@ -171,7 +171,7 @@ class NewtonSimulationFunctions:
         """
         return self.newton_stage.initialized
 
-    def flush_changes(self):
+    def flush_changes(self) -> None:
         """Flush changes to force physics to process buffered changes.
 
         Changes to physics get buffered. In some cases flushing changes is required
@@ -182,7 +182,7 @@ class NewtonSimulationFunctions:
         if not self.newton_stage.initialized:
             carb.log_warn("[Newton] flush_changes called but Newton not initialized yet")
 
-    def pause_change_tracking(self, pause: bool):
+    def pause_change_tracking(self, pause: bool) -> None:
         """Pause change tracking for physics listener.
 
         Args:
@@ -213,7 +213,7 @@ class NewtonSimulationFunctions:
         self.contact_callbacks[self._next_contact_cb_id] = on_event
         return self._next_contact_cb_id
 
-    def unsubscribe_physics_contact_report_events(self, subscription_id: int):
+    def unsubscribe_physics_contact_report_events(self, subscription_id: int) -> None:
         """Unsubscribe from physics contact report events.
 
         Args:
@@ -233,7 +233,7 @@ class NewtonSimulationFunctions:
             Current time steps per second.
         """
         if hasattr(self.newton_stage, "physics_frequency"):
-            return int(self.newton_stage.physics_frequency)
+            return int(self.newton_stage.physics_frequency)  # type: ignore[has-type]
         return (
             int(self.newton_stage.cfg.physics_frequency) if hasattr(self.newton_stage.cfg, "physics_frequency") else 60
         )
@@ -278,7 +278,7 @@ class NewtonSimulationFunctions:
         self.step_callbacks[self._next_step_cb_id] = (pre_step, order, on_update)
         return self._next_step_cb_id
 
-    def unsubscribe_physics_on_step_events(self, subscription_id: int):
+    def unsubscribe_physics_on_step_events(self, subscription_id: int) -> None:
         """Unsubscribe from physics step events.
 
         Args:

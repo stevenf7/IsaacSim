@@ -108,7 +108,7 @@ def get_available_physics_engines(verbose: bool = False) -> list[tuple[str, bool
 class NewtonSimExtension(omni.ext.IExt):
     """Newton physics simulation extension for Isaac Sim."""
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the extension when it is loaded.
 
         Args:
@@ -156,7 +156,7 @@ class NewtonSimExtension(omni.ext.IExt):
                 f"[isaacsim.physics.newton] Failed to register Newton (solver: {cfg.solver_cfg.solver_type})"
             )
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up resources when the extension is unloaded."""
         global _newton_stage
 

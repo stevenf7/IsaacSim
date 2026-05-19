@@ -36,7 +36,7 @@ class NewtonStageUpdateFunctions:
         newton_stage: NewtonStage instance that manages the Newton simulation.
     """
 
-    def __init__(self, newton_stage: NewtonStage):
+    def __init__(self, newton_stage: NewtonStage) -> None:
         self.newton_stage = newton_stage
         self.is_physics_loaded = False
         self.is_paused_state = False
@@ -65,7 +65,7 @@ class NewtonStageUpdateFunctions:
             True if attachment was successful.
         """
         try:
-            self.newton_stage.stage_id = stage_id
+            self.newton_stage.stage_id = stage_id  # type: ignore[assignment]
             self.newton_stage.on_attach(stage_id, meters_per_unit=1.0)
             return True
         except Exception as e:
@@ -150,7 +150,7 @@ class NewtonStageUpdateFunctions:
             self.is_paused_state = False
             self.newton_stage.playing = False
             self.newton_stage.init()
-            self.newton_stage.sim_time = 0.0
+            self.newton_stage.sim_time = 0.0  # type: ignore[assignment]
             return True
         except Exception as e:
             carb.log_error(f"[Newton] on_reset failed: {e}")
