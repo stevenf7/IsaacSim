@@ -431,6 +431,8 @@ To stop:
 .. note::
 
     * The web viewer bakes the signaling host and ports at build time. Use ``--build`` when changing ``ISAACSIM_HOST`` or port variables.
+    * If Docker startup fails after an interrupted build, failed extraction, or disk-full event, clean the generated Docker build context and rebuild from a known-good build output. See the `Docker
+      README troubleshooting section <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md#troubleshooting>`_ for recovery steps.
     * Docker Compose supports multi-instance deployment with dedicated GPUs, custom signal/stream ports, and more. See the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_ for full configuration details.
 
 
