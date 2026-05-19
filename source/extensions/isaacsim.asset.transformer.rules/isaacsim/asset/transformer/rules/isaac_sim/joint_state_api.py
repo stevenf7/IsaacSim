@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Apply ``PhysxSchema.JointStateAPI`` to non-fixed prismatic/revolute joints missing it.
+"""Apply ``PhysicsJointStateAPI`` to non-fixed prismatic/revolute joints missing it.
 
 The validation rule ``JointHasJointStateAPI`` flags every non-fixed prismatic or
 revolute joint that lacks a ``JointStateAPI`` with the correct actuator instance
@@ -35,17 +35,26 @@ from __future__ import annotations
 
 import os
 
+from isaacsim.asset.importer.utils.impl.physx_types import PhysxSchema as PhysxSchemaTokens
 from isaacsim.asset.transformer import RuleConfigurationParam, RuleInterface
-from pxr import PhysxSchema, UsdPhysics
+from pxr import UsdPhysics
+
+
+def _has_joint_state_api(prim, instance: str) -> bool:
+    return prim.HasAPI(PhysxSchemaTokens.JOINT_STATE_API, instance)
+
+
+def _apply_joint_state_api(prim, instance: str) -> None:
+    prim.ApplyAPI(PhysxSchemaTokens.JOINT_STATE_API, instance)
 
 
 class JointStateAPIRule(RuleInterface):
-    """Apply ``PhysxSchema.JointStateAPI`` to non-fixed prismatic/revolute joints.
+    """Apply ``PhysicsJointStateAPI`` to non-fixed prismatic/revolute joints.
 
     Mirrors the validation rule's joint-type dispatch:
 
-    * ``UsdPhysics.PrismaticJoint`` -> ``JointStateAPI.Apply(prim, "linear")``
-    * ``UsdPhysics.RevoluteJoint``  -> ``JointStateAPI.Apply(prim, "angular")``
+    * ``UsdPhysics.PrismaticJoint`` -> ``prim.ApplyAPI("PhysicsJointStateAPI", "linear")``
+    * ``UsdPhysics.RevoluteJoint``  -> ``prim.ApplyAPI("PhysicsJointStateAPI", "angular")``
     * ``UsdPhysics.FixedJoint``      -> skip
     * Any other ``UsdPhysics.Joint`` subtype (D6, spherical) -> skip
 
@@ -95,11 +104,11 @@ class JointStateAPIRule(RuleInterface):
                 skipped_count += 1
                 continue
 
-            if prim.HasAPI(PhysxSchema.JointStateAPI, instance):
+            if _has_joint_state_api(prim, instance):
                 skipped_count += 1
                 continue
 
-            PhysxSchema.JointStateAPI.Apply(prim, instance)
+            _apply_joint_state_api(prim, instance)
             applied_count += 1
             self.log_operation(f"JointStateAPIRule applied '{instance}' on {prim.GetPath()}")
 

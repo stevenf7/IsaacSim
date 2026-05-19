@@ -20,6 +20,7 @@ description = "Rule implementations for the Isaac Sim Asset Transformer"
 requires-python = ">=3.12"
 dependencies = [
     "isaacsim-asset-transformer==1.0.0",
+    "isaacsim-asset-importer-utils==1.0.0",
     "isaacsim-robot-schema==1.0.0",
     "usd-exchange>=2.2.2",
 ]

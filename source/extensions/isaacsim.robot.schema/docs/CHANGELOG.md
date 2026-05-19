@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.3.3] - 2026-05-18
+### Fixed
+- `robot_schema` now imports `pxr.Usd` during module initialization so `pxr.Usd` annotations resolve in standalone wheel environments.
+
 ## [6.3.2] - 2026-04-24
 ### Fixed
 - `PopulateRobotSchemaFromArticulation` and `RecalculateRobotSchema` fall back to `robot_prim` as a synthetic articulation root and sweep `Usd.PrimRange` to apply `JointAPI`/`LinkAPI` when BFS yields no chain, ensuring `robotLinks`/`robotJoints` relationships are populated on vehicle and drone assets.

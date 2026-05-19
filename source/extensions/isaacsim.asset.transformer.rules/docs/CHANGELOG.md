@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.7.5] - 2026-05-18
+### Added
+- Standalone smoke tests now import every shipped rule module and statically reject `pxr` schema imports that are unavailable in isolated pip wheel environments.
+
+### Fixed
+- `JointStateAPIRule` no longer imports `pxr.PhysxSchema`; it uses shared PhysX schema tokens from `isaacsim.asset.importer.utils` so standalone wheel imports do not require Kit-only schema bindings.
+- Added the standalone `isaacsim.asset.importer.utils` wheel dependency required by the rule token helper.
+
 ## [1.7.4] - 2026-05-11
 ### Changed
 - `MjcToPhysxConversionRule` and `UrdfToMjcPhysxConversionRule` no longer author `PhysxMimicJointAPI` from joints with `NewtonMimicAPI`. The runtime consumes `NewtonMimicAPI` directly, so the equivalent PhysX mimic schema is redundant and is now omitted.
