@@ -19,7 +19,7 @@ from enum import Enum
 from functools import lru_cache
 
 import pxr
-from pxr import Sdf
+from pxr import Sdf, Usd  # noqa: F401 — Usd is used through pxr.Usd annotations.
 
 logger = logging.getLogger(__name__)
 

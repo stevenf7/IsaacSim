@@ -1,4 +1,10 @@
 # Changelog
+
+## [1.18.8] - 2026-05-17
+### Fixed
+- `test_joint_state_position_publisher_from_sensor`: command the target via `Articulation.set_dof_position_targets` and wait for joints to converge before asserting (previously compared an uncommanded transient).
+- `test_spinning_camera_golden_images`: use a `depth=100` subscriber QoS for both camera streams so the rclpy executor doesn't drop frames under CI load.
+
 ## [1.18.7] - 2026-05-18
 ### Changed
 - Add `-> None` annotations to extension lifecycle methods and annotate `srtx_instance` parameters; remove blank lines after docstrings in `ros2_common.py`

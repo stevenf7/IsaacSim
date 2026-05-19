@@ -10,7 +10,7 @@
   - def set_setting(self, setting: str, value: Any)
   - def reset_render_settings(self)
   - def run_coroutine(self, coroutine: asyncio.Coroutine, run_until_complete: bool = True) -> asyncio.Task | asyncio.Future | Any
-  - def close(self, wait_for_replicator: bool = True, skip_cleanup: bool = False)
+  - def close(self, wait_for_replicator: bool = True, skip_cleanup: bool = False, exit_code: int = 0)
   - def is_running(self) -> bool
   - def is_exiting(self) -> bool
   - [property] def app(self) -> omni.kit.app.IApp

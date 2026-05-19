@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.6] - 2026-05-18
+### Fixed
+- Improve Leatherback ROS2 test reliability by using ROS2TestCase helpers and waiting for ROS publishers, subscribers, and camera data.
+
 ## [2.6.5] - 2026-05-01
 ### Fixed
 - Fix test failures caused by timeline stopping and playing in the robot helpers

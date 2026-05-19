@@ -827,7 +827,16 @@ class SimulationApp:
             return task_or_future.result()
         return task_or_future
 
-    def close(self, wait_for_replicator: bool = True, skip_cleanup: bool = False) -> None:
+    @staticmethod
+    def _flush_stdio() -> None:
+        """Flush Python's stdout and stderr, swallowing errors from closed/detached streams."""
+        for stream in (sys.stdout, sys.stderr):
+            try:
+                stream.flush()
+            except (ValueError, OSError, AttributeError):
+                pass
+
+    def close(self, wait_for_replicator: bool = True, skip_cleanup: bool = False, exit_code: int = 0) -> None:
         """Close the running Omniverse Toolkit application.
 
         Performs cleanup and shuts down the application. Can either perform
@@ -838,6 +847,9 @@ class SimulationApp:
                 before shutdown.
             skip_cleanup: If True, performs immediate exit without cleanup.
                 If False, performs graceful shutdown with full cleanup.
+            exit_code: Process exit status to preserve when fast shutdown terminates
+                the process. Nonzero values flush stdio and exit with the supplied
+                status before Kit's fast-shutdown path can replace it with 0.
 
         Example:
 
@@ -856,6 +868,16 @@ class SimulationApp:
             carb.log_info("SimulationApp.close: already exiting, skipping duplicate close call")
             return
 
+        # Flush Python stdio before any shutdown path that may terminate the process via _exit().
+        # When stdout/stderr are piped (e.g. through `tee` in test runners), CPython uses block
+        # buffering; the fast-shutdown path calls quickReleaseFrameworkAndTerminate which bypasses
+        # the interpreter's normal flush-on-exit, so pending print() output would otherwise be lost.
+        self._flush_stdio()
+
+        if exit_code != 0 and self.config.get("fast_shutdown", False):
+            self._exiting = True
+            os._exit(exit_code)
+
         # `post_quit()` can already stop Kit's run loop before callers reach `close()`.
         # In that state, forcing shutdown may block indefinitely.
         if not self._app.is_running():
@@ -863,7 +885,8 @@ class SimulationApp:
             carb.log_info("SimulationApp.close: app already stopped, skipping framework shutdown")
             if self.config.get("fast_shutdown", False):
                 self._app.print_and_log("Simulation App Shutting Down")
-                os._exit(0)
+                self._flush_stdio()
+                os._exit(exit_code)
             return
 
         if skip_cleanup:
@@ -871,6 +894,7 @@ class SimulationApp:
             carb.log_info("SimulationApp.close: immediate_exit")
             _logging = carb.logging.acquire_logging()
             _logging.set_log_enabled(False)
+            self._flush_stdio()
             self._app.shutdown()
             return
         try:
@@ -925,6 +949,7 @@ class SimulationApp:
         # default) it calls quickReleaseFrameworkAndTerminate which exits the process
         # immediately.  When false it performs full extension teardown and returns;
         # the framework/plugin unload is left to process exit.
+        self._flush_stdio()
         self._app.shutdown()
 
     def is_running(self) -> bool:

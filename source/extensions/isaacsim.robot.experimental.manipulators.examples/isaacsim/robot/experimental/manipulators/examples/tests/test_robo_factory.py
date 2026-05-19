@@ -26,6 +26,18 @@ from isaacsim.robot.experimental.manipulators.examples.interactive.robo_factory 
 class TestRoboFactoryExampleExtension(omni.kit.test.AsyncTestCase):
     """Test cases for the robo factory example."""
 
+    async def _wait_for_stacking_done(self, *, max_steps: int = 3200) -> bool:
+        """Wait until all stacking tasks report completion."""
+        is_done = False
+
+        def check_done(_step: int, _steps: int) -> bool:
+            nonlocal is_done
+            is_done = bool(self._sample._stackings) and all(stacking.is_done() for stacking in self._sample._stackings)
+            return not is_done
+
+        await app_utils.update_app_async(steps=max_steps, callback=check_done)
+        return is_done
+
     async def setUp(self) -> None:
         """Set up the robo factory sample and load the world."""
         self._sample = RoboFactory()
@@ -48,7 +60,8 @@ class TestRoboFactoryExampleExtension(omni.kit.test.AsyncTestCase):
         await self._sample._on_start_stacking_event_async()
         await app_utils.update_app_async()
 
-        await app_utils.update_app_async(steps=1750)
+        self.assertTrue(await self._wait_for_stacking_done(), "Stacking did not complete within the allotted steps.")
+        await app_utils.update_app_async(steps=60)
 
         stacking_task = self._sample._stackings[0]
         cube_names = stacking_task.get_cube_names()

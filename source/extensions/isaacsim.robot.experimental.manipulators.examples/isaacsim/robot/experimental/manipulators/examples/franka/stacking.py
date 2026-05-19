@@ -82,8 +82,8 @@ class Stacking:
                 60,  # Phase 1: Approach cube
                 30,  # Phase 2: Close gripper to grasp
                 60,  # Phase 3: Lift cube upward
-                130,  # Phase 4: Move cube to stack position
-                20,  # Phase 5: Open gripper to release
+                220,  # Phase 4: Move cube to stack position
+                80,  # Phase 5: Open gripper to release
                 20,  # Phase 6: Retract
             ]
 
