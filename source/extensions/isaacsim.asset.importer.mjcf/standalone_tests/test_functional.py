@@ -142,14 +142,18 @@ class TestMJCFImportPendulum(unittest.TestCase):
     def test_joints_exist(self) -> None:
         """Verify all MJCF joints become USD joint prims."""
         stage = self._import()
-        expected_joints = {"swing", "tip_hinge"}
+        expected_joints = {"swing", "tip_hinge", "PhysicsFixedJoint"}
 
         found_joints = set()
         for prim in stage.TraverseAll():
             if prim.IsA(UsdPhysics.Joint):
                 found_joints.add(prim.GetName())
 
-        self.assertEqual(found_joints, expected_joints, f"Missing joints: {expected_joints - found_joints}")
+        self.assertEqual(
+            found_joints,
+            expected_joints,
+            f"Missing joints: {expected_joints - found_joints}; extra joints: {found_joints - expected_joints}",
+        )
 
     def test_hinge_is_revolute(self) -> None:
         """Verify MJCF hinge joints map to USD RevoluteJoint."""

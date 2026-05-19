@@ -290,7 +290,6 @@ def _run_standalone_tests(
     Returns 0 on success, 1 on failure.
     """
     import tempfile as _tempfile
-    import venv as _venv
 
     test_extensions = _find_standalone_tests(eligible)
     if not test_extensions:
@@ -312,33 +311,32 @@ def _run_standalone_tests(
         if not os.path.isfile(venv_python):
             venv_python = os.path.join(venv_dir, "Scripts", "python.exe")
 
-        # Install all built wheels (--no-deps since inter-package deps aren't on PyPI).
+        # Install all built wheels into the clean venv with normal dependency
+        # resolution.  The local wheelhouse satisfies isaacsim-* inter-package
+        # requirements while PyPI/index configuration supplies external deps.
         wheel_pattern = os.path.join(output_dir, "*.whl")
         wheels = sorted(glob.glob(wheel_pattern))
         if not wheels:
             omni.repo.man.print_log(f"No wheels found in {output_dir}", logging.ERROR)
             return 1
 
-        omni.repo.man.print_log(f"  Installing {len(wheels)} wheel(s)...", logging.INFO)
+        omni.repo.man.print_log(f"  Installing {len(wheels)} wheel(s) with dependency resolution...", logging.INFO)
         ret = omni.repo.man.run_process(
-            [venv_python, "-m", "pip", "install", "--quiet", "--no-deps"] + wheels,
+            [venv_python, "-s", "-m", "pip", "install", "--quiet", "--find-links", output_dir] + wheels,
             exit_on_error=False,
         )
         if ret != 0:
             omni.repo.man.print_log("Failed to install wheels.", logging.ERROR)
             return 1
 
-        # Install converter dependencies (these ARE on PyPI).
-        omni.repo.man.print_log("  Installing converter dependencies...", logging.INFO)
+        omni.repo.man.print_log("  Checking installed wheel dependencies...", logging.INFO)
         ret = omni.repo.man.run_process(
-            [venv_python, "-m", "pip", "install", "--quiet", "urdf-usd-converter", "mujoco-usd-converter"],
+            [venv_python, "-s", "-m", "pip", "check"],
             exit_on_error=False,
         )
         if ret != 0:
-            omni.repo.man.print_log(
-                "WARNING: Failed to install converters. Converter tests may fail.",
-                logging.WARN,
-            )
+            omni.repo.man.print_log("Dependency check failed.", logging.ERROR)
+            return 1
 
         # Run tests for each extension.
         passed = 0
@@ -346,7 +344,7 @@ def _run_standalone_tests(
         for ext_name, tests_dir in test_extensions:
             omni.repo.man.print_log(f"  Testing: {ext_name}", logging.INFO)
             ret = omni.repo.man.run_process(
-                [venv_python, "-m", "unittest", "discover", "-s", tests_dir, "-p", "test_*.py", "-v"],
+                [venv_python, "-s", "-m", "unittest", "discover", "-s", tests_dir, "-p", "test_*.py", "-v"],
                 exit_on_error=False,
             )
             if ret == 0:
