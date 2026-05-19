@@ -225,7 +225,7 @@ There are three tabs for this tutorial, all three perform the same actions and r
 
       .. rubric:: Launch
 
-      The script that runs Part I, :ref:`isaac_sim_app_intro_quickstart`, is located in  ``standalone_examples/tutorials/getting_started.py``.
+      The script that runs Part I, :ref:`isaac_sim_app_intro_quickstart`, is located in  ``standalone_examples/tutorials/getting_started/getting_started.py``.
 
       To run the script, open a terminal, navigate to the root of the Isaac Sim installation, and run the following command:
 
@@ -234,13 +234,13 @@ There are three tabs for this tutorial, all three perform the same actions and r
 
             .. code-block:: bash
 
-               ./python.sh standalone_examples/tutorials/getting_started.py
+               ./python.sh standalone_examples/tutorials/getting_started/getting_started.py
 
          .. tab-item:: Windows
 
             .. code-block:: bash
 
-               python.bat standalone_examples\tutorials\getting_started.py
+               python.bat standalone_examples\tutorials\getting_started\getting_started.py
 
 
 
