@@ -20,7 +20,7 @@ Newton Physics Backend
 
 |isaac-sim_short| supports multiple physics backends. In addition to the default |physx| backend, you can now use Newton as the simulation backend.
 
-`Newton <https://newton-physics.github.io/newton/>`_ is a GPU-accelerated, extensible, and differentiable physics simulation engine designed for robotics and research. Built on `NVIDIA Warp <https://nvidia.github.io/warp/>`_ and integrating `MuJoCo Warp <https://github.com/google-deepmind/mujoco_warp>`_. Newton provides high-performance simulation with multiple solver implementations including XPBD, MuJoCo, Featherstone, and SemiImplicit. Newton is an open-source project maintained by Disney Research, Google DeepMind, and NVIDIA.
+`Newton <https://newton-physics.github.io/newton/>`_ is a GPU-accelerated, extensible, and differentiable physics simulation engine designed for robotics and research. Built on `NVIDIA Warp <https://nvidia.github.io/warp/>`_ and integrating `MuJoCo Warp <https://github.com/google-deepmind/mujoco_warp>`_, Newton provides high-performance simulation with multiple solver implementations, including XPBD, MuJoCo, Featherstone, and SemiImplicit. Newton is an open-source project maintained by Disney Research, Google DeepMind, and NVIDIA.
 
 
 Overview
@@ -30,7 +30,7 @@ Overview
 
 * **isaacsim.physics.newton**: The Newton physics backend implementation that:
 
-  * Parses USD stage from your scene and builds Newton simulation objects
+  * Parses the USD stage and builds Newton simulation objects
   * Synchronizes simulation state with Fabric for rendering and data access
   * Provides a tensor-based API (``isaacsim.physics.newton.tensors``) compatible with NumPy, PyTorch, and Warp
   * Registers Newton with the unified physics interface
@@ -65,7 +65,7 @@ You can launch |isaac-sim_short| with Newton as the default physics backend usin
 
             isaac-sim.newton.bat
 
-When launched with this application, Newton is automatically enabled and PhysX is disabled. 
+When launched with this application, Newton is automatically enabled and PhysX is disabled.
 
 
 Switching Physics Engines at Runtime
@@ -78,7 +78,7 @@ You can switch between physics engines programmatically using the ``SimulationMa
     :start-after: # [snippet-start]
 
 .. note::
-   Switching physics engines should be done before starting the simulation. The switch deactivates the previous engine and activates the new one. 
+   Switching physics engines should be done before starting the simulation. The switch deactivates the previous engine and activates the new one.
    Currently, only one physics engine can be active at a time.
 
 
@@ -145,7 +145,7 @@ The following example loads a Franka robot and simulates it with Newton:
 
 For more on the physics umbrella UI (engine selector, scene settings, and related controls), see the `Omni Physics UI documentation <http://omniverse-docs.s3-website-us-east-1.amazonaws.com/omni_physics/110.0/dev_guide/physics_umbrella/physics_umbrella_ui.html>`_.
 
-To compare simulation results between Newton and PhysX: 
+To compare simulation results between Newton and PhysX:
 
 * stop the simulation
 * switch the physics engine from "newton" to "physx" using the menu shown above
@@ -156,15 +156,18 @@ Asset Compatibility
 ===================
 
 
-Existing PhysX-based assets in |isaac-sim_short| are compatible with Newton. However, these assets are tuned for PhysX and may not produce optimal results with Newton/MuJoCo out of the box. You might need to adjust physics parameters (including: contact settings, solver iterations, timestep) to achieve desired simulation behavior with Newton/MuJoCo.
+Not all existing PhysX-based assets in |isaac-sim_short| are compatible with Newton. There are certain limitations on the Newton/MuJoCo side that may prevent you from using older assets out of the box.
+For instance:
+
+  * Meshes with negative scales or zero volume are not yet fully supported. If you use an asset with such meshes, even if the simulation runs, the results may be incorrect.
+  * Legacy assets tuned for PhysX may not produce exactly the same results with Newton/MuJoCo out of the box. You might need to adjust physics parameters (contact settings, solver iterations, and timestep) to achieve desired simulation behavior with Newton/MuJoCo.
 
 With the new asset structure and MJCF/URDF importers, we are working toward converting each asset to both PhysX schemas and MJC USD schemas. This will enable consistent simulation behavior between the original MJCF asset (using MuJoCo) and the converted MJC USD asset (using Newton).
-
 
 .. note::
     Newton integration in |isaac-sim_short| is experimental. The API and features may change in future releases.
     Many |isaac-sim_short| features and workflows that do not use the experimental core API are not yet supported with the Newton backend; support is being actively developed for the next release.
-    The Newton backend in |isaac-sim_short| has been tested only with a limited set of robots, including G1, H1, T1, UR5e, Wonik Allegro, and Shadow Hand. 
+    The Newton backend in |isaac-sim_short| has been tested only with a limited set of robots, including G1, H1, T1, UR5e, Wonik Allegro, and Shadow Hand.
 
 
 Additional Resources
