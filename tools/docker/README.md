@@ -525,6 +525,18 @@ gcloud compute firewall-rules create allow-isaacsim \
   mkdir -p ~/.cache/ov/hub
   sudo chown -R 1234:1234 ~/docker ~/.cache/ov/hub
   ```
+- **Docker image starts with missing module or plugin errors after an interrupted build, failed extraction, or disk-full event**: Remove the generated Docker build context and prepare the image again:
+  ```bash
+  rm -rf _container_temp
+  ./tools/docker/prep_docker_build.sh --x86_64
+  ./tools/docker/build_docker.sh --x86_64
+  ```
+  If the build output itself may be incomplete, remove `_build` as well and rebuild before preparing the Docker context:
+  ```bash
+  rm -rf _build _container_temp
+  ./tools/docker/prep_docker_build.sh --build --x86_64
+  ./tools/docker/build_docker.sh --x86_64
+  ```
 - **Second browser or tab cannot connect**: Only one browser connection to Isaac Sim is supported at a time. Close the existing browser tab or window that is connected to the web viewer, then open the URL again in a single tab.
 - **Clipboard (Ctrl+C/V) not working in the web viewer**: The browser Clipboard API requires a secure context. When accessing the web viewer over HTTP from a non-localhost address, clipboard forwarding to Isaac Sim is blocked. To enable it, open `chrome://flags/#unsafely-treat-insecure-origin-as-secure` in Chrome, add your web viewer URL (e.g. `http://192.168.1.100:8210`), and relaunch the browser.
 - **Error: "_build/$CONTAINER_PLATFORM/release does not exist"**: Run the script with `--build` option to build Isaac Sim first.
@@ -544,4 +556,3 @@ gcloud compute firewall-rules create allow-isaacsim \
   docker buildx inspect --bootstrap
   ./tools/docker/build_docker.sh --aarch64
   ```
-
