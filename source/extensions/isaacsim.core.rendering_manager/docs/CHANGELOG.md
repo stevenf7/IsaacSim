@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.1] - 2026-05-17
+### Fixed
+- `RenderingManager.set_dt()` now updates Fabric's default simulation period settings (`/app/settings/fabricDefaultSimPeriodNumerator` and `/app/settings/fabricDefaultSimPeriodDenominator`) along with USD/timeline timing. Kit reads these defaults when creating Fabric history stages, so newly-created graph/fabric caches use a render-product period that matches the requested rendering dt instead of Fabric's 1/30 s default.
+
 ## [0.4.0] - 2026-05-05
 ### Added
 - Adds _ensure_fabric_simulation_time class method to seed /ExternalSimulationTime prim in Fabric for multitick renderer.

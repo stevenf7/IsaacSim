@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import weakref
+from fractions import Fraction
 
 import carb
 import isaacsim.core.experimental.utils.prim as prim_utils
@@ -31,6 +32,8 @@ from pxr import Sdf, Usd
 _SETTING_PLAY_SIMULATION = "/app/player/playSimulations"
 _SETTING_RATE_LIMIT_ENABLED = "/app/runLoops/main/rateLimitEnabled"
 _SETTING_RATE_LIMIT_FREQUENCY = "/app/runLoops/main/rateLimitFrequency"
+_SETTING_FABRIC_DEFAULT_SIM_PERIOD_NUMERATOR = "/app/settings/fabricDefaultSimPeriodNumerator"
+_SETTING_FABRIC_DEFAULT_SIM_PERIOD_DENOMINATOR = "/app/settings/fabricDefaultSimPeriodDenominator"
 
 from enum import Enum
 
@@ -136,6 +139,9 @@ class RenderingManager:
         Args:
             dt: Rendering dt.
 
+        Raises:
+            ValueError: If ``dt`` is not positive.
+
         Example:
 
         .. code-block:: python
@@ -144,6 +150,9 @@ class RenderingManager:
             >>>
             >>> RenderingManager.set_dt(1 / 120.0)  # 120 Hz
         """
+
+        if dt <= 0:
+            raise ValueError(f"Rendering dt must be positive, got {dt}")
 
         def _set_rate_limit_frequency(frequency: float) -> None:
             cls._carb_settings.set_bool(_SETTING_RATE_LIMIT_ENABLED, True)
@@ -167,6 +176,13 @@ class RenderingManager:
         else:
             carb.log_warn(f"Isaac Sim's loop runner not found. Setting a rate limit instead ({frequency} Hz)")
             _set_rate_limit_frequency(frequency)
+        # Kit reads these defaults when creating Fabric SimStageWithHistory instances
+        # (for example graph/fabric caches). Existing histories expose getSimPeriod()
+        # but no setter, so callers must set dt before creating the Fabric-backed stage
+        # and render product that need this period.
+        sim_period = Fraction(dt).limit_denominator(1_000_000_000)
+        cls._carb_settings.set_int(_SETTING_FABRIC_DEFAULT_SIM_PERIOD_NUMERATOR, sim_period.numerator)
+        cls._carb_settings.set_int(_SETTING_FABRIC_DEFAULT_SIM_PERIOD_DENOMINATOR, sim_period.denominator)
 
     @classmethod
     def get_dt(cls) -> float:

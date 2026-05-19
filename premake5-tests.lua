@@ -1085,7 +1085,7 @@ local function get_ros_tests()
         {
             "tests-nativepython-testing-isaacsim.ros2.bridge.test_camera_tf_delay",
             "standalone_examples/testing/isaacsim.ros2.bridge/test_camera_tf_delay.py",
-            "--test-steps=50",
+            "--test-steps=50 --/rtx/hydra/supportMultiTickRate=0 --/rtx/rendering/perSensorTickTlas=0",
         },
         {
             "tests-nativepython-testing-isaacsim.ros2.bridge.test_publish_camera_data",

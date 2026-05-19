@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.2] - 2026-05-17
+### Fixed
+- Restore mode-specific `TimeSampleStorage` handling for render-product reference times. In multitick mode, render-product reference times come from `/ExternalSimulationTime` and can be returned as simulation time directly. In non-multitick mode, render-product reference times come from the renderer's Fabric frame time, so samples are keyed with `IStageReaderWriter::getFrameTime()` and `getSimulationTimeAt()` resolves the simulation time through exact-match or adjacent-sample lookup.
+
 ## [1.15.1] - 2026-05-15
 ### Fixed
 - Route base `PhysicsScene` timestep updates to the active physics engine so PhysX scenes do not author Newton timestep values that can hang playback.
