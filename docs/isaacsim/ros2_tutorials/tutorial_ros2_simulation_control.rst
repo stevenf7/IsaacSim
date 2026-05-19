@@ -46,20 +46,6 @@ Getting Started
 
                sudo apt install ros-humble-simulation-interfaces
 
-         .. note::
-
-            At this time, version 1.4.0 may not yet available via apt. To get the latest version,
-            clone the ``simulation_interfaces`` repository into your ROS workspace using the
-            ``humble`` branch and build from source instead:
-
-            .. code-block:: bash
-
-               cd ~/IsaacSim-ros_workspaces/humble_ws/src
-               git clone -b humble https://github.com/ros-simulation/simulation_interfaces.git
-               cd ~/IsaacSim-ros_workspaces/humble_ws
-               colcon build --packages-select simulation_interfaces
-               source ~/IsaacSim-ros_workspaces/humble_ws/install/setup.bash
-
       .. tab-item:: Jazzy
 
          .. code-block:: bash

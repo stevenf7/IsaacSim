@@ -139,11 +139,11 @@ If you open a terminal and type ``ros2 topic list``, verify that you observe the
 .. code-block:: console
 
     ros2 topic list
-    /camera_camera_info
-    /camera_depth
-    /camera_pointcloud
-    /camera_rgb
     /clock
+    /floating_camera_camera_info
+    /floating_camera_depth
+    /floating_camera_pointcloud
+    /floating_camera_rgb
     /parameter_events
     /rosout
     /tf
@@ -161,9 +161,9 @@ Now, you can visualize the pointcloud and depth images using RViz2. Open RViz2, 
             :width: 300
             :align: center
 
-Then, enable viewing ``/camera_depth``, ``/camera_rgb``, ``/camera_pointcloud``, and ``/tf`` topics.
+Then, enable viewing ``/floating_camera_depth``, ``/floating_camera_rgb``, ``/floating_camera_pointcloud``, and ``/tf`` topics.
 
-Verify that the depth image ``/camera_depth`` and RGB image ``/camera_rgb`` look like this:
+Verify that the depth image ``/floating_camera_depth`` and RGB image ``/floating_camera_rgb`` look like this:
 
 .. figure:: /images/isaac_tutorial_ros_camera_publishing_rgbd.png
             :width: 400
