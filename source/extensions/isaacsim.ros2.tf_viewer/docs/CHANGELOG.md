@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.2] - 2026-05-14
+### Changed
+- Add missing type annotations across the UI builder, viewport scene, and transform listeners; replace bare `except` clauses, switch `set([...])` literals and `.format()` calls to modern equivalents, fix `!= None` comparisons, and import `Callable` from `collections.abc`
+
 ## [2.3.1] - 2026-04-27
 ### Removed
 - Remove the `omni.isaac.ml_archive` dependency

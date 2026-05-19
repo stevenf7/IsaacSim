@@ -1,4 +1,8 @@
 # Changelog
+## [1.18.7] - 2026-05-18
+### Changed
+- Add `-> None` annotations to extension lifecycle methods and annotate `srtx_instance` parameters; remove blank lines after docstrings in `ros2_common.py`
+
 
 ## [1.18.6] - 2026-05-15
 ### Changed

@@ -16,7 +16,7 @@
 """Provides UI management for the ROS 2 TF viewer extension."""
 
 
-from typing import Callable
+from collections.abc import Callable
 
 import isaacsim.gui.components.ui_utils as ui_utils
 import omni.kit.menu.utils
@@ -43,7 +43,7 @@ class UIBuilder:
         viewport_scene: ViewportScene,
         on_visibility_changed_callback: Callable[[bool], None],
         on_reset_callback: Callable[[], None],
-    ):
+    ) -> None:
         self._window_title = window_title
         self._viewport_scene = viewport_scene
         self._on_visibility_changed_callback = on_visibility_changed_callback
@@ -58,40 +58,40 @@ class UIBuilder:
         self._window = None
 
     @property
-    def root_frame(self):
+    def root_frame(self) -> str:
         """Return the root frame name."""
         return self._root_frame
 
     @property
-    def update_frequency(self):
+    def update_frequency(self) -> int:
         """Return the update frequency."""
         return self._update_frequency
 
-    def show_window(self, value):
+    def show_window(self, value: bool) -> None:
         """Show or hide the TF Viewer window."""
         self._build_ui()
         self._window.visible = value
 
-    def _on_visibility_changed(self, visible):
+    def _on_visibility_changed(self, visible: bool) -> None:
         self._on_visibility_changed_callback(visible)
         self._menu_helper.menu_refresh()
 
-    def _on_update_frequency_changed(self, model):
+    def _on_update_frequency_changed(self, model: object) -> None:
         frequency = model.as_int
         if frequency < 1:
             frequency = 1
         self._update_frequency = frequency
 
-    def _on_frame_changed(self, frame_type, model, item):
+    def _on_frame_changed(self, frame_type: str, model: object, item: object) -> None:
         try:
             selected_index = model.get_item_value_model().get_value_as_int()
             value = model.get_item_value_model(model.get_item_children()[selected_index]).get_value_as_string()
-        except Exception as e:
+        except Exception:
             return
         if frame_type == "root":
             self._root_frame = value
 
-    def _build_ui(self):
+    def _build_ui(self) -> None:
         if not self._window:
             label_width = 120
             self._window = ui.Window(title=self._window_title, visible=False, width=375, height=270)
@@ -111,7 +111,7 @@ class UIBuilder:
 
                             # root frame
                             with ui.HStack():
-                                items = set(["World", "world", "map"])
+                                items = {"World", "world", "map"}
                                 tooltip = "Frame on which to compute the transformations"
                                 ui.Label(
                                     "Root Frame:",
@@ -351,7 +351,7 @@ class UIBuilder:
             # window event
             self._window.set_visibility_changed_fn(self._on_visibility_changed)
 
-    def update(self, frames):
+    def update(self, frames: set[str]) -> None:
         """Update the UI with the current TF frames."""
         # TODO: update only if different
         frames = sorted(frames)
@@ -366,7 +366,7 @@ class UIBuilder:
         self._ui_root_frame_combo_box.get_item_value_model().set_value(frames.index(root_frame))
         self._root_frame = root_frame
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Clean up menu item."""
         ui.Workspace.set_show_window_fn(self._window_title, None)
         if self._window:

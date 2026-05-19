@@ -56,7 +56,7 @@ class TFListener:
         node_name: Name of the ROS 2 node to create for the transform listener.
     """
 
-    def __init__(self, node_name: str = "ros2_tf_listener"):
+    def __init__(self, node_name: str = "ros2_tf_listener") -> None:
         self._node_name = node_name
 
         self._node = None
@@ -139,7 +139,7 @@ class TFListener:
                             [rotation.x, rotation.y, rotation.z, rotation.w],
                         )
                         transforms[frame] = transform
-                    except:
+                    except Exception:
                         pass
 
         return frames, transforms, relations
@@ -178,4 +178,4 @@ class TFListener:
         Returns:
             True if the listener is initialized.
         """
-        return self._listener != None
+        return self._listener is not None

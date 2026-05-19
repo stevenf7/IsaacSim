@@ -31,7 +31,7 @@ from . import ui_builder, viewport_scene
 class Extension(omni.ext.IExt):
     """Extension for the ROS 2 TF Viewer."""
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the extension."""
         self._extension_manager = omni.kit.app.get_app().get_extension_manager()
         ext_path = self._extension_manager.get_extension_path(ext_id)
@@ -83,9 +83,9 @@ class Extension(omni.ext.IExt):
         self._interface = None
 
         # data
-        self._frames = set(["World", "world", "map"])
+        self._frames = {"World", "world", "map"}
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up resources when the extension shuts down."""
         self._running = False
         self._ui_builder.shutdown()
@@ -95,7 +95,7 @@ class Extension(omni.ext.IExt):
             self._viewport_scene.destroy()
             self._viewport_scene = None
 
-    def _on_visibility_changed(self, visible):
+    def _on_visibility_changed(self, visible: bool) -> None:
         if self._extension_manager.is_extension_enabled("isaacsim.ros2.bridge"):
             self._ros_version = "ros2"
         else:
@@ -129,11 +129,11 @@ class Extension(omni.ext.IExt):
                 self._viewport_scene.manipulator.clear()
             carb.log_info("Transform listener released")
 
-    def _on_reset(self):
+    def _on_reset(self) -> None:
         if self._interface:
             self._interface.reset()
 
-    def _update_transforms(self):
+    def _update_transforms(self) -> None:
         self._running = True
         while self._running:
             if self._cpp:

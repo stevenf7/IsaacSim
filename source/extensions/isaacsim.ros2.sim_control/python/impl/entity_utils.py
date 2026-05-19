@@ -40,7 +40,7 @@ def resolve_source_path(src: str, assets_root_path: str | None) -> str:
     return src
 
 
-def get_filtered_entities(usdrt_stage: object, filter_pattern: str | None = None):
+def get_filtered_entities(usdrt_stage: object, filter_pattern: str | None = None) -> tuple[list[str], str]:
     """Get filtered entities based on regex pattern.
 
     This function retrieves all prim paths from the usdrt stage for efficient traversing and optionally filters them using a regular expression pattern.
@@ -81,7 +81,7 @@ def get_filtered_entities(usdrt_stage: object, filter_pattern: str | None = None
     return filtered_paths, ""
 
 
-async def get_entity_state(entity_path: str):
+async def get_entity_state(entity_path: str) -> tuple[object | None, str, int]:
     """Get state for a single entity.
 
     This function retrieves the complete state information for a specified entity,
@@ -222,7 +222,7 @@ async def get_entity_state(entity_path: str):
     return entity_state, "", Result.RESULT_OK
 
 
-def create_empty_entity_state():
+def create_empty_entity_state() -> object:
     """Create an empty entity state with default values.
 
     This function creates a new EntityState object with all fields initialized

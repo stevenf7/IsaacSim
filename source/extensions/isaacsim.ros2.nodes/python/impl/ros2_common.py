@@ -123,7 +123,6 @@ def get_srtx_sensor_set_config(render_product_path: str | None = None) -> SrtxSe
     If *render_product_path* is not mapped to a configured shared set, returns
     the historical per-bridge/default sensor-set name with no declaration paths.
     """
-
     default_name = _get_default_srtx_sensor_set_name()
     if not render_product_path:
         return SrtxSensorSetConfig(name=default_name)
@@ -174,7 +173,6 @@ def get_srtx_sensor_set_name(render_product_path: str | None = None) -> str:
 
 def prepare_srtx_sensor_set(srtx_instance: object, render_product_path: str) -> str | None:
     """Resolve and, if configured, declare the SRTX sensor set for a render product."""
-
     try:
         from omni.replicator.srtx import prepare_configured_sensorset
     except ImportError:
@@ -292,11 +290,13 @@ class SrtxCaptureState:
 _srtx_capture_state = SrtxCaptureState()
 
 
-def _start_or_extend_continuous_capture(srtx_instance, sensor_set_name: str, output_path: str) -> None:
+def _start_or_extend_continuous_capture(srtx_instance: object, sensor_set_name: str, output_path: str) -> None:
     _srtx_capture_state.start_or_extend(srtx_instance, sensor_set_name, output_path)
 
 
-def _stop_or_shrink_continuous_capture(srtx_instance, sensor_set_name: str, output_paths_to_remove: list[str]) -> None:
+def _stop_or_shrink_continuous_capture(
+    srtx_instance: object, sensor_set_name: str, output_paths_to_remove: list[str]
+) -> None:
     _srtx_capture_state.stop_or_shrink(srtx_instance, sensor_set_name, output_paths_to_remove)
 
 

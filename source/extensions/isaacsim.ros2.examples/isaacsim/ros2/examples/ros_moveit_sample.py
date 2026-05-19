@@ -44,7 +44,7 @@ FRANKA_STAGE_PATH = "/Franka"
 class Extension(omni.ext.IExt):
     """Extension providing the Franka MoveIt example."""
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the extension."""
         self._ext_id = ext_id
         """Initialize extension and UI elements"""
@@ -56,7 +56,7 @@ class Extension(omni.ext.IExt):
             name="Franka MoveIt", ui_hook=lambda a=weakref.proxy(self): a.build_ui(), category=MENU_CATEGORY
         )
 
-    def build_ui(self):
+    def build_ui(self) -> None:
         """Build the extension user interface."""
         # check if ros2 bridge is enabled before proceeding
         extension_enabled = omni.kit.app.get_app().get_extension_manager().is_extension_enabled("isaacsim.ros2.bridge")
@@ -76,8 +76,12 @@ class Extension(omni.ext.IExt):
                 )
                 ui.Button("Load Sample Scene", clicked_fn=self._on_environment_setup)
 
-    def create_ros_action_graph(self, franka_stage_path):
-        """Create the ROS 2 action graph for joint state communication."""
+    def create_ros_action_graph(self, franka_stage_path: str) -> None:
+        """Create the ROS 2 action graph for joint state communication.
+
+        Args:
+            franka_stage_path: USD prim path for the Franka robot.
+        """
         try:
             og.Controller.edit(
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
@@ -124,8 +128,12 @@ class Extension(omni.ext.IExt):
         except Exception as e:
             print(e)
 
-    def create_franka(self, stage_path):
-        """Create a Franka robot prim on the stage."""
+    def create_franka(self, stage_path: str) -> None:
+        """Create a Franka robot prim on the stage.
+
+        Args:
+            stage_path: USD prim path where the Franka robot will be added.
+        """
         usd_path = "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         asset_path = self._assets_root_path + usd_path
         prim = self._stage.DefinePrim(stage_path, "Xform")
@@ -142,7 +150,7 @@ class Extension(omni.ext.IExt):
             new_transform_matrix=Gf.Matrix4d().SetRotate(rot_mat).SetTranslateOnly(Gf.Vec3d(0, -0.64, 0)),
         )
 
-    async def _create_moveit_sample(self):
+    async def _create_moveit_sample(self) -> None:
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=[1.20, 1.20, 0.80], target=[0, 0, 0.50])
@@ -161,8 +169,7 @@ class Extension(omni.ext.IExt):
         await omni.kit.app.get_app().next_update_async()
         self._timeline.play()
 
-    def _on_environment_setup(self):
-
+    def _on_environment_setup(self) -> None:
         self._assets_root_path = get_assets_root_path()
         if self._assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
@@ -170,7 +177,7 @@ class Extension(omni.ext.IExt):
 
         asyncio.ensure_future(self._create_moveit_sample())
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleanup objects on extension shutdown."""
         get_browser_instance().deregister_example(name=MENU_NAME, category=MENU_CATEGORY)
         self._timeline.stop()

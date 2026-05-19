@@ -77,11 +77,11 @@ ACTION_TYPES = [
 
 
 # Define the Singleton decorator
-def Singleton(class_):
+def Singleton(class_: type) -> callable:  # noqa: N802 - decorator named after the pattern it implements
     """Decorate a class to implement the singleton pattern."""
     instances = {}
 
-    def getinstance(*args, **kwargs):
+    def getinstance(*args: object, **kwargs: object) -> object:
         if class_ not in instances:
             instances[class_] = class_(*args, **kwargs)
         return instances[class_]
@@ -100,7 +100,7 @@ class ROS2ServiceManager:
     for Isaac Sim simulation control.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the ROS2 service manager."""
         self.node_name = "isaac_sim_control"
         self.node = None
@@ -131,7 +131,6 @@ class ROS2ServiceManager:
             import rclpy
             from rclpy.callback_groups import ReentrantCallbackGroup
             from rclpy.executors import MultiThreadedExecutor
-            from rclpy.node import Node
 
             # Initialize ROS2 if it's not already initialized
             try:
@@ -355,7 +354,7 @@ class ROS2ServiceManager:
 
         """
 
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: object, **kwargs: object) -> object:
             if not self.loop:
                 self.loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(self.loop)
@@ -413,7 +412,7 @@ class ROS2ServiceManager:
             carb.log_error(f"Failed to unregister action server '{action_name}': {e}")
             return False
 
-    def _spin(self):
+    def _spin(self) -> None:
         """Spin the ROS2 executor in a separate thread.
 
         This method runs the multithreaded executor which enables parallel
@@ -457,7 +456,7 @@ class SimulationControl:
                 setattr(self, class_name, None)
                 setattr(self, f"{class_name}_{interface_kind}_name", None)
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the simulation control with ROS2 services and actions."""
         self.timeline = omni.timeline.get_timeline_interface()
         self.service_manager = ROS2ServiceManager()
@@ -528,9 +527,6 @@ class SimulationControl:
 
         """
         try:
-            # Import ROS2 message and service types
-            from simulation_interfaces.msg import Result, SimulationState
-
             # Initialize the ROS2 service manager
             self.service_manager.initialize()
 
@@ -2124,7 +2120,7 @@ class SimulationControl:
 
         return response
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Shutdown the simulation control services.
 
         Cleanly shuts down the ROS2 service manager and all registered
@@ -2137,11 +2133,11 @@ class SimulationControl:
 class Extension(omni.ext.IExt):
     """Extension that starts and stops the ROS 2 simulation control services."""
 
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the extension."""
         self.sim_control = SimulationControl()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up resources when the extension shuts down."""
         if self.sim_control:
             self.sim_control.shutdown()

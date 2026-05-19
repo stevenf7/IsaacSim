@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.9.1] - 2026-05-14
+### Changed
+- Add missing type annotations on `ROS2TestCase` methods and replace a bare `except` in viewport-ready setup
+
 ## [1.9.0] - 2026-05-07
 ### Fixed
 - Downgraded bundled Fast-RTPS from 2.6.11 to 2.6.10 in the Humble nv_ros2 linux packages to avoid a regression introduced upstream in 2.6.11.

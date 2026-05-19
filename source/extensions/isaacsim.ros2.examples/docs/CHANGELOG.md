@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.2] - 2026-05-14
+### Changed
+- Add missing type annotations and replace bare `except` clauses across the MoveIt, waypoint follower, and sample loader extensions
+
 ## [1.2.1] - 2026-04-27
 ### Removed
 - Remove the `omni.isaac.ml_archive` dependency

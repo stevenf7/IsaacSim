@@ -42,7 +42,7 @@ class ViewManipulator(sc.Manipulator):
         **kwargs: Additional keyword arguments passed to the parent class.
     """
 
-    def __init__(self, **kwargs: object):
+    def __init__(self, **kwargs: object) -> None:
         super().__init__(**kwargs)
 
         self._relations = []

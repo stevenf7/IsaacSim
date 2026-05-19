@@ -60,7 +60,7 @@ class ROS2NodesExtension(omni.ext.IExt):
 
         carb.log_info("ROS2 Nodes: OmniGraph nodes extension loaded successfully")
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Shutdown the nodes extension.
 
         Clean up registered nodes and release the core interface.
@@ -69,7 +69,7 @@ class ROS2NodesExtension(omni.ext.IExt):
         self.__interface = release_interface(self.__interface)
         carb.log_info("ROS2 Nodes: Extension shutdown complete")
 
-    def register_nodes(self):
+    def register_nodes(self) -> None:
         """Register ROS 2 OmniGraph node writers."""
         # For Simulation and System time. Removed first S char in keys to account for both upper and lower cases.
         TIME_TYPES = [("imulationTime", ""), ("ystemTime", "SystemTime")]
@@ -301,7 +301,7 @@ class ROS2NodesExtension(omni.ext.IExt):
                 category=BRIDGE_NAME,
             )
 
-    def unregister_nodes(self):
+    def unregister_nodes(self) -> None:
         """Unregister ROS 2 OmniGraph node writers."""
         for writer in rep.WriterRegistry.get_writers(category=BRIDGE_NAME):
             rep.writers.unregister_writer(writer)

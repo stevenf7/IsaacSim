@@ -83,16 +83,16 @@ class TFListener:
         # check ROS master
         try:
             rosgraph.Master("/rostopic").getPid()
-        except:
+        except Exception:
             carb.log_warn("ROS master is not running")
             return False
         # start ROS node
         try:
             rospy.init_node(self._node_name)
             time.sleep(0.1)
-            carb.log_info("ROS node started ({})".format(self._node_name))
+            carb.log_info(f"ROS node started ({self._node_name})")
         except rospy.ROSException as e:
-            carb.log_error("ROS node ({}): {}".format(self._node_name, e))
+            carb.log_error(f"ROS node ({self._node_name}): {e}")
 
         # tf2 implementation
         if self._use_tf2:
@@ -163,7 +163,7 @@ class TFListener:
                                 [rotation.x, rotation.y, rotation.z, rotation.w],
                             )
                         transforms[frame] = transform
-                    except:
+                    except Exception:
                         pass
 
         return frames, transforms, relations
@@ -211,4 +211,4 @@ class TFListener:
         Returns:
             True if the listener has been initialized, False otherwise.
         """
-        return self._listener != None
+        return self._listener is not None

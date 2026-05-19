@@ -153,7 +153,7 @@ class Extension(omni.ext.IExt):
             stage_path: Path to the USD stage to load.
         """
 
-        async def load_stage(path):
+        async def load_stage(path: str) -> None:
             await omni.usd.get_context().open_stage_async(path)
 
         self._assets_root_path = get_assets_root_path()
@@ -164,7 +164,7 @@ class Extension(omni.ext.IExt):
 
         asyncio.ensure_future(load_stage(scenario_path))
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Clean up by deregistering all registered examples."""
         for name, category in self._registered_examples:
             get_browser_instance().deregister_example(name=name, category=category)
