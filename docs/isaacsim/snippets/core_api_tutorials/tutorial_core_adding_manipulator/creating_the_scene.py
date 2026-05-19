@@ -1,20 +1,22 @@
 """Create a scene with ground, Franka robot, and blue cube."""
 
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", action="store_true")
+args, _ = parser.parse_known_args()
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
-
-import omni
-
-# Enables the manipulator extension, so we can import Franka module
-omni.kit.app.get_app().get_extension_manager().set_extension_enabled_immediate(
-    "isaacsim.robot.experimental.manipulators.examples", True
-)
 
 import isaacsim.core.experimental.utils.app as app_utils
 from isaacsim.core.experimental.objects import Cube, DomeLight, GroundPlane
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 from isaacsim.core.simulation_manager import SimulationManager
+
+app_utils.enable_extension("isaacsim.robot.experimental.manipulators.examples")
+
 from isaacsim.robot.experimental.manipulators.examples.franka import Franka
 
 DEVICE = "cpu"
@@ -43,8 +45,13 @@ physics_scene.set_enabled_gpu_dynamics(False)
 app_utils.play()
 app_utils.update_app(steps=20)
 
+step_count = 0
+max_test_steps = 60
 while simulation_app.is_running():
     simulation_app.update()
+    step_count += 1
+    if args.test and step_count >= max_test_steps:
+        break
 
 app_utils.stop()
 simulation_app.close()

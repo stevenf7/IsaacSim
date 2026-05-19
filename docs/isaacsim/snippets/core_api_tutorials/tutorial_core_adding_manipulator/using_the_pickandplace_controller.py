@@ -1,19 +1,21 @@
 """Pick-and-place using FrankaPickPlace."""
 
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", action="store_true")
+args, _ = parser.parse_known_args()
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
-import omni
-
-# Enables the manipulator extension, so we can import Franka module
-omni.kit.app.get_app().get_extension_manager().set_extension_enabled_immediate(
-    "isaacsim.robot.experimental.manipulators.examples", True
-)
-
 import isaacsim.core.experimental.utils.app as app_utils
 from isaacsim.core.experimental.objects import DomeLight, GroundPlane
 from isaacsim.core.simulation_manager import SimulationManager
+
+app_utils.enable_extension("isaacsim.robot.experimental.manipulators.examples")
+
 from isaacsim.robot.experimental.manipulators.examples.franka import FrankaPickPlace
 
 DEVICE = "cpu"
@@ -35,14 +37,21 @@ app_utils.update_app(steps=20)
 controller.reset()
 
 # Main loop: run one pick-place step each physics frame until done
+step_count = 0
+max_test_steps = sum(controller.events_dt) + 60
 while simulation_app.is_running():
     simulation_app.update()
+    step_count += 1
     if app_utils.is_playing():
         if not controller.is_done():
             controller.forward()
         else:
             print("Pick-and-place completed")
             app_utils.pause()
+            if args.test:
+                break
+    if args.test and step_count >= max_test_steps:
+        raise RuntimeError("Pick-and-place did not complete within the test step budget")
 
 app_utils.stop()
 simulation_app.close()

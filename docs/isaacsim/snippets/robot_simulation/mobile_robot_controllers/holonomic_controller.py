@@ -1,5 +1,11 @@
 # Reference: source/standalone_examples/api/isaacsim.robot.wheeled_robots.examples/kaya_holonomic_move.py
 
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", action="store_true")
+args, _ = parser.parse_known_args()
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
@@ -71,11 +77,16 @@ app_utils.update_app(steps=10)
 
 # Simulation loop: apply [forward, lateral, yaw]; e.g. 1.0, 1.0, 0.1.
 command = [1.0, 1.0, 0.1]
+step_count = 0
+max_test_steps = 60
 while simulation_app.is_running():
     simulation_app.update()
+    step_count += 1
     if app_utils.is_playing():
         velocities = my_controller.forward(command)
         my_kaya.apply_wheel_actions(velocities)
+    if args.test and step_count >= max_test_steps:
+        break
 
 app_utils.stop()
 simulation_app.close()

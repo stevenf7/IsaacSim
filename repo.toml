@@ -962,7 +962,6 @@ tc_report_enabled = false
 [[repo_test.suites.doc_snippets_async.group]]
 include = ["*test_snippets_async*"]
 args = [
-  "--experience-csv experiences.csv",
   "--junit-xml ${test_root}/_testoutput/results.xml",
 ]
 timeout = 1800

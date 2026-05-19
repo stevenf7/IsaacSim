@@ -139,20 +139,20 @@ Tutorial
 
     .. tab-item:: Standalone Python
 
-        The script that runs this tutorial is located in ``standalone_examples/tutorials/getting_started_robot.py``. To run the script, open a terminal, navigate to the root of the Isaac Sim installation, and run the following command:
+        The script that runs this tutorial is located in ``standalone_examples/tutorials/getting_started/getting_started_robot.py``. To run the script, open a terminal, navigate to the root of the Isaac Sim installation, and run the following command:
 
         .. tab-set::
             .. tab-item:: Linux
 
                 .. code-block:: bash
 
-                    ./python.sh standalone_examples/tutorials/getting_started_robot.py
+                    ./python.sh standalone_examples/tutorials/getting_started/getting_started_robot.py
 
             .. tab-item:: Windows
 
                 .. code-block:: bash
 
-                    python.bat standalone_examples\tutorials\getting_started_robot.py
+                    python.bat standalone_examples\tutorials\getting_started\getting_started_robot.py
 
         .. rubric:: Code Explained
 
@@ -181,4 +181,3 @@ Save your work.
 The next set of recommend tutorials are the GUI reference :ref:`isaac_sim_robot_setup_tutorials`.
 
 Or, you can continue to the next section to explore  use-cases and capabilities of |isaac-sim| by accessing a library of examples and demos in :ref:`Examples <isaac_sim_app_intro_examples>`.
-

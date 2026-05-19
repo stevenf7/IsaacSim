@@ -2,6 +2,12 @@
 # Uses Articulation from core.experimental.prims and AckermannController from
 # isaacsim.robot.experimental.wheeled_robots.
 
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", action="store_true")
+args, _ = parser.parse_known_args()
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
@@ -77,8 +83,11 @@ app_utils.play()
 app_utils.update_app(steps=10)
 
 # Simulation loop: apply steering positions and wheel velocities.
+step_count = 0
+max_test_steps = 60
 while simulation_app.is_running():
     simulation_app.update()
+    step_count += 1
     if app_utils.is_playing() and joint_positions is not None and joint_velocities is not None:
         my_leatherback.set_dof_position_targets(
             joint_positions,
@@ -88,6 +97,8 @@ while simulation_app.is_running():
             joint_velocities,
             dof_indices=wheel_dof_indices,
         )
+    if args.test and step_count >= max_test_steps:
+        break
 
 app_utils.stop()
 simulation_app.close()
