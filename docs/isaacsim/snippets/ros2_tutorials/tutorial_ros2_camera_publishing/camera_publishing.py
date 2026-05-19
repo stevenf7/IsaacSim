@@ -137,7 +137,7 @@ def publish_camera_tf(sensor: CameraSensor):
 
         # If a camera graph is not found, create a new one.
         if not stage_utils.get_current_stage().GetPrimAtPath(ros_camera_graph_path).IsValid():
-            (ros_camera_graph, _, _, _) = og.Controller.edit(
+            og.Controller.edit(
                 {
                     "graph_path": ros_camera_graph_path,
                     "evaluator_name": "execution",
@@ -156,11 +156,14 @@ def publish_camera_tf(sensor: CameraSensor):
                 },
             )
 
-        # Generate 2 nodes associated with each camera: TF from world to ROS camera convention, and world frame.
+        # Generate 3 nodes associated with each camera: a ComputeTF node that walks the prim hierarchy
+        # to produce parent/child frames and pose arrays, a TF publisher fed by the ComputeTF outputs,
+        # and a raw TF publisher for the static camera-convention-to-world rotation.
         og.Controller.edit(
             ros_camera_graph_path,
             {
                 og.Controller.Keys.CREATE_NODES: [
+                    ("ComputeTF_" + camera_frame_id, "isaacsim.core.nodes.IsaacComputeTransformTree"),
                     ("PublishTF_" + camera_frame_id, "isaacsim.ros2.bridge.ROS2PublishTransformTree"),
                     ("PublishRawTF_" + camera_frame_id + "_world", "isaacsim.ros2.bridge.ROS2PublishRawTransformTree"),
                 ],
@@ -175,7 +178,27 @@ def publish_camera_tf(sensor: CameraSensor):
                     ("PublishRawTF_" + camera_frame_id + "_world.inputs:rotation", [0.5, -0.5, 0.5, 0.5]),
                 ],
                 og.Controller.Keys.CONNECT: [
-                    (ros_camera_graph_path + "/OnTick.outputs:tick", "PublishTF_" + camera_frame_id + ".inputs:execIn"),
+                    (ros_camera_graph_path + "/OnTick.outputs:tick", "ComputeTF_" + camera_frame_id + ".inputs:execIn"),
+                    (
+                        "ComputeTF_" + camera_frame_id + ".outputs:execOut",
+                        "PublishTF_" + camera_frame_id + ".inputs:execIn",
+                    ),
+                    (
+                        "ComputeTF_" + camera_frame_id + ".outputs:parentFrames",
+                        "PublishTF_" + camera_frame_id + ".inputs:parentFrames",
+                    ),
+                    (
+                        "ComputeTF_" + camera_frame_id + ".outputs:childFrames",
+                        "PublishTF_" + camera_frame_id + ".inputs:childFrames",
+                    ),
+                    (
+                        "ComputeTF_" + camera_frame_id + ".outputs:translations",
+                        "PublishTF_" + camera_frame_id + ".inputs:translations",
+                    ),
+                    (
+                        "ComputeTF_" + camera_frame_id + ".outputs:orientations",
+                        "PublishTF_" + camera_frame_id + ".inputs:orientations",
+                    ),
                     (
                         ros_camera_graph_path + "/OnTick.outputs:tick",
                         "PublishRawTF_" + camera_frame_id + "_world.inputs:execIn",
@@ -194,9 +217,9 @@ def publish_camera_tf(sensor: CameraSensor):
     except Exception as e:
         print(e)
 
-    # Add target prims for the USD pose. All other frames are static.
+    # Set the target prim on the ComputeTF node; the PublishTF node consumes its outputs.
     set_target_prims(
-        primPath=ros_camera_graph_path + "/PublishTF_" + camera_frame_id,
+        primPath=ros_camera_graph_path + "/ComputeTF_" + camera_frame_id,
         inputName="inputs:targetPrims",
         targetPrimPaths=[camera_prim_path],
     )

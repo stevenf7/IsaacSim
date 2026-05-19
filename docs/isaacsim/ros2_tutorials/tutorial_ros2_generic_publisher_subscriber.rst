@@ -90,7 +90,7 @@ Example: Publish Joint States
 
 The following example shows how to publish to the topic ``/joint_states``, using the ROS 2 message type ``sensor_msgs/msg/JointState``, the joint states (positions, velocities and efforts) of a robot using the generic ROS2 Publisher node.
 
-#. In a new stage, load the Franka robot using the Robotics Examples browser by going to **Window > Examples > Robotics Examples**. Then click on the **Robotics Examples** tab and expand the sections on the left hand side and open the example: **Import Robots > Franka URDF**. Then click on **LOAD** and *CONFIGURE*, in the **Import Franka** window, to load the environment and configure the robot.
+#. In a new stage, open the Franka robot asset by going to the Isaac Sim Content browser and clicking **Isaac Sim>Robots>FrankaRobotics>FrankaPanda>franka.usd**.
 #. Go to **Window > Graph Editors > Action Graph** to create an Action Graph and add, connect and configure the following |omnigraph_short| nodes into the Action Graph:
 
  * **On Playback Tick** node to execute other graph nodes every simulation frame.
@@ -120,7 +120,7 @@ The following example shows how to publish to the topic ``/joint_states``, using
     +----------------------------+---------------------+------------------+
 
 
-#. Play the simulation to start publishing and click on **MOVE**, in the **Import Franka** window, to move the robot.
+#. Play the simulation to start publishing.
 #. Use the following command in a new ROS2-sourced terminal to observe the published messages:
 
     .. code-block:: bash

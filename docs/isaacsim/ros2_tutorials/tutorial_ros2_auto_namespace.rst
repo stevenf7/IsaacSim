@@ -98,7 +98,7 @@ Setting Up the Base Asset
 #. Add a 2D RTX Lidar sensor by going to **Create > Sensors > RTX Lidar > NVIDIA > Example Rotary 2D** and drag it under ``/mock_robot/base_link/lidar_link``.
 
 
-#. Add a Hawk stereo camera system by going to **Create > Sensors > Camera and Depth Sensors > LeopardImaging > Hawk** and drag it under ``/mock_robot/base_link/camera_link``.
+#. Add a Hawk stereo camera system by going to **Create > Sensors > Camera and Depth Sensors > LeopardImaging > Hawk** and drag it under ``/mock_robot/base_link/camera_link``. The newly created prim will be named ``hawk_v1_1_nominal``; rename it to ``Hawk`` (right-click the prim in the **Stage** panel and select **Rename**) so that the prim paths in the following steps match.
 
 #. Create a Generic Publisher by going to **Tools > Robotics > ROS 2 OmniGraphs > Generic Publisher**. Set **Generic Publisher Graph** as ``Publish String`` and the **Graph Path** to ``/mock_robot/base_link/wheel_left/String_graph``. Then hit **OK**. 
 
