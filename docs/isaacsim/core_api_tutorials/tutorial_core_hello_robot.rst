@@ -35,9 +35,9 @@ Begin with the source code of the **Hello World** example developed in the previ
 Adding a Robot
 ===================
 
-Begin by adding a NVIDIA Jetbot to the scene, which allows you to access the library of |isaac-sim|
+Begin by adding a NVIDIA Jetbot to the scene. You can do so by accessing the library of |isaac-sim|
 robots, sensors, and environments located on a :ref:`isaac_sim_glossary_nucleus` Server using Python,
-as well as navigate through it using the **Content** window.
+as well as navigate through it using the **Content** window, under **Isaac Sim > robots > NVIDIA > jetbot.usd**.
 
 .. Note:: The server shown in these steps has been connected to in :ref:`isaac_sim_install_workstation`. Follow these steps first before proceeding.
 
@@ -55,7 +55,7 @@ as well as navigate through it using the **Content** window.
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_robot/open_the_extension_examplesuser_exampleshello_worl.py
     :language: python
     :linenos:
-    :emphasize-lines: 1-5, 14-27, 31
+    :emphasize-lines: 1-5, 13-27, 30-31
 
 Click the **LOAD** button to load the scene and see the Jetbot appear. Although it is being simulated,
 it is not moving. The next section walks through how to make the robot move.
@@ -72,7 +72,7 @@ Next, apply random velocities to the Jetbot's wheel joints to get it moving.
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_robot/move_the_robot.py
     :language: python
     :linenos:
-    :emphasize-lines: 4, 37-40, 42-46
+    :emphasize-lines: 5, 36-41, 43-47
 
 
 Click the **LOAD** button to load the scene and watch the Jetbot move with random velocities.
@@ -101,7 +101,7 @@ joint indices and apply velocities only to specific joints:
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_robot/using_the_wheeledrobot_class.py
     :language: python
     :linenos:
-    :emphasize-lines: 32-38, 48-52
+    :emphasize-lines: 31-36, 46-48
 
 .. image:: /images/core_api_tutorials_2_2.webp
     :align: center

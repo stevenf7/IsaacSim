@@ -4,11 +4,18 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
+import omni
+
+# Enables the manipulator extension, so we can import Franka module
+omni.kit.app.get_app().get_extension_manager().set_extension_enabled_immediate(
+    "isaacsim.robot.experimental.manipulators.examples", True
+)
+
 import isaacsim.core.experimental.utils.app as app_utils
 from isaacsim.core.experimental.objects import Cube, DomeLight, GroundPlane
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.robot.manipulators.examples.franka import FrankaExperimental
+from isaacsim.robot.experimental.manipulators.examples.franka import Franka
 
 DEVICE = "cpu"
 
@@ -17,7 +24,7 @@ dome_light = DomeLight("/World/DomeLight")
 dome_light.set_intensities(1000)
 
 # Create the Franka robot
-robot = FrankaExperimental(robot_path="/World/robot", create_robot=True)
+robot = Franka(robot_path="/World/robot", create_robot=True)
 
 # Create a blue cube for the robot to pick up
 cube_shape = Cube(

@@ -106,7 +106,7 @@ Let's customize the collider for the Rubik's Cube, by making it a sphere and eas
 
 1. Left click on the ``RubikCube`` mesh at ``World/rubiks_cube/RubikCube`` and scroll down to the ``Physics/Collider`` section, press the ``x`` on the right to delete the current collider.
 
-2. Left click on the ``RubikCube`` mesh and select ``Create`` > ``Shape`` > ``Sphere``. This will add a sphere shape around the Rubik's Cube.
+2. Left click on the ``rubiks_cube`` Xform and select ``Create`` > ``Shape`` > ``Sphere``. This will add a sphere shape around the Rubik's Cube.
 
 3. Scroll down to the ``Geometry`` section and set the ``Radius`` to ``0.07`` to make the sphere smaller to match the Rubik's Cube.
 
@@ -131,7 +131,7 @@ You can also apply surface properties to the Rubik's Cube by adding a physics ma
 
 #. Left click on the Rubik's Cube and in the properties panel, set the ``Position`` to ``(0, 0, 1)`` to move it up.
 
-#. Right click on the Rubik's Cube and select ``Create`` > ``Physics`` > ``Physics Material``. This will add a physics material attribute to the Rubik's Cube. Drag it to the ``World/rubiks_cube/Looks`` folder.
+#. Right click on the Rubik's Cube and select ``Create`` > ``Physics`` > ``Physics Material``. Check ``Rigid Body Material``. This will add a physics material attribute to the Rubik's Cube. Drag it to the ``World/rubiks_cube/Looks`` scope.
 
 #. In the properties panel, scroll down to the ``Physics Material`` section and set the ``Restitution`` to ``1`` to make it bounce.
 

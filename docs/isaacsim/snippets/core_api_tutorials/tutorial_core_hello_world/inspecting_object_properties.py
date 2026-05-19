@@ -37,7 +37,7 @@ class HelloWorld(BaseSample):
         self._cube_shape.apply_visual_materials(visual_material)
 
     # This function is called after load button is pressed
-    # It's called after setup_scene and after one physics time step
+    # It's called once, after both setup_scene and one physics time step has finished
     # to propagate physics handles needed to retrieve physical properties
     async def setup_post_load(self):
         # Query cube properties using RigidPrim methods
