@@ -58,7 +58,7 @@ def find_matching_paths(stage: Usd.Stage, pattern: str | list[str]) -> list[str]
     tokens = [f"^{tok.replace('*', '.*')}$" for tok in tokens]
 
     roots = [stage.GetPseudoRoot()]
-    matches = []
+    matches = []  # type: ignore[var-annotated]
 
     num_tokens = len(tokens)
     for i in range(num_tokens):

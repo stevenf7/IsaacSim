@@ -58,7 +58,7 @@ class NewtonArticulationView:
         frontend: Tensor framework frontend.
     """
 
-    def __init__(self, backend: Any, frontend: Any):
+    def __init__(self, backend: Any, frontend: Any) -> None:
         self._backend = backend
         self._frontend = frontend
         self._newton_stage = backend.newton_stage
@@ -69,7 +69,7 @@ class NewtonArticulationView:
         self._ctrl_direct_map_initialized = False
         self._ctrl_direct_biastype_set = False
 
-    def _wrap_input_tensor(self, tensor: Any, dtype: "wp.dtype | None" = None) -> "wp.array | None":
+    def _wrap_input_tensor(self, tensor: Any, dtype: "wp.dtype | None" = None) -> "wp.array | None":  # type: ignore[name-defined]
         """Helper to wrap an input tensor as a warp array for kernel input.
 
         Args:
@@ -92,7 +92,7 @@ class NewtonArticulationView:
         """
         return convert_to_warp(tensor, self._frontend.device)
 
-    def _check_state(self):
+    def _check_state(self) -> None:
         """Check if Newton state is initialized.
 
         Raises:
@@ -105,7 +105,7 @@ class NewtonArticulationView:
                 f"(initialized={self._newton_stage.initialized}, model={self._newton_stage.model is not None})"
             )
 
-    def _notify_joint_dof_properties_changed(self):
+    def _notify_joint_dof_properties_changed(self) -> None:
         """Notify the solver that joint DOF properties (gains, limits, etc.) have changed."""
         if self._newton_stage.solver is not None:
             try:
@@ -140,7 +140,7 @@ class NewtonArticulationView:
         dof_map = self._ctrl_direct_dof_map
         if dof_map is not None:
             dof_map_np = dof_map.numpy()
-            newton_act_indices = sorted(set(int(a) for a in dof_map_np if a >= 0))
+            newton_act_indices = sorted({int(a) for a in dof_map_np if a >= 0})
             mujoco_attrs = getattr(self._model, "mujoco", None)
             if mujoco_attrs is not None:
                 bt = getattr(mujoco_attrs, "actuator_biastype", None)
@@ -252,7 +252,7 @@ class NewtonArticulationView:
                 pass
 
     @property
-    def count(self):
+    def count(self) -> int:
         """Number of articulations in this view.
 
         Returns:
@@ -261,7 +261,7 @@ class NewtonArticulationView:
         return self._backend.count
 
     @property
-    def max_dofs(self):
+    def max_dofs(self) -> int:
         """Maximum number of DOFs across all articulations.
 
         Returns:
@@ -270,7 +270,7 @@ class NewtonArticulationView:
         return self._backend.max_dofs
 
     @property
-    def max_links(self):
+    def max_links(self) -> int:
         """Maximum number of links across all articulations.
 
         Returns:
@@ -279,7 +279,7 @@ class NewtonArticulationView:
         return self._backend.max_links
 
     @property
-    def max_shapes(self):
+    def max_shapes(self) -> int:
         """Maximum number of shapes across all articulations.
 
         Returns:
@@ -288,7 +288,7 @@ class NewtonArticulationView:
         return self._backend.max_shapes
 
     @property
-    def max_fixed_tendons(self):
+    def max_fixed_tendons(self) -> int:
         """Maximum number of fixed tendons across all articulations.
 
         Returns:
@@ -297,7 +297,7 @@ class NewtonArticulationView:
         return self._backend.max_fixed_tendons
 
     @property
-    def dof_paths(self):
+    def dof_paths(self) -> Any:
         """DOF paths for all articulations in the view.
 
         Returns:
@@ -469,7 +469,7 @@ class NewtonArticulationView:
 
         return (n, n)
 
-    def get_metatype(self, index: int):
+    def get_metatype(self, index: int) -> Any:
         """Get metadata type for a specific articulation.
 
         Args:
@@ -485,16 +485,16 @@ class NewtonArticulationView:
             raise IndexError(f"Articulation index {index} out of range [0, {self.count})")
         return self._backend.meta_types[index]
 
-    def update(self, dt: float):
+    def update(self, dt: float) -> None:
         """Update simulation timestamp.
 
         Args:
             dt: Time delta.
         """
-        self._sim_timestamp += dt
+        self._sim_timestamp += dt  # type: ignore[assignment]
 
     @carb.profiler.profile
-    def get_root_transforms(self, copy: bool = copy_data):
+    def get_root_transforms(self, copy: bool = copy_data) -> Any:
         """Get root body transforms [position(3) + quaternion(4)].
 
         Args:
@@ -522,7 +522,7 @@ class NewtonArticulationView:
             return wp.indexedarray(state.body_q, self._backend.root_body_indices)
 
     @carb.profiler.profile
-    def get_root_velocities(self, copy: bool = copy_data):
+    def get_root_velocities(self, copy: bool = copy_data) -> Any:
         """Get root body velocities [linear(3) + angular(3)].
 
         Args:
@@ -549,7 +549,7 @@ class NewtonArticulationView:
         else:
             return wp.indexedarray(state.body_qd, self._backend.root_body_indices)
 
-    def get_masses(self, copy: bool = copy_data):
+    def get_masses(self, copy: bool = copy_data) -> Any:
         """Get link masses.
 
         Args:
@@ -572,7 +572,7 @@ class NewtonArticulationView:
         else:
             return wp.indexedarray(self._model.body_mass, self._backend.link_indices)
 
-    def get_inv_masses(self, copy: bool = copy_data):
+    def get_inv_masses(self, copy: bool = copy_data) -> Any:
         """Get link inverse masses (1/mass).
 
         Args:
@@ -598,7 +598,7 @@ class NewtonArticulationView:
             # For non-copy mode, return masses and let caller compute inverse
             return wp.indexedarray(self._model.body_mass, self._backend.link_indices)
 
-    def get_inertias(self, copy: bool = copy_data):
+    def get_inertias(self, copy: bool = copy_data) -> Any:
         """Get link inertias.
 
         Args:
@@ -619,7 +619,7 @@ class NewtonArticulationView:
             )
         return self._inertias
 
-    def get_inv_inertias(self, copy: bool = copy_data):
+    def get_inv_inertias(self, copy: bool = copy_data) -> Any:
         """Get link inverse inertias.
 
         Args:
@@ -658,11 +658,11 @@ class NewtonArticulationView:
             self._coms, self._coms_desc = self._frontend.create_tensor((self.count, self.max_links, 7), float32)
             if self.count > 0 and self.max_links > 0:
                 coms_warp = self._convert_to_warp(self._coms)
-                coms_warp.fill_(0.0)
+                coms_warp.fill_(0.0)  # type: ignore[union-attr]
 
-                coms_np = coms_warp.numpy()
+                coms_np = coms_warp.numpy()  # type: ignore[union-attr]
                 coms_np[:, :, 6] = 1.0
-                coms_warp.assign(coms_np)
+                coms_warp.assign(coms_np)  # type: ignore[union-attr]
         wp.launch(
             get_link_com_position_only,
             dim=(self.count, self.max_links, 7),
@@ -672,7 +672,7 @@ class NewtonArticulationView:
         )
         return self._coms
 
-    def set_coms(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_coms(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set link center of mass positions and orientations.
 
         Args:
@@ -684,11 +684,11 @@ class NewtonArticulationView:
             self._coms, self._coms_desc = self._frontend.create_tensor((self.count, self.max_links, 7), float32)
             if self.count > 0 and self.max_links > 0:
                 coms_warp = self._convert_to_warp(self._coms)
-                coms_warp.fill_(0.0)
+                coms_warp.fill_(0.0)  # type: ignore[union-attr]
 
-                coms_np = coms_warp.numpy()
+                coms_np = coms_warp.numpy()  # type: ignore[union-attr]
                 coms_np[:, :, 6] = 1.0
-                coms_warp.assign(coms_np)
+                coms_warp.assign(coms_np)  # type: ignore[union-attr]
         wp.launch(
             set_link_com,
             dim=(indices.shape[0], self.max_links, 3),
@@ -715,7 +715,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def get_dof_positions(self, copy: bool = copy_data):
+    def get_dof_positions(self, copy: bool = copy_data) -> Any:
         """Get joint positions.
 
         Args:
@@ -741,7 +741,7 @@ class NewtonArticulationView:
             return wp.indexedarray(self._newton_stage.state_0.joint_q, self._backend.dof_position_indices)
 
     @carb.profiler.profile
-    def get_dof_velocities(self, copy: bool = copy_data):
+    def get_dof_velocities(self, copy: bool = copy_data) -> Any:
         """Get joint velocities.
 
         Args:
@@ -767,7 +767,7 @@ class NewtonArticulationView:
             return wp.indexedarray(self._newton_stage.state_0.joint_qd, self._backend.dof_velocity_indices)
 
     @carb.profiler.profile
-    def get_dof_limits(self, copy: bool = copy_data):
+    def get_dof_limits(self, copy: bool = copy_data) -> Any:
         """Get joint limits [lower, upper].
 
         Args:
@@ -798,7 +798,7 @@ class NewtonArticulationView:
             return wp.indexedarray(self._model.joint_limit_lower, self._backend.dof_axis_indices)
 
     @carb.profiler.profile
-    def get_dof_stiffnesses(self, copy: bool = copy_data):
+    def get_dof_stiffnesses(self, copy: bool = copy_data) -> Any:
         """Get joint stiffnesses (for position control).
 
         Args:
@@ -824,7 +824,7 @@ class NewtonArticulationView:
             return wp.indexedarray(self._model.joint_target_ke, self._backend.dof_axis_indices)
 
     @carb.profiler.profile
-    def get_dof_dampings(self, copy: bool = copy_data):
+    def get_dof_dampings(self, copy: bool = copy_data) -> Any:
         """Get joint dampings (for velocity control).
 
         Args:
@@ -927,7 +927,9 @@ class NewtonArticulationView:
         else:
             return wp.indexedarray(control.joint_target_vel, self._backend.dof_axis_indices)
 
-    def _update_articulation_state(self, indices: Any, indices_mask: Any | None = None, update_positions: bool = True):
+    def _update_articulation_state(
+        self, indices: Any, indices_mask: Any | None = None, update_positions: bool = True
+    ) -> None:
         """Helper function to update articulation joint coordinates and evaluate forward kinematics.
 
             This should be called after modifying root transforms or velocities to ensure
@@ -947,7 +949,7 @@ class NewtonArticulationView:
             eval_fk(self._model, state.joint_q, state.joint_qd, state)
 
     @carb.profiler.profile
-    def set_root_transforms(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_root_transforms(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set root body transforms.
 
             Automatically detects whether each articulation is fixed-base or floating-base
@@ -1000,7 +1002,7 @@ class NewtonArticulationView:
         self._update_articulation_state(indices, indices_mask, update_positions=True)
 
     @carb.profiler.profile
-    def set_root_velocities(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_root_velocities(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set root body velocities.
 
         Automatically detects whether each articulation is fixed-base or floating-base:
@@ -1037,7 +1039,7 @@ class NewtonArticulationView:
         # Note: We don't call FK for velocity updates as it might reset the velocities
 
     @carb.profiler.profile
-    def set_masses(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_masses(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set link masses.
 
         Args:
@@ -1072,7 +1074,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def set_inertias(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_inertias(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set link inertias.
 
         Args:
@@ -1108,7 +1110,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def set_dof_positions(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_dof_positions(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set joint positions.
 
         Args:
@@ -1132,7 +1134,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def set_dof_velocities(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_dof_velocities(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set joint velocities.
 
         Args:
@@ -1156,7 +1158,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def set_dof_stiffnesses(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_dof_stiffnesses(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set joint stiffnesses.
 
         Args:
@@ -1181,7 +1183,7 @@ class NewtonArticulationView:
         self._sync_ctrl_direct_actuator_gains()
 
     @carb.profiler.profile
-    def set_dof_dampings(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_dof_dampings(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set joint dampings.
 
         Args:
@@ -1206,7 +1208,7 @@ class NewtonArticulationView:
         self._sync_ctrl_direct_actuator_gains()
 
     @carb.profiler.profile
-    def set_dof_armatures(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_dof_armatures(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set joint armatures (rotor inertias).
 
         Args:
@@ -1231,7 +1233,7 @@ class NewtonArticulationView:
         self._notify_joint_dof_properties_changed()
 
     @carb.profiler.profile
-    def set_dof_position_targets(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_dof_position_targets(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set joint position targets.
 
         Args:
@@ -1257,7 +1259,7 @@ class NewtonArticulationView:
         self._sync_ctrl_direct_position_targets()
 
     @carb.profiler.profile
-    def set_dof_velocity_targets(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_dof_velocity_targets(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set joint velocity targets.
 
         Args:
@@ -1281,7 +1283,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def set_dof_actuation_forces(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_dof_actuation_forces(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set joint actuation forces/torques.
 
         Writes directly into control.joint_f which is consumed by the solver.
@@ -1359,7 +1361,7 @@ class NewtonArticulationView:
             return wp.indexedarray(self._model.joint_effort_limit, self._backend.dof_axis_indices)
 
     @carb.profiler.profile
-    def set_dof_max_forces(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_dof_max_forces(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set joint maximum forces/torques (effort limits).
 
         Args:
@@ -1383,7 +1385,7 @@ class NewtonArticulationView:
         self._notify_joint_dof_properties_changed()
 
     @carb.profiler.profile
-    def set_dof_limits(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_dof_limits(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set joint limits (lower and upper bounds).
 
         Args:
@@ -1407,7 +1409,7 @@ class NewtonArticulationView:
         self._notify_joint_dof_properties_changed()
 
     @carb.profiler.profile
-    def set_dof_max_velocities(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_dof_max_velocities(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set joint maximum velocities.
 
         Args:
@@ -1432,7 +1434,7 @@ class NewtonArticulationView:
         self._notify_joint_dof_properties_changed()
 
     @carb.profiler.profile
-    def set_dof_drive_model_properties(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_dof_drive_model_properties(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set joint drive model properties.
 
         Args:
@@ -1445,7 +1447,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def set_dof_friction_properties(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_dof_friction_properties(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set joint friction properties.
 
         Args:
@@ -1458,7 +1460,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def set_disable_gravities(self, data: Any, indices: Any, indices_mask: Any | None = None):
+    def set_disable_gravities(self, data: Any, indices: Any, indices_mask: Any | None = None) -> None:
         """Set gravity disable flags for links.
 
         Args:
@@ -1471,7 +1473,7 @@ class NewtonArticulationView:
         )
 
     @carb.profiler.profile
-    def update_joints(self, indices: Any, indices_mask: Any | None = None):
+    def update_joints(self, indices: Any, indices_mask: Any | None = None) -> None:
         """Update joint states after setting positions/velocities.
 
         This evaluates forward kinematics to update body transforms from joint states.
@@ -1534,7 +1536,7 @@ class NewtonArticulationView:
             indices_mask: Optional mask for the indices.
         """
         if indices is None:
-            indices = wp.arange(self.count, dtype=wp.int32, device=str(self._frontend.device))
+            indices = wp.arange(self.count, dtype=wp.int32, device=str(self._frontend.device))  # type: ignore[attr-defined]
 
         self.apply_forces_and_torques_at_position(force_data, None, None, indices, is_global, indices_mask)
 
@@ -1605,7 +1607,7 @@ class NewtonArticulationView:
         # Apply forces to state
         wp.launch(
             apply_link_forces_at_position,
-            dim=(indices_tensor.shape[0], self.max_links),
+            dim=(indices_tensor.shape[0], self.max_links),  # type: ignore[union-attr]
             inputs=[
                 force_tensor,
                 torque_tensor,

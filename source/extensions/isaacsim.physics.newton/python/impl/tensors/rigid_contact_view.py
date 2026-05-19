@@ -72,8 +72,8 @@ def _extract_vec3_from_spatial(
 
 @wp.kernel
 def _extract_vec3_kernel(
-    src: wp.array(dtype=wp.spatial_vector),
-    dst: wp.array(dtype=wp.vec3),
+    src: wp.array(dtype=wp.spatial_vector),  # type: ignore[valid-type]
+    dst: wp.array(dtype=wp.vec3),  # type: ignore[valid-type]
 ) -> None:
     """Copy linear (first three) components of each spatial_vector to vec3.
 
@@ -117,7 +117,7 @@ def _resolve_newton_contacts(contacts: Any, model: Any) -> tuple[Any, Any, Any, 
     if spatial_force is not None:
         force = _extract_vec3_from_spatial(spatial_force, model.device)
     else:
-        force = getattr(contacts, "rigid_contact_force", None)
+        force = getattr(contacts, "rigid_contact_force", None)  # type: ignore[assignment]
         if force is None:
             force = wp.zeros(model.rigid_contact_max, dtype=wp.vec3, device=model.device)
     return (count_ref, shape0, shape1, normal, force)
@@ -203,7 +203,7 @@ class NewtonRigidContactView:
                         except ValueError:
                             carb.log_warn(f"[NewtonRigidContactView] Filter body not found: {filter_path}")
 
-        self._body_filter_map = wp.array(body_filter_map, dtype=wp.int32, device=self._model.device)
+        self._body_filter_map = wp.array(body_filter_map, dtype=wp.int32, device=self._model.device)  # type: ignore[assignment]
 
     @property
     def count(self) -> int:
@@ -283,7 +283,7 @@ class NewtonRigidContactView:
         Args:
             dt: Time delta.
         """
-        self._sim_timestamp += dt
+        self._sim_timestamp += dt  # type: ignore[assignment]
 
     @carb.profiler.profile
     def get_net_contact_forces(self, dt: float, copy: bool = copy_data) -> Any:
@@ -299,7 +299,7 @@ class NewtonRigidContactView:
         model = self._model
         zero_tensor(self._net_forces)
 
-        contacts = self._newton_stage.contacts
+        contacts = self._newton_stage.contacts  # type: ignore[has-type]
         resolved = _resolve_newton_contacts(contacts, model)
         if resolved is None:
             return self._net_forces
@@ -331,7 +331,7 @@ class NewtonRigidContactView:
 
         return self._net_forces
 
-    def get_contact_force_matrix(self, dt: float, copy: bool = copy_data) -> wp.array:
+    def get_contact_force_matrix(self, dt: float, copy: bool = copy_data) -> wp.array:  # type: ignore[return-value]
         """Get contact force matrix (sensor x filter).
 
         Args:
@@ -348,16 +348,16 @@ class NewtonRigidContactView:
         model = self._model
 
         if hasattr(self._force_matrix, "fill_"):
-            self._force_matrix.fill_(0.0)
+            self._force_matrix.fill_(0.0)  # type: ignore[attr-defined]
         elif hasattr(self._force_matrix, "zero_"):
-            self._force_matrix.zero_()
+            self._force_matrix.zero_()  # type: ignore[attr-defined]
         else:
-            self._force_matrix[:] = 0.0
+            self._force_matrix[:] = 0.0  # type: ignore[index]
 
-        contacts = self._newton_stage.contacts
+        contacts = self._newton_stage.contacts  # type: ignore[has-type]
         resolved = _resolve_newton_contacts(contacts, model)
         if resolved is None:
-            return self._force_matrix
+            return self._force_matrix  # type: ignore[return-value]
         count_ref, shape0, shape1, _normal, force = resolved
         contact_count = count_ref.numpy()[0] if hasattr(count_ref, "numpy") else int(count_ref)
         if model.rigid_contact_max > 0 and contact_count > 0:
@@ -381,7 +381,7 @@ class NewtonRigidContactView:
             )
             wp.synchronize_device(model.device)
 
-        return self._force_matrix
+        return self._force_matrix  # type: ignore[return-value]
 
     def get_contact_data(self, dt: float, max_contact_data_count: int = 0, copy: bool = copy_data) -> Any:
         """Get detailed contact data (forces, points, normals, separations).
@@ -411,10 +411,10 @@ class NewtonRigidContactView:
             self._contact_normals_buffer, _ = self._frontend.create_tensor((max_contact_data_count, 3), float32)
             self._contact_separations_buffer, _ = self._frontend.create_tensor((max_contact_data_count, 1), float32)
             # Create uint32 arrays directly as Warp arrays (PyTorch doesn't support uint32 well)
-            self._contact_counts = wp.zeros(
+            self._contact_counts = wp.zeros(  # type: ignore[assignment]
                 (self.sensor_count, self.filter_count), dtype=wp.uint32, device=self._model.device
             )
-            self._contact_start_indices = wp.zeros(
+            self._contact_start_indices = wp.zeros(  # type: ignore[assignment]
                 (self.sensor_count, self.filter_count), dtype=wp.uint32, device=self._model.device
             )
 
@@ -423,13 +423,13 @@ class NewtonRigidContactView:
         zero_tensor(self._contact_points_buffer)
         zero_tensor(self._contact_normals_buffer)
         zero_tensor(self._contact_separations_buffer)
-        self._contact_counts.zero_()
-        self._contact_start_indices.zero_()
+        self._contact_counts.zero_()  # type: ignore[attr-defined]
+        self._contact_start_indices.zero_()  # type: ignore[attr-defined]
 
         state = self._newton_stage.state_0
         model = self._model
 
-        contacts = self._newton_stage.contacts
+        contacts = self._newton_stage.contacts  # type: ignore[has-type]
         resolved = _resolve_newton_contacts(contacts, model)
         if resolved is None:
             return (
@@ -462,7 +462,7 @@ class NewtonRigidContactView:
 
         # MuJoCo doesn't populate rigid_contact_point0/1 in Newton's Contacts.
         # Populate them from MuJoCo's world-space contact positions + body transforms.
-        solver = self._newton_stage.solver
+        solver = self._newton_stage.solver  # type: ignore[has-type]
         mj_contact_pos = None
         if hasattr(solver, "mjw_data") and solver.mjw_data is not None:
             mj_contact = getattr(solver.mjw_data, "contact", None)
@@ -479,10 +479,10 @@ class NewtonRigidContactView:
             wp.synchronize_device(model.device)
 
         if model.rigid_contact_max > 0:
-            forces_wp = self._to_warp_array(self._contact_forces_buffer)
-            points_wp = self._to_warp_array(self._contact_points_buffer)
-            normals_wp = self._to_warp_array(self._contact_normals_buffer)
-            separations_wp = self._to_warp_array(self._contact_separations_buffer)
+            forces_wp = self._to_warp_array(self._contact_forces_buffer)  # type: ignore[arg-type]
+            points_wp = self._to_warp_array(self._contact_points_buffer)  # type: ignore[arg-type]
+            normals_wp = self._to_warp_array(self._contact_normals_buffer)  # type: ignore[arg-type]
+            separations_wp = self._to_warp_array(self._contact_separations_buffer)  # type: ignore[arg-type]
             counts_wp = self._contact_counts
             indices_wp = self._contact_start_indices
 
@@ -503,12 +503,12 @@ class NewtonRigidContactView:
             )
             wp.synchronize_device(model.device)
 
-            counts_np = counts_wp.numpy().astype(np.uint32).reshape(-1)
+            counts_np = counts_wp.numpy().astype(np.uint32).reshape(-1)  # type: ignore[attr-defined]
             indices_np = np.zeros_like(counts_np, dtype=np.uint32)
             indices_np[1:] = np.cumsum(counts_np[:-1], dtype=np.uint32)
-            indices_wp_flat = wp.array(indices_np, dtype=wp.uint32, device=model.device)
-            wp.copy(indices_wp, indices_wp_flat.reshape(indices_wp.shape))
-            counts_wp.zero_()
+            indices_wp_flat = wp.array(indices_np, dtype=wp.uint32, device=model.device)  # type: ignore[arg-type, var-annotated]
+            wp.copy(indices_wp, indices_wp_flat.reshape(indices_wp.shape))  # type: ignore[attr-defined, arg-type]
+            counts_wp.zero_()  # type: ignore[attr-defined]
 
             body_q = (
                 state.body_q
@@ -593,22 +593,22 @@ class NewtonRigidContactView:
             self._raw_points_buffer, _ = self._frontend.create_tensor((max_count, 3), float32)
             self._raw_normals_buffer, _ = self._frontend.create_tensor((max_count, 3), float32)
             self._raw_separations_buffer, _ = self._frontend.create_tensor((max_count, 1), float32)
-            self._raw_counts = wp.zeros(self.sensor_count, dtype=wp.uint32, device=self._model.device)
-            self._raw_start_indices = wp.zeros(self.sensor_count, dtype=wp.uint32, device=self._model.device)
-            self._raw_other_actor_ids = wp.zeros(max_count, dtype=wp.uint64, device=self._model.device)
+            self._raw_counts = wp.zeros(self.sensor_count, dtype=wp.uint32, device=self._model.device)  # type: ignore[assignment]
+            self._raw_start_indices = wp.zeros(self.sensor_count, dtype=wp.uint32, device=self._model.device)  # type: ignore[assignment]
+            self._raw_other_actor_ids = wp.zeros(max_count, dtype=wp.uint64, device=self._model.device)  # type: ignore[assignment]
 
         zero_tensor(self._raw_forces_buffer)
         zero_tensor(self._raw_points_buffer)
         zero_tensor(self._raw_normals_buffer)
         zero_tensor(self._raw_separations_buffer)
-        self._raw_counts.zero_()
-        self._raw_start_indices.zero_()
-        self._raw_other_actor_ids.zero_()
+        self._raw_counts.zero_()  # type: ignore[attr-defined]
+        self._raw_start_indices.zero_()  # type: ignore[attr-defined]
+        self._raw_other_actor_ids.zero_()  # type: ignore[attr-defined]
 
         state = self._newton_stage.state_0
         model = self._model
 
-        contacts = self._newton_stage.contacts
+        contacts = self._newton_stage.contacts  # type: ignore[has-type]
         resolved = _resolve_newton_contacts(contacts, model)
         if resolved is None:
             return (
@@ -642,7 +642,7 @@ class NewtonRigidContactView:
             )
 
         # Populate contact points from MuJoCo world-space positions if needed
-        solver = self._newton_stage.solver
+        solver = self._newton_stage.solver  # type: ignore[has-type]
         mj_contact_pos = None
         if hasattr(solver, "mjw_data") and solver.mjw_data is not None:
             mj_contact = getattr(solver.mjw_data, "contact", None)
@@ -659,10 +659,10 @@ class NewtonRigidContactView:
             wp.synchronize_device(model.device)
 
         if model.rigid_contact_max > 0:
-            forces_wp = self._to_warp_array(self._raw_forces_buffer)
-            points_wp = self._to_warp_array(self._raw_points_buffer)
-            normals_wp = self._to_warp_array(self._raw_normals_buffer)
-            separations_wp = self._to_warp_array(self._raw_separations_buffer)
+            forces_wp = self._to_warp_array(self._raw_forces_buffer)  # type: ignore[arg-type]
+            points_wp = self._to_warp_array(self._raw_points_buffer)  # type: ignore[arg-type]
+            normals_wp = self._to_warp_array(self._raw_normals_buffer)  # type: ignore[arg-type]
+            separations_wp = self._to_warp_array(self._raw_separations_buffer)  # type: ignore[arg-type]
 
             # Pass 1: count contacts per sensor
             wp.launch(
@@ -682,11 +682,11 @@ class NewtonRigidContactView:
             wp.synchronize_device(model.device)
 
             # Prefix scan: compute start indices from counts
-            counts_np = self._raw_counts.numpy().astype(np.uint32)
+            counts_np = self._raw_counts.numpy().astype(np.uint32)  # type: ignore[attr-defined]
             indices_np = np.zeros_like(counts_np, dtype=np.uint32)
             indices_np[1:] = np.cumsum(counts_np[:-1], dtype=np.uint32)
-            wp.copy(self._raw_start_indices, wp.array(indices_np, dtype=wp.uint32, device=model.device))
-            self._raw_counts.zero_()
+            wp.copy(self._raw_start_indices, wp.array(indices_np, dtype=wp.uint32, device=model.device))  # type: ignore[arg-type]
+            self._raw_counts.zero_()  # type: ignore[attr-defined]
 
             # Pass 2: write raw contact data
             body_q = (
@@ -779,7 +779,7 @@ class NewtonRigidContactView:
         if hasattr(tensor, "_warp_array"):
             return tensor._warp_array
         # Fallback: try to get the underlying array
-        return tensor
+        return tensor  # type: ignore[return-value]
 
     def check(self) -> bool:
         """Check if the view is valid and has sensors.

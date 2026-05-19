@@ -42,7 +42,7 @@ class NewtonPropertyQueryArticulationLink:
         joint_dof: Number of DOFs for this joint.
     """
 
-    def __init__(self, rigid_body: int = 0, joint: int = 0, joint_dof: int = 0):
+    def __init__(self, rigid_body: int = 0, joint: int = 0, joint_dof: int = 0) -> None:
         self._rigid_body = rigid_body
         self._joint = joint
         self._joint_dof = joint_dof
@@ -119,7 +119,7 @@ class NewtonPropertyQueryArticulationResponse:
         stage_id: int = 0,
         path_id: int = 0,
         links: list[NewtonPropertyQueryArticulationLink] | None = None,
-    ):
+    ) -> None:
         self.result = result
         self.stage_id = stage_id
         self.path_id = path_id
@@ -140,17 +140,17 @@ class NewtonPropertyQueryInterface:
         """
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance._articulation_cache = {}
-            cls._instance._stage_event_subscription = None
+            cls._instance._articulation_cache = {}  # type: ignore[has-type]
+            cls._instance._stage_event_subscription = None  # type: ignore[has-type]
         return cls._instance
 
     def _invalidate_cache_for_stage(self, stage_id: int) -> None:
         """Drop cached articulation responses for ``stage_id``."""
-        self._articulation_cache = {key: value for key, value in self._articulation_cache.items() if key[0] != stage_id}
+        self._articulation_cache = {key: value for key, value in self._articulation_cache.items() if key[0] != stage_id}  # type: ignore[has-type]
 
     def _ensure_stage_event_subscription(self) -> None:
         """Subscribe once to USD stage CLOSED events to drop stale cache entries."""
-        if self._stage_event_subscription is not None:
+        if self._stage_event_subscription is not None:  # type: ignore[has-type]
             return
         try:
             import carb.eventdispatcher
@@ -320,7 +320,7 @@ class NewtonPropertyQueryInterface:
         """
         from pxr import PhysicsSchemaTools
 
-        links = []
+        links = []  # type: ignore[var-annotated]
         # Get paths for the first articulation (homogeneous view, all have same structure)
         all_link_paths = articulation_view.link_paths
         all_dof_paths = articulation_view.dof_paths
@@ -334,7 +334,7 @@ class NewtonPropertyQueryInterface:
 
         # Create a mapping from joint paths to DOF count by counting DOFs
         # In Newton, each DOF path corresponds to exactly one joint
-        joint_dof_count_map = {}
+        joint_dof_count_map = {}  # type: ignore[var-annotated]
         for dof_path in dof_paths:
             # Count this DOF for its joint
             joint_dof_count_map[dof_path] = joint_dof_count_map.get(dof_path, 0) + 1
@@ -384,7 +384,7 @@ class NewtonPropertyQueryInterface:
             List of articulation links in PhysX-compatible format.
         """
         import newton
-        from newton.usd import SchemaResolverNewton, SchemaResolverPhysx
+        from newton.usd import SchemaResolverNewton, SchemaResolverPhysx  # type: ignore[attr-defined]
         from pxr import PhysicsSchemaTools
 
         collapse_fixed_joints = self._get_collapse_fixed_joints_setting()
@@ -432,7 +432,7 @@ class NewtonPropertyQueryInterface:
         for body_index, body_label in enumerate(builder.body_label):
             link = NewtonPropertyQueryArticulationLink()
             link._rigid_body = PhysicsSchemaTools.sdfPathToInt(Sdf.Path(body_label))
-            joint_index = body_to_inbound_joint.get(body_index)
+            joint_index = body_to_inbound_joint.get(body_index)  # type: ignore[assignment]
             if joint_index is not None:
                 linear_axes, angular_axes = builder.joint_dof_dim[joint_index]
                 joint_label = builder.joint_label[joint_index]

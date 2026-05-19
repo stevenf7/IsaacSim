@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import carb
 
@@ -36,12 +36,12 @@ class NewtonSimulationRegistry:
     seamlessly alongside PhysX using the same unified API.
     """
 
-    def __init__(self):
-        self.simulation_id = None
-        self.newton_stage = None
-        self.simulation = None
-        self.sim_fns = None
-        self.stage_update_fns = None
+    def __init__(self) -> None:
+        self.simulation_id: int | None = None
+        self.newton_stage: NewtonStage | None = None
+        self.simulation: Any = None
+        self.sim_fns: Any = None
+        self.stage_update_fns: Any = None
 
     def register_newton(self, newton_stage: NewtonStage) -> int | None:
         """Register Newton as a physics simulation backend.
@@ -67,7 +67,7 @@ class NewtonSimulationRegistry:
             self.stage_update_fns = NewtonStageUpdateFunctions(newton_stage)
 
             # Store reference in newton_stage so it can call the callbacks
-            newton_stage.simulation_functions = self.sim_fns
+            newton_stage.simulation_functions = self.sim_fns  # type: ignore[attr-defined]
 
             # Create Simulation object
             self.simulation = Simulation()
@@ -137,7 +137,7 @@ class NewtonSimulationRegistry:
             traceback.print_exc()
             return None
 
-    def unregister_newton(self):
+    def unregister_newton(self) -> None:
         """Unregister Newton simulation from physics interface."""
         if self.simulation_id is not None:
             try:

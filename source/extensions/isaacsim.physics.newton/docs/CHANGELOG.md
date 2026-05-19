@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.11] - 2026-05-18
+### Changed
+- Add return type annotations and mypy type:ignore comments across all source files to pass mypy and ruff linting
+
 ## [0.7.10] - 2026-05-12
 ### Changed
 - Updated newton pip dependencies to newton 1.2.0rc3, mujoco-warp 3.8.0.2, newton-usd-schemas 0.2.0

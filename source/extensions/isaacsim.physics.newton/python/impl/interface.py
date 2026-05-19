@@ -36,12 +36,12 @@ class NewtonPhysicsInterface:
         newtonStage: NewtonStage instance that manages the simulation.
     """
 
-    def __init__(self, newtonStage: NewtonStage):
+    def __init__(self, newtonStage: NewtonStage) -> None:
         self.newtonStage = newtonStage
         self.timeline = omni.timeline.get_timeline_interface()
 
     @carb.profiler.profile
-    def force_load_physics_from_usd(self, device: str | None = None):
+    def force_load_physics_from_usd(self, device: str | None = None) -> None:
         """Force load physics from USD.
 
         Args:
@@ -49,7 +49,7 @@ class NewtonPhysicsInterface:
         """
         self.newtonStage.initialize_newton(device)
 
-    def flush_changes(self):
+    def flush_changes(self) -> None:
         """Flush any pending changes to ensure Newton is fully initialized.
 
         This is called before creating simulation views to ensure Newton's state
@@ -59,12 +59,12 @@ class NewtonPhysicsInterface:
             carb.log_warn("[Newton] flush_changes called but Newton not initialized yet")
 
     @carb.profiler.profile
-    def start_simulation(self):
+    def start_simulation(self) -> None:
         """Start the physics simulation."""
         self.update_simulation(self.newtonStage.sim_dt, 0.0)
 
     @carb.profiler.profile
-    def update_simulation(self, elapsedStep: float, currentTime: float):
+    def update_simulation(self, elapsedStep: float, currentTime: float) -> None:
         """Update the simulation by stepping physics.
 
         Args:
@@ -80,7 +80,7 @@ class NewtonPhysicsInterface:
         updateToUsd: bool = False,
         updateVelocitiesToUsd: bool = True,
         outputVelocitiesLocalSpace: bool = False,
-    ):
+    ) -> None:
         """Update transformations from simulation to USD/Fabric.
 
         Args:
@@ -91,7 +91,7 @@ class NewtonPhysicsInterface:
         """
 
     @carb.profiler.profile
-    def update(self, elapsedStep: float, currentTime: float):
+    def update(self, elapsedStep: float, currentTime: float) -> None:
         """Update callback for stage update events.
 
         Args:
@@ -104,7 +104,7 @@ class NewtonPhysicsInterface:
         """Fetch simulation results after stepping."""
         return
 
-    def subscribe_physics_step_events(self, callback: Callable):
+    def subscribe_physics_step_events(self, callback: Callable) -> None:
         """Subscribe to physics step events.
 
         Args:
@@ -112,7 +112,7 @@ class NewtonPhysicsInterface:
         """
         self.newtonStage.physics_callbacks.append(callback)
 
-    def unsubscribe_physics_step_events(self, callback: Callable):
+    def unsubscribe_physics_step_events(self, callback: Callable) -> None:
         """Unsubscribe from physics step events.
 
         Args:
@@ -120,7 +120,7 @@ class NewtonPhysicsInterface:
         """
         self.newtonStage.physics_callbacks.remove(callback)
 
-    def simulate(self, dt: float, currentTime: float):
+    def simulate(self, dt: float, currentTime: float) -> None:
         """Step the simulation by the given time delta.
 
         Args:
