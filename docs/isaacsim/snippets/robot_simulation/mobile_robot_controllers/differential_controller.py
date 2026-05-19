@@ -1,6 +1,12 @@
 # Reference: source/standalone_examples/api/isaacsim.robot.wheeled_robots.examples/jetbot_differential_move.py
 # Timeline: use app_utils (play/stop/is_playing) instead of omni.timeline. Use app_utils.update_app(steps=N) instead of for-loop simulation_app.update(); same for other mobile_robot_controllers examples.
 
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", action="store_true")
+args, _ = parser.parse_known_args()
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
@@ -47,11 +53,16 @@ app_utils.update_app(steps=10)
 # Simulation loop: apply [linear_speed, angular_speed]; e.g. 0.3 m/s, 1.0 rad/s.
 linear_speed = 0.3
 angular_speed = 1.0
+step_count = 0
+max_test_steps = 60
 while simulation_app.is_running():
     simulation_app.update()
+    step_count += 1
     if app_utils.is_playing():
         velocities = my_controller.forward([linear_speed, angular_speed])
         my_jetbot.apply_wheel_actions(velocities)
+    if args.test and step_count >= max_test_steps:
+        break
 
 app_utils.stop()
 simulation_app.close()

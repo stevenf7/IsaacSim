@@ -1159,6 +1159,21 @@ local function get_doc_snippets_tests()
             "../../../docs/isaacsim/snippets/core_api_tutorials/tutorial_core_hello_world/open_a_new_my_applicationpy_file_and_add_the_follo.py",
             "--test",
         },
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.core_api_tutorials.tutorial_core_adding_manipulator.creating_the_scene",
+            "../../../docs/isaacsim/snippets/core_api_tutorials/tutorial_core_adding_manipulator/creating_the_scene.py",
+            "--test",
+        },
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.core_api_tutorials.tutorial_core_adding_manipulator.understanding_the_state_machine",
+            "../../../docs/isaacsim/snippets/core_api_tutorials/tutorial_core_adding_manipulator/understanding_the_state_machine.py",
+            "--test",
+        },
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.core_api_tutorials.tutorial_core_adding_manipulator.using_the_pickandplace_controller",
+            "../../../docs/isaacsim/snippets/core_api_tutorials/tutorial_core_adding_manipulator/using_the_pickandplace_controller.py",
+            "--test",
+        },
         -- cortex_tutorials
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.cortex_tutorials.tutorial_cortex_2_decider_networks.decision_framework_tooling",
@@ -1175,6 +1190,12 @@ local function get_doc_snippets_tests()
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.installation.install_python.perform_any_isaac_sim_omniverse_imports_after_inst",
             "../../../docs/isaacsim/snippets/installation/install_python/perform_any_isaac_sim_omniverse_imports_after_inst.py",
+            "--test",
+        },
+        -- introduction
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.introduction.quickstart_isaacsim_robot.standalone_start_and_scene",
+            "../../../docs/isaacsim/snippets/introduction/quickstart_isaacsim_robot/standalone_start_and_scene.py",
             "--test",
         },
         -- python_scripting/manual_standalone_python
@@ -1222,10 +1243,44 @@ local function get_doc_snippets_tests()
             "../../../docs/isaacsim/snippets/action_and_event_data_generation/tutorial_replicator_agent.py",
             "--test",
         },
+        -- replicator_tutorials
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.replicator_tutorials.tutorial_replicator_isaac_randomizers.simready_assets_sdg_example",
+            "../../../docs/isaacsim/snippets/replicator_tutorials/tutorial_replicator_isaac_randomizers/simready_assets_sdg_example.py",
+            "--test",
+        },
+        -- robot_setup/asset_transformer_api
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.robot_setup.asset_transformer_api",
+            "../../../docs/isaacsim/snippets/robot_setup/asset_transformer_api.py",
+            "--test",
+        },
+        -- robot_setup/asset_transformer_tutorials
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.robot_setup.asset_transformer_tutorials",
+            "../../../docs/isaacsim/snippets/robot_setup/asset_transformer_tutorials.py",
+            "--test",
+        },
         -- robot_setup/merge_mesh
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.robot_setup.merge_mesh",
             "../../../docs/isaacsim/snippets/robot_setup/merge_mesh.py",
+            "--test",
+        },
+        -- robot_simulation/mobile_robot_controllers
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.robot_simulation.mobile_robot_controllers.ackemann_controller",
+            "../../../docs/isaacsim/snippets/robot_simulation/mobile_robot_controllers/ackemann_controller.py",
+            "--test",
+        },
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.robot_simulation.mobile_robot_controllers.differential_controller",
+            "../../../docs/isaacsim/snippets/robot_simulation/mobile_robot_controllers/differential_controller.py",
+            "--test",
+        },
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.robot_simulation.mobile_robot_controllers.holonomic_controller",
+            "../../../docs/isaacsim/snippets/robot_simulation/mobile_robot_controllers/holonomic_controller.py",
             "--test",
         },
         -- robot_simulation/grasp_editor
@@ -1269,6 +1324,12 @@ local function get_doc_snippets_tests()
             "../../../docs/isaacsim/snippets/sensors/isaacsim_sensors_rtx/how_to_enable_motion_bvh.py",
             "--test",
         },
+        -- sensors/isaacsim_sensors_rtx_annotators
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.sensors.isaacsim_sensors_rtx_annotators.collect_data_with_lidar_sensor",
+            "../../../docs/isaacsim/snippets/sensors/isaacsim_sensors_rtx_annotators/collect_data_with_lidar_sensor.py",
+            "--test",
+        },
         -- sensors/isaacsim_sensors_multitick_rendering
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.sensors.isaacsim_sensors_multitick_rendering.defer_radar_after_lidar_warmup",
@@ -1285,6 +1346,11 @@ local function get_doc_snippets_tests()
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.cumotion.graph_planner_example",
             "../../../docs/isaacsim/snippets/cumotion/graph_planner_example.py",
+            "--test",
+        },
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.cumotion.robot_configuration_example",
+            "../../../docs/isaacsim/snippets/cumotion/robot_configuration_example.py",
             "--test",
         },
         -- cumotion/rmpflow
@@ -1305,12 +1371,6 @@ local function get_doc_snippets_tests()
             "../../../docs/isaacsim/snippets/cumotion/world_interface_example.py",
             "--test",
         },
-        -- actuators/newton_actuators_omnigraph_example
-        {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.newton_actuators.newton_actuators_omnigraph_example",
-            "../../../docs/isaacsim/snippets/newton_actuators/newton_actuators_omnigraph_example.py",
-            "--test",
-        },
         -- utilities/debugging/profiling_performance
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.utilities.debugging.profiling_performance.standalone_workflow",
@@ -1327,7 +1387,7 @@ local function get_doc_snippets_tests()
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.test_snippets_async",
             "standalone_examples/testing/doc_snippets/test_snippets_async.py",
-            "--expected-failures-csv expected_failures.csv --experience-csv experiences.csv --excluded-snippets-csv excluded_snippets.csv",
+            "--expected-failures-csv expected_failures.csv --experience-csv experiences.csv --excluded-snippets-csv excluded_snippets.csv --platform-constraints-csv platform_constraints.csv",
         },
     }
 end

@@ -150,6 +150,7 @@ There are three tabs for this tutorial, all three perform the same actions and r
       We will demonstrate the property of an Extension workflow using an existing Extension module called the "Script Editor". The Script Editor allows the users to interact with the stage using Python. You will see that we will be mostly using the same Python APIs as in the Standalone Python workflow. The difference between the two workflows will become clear when we start to interact with the simulation timeline, especially in the :ref:`next tutorial <isaac_sim_app_intro_quickstart_robot>`.
 
       Launch a fresh instance of |isaac-sim_short|, go the top Menu Bar and click **Window > Script Editor**.
+      The code snippets in this tab are sections from one runnable script and should be executed in order.
 
 
       .. rubric::  Add a Ground Plane
@@ -157,8 +158,10 @@ There are three tabs for this tutorial, all three perform the same actions and r
       To add a ground plane using the interactive Python, copy paste the following snippet in the Script Editor and run it by clicking the **Run** button on the bottom.
 
 
-      .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/ground_plane.py
+      .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/extension_workflow.py
           :language: python
+          :start-after: # -- Add a ground plane --
+          :end-before: # -- End add a ground plane --
 
       .. rubric::  Add a Light Source
 
@@ -168,8 +171,10 @@ There are three tabs for this tutorial, all three perform the same actions and r
       2. Add a light source by copy-pasting the following snippet in the Script Editor and running it.
 
 
-      .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/light_source.py
+      .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/extension_workflow.py
           :language: python
+          :start-after: # -- Add a light source --
+          :end-before: # -- End add a light source --
 
       .. rubric::  Add a Visual Cube
 
@@ -180,13 +185,17 @@ There are three tabs for this tutorial, all three perform the same actions and r
       1. Open a new tab in the Script Editor (**Tab > Add Tab**). 
       2. Add two cubes by copy-pasting the following snippet in the Script Editor and run it. We'll keep one as visual-only, and add physics and collision properties to the other for comparison.
 
-      .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/visual_cube_api.py
+      .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/extension_workflow.py
           :language: python
+          :start-after: # -- Add visual cubes with the Core API --
+          :end-before: # -- End add visual cubes with the Core API --
 
       Isaac Sim Core API are wrappers for raw USD and physics engine APIs. You can add a visual cube (without physics and color properties) using raw USD API. Notice that the raw USD API is more verbose, but gives you more control over each property.
 
-      .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/visual_cube_usd.py
+      .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/extension_workflow.py
           :language: python
+          :start-after: # -- Add a visual cube with the raw USD API --
+          :end-before: # -- End add a visual cube with the raw USD API --
 
       .. rubric::  Add Physics and Collision Properties
 
@@ -196,14 +205,17 @@ There are three tabs for this tutorial, all three perform the same actions and r
 
       With the core APIs, you can add a new cube with physics and collision by creating a cube and then applying rigid body and collision APIs.
 
-      .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/adding_a_cube_with_physics_and_collision.py
+      .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/extension_workflow.py
           :language: python
+          :start-after: # -- Add physics and collision to a new cube --
+          :end-before: # -- End add physics and collision to a new cube --
 
       Alternatively, if you want to modify an existing object to have physics and collision properties, you can use the following snippet.
 
-      .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/adding_physics_and_collision_to_existing_object.py
+      .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/extension_workflow.py
           :language: python
-          :start-after: # -- End test setup --
+          :start-after: # -- Add physics and collision to an existing cube --
+          :end-before: # -- End add physics and collision to an existing cube --
 
       Click the **Play** button to see the cubes fall under gravity and collide with the ground plane.
 
@@ -211,15 +223,17 @@ There are three tabs for this tutorial, all three perform the same actions and r
 
       Moving an object using core API:
 
-      .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/moving_an_object_using_core_api.py
+      .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/extension_workflow.py
           :language: python
-          :start-after: # -- End test setup --
+          :start-after: # -- Move an object with the Core API --
+          :end-before: # -- End move an object with the Core API --
 
       Moving an object using raw USD API:
 
-      .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/moving_an_object_using_raw_usd_api.py
+      .. literalinclude:: ../snippets/introduction/quickstart_isaacsim/extension_workflow.py
           :language: python
-          :start-after: # -- End test setup --
+          :start-after: # -- Move an object with the raw USD API --
+          :end-before: # -- End move an object with the raw USD API --
 
    .. tab-item:: Standalone Python
 

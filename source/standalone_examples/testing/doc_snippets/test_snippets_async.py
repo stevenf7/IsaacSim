@@ -29,8 +29,10 @@ import argparse
 import asyncio
 import atexit
 import csv
+import fnmatch
 import importlib.util
 import os
+import platform
 import re
 import signal
 import sys
@@ -91,6 +93,14 @@ def parse_args():
         "the snippets directory). Lines starting with '#' are comments.",
     )
     parser.add_argument(
+        "--platform-constraints-csv",
+        type=str,
+        default=None,
+        help="Path to a CSV file listing per-snippet platform constraints. "
+        "First column is the snippet path (relative to the snippets directory), "
+        "subsequent columns are allowed Isaac Sim platform names or fnmatch patterns.",
+    )
+    parser.add_argument(
         "--junit-xml",
         type=str,
         default=None,
@@ -109,19 +119,24 @@ def parse_args():
     return parser.parse_known_args()
 
 
-def parse_experience_csv(csv_path, base_dir):
+def parse_experience_csv(csv_path, base_dir, snippets_root=None):
     """Parse the experience CSV file and return a mapping of absolute file paths to experiences.
 
     Args:
         csv_path: Path to the CSV file (relative to base_dir or absolute).
-        base_dir: Base directory for resolving relative paths in the CSV and the CSV path itself.
+        base_dir: Base directory for resolving the CSV file path itself.
+        snippets_root: Base directory for resolving snippet paths within the CSV.
+            If None, defaults to base_dir.
 
     Returns:
         Dictionary mapping absolute file paths (as strings) to experience names.
     """
+    if snippets_root is None:
+        snippets_root = base_dir
     experience_map = {}
     # Resolve CSV path relative to base_dir if not absolute
     csv_file = Path(csv_path)
+    root_path = Path(snippets_root)
     if not csv_file.is_absolute():
         csv_file = base_dir / csv_file
     if not csv_file.exists():
@@ -131,11 +146,14 @@ def parse_experience_csv(csv_path, base_dir):
     with open(csv_file, "r", encoding="utf-8") as f:
         reader = csv.reader(f)
         for row in reader:
+            if not row or row[0].strip().startswith("#"):
+                continue
             if len(row) >= 2:
                 snippet_path = row[0].strip()
+                if not snippet_path:
+                    continue
                 experience = row[1].strip()
-                # Resolve relative path to absolute
-                abs_path = (base_dir / snippet_path).resolve()
+                abs_path = (root_path / snippet_path).resolve()
                 experience_map[str(abs_path)] = experience
 
     return experience_map
@@ -179,6 +197,70 @@ def resolve_experience_path(experience):
 
     print(f"Warning: Experience file not found for {experience!r}; passing value through unchanged")
     return experience
+
+
+def get_current_platform_name() -> str:
+    """Return the current platform using Isaac Sim platform target naming."""
+    machine = platform.machine().lower()
+    if machine in {"amd64", "x64"}:
+        machine = "x86_64"
+    elif machine == "arm64":
+        machine = "aarch64"
+
+    if sys.platform.startswith("linux"):
+        return f"linux-{machine}"
+    if sys.platform.startswith("win"):
+        return f"windows-{machine}"
+    return f"{sys.platform}-{machine}"
+
+
+def parse_platform_constraints_csv(
+    csv_path: str | Path, base_dir: str | Path, snippets_root: str | Path | None = None
+) -> dict[str, tuple[str, ...]]:
+    """Parse snippet platform constraints from CSV."""
+    if snippets_root is None:
+        snippets_root = base_dir
+
+    constraints = {}
+    csv_file = Path(csv_path)
+    base_path = Path(base_dir)
+    root_path = Path(snippets_root)
+    if not csv_file.is_absolute():
+        csv_file = base_path / csv_file
+    if not csv_file.exists():
+        print(f"Warning: Platform constraints CSV file not found: {csv_file}")
+        return constraints
+
+    with open(csv_file, "r", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        for row in reader:
+            if not row or row[0].strip().startswith("#"):
+                continue
+            snippet_path = row[0].strip()
+            if not snippet_path:
+                continue
+            allowed_platforms = []
+            for field in row[1:]:
+                allowed_platforms.extend(platform for platform in re.split(r"[;\s]+", field.strip()) if platform)
+            if not allowed_platforms:
+                continue
+
+            abs_path = str((root_path / snippet_path).resolve())
+            constraints[abs_path] = tuple(allowed_platforms)
+
+    return constraints
+
+
+def get_platform_skip_reason(
+    file_path: str | Path, current_platform: str, platform_constraints: dict[str, tuple[str, ...]]
+) -> str | None:
+    """Return a unittest skip reason when the snippet is not allowed on the current platform."""
+    allowed_platforms = platform_constraints.get(str(Path(file_path).resolve()))
+    if not allowed_platforms:
+        return None
+    if any(fnmatch.fnmatchcase(current_platform, allowed_platform) for allowed_platform in allowed_platforms):
+        return None
+    return f"Snippet is constrained to platform(s): {', '.join(allowed_platforms)}"
 
 
 def parse_expected_failures_csv(csv_path, base_dir, snippets_root=None):
@@ -781,7 +863,7 @@ if args.excluded_snippets_csv:
 # Parse experience CSV and group files by experience
 experience_map = {}
 if args.experience_csv:
-    experience_map = parse_experience_csv(args.experience_csv, script_dir)
+    experience_map = parse_experience_csv(args.experience_csv, script_dir, snippets_dir)
     print(f"Loaded {len(experience_map)} experience mappings from CSV")
 
 files_by_experience = group_files_by_experience(files_to_test, experience_map)
@@ -793,6 +875,16 @@ expected_failures = []
 if args.expected_failures_csv:
     expected_failures = parse_expected_failures_csv(args.expected_failures_csv, script_dir, snippets_dir)
     print(f"Loaded {len(expected_failures)} expected failure rules from CSV")
+
+# Parse platform constraints
+current_platform = get_current_platform_name()
+platform_constraints = {}
+if args.platform_constraints_csv:
+    platform_constraints = parse_platform_constraints_csv(args.platform_constraints_csv, script_dir, snippets_dir)
+    print(
+        f"Loaded {len(platform_constraints)} platform constraint rule(s) from CSV "
+        f"for current platform: {current_platform}"
+    )
 
 # ---------------------------------------------------------------------------
 # Dynamic unittest generation -- one test method per snippet file
@@ -812,10 +904,23 @@ def is_in_expected_failures(file_path, expected_failures):
     return False
 
 
-def _make_snippet_test(file_path, snippets_root, snippet_index, total_count, expected_failures_list, snippet_timeout):
+def _make_snippet_test(
+    file_path,
+    snippets_root,
+    snippet_index,
+    total_count,
+    expected_failures_list,
+    snippet_timeout,
+    platform_constraints_map,
+    current_platform_name,
+):
     """Create a test method for a single doc snippet."""
 
     def test_snippet(self):
+        platform_skip_reason = get_platform_skip_reason(file_path, current_platform_name, platform_constraints_map)
+        if platform_skip_reason:
+            self.skipTest(platform_skip_reason)
+
         result_path, exception, elapsed = load_snippet_module(
             file_path, snippets_root, snippet_index, self.__class__._simulation_app, snippet_timeout=snippet_timeout
         )
@@ -907,7 +1012,14 @@ for _exp_idx, _experience in enumerate(experience_names):
         _test_name = f"test_{_snippet_counter:04d}_{_safe_name}"
 
         _func = _make_snippet_test(
-            _file_path, snippets_dir, _snippet_counter, _total_snippets, expected_failures, args.snippet_timeout
+            _file_path,
+            snippets_dir,
+            _snippet_counter,
+            _total_snippets,
+            expected_failures,
+            args.snippet_timeout,
+            platform_constraints,
+            current_platform,
         )
         _func.__name__ = _test_name
         _func.__doc__ = str(_rel)

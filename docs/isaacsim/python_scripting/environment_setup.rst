@@ -214,7 +214,6 @@ Adding a transform matrix to a prim
 
 .. literalinclude:: ../snippets/python_scripting/environment_setup/adding_a_transform_matrix_to_a_prim.py
     :language: python
-    :start-after: # -- End test setup --
 
 Align two USD prims
 ^^^^^^^^^^^^^^^^^^^^^^^^
