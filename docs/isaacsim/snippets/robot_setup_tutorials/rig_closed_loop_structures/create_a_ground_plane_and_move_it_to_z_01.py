@@ -10,6 +10,8 @@ xform_1 = UsdGeom.Xform.Define(stage, "/World/Xform_1")
 # Add Physics Rigid Body API to Xform nodes
 for node in [xform, xform_1]:
     UsdPhysics.RigidBodyAPI.Apply(node.GetPrim())
+    mass_api = UsdPhysics.MassAPI.Apply(node.GetPrim())
+    mass_api.CreateMassAttr(0.1)
 
 # Create Fixed Joint from Xform to Xform_1
 fixed_joint = UsdPhysics.FixedJoint.Define(stage, xform.GetPath().AppendChild("fixed_joint"))
@@ -55,6 +57,8 @@ cylinder_prim.GetAttribute("xformOp:translate").Set((0.12, 0, 0))
 # Add Rigid Body and Mass API to cylinder
 cylinder_body = UsdPhysics.RigidBodyAPI.Apply(cylinder_prim)
 UsdPhysics.CollisionAPI.Apply(cylinder_prim)
+mesh_collision = UsdPhysics.MeshCollisionAPI.Apply(cylinder_prim)
+mesh_collision.CreateApproximationAttr().Set("convexHull")
 massAPI = UsdPhysics.MassAPI.Apply(cylinder_body.GetPrim())
 massAPI.CreateMassAttr(0.20)
 
