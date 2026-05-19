@@ -37,7 +37,7 @@ class ROS2TestCase(TimedAsyncTestCase):
     It also provides helper methods for creating and managing ROS2 resources with automatic cleanup.
     """
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test timing before each test method."""
         await super().setUp()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -64,10 +64,10 @@ class ROS2TestCase(TimedAsyncTestCase):
 
             status, frames = await ViewportManager.wait_for_viewport_async()
             self.assertTrue(status, f"Viewport not ready after {frames} frames")
-        except:
+        except Exception:
             pass
 
-    def create_node(self, node_name: str):
+    def create_node(self, node_name: str) -> object:
         """Create a ROS2 node and track it for automatic cleanup.
 
         Args:
@@ -82,7 +82,7 @@ class ROS2TestCase(TimedAsyncTestCase):
         self._ros2_nodes.append(node)
         return node
 
-    def create_publisher(self, node: object, msg_type: type, topic_name: str, qos_profile: int = 10):
+    def create_publisher(self, node: object, msg_type: type, topic_name: str, qos_profile: int = 10) -> object:
         """Create a ROS2 publisher and track it for automatic cleanup.
 
         Args:
@@ -100,7 +100,7 @@ class ROS2TestCase(TimedAsyncTestCase):
 
     def create_subscription(
         self, node: object, msg_type: type, topic_name: str, callback: object, qos_profile: int = 10
-    ):
+    ) -> object:
         """Create a ROS2 subscription and track it for automatic cleanup.
 
         When the node has a background executor (via start_async_spinning), a
@@ -192,8 +192,12 @@ class ROS2TestCase(TimedAsyncTestCase):
         thread.join(timeout=5.0)
 
     async def simulate_until_condition(
-        self, condition_func: object, max_frames: int = 180, frames_per_step: int = 1, per_frame_callback: object = None
-    ):
+        self,
+        condition_func: object,
+        max_frames: int = 180,
+        frames_per_step: int = 1,
+        per_frame_callback: object | None = None,
+    ) -> bool:
         """Simulate until condition is met or maximum frames reached.
 
         This method runs simulation in steps until a specified condition function
@@ -219,8 +223,13 @@ class ROS2TestCase(TimedAsyncTestCase):
         return False
 
     async def wait_for_publishers_on_topic(
-        self, node, topic_name: str, count: int = 1, timeout_sec: float = 10.0, per_frame_callback=None
-    ):
+        self,
+        node: object,
+        topic_name: str,
+        count: int = 1,
+        timeout_sec: float = 10.0,
+        per_frame_callback: object | None = None,
+    ) -> None:
         """Wait until a node discovers the expected number of publishers on a topic.
 
         Uses wall-clock time rather than frame count because tests run with no
@@ -251,8 +260,12 @@ class ROS2TestCase(TimedAsyncTestCase):
         )
 
     async def wait_for_subscribers_on_topic(
-        self, publisher, count: int = 1, timeout_sec: float = 10.0, per_frame_callback=None
-    ):
+        self,
+        publisher: object,
+        count: int = 1,
+        timeout_sec: float = 10.0,
+        per_frame_callback: object | None = None,
+    ) -> None:
         """Wait until a publisher discovers the expected number of matching subscribers.
 
         Uses wall-clock time rather than frame count because tests run with no
@@ -301,7 +314,7 @@ class ROS2TestCase(TimedAsyncTestCase):
             f"'{publisher.topic_name}' (last seen {found})"
         )
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()

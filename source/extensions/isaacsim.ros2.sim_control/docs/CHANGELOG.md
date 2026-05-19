@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.4] - 2026-05-14
+### Changed
+- Add missing type annotations across `entity_utils.py` and `simulation_control.py`, and drop unused `rclpy.node.Node` / `Result` / `SimulationState` imports flagged by ruff
+
 ## [1.6.3] - 2026-04-30
 ### Changed
 - Added simulate until condition functions to tests to reduce test time

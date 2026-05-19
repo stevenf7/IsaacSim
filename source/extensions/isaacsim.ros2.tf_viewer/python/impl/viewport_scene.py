@@ -42,11 +42,11 @@ class ViewportScene:
             # register the scene view to get projection and view updates
             self._viewport_window.viewport_api.add_scene_view(self._scene_view)
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Clean up the viewport scene."""
         self.destroy()
 
-    def destroy(self):
+    def destroy(self) -> None:
         """Destroy the viewport scene and release resources."""
         if self._scene_view:
             # empty the scene view

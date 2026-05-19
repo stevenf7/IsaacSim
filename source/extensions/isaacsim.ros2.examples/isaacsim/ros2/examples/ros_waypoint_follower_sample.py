@@ -399,7 +399,7 @@ def compute(db: og.Database):
 class Extension(omni.ext.IExt):
     """Extension providing the ROS 2 waypoint follower example."""
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initialize the extension."""
         self._ext_id = ext_id
         """Initialize extension and UI elements"""
@@ -416,7 +416,7 @@ class Extension(omni.ext.IExt):
             name=MENU_NAME, ui_hook=lambda a=weakref.proxy(self): a.build_ui(), category=MENU_CATEGORY
         )
 
-    def build_ui(self):
+    def build_ui(self) -> None:
         """Build the extension user interface."""
         # check if ros2 bridge is enabled before proceeding
         extension_enabled = omni.kit.app.get_app().get_extension_manager().is_extension_enabled("isaacsim.ros2.bridge")
@@ -487,7 +487,7 @@ class Extension(omni.ext.IExt):
                             clicked_fn=self._on_environment_setup,
                         )
 
-    def _create_ros_action_graph(self):
+    def _create_ros_action_graph(self) -> None:
         self._timeline.stop()
 
         keys = og.Controller.Keys
@@ -587,7 +587,7 @@ class Extension(omni.ext.IExt):
         except Exception as e:
             print(e)
 
-    def _create_waypoints(self, xform_path):
+    def _create_waypoints(self, xform_path: str) -> None:
         stage = omni.usd.get_context().get_stage()
 
         xform_prim = UsdGeom.Xform.Define(stage, xform_path)
@@ -601,7 +601,7 @@ class Extension(omni.ext.IExt):
         xform_prim.AddOrientOp().Set(quaternion)
         xform_prim.AddScaleOp().Set(scale)
 
-    def _on_radio_selected(self, label):
+    def _on_radio_selected(self, label: str) -> None:
         if label == "Patrolling":
             self._enable_patrolling = True
             self.waypoint_count_label.visible = True
@@ -611,7 +611,7 @@ class Extension(omni.ext.IExt):
             self.waypoint_count_label.visible = False
             self.waypoint_count_field.visible = False
 
-    def _check_params(self):
+    def _check_params(self) -> bool:
         try:
             if self._enable_patrolling:
                 self._number_of_waypoints = self.waypoint_count_field.model.get_value_as_int()
@@ -623,13 +623,13 @@ class Extension(omni.ext.IExt):
                     return False
             else:
                 self._number_of_waypoints = 1
-        except:
+        except Exception:
             post_notification("Waypoint count must be an integer", status=NotificationStatus.WARNING)
             return False
 
         return True
 
-    def _on_environment_setup(self):
+    def _on_environment_setup(self) -> None:
         self._og_path = self.og_path_input.get_value()
         self._frame_id = self.frame_id_input.get_value()
 
@@ -640,13 +640,13 @@ class Extension(omni.ext.IExt):
                 self._create_ros_action_graph()
                 for _xform in range(self._number_of_waypoints):
                     self._create_waypoints(f"{self._goal_parent_prim}/waypoint_{_xform}")
-            except:
+            except Exception:
                 post_notification(
                     f"Please delete {self._og_path} and /World/Waypoints from stage and try again",
                     status=NotificationStatus.WARNING,
                 )
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleanup objects on extension shutdown."""
         get_browser_instance().deregister_example(name=MENU_NAME, category=MENU_CATEGORY)
         self._timeline.stop()
