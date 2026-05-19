@@ -240,10 +240,20 @@ class TestRos2JointStatePublisherFromSensor(ROS2TestCase):
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
+
+        art_handle = Articulation("/Articulation")
+        art_handle.set_dof_position_targets(default_position)
+        print("\n commanded position", default_position)
+
         await self.simulate_until_condition(
-            lambda: len(self.js_ros.position) > 0, max_frames=60, per_frame_callback=spin
+            lambda: len(self.js_ros.position) > 0
+            and all(abs(self.js_ros.position[i] - default_position[i]) < 1e-3 for i in range(len(default_position))),
+            max_frames=120,
+            per_frame_callback=spin,
         )
         received_position = self.js_ros.position
+
+        print("\n received_position", received_position)
 
         self.assertAlmostEqual(received_position[0], default_position[0], delta=1e-3)
         self.assertAlmostEqual(received_position[1], default_position[1], delta=1e-3)

@@ -584,11 +584,11 @@ class TestROS2LaserScanRTX(TestROS2SensorMsgRTX):
         ros_intensities = np.array(self._ros_msg_data.intensities, dtype=np.float32)
         self.assertTrue(
             np.allclose(expected_ranges, ros_ranges, atol=1e-5),
-            "Range data mismatch between GMO-derived flat scan and ROS LaserScan message.",
+            "Range data mismatch between GMO-derived flat scan and ROS LaserScan message. expected_ranges: {expected_ranges}, ros_ranges: {ros_ranges}",
         )
         self.assertTrue(
             np.allclose(expected_intensities, ros_intensities, atol=1e-5),
-            "Intensity data mismatch between GMO-derived flat scan and ROS LaserScan message.",
+            "Intensity data mismatch between GMO-derived flat scan and ROS LaserScan message. expected_intensities: {expected_intensities}, ros_intensities: {ros_intensities}",
         )
 
     async def test_rtx_lidar_full_scan_simulation_time(self):

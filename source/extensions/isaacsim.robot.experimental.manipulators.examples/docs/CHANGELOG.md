@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.3] - 2026-05-18
+### Fixed
+- Improve Robo Factory stacking test reliability by waiting for stacking completion and allowing more time for the Franka move and release phases.
+
 ## [0.1.2] - 2026-05-11
 ### Fixed
 - Move default cube placement position to [0.4, 0.2, 0.7] for follow_target.py example so all IK methods can reach default pose.

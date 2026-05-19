@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.18.2] - 2026-05-17
+### Fixed
+- `SimulationApp.close()` now flushes Python stdout/stderr before shutdown paths that can terminate the process through fast shutdown, preventing piped test output from being dropped.
+- `SimulationApp.close(exit_code=...)` now preserves nonzero script/test failure status when fast shutdown is enabled, removing the need for per-test `os._exit` hooks.
+
 ## [2.18.1] - 2026-04-20
 ### Removed
 - Removed optional multitick support; when multitick is enabled, time now routes through Fabric prim via SimulationManager.

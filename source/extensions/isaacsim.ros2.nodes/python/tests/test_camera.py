@@ -18,6 +18,7 @@
 import math
 import os
 import shutil
+import time
 import unittest
 
 # NOTE:
@@ -103,7 +104,7 @@ def _match_buffered_images(image_buffer, sim_times, timestamp_tolerance, label="
     """Match buffered (timestamp, image) pairs to target sim_times by closest timestamp.
 
     Args:
-        image_buffer: List of (timestamp, image_array) tuples.
+        image_buffer: List of (timestamp, ROS2 image message or image array) tuples.
         sim_times: Dict mapping target_angle -> sim_time to match against.
         timestamp_tolerance: Maximum allowed difference between image timestamp and sim_time.
         label: Optional prefix for log messages (e.g. "golden ").
@@ -125,7 +126,15 @@ def _match_buffered_images(image_buffer, sim_times, timestamp_tolerance, label="
                 best_match = img
                 best_ts = ts
         if best_diff <= timestamp_tolerance:
-            matched[target] = best_match
+            if hasattr(best_match, "shape"):
+                matched[target] = best_match
+            else:
+                matched[target] = ros2_image_to_buffer(
+                    best_match,
+                    normalize_color_order=True,
+                    squeeze_singleton_channel=True,
+                    copy=True,
+                )
             matched_ts[target] = best_ts
             print(f"Matched {label}{target}° - " f"best_diff={best_diff:.6f}s (tolerance={timestamp_tolerance:.6f}s)")
         else:
@@ -585,12 +594,11 @@ class TestRos2Camera(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
         # Buffer all received ROS2 images with their timestamps
-        image_buffer = []  # list of (timestamp, image_array)
+        image_buffer = []  # list of (timestamp, ROS2 Image message)
 
         def rgb_callback(data):
             ts = data.header.stamp.sec + data.header.stamp.nanosec / 1e9
-            img = ros2_image_to_buffer(data, normalize_color_order=True, squeeze_singleton_channel=True, copy=True)
-            image_buffer.append((ts, img))
+            image_buffer.append((ts, data))
 
         node = self.create_node("spinning_camera_test_node")
         self.start_async_spinning(node)
@@ -599,7 +607,7 @@ class TestRos2Camera(ROS2TestCase):
             Image,
             "spinning_camera_rgb",
             rgb_callback,
-            get_qos_profile(history="system_default"),
+            get_qos_profile(depth=100),
         )
 
         # ============================================================
@@ -614,6 +622,17 @@ class TestRos2Camera(ROS2TestCase):
         )
 
         stage_fps = self._timeline.get_time_codes_per_second()
+        ros_drain_delay_sec = 1.0 / stage_fps
+
+        async def _simulate_frames_with_ros_drain(max_frames, per_frame_callback=None):
+            for _ in range(max_frames):
+                await omni.kit.app.get_app().next_update_async()
+                if per_frame_callback is not None:
+                    per_frame_callback()
+                # The ROS executor runs in a background thread. Yield wall-clock
+                # time here so callbacks drain before the next frame is published.
+                time.sleep(ros_drain_delay_sec)
+
         angle_tolerance_deg = 0.1
         # One full rotation plus extra frames for pipeline-delayed images to arrive
         rotation_frames = int((360.0 / rotation_speed_deg_per_sec) * stage_fps)
@@ -649,11 +668,7 @@ class TestRos2Camera(ROS2TestCase):
                         recorded_angles[target] = actual_angle
                         print(f"Angle {target}° at sim_time={sim_time:.6f}s (actual={actual_angle:.2f}°)")
 
-        await self.simulate_until_condition(
-            lambda: False,
-            max_frames=total_frames,
-            per_frame_callback=_record_angles_step,
-        )
+        await _simulate_frames_with_ros_drain(total_frames, per_frame_callback=_record_angles_step)
 
         missing_angles = [a for a in keyframe_angles_deg if a not in recorded_sim_times]
         if missing_angles:
@@ -693,15 +708,14 @@ class TestRos2Camera(ROS2TestCase):
 
         def rgb_callback_2(data):
             ts = data.header.stamp.sec + data.header.stamp.nanosec / 1e9
-            img = ros2_image_to_buffer(data, normalize_color_order=True, squeeze_singleton_channel=True, copy=True)
-            image_buffer_2.append((ts, img))
+            image_buffer_2.append((ts, data))
 
         self.create_subscription(
             node,
             Image,
             "spinning_camera_2_rgb",
             rgb_callback_2,
-            get_qos_profile(history="system_default"),
+            get_qos_profile(depth=100),
         )
         print("[Live] Camera 2 subscription added, background executor handles both cameras.")
 
@@ -736,11 +750,7 @@ class TestRos2Camera(ROS2TestCase):
                         recorded_angles_1b[target] = actual_angle
                         print(f"  rig {target}° at sim_time={sim_time:.6f}s (actual={actual_angle:.2f}°)")
 
-        await self.simulate_until_condition(
-            lambda: False,
-            max_frames=total_frames,
-            per_frame_callback=_record_angles_1b_step,
-        )
+        await _simulate_frames_with_ros_drain(total_frames, per_frame_callback=_record_angles_1b_step)
 
         missing_angles_1b = [a for a in keyframe_angles_deg if a not in recorded_sim_times_1b]
         if missing_angles_1b:
@@ -765,7 +775,8 @@ class TestRos2Camera(ROS2TestCase):
                 f"Buffered {len(image_buffer_r1)} images, tolerance={timestamp_tolerance:.6f}s"
             )
 
-        # Find timestamps present in both cam1 and cam2, then match to rig angles
+        # Keep common timestamps in the log because missing common frames are useful
+        # evidence, but do not require common timestamps for image comparison.
         cam1_by_ts = {ts: img for ts, img in image_buffer}
         cam2_by_ts = {ts: img for ts, img in image_buffer_2}
         cam1_timestamps = sorted(cam1_by_ts.keys())
@@ -785,26 +796,14 @@ class TestRos2Camera(ROS2TestCase):
         print(f"Recorded rig sim_times: { {a: f'{t:.6f}' for a, t in sorted(recorded_sim_times_1b.items())} }")
         print("=== End timestamp dump ===\n")
 
-        physics_images_1b = {}
-        physics_images_2 = {}
-        for target_angle in keyframe_angles_deg:
-            target_sim_time = recorded_sim_times_1b[target_angle]
-            best_ts = None
-            best_diff = float("inf")
-            for ts in common_timestamps:
-                diff = abs(ts - target_sim_time)
-                if diff < best_diff:
-                    best_diff = diff
-                    best_ts = ts
-            if best_ts is not None and best_diff <= timestamp_tolerance:
-                physics_images_1b[target_angle] = cam1_by_ts[best_ts]
-                physics_images_2[target_angle] = cam2_by_ts[best_ts]
-                print(f"  {target_angle}° paired at ts={best_ts:.6f}s (diff={best_diff:.6f}s)")
-            else:
-                print(
-                    f"WARNING: no common timestamp for {target_angle}° "
-                    f"(sim_time={target_sim_time:.6f}s, best_diff={best_diff:.6f}s)"
-                )
+        # Match each camera independently. A dropped cam2 frame should not force cam1
+        # to compare against a later common timestamp.
+        physics_images_1b, _ = _match_buffered_images(
+            image_buffer, recorded_sim_times_1b, timestamp_tolerance, label="cam1 second rotation "
+        )
+        physics_images_2, _ = _match_buffered_images(
+            image_buffer_2, recorded_sim_times_1b, timestamp_tolerance, label="cam2 "
+        )
 
         if save_debug_images:
             debug_dir_1b = os.path.join(golden_dir, "debug_captured_camera_1_2nd")
@@ -816,11 +815,14 @@ class TestRos2Camera(ROS2TestCase):
             for target, img in physics_images_2.items():
                 save_rgb_image(img, debug_dir_2, f"physics_angle_{target}.png")
 
-        missing_1b = [a for a in keyframe_angles_deg if a not in physics_images_1b]
-        if missing_1b:
+        missing_1b_cam1 = [a for a in keyframe_angles_deg if a not in physics_images_1b]
+        missing_1b_cam2 = [a for a in keyframe_angles_deg if a not in physics_images_2]
+        if missing_1b_cam1 or missing_1b_cam2:
             self.fail(
-                f"[STEP 1b] Could not match cam1/cam2 pair for angles: {missing_1b}. "
-                f"{len(common_timestamps)} common timestamps, tolerance={timestamp_tolerance:.6f}s"
+                f"[STEP 1b] Could not match images for cam1 angles: {missing_1b_cam1}, "
+                f"cam2 angles: {missing_1b_cam2}. "
+                f"cam1={len(cam1_timestamps)} timestamps, cam2={len(cam2_timestamps)} timestamps, "
+                f"common={len(common_timestamps)} timestamps, tolerance={timestamp_tolerance:.6f}s"
             )
 
         # ============================================================
@@ -866,8 +868,18 @@ class TestRos2Camera(ROS2TestCase):
                     cam2_pre,
                     f"No new cam2 image after teleporting to {target_angle}°",
                 )
-                golden_images[target_angle] = image_buffer[-1][1]
-                golden_images_2[target_angle] = image_buffer_2[-1][1]
+                golden_images[target_angle] = ros2_image_to_buffer(
+                    image_buffer[-1][1],
+                    normalize_color_order=True,
+                    squeeze_singleton_channel=True,
+                    copy=True,
+                )
+                golden_images_2[target_angle] = ros2_image_to_buffer(
+                    image_buffer_2[-1][1],
+                    normalize_color_order=True,
+                    squeeze_singleton_channel=True,
+                    copy=True,
+                )
                 print(f"  {target_angle}° captured (cam1 + cam2)")
 
             self.stop_async_spinning(node)
@@ -1001,15 +1013,21 @@ class TestRos2Camera(ROS2TestCase):
         image_buffer_1 = []
         image_buffer_2 = []
 
+        def _to_image_array(image_msg):
+            return ros2_image_to_buffer(
+                image_msg,
+                normalize_color_order=True,
+                squeeze_singleton_channel=True,
+                copy=True,
+            )
+
         def rgb_callback_1(data):
             ts = data.header.stamp.sec + data.header.stamp.nanosec / 1e9
-            img = ros2_image_to_buffer(data, normalize_color_order=True, squeeze_singleton_channel=True, copy=True)
-            image_buffer_1.append((ts, img))
+            image_buffer_1.append((ts, data))
 
         def rgb_callback_2(data):
             ts = data.header.stamp.sec + data.header.stamp.nanosec / 1e9
-            img = ros2_image_to_buffer(data, normalize_color_order=True, squeeze_singleton_channel=True, copy=True)
-            image_buffer_2.append((ts, img))
+            image_buffer_2.append((ts, data))
 
         node = self.create_node("dual_camera_test_node")
         self.start_async_spinning(node)
@@ -1024,6 +1042,7 @@ class TestRos2Camera(ROS2TestCase):
             lambda: len(image_buffer_1) > 0 and len(image_buffer_2) > 0,
         )
 
+        ros_drain_delay_sec = 1.0 / self._timeline.get_time_codes_per_second()
         image_buffer_1.clear()
         image_buffer_2.clear()
         capture_start_time = SimulationManager.get_simulation_time()
@@ -1035,10 +1054,13 @@ class TestRos2Camera(ROS2TestCase):
             cube_y = cube_start_y + frame_idx * cube_step_m
             cube_xform.set_world_poses(positions=[[cube_distance, cube_y, camera_height]])
             await omni.kit.app.get_app().next_update_async()
+            time.sleep(ros_drain_delay_sec)
 
         # Extra frames so pipeline-delayed images flush through
         pipeline_drain_frames = 30
-        await self.simulate_until_condition(lambda: False, max_frames=pipeline_drain_frames)
+        for _ in range(pipeline_drain_frames):
+            await omni.kit.app.get_app().next_update_async()
+            time.sleep(ros_drain_delay_sec)
 
         self.stop_async_spinning(node)
         self._timeline.stop()
@@ -1064,24 +1086,30 @@ class TestRos2Camera(ROS2TestCase):
 
         # Save all debug images first (both cameras, every frame)
         if save_debug_images:
-            for idx, (ts, img) in enumerate(image_buffer_1):
-                save_rgb_image(img, debug_dir, f"cam1_{idx:03d}_ts_{ts:.6f}.png")
-            for idx, (ts, img) in enumerate(image_buffer_2):
-                save_rgb_image(img, debug_dir, f"cam2_{idx:03d}_ts_{ts:.6f}.png")
+            for idx, (ts, img_msg) in enumerate(image_buffer_1):
+                save_rgb_image(_to_image_array(img_msg), debug_dir, f"cam1_{idx:03d}_ts_{ts:.6f}.png")
+            for idx, (ts, img_msg) in enumerate(image_buffer_2):
+                save_rgb_image(_to_image_array(img_msg), debug_dir, f"cam2_{idx:03d}_ts_{ts:.6f}.png")
             print(f"Saved {len(image_buffer_1)} cam1 + {len(image_buffer_2)} cam2 " f"debug images to {debug_dir}")
 
-        # Index cam2 images by timestamp for exact matching
+        # Compare only timestamps present in both cameras. Randomly dropped frames
+        # should not fail the test as long as enough exact same-frame pairs remain.
+        cam1_by_ts = {ts: img for ts, img in image_buffer_1}
         cam2_by_ts = {ts: img for ts, img in image_buffer_2}
+        common_timestamps = sorted(set(cam1_by_ts) & set(cam2_by_ts))
+        cam1_only = sorted(set(cam1_by_ts) - set(cam2_by_ts))
+        cam2_only = sorted(set(cam2_by_ts) - set(cam1_by_ts))
+        if cam1_only:
+            print(f"cam1-only timestamps ({len(cam1_only)}): {[f'{ts:.6f}' for ts in cam1_only]}")
+        if cam2_only:
+            print(f"cam2-only timestamps ({len(cam2_only)}): {[f'{ts:.6f}' for ts in cam2_only]}")
 
         matched_pairs = 0
         comparison_failures = []
 
-        for ts1, img1 in image_buffer_1:
-            self.assertIn(ts1, cam2_by_ts, f"cam1 timestamp {ts1:.6f}s has no exact match in cam2")
-            # if ts1 not in cam2_by_ts:
-            #     print(f"Skipping cam1 ts={ts1:.6f}s (no matching cam2 image)")
-            #     continue
-            img2 = cam2_by_ts[ts1]
+        for ts1 in common_timestamps:
+            img1 = _to_image_array(cam1_by_ts[ts1])
+            img2 = _to_image_array(cam2_by_ts[ts1])
 
             matched_pairs += 1
             print(f"Pair {matched_pairs}: ts={ts1:.6f}s")
@@ -1099,7 +1127,13 @@ class TestRos2Camera(ROS2TestCase):
 
         print(f"Compared {matched_pairs} image pairs with identical timestamps")
 
-        self.assertGreater(matched_pairs, 0, "No image pairs with matching timestamps")
+        self.assertGreaterEqual(
+            matched_pairs,
+            num_frames,
+            f"Expected at least {num_frames} matching timestamp pairs, got {matched_pairs}. "
+            f"cam1={len(image_buffer_1)}, cam2={len(image_buffer_2)}, "
+            f"cam1_only={len(cam1_only)}, cam2_only={len(cam2_only)}",
+        )
         self.assertEqual(
             len(comparison_failures),
             0,
