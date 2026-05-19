@@ -66,9 +66,8 @@ The :code:`hello_world.py` script is where the logic of the application will be 
 elements of the application will be added in :code:`hello_world_extension.py` script and thus
 linked to the logic.
 
+#. Click **File > New From Stage Template > Empty** to create a new stage, click **Don't Save** when prompted to save the current stage.
 #. Click the **LOAD** button to load the World.
-#. click **File > New From Stage Template > Empty** to create a new stage, click **Don't Save** when prompted to save the current stage.
-#. Click the **LOAD** button to load the World again.
 #. Open :code:`hello_world.py` and press "Ctrl+S" to use the hot-reload feature. You will
    notice that the menu disappears from the workspace (because it was restarted).
 #. Open the example menu again and click the **LOAD** button.
@@ -91,7 +90,7 @@ actions BaseSample performs:
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_world/handling_hot_reloading.py
     :language: python
     :linenos:
-    :emphasize-lines: 1-3, 10-15
+    :emphasize-lines: 1-3, 10-16
 
 Key Concepts
 ^^^^^^^^^^^^^^^
@@ -115,13 +114,11 @@ create the geometry first, then apply collision and rigid body properties.
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_world/adding_to_the_scene.py
     :language: python
     :linenos:
-    :emphasize-lines: 1-7, 21-40
+    :emphasize-lines: 1-7, 21-41
 
 #. Press **Ctrl+S** to save the code and hot-reload |isaac-sim|.
 #. Open the menu again.
-#. click **File > New From Stage Template > Empty**, then the **LOAD** button. You need to perform this action
-   if you change anything in the **setup_scene**. Otherwise, you only need to press the
-   **LOAD** button.
+#. Click the **LOAD** button.
 #. See the dynamic cube falling as the simulation starts automatically.
 
 .. image:: /images/core_api_tutorials_1_1.webp
@@ -153,7 +150,7 @@ Print the world pose and velocity of the cube. The highlighted lines show how yo
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_world/inspecting_object_properties.py
     :language: python
     :linenos:
-    :emphasize-lines: 38-51
+    :emphasize-lines: 39-52
 
 .. note:: The experimental APIs return batched results as warp arrays. Use ``.numpy()`` to convert
           them to numpy arrays, and index with ``[0]`` to get the first (and only) element when
@@ -173,7 +170,7 @@ Add a physics callback using the SimulationManager:
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_world/continuously_inspecting_the_object_properties_duri.py
     :language: python
     :linenos:
-    :emphasize-lines: 7, 44-46, 51-56
+    :emphasize-lines: 6, 45-47, 51-57
 
 Converting the Example to a Standalone Application
 =====================================================

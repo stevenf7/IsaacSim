@@ -4,10 +4,17 @@ from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
 
+import omni
+
+# Enables the manipulator extension, so we can import Franka module
+omni.kit.app.get_app().get_extension_manager().set_extension_enabled_immediate(
+    "isaacsim.robot.experimental.manipulators.examples", True
+)
+
 import isaacsim.core.experimental.utils.app as app_utils
 from isaacsim.core.experimental.objects import DomeLight, GroundPlane
 from isaacsim.core.simulation_manager import SimulationManager
-from isaacsim.robot.manipulators.examples.franka import FrankaPickPlace
+from isaacsim.robot.experimental.manipulators.examples.franka import FrankaPickPlace
 
 DEVICE = "cpu"
 

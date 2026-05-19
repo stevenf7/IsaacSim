@@ -59,7 +59,7 @@ Scaling to Multiple Scenarios
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_multiple_tasks/scaling_to_many_tasks.py
     :language: python
     :linenos:
-    :emphasize-lines: 152, 160-164, 168-169, 177-178, 181-182, 189
+    :emphasize-lines: 152, 160-164, 168-169, 177-178, 182-183, 189
 
 .. image:: /images/core_api_tutorials_6_2.webp
     :align: center

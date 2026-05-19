@@ -38,11 +38,11 @@ This tutorial uses **standalone Python scripts**. Run them with a Python environ
 Creating the Scene with a Franka Robot
 ======================================
 
-Add a Franka robot and a cube for the robot to pick up using the :code:`FrankaExperimental` class.
+Add a Franka robot and a cube for the robot to pick up using the :code:`Franka` class.
 This class inherits from :code:`Articulation` and provides high-level control methods including
 inverse kinematics and gripper control.
 
-When you set :code:`create_robot=True` in the constructor, :code:`FrankaExperimental` automatically
+When you set :code:`create_robot=True` in the constructor, :code:`Franka` automatically
 spawns the Franka robot USD asset at the specified path.
 
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_adding_manipulator/creating_the_scene.py
@@ -50,7 +50,7 @@ spawns the Franka robot USD asset at the specified path.
 
 Run the script. A window opens with the Franka robot and cube in the scene; the simulation runs until you close the window.
 
-The :code:`FrankaExperimental` class provides these key methods for robot control:
+The :code:`Franka` class provides these key methods for robot control:
 
 - :code:`set_end_effector_pose(position, orientation)` - Move end-effector using inverse kinematics
 - :code:`open_gripper()` / :code:`close_gripper()` - Control the gripper
@@ -106,12 +106,12 @@ The :code:`FrankaPickPlace` class uses a state machine with the following phases
      - Move up and away
      - 20
 
-You can customize the phase durations by passing :code:`events_dt` to the constructor:
+You can customize the phase durations by passing :code:`events_dt` to the constructor, and change the cube starting position using :code:`setup_scene`:
 
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_adding_manipulator/understanding_the_state_machine.py
     :language: python
     :linenos:
-    :emphasize-lines: 22,23,24,25,26
+    :emphasize-lines: 25-30
 
 .. image:: /images/core_api_tutorials_4_1.webp
     :align: center
@@ -122,7 +122,7 @@ Summary
 ========
 This tutorial covered the following topics:
 
-#. Adding a Franka manipulator robot using :code:`FrankaExperimental` with :code:`create_robot=True`
+#. Adding a Franka manipulator robot using :code:`Franka` with :code:`create_robot=True`
 #. Using the :code:`FrankaPickPlace.setup_scene()` method to spawn a complete pick-and-place scene
 #. Executing pick-and-place operations with the :code:`forward()` method
 #. Understanding and customizing the pick-and-place state machine phases

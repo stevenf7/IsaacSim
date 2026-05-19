@@ -56,7 +56,7 @@ forward while the Franka prepares to receive it.
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_adding_multiple_robots/controlling_multiple_robots.py
     :language: python
     :linenos:
-    :emphasize-lines: 69-76
+    :emphasize-lines: 70-77
 
 Watch as the Jetbot pushes the cube towards the Franka!
 
@@ -70,12 +70,12 @@ Adding State Machine Logic
 
 Create a state machine to coordinate the robots: first the Jetbot pushes the cube towards Franka,
 then backs up to give space, and finally Franka executes a full pick-and-place sequence using
-the :code:`FrankaExperimental` class for IK-based end-effector control:
+the :code:`Franka` class for IK-based end-effector control:
 
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_adding_multiple_robots/adding_state_machine_logic.py
     :language: python
     :linenos:
-    :emphasize-lines: 65-134
+    :emphasize-lines: 66-139
 
 .. image:: /images/core_api_tutorials_5_2.webp
     :align: center
@@ -91,7 +91,7 @@ This tutorial covered the following topics:
 #. Using the :code:`Articulation` class to control different robot types
 #. Having a mobile robot (Jetbot) push objects towards a manipulator (Franka)
 #. Building state machine logic to coordinate pushing, backing up, and picking
-#. Using :code:`FrankaExperimental` for IK-based end-effector control and gripper operations
+#. Using :code:`Franka` for IK-based end-effector control and gripper operations
 
 
 Next Steps
