@@ -54,6 +54,30 @@ as JSON (by default ``incidents_report.json`` in the output directory) to record
 
 .. Note:: No adjustment is made to the viewport camera during an event, so you must manually find the event in the scene and move the viewport camera there to view it.
 
+.. warning::
+
+    If fire effects do not render correctly during a fire event, disable multi-tick
+    rendering by setting ``/rtx/hydra/supportMultiTickRate`` to ``false``. The fastest
+    way is to override it on the command line at launch:
+
+    .. tab-set::
+        .. tab-item:: Linux
+
+            .. code-block:: bash
+
+                ./isaac-sim.sh --/rtx/hydra/supportMultiTickRate=false
+
+        .. tab-item:: Windows
+
+            .. code-block:: bash
+
+                .\isaac-sim.bat --/rtx/hydra/supportMultiTickRate=false
+
+    For other ways to apply this setting (Script Editor snippet, ``.kit`` or ``.toml``
+    edits), refer to :ref:`isaac_sim_carb_settings`. Refer to
+    :ref:`isaac_sim_sensors_multitick_rendering` for what multi-tick rendering does and
+    the trade-offs of disabling it.
+
 IRI Standalone UI Example
 --------------------------
 
