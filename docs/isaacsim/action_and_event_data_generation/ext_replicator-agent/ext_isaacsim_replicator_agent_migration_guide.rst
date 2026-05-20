@@ -224,10 +224,10 @@ Default Config File Location
    * - 0.x
      - ``[ext-path]/config/default_config.yaml`` (auto-loaded on startup)
    * - 1.x
-     - ``[ext-path]/data/sample_configs/`` (contains ``minimal.yaml`` and ``warehouse.yaml``)
+     - ``[ext-path]/data/sample_configs/`` (refer to :ref:`Sample Configs <ira_sample_configs>` for the bundled samples)
 
-In 1.x, a minimal config is loaded by default. For a full example with
-characters, cameras, and writers, use ``warehouse.yaml``.
+In 1.x, ``minimal.yaml`` is loaded by default. For a full example with
+characters, cameras, and writers, use ``full_pipeline.yaml``.
 
 Headless or Script-Based Data Generation
 -----------------------------------------
