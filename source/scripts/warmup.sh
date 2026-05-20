@@ -24,11 +24,6 @@ TASKING_THREAD_CNT=$(($TASKING_THREAD_CNT/2))
 PORTABLE_ROOT="$SCRIPT_DIR/portable_root"
 
 set +e # Workaround post-install script failure
-# Warm up shader cache for Python app
-"$SCRIPT_DIR/python.sh" "$SCRIPT_DIR/standalone_examples/testing/isaacsim.simulation_app/test_viewport_ready.py" \
-    --portable-root "$PORTABLE_ROOT" \
-    --/log/flushStandardStreamOutput=1
-echo "Python app shader cache is warmed up."
 
 # Warm up shader cache
 "$SCRIPT_DIR/kit/kit" "$SCRIPT_DIR/apps/isaacsim.exp.base.kit" \
@@ -56,4 +51,13 @@ echo "Python app shader cache is warmed up."
     --/log/flushStandardStreamOutput=1 \
     --/plugins/carb.tasking.plugin/threadCount=$TASKING_THREAD_CNT
 echo "Shader cache is warmed up."
+
+# Warm up shader cache for Python app
+"$SCRIPT_DIR/python.sh" "$SCRIPT_DIR/standalone_examples/testing/isaacsim.simulation_app/test_viewport_ready.py" \
+    --portable-root "$PORTABLE_ROOT" \
+    --/log/flushStandardStreamOutput=1 \
+    --no-window \
+    --silent \
+echo "Python app shader cache is warmed up."
+
 set -e
