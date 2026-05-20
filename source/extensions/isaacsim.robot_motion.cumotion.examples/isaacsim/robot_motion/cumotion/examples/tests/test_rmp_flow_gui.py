@@ -19,10 +19,22 @@ from unittest.mock import patch
 
 import omni.kit.app
 import omni.kit.test
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.robot_motion.cumotion.examples.rmp_flow.scenario import FrankaRmpFlowExample
 from isaacsim.robot_motion.cumotion.examples.rmp_flow.ui_builder import UIBuilder
 
-from .gui_test_support import assert_xyz_and_unit_quaternion_wxyz, wait_until
+from .gui_test_support import (
+    TEST_LOAD_TIMEOUT_SEC,
+    WARMUP_LOAD_TIMEOUT_SEC,
+    assert_xyz_and_unit_quaternion_wxyz,
+    ensure_gui_class_warmup_once,
+    wait_until,
+)
+
+_ROBOT_PATH = "/panda"
+_TARGET_PATH = "/World/target"
+_OBSTACLE_PATH = "/World/obstacle"
+_PHYSICS_SCENE_PATH = "/World/PhysicsScene"
 
 
 def _scenario_loaded(ui_builder: UIBuilder) -> bool:
@@ -36,6 +48,11 @@ class TestRmpFlowGui(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         """Set up the UI builder before each test."""
         await omni.kit.app.get_app().next_update_async()
+        await ensure_gui_class_warmup_once(
+            type(self),
+            ui_builder_cls=UIBuilder,
+            wait_for_load=lambda wb: self._load_until_scenario_ready_on(wb, timeout_sec=WARMUP_LOAD_TIMEOUT_SEC),
+        )
         self.ui_builder = UIBuilder()
         self.ui_builder.build_ui()
         await omni.kit.app.get_app().next_update_async()
@@ -44,6 +61,14 @@ class TestRmpFlowGui(omni.kit.test.AsyncTestCase):
         """Clean up the UI builder after each test."""
         self.ui_builder.cleanup()
         await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
+
+    @classmethod
+    async def _load_until_scenario_ready_on(cls, ui_builder: UIBuilder, *, timeout_sec: float) -> None:
+        ui_builder._load_btn.trigger_click()
+        ok = await wait_until(lambda: _scenario_loaded(ui_builder), timeout_sec=timeout_sec)
+        if not ok:
+            raise AssertionError("Timed out waiting for scenario load (target/articulation/controller)")
 
     async def test_gui_layout(self):
         """Checks that we have the correct buttons available."""
@@ -54,6 +79,34 @@ class TestRmpFlowGui(omni.kit.test.AsyncTestCase):
         # The scenario state button should be disabled initially
         self.assertTrue(self.ui_builder._scenario_state_btn.is_in_a_state())
 
+    async def test_load_creates_all_expected_assets(self):
+        """LOAD populates every expected scenario object and prim on the stage."""
+        self.ui_builder._load_btn.trigger_click()
+
+        ok = await wait_until(
+            lambda: self.ui_builder._load_task is not None and self.ui_builder._load_task.done(),
+            timeout_sec=120.0,
+        )
+        self.assertTrue(ok, "Timed out waiting for load to complete")
+
+        # Surface any exception raised inside the load coroutine.
+        load_exc = self.ui_builder._load_task.exception()
+        if load_exc is not None:
+            raise load_exc
+
+        # All expected scenario state must be populated.
+        s = self.ui_builder._scenario
+        self.assertIsNotNone(s._articulation, "scenario._articulation should be set after LOAD")
+        self.assertIsNotNone(s._target, "scenario._target should be set after LOAD")
+        self.assertIsNotNone(s._controller, "scenario._controller should be set after LOAD")
+        self.assertIsNotNone(s._world_binding, "scenario._world_binding should be set after LOAD")
+
+        # All expected prims must be on the stage.
+        stage = stage_utils.get_current_stage()
+        self.assertIsNotNone(stage, "Stage should exist after LOAD")
+        for path in (_ROBOT_PATH, _TARGET_PATH, _OBSTACLE_PATH, _PHYSICS_SCENE_PATH):
+            self.assertTrue(stage.GetPrimAtPath(path).IsValid(), f"Expected prim {path!r} on stage after LOAD")
+
     async def test_load_button_creates_cube_and_articulation(self):
         """After calling load button, there should be a cube and an Articulation added to the stage."""
         # There is initially no controller:
@@ -62,7 +115,7 @@ class TestRmpFlowGui(omni.kit.test.AsyncTestCase):
         self.ui_builder._load_btn.trigger_click()
         await omni.kit.app.get_app().next_update_async()
 
-        ok = await wait_until(lambda: _scenario_loaded(self.ui_builder), timeout_sec=120.0)
+        ok = await wait_until(lambda: _scenario_loaded(self.ui_builder), timeout_sec=TEST_LOAD_TIMEOUT_SEC)
         self.assertTrue(ok, "Timed out waiting for scenario load (target/articulation/controller)")
 
         self.assertIsNotNone(self.ui_builder._scenario._target)
@@ -74,7 +127,7 @@ class TestRmpFlowGui(omni.kit.test.AsyncTestCase):
         self.ui_builder._load_btn.trigger_click()
         await omni.kit.app.get_app().next_update_async()
 
-        ok = await wait_until(lambda: _scenario_loaded(self.ui_builder), timeout_sec=120.0)
+        ok = await wait_until(lambda: _scenario_loaded(self.ui_builder), timeout_sec=TEST_LOAD_TIMEOUT_SEC)
         self.assertTrue(ok, "Timed out waiting for scenario load (target/articulation/controller)")
 
         _orig_update = FrankaRmpFlowExample.update
@@ -103,7 +156,7 @@ class TestRmpFlowGui(omni.kit.test.AsyncTestCase):
         self.ui_builder._load_btn.trigger_click()
         await omni.kit.app.get_app().next_update_async()
 
-        ok = await wait_until(lambda: _scenario_loaded(self.ui_builder), timeout_sec=120.0)
+        ok = await wait_until(lambda: _scenario_loaded(self.ui_builder), timeout_sec=TEST_LOAD_TIMEOUT_SEC)
         self.assertTrue(ok, "Timed out waiting for scenario load (target/articulation/controller)")
 
         await omni.kit.app.get_app().next_update_async()

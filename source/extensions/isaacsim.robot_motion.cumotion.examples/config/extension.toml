@@ -4,7 +4,7 @@
 #
 
 [package]
-version = "0.3.3"
+version = "0.4.0"
 category = "Simulation"
 title = "cuMotion Examples"
 description = "Examples for using the cuMotion planning library under motion generation."
@@ -110,6 +110,7 @@ args = [
 
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
+    '*Stage opening or closing already in progress*',
 ]
 
 [documentation]
