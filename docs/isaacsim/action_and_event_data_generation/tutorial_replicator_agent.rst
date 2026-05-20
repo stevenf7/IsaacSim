@@ -40,7 +40,7 @@ Enable Extensions
 ----------------------------------
 1. Follow the `Omniverse Extension Manager guide <https://docs.omniverse.nvidia.com/extensions/latest/ext_core/ext_extension-manager.html>`_ to enable the ``Omni.Metropolis.Pipeline``, ``Isaacsim.Anim.Robot.Core``, and ``Isaacsim.Replicator.Agent.Core & UI``.
 
-    * The extensions fetch sample assets from Isaac Sim Assets during start. Refer to :doc:`Isaac Sim Assets </assets/usd_assets_overview>` if you encounter issues for loading assets.
+    * The extensions fetch sample assets from Isaac Sim Assets during start. Refer to :doc:`Isaac Sim Assets </assets/usd_assets_overview>`, if you encounter issues for loading assets.
     * If loading the UI appears to be hanging, try starting Isaac Sim with the flag ``--/persistent/isaac/asset_root/timeout=1.0``.
 
 2. The UI panel is accessible by **Tools > Action and Event Data Generation > Actor SDG** and it opens on the right side of the screen.
@@ -60,14 +60,14 @@ Enable Extensions
 
 Getting Started in the UI
 -------------------------
-For first-time users, it is recommended that you use the UI. Refer to the :ref:`Running from script <actor_sim_running_from_script>` section for running with a Python script in Isaac Sim headless mode.
+For first-time users, start with the UI. Refer to the :ref:`Running from script <actor_sim_running_from_script>` section for running with a Python script in Isaac Sim headless mode.
 
 1. Follow the :ref:`Enable Extensions <actor_sim_enable_extensions>` section and open the UI panel.
 
-2. The default minimal config is loaded by default. You can also load a separate config file using the folder browser icon.
+2. The minimal config is loaded by default. You can also load a separate config file using the folder browser icon.
 
-    * All the sample config files are in ``[Isaac Sim App Path]/extscache/isaacsim.replicator.agent.core-[current-version]/data/sample_configs/``.
-    * The minimal config file does not have actors and cameras. For a more comprehensive example, use ``warehouse.yaml`` in the above folder. This example can take up more loading time.
+    * All the sample config files are in ``[Isaac Sim App Path]/extscache/isaacsim.replicator.agent.core-[current-version]/data/sample_configs/``. For a description of each file, refer to :ref:`Sample Configs <ira_sample_configs>`.
+    * The minimal config file does not have actors or cameras. For a more comprehensive example, use ``full_pipeline.yaml`` in the above folder. This example can take up more loading time.
 
 .. image:: /images/isim_6.0_full_tut_external_actor_sim_getting_started_config_panel.png
     :width: 680
@@ -78,20 +78,20 @@ For first-time users, it is recommended that you use the UI. Refer to the :ref:`
 
 3. [Optional] Modify the configuration file to your needs.
 
-    * Use the New icon to create a new config file.
-    * Use the Reload icon to reset changes in UI and load the original config file again.
-    * Use the Save or Save As icon to save the changes in UI to config file.
-    * Use the Verbose save checkbox to control how much detail is written when saving your configuration file. When off, the written file is kept compact, only writing the values that are modified. When on, all non-empty fields are included — useful if you want a complete reference of every available option or need to share a fully explicit config with others.
+    * Use the **New** icon to create a new config file.
+    * Use the **Reload** icon to reset changes in UI and load the original config file again.
+    * Use the **Save** or **Save As** icon to save the changes in UI to config file.
+    * Use the **Verbose save** checkbox to control how much detail is written when saving your configuration file. When off, the written file is kept compact, only writing the values that are modified. When on, all non-empty fields are included, which is useful if you want a complete reference of every available option or need to share a fully explicit config with others.
 
-4. Click the **Set Up Simulation** button from the top of the UI and it will start loading simulation assets (scene, cameras, actors) according to the UI.
+4. Click the **Set Up Simulation** button from the top of the UI. It starts loading simulation assets (scene, cameras, actors) according to the configuration.
 
     * The scene requires a NavMesh to spawn assets and control them correctly. The scenes in the example config have NavMesh set up in advance. If you are using an external scene, refer to :doc:`Navigation Mesh<extensions:ext_navigation-mesh>` for NavMesh set up.
     * You can also go to **Window > Navigation > NavMesh** and turn off **Auto-Bake** in the NavMesh settings. Turning it off can increase the performance.
 
     .. note::
-        Clicking **Set Up Simulation** always fully reloads the scene from the current configuration. This includes reopening the base environment USD and re-creating all actors (characters and robots), sensors, and prop layers from scratch. Any manual edits made to the stage after a previous setup will be lost. If you want to iterate on the configuration, make your changes in the UI or config file first, then click **Set Up Simulation** to apply them.
+        Clicking **Set Up Simulation** always fully reloads the scene from the current configuration. This includes reopening the base environment USD and re-creating all actors (characters and robots), sensors, and prop layers from scratch. This action discards any manual edits made to the stage after a previous setup. If you want to iterate on the configuration, make your changes in the UI or config file first, then click **Set Up Simulation** to apply them.
 
-5. Click the **Start Data Generation** button from the top of the UI and the simulation and data generation will start. It will run for the duration (in seconds) specified in the **Simulation Duration** in **Actor SDG Setup** panel.
+5. Click the **Start Data Generation** button from the top of the UI. The simulation and data generation run for the duration (in seconds) specified in the **Simulation Duration** field in the **Actor SDG Setup** panel.
 
 6. When data generation finishes, the output data is available in the **Output Directory** specified in the **Replicator** panel.
 
@@ -103,7 +103,7 @@ For first-time users, it is recommended that you use the UI. Refer to the :ref:`
 Running from Script
 --------------------
 
-For large-scale data generation, it can be more efficient to launch it from script. IRA provides an automatic script (``actor_sdg.py``) to run offline data generation.
+For large-scale data generation, launching from a script is more efficient. IRA provides an automatic script (``actor_sdg.py``) to run offline data generation.
 
 To run from script, open a terminal from where Isaac Sim is installed and run the following commands:
 
@@ -153,6 +153,26 @@ For detailed configuration instructions, parameter lists, and examples, refer to
     :maxdepth: 1
 
     ./ext_replicator-agent/ext_isaacsim_replicator_agent_configuration.rst
+
+Sample Configs
+^^^^^^^^^^^^^^
+
+The extension bundles a small set of ready-to-run YAML configs under
+``[ext-path]/data/sample_configs/`` so you can review each major feature in
+isolation before composing your own. The samples cover both character-behavior
+APIs side by side: 
+
+* the stable routine-trigger system at the top level
+* the experimental behavior-tree system under ``behavior_tree/``
+
+If you are starting out, open ``minimal.yaml`` (the UI loads it on launch) to
+review the smallest valid config, then switch to ``full_pipeline.yaml``
+for an end-to-end demo with sensor placement and writers.
+
+.. toctree::
+    :maxdepth: 1
+
+    ./ext_replicator-agent/ext_isaacsim_replicator_agent_sample_configs.rst
 
 Migrating from IRA 0.x.x
 --------------------------
@@ -232,9 +252,9 @@ The Routine Trigger Loop
 
 When no actor triggers are activated, actors perform a routine loop by repeatedly picking behaviors from routines to perform, weighted by their probability, using the ``actor global seed``.
 
-When any trigger is activated, the actor will pause routine and start performing the behaviors under each active trigger. Running triggers will be paused and pushed to queue if a trigger with higher priority happens (triggers with lower priority will be skipped).
-The trigger will be marked complete when its behaviors are all finished. Then the first trigger in queue will resume running.
-After all active triggers complete, the actors fall back to their routine.
+When any trigger activates, the actor pauses its routine and performs the behaviors under each active trigger. The system pauses and queues running triggers if a higher-priority trigger fires (lower-priority triggers are skipped).
+A trigger is marked complete when all its behaviors finish. The first trigger in the queue then resumes.
+After all active triggers complete, the actor returns to its routine.
 
 .. image:: /images/isim_6.0_full_tut_external_actor_sim_actor_behavior_flowchart.png
     :width: 900
@@ -289,7 +309,7 @@ In addition to the routine-trigger behavior system described above, IRA 1.3.0 in
 
 .. TODO: Add links to omni.behavior.tree.core and omni.anim.behavior.tree extension docs when available.
 
-**What is a Behavior Tree?**
+**Behavior Tree Overview**
 
 A behavior tree is a hierarchical model for decision-making. It is composed of different node types that work together:
 
@@ -316,7 +336,7 @@ Behavior tree mode is an alternative to the routine-trigger system. Each charact
 
 3.  Run the simulation as usual. The behavior-tree characters share the same spawning, NavMesh, and data-generation pipeline as IRA characters.
 
-Some sample config files with behavior tree character groups are provided in the ``[Isaac Sim Assets Path]/Samples/BehaviorTree`` folder as well as bundled in the ``data/sample_configs`` folder in the ``isaacsim.replicator.agent.core`` extension. For configuration details, parameter reference, and YAML examples, refer to :ref:`Behavior Tree Character Group (Experimental) <ira_bt_character_group>` in the Configuration File Guide.
+Some sample config files with behavior tree character groups are provided in the ``[Isaac Sim Assets Path]/Samples/BehaviorTree`` folder as well as bundled in the ``data/sample_configs/behavior_tree/`` folder in the ``isaacsim.replicator.agent.core`` extension (refer to :ref:`Sample Configs <ira_sample_configs>`). For configuration details, parameter reference, and YAML examples, refer to :ref:`Behavior Tree Character Group (Experimental) <ira_bt_character_group>` in the Configuration File Guide.
 
 .. warning::
     Behavior tree characters set up by IRA still have the ``IRACharacterAPI`` schema applied, but this is only used for data-generation identification (name, group, semantic labels, and related fields). The character's behavior is entirely controlled by the behavior tree through ``omni.behavior.tree.core`` (OBT). IRA-level settings such as ``seed`` have no effect on behavior-tree characters.
@@ -345,7 +365,7 @@ Terminology
 
 .. dropdown:: Replicator (Omni.Replicator.Core)
 
-    The data capturing extension that our extension is based on. More information about the Replicator extension can be found in :doc:`Replicator Official Documentation</replicator_tutorials/index>`.
+    The data capturing extension that this extension is based on. More information about the Replicator extension can be found in :doc:`Replicator Official Documentation</replicator_tutorials/index>`.
 
 .. dropdown:: Behavior Tree
 

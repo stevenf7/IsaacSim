@@ -23,7 +23,7 @@ config_path = get_config_file_path()
 if config_path:
     from pathlib import Path
 
-    target_config_path = Path(config_path).parent / "warehouse.yaml"
+    target_config_path = Path(config_path).parent / "full_pipeline.yaml"
 else:
     target_config_path = None
 

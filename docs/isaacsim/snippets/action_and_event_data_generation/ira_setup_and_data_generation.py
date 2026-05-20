@@ -59,7 +59,7 @@ handle_data = dispatcher.observe_event(
 
 config_path = get_config_file_path()
 if config_path:
-    target_config_path = Path(config_path).parent / "warehouse.yaml"
+    target_config_path = Path(config_path).parent / "full_pipeline.yaml"
 else:
     print("No config file path found")
     target_config_path = None
