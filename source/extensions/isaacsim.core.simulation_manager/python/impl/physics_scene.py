@@ -189,6 +189,7 @@ class PhysicsScene:
             dt: Physics Scene's delta time (DT) for the active physics engine.
 
         Raises:
+            RuntimeError: If the Physics Scene has no 'NewtonSceneAPI' applied.
             ValueError: If the delta time (DT) is less than 0 or greater than 1.0.
 
         Example:
@@ -207,9 +208,10 @@ class PhysicsScene:
             physx_scene_api.GetTimeStepsPerSecondAttr().Set(steps_per_second)
             return
 
+        if not self._prim.HasAPI("NewtonSceneAPI"):
+            raise RuntimeError("The Physics Scene has no 'NewtonSceneAPI' applied")
         attr = self._prim.GetAttribute("newton:timeStepsPerSecond")
-        if attr:
-            attr.Set(steps_per_second)
+        attr.Set(steps_per_second)
 
     def get_enabled_gravity(self) -> bool:
         """Get whether gravity is enabled for the Physics Scene.
@@ -233,15 +235,19 @@ class PhysicsScene:
         Args:
             enabled: True to enable gravity, False to disable.
 
+        Raises:
+            RuntimeError: If the Physics Scene has no 'NewtonSceneAPI' applied.
+
         Example:
 
         .. code-block:: python
 
             >>> physics_scene.set_enabled_gravity(False)
         """
+        if not self._prim.HasAPI("NewtonSceneAPI"):
+            raise RuntimeError("The Physics Scene has no 'NewtonSceneAPI' applied")
         attr = self._prim.GetAttribute("newton:gravityEnabled")
-        if attr:
-            attr.Set(bool(enabled))
+        attr.Set(bool(enabled))
 
     def get_max_solver_iterations(self) -> int:
         """Get the maximum number of solver iterations for the Physics Scene.
@@ -266,6 +272,7 @@ class PhysicsScene:
             iterations: Maximum number of solver iterations. Set to -1 to use solver default.
 
         Raises:
+            RuntimeError: If the Physics Scene has no 'NewtonSceneAPI' applied.
             ValueError: If the iterations is less than -1.
 
         Example:
@@ -276,6 +283,7 @@ class PhysicsScene:
         """
         if iterations < -1:
             raise ValueError(f"The iterations must be greater than or equal to -1, got {iterations}")
+        if not self._prim.HasAPI("NewtonSceneAPI"):
+            raise RuntimeError("The Physics Scene has no 'NewtonSceneAPI' applied")
         attr = self._prim.GetAttribute("newton:maxSolverIterations")
-        if attr:
-            attr.Set(int(iterations))
+        attr.Set(int(iterations))

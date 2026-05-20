@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.3] - 2026-05-19
+### Fixed
+- Raise `RuntimeError` in `PhysicsScene.set_dt()`, `set_enabled_gravity()`, and `set_max_solver_iterations()` when `NewtonSceneAPI` is not applied, matching the `PhysxScene` error-handling pattern.
+
 ## [1.15.2] - 2026-05-17
 ### Fixed
 - Restore mode-specific `TimeSampleStorage` handling for render-product reference times. In multitick mode, render-product reference times come from `/ExternalSimulationTime` and can be returned as simulation time directly. In non-multitick mode, render-product reference times come from the renderer's Fabric frame time, so samples are keyed with `IStageReaderWriter::getFrameTime()` and `getSimulationTimeAt()` resolves the simulation time through exact-match or adjacent-sample lookup.
