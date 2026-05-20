@@ -10,7 +10,7 @@ Launch Isaac Sim with the extension enabled:
 bash isaac-sim.sh --no-window --enable isaacsim.code_editor.python_server
 ```
 
-Wait for `app ready` in the output, then connect from any TCP client on port 8226.
+Wait for `app ready` in the output, then connect from any TCP client on port 8226. If `auth_token` setting is left empty while `require_auth` is true, the extension will generate a random token upon startup. It will then write the token to the `auth_token` setting and print it to the standard output (e.g., *Python server authentication token: TOKEN*).
 
 ## Functionality
 
@@ -20,7 +20,7 @@ The extension creates an async TCP server that listens for incoming Python sourc
 
 ### Wire Protocol
 
-- **Request**: Raw UTF-8 Python source code sent over TCP, or a JSON envelope (see below). The client must signal end-of-input by calling ``write_eof()`` (TCP half-close) after sending all data. The server buffers incoming data until EOF is received before executing, ensuring that TCP-fragmented payloads are fully reassembled.
+- **Request**: Raw UTF-8 Python source code sent over TCP with a token header, or a JSON envelope with an `auth_token` field (see below). The client must signal end-of-input by calling ``write_eof()`` (TCP half-close) after sending all data. The server buffers incoming data until EOF is received before executing, ensuring that TCP-fragmented payloads are fully reassembled.
 - **Response**: JSON object with the following fields:
   - `status`: `"ok"` or `"error"`
   - `output`: Captured standard output (includes output from both synchronous and async code)
@@ -59,6 +59,7 @@ Instead of raw Python source, a client may send a JSON-encoded envelope object. 
 
 ```json
 {
+  "auth_token": "TOKEN",
   "code": "print('hello')",
   "context": "my_context",
   "args": {"x": 42, "name": "robot"},
@@ -70,20 +71,29 @@ Instead of raw Python source, a client may send a JSON-encoded envelope object. 
 **Fields:**
 
 - `code` *(required)*: Python source to execute.
+- `auth_token`: Authentication token. Required when `require_auth` is true.
 - `context`: Named execution context (see below). Defaults to `""` (shared default context).
 - `args`: Dict of values injected into the execution namespace before running the code.
 - `timeout`: Per-request timeout in seconds (overrides the global `execution_timeout` setting; `0` = no timeout).
 - `fire_and_forget`: If `true`, acknowledge immediately and execute in background (see below).
 
 Raw Python source (not starting with ``{``) is also accepted. If the request starts with ``{`` but fails JSON parsing, it is treated as raw Python code.
+If authentication is required, this can be indicated via the authentication header comment:
+
+```python
+# isaacsim-python-server-token: TOKEN
+print("hello")
+```
+
 
 **Example:**
 
 ```python
 import asyncio, json
 
-async def send_envelope(envelope: dict, host="127.0.0.1", port=8226) -> dict:
+async def send_envelope(envelope: dict, host="127.0.0.1", port=8226, token="TOKEN") -> dict:
     reader, writer = await asyncio.open_connection(host, port)
+    envelope = {**envelope, "auth_token": token}
     writer.write(json.dumps(envelope).encode())
     writer.write_eof()
     data = await asyncio.wait_for(reader.read(), timeout=30.0)
@@ -212,9 +222,11 @@ print(data["result"])
 import asyncio
 import json
 
-async def send_code(code: str, host: str = "127.0.0.1", port: int = 8226) -> dict:
+async def send_code(code: str, host: str = "127.0.0.1", port: int = 8226, token: str = "TOKEN") -> dict:
     """Send Python code to Isaac Sim and return the JSON response."""
     reader, writer = await asyncio.open_connection(host, port)
+    if token: 
+        code = f"# isaacsim-python-server-token: {token}\n{code}"
     writer.write(code.encode())
     writer.write_eof()  # Signal end-of-input (required)
     data = await asyncio.wait_for(reader.read(), timeout=30.0)
@@ -232,7 +244,7 @@ print(result)
 ### netcat (quick test)
 
 ```bash
-echo 'print("hello")' | nc -q 0 127.0.0.1 8226
+printf '# isaacsim-python-server-token: TOKEN\nprint("hello")\n' | nc -q 0 127.0.0.1 8226
 ```
 
 ## Key Components
@@ -247,6 +259,8 @@ The extension provides the following configuration settings:
 
 - `host`: Configures the IP address where the socket server listens for connections (default: 127.0.0.1)
 - `port`: Sets the port number for socket communication (default: 8226)
+- `require_auth`: Requires clients to provide an authentication token before commands are processed (default: false)
+- `auth_token`: Authentication token for TCP clients. If empty and `require_auth` is true, a random token is generated on startup.
 - `carb_logs`: Controls whether Carbonite logging messages are broadcast via UDP (default: false, with warnings about potential application freezing)
 - `execution_timeout`: Global default execution timeout in seconds; `0` disables the timeout (default: 0)
 - `keepalive_interval`: When non-zero, includes `elapsed_seconds` in responses that took longer than this value in seconds (default: 0)

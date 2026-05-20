@@ -1,5 +1,5 @@
 [package]
-version = "1.2.2"
+version = "1.3.0"
 category = "Utility"
 title = "Python Server"
 description = "TCP socket server for remote Python code execution in Isaac Sim"
@@ -23,6 +23,10 @@ name = "isaacsim.code_editor.python_server"
 exts."isaacsim.code_editor.python_server".host = "127.0.0.1"
 # Port number where the extension server will listen for connections.
 exts."isaacsim.code_editor.python_server".port = 8226
+# Whether clients must provide an authentication token when executing code.
+exts."isaacsim.code_editor.python_server".require_auth = false
+# Authentication token for clients. If empty and require_auth is true, a random token is generated on startup.
+exts."isaacsim.code_editor.python_server".auth_token = ""
 # Whether to publish incoming carb logging messages.
 # Warning: enabling this feature may cause the application to freeze in certain circumstances.
 exts."isaacsim.code_editor.python_server".carb_logs = false
@@ -87,7 +91,9 @@ args = [
     "--/rtx/rendering/perSensorTickTlas=true",
     "--/rtx/reservedDescriptors=900000",
     ### Extension specific args
-     "--/exts/isaacsim.code_editor.python_server/port=8227",
+    "--/exts/isaacsim.code_editor.python_server/port=8227",
+    "--/exts/isaacsim.code_editor.python_server/require_auth=true",
+    "--/exts/isaacsim.code_editor.python_server/auth_token=isaacsim-python-server-test-token",
 ]
 stdoutFailPatterns.exclude = [
     # Pre-existing asyncio context re-entry errors when update_app() pumps the

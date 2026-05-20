@@ -21,8 +21,10 @@ __all__ = []
 
 import asyncio
 import contextlib
+import hmac
 import io
 import json
+import secrets
 import socket
 import sys
 import threading
@@ -37,6 +39,7 @@ import omni.ext
 from .executor import ExecutionResult, Executor
 
 _SETTINGS_PREFIX = "/exts/isaacsim.code_editor.python_server"
+_AUTH_HEADER_PREFIX = "# isaacsim-python-server-token:"
 
 #: Maximum number of completed fire-and-forget task results to retain (FIFO eviction).
 _MAX_COMPLETED_TASKS = 100
@@ -164,6 +167,8 @@ class Extension(omni.ext.IExt):
         settings = carb.settings.get_settings()
         self._socket_host: str = settings.get(f"{_SETTINGS_PREFIX}/host")
         self._socket_port: int = settings.get(f"{_SETTINGS_PREFIX}/port")
+        self._require_auth: bool = bool(settings.get(f"{_SETTINGS_PREFIX}/require_auth"))
+        self._auth_token: str = self._get_or_create_auth_token(settings) if self._require_auth else ""
         self._publish_carb_logs: bool = settings.get(f"{_SETTINGS_PREFIX}/carb_logs")
         self._execution_timeout: float = float(settings.get(f"{_SETTINGS_PREFIX}/execution_timeout") or 0.0)
         self._keepalive_interval: float = float(settings.get(f"{_SETTINGS_PREFIX}/keepalive_interval") or 0.0)
@@ -302,6 +307,18 @@ class Extension(omni.ext.IExt):
     # TCP code execution server
     # ------------------------------------------------------------------
 
+    def _get_or_create_auth_token(self, settings: object) -> str:
+        """Read the configured auth token or generate one for this settings store."""
+        if not self._require_auth:
+            return ""
+        token = settings.get_as_string(f"{_SETTINGS_PREFIX}/auth_token")
+        if not token:
+            token = secrets.token_urlsafe(32)
+            settings.set_string(f"{_SETTINGS_PREFIX}/auth_token", token)
+        carb.log_info(f"Python server authentication token: {token}")
+        print(f"Python server authentication token: {token}")
+        return token
+
     async def _create_socket(self) -> None:
         """Create the async TCP server and begin accepting connections."""
 
@@ -377,6 +394,14 @@ class Extension(omni.ext.IExt):
             carb.log_error(str(exc))
             self._server = None
 
+    def _strip_auth_header(self, source: str) -> tuple[str | None, str]:
+        """Extract the optional raw-source token header from *source*."""
+        if not source.startswith(_AUTH_HEADER_PREFIX):
+            return None, source
+        header, separator, remainder = source.partition("\n")
+        token = header[len(_AUTH_HEADER_PREFIX) :].strip()
+        return token, remainder if separator else ""
+
     def _parse_envelope(self, source: str) -> tuple[str, dict]:
         """Parse the incoming request as a JSON envelope or raw Python code.
 
@@ -391,14 +416,28 @@ class Extension(omni.ext.IExt):
             A ``(code, envelope)`` tuple where *code* is the Python source to
             execute and *envelope* contains any extra request metadata.
         """
+        header_token, source = self._strip_auth_header(source)
         if source.lstrip().startswith("{"):
             try:
                 parsed = json.loads(source)
                 if isinstance(parsed, dict):
+                    if header_token is not None:
+                        parsed.setdefault("auth_token", header_token)
                     return parsed.get("code", ""), parsed
             except json.JSONDecodeError:
                 pass
+        if header_token is not None:
+            return source, {"auth_token": header_token}
         return source, {}
+
+    def _is_authenticated(self, envelope: dict) -> bool:
+        """Return whether the request envelope contains a valid authentication token."""
+        if not self._require_auth:
+            return True
+        token = envelope.get("auth_token")
+        if not token or not isinstance(token, str):
+            return False
+        return hmac.compare_digest(token, self._auth_token)
 
     def _process_code(self, source: str, transport: asyncio.Transport) -> None:
         """Execute Python source and send a JSON reply back to the client.
@@ -434,6 +473,18 @@ class Extension(omni.ext.IExt):
     def _process_code_inner(self, source: str, transport: asyncio.Transport) -> None:
         """Inner implementation of ``_process_code``, wrapped by a safety-net handler."""
         code, envelope = self._parse_envelope(source)
+        if not self._is_authenticated(envelope):
+            self._send_raw_reply(
+                {
+                    "status": "error",
+                    "output": "",
+                    "ename": "AuthenticationError",
+                    "evalue": "Missing or invalid authentication token",
+                    "traceback": ["AuthenticationError: Missing or invalid authentication token"],
+                },
+                transport,
+            )
+            return
 
         # Introspection shortcut — no code execution needed
         if "introspect" in envelope:

@@ -23,6 +23,8 @@ import json
 import carb
 import omni.kit.test
 
+from ._auth import add_auth_header, add_auth_to_envelope
+
 _SETTINGS_PREFIX = "/exts/isaacsim.code_editor.python_server"
 _HOST = "127.0.0.1"
 
@@ -39,7 +41,7 @@ async def _send_and_receive(port: int, source: str, client_timeout: float = 30.0
         The parsed JSON response dictionary.
     """
     reader, writer = await asyncio.open_connection(_HOST, port)
-    writer.write(source.encode())
+    writer.write(add_auth_header(source).encode())
     writer.write_eof()
     data = await asyncio.wait_for(reader.read(), timeout=client_timeout)
     writer.close()
@@ -57,7 +59,7 @@ async def _send_envelope(port: int, envelope: dict, client_timeout: float = 30.0
     Returns:
         The parsed JSON response dictionary.
     """
-    return await _send_and_receive(port, json.dumps(envelope), client_timeout)
+    return await _send_and_receive(port, json.dumps(add_auth_to_envelope(envelope)), client_timeout)
 
 
 class TestJsonEnvelope(omni.kit.test.AsyncTestCase):

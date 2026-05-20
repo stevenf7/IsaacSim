@@ -14,6 +14,14 @@
 - **Default Value**: 8226
 - **Description**: Port number where the extension server will listen for connections.
 
+### exts."isaacsim.code_editor.python_server".require_auth
+- **Default Value**: false
+- **Description**: Whether TCP clients must provide an authentication token before commands are processed.
+
+### exts."isaacsim.code_editor.python_server".auth_token
+- **Default Value**: ""
+- **Description**: Authentication token for TCP clients. If empty and `require_auth` is true, a random token is generated on startup.
+
 ### exts."isaacsim.code_editor.python_server".carb_logs
 - **Default Value**: false
 - **Description**: Whether to publish incoming carb logging messages. Warning: enabling this feature may cause the application to freeze in certain circumstances.
