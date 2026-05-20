@@ -1,14 +1,8 @@
-import omni
-from pxr import Gf, Usd, UsdGeom
+import isaacsim.core.experimental.utils.bounds as bounds_utils
+from isaacsim.core.experimental.objects import Cone
 
-stage = omni.usd.get_context().get_stage()
-result, path = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cone")
-# Get the prim
-prim = stage.GetPrimAtPath(path)
+cone = Cone("/World/Cone")
 # Get the size
-bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
-bbox_cache.Clear()
-prim_bbox = bbox_cache.ComputeWorldBound(prim)
-prim_range = prim_bbox.ComputeAlignedRange()
-prim_size = prim_range.GetSize()
+aabb = bounds_utils.compute_aabb(cone.paths[0])
+prim_size = aabb[3:] - aabb[:3]
 print(prim_size)

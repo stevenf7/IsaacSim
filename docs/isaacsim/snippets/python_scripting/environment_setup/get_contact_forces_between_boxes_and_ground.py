@@ -1,47 +1,51 @@
 import asyncio
 
+import isaacsim.core.experimental.utils.app as app_utils
+import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-from isaacsim.core.api.materials.physics_material import PhysicsMaterial
-from isaacsim.core.api.objects import DynamicCuboid
-from isaacsim.core.api.world import World
-from isaacsim.core.prims import RigidPrim
-from isaacsim.core.utils.stage import create_new_stage_async, update_stage_async
+from isaacsim.core.experimental.materials import RigidBodyMaterial
+from isaacsim.core.experimental.objects import Cube, GroundPlane
+from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
+from isaacsim.core.simulation_manager import SimulationManager
+from pxr import PhysxSchema
 
 
 async def contact_force_example():
     g = 10
-    await create_new_stage_async()
-    if World.instance():
-        World.instance().clear_instance()
-    world = World()
-    world.scene.add_default_ground_plane()
-    await world.initialize_simulation_context_async()
-    material = PhysicsMaterial(
-        prim_path="/World/PhysicsMaterials",
-        static_friction=0.5,
-        dynamic_friction=0.5,
+    await stage_utils.create_new_stage_async()
+    stage_utils.define_prim("/World/physicsScene", "PhysicsScene")
+    ground_plane = GroundPlane("/World/GroundPlane")
+    material = RigidBodyMaterial(
+        "/World/PhysicsMaterials",
+        static_frictions=[0.5],
+        dynamic_frictions=[0.5],
     )
     # create three rigid cubes sitting on top of three others
-    for i in range(3):
-        DynamicCuboid(
-            prim_path=f"/World/Box_{i+1}", size=2, color=np.array([0, 0, 0.5]), mass=1.0
-        ).apply_physics_material(material)
+    cube_paths = [f"/World/Box_{i+1}" for i in range(3)]
+    Cube(cube_paths, sizes=2, colors=np.array([0, 0, 0.5]))
+    cube_geoms = GeomPrim(cube_paths, apply_collision_apis=True)
+    cube_geoms.apply_physics_materials(material)
 
     # Creating RigidPrim with contact relevant keywords allows receiving contact information
     # In the following we indicate that we are interested in receiving up to 30 contact points data between the boxes and the ground plane
     box_view = RigidPrim(
-        prim_paths_expr="/World/Box_*",
+        cube_paths,
+        masses=[1.0],
         positions=np.array([[0, 0, 1.0], [-5.0, 0, 1.0], [5.0, 0, 1.0]]),
-        contact_filter_prim_paths_expr=["/World/defaultGroundPlane/GroundPlane/CollisionPlane"],
+        contact_filter_paths=["/World/GroundPlane/collisionPlane"],
         max_contact_count=3 * 10,  # we don't expect more than 10 contact points for each box
     )
+    if SimulationManager.get_active_physics_engine() == "physx":
+        box_view.set_sleep_thresholds([0.0])
+        box_view.set_enabled_contact_tracking([True])
+        GeomPrim.ensure_api(ground_plane.planes.prims, PhysxSchema.PhysxContactReportAPI)
 
-    world.scene.add(box_view)
-    await world.reset_async()
+    app_utils.play()
+    await app_utils.update_app_async()
 
     forces = np.array([[g, 0, 0], [g, 0, 0], [g, 0, 0]])
     box_view.apply_forces(forces)
-    await update_stage_async()
+    await app_utils.update_app_async(steps=5)
 
     # tangential forces
     friction_forces, friction_points, friction_pair_contacts_count, friction_pair_contacts_start_indices = (
@@ -51,11 +55,18 @@ async def contact_force_example():
     forces, points, normals, distances, pair_contacts_count, pair_contacts_start_indices = (
         box_view.get_contact_force_data(dt=1 / 60)
     )
+    friction_forces = friction_forces.numpy()
+    forces = forces.numpy()
+    normals = normals.numpy()
+    pair_contacts_count = pair_contacts_count.numpy()
+    pair_contacts_start_indices = pair_contacts_start_indices.numpy()
+    friction_pair_contacts_count = friction_pair_contacts_count.numpy()
+    friction_pair_contacts_start_indices = friction_pair_contacts_start_indices.numpy()
     # pair_contacts_count, pair_contacts_start_indices are tensors of size num_sensors x num_filters
     # friction_pair_contacts_count, friction_pair_contacts_start_indices are tensors of size num_sensors x num_filters
     # use the following tensors to sum across all the contact points
-    force_aggregate = np.zeros((box_view._contact_view.num_shapes, box_view._contact_view.num_filters, 3))
-    friction_force_aggregate = np.zeros((box_view._contact_view.num_shapes, box_view._contact_view.num_filters, 3))
+    force_aggregate = np.zeros((len(box_view), box_view.num_contact_filters, 3))
+    friction_force_aggregate = np.zeros((len(box_view), box_view.num_contact_filters, 3))
 
     # process contacts for each pair i, j
     for i in range(pair_contacts_count.shape[0]):
@@ -76,11 +87,12 @@ async def contact_force_example():
     print("friction forces: \n", friction_force_aggregate)
     print("contact forces: \n", force_aggregate)
     # get_contact_force_matrix API is equivalent to the summation of the individual contact forces computed above
-    print("contact force matrix: \n", box_view.get_contact_force_matrix(dt=1 / 60))
+    print("contact force matrix: \n", box_view.get_contact_force_matrix(dt=1 / 60).numpy())
     # get_net_contact_forces API is the summation of the all forces
-    # in the current example because all the potential contacts are captured by the choice of our filter prims (/World/defaultGroundPlane/GroundPlane/CollisionPlane)
+    # in the current example because all the potential contacts are captured by the choice of our filter prims (/World/GroundPlane/collisionPlane)
     # the following is similar to the reduction of the contact force matrix above across the filters
-    print("net contact force: \n", box_view.get_net_contact_forces(dt=1 / 60))
+    print("net contact force: \n", box_view.get_net_contact_forces(dt=1 / 60).numpy())
+    app_utils.stop()
 
 
 asyncio.ensure_future(contact_force_example())

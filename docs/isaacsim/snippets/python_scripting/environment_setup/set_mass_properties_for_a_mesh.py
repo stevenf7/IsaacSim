@@ -1,15 +1,12 @@
-import omni
-from omni.physx.scripts import utils
-from pxr import UsdPhysics
+from isaacsim.core.experimental.objects import Cube
+from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 
-stage = omni.usd.get_context().get_stage()
-result, path = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
-# Get the prim
-cube_prim = stage.GetPrimAtPath(path)
+cube = Cube("/World/Cube")
 # Make it a rigid body
-utils.setRigidBody(cube_prim, "convexHull", False)
+geom_prim = GeomPrim(cube.paths, apply_collision_apis=True)
+geom_prim.set_collision_approximations(["convexHull"])
 
-mass_api = UsdPhysics.MassAPI.Apply(cube_prim)
-mass_api.CreateMassAttr(10)
+rigid_prim = RigidPrim(cube.paths)
+rigid_prim.set_masses([10.0])
 ### Alternatively set the density
-mass_api.CreateDensityAttr(1000)
+rigid_prim.set_densities([1000.0])

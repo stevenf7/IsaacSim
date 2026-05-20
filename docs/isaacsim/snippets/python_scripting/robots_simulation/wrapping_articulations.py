@@ -25,6 +25,11 @@ for _ in range(3):
     omni.kit.app.get_app().update()
 # -- End test setup --
 
+from isaacsim.core.experimental.prims import Articulation
+
+# Wrap the existing Franka robots while the simulation is playing
+articulations = Articulation("/World/Franka_.*")
+
 # Set the joint positions for each articulation
 articulations.set_dof_position_targets(
     [

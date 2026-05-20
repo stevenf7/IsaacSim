@@ -52,8 +52,10 @@ Creating the ROS 2 Custom |omnigraph_short| Python Node Template
 
 #. Edit the extension configuration file (``custom.python.ros2_node/config/extension.toml``) to add the Isaac Sim's ROS 2 Bridge extension as a dependency (under ``[dependencies]``)
 
-    .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_custom_omnigraph_node_python/edit_the_extension_configuration_file_custompython.py
-        :language: python
+    .. code-block:: toml
+
+        [dependencies]
+        "isaacsim.ros2.bridge" = {}
 
 #. Edit the OmniGraph definition file (``OgnCustomPythonRos2NodePy.ogn`` located in the ``custom.python.ros2_node/custom/python/ros2_node/ogn/python/nodes`` folder) with the following specification.
 
