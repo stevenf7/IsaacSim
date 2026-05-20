@@ -23,6 +23,7 @@ import sys
 
 SOCKET_HOST = "127.0.0.1"
 SOCKET_PORT = 8227
+SOCKET_TOKEN = ""
 PACKAGES_PATH = []
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -36,6 +37,10 @@ with open(os.path.join(SCRIPT_DIR, "packages.txt"), "r") as f:
                 print("Adding package to sys.path: {}".format(p))
                 sys.path.append(p)
 
+# read authentication token from file
+with open(os.path.join(SCRIPT_DIR, "token.txt"), "r") as f:
+    SOCKET_TOKEN = f.read().strip()
+
 
 from ipykernel.kernelapp import IPKernelApp
 from ipykernel.kernelbase import Kernel
@@ -43,7 +48,7 @@ from ipykernel.kernelbase import Kernel
 
 async def _send_and_recv(message):
     reader, writer = await asyncio.open_connection(host=SOCKET_HOST, port=SOCKET_PORT, family=socket.AF_INET)
-    writer.write(message.encode())
+    writer.write((SOCKET_TOKEN + message).encode())
     await writer.drain()
     data = await reader.read()
     writer.close()

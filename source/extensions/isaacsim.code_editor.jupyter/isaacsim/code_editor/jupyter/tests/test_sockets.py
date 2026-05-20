@@ -17,11 +17,20 @@
 
 import asyncio
 import json
+import os
 
 import carb
+import isaacsim.core.experimental.utils.app as app_utils
 import omni.kit.test
 
 message = "Hello World!"
+
+
+def _read_token() -> str:
+    """Read the authentication token written by the extension at startup."""
+    ext_path = app_utils.get_extension_path("isaacsim.code_editor.jupyter")
+    with open(os.path.join(ext_path, "data", "launchers", "token.txt")) as f:
+        return f.read().strip()
 
 
 class TestSockets(omni.kit.test.AsyncTestCase):
@@ -41,7 +50,7 @@ class TestSockets(omni.kit.test.AsyncTestCase):
         """Test TCP socket code execution and response parsing."""
         # open TCP socket (code execution)
         reader, writer = await asyncio.open_connection("127.0.0.1", self._socket_port)
-        writer.write(f'print("{message}")'.encode())
+        writer.write((_read_token() + f'print("{message}")').encode())
         # wait for code execution
         for _ in range(10):
             await asyncio.sleep(0.1)

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2026-05-19
+### Changed
+- Add internal token-based authentication to prevent code execution by unauthenticated sources
+
 ## [1.1.6] - 2026-04-06
 ### Changed
 - Disable SystemExit/BaseException tests in CI

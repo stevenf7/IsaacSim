@@ -32,13 +32,21 @@ import os
 import unittest
 
 import carb
+import isaacsim.core.experimental.utils.app as app_utils
 import omni.kit.test
 
 _SETTINGS_PREFIX = "/exts/isaacsim.code_editor.jupyter"
 _HOST = "127.0.0.1"
 
 
-async def _send_and_receive(port: int, source: str, timeout: float = 10.0) -> dict:
+def _read_token() -> str:
+    """Read the authentication token written by the extension at startup."""
+    ext_path = app_utils.get_extension_path("isaacsim.code_editor.jupyter")
+    with open(os.path.join(ext_path, "data", "launchers", "token.txt")) as f:
+        return f.read().strip()
+
+
+async def _send_and_receive(port: int, source: str, timeout: float = 10.0, token: str | None = None) -> dict:
     """Send source to the Jupyter server and return the parsed JSON response.
 
     The Jupyter extension processes code on ``data_received`` (not ``eof_received``),
@@ -50,12 +58,18 @@ async def _send_and_receive(port: int, source: str, timeout: float = 10.0) -> di
         port: The TCP port to connect to.
         source: Raw Python source string.
         timeout: Maximum seconds to wait for a response.
+        token: Authentication token to prepend to ``source``. When ``None`` (the
+            default) the helper reads the token from the extension's token file
+            so that callers do not need to manage it explicitly. Pass an explicit
+            string (including an invalid one) to exercise the auth check.
 
     Returns:
         The parsed JSON response dictionary.
     """
+    if token is None:
+        token = _read_token()
     reader, writer = await asyncio.open_connection(_HOST, port)
-    writer.write(source.encode())
+    writer.write((token + source).encode())
     # The Jupyter server processes on data_received and closes the transport.
     # Give it a moment to execute, then read the response.
     data = await asyncio.wait_for(reader.read(), timeout=timeout)
@@ -415,3 +429,44 @@ class TestSequentialRequests(omni.kit.test.AsyncTestCase):
             data = await _send_and_receive(self._port, f"print({i})")
             self.assertEqual("ok", data.get("status"))
             self.assertEqual(str(i), data.get("output"))
+
+
+# ---------------------------------------------------------------------------
+# 9. Authentication
+# ---------------------------------------------------------------------------
+
+
+class TestAuthentication(omni.kit.test.AsyncTestCase):
+    """Verify that the token-based authentication gate cannot be bypassed."""
+
+    async def setUp(self) -> None:
+        """Read socket configuration from Carbonite settings."""
+        settings = carb.settings.get_settings()
+        self._port: int = settings.get(f"{_SETTINGS_PREFIX}/port")
+
+    async def tearDown(self) -> None:
+        """Clean up after each test."""
+
+    async def test_invalid_token_rejected(self) -> None:
+        """A request with a wrong token of the correct length must be rejected."""
+        # Same length so the server slices the prefix in the same place; only the bytes differ.
+        bogus = "0" * len(_read_token())
+        data = await _send_and_receive(self._port, "print('should not run')", token=bogus)
+        self.assertEqual("error", data.get("status"))
+        self.assertEqual("AuthenticationError", data.get("ename"))
+        self.assertEqual("", data.get("output"))
+
+    async def test_missing_token_rejected(self) -> None:
+        """A request with no token prefix must be rejected, not executed."""
+        data = await _send_and_receive(self._port, "print('should not run')", token="")
+        self.assertEqual("error", data.get("status"))
+        self.assertEqual("AuthenticationError", data.get("ename"))
+
+    async def test_server_alive_after_rejected_request(self) -> None:
+        """A rejected request must not destabilize the server for subsequent valid traffic."""
+        bogus = "0" * len(_read_token())
+        await _send_and_receive(self._port, "print('nope')", token=bogus)
+        # Valid token should succeed immediately after.
+        data = await _send_and_receive(self._port, "print('alive')")
+        self.assertEqual("ok", data.get("status"))
+        self.assertEqual("alive", data.get("output"))
