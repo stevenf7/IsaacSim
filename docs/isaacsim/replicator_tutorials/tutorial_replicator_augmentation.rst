@@ -54,16 +54,17 @@ The annotator example will output rgb images with the red and blue channels swit
 
         .. code-block:: bash
 
-            ./python.sh standalone_examples/replicator/augmentation/annotator_augmentation.py
+            ./python.sh standalone_examples/replicator/augmentation/annotator_augmentation.py --env_url /Isaac/Environments/Grid/default_environment.usd
 
         Optionally the following arguments can be used to change the default behavior:
 
+        - ``--env_url`` -- USD environment path relative to the assets root (default: empty scene with dome light and ground plane)
         - ``--use_warp`` -- flag to use warp (GPU) instead of numpy (CPU) for the augmentation functions (default: False)  
         - ``--num_frames`` -- the number of frames to be captured (default: 25)
 
         .. code-block:: bash
 
-            ./python.sh standalone_examples/replicator/augmentation/annotator_augmentation.py --use_warp --num_frames 25
+            ./python.sh standalone_examples/replicator/augmentation/annotator_augmentation.py --use_warp --num_frames 25 --env_url /Isaac/Environments/Grid/default_environment.usd
 
         .. raw:: html
 
@@ -261,16 +262,17 @@ The **writer** example will output gaussian noise augmented RGB and depth annota
 
         .. code-block:: bash
 
-            ./python.sh standalone_examples/replicator/augmentation/writer_augmentation.py
+            ./python.sh standalone_examples/replicator/augmentation/writer_augmentation.py --env_url /Isaac/Environments/Grid/default_environment.usd
 
         Optionally the following arguments can be used to change the default behavior:
 
+        - ``--env_url`` -- USD environment path relative to the assets root (default: empty scene with dome light and ground plane)
         - ``--use_warp`` -- flag to use warp (GPU) instead of NumPy (CPU) for the augmentation functions (default: False)  
         - ``--num_frames`` -- the number of frames to be captured (default: 25)
 
         .. code-block:: bash
 
-            ./python.sh standalone_examples/replicator/augmentation/writer_augmentation.py --use_warp --num_frames 25
+            ./python.sh standalone_examples/replicator/augmentation/writer_augmentation.py --use_warp --num_frames 25 --env_url /Isaac/Environments/Grid/default_environment.usd
 
         .. raw:: html
 

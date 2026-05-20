@@ -25,7 +25,11 @@ from isaacsim.test.utils.image_comparison import compare_images_in_directories
 
 class TestDataAugmentation(omni.kit.test.AsyncTestCase):
 
-    MEAN_DIFF_TOLERANCE = 25
+    # Per-channel mean-diff tolerances. RGB augmentations stay close to the golden
+    # because the channel swap / HSV roundtrip is bit-stable, while depth is amplified
+    # by the min/max normalization in convert_depth_to_uint8 plus tiny rendering deltas.
+    RGB_MEAN_DIFF_TOLERANCE = 5
+    DEPTH_MEAN_DIFF_TOLERANCE = 30
 
     async def setUp(self):
         await omni.kit.app.get_app().next_update_async()
@@ -241,16 +245,33 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
                 folder_contents_success, f"Folder contents validation failed ({mode_label}). Output dir: {out_dir}"
             )
 
-            result = compare_images_in_directories(
+            rgb_result = compare_images_in_directories(
                 golden_dir=golden_dir,
                 test_dir=out_dir,
-                path_pattern=r"\.png$",
+                path_pattern=r"^annot_rgb_.*\.png$",
                 allclose_rtol=None,
                 allclose_atol=None,
-                mean_tolerance=self.MEAN_DIFF_TOLERANCE,
+                mean_tolerance=self.RGB_MEAN_DIFF_TOLERANCE,
                 print_all_stats=False,
             )
-            self.assertTrue(result["all_passed"], f"Image comparison failed ({mode_label}). Output dir: {out_dir}")
+            self.assertTrue(
+                rgb_result["all_passed"],
+                f"RGB image comparison failed ({mode_label}, tol={self.RGB_MEAN_DIFF_TOLERANCE}). Output dir: {out_dir}",
+            )
+
+            depth_result = compare_images_in_directories(
+                golden_dir=golden_dir,
+                test_dir=out_dir,
+                path_pattern=r"^annot_depth_.*\.png$",
+                allclose_rtol=None,
+                allclose_atol=None,
+                mean_tolerance=self.DEPTH_MEAN_DIFF_TOLERANCE,
+                print_all_stats=False,
+            )
+            self.assertTrue(
+                depth_result["all_passed"],
+                f"Depth image comparison failed ({mode_label}, tol={self.DEPTH_MEAN_DIFF_TOLERANCE}). Output dir: {out_dir}",
+            )
 
     async def test_data_augmentation_writer(self):
         import asyncio
@@ -449,13 +470,30 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
                 folder_contents_success, f"Folder contents validation failed ({mode_label}). Output dir: {out_dir}"
             )
 
-            result = compare_images_in_directories(
+            rgb_result = compare_images_in_directories(
                 golden_dir=golden_dir,
                 test_dir=out_dir,
-                path_pattern=r"\.png$",
+                path_pattern=r"^rgb_.*\.png$",
                 allclose_rtol=None,
                 allclose_atol=None,
-                mean_tolerance=self.MEAN_DIFF_TOLERANCE,
+                mean_tolerance=self.RGB_MEAN_DIFF_TOLERANCE,
                 print_all_stats=False,
             )
-            self.assertTrue(result["all_passed"], f"Image comparison failed ({mode_label}). Output dir: {out_dir}")
+            self.assertTrue(
+                rgb_result["all_passed"],
+                f"RGB image comparison failed ({mode_label}, tol={self.RGB_MEAN_DIFF_TOLERANCE}). Output dir: {out_dir}",
+            )
+
+            depth_result = compare_images_in_directories(
+                golden_dir=golden_dir,
+                test_dir=out_dir,
+                path_pattern=r"^distance_to_camera_.*\.png$",
+                allclose_rtol=None,
+                allclose_atol=None,
+                mean_tolerance=self.DEPTH_MEAN_DIFF_TOLERANCE,
+                print_all_stats=False,
+            )
+            self.assertTrue(
+                depth_result["all_passed"],
+                f"Depth image comparison failed ({mode_label}, tol={self.DEPTH_MEAN_DIFF_TOLERANCE}). Output dir: {out_dir}",
+            )

@@ -187,7 +187,6 @@ class SyntheticRecorderWindow(MenuHelperWindow):
         # UI-only fields
         self._out_working_dir = ""  # Empty = use current working directory
         self._out_dir = "_out_sdrec"
-        self._use_s3 = False
         self._s3_params = {"s3_bucket": "", "s3_region": "", "s3_endpoint": ""}
         self._custom_writer_params = {}
         self._basic_writer_params = {
@@ -304,39 +303,36 @@ class SyntheticRecorderWindow(MenuHelperWindow):
         open_file_using_os_default(path)
 
     def _configure_disk_backend(self) -> None:
-        """Configure DiskBackend parameters from UI fields."""
+        """Configure DiskBackend parameters from UI fields.
+
+        Replaces any previously configured backend params with a fresh DiskBackend-only set so that
+        stale keys (e.g. ``bucket`` from a previous S3 session) do not leak into ``initialize()``.
+        """
         if self._out_working_dir:
-            self._recorder.backend_params["output_dir"] = os.path.join(self._out_working_dir, self._out_dir)
+            output_dir = os.path.join(self._out_working_dir, self._out_dir)
         else:
-            self._recorder.backend_params["output_dir"] = self._out_dir
+            output_dir = self._out_dir
+        self._recorder.backend_params = {"output_dir": output_dir}
 
     def _configure_s3_backend(self) -> None:
-        """Configure S3Backend parameters from UI fields."""
-        backend_params = self._recorder.backend_params
+        """Configure S3Backend parameters from UI fields.
 
-        key_prefix = self._out_dir or None
-        if key_prefix:
-            backend_params["key_prefix"] = key_prefix
-        else:
-            backend_params.pop("key_prefix", None)
-
-        bucket = self._s3_params.get("s3_bucket") or None
+        Replaces any previously configured backend params with a fresh S3Backend-only set so that
+        stale keys (e.g. ``output_dir`` from a previous Disk session) do not leak into ``initialize()``.
+        """
+        backend_params = {}
+        if self._out_dir:
+            backend_params["key_prefix"] = self._out_dir
+        bucket = self._s3_params.get("s3_bucket")
         if bucket:
             backend_params["bucket"] = bucket
-        else:
-            backend_params.pop("bucket", None)
-
-        region = self._s3_params.get("s3_region") or None
+        region = self._s3_params.get("s3_region")
         if region:
             backend_params["region"] = region
-        else:
-            backend_params.pop("region", None)
-
-        endpoint = self._s3_params.get("s3_endpoint") or None
+        endpoint = self._s3_params.get("s3_endpoint")
         if endpoint:
             backend_params["endpoint_url"] = endpoint
-        else:
-            backend_params.pop("endpoint_url", None)
+        self._recorder.backend_params = backend_params
 
     def _load_config(self, path: str) -> None:
         """Load the json config file and set the recorder parameters.
@@ -374,24 +370,30 @@ class SyntheticRecorderWindow(MenuHelperWindow):
         # Load UI-only fields
         self._out_working_dir = config.get("out_working_dir", self._out_working_dir)
         self._out_dir = config.get("out_dir", self._out_dir)
-        self._use_s3 = config.get("use_s3", False)
         s3_params = config.get("s3_params")
         if isinstance(s3_params, dict):
-            self._s3_params = s3_params
+            self._s3_params.update(s3_params)
 
-        # Load backend configuration
-        self._recorder.backend_type = config.get("backend_type", self._recorder.backend_type)
+        # Resolve backend type from config. ``backend_type`` is the source of truth; the legacy
+        # ``use_s3`` flag is honored only when no ``backend_type`` was saved.
+        backend_type = config.get("backend_type")
+        if backend_type not in ("DiskBackend", "S3Backend"):
+            backend_type = "S3Backend" if config.get("use_s3") else "DiskBackend"
+        self._recorder.backend_type = backend_type
+
+        # Hydrate S3 UI fields from saved backend_params for backwards compatibility with configs
+        # that stored bucket/region/endpoint only under ``backend_params``.
         backend_params = config.get("backend_params")
-        if isinstance(backend_params, dict):
-            self._recorder.backend_params = backend_params
-        else:
-            self._recorder.backend_params = {}
+        if isinstance(backend_params, dict) and backend_type == "S3Backend":
+            self._s3_params["s3_bucket"] = backend_params.get("bucket", self._s3_params["s3_bucket"])
+            self._s3_params["s3_region"] = backend_params.get("region", self._s3_params["s3_region"])
+            self._s3_params["s3_endpoint"] = backend_params.get("endpoint_url", self._s3_params["s3_endpoint"])
 
-        # Construct backend_params based on backend type and UI fields
-        if self._recorder.backend_type == "DiskBackend":
-            self._configure_disk_backend()
-        elif self._recorder.backend_type == "S3Backend":
+        # Always (re)derive backend_params from UI fields so disk/S3 toggles never leak stale keys.
+        if backend_type == "S3Backend":
             self._configure_s3_backend()
+        else:
+            self._configure_disk_backend()
 
         # Load writer params (UI-only fields)
         basic_writer_params = config.get("basic_writer_params")
@@ -462,8 +464,6 @@ class SyntheticRecorderWindow(MenuHelperWindow):
                     config["out_working_dir"] = self._out_working_dir
                 if self._out_dir:
                     config["out_dir"] = self._out_dir
-                if self._use_s3:
-                    config["use_s3"] = self._use_s3
                 if self._s3_params:
                     config["s3_params"] = self._s3_params
                 if self._basic_writer_params:
@@ -573,11 +573,12 @@ class SyntheticRecorderWindow(MenuHelperWindow):
             # If custom writer, load parameters from the given json config file
             self._recorder.writer_params = self._get_custom_params(self._custom_params_path)
 
-        # Configure backend params from UI fields before recording
-        if self._recorder.backend_type == "DiskBackend":
-            self._configure_disk_backend()
-        elif self._recorder.backend_type == "S3Backend":
+        # Configure backend params from UI fields before recording (always rebuilt from scratch
+        # so Disk/S3 toggles never leak stale keys into backend.initialize()).
+        if self._recorder.backend_type == "S3Backend":
             self._configure_s3_backend()
+        else:
+            self._configure_disk_backend()
 
         asyncio.ensure_future(self._recorder.start_stop_async())
 
@@ -655,17 +656,18 @@ class SyntheticRecorderWindow(MenuHelperWindow):
         """Build the S3 part of the UI.
 
         Creates UI elements for configuring S3 backend parameters including the S3 enable checkbox
-        and input fields for bucket, region, and endpoint settings.
+        and input fields for bucket, region, and endpoint settings. The "Use S3" checkbox is bound
+        directly to ``self._recorder.backend_type`` to keep a single source of truth.
         """
         with ui.VStack(spacing=5):
             with ui.HStack():
                 ui.Spacer(width=10)
                 ui.Label("Use S3", width=250, alignment=ui.Alignment.LEFT, tooltip="Write data to S3 buckets")
                 s3_model = ui.CheckBox(width=10, height=0).model
-                s3_model.set_value(self._use_s3)
+                s3_model.set_value(self._recorder.backend_type == "S3Backend")
 
                 def value_changed(m: object) -> None:
-                    self._use_s3 = m.as_bool
+                    self._recorder.backend_type = "S3Backend" if m.as_bool else "DiskBackend"
 
                 s3_model.add_value_changed_fn(value_changed)
 
@@ -721,7 +723,9 @@ class SyntheticRecorderWindow(MenuHelperWindow):
 
             with ui.HStack(spacing=5):
                 ui.Spacer(width=5)
-                out_dir_model = ui.StringField().model
+                out_dir_model = ui.StringField(
+                    tooltip="Disk: leaf directory under Working Directory.  S3: key_prefix inside the bucket."
+                ).model
                 out_dir_model.set_value(self._out_dir)
 
                 def out_dir_changed(model: object) -> None:
