@@ -62,9 +62,6 @@ parser.add_argument(
     help="Tick rate for camera sensors (Hz). 0.0 means default rate.",
 )
 parser.add_argument(
-    "--enable-lidar-multitick", action="store_true", help="Enable multi-tick rendering for lidar sensors"
-)
-parser.add_argument(
     "--rtf-window-ms",
     type=float,
     default=100.0,
@@ -95,7 +92,6 @@ headless = args.non_headless
 viewport_updates = args.viewport_updates
 async_render_handshake = args.async_render_handshake
 tick_rate = args.tick_rate
-enable_lidar_multitick = args.enable_lidar_multitick
 rtf_window_ms = args.rtf_window_ms
 rtf_export_samples = args.rtf_export_samples
 physics_dt = args.physics_dt
@@ -160,7 +156,6 @@ benchmark = BaseIsaacBenchmark(
             {"name": "num_3d_lidars", "data": enable_3d_lidar},
             {"name": "num_robots", "data": n_robot},
             {"name": "tick_rate_hz", "data": tick_rate},
-            {"name": "enable_lidar_multitick", "data": enable_lidar_multitick},
             {"name": "rtf_window_wall_ms", "data": rtf_window_ms},
             {"name": "rtf_export_window_samples", "data": rtf_export_samples},
             {"name": "physics_dt_s", "data": physics_dt},
@@ -247,16 +242,6 @@ if tick_rate > 0:
             if prim.IsA(UsdGeom.Camera):
                 prim.ApplyAPI("OmniSensorAPI")
                 prim.GetAttribute("omni:sensor:tickRate").Set(tick_rate)
-
-if enable_lidar_multitick:
-    for robot_idx in range(n_robot):
-        robot_prim_path = "/Robots/Robot_" + str(robot_idx)
-        robot_prim = stage.GetPrimAtPath(robot_prim_path)
-        for prim in Usd.PrimRange(robot_prim):
-            if prim.GetTypeName() == "OmniLidar":
-                scan_rate = prim.GetAttribute("omni:sensor:Core:scanRateBaseHz").Get()
-                if scan_rate is not None:
-                    prim.GetAttribute("omni:sensor:tickRate").Set(float(scan_rate))
 
 carb.settings.get_settings().set_bool("/exts/isaacsim.ros2.bridge/publish_without_verification", True)
 

@@ -31,11 +31,6 @@ parser.add_argument(
     choices=["LocalLogMetrics", "JSONFileMetrics", "OsmoKPIFile", "OmniPerfKPIFile"],
     help="Benchmarking backend, defaults",
 )
-parser.add_argument(
-    "--enable-lidar-multitick",
-    action="store_true",
-    help="Set omni:sensor:tickRate on lidar sensors to their scan rate",
-)
 
 
 args, unknown = parser.parse_known_args()
@@ -43,7 +38,6 @@ args, unknown = parser.parse_known_args()
 n_sensor = args.num_sensors
 n_gpu = args.num_gpus
 n_frames = args.num_frames
-enable_lidar_multitick = args.enable_lidar_multitick
 
 from isaacsim import SimulationApp
 
@@ -94,11 +88,6 @@ for i in range(n_sensor):
     )
     sensor = lidar.prims[0]
     sensors.append(sensor)
-
-    if enable_lidar_multitick:
-        scan_rate = sensor.GetAttribute("omni:sensor:Core:scanRateBaseHz").Get()
-        if scan_rate is not None:
-            sensor.GetAttribute("omni:sensor:tickRate").Set(float(scan_rate))
 
     hydra_texture = rep.create.render_product(sensor.GetPath(), [1, 1], name="Isaac")
     hydra_textures.append(hydra_texture)

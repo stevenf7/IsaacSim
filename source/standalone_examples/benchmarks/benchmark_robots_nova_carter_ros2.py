@@ -49,9 +49,6 @@ parser.add_argument(
 parser.add_argument(
     "--tick-rate", type=float, default=0.0, help="Tick rate for camera sensors (Hz). 0.0 means default rate."
 )
-parser.add_argument(
-    "--enable-lidar-multitick", action="store_true", help="Set omni:sensor:tickRate on lidar sensors to their scan rate"
-)
 
 args, unknown = parser.parse_known_args()
 
@@ -66,7 +63,6 @@ headless = args.non_headless
 viewport_updates = args.viewport_updates
 async_render_handshake = args.async_render_handshake
 tick_rate = args.tick_rate
-enable_lidar_multitick = args.enable_lidar_multitick
 
 extra_args = []
 if async_render_handshake:
@@ -221,16 +217,6 @@ if tick_rate > 0:
             if prim.IsA(UsdGeom.Camera):
                 prim.ApplyAPI("OmniSensorAPI")
                 prim.GetAttribute("omni:sensor:tickRate").Set(tick_rate)
-
-if enable_lidar_multitick:
-    for robot_idx in range(n_robot):
-        robot_prim_path = "/Robots/Robot_" + str(robot_idx)
-        robot_prim = stage.GetPrimAtPath(robot_prim_path)
-        for prim in Usd.PrimRange(robot_prim):
-            if prim.GetTypeName() == "OmniLidar":
-                scan_rate = prim.GetAttribute("omni:sensor:Core:scanRateBaseHz").Get()
-                if scan_rate is not None:
-                    prim.GetAttribute("omni:sensor:tickRate").Set(float(scan_rate))
 
 # Set this to true so that we always publish regardless of subscribers
 carb.settings.get_settings().set_bool("/exts/isaacsim.ros2.bridge/publish_without_verification", True)
