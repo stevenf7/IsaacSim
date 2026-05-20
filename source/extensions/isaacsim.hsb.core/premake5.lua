@@ -151,7 +151,6 @@ if os.target() == "linux" then
         { "docs", ext.target_dir .. "/docs" },
         { "data", ext.target_dir .. "/data" },
         { "include", ext.target_dir .. "/include" },
-        { "$root/_build/target-deps/pip_ucx_prebundle", ext.target_dir .. "/pip_prebundle" },
     }
 else
     print("SKIPPING BUILD - Only supported on linux-x86_64")

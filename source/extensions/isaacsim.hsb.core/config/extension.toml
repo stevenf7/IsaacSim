@@ -17,9 +17,6 @@ writeTarget.platform = true
 "omni.usd.libs" = {}
 
 [[python.module]]
-path = "pip_prebundle"
-
-[[python.module]]
 name = "isaacsim.hsb.core"
 
 [[python.module]]
