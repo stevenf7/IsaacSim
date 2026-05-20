@@ -6,5 +6,5 @@ cube = Cube("/World/Cube")
 # Enable physics on prim
 # If a tighter collision approximation is desired use convexDecomposition instead of convexHull
 geom_prim = GeomPrim(cube.paths, apply_collision_apis=True)
-geom_prim.set_collision_approximations(["convexHull"])
+geom_prim.set_collision_approximations(["convexDecomposition"])
 RigidPrim(cube.paths)

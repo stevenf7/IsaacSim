@@ -17,6 +17,8 @@ for _ in range(3):
 # -- End test setup --
 
 # [query-articulation]
+from isaacsim.core.experimental.prims import Articulation
+
 articulation = Articulation("/Franka")
 # Get articulation information
 print("DOF count:", articulation.num_dofs)
@@ -29,6 +31,8 @@ print("Link paths:", articulation.link_paths)
 # [/query-articulation]
 
 # [read-dof-states]
+from isaacsim.core.experimental.prims import Articulation
+
 articulation = Articulation("/Franka")
 # Get all DOF states
 print("DOF positions:", articulation.get_dof_positions())
@@ -37,12 +41,17 @@ print("DOF efforts:", articulation.get_dof_efforts())
 # [/read-dof-states]
 
 # [dof-position-control]
+import numpy as np
+from isaacsim.core.experimental.prims import Articulation
+
 articulation = Articulation("/Franka")
 # Set all DOF positions to random values between -1 and 1
 articulation.set_dof_position_targets(np.random.rand(9) * 2 - 1)
 # [/dof-position-control]
 
 # [single-dof-position-control]
+from isaacsim.core.experimental.prims import Articulation
+
 articulation = Articulation("/Franka")
 # Set the 'panda_finger_joint1' DOF position to 0.04.
 # The 'panda_finger_joint2' will mimic the value, as they are linked
@@ -50,6 +59,9 @@ articulation.set_dof_position_targets(0.04, dof_indices=articulation.get_dof_ind
 # [/single-dof-position-control]
 
 # [velocity-control]
+import numpy as np
+from isaacsim.core.experimental.prims import Articulation
+
 articulation = Articulation("/Franka")
 # Switch to velocity control mode
 articulation.switch_dof_control_mode("velocity")
@@ -58,6 +70,8 @@ articulation.set_dof_velocity_targets(10 * (np.random.rand(9) * 2 - 1))
 # [/velocity-control]
 
 # [single-dof-velocity-control]
+from isaacsim.core.experimental.prims import Articulation
+
 articulation = Articulation("/Franka")
 # Switch to velocity control mode
 articulation.switch_dof_control_mode("velocity")
@@ -66,6 +80,9 @@ articulation.set_dof_velocity_targets(0.25, dof_indices=articulation.get_dof_ind
 # [/single-dof-velocity-control]
 
 # [effort-control]
+import numpy as np
+from isaacsim.core.experimental.prims import Articulation
+
 articulation = Articulation("/Franka")
 # Switch to effort control mode
 articulation.switch_dof_control_mode("effort")

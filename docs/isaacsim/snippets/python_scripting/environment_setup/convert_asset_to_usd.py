@@ -1,4 +1,6 @@
 import asyncio
+import tempfile
+from pathlib import Path
 
 import carb
 import omni
@@ -30,9 +32,10 @@ async def convert_asset_to_usd(input_obj: str, output_usd: str):
     print("converting done")
 
 
-asyncio.ensure_future(
-    convert_asset_to_usd(
-        "</path/to/mesh.obj>",
-        "</path/to/mesh.usd>",
-    )
-)
+demo_dir = Path(tempfile.gettempdir()) / "isaacsim_asset_converter_demo"
+demo_dir.mkdir(parents=True, exist_ok=True)
+
+# This repo mesh path is illustrative; replace it with the path to your own OBJ/STL/FBX asset.
+input_asset = Path("source/standalone_examples/data/torus/torus.stl")
+output_usd = demo_dir / "torus.usd"
+asyncio.ensure_future(convert_asset_to_usd(str(input_asset), str(output_usd)))

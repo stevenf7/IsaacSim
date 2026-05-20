@@ -1,31 +1,15 @@
-import carb
-import omni
-from pxr import Sdf, UsdShade
+from isaacsim.core.experimental.materials import OmniPbrMaterial
+from isaacsim.core.experimental.objects import Cube
+from isaacsim.storage.native import get_assets_root_path
 
-# Change the server to your Nucleus install, default is set to localhost in omni.isaac.sim.base.kit
-default_server = carb.settings.get_settings().get("/persistent/isaac/asset_root/default")
-mtl_created_list = []
+texture_path = get_assets_root_path(skip_check=True) + "/Isaac/Samples/DR/Materials/Textures/marble_tile.png"
+
 # Create a new material using OmniPBR.mdl
-omni.kit.commands.execute(
-    "CreateAndBindMdlMaterialFromLibrary",
-    mdl_name="OmniPBR.mdl",
-    mtl_name="OmniPBR",
-    mtl_created_list=mtl_created_list,
-)
-stage = omni.usd.get_context().get_stage()
-mtl_prim = stage.GetPrimAtPath(mtl_created_list[0])
+material = OmniPbrMaterial("/World/OmniPBRMaterial")
 # Set material inputs, these can be determined by looking at the .mdl file
 # or by selecting the Shader attached to the Material in the stage window and looking at the details panel
-omni.usd.create_material_input(
-    mtl_prim,
-    "diffuse_texture",
-    default_server + "/Isaac/Samples/DR/Materials/Textures/marble_tile.png",
-    Sdf.ValueTypeNames.Asset,
-)
+material.set_input_values("diffuse_texture", texture_path)
 # Create a prim to apply the material to
-result, path = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
-# Get the path to the prim
-cube_prim = stage.GetPrimAtPath(path)
+cube = Cube("/World/Cube")
 # Bind the material to the prim
-cube_mat_shade = UsdShade.Material(mtl_prim)
-UsdShade.MaterialBindingAPI(cube_prim).Bind(cube_mat_shade, UsdShade.Tokens.strongerThanDescendants)
+cube.apply_visual_materials(material)

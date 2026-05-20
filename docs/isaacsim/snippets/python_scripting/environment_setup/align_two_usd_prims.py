@@ -1,25 +1,16 @@
-import omni
-from pxr import Gf, UsdGeom
+import isaacsim.core.experimental.utils.transform as transform_utils
+from isaacsim.core.experimental.objects import Cube
+from isaacsim.core.experimental.prims import XformPrim
 
-stage = omni.usd.get_context().get_stage()
 # Create a cube
-result, path_a = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
-prim_a = stage.GetPrimAtPath(path_a)
+cube_a = Cube("/World/CubeA")
 # change the cube pose
-xform = UsdGeom.Xformable(prim_a)
-transform = xform.AddTransformOp()
-mat = Gf.Matrix4d()
-mat.SetTranslateOnly(Gf.Vec3d(0.10, 1, 1.5))
-mat.SetRotateOnly(Gf.Rotation(Gf.Vec3d(0, 1, 0), 290))
-transform.Set(mat)
+orientation = transform_utils.euler_angles_to_quaternion([0.0, 290.0, 0.0], degrees=True)
+prim_a = XformPrim(cube_a.paths)
+prim_a.set_world_poses(positions=[[0.10, 1.0, 1.5]], orientations=orientation)
 # Create a second cube
-result, path_b = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
-prim_b = stage.GetPrimAtPath(path_b)
+cube_b = Cube("/World/CubeB")
 # Get the transform of the first cube
-pose = omni.usd.utils.get_world_transform_matrix(prim_a)
-# Clear the transform on the second cube
-xform = UsdGeom.Xformable(prim_b)
-xform.ClearXformOpOrder()
-# Set the pose of prim_b to that of prim_b
-xform_op = xform.AddXformOp(UsdGeom.XformOp.TypeTransform, UsdGeom.XformOp.PrecisionDouble, "")
-xform_op.Set(pose)
+positions, orientations = prim_a.get_world_poses()
+# Set the pose of prim_b to that of prim_a
+XformPrim(cube_b.paths).set_world_poses(positions=positions, orientations=orientations)

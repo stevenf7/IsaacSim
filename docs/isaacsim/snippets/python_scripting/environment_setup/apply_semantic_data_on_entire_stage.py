@@ -1,5 +1,5 @@
+import isaacsim.core.experimental.utils.semantics as semantics_utils
 import omni.usd
-from isaacsim.core.utils.semantics import add_labels
 
 
 def remove_prefix(name, prefix):
@@ -26,4 +26,4 @@ for prim in stage.Traverse():
         label = remove_prefix(label, "SM_")
         label = remove_numerical_suffix(label)
         label = remove_underscores(label)
-        add_labels(prim, labels=[label], instance_name="class")
+        semantics_utils.add_labels(prim, labels=[label], taxonomy="class")
