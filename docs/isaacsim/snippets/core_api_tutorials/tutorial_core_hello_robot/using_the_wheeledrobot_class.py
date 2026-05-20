@@ -28,12 +28,14 @@ class HelloWorld(BaseSample):
         # Wrap the Jetbot with the Articulation class
         self._jetbot = Articulation("/World/Fancy_Robot")
 
+        # -- Begin getting indices -- #
         # Print available DOF names
         print("Available DOFs:", self._jetbot.dof_names)
 
         # Get indices for specific wheel joints
         self._wheel_indices = self._jetbot.get_dof_indices(["left_wheel_joint", "right_wheel_joint"]).numpy()
         print("Wheel indices:", self._wheel_indices)
+        # -- End of getting indices -- #
 
         # Register physics callback
         from isaacsim.core.simulation_manager.impl.isaac_events import IsaacEvents
@@ -43,9 +45,11 @@ class HelloWorld(BaseSample):
         )
 
     def send_robot_actions(self, dt, context):
+        # -- Begin setting wheel velocity -- #
         # Apply velocity targets to specific DOF indices
         wheel_velocities = np.array([[10.0, 10.0]])  # Both wheels same speed = forward
         self._jetbot.set_dof_velocity_targets(wheel_velocities, dof_indices=self._wheel_indices)
+        # -- End of setting wheel velocity -- #
 
     def physics_cleanup(self):
         if self._physics_callback_id is not None:

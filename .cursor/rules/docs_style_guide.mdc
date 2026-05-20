@@ -118,6 +118,7 @@ My Section
 
 - Use `.. code-block:: <language>` with proper indentation.
 - Specify the language (``python``, ``bash``, ``json``, ``yaml``, ``cpp``).
+- Avoid using `emphasize-lines`. Use `start-after` and `end-before` to include code snippets. If needed, also include the complete code.
 
 ### Images
 

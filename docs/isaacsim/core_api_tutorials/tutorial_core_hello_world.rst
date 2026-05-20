@@ -86,11 +86,27 @@ actions BaseSample performs:
 #. Resetting objects to their default states.
 #. Handling hot reloading.
 
+Import packages:
 
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_world/handling_hot_reloading.py
     :language: python
     :linenos:
-    :emphasize-lines: 1-3, 10-16
+    :start-after: # -- Import Isaac sim packages -- #
+    :end-before: # -- End of import Isaac sim packages -- #
+
+Setup scene:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_world/handling_hot_reloading.py
+    :language: python
+    :linenos:
+    :start-after: # -- Set up scene -- #
+    :end-before: # -- End of set up scene -- #
+
+Complete code:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_world/handling_hot_reloading.py
+    :language: python
+    :linenos:
 
 Key Concepts
 ^^^^^^^^^^^^^^^
@@ -111,10 +127,27 @@ Adding to the Scene
 Use the Python API to add a cube as a rigid body to the scene. With the Core APIs,
 create the geometry first, then apply collision and rigid body properties.
 
+Import packages:
+
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_world/adding_to_the_scene.py
     :language: python
     :linenos:
-    :emphasize-lines: 1-7, 21-41
+    :start-after: # -- Import Isaac sim packages -- #
+    :end-before: # -- End of import Isaac sim packages -- #
+
+Adding a cube:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_world/adding_to_the_scene.py
+    :language: python
+    :linenos:
+    :start-after: # -- Creating a cube and apply materials -- #
+    :end-before: # -- End of creating a cube and apply materials -- #
+
+Complete code:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_world/adding_to_the_scene.py
+    :language: python
+    :linenos:
 
 #. Press **Ctrl+S** to save the code and hot-reload |isaac-sim|.
 #. Open the menu again.
@@ -145,17 +178,23 @@ This modular approach gives you fine-grained control - you can create static col
 Inspecting Object Properties
 =============================
 
-Print the world pose and velocity of the cube. The highlighted lines show how you can query object properties.
+Print the world pose and velocity of the cube. The following lines show how you can query object properties.
 
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_world/inspecting_object_properties.py
     :language: python
     :linenos:
-    :emphasize-lines: 39-52
+    :start-after: # -- Begin query properties -- #
+    :end-before: # -- End of query properties -- #
 
 .. note:: The experimental APIs return batched results as warp arrays. Use ``.numpy()`` to convert
           them to numpy arrays, and index with ``[0]`` to get the first (and only) element when
           working with a single object.
 
+Complete code:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_world/inspecting_object_properties.py
+    :language: python
+    :linenos:
 
 Continuously Inspecting the Object Properties during Simulation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -165,12 +204,35 @@ executed. As mentioned in :ref:`isaac_sim_app_tutorial_intro_workflows`, in this
 application is running asynchronously and can't control when to step physics. However, you can add
 callbacks to ensure certain things happen before certain events.
 
+Import SimulationManager:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_world/continuously_inspecting_the_object_properties_duri.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin loading SimulationManager -- #
+    :end-before: # -- End of loading SimulationManager -- #
+
 Add a physics callback using the SimulationManager:
 
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_world/continuously_inspecting_the_object_properties_duri.py
     :language: python
     :linenos:
-    :emphasize-lines: 6, 45-47, 51-57
+    :start-after: # -- Begin registering callback -- #
+    :end-before: # -- End of registering callback -- #
+
+Deregister the callback during clean up:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_world/continuously_inspecting_the_object_properties_duri.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin deregistering callback -- #
+    :end-before: # -- End of deregistering callback -- #
+
+Complete code:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_world/continuously_inspecting_the_object_properties_duri.py
+    :language: python
+    :linenos:
 
 Converting the Example to a Standalone Application
 =====================================================
@@ -214,4 +276,3 @@ Continue to :ref:`isaac_sim_app_tutorial_core_hello_robot` to learn how to add a
 .. Note:: The next tutorials will be developed mainly using the extensions application workflow.
           However, conversion to other workflows is similar given what was covered
           in this tutorial.
-

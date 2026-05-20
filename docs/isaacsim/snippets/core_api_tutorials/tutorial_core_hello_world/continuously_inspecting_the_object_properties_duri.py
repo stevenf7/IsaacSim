@@ -3,7 +3,11 @@ import numpy as np
 from isaacsim.core.experimental.materials import PreviewSurfaceMaterial
 from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
+
+# -- Begin loading SimulationManager -- #
 from isaacsim.core.simulation_manager import SimulationManager
+
+# -- End of loading SimulationManager -- #
 from isaacsim.examples.base.base_sample_experimental import BaseSample
 from isaacsim.storage.native import get_assets_root_path
 
@@ -39,12 +43,14 @@ class HelloWorld(BaseSample):
         self._cube_shape.apply_visual_materials(visual_material)
 
     async def setup_post_load(self):
+        # -- Begin registering callback -- #
         # Register a physics callback using SimulationManager
         from isaacsim.core.simulation_manager.impl.isaac_events import IsaacEvents
 
         self._physics_callback_id = SimulationManager.register_callback(
             self.print_cube_info, IsaacEvents.POST_PHYSICS_STEP
         )
+        # -- End of registering callback -- #
 
     # Physics callback function - called after each physics step
     # Takes dt (delta time) and context as arguments
@@ -57,7 +63,9 @@ class HelloWorld(BaseSample):
         print("Cube's linear velocity is : " + str(linear_velocities.numpy()[0]))
 
     def physics_cleanup(self):
+        # -- Begin deregistering callback -- #
         # Clean up callback when the extension is unloaded
         if self._physics_callback_id is not None:
             SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
+        # -- End of deregistering callback -- #

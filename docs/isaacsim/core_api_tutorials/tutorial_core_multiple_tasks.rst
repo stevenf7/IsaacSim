@@ -56,10 +56,61 @@ Create a :code:`RobotScenario` class that manages a Jetbot pushing a cube to a F
 Scaling to Multiple Scenarios
 =============================
 
+Adding the following operations:
+
+Set number of scenarios:
+
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_multiple_tasks/scaling_to_many_tasks.py
     :language: python
     :linenos:
-    :emphasize-lines: 152, 160-164, 168-169, 177-178, 182-183, 189
+    :start-after: # -- Begin setting scenario number -- #
+    :end-before: # -- End of setting scenario number -- #
+
+Creating scenarios:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_multiple_tasks/scaling_to_many_tasks.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin creating scenarios -- #
+    :end-before: # -- End of creating scenarios -- #
+
+Initializing scenarios:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_multiple_tasks/scaling_to_many_tasks.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin initializing scenarios -- #
+    :end-before: # -- End of initializing scenarios -- #
+
+Stepping all scenarios:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_multiple_tasks/scaling_to_many_tasks.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin stepping scenarios -- #
+    :end-before: # -- End of stepping scenarios -- #
+
+Resetting all scenarios:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_multiple_tasks/scaling_to_many_tasks.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin resetting scenarios -- #
+    :end-before: # -- End of resetting scenarios -- #
+
+Clean up:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_multiple_tasks/scaling_to_many_tasks.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin remove all scenarios -- #
+    :end-before: # -- End of remove all scenarios -- #
+
+Complete code:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_multiple_tasks/scaling_to_many_tasks.py
+    :language: python
+    :linenos:
 
 .. image:: /images/core_api_tutorials_6_2.webp
     :align: center
@@ -75,7 +126,6 @@ In the :code:`setup_scene` method above, set :code:`randomize=True` when creatin
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_multiple_tasks/adding_randomization.py
     :language: python
     :linenos:
-    :emphasize-lines: 3
 
 Best Practices for Scaling
 ==========================
@@ -106,4 +156,3 @@ This tutorial covered the following topics:
 #. Scaling to multiple parallel scenarios with a simple loop
 #. Adding randomization to scenario parameters
 #. Best practices for managing multiple robot instances
-

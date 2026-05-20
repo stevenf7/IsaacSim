@@ -47,6 +47,7 @@ class FrankaRrtExample:
         return self._articulation, self._target
 
     def setup(self):
+        # -- Begin initializing RRT -- #
         # Lula config files for supported robots are stored in the motion_generation extension under
         # "/path_planner_configs" and "/motion_policy_configs"
         mg_extension_path = get_extension_path_from_name("isaacsim.robot_motion.motion_generation")
@@ -60,19 +61,26 @@ class FrankaRrtExample:
             rrt_config_path=rrt_config_dir + "/franka/rrt/franka_planner_config.yaml",
             end_effector_frame_name="right_gripper",
         )
+        # -- End of initializing RRT -- #
 
+        # -- Begin simplified initialization of RRT -- #
         # RRT for supported robots can also be loaded with a simpler equivalent:
         # rrt_config = interface_config_loader.load_supported_path_planner_config("Franka", "RRT")
         # self._rrt = RRT(**rrt_confg)
+        # -- End of simplified initialization of RRT -- #
 
+        # -- Begin adding obstacle -- #
         self._rrt.add_obstacle(self._obstacle)
+        # -- End of adding obstacle -- #
 
         # Set the maximum number of iterations of RRT to prevent it from blocking Isaac Sim for
         # too long.
         self._rrt.set_max_iterations(5000)
 
+        # -- Begin setting PathPlannerVisualizer -- #
         # Use the PathPlannerVisualizer wrapper to generate a trajectory of ArticulationActions
         self._path_planner_visualizer = PathPlannerVisualizer(self._articulation, self._rrt)
+        # -- End of setting PathPlannerVisualizer -- #
 
         self.reset()
 
@@ -85,10 +93,12 @@ class FrankaRrtExample:
         target_moved = translation_distance > 0.01 or rotation_distance > 0.01
 
         if self._frame_counter % 60 == 0 and target_moved:
+            # -- Begin computing plan -- #
             # Replan every 60 frames if the target has moved
             self._rrt.set_end_effector_target(current_target_translation, current_target_orientation)
             self._rrt.update_world()
             self._plan = self._path_planner_visualizer.compute_plan_as_articulation_actions(max_cspace_dist=0.01)
+            # -- End of computing plan -- #
 
             self._target_translation = current_target_translation
             self._target_rotation = current_target_rotation

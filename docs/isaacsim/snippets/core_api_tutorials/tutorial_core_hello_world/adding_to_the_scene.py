@@ -1,3 +1,4 @@
+# -- Import Isaac sim packages -- #
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 from isaacsim.core.experimental.materials import PreviewSurfaceMaterial
@@ -5,6 +6,8 @@ from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 from isaacsim.examples.base.base_sample_experimental import BaseSample
 from isaacsim.storage.native import get_assets_root_path
+
+# -- End of import Isaac sim packages -- #
 
 
 class HelloWorld(BaseSample):
@@ -18,6 +21,7 @@ class HelloWorld(BaseSample):
             path="/World/ground",
         )
 
+        # -- Creating a cube and apply materials -- #
         # Create a blue visual material for the cube
         visual_material = PreviewSurfaceMaterial("/World/Materials/blue")
         visual_material.set_input_values("diffuseColor", [0.0, 0.0, 1.0])
@@ -39,3 +43,4 @@ class HelloWorld(BaseSample):
 
         # Apply the blue material
         self._cube_shape.apply_visual_materials(visual_material)
+        # -- End of creating a cube and apply materials -- #

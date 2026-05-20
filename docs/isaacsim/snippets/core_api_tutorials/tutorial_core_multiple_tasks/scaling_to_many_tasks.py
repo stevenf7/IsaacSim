@@ -149,41 +149,53 @@ class HelloWorld(BaseSample):
         super().__init__()
         self._physics_callback_id = None
         self._scenarios = []
+        # -- Begin setting scenario number -- #
         self._num_scenarios = 3  # Number of parallel scenarios
+        # -- End of setting scenario number -- #
 
     def setup_scene(self):
         GroundPlane("/World/ground_plane")
         dome_light = DomeLight("/World/DomeLight")
         dome_light.set_intensities(1000)
 
+        # -- Begin creating scenarios -- #
         # Create multiple scenarios with Y-axis offsets
         for i in range(self._num_scenarios):
             offset = np.array([0.0, (i - 1) * 2.0, 0.0])  # Spread along Y-axis
             scenario = RobotScenario(name=f"scenario_{i}", offset=offset, randomize=False)
             scenario.setup_scene()
             self._scenarios.append(scenario)
+        # -- End of creating scenarios -- #
 
     async def setup_post_load(self):
+        # -- Begin initializing scenarios -- #
         # Initialize all scenarios
         for scenario in self._scenarios:
             scenario.initialize()
+        # -- End of initializing scenarios -- #
 
         self._physics_callback_id = SimulationManager.register_callback(
             self.physics_step, event=SimulationEvent.PHYSICS_POST_STEP
         )
 
     def physics_step(self, dt, context):
+        # -- Begin stepping scenarios -- #
         # Step all scenarios
         for scenario in self._scenarios:
             scenario.step()
+        # -- End of stepping scenarios -- #
 
     async def setup_post_reset(self):
+        # -- Begin resetting scenarios -- #
         # Reset all scenarios
         for scenario in self._scenarios:
             scenario.reset()
+        # -- End of resetting scenarios -- #
 
     def physics_cleanup(self):
         if self._physics_callback_id is not None:
             SimulationManager.deregister_callback(self._physics_callback_id)
             self._physics_callback_id = None
+        # -- Begin remove all scenarios -- #
         self._scenarios = []
+        # -- End of remove all scenarios -- #

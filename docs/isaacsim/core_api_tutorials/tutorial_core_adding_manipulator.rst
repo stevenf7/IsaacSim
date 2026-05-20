@@ -111,7 +111,14 @@ You can customize the phase durations by passing :code:`events_dt` to the constr
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_adding_manipulator/understanding_the_state_machine.py
     :language: python
     :linenos:
-    :emphasize-lines: 25-30
+    :start-after: # -- Begin custom setup -- #
+    :end-before: # -- End of custom setup -- #
+
+Complete code:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_adding_manipulator/understanding_the_state_machine.py
+    :language: python
+    :linenos:
 
 .. image:: /images/core_api_tutorials_4_1.webp
     :align: center

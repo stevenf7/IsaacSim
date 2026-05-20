@@ -40,6 +40,7 @@ class HelloWorld(BaseSample):
     # It's called once, after both setup_scene and one physics time step has finished
     # to propagate physics handles needed to retrieve physical properties
     async def setup_post_load(self):
+        # -- Begin query properties -- #
         # Query cube properties using RigidPrim methods
         positions, orientations = self._cube.get_world_poses()
         # get_velocities() returns a tuple: (linear_velocities, angular_velocities)
@@ -50,3 +51,4 @@ class HelloWorld(BaseSample):
         print("Cube position is : " + str(positions.numpy()[0]))
         print("Cube's orientation is : " + str(orientations.numpy()[0]))
         print("Cube's linear velocity is : " + str(linear_velocities.numpy()[0]))
+        # -- End of query properties -- #
