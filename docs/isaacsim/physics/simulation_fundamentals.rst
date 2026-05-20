@@ -50,7 +50,7 @@ There are three event streams on the timeline (among a few others, but these are
 Configuring Frame Rate
 ----------------------
 
-The simulation rendering frame rate can be configured by adjusting the current stage metadata. In the **Layer** tab, select the **Root Layer**, and in the properties panel modify the **Timecodes per second** property. 
+The stage's **Timecodes per second** can be configured by adjusting the current stage metadata. In the **Layer** tab, select the **Root Layer**, and in the properties panel modify the **Timecodes per second** property. Under the GUI default ``/app/player/useFixedTimeStepping=true``, the timeline uses ``1 / TimeCodesPerSecond`` as its per-tick ``dt``, so this value sets the simulation's wall-clock playback rate as well as the recorded animation rate. The physics step rate is configured separately on the Physics Scene (see **Configuring Simulation Timesteps** below); for the relationship between the three rates, see :ref:`isaac_sim_sensors_multitick_clock_relationships`. 
 
 .. image:: /images/isaac_sim_frame_rate.png
   :width: 400

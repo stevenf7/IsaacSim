@@ -20,7 +20,6 @@ The easiest way to stream a camera. Given a render product, it automatically wir
 | `dataPlaneType` | token | `coe` (Camera-over-Ethernet) or `linux` (RoCEv2 UDP). Default: `coe` |
 | `dataPlaneId` | uint | Data plane ID |
 | `sensorId` | uint | Sensor ID |
-| `frameSkipCount` | uint | **Deprecated.** Frames to skip between publishes (0 = every frame). Set `omni:sensor:tickRate` on the camera prim instead — see {ref}`isaac_sim_sensors_multitick_rendering`. |
 | `useSystemTime` | bool | Use system clock instead of simulation time |
 | `resetSimulationTimeOnStop` | bool | Reset simulation timestamp on stop |
 

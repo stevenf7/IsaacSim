@@ -82,7 +82,7 @@ app.sensors.nv.radar.outputBufferOnGPU = false
 rtx.materialDb.nonVisualMaterialCSV.enabled=false
 # Specify the non-visual material USD attribute prefix.
 rtx.materialDb.nonVisualMaterialSemantics.prefix="omni:simready:nonvisual"
-# Use Hydra time (`omni.timeline`) in RTX sensor models.
+# Use Hydra time (`omni.timeline`) in RTX sensor models. Applies only if multi-tick rendering is disabled.
 rtx.rtxsensor.useHydraTimeAlways = true
 
 [[test]]

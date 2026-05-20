@@ -153,7 +153,7 @@ The Tracy profiler outputs a hierarchical view of captured zones, split across t
 
 App Main loop
 ^^^^^^^^^^^^^
-In |isaac-sim_short|, the top level zone indicates one frame of the simulation, denoted as ``App Main loop``. The duration of this zone determines the simulation frame rate.
+In |isaac-sim_short|, the top level zone indicates one iteration of the main run loop, denoted as ``App Main loop``. The duration of this zone is the wall-clock time per app update (loop + timeline + render). It is **not** the physics step rate (set on the Physics Scene's ``timeStepsPerSecond``) nor the timeline per-tick ``dt`` (``1 / timeCodesPerSecond`` under fixed time stepping). See :ref:`isaac_sim_sensors_multitick_clock_relationships` for how the three rates interact.
 
 .. Note::
     The `App Update` zone is one level lower but effectively equivalent to the `App Main loop` zone.

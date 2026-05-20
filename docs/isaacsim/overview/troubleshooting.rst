@@ -86,7 +86,9 @@ See :ref:`isaac_sim_app_profiling_performance` for details on using Tracy for pe
 Simulation Frame Rates
 ~~~~~~~~~~~~~~~~~~~~~~
 
-If you observe publish rates that differ from the target simulation frame rate, try:
+If you observe publish rates that differ from the target simulation frame rate, first confirm you set the rate coherently using the ``SimulationManager.setup_simulation`` + ``RenderingManager.set_dt`` pair documented at :ref:`isaac_sim_app_tutorial_ros2_publish_rate_set_simulation_frame_rates`. Setting only one of the three rate clocks (loop rate, timeline ``timeCodesPerSecond``, physics ``timeStepsPerSecond``) produces non-obvious slow-motion or fast-forward behavior - see :ref:`isaac_sim_sensors_multitick_clock_relationships`.
+
+If the rate is set coherently and the issue persists, try:
 
 1. Running |isaac-sim_short| with factory settings to clear any persistent simulation frame rate settings:
 

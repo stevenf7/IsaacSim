@@ -27,9 +27,9 @@ Improve Simulation Performance
 Simulation Time Stepping and Rendering Rate
 ============================================
 
-- adjust the rendering and physics stepping in simulation. If your system is GPU limited, decrease the rending rate could allow more physics stepping to happen per frame, so although it may appear less smooth with a lower frame rate, the physics simulation may be more accurate and more simulation time would have elapsed per frame.
+- Adjust the physics step rate and the application's loop / timeline rate. The physics step rate is set independently on the Physics Scene (or via :py:meth:`isaacsim.core.simulation_manager.SimulationManager.setup_simulation`); lowering the application's render rate via :py:meth:`isaacsim.core.rendering_manager.RenderingManager.set_dt` does **not** automatically increase the number of physics substeps per frame. If you want more physics resolution, raise the Physics Scene's ``timeStepsPerSecond`` (equivalently ``SimulationManager.setup_simulation(dt=...)``); if you want fewer, lower it.
 
-- These parameters can be set using the Simulation Manager and the Rendering Manager, assessbile via Python
+- For an end-to-end coherent rate change, call ``SimulationManager.setup_simulation(dt=...)`` and ``RenderingManager.set_dt(...)`` with the same ``dt`` so the three rate clocks stay aligned. See :ref:`isaac_sim_sensors_multitick_clock_relationships` for the relationship between the clocks.
 
  
 Adjusting friction for wheeled robots 

@@ -105,16 +105,13 @@ Setting a nonzero value causes the camera to render at the specified frequency i
 simulation step rate. This maps to the ``omni:sensor:tickRate`` prim attribute and requires the
 ``OmniSensorAPI`` schema to be applied to the Camera prim — ``RtxCamera`` does this automatically.
 
-.. code-block:: python
-
-    from isaacsim.sensors.experimental.rtx import RtxCamera
-
-    camera = RtxCamera(path="/World/Camera", tick_rate=30.0)
+.. literalinclude:: ../snippets/sensors/isaacsim_sensors_camera/set_camera_tick_rate.py
+    :language: python
 
 ``tick_rate`` is the recommended replacement for the deprecated ``frameSkipCount`` input on
-``ROS2 Camera Helper``, ``ROS2 Camera Info Helper``, ``UCX Camera Helper``, and
-``HSB Camera Helper`` nodes. See :ref:`isaac_sim_sensors_multitick_rendering` for the full
-migration guide and the list of related known issues.
+``ROS2 Camera Helper``, ``ROS2 Camera Info Helper``, and ``UCX Camera Helper`` nodes. See
+:ref:`isaac_sim_sensors_multitick_rendering` for the full migration guide and the list of
+related known issues.
 
 How to Collect Data from a Camera
 ---------------------------------

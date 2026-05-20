@@ -92,12 +92,14 @@ timeline = omni.timeline.get_timeline_interface()
 
 
 if USE_CUSTOM_TIMELINE_SETTINGS:
-    # Ideal to make simulation and animation synchronized.
+    # When True, the timeline forces `dt = 1 / timeCodesPerSecond` per accepted tick
+    # (ignoring the run loop's measured wall-clock dt). On Play it also overrides
+    # `/app/runLoops/main/rateLimitFrequency` to a value computed from
+    # `targetFramerate` and `timeCodesPerSecond`.
     # Default: True in editor, False in standalone.
     # NOTE:
-    # - It may limit the frame rate (see 'timeline.set_play_every_frame') such that the elapsed wall clock time matches the frame's delta time.
-    # - If the app runs slower than this, animation playback may slow down (see 'CompensatePlayDelayInSecs').
-    # - For performance benchmarks, turn this off or set a very high target in `timeline.set_target_framerate`
+    # - If the app cannot sustain that rate, animation playback may slow down (see 'CompensatePlayDelayInSecs').
+    # - For performance benchmarks, turn this off so the timeline advances by the loop's measured dt.
     carb.settings.get_settings().set("/app/player/useFixedTimeStepping", USE_FIXED_TIME_STEPPING)
 
     # This compensates for frames that require more computation time than the frame's fixed delta time, by temporarily speeding up playback.
@@ -157,7 +159,10 @@ if LIMIT_APP_FPS:
 
     # FPS limit of the main run loop (UI, rendering, etc.)
     # Default: 120
-    # NOTE: disabled if `/app/player/useFixedTimeStepping` is False
+    # NOTE: This caps the loop's tick rate (sleeps at end of frame); it does NOT set the
+    # timeline's per-tick dt. On Play with `/app/player/useFixedTimeStepping=True`,
+    # the timeline computes its own `rateLimitFrequency` from `targetFramerate` and
+    # `timeCodesPerSecond` and overrides this value at that moment.
     carb.settings.get_settings().set("/app/runLoops/main/rateLimitFrequency", int(APP_FPS))
 
 
@@ -174,7 +179,7 @@ print(f"    - Subsample rate: {SUBSAMPLE_RATE}  (/app/player/timelineSubsampleRa
 print(f"    - Play delay compensation: {PLAY_DELAY_COMPENSATION}s  (/app/player/CompensatePlayDelayInSecs)")
 print(f"  Physics:")
 print(f"    - PhysX FPS: {PHYSX_FPS}  (physxScene.timeStepsPerSecond)")
-print(f"    - Min simulation FPS: {MIN_SIM_FPS}  (/persistent/simulation/minFrameRate)")
+print(f"    - PhysX min frame-rate clamp: {MIN_SIM_FPS}  (/persistent/simulation/minFrameRate)")
 print(f"    - Simulations enabled: {not DISABLE_SIMULATIONS}  (/app/player/playSimulations)")
 print(f"  Rendering:")
 print(f"    - App FPS limit: {APP_FPS if LIMIT_APP_FPS else 'unlimited'}  (/app/runLoops/main/rateLimitFrequency)")

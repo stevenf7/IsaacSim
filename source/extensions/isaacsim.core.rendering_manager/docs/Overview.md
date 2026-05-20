@@ -8,12 +8,14 @@ The isaacsim.core.rendering_manager extension provides centralized control over 
 
 **{class}`RenderingManager <isaacsim.core.rendering_manager.RenderingManager>` provides core rendering control and timing management.** The class handles synchronous and asynchronous rendering operations, allowing applications to trigger frame updates without advancing simulation or physics systems.
 
-The rendering timing system allows precise control over frame rates through configurable delta time values. Applications can set custom rendering intervals to match specific performance requirements or synchronize with external systems.
+The {meth}`set_dt <isaacsim.core.rendering_manager.RenderingManager.set_dt>` method configures the application's coherent dt across the run loop, timeline (``targetFramerate`` and ``timeCodesPerSecond``), and Isaac loop runner's manual-mode step size. It does **not** modify the physics scene's ``timeStepsPerSecond``; for that, pair the call with {meth}`SimulationManager.setup_simulation <isaacsim.core.simulation_manager.SimulationManager.setup_simulation>` at the same dt.
 
 ```python
 from isaacsim.core.rendering_manager import RenderingManager
+from isaacsim.core.simulation_manager import SimulationManager
 
-# Set 120 Hz rendering rate
+# Coherent 120 Hz setup (loop, timeline, and physics aligned)
+SimulationManager.setup_simulation(dt=1 / 120.0)
 RenderingManager.set_dt(1 / 120.0)
 
 # Trigger a single render frame

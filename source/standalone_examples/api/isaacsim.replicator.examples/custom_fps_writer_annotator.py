@@ -47,7 +47,8 @@ def run_custom_fps_example(duration_seconds):
     # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
     carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
 
-    # Make sure fixed time stepping is set (the timeline will be advanced with the same delta time)
+    # Enable fixed time stepping: the timeline will advance by `1 / timeCodesPerSecond`
+    # per accepted tick, ignoring the run loop's measured wall-clock dt.
     carb.settings.get_settings().set("/app/player/useFixedTimeStepping", True)
 
     # Create scene with a semantically annotated cube with physics

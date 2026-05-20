@@ -324,13 +324,19 @@ public:
 
         updateSettings();
 
-        // We should only do this if we can guarantee we never fall below the rate limited FPS.
-        // DriveSim would want something like this, but they do their own RunLoopRunner. For now disable this
+        // NOTE: the active codepath above leaves `dt` as the wall-clock measured value
+        // (or `m_deltaTime` when manual mode is on). The rate-limit setting
+        // (/app/runLoops/main/rateLimitFrequency) only caps how often update() is
+        // called by sleeping at the end of the frame; it does NOT set dt.
+        //
+        // The alternative below would force dt to the rate-limit period, but it is
+        // only safe if the loop is guaranteed never to fall below the rate-limited
+        // FPS. DriveSim wants something like this but uses its own RunLoopRunner.
+        // Keep disabled here.
         // if (this->rateLimitEnabled)
         //{
-        //    // If rate limit is enabled, we set dt to rateLimitFrequency
-        //    dt = this->minLoopTime.count() * 0.000001;
-        //}
+        //     dt = this->minLoopTime.count() * 0.000001;
+        // }
 
         if (usingEventAdapter)
         {

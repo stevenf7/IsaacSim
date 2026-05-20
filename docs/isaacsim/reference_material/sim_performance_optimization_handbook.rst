@@ -34,10 +34,16 @@ Physics Simulation Optimizations
 .. Note::
     Adjust the physics step size in your script using the ``SimulationManager.set_physics_dt(dt)`` function, where dt is the desired step size in seconds.
 
-2.	**Minimum Simulation Frame Rate**: The minimum simulation frame rate determines the minimum desired frame rate as FPS. If the actual frame rate drops below this value, the simulation will reduce physics accuracy by clamping physics steps to maintain the desired frame rate.
+2.	**PhysX Minimum Frame Rate Clamp** (``--/persistent/simulation/minFrameRate``): caps how many ``physics_dt`` substeps PhysX will run per app update to catch up after a slow frame. The value represents the target minimum app frame rate; PhysX will not run so many catch-up substeps in one update that the effective frame rate would drop below it. This is a direct performance-vs-accuracy knob:
+
+- **Raising the clamp** (for example to ``60``) keeps the app frame rate up under load at the cost of physics-time accuracy: when an app update is slow, PhysX truncates the substep budget, so simulated time falls behind wall-clock and the simulation appears to run in slow motion (or, equivalently, some physics work is effectively dropped). Use this when responsiveness / rendering throughput matters more than 1:1 sim-time-to-wall-time playback.
+
+- **Lowering the clamp** (for example to ``15``) lets PhysX run more catch-up substeps after a slow frame, keeping simulated time closer to wall-clock at the cost of further reducing the visible frame rate. Use this when sim-time accuracy or determinism matters more than smoothness.
+
+This setting is **not** the same as the timeline's ``targetFrameRate`` (set via :py:meth:`isaacsim.core.rendering_manager.RenderingManager.set_dt`) or the loop runner's ``/app/runLoops/main/rateLimitFrequency``. See :ref:`isaac_sim_sensors_multitick_clock_relationships` for the three-clock architecture.
 
 .. Note::
-    Adjust the minimum simulation frame rate by modifying the ``--/persistent/simulation/minFrameRate=<value>`` setting, where ``<value>`` is the desired frame rate in frames per second.
+    Adjust the PhysX minimum frame rate clamp by modifying the ``--/persistent/simulation/minFrameRate=<value>`` setting, where ``<value>`` is the target minimum app frame rate in FPS.
 
 3.	**GPU Dynamics**: Enabling GPU dynamics can potentially speed up the simulation by offloading the physics calculations to the GPU.
 
