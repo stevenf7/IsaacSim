@@ -1,4 +1,8 @@
 # Changelog
+## [1.5.3] - 2026-05-19
+### Changed
+- Clarified `LocationRandomizer` docstrings for the `frame:useRelativeFrame` and `frame:targetPrimPath` exposed attributes to disambiguate how the random offset is composed with the initial location and the optional target prim.
+
 ## [1.5.2] - 2026-05-08
 ### Fixed
 - `TextureRandomizer._apply_behavior` now skips the tick (with a warning) when no texture URLs are configured, instead of letting `numpy.random.Generator.choice` raise on an empty list.

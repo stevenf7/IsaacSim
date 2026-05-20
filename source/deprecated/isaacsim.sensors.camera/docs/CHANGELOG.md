@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.8] - 2026-05-18
+### Fixed
+- Log a warning when `Camera.set_frequency()` / `set_dt()` fall back to "process all frames" because `/app/runLoops/main/rateLimitFrequency` is unset, instead of silently discarding the requested value
+
 ## [1.7.7] - 2026-05-10
 ### Fixed
 - Raise a clear error when `Camera.attach_annotator()` is called before `Camera.initialize()`

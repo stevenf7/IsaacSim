@@ -850,7 +850,7 @@ local function get_replicator_tests()
         {
             "tests-nativepython-replicator.infinigen_sdg_config",
             "standalone_examples/replicator/infinigen/infinigen_sdg.py",
-            "--close-on-completion --config standalone_examples/replicator/infinigen/config/infinigen_multi_writers_pt.yaml",
+            [[--close-on-completion --config "$SAMPLE_DIR/standalone_examples/replicator/infinigen/config/infinigen_multi_writers_pt.yaml"]],
         },
         {
             "tests-nativepython-replicator.scene_based_sdg",
@@ -859,22 +859,22 @@ local function get_replicator_tests()
         {
             "tests-nativepython-replicator.scene_based_sdg_basic_writer",
             "standalone_examples/replicator/scene_based_sdg/scene_based_sdg.py",
-            "--config standalone_examples/replicator/scene_based_sdg/config/config_basic_writer.yaml",
+            [[--config "$SAMPLE_DIR/standalone_examples/replicator/scene_based_sdg/config/config_basic_writer.yaml"]],
         },
         {
             "tests-nativepython-replicator.scene_based_sdg_default_writer",
             "standalone_examples/replicator/scene_based_sdg/scene_based_sdg.py",
-            "--config standalone_examples/replicator/scene_based_sdg/config/config_default_writer.json",
+            [[--config "$SAMPLE_DIR/standalone_examples/replicator/scene_based_sdg/config/config_default_writer.json"]],
         },
         {
             "tests-nativepython-replicator.scene_based_sdg_kitti_writer",
             "standalone_examples/replicator/scene_based_sdg/scene_based_sdg.py",
-            "--config standalone_examples/replicator/scene_based_sdg/config/config_kitti_writer.yaml",
+            [[--config "$SAMPLE_DIR/standalone_examples/replicator/scene_based_sdg/config/config_kitti_writer.yaml"]],
         },
         {
             "tests-nativepython-replicator.scene_based_sdg_coco_writer",
             "standalone_examples/replicator/scene_based_sdg/scene_based_sdg.py",
-            "--config standalone_examples/replicator/scene_based_sdg/config/config_coco_writer.yaml",
+            [[--config "$SAMPLE_DIR/standalone_examples/replicator/scene_based_sdg/config/config_coco_writer.yaml"]],
         },
         {
             "tests-nativepython-replicator.object_based_sdg",
@@ -883,17 +883,17 @@ local function get_replicator_tests()
         {
             "tests-nativepython-replicator.object_based_sdg_config",
             "standalone_examples/replicator/object_based_sdg/object_based_sdg.py",
-            "--config standalone_examples/replicator/object_based_sdg/config/object_based_sdg_config.yaml",
+            [[--config "$SAMPLE_DIR/standalone_examples/replicator/object_based_sdg/config/object_based_sdg_config.yaml"]],
         },
         {
             "tests-nativepython-replicator.object_based_sdg_config_dope",
             "standalone_examples/replicator/object_based_sdg/object_based_sdg.py",
-            "--config standalone_examples/replicator/object_based_sdg/config/object_based_sdg_dope_config.yaml",
+            [[--config "$SAMPLE_DIR/standalone_examples/replicator/object_based_sdg/config/object_based_sdg_dope_config.yaml"]],
         },
         {
             "tests-nativepython-replicator.object_based_sdg_config_centerpose",
             "standalone_examples/replicator/object_based_sdg/object_based_sdg.py",
-            "--config standalone_examples/replicator/object_based_sdg/config/object_based_sdg_centerpose_config.yaml",
+            [[--config "$SAMPLE_DIR/standalone_examples/replicator/object_based_sdg/config/object_based_sdg_centerpose_config.yaml"]],
         },
         {
             "tests-nativepython-replicator.writer_augmentation_numpy",

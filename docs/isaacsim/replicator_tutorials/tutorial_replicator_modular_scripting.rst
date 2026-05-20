@@ -195,16 +195,42 @@ The ``location_randomizer.py`` script randomizes the location of prims within sp
             <details open>
             <summary>Configuration Parameters</summary>
 
-        * **range:minPosition** (`Vector3d`): Minimum position bounds for randomization
-        * **range:maxPosition** (`Vector3d`): Maximum position bounds for randomization  
-        * **frame:useRelativeFrame** (`Bool`): Enable relative positioning mode
-        * **frame:targetPrimPath** (`String`): Reference prim path for relative positioning
-        * **includeChildren** (`Bool`): Include child prims in randomization
-        * **interval** (`UInt`): Update frequency (0 = every frame)
+        * **range:minPosition** (`Vector3d`): Minimum bounds of the random offset.
+        * **range:maxPosition** (`Vector3d`): Maximum bounds of the random offset.
+        * **frame:useRelativeFrame** (`Bool`): If `True`, preserve the prim's initial offset (from the target prim if set, otherwise from its own starting position) and add the random offset on top. If `False`, the random offset is applied as an absolute position (relative to the target prim if set, otherwise to the world origin).
+        * **frame:targetPrimPath** (`String`): Optional path to a reference prim. When set, all randomization is anchored to this prim's world location; leave empty to randomize independently of any other prim.
+        * **includeChildren** (`Bool`): Include child prims in randomization.
+        * **interval** (`UInt`): Update frequency (0 = every frame).
 
         .. raw:: html
 
             </details>
+
+        **Behavior Matrix:**
+
+        The combination of ``frame:targetPrimPath`` and ``frame:useRelativeFrame`` determines how the random offset is applied:
+
+        .. list-table::
+            :header-rows: 1
+            :widths: 20 20 60
+
+            * - ``targetPrimPath``
+              - ``useRelativeFrame``
+              - Resulting location
+            * - empty
+              - `False`
+              - ``random_offset`` (treated as absolute world coordinates).
+            * - empty
+              - `True`
+              - ``initial_location + random_offset`` (jitter around the prim's starting position).
+            * - set
+              - `False`
+              - ``target_location + random_offset`` (prim is placed near the target, ignoring its original position).
+            * - set
+              - `True`
+              - ``target_location + initial_offset_from_target + random_offset`` (prim follows the target while preserving its original relative offset).
+
+        To make the prim's randomization fully independent of any other prim, leave ``frame:targetPrimPath`` empty. Toggling ``frame:useRelativeFrame`` alone does not decouple the prim from the target.
 
     .. tab-item:: Implementation Details
 
@@ -265,10 +291,10 @@ The ``location_randomizer.py`` script randomizes the location of prims within sp
 
                 self._set_location(prim, loc)
 
-        * Generates random offset within specified bounds
-        * Handles target prim relative positioning
-        * Applies relative frame calculations when enabled
-        * Updates prim location using internal API
+        * Generates a random offset within the configured ``range:minPosition`` / ``range:maxPosition`` bounds.
+        * If ``frame:targetPrimPath`` is set, anchors the result to the target prim's current world location.
+        * If ``frame:useRelativeFrame`` is `True`, preserves the prim's initial offset (from the target prim if set, otherwise from its own starting position) so the random offset acts as jitter rather than an absolute placement.
+        * Writes the final location to the prim using the existing translate or transform xformOp.
 
         .. raw:: html
 
@@ -301,9 +327,10 @@ The ``location_randomizer.py`` script randomizes the location of prims within sp
 
         **Use Cases:**
 
-        * **Background Objects**: Randomize prop positions for scene variety
-        * **Relative Positioning**: Move objects relative to a moving target
-        * **Hierarchical Randomization**: Apply randomization to object groups
+        * **Background Objects**: Randomize prop positions for scene variety. Leave ``frame:targetPrimPath`` empty and set ``frame:useRelativeFrame`` to `True` to jitter each prop around its authored location.
+        * **Follow a Moving Target**: Keep an object's relative offset to a moving prim. Set ``frame:targetPrimPath`` to the target and ``frame:useRelativeFrame`` to `True`.
+        * **Snap Near a Target**: Place an object at randomized positions around a target, ignoring its original location. Set ``frame:targetPrimPath`` to the target and ``frame:useRelativeFrame`` to `False`.
+        * **Hierarchical Randomization**: Apply randomization to object groups by enabling ``includeChildren``.
 
 
 Rotation Randomizer

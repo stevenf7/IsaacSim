@@ -371,8 +371,16 @@ class Camera(BaseSensor):
     def set_frequency(self, value: int) -> None:
         """Sets the frequency to acquire new data frames.
 
+        If ``/app/runLoops/main/rateLimitFrequency`` is unset (common in headless launches or
+        custom Kit apps without rate-limit configuration), the requested frequency cannot be
+        honored and the camera falls back to processing every rendered frame; a warning is
+        logged so the discrepancy is observable at the call site.
+
         Args:
             value: The frequency to acquire new data frames.
+
+        Raises:
+            Exception: If ``value`` is not a divisor of the configured rendering frequency.
 
         Returns:
             None.
@@ -382,11 +390,16 @@ class Camera(BaseSensor):
             carb.settings.get_settings(), "/app/runLoops/main/rateLimitFrequency"
         )
         if current_rendering_frequency is None:
-            # Target rendering frequency is not known, processing all frames
+            carb.log_warn(
+                f"Camera.set_frequency({value}): rendering frequency unknown "
+                f"(/app/runLoops/main/rateLimitFrequency is None). Camera will process all "
+                f"frames. Configure the rendering rate before calling set_frequency() to "
+                f"apply the requested value."
+            )
             self._frequency = -1
         else:
             if current_rendering_frequency % value != 0:
-                raise Exception("frequency of the camera sensor needs to be a divisible by the rendering frequency.")
+                raise Exception("frequency of the camera sensor needs to be a divisor of the rendering frequency.")
             self._frequency = value
         return
 
@@ -402,8 +415,16 @@ class Camera(BaseSensor):
     def set_dt(self, value: float) -> None:
         """Sets the dt to acquire new data frames.
 
+        If ``/app/runLoops/main/rateLimitFrequency`` is unset (common in headless launches or
+        custom Kit apps without rate-limit configuration), the requested dt cannot be honored
+        and the camera falls back to processing every rendered frame; a warning is logged so
+        the discrepancy is observable at the call site.
+
         Args:
             value: The dt to acquire new data frames.
+
+        Raises:
+            Exception: If ``value`` is not a multiple of the configured rendering dt.
 
         Returns:
             None.
@@ -413,7 +434,12 @@ class Camera(BaseSensor):
             carb.settings.get_settings(), "/app/runLoops/main/rateLimitFrequency"
         )
         if current_rendering_frequency is None:
-            # Target rendering frequency is not known, processing all frames
+            carb.log_warn(
+                f"Camera.set_dt({value}): rendering frequency unknown "
+                f"(/app/runLoops/main/rateLimitFrequency is None). Camera will process all "
+                f"frames. Configure the rendering rate before calling set_dt() to apply the "
+                f"requested value."
+            )
             self._frequency = -1
         else:
             freq_as_int = round(1.0 / value)
@@ -870,20 +896,31 @@ class Camera(BaseSensor):
         The annotator data will be available in get_current_frame() using a normalized key
         (e.g., "bounding_box_2d_tight" for both "bounding_box_2d_tight" and "bounding_box_2d_tight_fast").
 
+        Note:
+            ``initialize()`` must be called before this method so the camera's render product
+            exists. Calling ``attach_annotator()`` beforehand (or after ``destroy()``) will raise
+            ``RuntimeError`` rather than producing an opaque error from ``omni.syntheticdata``.
+
         Args:
             annotator_name: Name of the annotator to attach (as registered in replicator).
             **kwargs: Additional arguments to pass to the annotator.
 
         Raises:
-            RuntimeError: If the camera has not been initialized.
+            RuntimeError: If ``initialize()`` has not been called (no render product exists yet).
             rep.annotators.AnnotatorRegistryError: If the annotator is not found.
 
         Returns:
             None.
 
         """
-        if not self._is_initialized:
-            raise RuntimeError("Camera is not initialized. Call initialize() before attach_annotator().")
+        # Fail fast with a clear message; otherwise annotator.attach([None]) crashes deep inside
+        # omni.syntheticdata with an opaque Boost.Python.ArgumentError and leaves the SDG graph
+        # in a partially-initialized state.
+        if self._render_product_path is None:
+            raise RuntimeError(
+                "Camera.initialize() must be called before attach_annotator(). "
+                "Call camera.initialize() to create the render product first."
+            )
 
         # Normalize key by removing variant suffixes for consistent frame data access
         frame_key = annotator_name.replace("_fast", "")

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.4] - 2026-05-11
+### Fixed
+- `get_gripper_joint_states` returns POSIX joint keys on Windows (replaced `os.path.relpath` with a string slice).
+
 ## [1.1.3] - 2026-04-28
 ### Fixed
 - `simulate_physics_async` and `simulate_physics_with_forces_async` now restore the PhysX scene's original `updateType` (or clear it if it was unauthored) via try/finally, instead of permanently leaving the scene set to `Disabled` after manual stepping.
