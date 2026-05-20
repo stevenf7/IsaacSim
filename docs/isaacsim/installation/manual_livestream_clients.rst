@@ -162,16 +162,7 @@ This section shows you the methods of livestreaming a headless instance of |isaa
 
     * |isaac-sim_short| WebRTC Streaming Client is recommended to be used within the same network as an |isaac-sim_short| headless instance.
     * To connect to a headless instance of |isaac-sim_short| in the same network, replace **127.0.0.1** with the IP address of the machine running |isaac-sim_short|.
-    * On Linux: choose either the tarball or the Debian package.
-
-        * Tarball (no root required):
-
-          .. code-block:: bash
-
-              tar -xzf isaacsim-webrtc-streaming-client-*-linux-*.tar.gz
-
-          Then run the |isaac-sim_short| WebRTC Streaming Client binary from the extracted
-          directory (for example, ``./Isaac\ Sim\ WebRTC\ Streaming\ Client``).
+    * On Linux: install the Debian package.
 
         * Debian package (Ubuntu / Debian, with menu integration):
 
@@ -182,9 +173,9 @@ This section shows you the methods of livestreaming a headless instance of |isaa
           Then launch **Isaac Sim WebRTC Streaming Client** from the application menu or run
           ``isaacsim-webrtc-streaming-client`` from a terminal.
 
-        * No FUSE or AppImage runtime is required by either package; both run on Ubuntu
-          22.04, 24.04, and later without additional system libraries beyond a standard
-          desktop environment.
+        * No FUSE or AppImage runtime is required by the package; it runs on Ubuntu 22.04,
+          24.04, and later without additional system libraries beyond a standard desktop
+          environment.
         * On Ubuntu 24.04 or later, Electron's sandbox requires unprivileged user namespaces.
           If the client fails to launch with a SUID sandbox error, enable them with:
 
