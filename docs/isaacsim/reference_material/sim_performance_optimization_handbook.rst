@@ -97,6 +97,8 @@ A step-by-step tutorial to optimize a sample asset is provided in :ref:`isaac_as
 Scene and Rendering Optimizations
 =================================
 
+For an overview of available renderer modes and when to use each one, see :ref:`isaac_sim_rendering_modes`.
+
 1.	**Simplify the Scene**: Reducing the complexity of the scene, implementing level of detail (LOD), culling invisible objects, and optimizing the physics settings.
 
 .. Note:: Isaac Sim provides several tools for simplifying your scene
@@ -107,9 +109,11 @@ Scene and Rendering Optimizations
 
 .. Note:: During realtime simulation, the gizmos (including floor grids) automatically disappear to optimize performance. They reappear when the simulation is paused or stopped.
 
-2. **Using RTX Real-Time 2.0**: (see `here <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/rtx-renderer.html>`_)
+2. **Using RTX Real-Time 2.0**: (see `RTX - Real-Time 2.0 mode <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/rtx-renderer_rt.html>`_)
 
     - RT2 is the new default rendering mode in |isaac-sim_short|. It offers both accuracy and performance improvements over the previous RTX Real-Time mode.
+
+    - For training-in-the-loop or other workflows that prioritize throughput over full light transport, consider RTX - Minimal for faster performance. In standalone Python, set ``renderer`` to ``MinimalRendering`` in the ``SimulationApp`` launch configuration and use ``minimal_shading_mode`` to choose the simplified shading behavior. See :ref:`isaac_sim_rendering_modes` for mode selection guidance.
 
     - The retrace threshold can be decreased to improve performance at the cost of a slightly more biased result. This will still be comparable in accuracy to the legacy RTX Real-Time mode.
 

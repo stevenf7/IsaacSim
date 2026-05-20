@@ -117,6 +117,7 @@
    ./reference_material/community_highlights
    ./reference_material/reference_glossary
    ./reference_material/reference_conventions
+   ./reference_material/rendering_modes
    ./reference_material/sim_performance_optimization_handbook
    ./reference_material/benchmarks
    ./overview/extensions_renaming
