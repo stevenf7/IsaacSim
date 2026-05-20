@@ -75,6 +75,7 @@ files_exclude = [
     ["extsbuild/**"],
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
+    ["tests/tests-external*"], # internal tests only
     ["dockertests/**"],
     ["tests-external/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"],
@@ -163,6 +164,7 @@ files_exclude = [
     ["extsbuild/**"],
     ["tests/tests-internal*"],
     ["tests/tests-docker*"],
+    ["tests/tests-external*"], # internal tests only
     ["dockertests/**"],
     ["tests-external/**"],
     ["exts/omni.isaac.core_archive/pip_prebundle/bin/**"], # OM-84922

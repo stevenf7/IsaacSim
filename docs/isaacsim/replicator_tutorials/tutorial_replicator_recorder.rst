@@ -108,69 +108,17 @@ Custom Writer Example
 
 To support custom data formats, the custom writer can be registered and loaded from the GUI. In this example, a custom writer called ``MyCustomWriter`` is registered using the :ref:`Script Editor <script-editor>` for use with the recorder.
 
+The Synthetic Data Recorder initializes the selected disk or cloud backend, then calls ``writer.initialize(backend=..., **parameters)``. Starting in recent |isaac-sim_short| / Replicator releases, those keyword arguments are applied when the writer is constructed. Custom writers must therefore accept a ``backend`` argument (the configured ``DiskBackend`` or ``S3Backend`` instance) or accept arbitrary keyword arguments with ``**kwargs``. They should write using that backend rather than constructing a separate ``BackendDispatch`` from a raw output path when ``backend`` is supplied.
+
 .. raw:: html
 
     <details open>
     <summary>MyCustomWriter</summary>
 
-.. code-block:: python
-
-    import numpy as np
-    from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer, WriterRegistry
-
-
-    class MyCustomWriter(Writer):
-        def __init__(
-            self,
-            output_dir,
-            rgb=True,
-            normals=False,
-        ):
-            self.version = "0.0.1"
-            self.backend = BackendDispatch({"paths": {"out_dir": output_dir}})
-            self.output_dir = output_dir
-            self.annotators = []
-            if rgb:
-                self.annotators.append(AnnotatorRegistry.get_annotator("rgb"))
-            if normals:
-                self.annotators.append(AnnotatorRegistry.get_annotator("normals"))
-            self._frame_id = 0
-
-        def write(self, data: dict):
-            for annotator in data.keys():
-                # If there are multiple render products the data will be stored in subfolders
-                annotator_split = annotator.split("-")
-                render_product_path = ""
-                multi_render_prod = 0
-                if len(annotator_split) > 1:
-                    multi_render_prod = 1
-                    render_product_name = annotator_split[-1]
-                    render_product_path = f"{render_product_name}/"
-
-                # rgb
-                if annotator.startswith("rgb"):
-                    if multi_render_prod:
-                        render_product_path += "rgb/"
-                    filename = f"{render_product_path}rgb_{self._frame_id}.png"
-                    print(f"[{self._frame_id}] Writing {self.output_dir}/{filename} ..")
-                    self.backend.write_image(filename, data[annotator])
-
-                # normals
-                if annotator.startswith("normals"):
-                    if multi_render_prod:
-                        render_product_path += "normals/"
-                    filename = f"{render_product_path}normals_{self._frame_id}.png"
-                    print(f"[{self._frame_id}] Writing {self.output_dir}/{filename} ..")
-                    colored_data = ((data[annotator] * 0.5 + 0.5) * 255).astype(np.uint8)
-                    self.backend.write_image(filename, colored_data)
-
-            self._frame_id += 1
-
-        def on_final_frame(self):
-            self._frame_id = 0
-
-
-    WriterRegistry.register(MyCustomWriter)
+.. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_recorder/register_my_custom_writer.py
+    :language: python
+    :start-after: __doc_snippet_mycustomwriter_begin__
+    :end-before: __doc_snippet_mycustomwriter_end__
 
 .. raw:: html
 

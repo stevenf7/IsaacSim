@@ -45,25 +45,32 @@ class LocationRandomizer(BehaviorScript):
             "attr_name": "range:minPosition",
             "attr_type": Sdf.ValueTypeNames.Vector3d,
             "default_value": Gf.Vec3d(-1.0, -1.0, -1.0),
-            "doc": "The minimum position for the randomization.",
+            "doc": "Minimum bounds of the random offset applied each update.",
         },
         {
             "attr_name": "range:maxPosition",
             "attr_type": Sdf.ValueTypeNames.Vector3d,
             "default_value": Gf.Vec3d(1.0, 1.0, 1.0),
-            "doc": "The maximum position for the randomization.",
+            "doc": "Maximum bounds of the random offset applied each update.",
         },
         {
             "attr_name": "frame:useRelativeFrame",
             "attr_type": Sdf.ValueTypeNames.Bool,
             "default_value": True,
-            "doc": "Use relative frame for randomization.",
+            "doc": (
+                "If true, preserve the prim's initial offset (from the target prim if set, otherwise from its own "
+                "starting position) and add the random offset on top. If false, the random offset is applied as an "
+                "absolute position relative to the target prim if set, or to the world origin otherwise."
+            ),
         },
         {
             "attr_name": "frame:targetPrimPath",
             "attr_type": Sdf.ValueTypeNames.String,
             "default_value": "",
-            "doc": "Path to the target prim for relative randomization.",
+            "doc": (
+                "Optional path to a reference prim. When set, randomization is anchored to this prim's world "
+                "location; leave empty to randomize independently of any other prim."
+            ),
         },
         {
             "attr_name": "includeChildren",

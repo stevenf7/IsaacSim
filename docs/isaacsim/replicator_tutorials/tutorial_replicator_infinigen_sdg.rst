@@ -59,6 +59,10 @@ Generating Infinigen Environments
 
 1. **Install Infinigen**: Follow the installation instructions on the `Infinigen GitHub Repository <https://github.com/princeton-vl/infinigen/blob/main/docs/Installation.md>`_.
 
+   .. note::
+
+      The Infinigen scene generation step is only tested on Linux. Refer to the `Infinigen platform support matrix <https://github.com/princeton-vl/infinigen/blob/main/docs/Installation.md#installation-options--supported-platforms>`_ for the current platform status, as Infinigen is an external library maintained outside of |isaac-sim_short|.
+
 2. **Generate Environments**: Use the `Hello Room <https://github.com/princeton-vl/infinigen/blob/main/docs/HelloRoom.md>`_ instructions to generate indoor scenes using various settings and parameters.
 
 3. **Example Script**: Use the following example script (Linux) to generate multiple dining room environments with different seeds. The script can be run directly from the terminal.

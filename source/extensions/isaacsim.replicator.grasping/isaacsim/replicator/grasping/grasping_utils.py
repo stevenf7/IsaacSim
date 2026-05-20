@@ -853,8 +853,10 @@ def get_gripper_joint_states(gripper_base_path: str) -> dict[str, float] | None:
                 state = get_joint_state(joint_prim)
                 if state is not None:
                     position, _ = state
-                    # Use relative path for cleaner output
-                    relative_path = os.path.relpath(joint_path, start=gripper_base_path)
+                    # USD paths are always POSIX (forward-slash). Use a string slice so the
+                    # relative key stays OS-independent; os.path.relpath would inject os.sep
+                    # on Windows and corrupt nested keys (e.g. 'link1\\joint_left').
+                    relative_path = joint_path[len(gripper_base_path) + 1 :]
                     joint_states[relative_path] = position
                 else:
                     carb.log_warn(f"Could not get state for joint {joint_path} for results.")
