@@ -1,4 +1,12 @@
 # Changelog
+## [2.4.3] - 2026-05-20
+### Fixed
+- "Use S3" UI checkbox now actually switches the backend; previously it was a no-op and recordings silently fell back to disk.
+- `backend_params` is rebuilt from scratch on Start so toggling Disk/S3 no longer leaks stale keys into `backend.initialize()`.
+
+### Changed
+- S3 checkbox bound directly to `backend_type` (single source of truth); legacy `use_s3` flag is still honored when loading old configs.
+
 ## [2.4.2] - 2026-04-18
 ### Changed
 - Added return type annotations and imperative-mood docstrings

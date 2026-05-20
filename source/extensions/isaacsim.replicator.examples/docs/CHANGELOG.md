@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.3] - 2026-05-20
+### Changed
+- Update test_data_augmentation to use different tolerance values for RGB and depth images
+
 ## [1.11.2] - 2026-05-18
 ### Added
 - Added multiple captures with toggled render product while timeline is running test
