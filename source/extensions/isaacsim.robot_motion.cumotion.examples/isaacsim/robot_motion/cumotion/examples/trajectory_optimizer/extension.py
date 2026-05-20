@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Extension for cuMotion trajectory optimization examples in Isaac Sim."""
+"""Trajectory optimizer extension for cuMotion robot motion planning with Isaac Sim integration."""
 
 
 import asyncio
@@ -22,7 +22,6 @@ from typing import Any
 
 import carb.eventdispatcher
 import omni
-import omni.physics.core
 import omni.timeline
 import omni.ui as ui
 import omni.usd
@@ -35,35 +34,15 @@ from .ui_builder import UIBuilder
 
 
 class Extension(omni.ext.IExt):
-    """Extension class for the isaacsim.robot_motion.cumotion.examples module.
-
-    Provides a UI interface for cuMotion trajectory optimization examples in Isaac Sim. The extension creates
-    a "Trajectory Optimizer" menu item and window that allows users to explore and interact with cuMotion's
-    robot motion planning capabilities.
-
-    The extension automatically detects the operating system and shows an appropriate message on Windows,
-    where cuMotion is not currently supported. On supported platforms, it initializes a scrollable window
-    interface with trajectory optimization tools and examples.
-
-    The UI includes physics simulation integration, timeline event handling, and stage management to provide
-    a complete interactive experience for robot motion planning workflows.
-    """
+    """Isaac Sim extension providing the cuMotion trajectory optimization example with interactive UI."""
 
     def on_startup(self, ext_id: str) -> None:
-        """Startup the extension.
+        """Initialize the extension and register UI elements.
 
         Args:
             ext_id: The extension ID.
         """
         self.ext_id = ext_id
-
-        # Register menu item
-        menu_item_name = "Trajectory Optimizer"
-        self._menu_items = [
-            MenuItemDescription(name=menu_item_name, onclick_action=(ext_id, f"CreateUIExtension:{EXTENSION_TITLE}"))
-        ]
-        add_menu_items(self._menu_items, "cuMotion Examples")
-
         self._usd_context = omni.usd.get_context()
 
         self._window = ScrollingWindow(
@@ -78,22 +57,24 @@ class Extension(omni.ext.IExt):
             self._menu_callback,
             description=f"Add {EXTENSION_TITLE} Extension to UI toolbar",
         )
+        # Use shorter name for menu item, register under parent "cuMotion Examples" menu
+        self._menu_items = [
+            MenuItemDescription(
+                name="Trajectory Optimizer", onclick_action=(ext_id, f"CreateUIExtension:{EXTENSION_TITLE}")
+            )
+        ]
+        add_menu_items(self._menu_items, "cuMotion Examples")
 
         self.ui_builder = UIBuilder()
-
-        self._usd_context = omni.usd.get_context()
-        self._physics_simulation_interface = omni.physics.core.get_physics_simulation_interface()
-        self._physics_subscription = None
         self._timeline = omni.timeline.get_timeline_interface()
 
     def on_shutdown(self) -> None:
-        """Shutdown the extension."""
+        """Clean up the extension and deregister UI elements."""
         remove_menu_items(self._menu_items, "cuMotion Examples")
 
         action_registry = omni.kit.actions.core.get_action_registry()
         action_registry.deregister_action(self.ext_id, f"CreateUIExtension:{EXTENSION_TITLE}")
 
-        self._models = {}
         if self._window:
             self._window = None
         self.ui_builder.cleanup()
@@ -102,80 +83,55 @@ class Extension(omni.ext.IExt):
     def _on_window(self, visible: bool) -> None:
         if self._window.visible:
             self._usd_context = omni.usd.get_context()
-            self._stage_event_sub_opened = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            ed = carb.eventdispatcher.get_eventdispatcher()
+            self._stage_event_sub_opened = ed.observe_event(
                 event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.OPENED),
                 on_event=self._on_stage_opened,
                 observer_name="cumotion_trajectory_optimizer._on_stage_opened",
             )
-            self._stage_event_sub_closed = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            self._stage_event_sub_closed = ed.observe_event(
                 event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.CLOSED),
                 on_event=self._on_stage_closed,
                 observer_name="cumotion_trajectory_optimizer._on_stage_closed",
             )
-            self._timeline_event_sub_play = carb.eventdispatcher.get_eventdispatcher().observe_event(
-                event_name=omni.timeline.GLOBAL_EVENT_PLAY,
-                on_event=self._on_timeline_play,
-                observer_name="cumotion_trajectory_optimizer._on_timeline_play",
-            )
-            self._timeline_event_sub_stop = carb.eventdispatcher.get_eventdispatcher().observe_event(
+            self._timeline_event_sub_stop = ed.observe_event(
                 event_name=omni.timeline.GLOBAL_EVENT_STOP,
                 on_event=self._on_timeline_stop,
                 observer_name="cumotion_trajectory_optimizer._on_timeline_stop",
             )
-
             self._build_ui()
         else:
             self._usd_context = None
             self._stage_event_sub_opened = None
             self._stage_event_sub_closed = None
-            self._timeline_event_sub_play = None
             self._timeline_event_sub_stop = None
             self.ui_builder.cleanup()
 
     def _build_ui(self) -> None:
         with self._window.frame:
             with ui.VStack(spacing=5, height=0):
-                self._build_extension_ui()
+                self.ui_builder.build_ui()
 
         async def dock_window() -> None:
             await omni.kit.app.get_app().next_update_async()
-
-            def dock(space: Any, name: str, location: Any, pos: float = 0.5) -> None:
-                window = omni.ui.Workspace.get_window(name)
-                if window and space:
-                    window.dock_in(space, location, pos)
-
             tgt = ui.Workspace.get_window("Viewport")
-            dock(tgt, EXTENSION_TITLE, omni.ui.DockPosition.LEFT, 0.33)
+            window = omni.ui.Workspace.get_window(EXTENSION_TITLE)
+            if window and tgt:
+                window.dock_in(tgt, omni.ui.DockPosition.LEFT, 0.33)
             await omni.kit.app.get_app().next_update_async()
 
         self._task = asyncio.ensure_future(dock_window())
 
     def _menu_callback(self) -> None:
         self._window.visible = not self._window.visible
-        self.ui_builder.on_menu_callback()
-
-    def _on_timeline_play(self, event: Any) -> None:
-        if not self._physics_subscription:
-            self._physics_subscription = self._physics_simulation_interface.subscribe_physics_on_step_events(
-                pre_step=False, order=0, on_update=self._on_physics_step
-            )
 
     def _on_timeline_stop(self, event: Any) -> None:
-        self._physics_subscription = None
         self.ui_builder.on_timeline_event(event)
 
-    def _on_physics_step(self, step: float, context: Any) -> None:
-        self.ui_builder.on_physics_step(step)
-
     def _on_stage_opened(self, event: Any) -> None:
-        self._physics_subscription = None
-        self.ui_builder.cleanup()
-        self.ui_builder.on_stage_event(event)
+        self.ui_builder.on_stage_changed(event)
 
     def _on_stage_closed(self, event: Any) -> None:
-        self._physics_subscription = None
-        self.ui_builder.cleanup()
-
-    def _build_extension_ui(self) -> None:
-        self.ui_builder.build_ui()
+        self.ui_builder.on_stage_changed(event)
+        # Encourage release of any prim wrappers we just dropped.
+        gc.collect()

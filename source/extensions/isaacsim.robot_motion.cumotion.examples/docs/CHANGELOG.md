@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0] - 2026-05-19
+### Added
+- Adds a best-effort per-class GUI warmup in ``async setUp`` (awaited on the Kit loop), prevents Windows hangs.
+
+### Changed
+- Refactored all five example sub-extensions (`graph_planner`, `trajectory_optimizer`, `rmp_flow`, `trajectory_generator`, `world_interface`) so each `Scenario` owns its scene loading, async lifecycle, and prim-wrapper teardown, while `UIBuilder` is a strict view that only builds widgets and forwards events.
+- `Extension` removes no-op physics step subscriptions.
+
+### Fixed
+- `LOAD` no longer hangs when clicked while a previous load is still in flight: pending load tasks are now cancelled and replaced.
+- `LOAD` is not cancelled in mid-flight on the graph-planner.
+
 ## [0.3.3] - 2026-05-12
 ### Changed
 - Reduces the number of GPU copies needed, since certain warp arrays are only needed for `reset`.

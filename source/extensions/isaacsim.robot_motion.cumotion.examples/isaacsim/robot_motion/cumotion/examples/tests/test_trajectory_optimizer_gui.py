@@ -21,10 +21,22 @@ import isaacsim.robot_motion.cumotion.examples.trajectory_optimizer.scenario as 
 import numpy as np
 import omni.kit.app
 import omni.kit.test
+from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.robot_motion.cumotion import TrajectoryOptimizer
 from isaacsim.robot_motion.cumotion.examples.trajectory_optimizer.ui_builder import UIBuilder
 
-from .gui_test_support import assert_xyz_and_unit_quaternion_wxyz, wait_until
+from .gui_test_support import (
+    TEST_LOAD_TIMEOUT_SEC,
+    WARMUP_LOAD_TIMEOUT_SEC,
+    assert_xyz_and_unit_quaternion_wxyz,
+    ensure_gui_class_warmup_once,
+    wait_until,
+)
+
+_ROBOT_PATH = "/panda"
+_TARGET_PATH = "/World/target"
+_OBSTACLE_PATH = "/World/obstacle"
+_PHYSICS_SCENE_PATH = "/World/PhysicsScene"
 
 
 class TestTrajectoryOptimizerGui(omni.kit.test.AsyncTestCase):
@@ -33,6 +45,11 @@ class TestTrajectoryOptimizerGui(omni.kit.test.AsyncTestCase):
     async def setUp(self):
         """Set up the UI builder before each test."""
         await omni.kit.app.get_app().next_update_async()
+        await ensure_gui_class_warmup_once(
+            type(self),
+            ui_builder_cls=UIBuilder,
+            wait_for_load=lambda wb: self._load_until_articulation_ready_on(wb, timeout_sec=WARMUP_LOAD_TIMEOUT_SEC),
+        )
         self.ui_builder = UIBuilder()
         self.ui_builder.build_ui()
         await omni.kit.app.get_app().next_update_async()
@@ -41,11 +58,63 @@ class TestTrajectoryOptimizerGui(omni.kit.test.AsyncTestCase):
         """Clean up the UI builder after each test."""
         self.ui_builder.cleanup()
         await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
 
     async def test_widgets_built(self):
         """Verify that all expected widgets are created."""
         self.assertIsNotNone(self.ui_builder._load_btn)
         self.assertIsNotNone(self.ui_builder._to_cspace_btn)
+
+    async def test_load_creates_all_expected_assets(self):
+        """LOAD populates every expected scenario object and prim on the stage."""
+        self.ui_builder._load_btn.trigger_click()
+
+        ok = await wait_until(
+            lambda: self.ui_builder._load_task is not None and self.ui_builder._load_task.done(),
+            timeout_sec=120.0,
+        )
+        self.assertTrue(ok, "Timed out waiting for load to complete")
+
+        # Surface any exception raised inside the load coroutine.
+        load_exc = self.ui_builder._load_task.exception()
+        if load_exc is not None:
+            raise load_exc
+
+        # All expected scenario state must be populated.
+        s = self.ui_builder._scenario
+        self.assertIsNotNone(s._cumotion_robot, "scenario._cumotion_robot should be set after LOAD")
+        self.assertIsNotNone(s._articulation, "scenario._articulation should be set after LOAD")
+        self.assertIsNotNone(s._target, "scenario._target should be set after LOAD")
+        self.assertIsNotNone(s._q_initial, "scenario._q_initial should be set after LOAD")
+        self.assertIsNotNone(s._controlled_dof_indices, "scenario._controlled_dof_indices should be set after LOAD")
+
+        # All expected prims must be on the stage.
+        stage = stage_utils.get_current_stage()
+        self.assertIsNotNone(stage, "Stage should exist after LOAD")
+        for path in (_ROBOT_PATH, _TARGET_PATH, _OBSTACLE_PATH, _PHYSICS_SCENE_PATH):
+            self.assertTrue(stage.GetPrimAtPath(path).IsValid(), f"Expected prim {path!r} on stage after LOAD")
+
+    @classmethod
+    async def _load_until_sliders_on(cls, ui_builder: UIBuilder, *, timeout_sec: float) -> None:
+        """Trigger load and wait until joint sliders exist on ``ui_builder``."""
+        ui_builder._load_btn.trigger_click()
+        ok = await wait_until(
+            lambda: len(ui_builder._joint_slider_models) > 0,
+            timeout_sec=timeout_sec,
+        )
+        if not ok:
+            raise AssertionError("Timed out waiting for joint sliders")
+
+    @classmethod
+    async def _load_until_articulation_ready_on(cls, ui_builder: UIBuilder, *, timeout_sec: float) -> None:
+        """Trigger load and wait until sliders and articulation are ready."""
+        await cls._load_until_sliders_on(ui_builder, timeout_sec=timeout_sec)
+        ok = await wait_until(
+            lambda: ui_builder._scenario._articulation is not None,
+            timeout_sec=timeout_sec,
+        )
+        if not ok:
+            raise AssertionError("Timed out waiting for articulation to be ready")
 
     async def _load_until_sliders(self) -> None:
         """Trigger load and wait until joint sliders are built.
@@ -55,12 +124,7 @@ class TestTrajectoryOptimizerGui(omni.kit.test.AsyncTestCase):
         ``_articulation`` (e.g. task-space tests) must call
         :meth:`_load_until_articulation_ready` instead.
         """
-        self.ui_builder._load_btn.trigger_click()
-        ok = await wait_until(
-            lambda: len(self.ui_builder._joint_slider_models) > 0,
-            timeout_sec=120.0,
-        )
-        self.assertTrue(ok, "Timed out waiting for joint sliders")
+        await self._load_until_sliders_on(self.ui_builder, timeout_sec=TEST_LOAD_TIMEOUT_SEC)
 
     async def _load_until_articulation_ready(self) -> None:
         """Trigger load and wait until both sliders and articulation are ready.
@@ -69,12 +133,7 @@ class TestTrajectoryOptimizerGui(omni.kit.test.AsyncTestCase):
         when the test exercises code paths that call
         ``_articulation.get_world_poses()`` or similar.
         """
-        await self._load_until_sliders()
-        ok = await wait_until(
-            lambda: self.ui_builder._scenario._articulation is not None,
-            timeout_sec=120.0,
-        )
-        self.assertTrue(ok, "Timed out waiting for articulation to be ready")
+        await self._load_until_articulation_ready_on(self.ui_builder, timeout_sec=TEST_LOAD_TIMEOUT_SEC)
 
     async def test_cspace_button_passes_slider_joint_values(self):
         """Test that slider values are correctly passed to C-space planning."""

@@ -19,10 +19,18 @@ from __future__ import annotations
 
 import asyncio
 import time
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 
+import carb
 import numpy as np
 import omni.kit.app
+
+# First stage creation on Windows can spend minutes in RTX PSO compile; per-test
+# timeouts are enough once GPU state is warm.
+WARMUP_LOAD_TIMEOUT_SEC = 300.0
+TEST_LOAD_TIMEOUT_SEC = 120.0
+
+_GUI_CLASS_WARMUP_DONE_ATTR = "_gui_class_warmup_done"
 
 
 async def wait_until(
@@ -68,6 +76,49 @@ async def wait_until(
         except asyncio.TimeoutError:
             return False
         await asyncio.sleep(poll_sec)
+
+
+def create_built_ui_builder(ui_builder_cls: type) -> object:
+    """Construct a UI builder instance and call ``build_ui()``."""
+    ui_builder = ui_builder_cls()
+    ui_builder.build_ui()
+    return ui_builder
+
+
+async def ensure_gui_class_warmup_once(
+    test_cls: type,
+    *,
+    ui_builder_cls: type,
+    wait_for_load: Callable[[object], Awaitable[None]],
+) -> None:
+    """Run one full LOAD per test class (best-effort RTX / stage warmup).
+
+    Invoked from ``async setUp`` so the warmup coroutine is awaited on the Kit
+    loop.  Runs at most once per class regardless of test execution order.
+
+    Args:
+        test_cls: GUI test case class (e.g. ``TestGraphPlannerGui``).
+        ui_builder_cls: UI builder type to construct for the warmup load.
+        wait_for_load: Async callable that performs LOAD and waits until ready.
+            Should raise :class:`AssertionError` on timeout (see ``_load_until_*_on``).
+    """
+    if getattr(test_cls, _GUI_CLASS_WARMUP_DONE_ATTR, False):
+        return
+
+    await omni.kit.app.get_app().next_update_async()
+    warmup = None
+    try:
+        warmup = create_built_ui_builder(ui_builder_cls)
+        await omni.kit.app.get_app().next_update_async()
+        await wait_for_load(warmup)
+    except AssertionError as exc:
+        carb.log_warn(f"GUI class warmup failed ({test_cls.__name__}): {exc}")
+    finally:
+        setattr(test_cls, _GUI_CLASS_WARMUP_DONE_ATTR, True)
+        if warmup is not None:
+            warmup.cleanup()
+        await omni.kit.app.get_app().next_update_async()
+        await omni.kit.app.get_app().next_update_async()
 
 
 def assert_xyz_and_unit_quaternion_wxyz(position: object, orientation: object) -> None:
