@@ -38,19 +38,19 @@ To create the body of the robot:
 #. Click and drag on the blue arrow to raise the cube above the ground plane.
 #. On the left side of the app, click the Scale icon (or press the `R` key while the cube is selected) to activate the scale widget.
 #. Click and drag on the red part of the widget to scale the cube in the x direction
-#. Place the cube in a specific location. Navigate to **Transform > Scale** in the property pane, and set the scale to ``(1, 2, 0.5)``.
+#. Place the cube in a specific location. Navigate to **Transform > Scale** in the property pane, and set the scale to ``(2, 1, 0.5)``.
 #. Drag the cube to the **Body** Xform.
 
 
 To create the wheels of the robot:
 
-#. Create a Xform by right clicking on the stage, selecting **Create > Xform**. Set the **Translate** to ``(1.5, 0, 1)`` and the **Orient** to ``90, 0, 0`` to rotate the wheel Xform 90 degrees around the x axis.
+#. Create a Xform by right clicking on the stage, selecting **Create > Xform**. Set the **Translate** to ``(0, 1.5, 1)`` and the **Orient** to ``90, 0, 0`` to rotate the wheel Xform 90 degrees around the x axis.
 #. Rename it to **wheel_left** by right clicking on it and selecting **Rename**.
 #. Create a cylinder by clicking **Create > Shape > Cylinder** in the top menu bar.
 #. In the property panel on the bottom right corner, scroll down to the **Geometry** section. Change its **Radius** to ``0.5`` and **Height** to ``1.0``.
 #. Drag the cylinder to the **wheel_left** Xform.
 #. Rename the cylinder to **wheel_left** by right clicking on it and selecting **Rename**.
-#. Duplicate the ``wheel_left`` by right clicking the ``wheel_left`` Xform on the stage tree, select **Duplicate**, and move it to ``x = -1.5`` while keeping all other parameters the same.
+#. Duplicate the ``wheel_left`` by right clicking the ``wheel_left`` Xform on the stage tree, select **Duplicate**, and move it to ``y = -1.5`` while keeping all other parameters the same.
 #. Rename the duplicated Xform to **wheel_right** by right clicking on it and selecting **Rename**.
 #. Rename the duplicated cylinder to **wheel_right** by right clicking on it and selecting **Rename**.
 
