@@ -168,7 +168,9 @@ This section shows you the methods of livestreaming a headless instance of |isaa
 
           .. code-block:: bash
 
-              sudo apt install ./isaacsim-webrtc-streaming-client-*-linux-*.deb
+              sudo dpkg -i ./isaacsim-webrtc-streaming-client-*-linux-*.deb
+              sudo apt -f install
+              dpkg -l | grep isaacsim-webrtc-streaming-client
 
           Then launch **Isaac Sim WebRTC Streaming Client** from the application menu or run
           ``isaacsim-webrtc-streaming-client`` from a terminal.
