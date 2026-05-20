@@ -48,6 +48,21 @@ MobilityGen supports:
 Generate Data with MobilityGen
 --------------------------------
 
+Launch Isaac Sim
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Open Isaac Sim from the terminal with multi-GPU rendering disabled:
+
+.. code-block:: bash
+
+   ./isaac-sim.sh --/renderer/multiGpu/enabled=false
+
+.. note::
+
+   Always launch Isaac Sim with ``--/renderer/multiGpu/enabled=false`` when using
+   MobilityGen. On machines with multiple GPUs, leaving multi-GPU rendering enabled
+   can cause CUDA errors or crashes during MobilityGen startup.
+
 Build an Occupancy Map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
