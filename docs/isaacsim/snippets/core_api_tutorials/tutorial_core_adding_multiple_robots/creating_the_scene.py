@@ -11,6 +11,7 @@ class HelloWorld(BaseSample):
     def __init__(self) -> None:
         super().__init__()
 
+    # -- Begin setup_scene -- #
     def setup_scene(self):
         assets_root_path = get_assets_root_path()
 
@@ -49,6 +50,8 @@ class HelloWorld(BaseSample):
         # Position Franka so the cube will be pushed into its workspace
         franka_xform = XformPrim("/World/Franka")
         franka_xform.set_world_poses(positions=np.array([[0.8, -0.5, 0.0]]))
+
+    # -- End of setup_scene -- #
 
     async def setup_post_load(self):
         # Create Articulation handles for both robots

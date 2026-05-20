@@ -46,32 +46,68 @@ The code snippet below shows the relevant contents of ``/Trajectory_Generator_py
 .. literalinclude:: ../snippets/manipulators/manipulators_lula_trajectory_generator/generating_a_c_space_trajectory.py
     :language: python
     :linenos:
-    :emphasize-lines: 53-56, 80-81, 99-103
 
-On lines 53-56, the ``LulaCSpaceTrajectoryGenerator`` class is initialized using a URDF and
-:ref:`Lula Robot Description File <isaac_sim_app_tutorial_motion_generation_robot_description_editor>`.
+The ``LulaCSpaceTrajectoryGenerator`` class is initialized using a URDF and
+:ref:`Lula Robot Description File <isaac_sim_app_tutorial_motion_generation_robot_description_editor>`:
+
+.. literalinclude:: ../snippets/manipulators/manipulators_lula_trajectory_generator/generating_a_c_space_trajectory.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin LulaCSpaceTrajectoryGenerator -- #
+    :end-before: # -- End of LulaCSpaceTrajectoryGenerator -- #
+
 The ``LulaCSpaceTrajectoryGenerator`` takes in a series of waypoints, and it connects them in configuration space using spline-based interpolation.
 There are two main objectives that can be fulfilled by the trajectory generator:
 
 * time-optimal
 * time-stamped
 
-The provided example shows a trajectory that runs quickly, and then runs slowly.  This is seen in the code on lines (80-81 and 99-103).
-On line 80, a time-optimal trajectory is created in the form of a ``LulaTrajectory`` object, which fulfills the :ref:`Trajectory Interface <isaac_sim_trajectory>`.
-On line 81, a time-stamped trajectory is created that will hit the same waypoints at the times ``[0,5,10,13]`` seconds (line 78).  Time optimality is
-defined as saturating at least one of velocity, acceleration, or jerk limits of the robot throughout a trajectory.
+The provided example shows a trajectory that runs quickly, and then runs slowly.
 
-On lines 99-103, These ``LulaTrajectory`` objects are passed to ``ArticulationTrajectory`` to generate a sequence of ``ArticulationAction`` that can be passed directly to the
+A time-optimal trajectory is created in the form of a ``LulaTrajectory`` object, which fulfills the :ref:`Trajectory Interface <isaac_sim_trajectory>`:
+
+.. literalinclude:: ../snippets/manipulators/manipulators_lula_trajectory_generator/generating_a_c_space_trajectory.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin time optimal -- #
+    :end-before: # -- End of time optimal -- #
+
+Next, a time-stamped trajectory is created that will hit the same waypoints at the times ``[0,5,10,13]`` seconds.  Time optimality is
+defined as saturating at least one of velocity, acceleration, or jerk limits of the robot throughout a trajectory:
+
+.. literalinclude:: ../snippets/manipulators/manipulators_lula_trajectory_generator/generating_a_c_space_trajectory.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin time stamped -- #
+    :end-before: # -- End of time stamped -- #
+
+These ``LulaTrajectory`` objects are passed to ``ArticulationTrajectory`` to generate a sequence of ``ArticulationAction`` that can be passed directly to the
 robot ``Articulation``.  The function ``ArticulationTrajectory.get_action_sequence()`` returns a list of ``ArticulationAction`` that is meant to be consumed at the specified
-rate.  In this case, the framerate of physics is assumed to be fixed at ``1/60`` seconds.
+rate.  In this case, the framerate of physics is assumed to be fixed at ``1/60`` seconds:
 
+.. literalinclude:: ../snippets/manipulators/manipulators_lula_trajectory_generator/generating_a_c_space_trajectory.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin trajectory following -- #
+    :end-before: # -- End of trajectory following -- #
 
 If no trajectory can be computed that connects the c-space waypoints, the trajectory returned by ``LulaCSpaceTrajectoryGenerator.compute_c_space_trajectory``
-will be ``None``.  This can occur when one of the specified c-space waypoints is not reachable or is very close to a joint limit.
-This case is handled on lines 90-92.
+will be ``None``.  This can occur when one of the specified c-space waypoints is not reachable or is very close to a joint limit:
 
-On lines 84-88, a visualization of the original ``c_space_points`` is created by converting them to task-space points.
-This code is not functional, but it helps to verify that the robot is hitting every target.
+.. literalinclude:: ../snippets/manipulators/manipulators_lula_trajectory_generator/generating_a_c_space_trajectory.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin no trajectory handling -- #
+    :end-before: # -- End of no trajectory handling -- #
+
+A visualization of the original ``c_space_points`` is created by converting them to task-space points.
+This code is not functional, but it helps to verify that the robot is hitting every target:
+
+.. literalinclude:: ../snippets/manipulators/manipulators_lula_trajectory_generator/generating_a_c_space_trajectory.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin visualization -- #
+    :end-before: # -- End of visualization -- #
 
 The ``update()`` function is programmed to play the sequence of ``ArticulationActions`` in a loop, taking a pause of ``10 frames`` for dramatic effect between trajectories.
 

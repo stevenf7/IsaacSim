@@ -68,6 +68,7 @@ class HelloWorld(BaseSample):
         )
 
     def physics_step(self, dt, context):
+        # -- Begin control Jetbot -- #
         self._step_counter += 1
         if self._step_counter < 300:
             # Drive Jetbot forward to push the cube
@@ -75,6 +76,7 @@ class HelloWorld(BaseSample):
         else:
             # Stop the Jetbot after pushing
             self._jetbot.set_dof_velocity_targets([[0.0, 0.0]])
+        # -- End of control Jetbot -- #
 
     def physics_cleanup(self):
         if self._physics_callback_id is not None:

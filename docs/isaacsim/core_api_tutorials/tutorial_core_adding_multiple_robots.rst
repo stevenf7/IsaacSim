@@ -42,7 +42,6 @@ Begin by adding the Jetbot, Franka Panda, and the Cube from the previous tutoria
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_adding_multiple_robots/creating_the_scene.py
     :language: python
     :linenos:
-    :emphasize-lines: 14-51
 
 Click the **LOAD** button to see both robots and the cube in the scene.
 
@@ -56,7 +55,14 @@ forward while the Franka prepares to receive it.
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_adding_multiple_robots/controlling_multiple_robots.py
     :language: python
     :linenos:
-    :emphasize-lines: 70-77
+    :start-after: # -- Begin control Jetbot -- #
+    :end-before: # -- End of control Jetbot -- #
+
+Complete code:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_adding_multiple_robots/controlling_multiple_robots.py
+    :language: python
+    :linenos:
 
 Watch as the Jetbot pushes the cube towards the Franka!
 
@@ -75,7 +81,14 @@ the :code:`Franka` class for IK-based end-effector control:
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_adding_multiple_robots/adding_state_machine_logic.py
     :language: python
     :linenos:
-    :emphasize-lines: 66-139
+    :start-after: # -- Begin state machine -- #
+    :end-before: # -- End of state machine -- #
+
+Complete code:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_adding_multiple_robots/adding_state_machine_logic.py
+    :language: python
+    :linenos:
 
 .. image:: /images/core_api_tutorials_5_2.webp
     :align: center
@@ -99,4 +112,3 @@ Next Steps
 
 Continue on to the next tutorial in our Essential Tutorials series, :ref:`isaac_sim_app_tutorial_core_multiple_tasks`,
 to learn how to add multiple tasks and manage them.
-

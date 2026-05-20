@@ -90,20 +90,56 @@ The file ``/RRT_Example_python/scenario.py`` loads the Franka robot and uses ``R
 Every 60 frames, the planner replans to move to the current target position (if possible).  In this example, the planner does
 not attempt to plan to the same target multiple times if a failure is encountered.  The returned plan will be ``None`` and no actions will be taken.
 
+Initialize RRT:
+
 .. literalinclude:: ../snippets/manipulators/manipulators_lula_rrt/rrt_example.py
     :language: python
     :linenos:
-    :emphasize-lines: 51-61, 63-65, 67, 74, 88-90, 96-97
+    :start-after: # -- Begin initializing RRT -- #
+    :end-before: # -- End of initializing RRT -- #
 
-The ``RRT`` class is initialized on lines 51-61.  For supported robots, this can be simplified as on lines 63-65.  ``RRT`` is made
-aware of the obstacle it needs to watch on line 67.  Any time ``RRT.update_world()`` is called (line 89), it will query the current position
+For supported robots, this can be simplified:
+
+.. literalinclude:: ../snippets/manipulators/manipulators_lula_rrt/rrt_example.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin simplified initialization of RRT -- #
+    :end-before: # -- End of simplified initialization of RRT -- #
+
+To make ``RRT`` aware of the obstacle it needs to watch the obstacles:
+
+.. literalinclude:: ../snippets/manipulators/manipulators_lula_rrt/rrt_example.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin adding obstacle -- #
+    :end-before: # -- End of adding obstacle -- #
+
+Any time ``RRT.update_world()`` is called, it will query the current position
 of watched obstacles.
 
 ``RRT`` outputs sparse plans that, when linearly interpolated, form a collision-free path to the goal position.
 As an instance of the ``PathPlanner`` interface, ``RRT`` can be passed to a :ref:`isaac_sim_path_planner_visualizer` to convert its output
-to a form that is directly usable by the robot ``Articulation`` (line 74).
+to a form that is directly usable by the robot ``Articulation``:
 
-In this example, ``RRT`` replans every second if the target has been moved.  The replanning is performed on lines 88-90.
+.. literalinclude:: ../snippets/manipulators/manipulators_lula_rrt/rrt_example.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin setting PathPlannerVisualizer -- #
+    :end-before: # -- End of setting PathPlannerVisualizer -- #
+
+Complete code:
+
+.. literalinclude:: ../snippets/manipulators/manipulators_lula_rrt/rrt_example.py
+    :language: python
+    :linenos:
+
+In this example, ``RRT`` replans every second if the target has been moved. The replanning is performed as follows:
+
+.. literalinclude:: ../snippets/manipulators/manipulators_lula_rrt/rrt_example.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin computing plan -- #
+    :end-before: # -- End of computing plan -- #
 
 * First, ``RRT`` is informed of the new target position.
 * Then it is told to query the position of watched obstacles.
@@ -111,7 +147,7 @@ In this example, ``RRT`` replans every second if the target has been moved.  The
 
 The ``max_cspace_dist`` argument passed to the ``path_planner_visualizer`` interpolates the sparse output with a maximum l2 norm of ``.01``
 between any two commanded robot positions.  On every frame, one of the actions in the plan is removed from the plan and sent to the
-robot (lines 92-93).
+robot.
 
 .. figure:: /images/isim_4.5_full_tut_gui_rrt.webp
    :align: center

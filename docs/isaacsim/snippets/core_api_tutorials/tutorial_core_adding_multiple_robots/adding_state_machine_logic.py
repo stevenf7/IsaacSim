@@ -64,6 +64,7 @@ class HelloWorld(BaseSample):
         self._state = 0
 
     def physics_step(self, dt, context):
+        # -- Begin state machine -- #
         if self._state == 0:
             # Jetbot pushes cube to Franka
             cube_pos = self._cube.get_world_poses()[0].numpy()[0]
@@ -137,6 +138,7 @@ class HelloWorld(BaseSample):
                 )
                 if self._step_counter > 150:
                     self._step_counter = 0
+        # -- End of state machine -- #
 
     async def setup_post_reset(self):
         self._state = 0

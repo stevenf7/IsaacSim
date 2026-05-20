@@ -24,12 +24,14 @@ GroundPlane("/World/ground_plane")
 dome_light = DomeLight("/World/DomeLight")
 dome_light.set_intensities(1000)
 
+# -- Begin custom setup -- #
 # Custom phase durations (steps for each phase)
 controller = FrankaPickPlace(events_dt=[80, 60, 30, 60, 100, 30, 30])
 # Customize cube position, size, and target position
 controller.setup_scene(
     cube_initial_position=[0.4, 0.2, 0.0258], cube_size=[0.05, 0.05, 0.05], target_position=[-0.4, 0.2, 0.12]
 )
+# -- End of custom setup -- #
 
 SimulationManager.setup_simulation(dt=1.0 / 60.0, device=DEVICE)
 physics_scene = SimulationManager.get_physics_scenes()[0]

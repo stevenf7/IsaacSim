@@ -52,10 +52,35 @@ as well as navigate through it using the **Content** window, under **Isaac Sim >
 #. Open the ``hello_world.py`` file by clicking the **Open Source Code**
    button in the **Hello World** window.
 
+Import packages:
+
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_robot/open_the_extension_examplesuser_exampleshello_worl.py
     :language: python
     :linenos:
-    :emphasize-lines: 1-5, 13-27, 30-31
+    :start-after: # -- Begin importing Isaac packages -- #
+    :end-before: # -- End of importing Isaac packages -- #
+
+Setup scene:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_robot/open_the_extension_examplesuser_exampleshello_worl.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin adding Jetbot -- #
+    :end-before: # -- End of adding Jetbot -- #
+
+Articulate the robot:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_robot/open_the_extension_examplesuser_exampleshello_worl.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin articulation -- #
+    :end-before: # -- End of articulation -- #
+
+Complete code:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_robot/open_the_extension_examplesuser_exampleshello_worl.py
+    :language: python
+    :linenos:
 
 Click the **LOAD** button to load the scene and see the Jetbot appear. Although it is being simulated,
 it is not moving. The next section walks through how to make the robot move.
@@ -69,10 +94,35 @@ to these articulations make them move.
 
 Next, apply random velocities to the Jetbot's wheel joints to get it moving.
 
+Importing SimulationManager:
+
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_robot/move_the_robot.py
     :language: python
     :linenos:
-    :emphasize-lines: 5, 36-41, 43-47
+    :start-after: # -- Begin importing SimulationManager -- #
+    :end-before: # -- End of importing SimulationManager -- #
+
+Registering callbacks:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_robot/move_the_robot.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin registering callback -- #
+    :end-before: # -- End of registering callback -- #
+
+Define command function:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_robot/move_the_robot.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin sending actions -- #
+    :end-before: # -- End of sending actions -- #
+
+Complete code:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_robot/move_the_robot.py
+    :language: python
+    :linenos:
 
 
 Click the **LOAD** button to load the scene and watch the Jetbot move with random velocities.
@@ -98,10 +148,27 @@ Controlling Specific Joints
 You can also control specific joints by their names or indices. Here's how to get the wheel
 joint indices and apply velocities only to specific joints:
 
+Getting wheel indices:
+
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_robot/using_the_wheeledrobot_class.py
     :language: python
     :linenos:
-    :emphasize-lines: 31-36, 46-48
+    :start-after: # -- Begin getting indices -- #
+    :end-before: # -- End of getting indices -- #
+
+Setting wheel velocities using indices:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_robot/using_the_wheeledrobot_class.py
+    :language: python
+    :linenos:
+    :start-after: # -- Begin setting wheel velocity -- #
+    :end-before: # -- End of setting wheel velocity -- #
+
+Complete code:
+
+.. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_hello_robot/using_the_wheeledrobot_class.py
+    :language: python
+    :linenos:
 
 .. image:: /images/core_api_tutorials_2_2.webp
     :align: center
@@ -141,4 +208,3 @@ Further Learning
   and ``isaacsim.robot.experimental.manipulators.examples``.
   To learn more, check out the standalone examples located at ``standalone_examples/api/isaacsim.robot.experimental.manipulators/franka``
   and ``standalone_examples/api/isaacsim.robot.experimental.manipulators/universal_robots/``.
-
