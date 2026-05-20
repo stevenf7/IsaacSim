@@ -63,11 +63,6 @@ parser.add_argument(
 )
 parser.add_argument("--gpu-frametime", action="store_true", help="Enable GPU frametime measurement")
 parser.add_argument("--non-headless", action="store_false", dest="headless", help="Run with GUI")
-parser.add_argument(
-    "--enable-lidar-multitick",
-    action="store_true",
-    help="Set omni:sensor:tickRate on lidar sensors to their scan rate",
-)
 
 args, unknown = parser.parse_known_args()
 
@@ -78,7 +73,6 @@ lidar_type = args.lidar_type
 metadata_fields = args.metadata
 gpu_frametime = args.gpu_frametime
 headless = args.headless
-enable_lidar_multitick = args.enable_lidar_multitick
 
 from isaacsim import SimulationApp
 
@@ -174,12 +168,6 @@ for i in range(n_sensor):
         aux_output_level=aux_output_level,
     )
     lidars.append(lidar)
-
-    if enable_lidar_multitick:
-        prim = lidar.prims[0]
-        scan_rate = prim.GetAttribute("omni:sensor:Core:scanRateBaseHz").Get()
-        if scan_rate is not None:
-            prim.GetAttribute("omni:sensor:tickRate").Set(float(scan_rate))
 
     print(lidar.paths[0])
 
