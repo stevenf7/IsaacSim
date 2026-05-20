@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.0] - 2026-05-19
+### Added
+- Token authentication for client requests via the `auth_token` JSON envelope field or the `# isaacsim-python-server-token:` raw-source header
+- New `require_auth` and `auth_token` settings. When authentication is required and no token is configured, the server generates one at startup
+
 ## [1.2.2] - 2026-04-06
 ### Fixed
 - RecursionError and MemoryError in user code no longer hang the server. Exception handlers in the executor are now resilient to secondary failures (e.g. `traceback.format_exc()` raising after RecursionError).

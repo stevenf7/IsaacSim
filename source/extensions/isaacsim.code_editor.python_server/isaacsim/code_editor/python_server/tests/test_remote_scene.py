@@ -29,6 +29,8 @@ import textwrap
 import carb
 import omni.kit.test
 
+from ._auth import add_auth_header
+
 _SETTINGS_PREFIX = "/exts/isaacsim.code_editor.python_server"
 _HOST = "127.0.0.1"
 
@@ -44,7 +46,7 @@ async def _send_and_receive(port: int, source: str) -> dict:
         The parsed JSON response dictionary.
     """
     reader, writer = await asyncio.open_connection(_HOST, port)
-    writer.write(source.encode())
+    writer.write(add_auth_header(source).encode())
     writer.write_eof()
     data = await asyncio.wait_for(reader.read(), timeout=30.0)
     writer.close()

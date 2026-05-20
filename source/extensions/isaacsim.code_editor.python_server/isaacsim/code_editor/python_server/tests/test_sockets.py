@@ -23,6 +23,8 @@ import json
 import carb
 import omni.kit.test
 
+from ._auth import add_auth_header
+
 _SETTINGS_PREFIX = "/exts/isaacsim.code_editor.python_server"
 _HOST = "127.0.0.1"
 _MESSAGE = "Hello World!"
@@ -39,7 +41,17 @@ async def _send_and_receive(port: int, source: str) -> dict:
         The parsed JSON response dictionary.
     """
     reader, writer = await asyncio.open_connection(_HOST, port)
-    writer.write(source.encode())
+    writer.write(add_auth_header(source).encode())
+    writer.write_eof()
+    data = await asyncio.wait_for(reader.read(), timeout=30.0)
+    writer.close()
+    return json.loads(data.decode())
+
+
+async def _send_raw_payload(port: int, payload: str) -> dict:
+    """Send a payload exactly as provided and return the parsed JSON response."""
+    reader, writer = await asyncio.open_connection(_HOST, port)
+    writer.write(payload.encode())
     writer.write_eof()
     data = await asyncio.wait_for(reader.read(), timeout=30.0)
     writer.close()
@@ -64,6 +76,20 @@ class TestSockets(omni.kit.test.AsyncTestCase):
         print("response:", data)
         self.assertEqual("ok", data.get("status"))
         self.assertEqual(_MESSAGE, data.get("output"))
+
+    async def test_tcp_socket_missing_auth_token(self) -> None:
+        """Verify that unauthenticated requests are rejected before execution."""
+        data = await _send_raw_payload(self._socket_port, f'print("{_MESSAGE}")')
+        print("response:", data)
+        self.assertEqual("error", data.get("status"))
+        self.assertEqual("AuthenticationError", data.get("ename"))
+
+    async def test_tcp_socket_invalid_auth_token(self) -> None:
+        """Verify that requests with an invalid token are rejected before execution."""
+        data = await _send_raw_payload(self._socket_port, "# isaacsim-python-server-token: invalid\nprint('bad')")
+        print("response:", data)
+        self.assertEqual("error", data.get("status"))
+        self.assertEqual("AuthenticationError", data.get("ename"))
 
     async def test_tcp_socket_error(self) -> None:
         """Verify that a syntax error returns error status via TCP."""
