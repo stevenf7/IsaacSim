@@ -257,6 +257,13 @@ osec:sonarqube:
         interruptible: true
       # - !reference [.rules-push-manual, rules]
 
+# Overrides for mirror-sync job
+mirror-sync: 
+  stage: check
+
+mirror-mark-eligible:
+  stage: check
+
 # ==============================================================================================================
 .check-common:
     stage: check
