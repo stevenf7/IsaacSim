@@ -59,7 +59,7 @@ class RenderingManager:
     _event_dispatcher = carb.eventdispatcher.get_eventdispatcher()
     """Carbonite event dispatcher for managing event subscriptions and notifications."""
     _timeline = omni.timeline.get_timeline_interface()
-    """Timeline interface for controlling time-related operations and frame rate settings."""
+    """Timeline interface used by :meth:`set_dt` to configure ``set_target_framerate`` and ``set_time_codes_per_second``."""
     _fabric_time_stage_id = None
     """Cached stage ID for :meth:`_ensure_fabric_simulation_time` to avoid redundant Fabric writes."""
     try:
@@ -134,10 +134,36 @@ class RenderingManager:
 
     @classmethod
     def set_dt(cls, dt: float) -> None:
-        """Set the rendering dt.
+        """Set the application's coherent dt across the run loop, timeline, and loop runner.
+
+        Sets the following, in order:
+
+        1. **If ``/app/runLoops/main/rateLimitEnabled`` is already true**, writes
+           ``/app/runLoops/main/rateLimitFrequency = 1/dt`` and calls
+           ``timeline.set_target_framerate(1/dt)``. If rate-limit is not already enabled,
+           this step is skipped and the app continues to run unthrottled - this method
+           does not enable rate-limiting on its own.
+        2. Writes ``stage.SetTimeCodesPerSecond(1/dt)`` to the root layer and
+           ``timeline.set_time_codes_per_second(1/dt)``. This is the value the timeline uses
+           as its per-tick ``dt`` whenever ``/app/player/useFixedTimeStepping`` is true (the
+           default in the full Isaac Sim GUI).
+        3. Calls ``loop_runner.set_manual_step_size(dt)`` and ``loop_runner.set_manual_mode(True)``
+           on the Isaac loop runner, so the loop dispatches a fixed ``dt`` instead of the
+           wall-clock measured value (relevant when ``useFixedTimeStepping`` is false, e.g.
+           standalone Python). If the Isaac loop runner is not available, falls back to
+           enabling the carb rate-limit (``rateLimitEnabled = True``) and writing
+           ``rateLimitFrequency`` / ``timeline.set_target_framerate`` regardless of the
+           prior ``rateLimitEnabled`` value.
+        4. Writes the Fabric default simulation-period numerator/denominator carb settings
+           from ``dt``. These are read by Fabric ``SimStageWithHistory`` instances created
+           after this call; existing histories are not updated.
+
+        This does **not** modify the physics scene's ``timeStepsPerSecond`` attribute - use
+        :py:meth:`isaacsim.core.simulation_manager.SimulationManager.setup_simulation` for that.
+        For real-time playback at a chosen rate, call both APIs with the same ``dt``.
 
         Args:
-            dt: Rendering dt.
+            dt: Application dt in seconds (e.g. ``1.0 / 60`` for 60 Hz).
 
         Raises:
             ValueError: If ``dt`` is not positive.
@@ -186,10 +212,22 @@ class RenderingManager:
 
     @classmethod
     def get_dt(cls) -> float:
-        """Get the rendering dt.
+        """Get the application's currently-configured dt.
+
+        Reads from one of two sources, in priority order:
+
+        1. If ``/app/runLoops/main/rateLimitEnabled`` is true, returns
+           ``1 / /app/runLoops/main/rateLimitFrequency``.
+        2. Otherwise, if the Isaac loop runner is in manual mode, returns its
+           ``manual_step_size``.
+        3. As a final fallback, returns ``1 / /app/runLoops/main/rateLimitFrequency`` even
+           though the rate-limit isn't enabled (the value may not actually be in effect).
+
+        Note that this returns the loop / timeline dt, not the physics scene's ``physics_dt``;
+        for that use :py:meth:`isaacsim.core.simulation_manager.PhysicsScene.get_dt`.
 
         Returns:
-            Rendering dt.
+            Application dt in seconds.
 
         Example:
 

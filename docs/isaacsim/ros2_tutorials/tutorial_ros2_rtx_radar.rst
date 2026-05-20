@@ -134,7 +134,7 @@ Exposing Radar Metadata
 
 The ``ROS2 RTX Radar Helper`` node supports optional per-point metadata fields in the PointCloud2 message:
 
-- **outputRadialVelocityMS**: Include per-point radial velocity (m/s). Requires the OmniRadar prim to be created with ``Radar(path, aux_output_level="BASIC")`` (or have ``_replicator:rendervar:GenericModelOutput:channels = ["BASIC"]`` authored on it). See :ref:`isaac_sim_sensors_multitick_aux_output_level` for known issues and more details, including how to set the attribute via the UI.
+- **outputRadialVelocityMS**: Include per-point radial velocity (m/s). Requires the OmniRadar prim to be created with ``Radar(path, aux_output_level="BASIC")`` (or have ``_replicator:rendervar:GenericModelOutput:channels = ["BASIC"]`` authored on it). See :ref:`isaacsim_sensors_rtx_aux_output_level` for known issues and more details, including how to set the attribute via the UI.
 - **outputIntensity**: Include per-point intensity values.
 - **outputTimestamp**: Include per-point timestamps.
 

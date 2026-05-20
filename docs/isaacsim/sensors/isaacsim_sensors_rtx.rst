@@ -101,7 +101,7 @@ The following settings affect RTX sensor behavior and performance:
     "``--/app/sensors/nv/lidar/publishNormals``", "``false``", "Enable hit normal output. Increases VRAM usage."
     "``--/rtx/materialDb/nonVisualMaterialCSV/enabled``", "``false``", "Enable non-visual materials using USD attributes."
     "``--/rtx/materialDb/nonVisualMaterialSemantics/prefix``", "``omni:simready:nonvisual``", "Specify the non-visual material USD attribute prefix."
-    "``--/rtx/rtxsensor/useHydraTimeAlways``", "``true``", "Use Hydra time (``omni.timeline``) in RTX sensor models."
+    "``--/rtx/rtxsensor/useHydraTimeAlways``", "``true``", "Use Hydra time (``omni.timeline``) in RTX sensor models. Applies only if multi-tick rendering is disabled."
     "``--/rtx-transient/stableIds/enabled``", "``false``", "Enable stable 128-bit object IDs for semantic segmentation."
     "``--/renderer/raytracingMotion/enabled``", "``false``", "Enable Motion BVH for motion compensation and Doppler effects."
 
@@ -142,6 +142,120 @@ There are two ways to enable Motion BVH:
     --/renderer/raytracingMotion/enableHydraEngineMasking=true \
     --/renderer/raytracingMotion/enabledForHydraEngines='0,1,2,3,4'
 
+.. _isaacsim_sensors_rtx_aux_output_level:
+
+Auxiliary Output Level and the GenericModelOutput RenderVar
+-----------------------------------------------------------
+
+RTX Lidar, Radar, and Acoustic sensors emit a ``GenericModelOutput`` (GMO) AOV. The
+amount of auxiliary data carried in each GMO frame is controlled by the
+``_replicator:rendervar:GenericModelOutput:channels`` attribute on the sensor prim.
+
+Setting the channels attribute in the UI
+########################################
+
+To set ``_replicator:rendervar:GenericModelOutput:channels`` on an OmniRadar prim from
+the Isaac Sim UI:
+
+#. Select the prim in the **Stage** window.
+#. Open the **Property** tab.
+#. Expand the **Array Properties** widget.
+#. Click **Edit** on the ``_replicator:rendervar:GenericModelOutput:channels`` row.
+#. Set the first field in the dialog to ``BASIC``.
+#. Close the dialog to save the change.
+
+.. figure:: /images/isim_6.0_sensors_multitick_gui_array_properties_channels.png
+    :align: center
+    :width: 800
+    :alt: Setting the GenericModelOutput channels attribute on an OmniRadar prim via the Array Properties widget in the Property tab
+
+How the attribute flows to the RenderVar
+########################################
+
+When ``omni.replicator.core`` adds a ``GenericModelOutput`` RenderVar to a render product
+that is attached to an RTX sensor prim, it reads
+``_replicator:rendervar:GenericModelOutput:channels`` from the sensor prim and copies the
+value onto the RenderVar's ``channels`` attribute. The RTX Sensor SDK then uses that
+value to decide which auxiliary fields to populate.
+
+The ``aux_output_level`` constructor parameter on
+:py:class:`isaacsim.sensors.experimental.rtx.Lidar`,
+:py:class:`isaacsim.sensors.experimental.rtx.Radar`, and
+:py:class:`isaacsim.sensors.experimental.rtx.Acoustic` is a convenience that authors
+``_replicator:rendervar:GenericModelOutput:channels = [level]`` on the sensor prim. The
+two paths are interchangeable; reading existing USD scenes is easier if you recognize
+the underlying attribute.
+
+Valid values are modality-specific:
+
+.. csv-table::
+    :header: "Modality", "Valid values"
+    :widths: 30, 70
+
+    "Lidar", "``NONE`` (default), ``BASIC``, ``EXTRA``, ``FULL``"
+    "Radar", "``NONE`` (default), ``BASIC``"
+    "Acoustic", "``NONE`` (default), ``BASIC``"
+
+See :ref:`rtx_sensor_annotator_descriptions` for the per-level field listing.
+
+Migration from previous releases
+################################
+
+Earlier releases used per-modality USD attributes for the same purpose. These attributes
+have been removed from the schemas:
+
+.. csv-table::
+    :header: "Old attribute (removed)", "Replacement"
+    :widths: 50, 50
+
+    "``omni:sensor:Core:auxOutputType`` (Lidar)", "``_replicator:rendervar:GenericModelOutput:channels`` on the ``OmniLidar`` prim, or ``Lidar(..., aux_output_level='FULL')``."
+    "``omni:sensor:WpmDmat:auxOutputType`` (Radar)", "``_replicator:rendervar:GenericModelOutput:channels`` on the ``OmniRadar`` prim, or ``Radar(..., aux_output_level='BASIC')``."
+
+USD assets shipped with |isaac-sim_short| 6.0 have already been updated. Custom USD
+scenes carrying the old attributes need to be migrated; the old attributes are silently
+ignored by the new schemas.
+
+.. note::
+
+    ``RtxCamera`` removes ``_replicator:rendervar:GenericModelOutput:channels`` from the
+    Camera prim during construction because cameras do not produce a GMO AOV. Camera
+    prims therefore do not participate in the propagation behavior described in
+    :ref:`isaacsim_sensors_rtx_known_issue_gmo_channels`.
+
+.. _isaacsim_sensors_rtx_known_issue_gmo_channels:
+
+Known issue: last-attach-wins propagation of GMO channels
+#########################################################
+
+.. warning::
+
+    The ``_replicator:rendervar:GenericModelOutput:channels`` attribute is currently
+    **effectively global per render-product-attach event**. When two RTX sensors on the
+    same stage author different values, only the **last** sensor to have a render product
+    attached "wins" - every subsequent ``GenericModelOutput`` RenderVar uses that
+    sensor's channels value, regardless of which sensor prim it was created from.
+
+Concrete example. Suppose you have one ``Lidar`` with ``aux_output_level="FULL"`` and
+one ``Radar`` with ``aux_output_level="BASIC"`` on the same stage:
+
+- If the **Radar** render product is created second, every GMO consumer (Lidar and
+  Radar) sees ``BASIC`` channels. The Lidar silently loses its ``FULL``-level fields.
+- If the **Lidar** render product is created second, the Radar GMO RenderVar inherits
+  ``FULL``. The Radar pipeline does not recognize ``FULL`` and produces **no auxiliary
+  data at all** for that Radar (no ``rv_ms``, no intensity, etc.).
+
+Recommended workarounds:
+
+- Keep all RTX sensors on a stage at the same ``aux_output_level``.
+- Order render-product attachment so the sensor whose channels value you want to use is
+  attached last.
+- Split sensors with conflicting auxiliary-output requirements across separate stages
+  or ``SimulationApp`` instances.
+
+This issue is tracked separately and will be addressed in a future release. Cameras are
+unaffected: ``RtxCamera`` removes the GMO channels attribute during construction because
+Camera prims do not emit GMO AOVs.
+
 .. _isaacsim_sensors_rtx_troubleshooting:
 
 Troubleshooting and Known Issues
@@ -158,24 +272,20 @@ Common Issues
     If the Lidar rotation rate is slower than the frame rate, accumulated scan data may contain returns from multiple frames.
     This is expected behavior for rotating Lidars. Consider using per-frame output instead of accumulated scans.
 
-**Lidar scans are incomplete in standalone Python workflows**
-    Consider setting ``--/app/player/useFixedTimeStepping=true`` to force frames to have a fixed time step, ensuring the Lidar model does not discard points if a frame has a slightly
-    longer simulated time than the Lidar scan period. This setting is ``true`` by default in the full Isaac Sim app, but ``false`` by default in standalone Python workflows.
+**Lidar scans are incomplete**
+    Ensure ``omni:sensor:Core:accumulateOutputs`` is set to ``true`` on the ``OmniLidar`` prim. ``omni:sensor:tickRate`` must equal ``omni:sensor:Core:scanRateBaseHz`` on the ``OmniLidar`` prim.
+    See :ref:`isaac_sim_sensors_multitick_lidar_tickrate_must_match_scanrate`.
+
 
 **Radar simulation does not show Doppler effects**
     Motion BVH must be enabled for Doppler effects to be modeled correctly. See :ref:`isaac_sim_sensors_rtx_how_to_enable_motion_bvh`.
 
 **Timestamps are discontinuous after pause/resume**
-    The ``GenericModelOutput`` AOV timestamp is independent of the animation timeline and continues to increase even when paused.
-    This is expected behavior.
-
-**Lidar emits truncated or partial scans every frame**
-    ``omni:sensor:tickRate`` must equal ``omni:sensor:Core:scanRateBaseHz`` on the ``OmniLidar`` prim.
-    See :ref:`isaac_sim_sensors_multitick_lidar_tickrate_must_match_scanrate`.
+    This should not occur if multi-tick rendering is enabled. If multi-tick rendering is disabled, the ``GenericModelOutput`` AOV timestamp is independent of the animation timeline and continues to increase even when paused.
 
 **One sensor's auxiliary output level overrides another's**
     The ``_replicator:rendervar:GenericModelOutput:channels`` attribute is currently global
-    per render-product-attach event. See :ref:`isaac_sim_sensors_multitick_known_issue_gmo_channels`.
+    per render-product-attach event. See :ref:`isaacsim_sensors_rtx_known_issue_gmo_channels`.
 
 Performance Considerations
 ##########################

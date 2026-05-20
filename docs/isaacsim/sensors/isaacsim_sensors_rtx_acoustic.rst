@@ -136,16 +136,17 @@ The ``tick_rate`` parameter (Hz) controls how frequently the sensor renders. A v
 Auxiliary Output Level
 ^^^^^^^^^^^^^^^^^^^^^^
 
-In previous releases, users set ``auxOutputType`` as a prim attribute directly on acoustic prims.
-With the experimental API in 6.0, use the ``aux_output_level`` constructor parameter instead. This
-controls what auxiliary data appears in ``GenericModelOutput`` frames.
-
-Valid values for Acoustic: ``"NONE"`` (default), ``"BASIC"``.
+RTX Acoustic exposes auxiliary data through the ``aux_output_level`` constructor parameter.
+Valid values are ``"NONE"`` (default) and ``"BASIC"``.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_acoustic/set_acoustic_aux_output_level.py
     :language: python
 
-See :ref:`rtx_sensor_annotator_descriptions` for details on what fields are available at each level.
+See :ref:`isaacsim_sensors_rtx_aux_output_level` for the full attribute-flow explanation and the
+migration from the removed per-modality ``auxOutputType`` attribute, and
+:ref:`isaacsim_sensors_rtx_known_issue_gmo_channels` for a known issue when multiple RTX sensors
+with different auxiliary levels share a stage. See :ref:`rtx_sensor_annotator_descriptions` for
+the per-level field listing.
 
 How to Collect Data from an RTX Acoustic Sensor
 -------------------------------------------------

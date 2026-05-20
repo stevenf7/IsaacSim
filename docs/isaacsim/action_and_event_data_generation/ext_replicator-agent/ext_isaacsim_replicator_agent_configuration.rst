@@ -57,7 +57,7 @@ Root Parameters
     -   Used to initialize random number generators for deterministic simulations (for example, character spawn locations, routine variations).
     -   If omitted, a seed is generated based on the current system time.
 -   **simulation_duration** (optional): The total run time of the simulation in seconds (must be >= 0).
-    -   The simulation runs at a fixed time step corresponding to **30 FPS**.
+    -   The simulation runs with the timeline's per-tick ``dt`` set to ``1/30 s`` and the application's loop rate-limited to 30 Hz, giving an effective 30 FPS playback rate.
     -   Defaults to ``60.0`` seconds.
 -   **character** (optional): Configures human agents (appearance, behaviors like wander/patrol, and triggers).
 -   **robot** (optional): Configures robot agents (config path, behaviors/commands, data collection).

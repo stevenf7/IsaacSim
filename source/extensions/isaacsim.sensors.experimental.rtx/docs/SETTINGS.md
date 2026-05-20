@@ -24,4 +24,4 @@
 
 ### rtx.rtxsensor.useHydraTimeAlways
 - **Default Value**: true
-- **Description**: Use Hydra time (`omni.timeline`) in RTX sensor models.
+- **Description**: Use Hydra time (`omni.timeline`) in RTX sensor models. Applies only if multi-tick rendering is disabled.

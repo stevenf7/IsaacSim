@@ -31,14 +31,17 @@ Time Behavior of RTX Sensor Annotators
 
 .. warning:: RTX Sensor Annotators rely on the simulation timeline to collect data. If the timeline is not playing (for example, if the simulation is paused or stopped), the annotators will not collect data.
 
-The ``GenericModelOutput`` AOV produced by RTX Sensors contains an internal timestamp, which increases monotonically starting when ``App Ready`` appears in the simulation logs. This timestamp is
-independent of the animation timeline (``omni.timeline``), so the sensor timestamp will continue to increase even if the timeline is paused or stopped. This AOV feeds into all other RTX Sensor Annotators.
+The ``GenericModelOutput`` AOV produced by RTX Sensors contains an internal timestamp. When multi-tick rendering is enabled (default behavior), the timestamp advances every time the sensor ticks, and respects
+``omni.timeline`` Play/Pause/Stop controls since those controls affect the physics simulation, which drives the clock the renderer references. Driving the simulation via ``omni.kit.app.get_app().update()``,
+``omni.kit.app.get_app().next_update_async()``, ``omni.replicator.core.orchestrator.step()``, or ``omni.replicator.core.orchestrator.step_async()`` is supported and should result in expected timestamp behavior.
 
-If the user pauses the timeline, then resumes, timestamps in the ``GenericModelOutput`` point cloud (for example, the ``timestamp`` field of ``IsaacCreateRTXLidarScanBuffer`` below) may be discontinuous. This also means the simulation must be
-stepped using ``omni.kit.app.get_app().update`` or ``omni.kit.app.get_app().next_update_async()`` rather than ``omni.replicator.core.orchestrator.step()`` or ``omni.replicator.core.orchestrator.step_async()``
+When multi-tick rendering is disabled, the timestamp increases monotonically starting when ``App Ready`` appears in the simulation logs. This timestamp is independent of the animation timeline (``omni.timeline``),
+so the sensor timestamp will continue to increase even if the timeline is paused or stopped. This AOV feeds into all other RTX Sensor Annotators. If the user pauses the timeline, then resumes, timestamps in the
+``GenericModelOutput`` point cloud (for example, the ``timestamp`` field of ``IsaacCreateRTXLidarScanBuffer`` below) may be discontinuous. This also means the simulation must be stepped using ``omni.kit.app.get_app().update``
+or ``omni.kit.app.get_app().next_update_async()`` rather than ``omni.replicator.core.orchestrator.step()`` or ``omni.replicator.core.orchestrator.step_async()``
 when collecting data using these Annotators.
 
-.. note:: |isaac-sim_short| APIs for controlling the simulation state use the former two methods rather than the latter two.
+.. note:: The ``omni.replicator.core.orchestrator.step()`` / ``step_async()`` methods are preferred when driving the simulation, to guarantee that any Writers attached to OmniSensor prims trigger correctly.
 
 .. _rtx_sensor_annotators:
 
@@ -207,15 +210,23 @@ If the user does not set the required attributes or carb settings, the annotator
     "``distance``", "``float``", "Range of each return, in world units (by default, meters).", "Provided if ``outputDistance`` is set to ``true``."
     "``intensity``", "``float``", "Intensity of each return, normalized as described `here <https://docs.omniverse.nvidia.com/kit/docs/omni.sensors.nv.lidar/latest/lidar_extension.html#intensity-defining-attributes>`_.", "Provided if ``outputIntensity`` is set to ``true``."
     "``timestamp``", "``uint64``", "Timestamp of each return, in nanoseconds since the start of the simulation.", "Provided if ``outputTimestamp`` is set to ``true``."
-    "``emitterId``", "``uint32``", "ID of the emitter that emitted the return.", "Provided if ``outputEmitterId`` is set to ``true``, and ``omni:sensor:Core:auxOutputType`` is set to ``BASIC`` (or higher) on the ``OmniLidar`` prim."
-    "``channelId``", "``uint32``", "ID of the channel the return was generated on.", "Provided if ``outputChannelId`` is set to ``true``, and ``omni:sensor:Core:auxOutputType`` is set to ``BASIC`` (or higher) on the ``OmniLidar`` prim."
-    "``materialId``", "``uint32``", "ID of the material of the object that generated the return.", "Provided if ``outputMaterialId`` is set to ``true``, and ``omni:sensor:Core:auxOutputType`` is set to ``EXTRA`` (or higher) on the ``OmniLidar`` prim. Refer to :ref:`isaacsim_sensors_rtx_materials` for more details on how material IDs are computed."
-    "``tickId``", "``uint32``", "ID of the tick the return was generated on.", "Provided if ``outputTickId`` is set to ``true``, and ``omni:sensor:Core:auxOutputType`` is set to ``BASIC`` (or higher) on the ``OmniLidar`` prim."
-    "``hitNormal``", "``float3``", "Normal to the surface of the object that generated the return.", "Provided if ``outputHitNormal`` is set to ``true``, ``omni:sensor:Core:auxOutputType`` is set to ``FULL`` on the ``OmniLidar`` prim, and ``--/app/sensors/nv/lidar/publishNormals=true`` is set."
-    "``velocity``", "``float3``", "Velocity of the object that generated the return.", "Provided if ``outputVelocity`` is set to ``true``, and ``omni:sensor:Core:auxOutputType`` is set to ``FULL`` on the ``OmniLidar`` prim."
-    "``objectId``", "``uint8``", "ID of the object that generated the return.", "Provided if ``outputObjectId`` is set to ``true``, and ``omni:sensor:Core:auxOutputType`` is set to ``EXTRA`` (or higher) on the ``OmniLidar`` prim, and ``--/rtx-transient/stableIds/enabled=true`` is set. Object ID is a stable, unique 128-bit unsigned integer mapping to the prim path of the object that generated the corresponding return. See :ref:`rtx_sensor_resolving_object_ids` for more details."
-    "``echoId``", "``uint8``", "Indicates which echo the return represents in a multi-echo Lidar configuration.", "Provided if ``outputEchoId`` is set to ``true``, and ``omni:sensor:Core:auxOutputType`` is set to ``BASIC`` (or higher) on the ``OmniLidar`` prim."
-    "``tickState``", "``uint8``", "Indicates the state of the tick the return was generated on.", "Provided if ``outputTickState`` is set to ``true``, and ``omni:sensor:Core:auxOutputType`` is set to ``BASIC`` (or higher) on the ``OmniLidar`` prim."
+    "``emitterId``", "``uint32``", "ID of the emitter that emitted the return.", "Provided if ``outputEmitterId`` is set to ``true``, and the OmniLidar's ``aux_output_level`` is ``BASIC`` (or higher)."
+    "``channelId``", "``uint32``", "ID of the channel the return was generated on.", "Provided if ``outputChannelId`` is set to ``true``, and the OmniLidar's ``aux_output_level`` is ``BASIC`` (or higher)."
+    "``materialId``", "``uint32``", "ID of the material of the object that generated the return.", "Provided if ``outputMaterialId`` is set to ``true``, and the OmniLidar's ``aux_output_level`` is ``EXTRA`` (or higher). Refer to :ref:`isaacsim_sensors_rtx_materials` for more details on how material IDs are computed."
+    "``tickId``", "``uint32``", "ID of the tick the return was generated on.", "Provided if ``outputTickId`` is set to ``true``, and the OmniLidar's ``aux_output_level`` is ``BASIC`` (or higher)."
+    "``hitNormal``", "``float3``", "Normal to the surface of the object that generated the return.", "Provided if ``outputHitNormal`` is set to ``true``, the OmniLidar's ``aux_output_level`` is ``FULL``, and ``--/app/sensors/nv/lidar/publishNormals=true`` is set."
+    "``velocity``", "``float3``", "Velocity of the object that generated the return.", "Provided if ``outputVelocity`` is set to ``true``, and the OmniLidar's ``aux_output_level`` is ``FULL``."
+    "``objectId``", "``uint8``", "ID of the object that generated the return.", "Provided if ``outputObjectId`` is set to ``true``, the OmniLidar's ``aux_output_level`` is ``EXTRA`` (or higher), and ``--/rtx-transient/stableIds/enabled=true`` is set. Object ID is a stable, unique 128-bit unsigned integer mapping to the prim path of the object that generated the corresponding return. See :ref:`rtx_sensor_resolving_object_ids` for more details."
+    "``echoId``", "``uint8``", "Indicates which echo the return represents in a multi-echo Lidar configuration.", "Provided if ``outputEchoId`` is set to ``true``, and the OmniLidar's ``aux_output_level`` is ``BASIC`` (or higher)."
+    "``tickState``", "``uint8``", "Indicates the state of the tick the return was generated on.", "Provided if ``outputTickState`` is set to ``true``, and the OmniLidar's ``aux_output_level`` is ``BASIC`` (or higher)."
+
+.. note::
+
+    ``aux_output_level`` is a constructor parameter on
+    :py:class:`isaacsim.sensors.experimental.rtx.Lidar` that authors
+    ``_replicator:rendervar:GenericModelOutput:channels`` on the prim. See
+    :ref:`isaacsim_sensors_rtx_aux_output_level` for the attribute-flow explanation and how to
+    set the channels attribute via the UI.
 
 .. warning:: Enabling nonzero ``normal`` output by setting ``--/app/sensors/nv/lidar/publishNormals=true`` will increase VRAM usage and might negatively impact performance.
 

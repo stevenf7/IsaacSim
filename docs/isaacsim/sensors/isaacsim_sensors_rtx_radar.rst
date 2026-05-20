@@ -111,20 +111,18 @@ The ``tick_rate`` parameter (Hz) controls how frequently the sensor renders. A v
 Auxiliary Output Level
 ^^^^^^^^^^^^^^^^^^^^^^
 
-In previous releases, users set ``auxOutputType`` as a prim attribute directly on radar prims. With
-the experimental API in 6.0, use the ``aux_output_level`` constructor parameter instead. This
-controls what auxiliary data appears in ``GenericModelOutput`` frames.
-
-Valid values for Radar: ``"NONE"`` (default), ``"BASIC"``.
+RTX Radar exposes auxiliary data through the ``aux_output_level`` constructor parameter.
+Valid values are ``"NONE"`` (default) and ``"BASIC"``. Setting ``"BASIC"`` enables radial
+velocity (``rv_ms``) in the GMO output.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_radar/set_radar_aux_output_level.py
     :language: python
 
-.. note::
-
-    Setting ``aux_output_level="BASIC"`` enables radial velocity (``rv_ms``) in the GMO output.
-
-See :ref:`rtx_sensor_annotator_descriptions` for details on what fields are available at each level.
+See :ref:`isaacsim_sensors_rtx_aux_output_level` for the full attribute-flow explanation and the
+migration from the removed ``omni:sensor:WpmDmat:auxOutputType`` attribute, and
+:ref:`isaacsim_sensors_rtx_known_issue_gmo_channels` for a known issue when multiple RTX sensors
+with different auxiliary levels share a stage. See :ref:`rtx_sensor_annotator_descriptions` for
+the per-level field listing.
 
 How to Collect Data from an RTX Radar
 -------------------------------------

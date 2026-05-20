@@ -242,8 +242,7 @@ To publish the simulation time to the ROS 2 clock topic, you can setup the graph
 RTX Lidar sensors can optionally expose metadata beyond the Cartesian point cloud, including return intensity and timestamp, materials of the objects generating individual returns, and prim paths of the prims generating individual returns.
 The full list of metadata that can be exposed is described in the :ref:`rtx_sensor_IsaacCreateRTXLidarScanBuffer` Annotator.
 
-To generate the metadata, you must set the ``omni:sensor:Core:auxOutputType`` attribute on the ``OmniLidar`` prim to ``BASIC`` (or higher),
-and possibly additional ``carb`` settings at runtime, referencing the table in the :ref:`rtx_sensor_IsaacCreateRTXLidarScanBuffer` Annotator documentation.
+To generate the metadata, you must set the ``_replicator:rendervar:GenericModelOutput:channels`` attribute on the ``OmniLidar`` prim to include ``BASIC`` (or a higher level) - equivalently, construct the prim with ``Lidar(..., aux_output_level="BASIC")`` (or higher). See :ref:`isaacsim_sensors_rtx_aux_output_level` for how to set the attribute from the **Array Properties** widget. Some metadata fields require additional ``carb`` settings at runtime; refer to the table in the :ref:`rtx_sensor_IsaacCreateRTXLidarScanBuffer` Annotator documentation.
 
 Isaac Sim must then be configured to write the metadata to the PointCloud2 message. There are multiple ways to do this.
 
@@ -264,7 +263,7 @@ Follow the steps in the :ref:`isaac_sim_app_tutorial_ros2_rtx_lidar_basic` secti
 #. Connect the ``selectedMetadata`` output of the `ROS2 RTX Lidar Point Cloud Config` node to the ``selectedMetadata`` input of the `ROS2 RTX Lidar Helper` node for the 3D Lidar sensor.
 #. Tick the **enableObjectIdMap** checkbox on the `ROS2 RTX Lidar Helper` node for the 3D Lidar sensor. This will enable Isaac Sim to publish a ``String`` message containing the Object ID map, on the ``/object_id_map`` topic.
 #. Tick the **enabled** checkbox on the `ROS2 RTX Lidar Helper` node for the 3D Lidar sensor, if not already selected.
-#. Select the `Example_Rotary` Lidar prim, and set the ``omni:sensor:Core:auxOutputType`` attribute to ``FULL``.
+#. Select the `Example_Rotary` Lidar prim, and set its ``_replicator:rendervar:GenericModelOutput:channels`` attribute to ``["FULL"]`` - see :ref:`isaacsim_sensors_rtx_aux_output_level` for the step-by-step **Array Properties** workflow.
 #. Press **Play** to start the simulation.
 
 .. figure:: /images/isim_6.0_ros_tut_gui_rtx_lidar_graph_metadata.png
@@ -300,7 +299,7 @@ fields end up in the PointCloud2 message:
 
 The snippet authors ``_replicator:rendervar:GenericModelOutput:channels = ["FULL"]`` on the lidar
 prim via ``Lidar.create(..., aux_output_level="FULL")``. See
-:ref:`isaac_sim_sensors_multitick_aux_output_level` for the attribute-flow explanation and a known
+:ref:`isaacsim_sensors_rtx_aux_output_level` for the attribute-flow explanation and a known
 issue when multiple RTX sensors with different auxiliary levels share a stage.
 
 In addition, specify ``--/rtx-transient/stableIds/enabled=true`` when invoking ``SimulationApp``, like so:

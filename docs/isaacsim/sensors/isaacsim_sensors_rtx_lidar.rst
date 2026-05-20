@@ -106,20 +106,17 @@ step rate. This maps to the ``omni:sensor:tickRate`` prim attribute.
 Auxiliary Output Level
 ^^^^^^^^^^^^^^^^^^^^^^
 
-In previous releases, users set ``omni:sensor:Core:auxOutputType`` as a prim attribute directly on
-lidar prims. That attribute has been removed from the ``OmniSensorGenericLidarCoreAPI`` schema. Use
-the ``aux_output_level`` constructor parameter instead, which authors
-``_replicator:rendervar:GenericModelOutput:channels`` on the prim. Replicator copies that value onto
-the ``GenericModelOutput`` RenderVar's ``channels`` attribute when a render product is attached.
-
-Valid values for Lidar: ``"NONE"`` (default), ``"BASIC"``, ``"EXTRA"``, ``"FULL"``.
+RTX Lidar exposes auxiliary data through the ``aux_output_level`` constructor parameter.
+Valid values are ``"NONE"`` (default), ``"BASIC"``, ``"EXTRA"``, ``"FULL"``.
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_lidar/set_lidar_aux_output_level.py
     :language: python
 
-See :ref:`rtx_sensor_annotator_descriptions` for details on what fields are available at each level,
-and :ref:`isaac_sim_sensors_multitick_aux_output_level` for the full attribute-flow explanation and
-a known issue when multiple RTX sensors with different auxiliary levels share a stage.
+See :ref:`isaacsim_sensors_rtx_aux_output_level` for the full attribute-flow explanation and the
+migration from the removed ``omni:sensor:Core:auxOutputType`` attribute, and
+:ref:`isaacsim_sensors_rtx_known_issue_gmo_channels` for a known issue when multiple RTX sensors
+with different auxiliary levels share a stage. See :ref:`rtx_sensor_annotator_descriptions` for
+the per-level field listing.
 
 Scan Accumulation
 ^^^^^^^^^^^^^^^^^

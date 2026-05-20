@@ -1,13 +1,23 @@
 ---
 name: doc-snippets
-description: Author and runtime-test Python code samples shown in Isaac Sim user docs. Use when the user asks to add a code example to an RST page, fix an inline `.. code-block:: python` block, or run the doc snippet test runner. Covers the .py + literalinclude convention, async vs SimulationApp snippet styles, the test runner, and common runtime pitfalls.
+description: Author and runtime-test Python code samples shown in Isaac Sim user docs. Use when the user asks to add a code example to an RST page, fix an inline `.. code-block:: python` block, run the doc snippet test runner, OR any time you are about to edit a user-facing RST file under `docs/isaacsim/` that contains Python code. Covers the .py + literalinclude convention, async vs SimulationApp snippet styles, the test runner, and common runtime pitfalls.
 ---
 
 # Authoring and testing doc snippets
 
 ## The rule
 
-**Every Python code sample shown in a user-facing RST doc must live as a real `.py` file under `docs/isaacsim/snippets/<category>/<rst_stem>/<name>.py` and be embedded with `.. literalinclude::`.** Inline `.. code-block:: python` is **not** an acceptable pattern in this repo and should be fixed when found, regardless of who introduced it.
+**Every Python code sample shown in a user-facing RST doc must live as a real `.py` file under `docs/isaacsim/snippets/<category>/<rst_stem>/<name>.py` and be embedded with `.. literalinclude::`.** Inline `.. code-block:: python` is **not** an acceptable pattern in this repo and should be fixed when found, regardless of who introduced it. **This applies even to one- or two-line snippets** — short examples are not an excuse for inline blocks. Create the file anyway.
+
+## Pre-flight check (do this before editing any RST under `docs/isaacsim/`)
+
+Before touching a user-facing RST page, grep it once for the violation pattern:
+
+```bash
+grep -nE "code-block:: ?python" path/to/file.rst
+```
+
+If matches exist, fix them as part of the same change (per the authoring workflow below) — do not leave behind inline blocks in a file you have already opened. Also re-run the same grep after your edits to confirm you didn't introduce new inline blocks (it is easy to do this by reflex when adding examples).
 
 Why:
 
@@ -154,6 +164,59 @@ grep -rln "code-block:: ?python" docs/isaacsim/
 ```
 
 For each hit, follow the authoring workflow above. Group the cleanup into a single commit (no extension version bump needed for pure docs changes).
+
+## Common RST/CSV gotchas when citing code values
+
+A few RST authoring mistakes that bite when editing the same files that contain (or should contain) snippet citations. None are snippet-rule violations per se, but they show up in the same edits.
+
+### `.. csv-table::` fields can't use `\"`-escaped quotes
+
+`.. csv-table::` parses each row as CSV: fields delimited by `,`, optionally wrapped in `"..."`. To include a literal double-quote inside a quoted field, double it (`""`), not backslash-escape it. The build error is `',' expected after '"'`.
+
+Wrong:
+
+```rst
+"``aux_output_level`` is ``\"BASIC\"`` (or higher)."
+```
+
+Right (escape the quote by doubling):
+
+```rst
+"``aux_output_level`` is ``""BASIC""`` (or higher)."
+```
+
+Better (drop the quotes around the value — matches the convention in the canonical valid-values table at `:ref:\`isaacsim_sensors_rtx_aux_output_level\``):
+
+```rst
+"``aux_output_level`` is ``BASIC`` (or higher)."
+```
+
+### `.. code-block:: <lang>` requires a blank line before the content
+
+```rst
+.. code-block:: python
+
+    from foo import bar
+```
+
+Not:
+
+```rst
+.. code-block:: python
+    from foo import bar
+```
+
+Sphinx errors with `maximum 1 argument(s) allowed, N supplied.` because it parses the un-blanked line as continuation of the directive's arguments. Trivial to introduce by an autoformatter or by hand-consolidating an inline block. Best fix is to remove the inline block per "The rule" above; if you must keep it, mind the blank line.
+
+### Language tags matter even when the build succeeds
+
+`.. code-block:: bash` wrapping Python content builds without errors but renders with bash highlighting and misleads readers about what the code is. When you convert an inline block to a snippet `.py` file, set `:language: python` on the `.. literalinclude::` to match the file's actual content. Audit for mismatches with a grep:
+
+```bash
+grep -nE "code-block:: ?bash" docs/isaacsim/<file>.rst
+```
+
+If the body of the block has `import`, `def`, `from ... import`, `await`, etc., it's Python in a bash wrapper — fix the tag and (preferably) extract to a `.py` file.
 
 ## Don't forget
 

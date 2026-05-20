@@ -50,6 +50,8 @@ ROS 2 Publish Rate Does Not Match Physics Rate
 
 **Q: I increased the simulation frame rate to 100 Hz, but the ROS topic publish rate is still around 60 Hz. How do I make them match?**
 
+If you only changed one knob (for example only ``/app/runLoops/main/rateLimitFrequency``), the three clocks Isaac Sim uses (physics step rate, timeline tick rate, run-loop tick rate) are now out of sync. Use the coherent setup from :ref:`isaac_sim_app_tutorial_ros2_publish_rate_set_simulation_frame_rates` (``SimulationManager.setup_simulation`` + ``RenderingManager.set_dt``) so all three move together. See :ref:`isaac_sim_sensors_multitick_clock_relationships` for the underlying mechanics.
+
 There are a few important concepts to understand when working with publish rates in |isaac-sim_short|:
 
 Simulation Time vs. Wall Time
