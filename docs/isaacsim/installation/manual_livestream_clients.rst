@@ -193,6 +193,17 @@ This section shows you the methods of livestreaming a headless instance of |isaa
               sudo sysctl -w kernel.unprivileged_userns_clone=1
               sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
+          The ``sysctl -w`` settings are temporary and reset after reboot. To make
+          them persistent, add them to a file under ``/etc/sysctl.d/``:
+
+          .. code-block:: bash
+
+              sudo tee /etc/sysctl.d/99-electron-sandbox.conf >/dev/null <<'EOF'
+              kernel.unprivileged_userns_clone=1
+              kernel.apparmor_restrict_unprivileged_userns=0
+              EOF
+              sudo sysctl --system
+
     * On Windows:
 
         * If you have issues connecting to a local or remote Isaac Sim instance, make sure the `/kit/kit.exe` and **Isaac Sim WebRTC Streaming Client** app is on the allow list in the Windows Firewall.
