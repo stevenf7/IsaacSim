@@ -22,8 +22,8 @@ import gc
 import carb
 import carb.eventdispatcher
 import omni
+import omni.kit.actions.core
 import omni.kit.app
-import omni.kit.commands
 import omni.physics.core
 import omni.timeline
 import omni.ui as ui
@@ -61,7 +61,7 @@ class Extension(omni.ext.IExt):
     """Extension class for the isaacsim.robot_setup.gain_tuner extension.
 
     Provides a UI-based extension that adds a gain tuner tool to the Omniverse Kit SDK interface. The extension
-    creates a scrolling window accessible through the Tools > Robotics menu, enabling users to interact with
+    creates a scrolling window under Tools > Robotics > Asset Editors, enabling users to interact with
     robot gain tuning functionality.
 
     The extension handles standard lifecycle operations including window management, event subscriptions for
@@ -101,8 +101,8 @@ class Extension(omni.ext.IExt):
                 name=EXTENSION_TITLE, onclick_action=(self._ext_name, f"CreateUIExtension:{EXTENSION_TITLE}")
             )
         ]
-
-        self._menu_items = [MenuItemDescription(name="Robotics", sub_menu=self._menu_items)]
+        asset_editors = [MenuItemDescription(name="Asset Editors", sub_menu=self._menu_items)]
+        self._menu_items = [MenuItemDescription(name="Robotics", sub_menu=asset_editors)]
         add_menu_items(self._menu_items, "Tools")
 
         # Filled in with User Functions
@@ -116,7 +116,6 @@ class Extension(omni.ext.IExt):
         tuner.register_test(GainsTestMode.STRESS_TEST, StressTest())
 
         # Events
-        self._usd_context = omni.usd.get_context()
         self._physics_simulation_interface = omni.physics.core.get_physics_simulation_interface()
         self._physics_subscription = None
         self._event_dispatcher = carb.eventdispatcher.get_eventdispatcher()
@@ -127,7 +126,6 @@ class Extension(omni.ext.IExt):
 
     def on_shutdown(self) -> None:
         """Clean up extension resources and remove UI elements."""
-        self._models = {}
         remove_menu_items(self._menu_items, "Tools")
 
         action_registry = omni.kit.actions.core.get_action_registry()
@@ -144,7 +142,7 @@ class Extension(omni.ext.IExt):
         Args:
             visible: Whether the window is visible.
         """
-        if self._window.visible:
+        if visible:
             # Subscribe to Stage and Timeline Events
             self._usd_context = omni.usd.get_context()
             self._stage_event_sub_opened = carb.eventdispatcher.get_eventdispatcher().observe_event(
@@ -213,8 +211,11 @@ class Extension(omni.ext.IExt):
     #################################################################
 
     def _menu_callback(self) -> None:
-        """Handle menu item selection and toggle window visibility."""
-        self._window.visible = not self._window.visible
+        """Handle menu or action: show the window and focus it (same intent as re-opening from the menu)."""
+        self._window.visible = True
+        focus_fn = getattr(self._window, "focus", None)
+        if callable(focus_fn):
+            focus_fn()
 
         self.ui_builder.on_menu_callback()
 

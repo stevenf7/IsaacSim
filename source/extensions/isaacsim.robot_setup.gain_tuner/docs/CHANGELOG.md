@@ -1,4 +1,12 @@
 # Changelog
+## [3.5.2] - 2026-05-12
+### Changed
+- Menu entry is under Tools > Robotics > Asset Editors > Gain Tuner (matches `isaacsim.gui.menu` layout and user docs).
+
+### Fixed
+- Menu and `CreateUIExtension:Gain Tuner` show and focus the panel instead of toggling visibility, so a second open does not hide it.
+- Visibility callback branches on the `visible` argument so the hide path runs when the window is closed (not only when `self._window.visible` was already false).
+
 ## [3.5.1] - 2026-05-07
 ### Added
 - Extension tests for PD oscillation identification, drive-parameter math (`gain_tuner_drive_math`), registered `RobotTest` path, and USD drive spec queries
