@@ -150,7 +150,7 @@ class TestNewtonActuatorBridge(omni.kit.test.AsyncTestCase):
         self._prim_path = "/World/Robot"
 
         stage_utils.add_reference_to_stage(
-            usd_path=assets_root + "/Isaac/Samples/Mujoco_Menagerie/unitree_go2/go2.usda",
+            usd_path=assets_root + "/Isaac/Samples/Mujoco_Menagerie/unitree_go2/go2/go2.usda",
             path=self._prim_path,
         )
         _set_mujoco_variant(self._stage, self._prim_path)

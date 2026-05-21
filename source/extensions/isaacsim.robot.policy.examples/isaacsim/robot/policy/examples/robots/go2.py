@@ -52,7 +52,7 @@ class Go2FlatTerrainPolicy(PolicyController):
 
         assets_root_path = get_assets_root_path()
         if usd_path is None:
-            usd_path = assets_root_path + "/Isaac/Samples/Mujoco_Menagerie/unitree_go2/go2.usda"
+            usd_path = assets_root_path + "/Isaac/Samples/Mujoco_Menagerie/unitree_go2/go2/go2.usda"
 
         super().__init__(prim_path, root_path, usd_path, position, orientation)
 

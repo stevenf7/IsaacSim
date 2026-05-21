@@ -52,7 +52,7 @@ class SpotFlatTerrainPolicy(PolicyController):
     ):
         assets_root_path = get_assets_root_path()
         if usd_path is None:
-            usd_path = assets_root_path + "/Isaac/Samples/Mujoco_Menagerie/boston_dynamics_spot/spot.usda"
+            usd_path = assets_root_path + "/Isaac/Samples/Mujoco_Menagerie/boston_dynamics_spot/spot/spot.usda"
 
         super().__init__(prim_path, root_path, usd_path, position, orientation)
 
