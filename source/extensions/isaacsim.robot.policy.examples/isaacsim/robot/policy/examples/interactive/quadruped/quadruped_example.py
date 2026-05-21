@@ -36,7 +36,7 @@ class QuadrupedExample(BaseSample):
     how to control it using keyboard input. The robot uses a reinforcement learning policy trained for
     flat terrain locomotion and runs on GPU for high-performance physics simulation.
 
-    The simulation is configured with 200 Hz physics updates and 50 Hz rendering for smooth real-time
+    The simulation is configured with 500 Hz physics updates and 50 Hz rendering for smooth real-time
     interaction. Users can control the robot's movement using keyboard inputs:
 
     - Arrow keys or Numpad 8/2/4/6: Forward/backward and left/right movement
@@ -57,8 +57,8 @@ class QuadrupedExample(BaseSample):
         super().__init__()
         # Configure simulation settings for GPU dynamics with high-frequency physics
         self._world_settings["stage_units_in_meters"] = 1.0
-        self._world_settings["physics_dt"] = 1.0 / 200.0  # 200 Hz physics
-        self._world_settings["rendering_dt"] = 4.0 / 200.0  # 50 Hz rendering (4 physics steps per render)
+        self._world_settings["physics_dt"] = 1.0 / 500.0  # 500 Hz physics
+        self._world_settings["rendering_dt"] = 10.0 / 500.0  # 50 Hz rendering (10 physics steps per render)
         self._world_settings["device"] = "cuda"  # GPU dynamics
         self._world_settings["backend"] = "torch"  # PyTorch backend
 
