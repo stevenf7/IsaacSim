@@ -29,6 +29,7 @@ from isaacsim.core.experimental.utils.prim import get_prim_at_path
 from isaacsim.core.experimental.utils.stage import define_prim
 from isaacsim.core.simulation_manager import SimulationManager
 from omni.physics.core import get_physics_simulation_interface
+from pxr import PhysxSchema, Usd, UsdPhysics
 
 from .config_loader import get_articulation_props, get_physics_properties, get_robot_joint_properties, parse_env_config
 
@@ -61,14 +62,17 @@ class PolicyController(ABC):
             else:
                 carb.log_error("unable to add robot usd, usd_path not provided")
 
+        self._prim_path = prim_path
+
+        # Variant must be selected before Articulation construction to author ArticulationRootAPI.
+        self._set_physics_variant(prim_path)
+
         self.robot = Articulation(
             paths=prim_path if root_path is None else root_path,
             positions=position,
             orientations=orientation,
             reset_xform_op_properties=True,
         )
-
-        self._set_physics_variant(prim_path)
 
     _ENGINE_TO_VARIANT = {"physx": "physx", "newton": "mujoco"}
 
@@ -86,6 +90,8 @@ class PolicyController(ABC):
         if "Physics" not in variant_sets.GetNames():
             return
         engine = (SimulationManager.get_active_physics_engine() or "").lower()
+        if engine == "physx":
+            self._ensure_physx_articulation_api()
         target_variant = self._ENGINE_TO_VARIANT.get(engine, engine)
         variant_set = variant_sets.GetVariantSet("Physics")
         available_variants = variant_set.GetVariantNames()
@@ -188,6 +194,28 @@ class PolicyController(ABC):
             self.robot.set_enabled_self_collisions([enabled_self_collisions])
         if sleep_threshold not in [None, float("inf")]:
             self.robot.set_sleep_thresholds([sleep_threshold])
+
+    def _ensure_physx_articulation_api(self) -> None:
+        """Apply ``PhysxArticulationAPI`` to descendants carrying an articulation root API.
+
+        Walks the subtree rooted at ``self._prim_path`` and applies ``PhysxArticulationAPI``
+        to any prim that has ``UsdPhysics.ArticulationRootAPI`` or ``NewtonArticulationRootAPI``
+        but is missing ``PhysxArticulationAPI``.
+        """
+        stage = omni.usd.get_context().get_stage()
+        if stage is None:
+            return
+        root_prim = stage.GetPrimAtPath(self._prim_path)
+        if not (root_prim and root_prim.IsValid()):
+            return
+        for prim in Usd.PrimRange(root_prim):
+            has_root_api = prim.HasAPI(UsdPhysics.ArticulationRootAPI) or prim.HasAPI("NewtonArticulationRootAPI")
+            if not has_root_api:
+                continue
+            if prim.HasAPI(PhysxSchema.PhysxArticulationAPI):
+                continue
+            PhysxSchema.PhysxArticulationAPI.Apply(prim)
+            carb.log_info(f"PolicyController: applied PhysxArticulationAPI to {prim.GetPath()}.")
 
     def _compute_action(self, obs: "torch.Tensor") -> "torch.Tensor":
         """Compute the action from the observation using the loaded policy.

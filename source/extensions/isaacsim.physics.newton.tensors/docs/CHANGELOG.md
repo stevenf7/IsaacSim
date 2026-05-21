@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.7] - 2026-05-19
+### Fixed
+- Update Go2 test asset path to `Mujoco_Menagerie/unitree_go2/go2/go2.usda` to match the new nested asset layout
+
+
 ## [0.1.6] - 2026-05-18
 ### Changed
 - Add return type annotations and mypy type:ignore comments to pass mypy and ruff linting
