@@ -137,7 +137,7 @@ ROS 2 Sample Scene
 First activate **Windows** > **Examples** > **Robotics Examples** which will open the ``Robotics Examples`` tab.
 The sample scene can be loaded after :ref:`enabling the ROS 2 Bridge Extension<isaac_sim_app_enable_ros>` by clicking *Robotics Examples > ROS2 > Isaac ROS > Sample Scene*.
 
-This scene showcases a Nova Carter inside a small warehouse, with all Lidars and front hawk camera running from the robot frame. Please follow  :ref:`Multiple Sensors in RViz2 section <isaac_sim_app_tutorial_ros2_rtx_lidar_multiple_sensors>`
+This scene showcases a Nova Carter inside a small warehouse, with all Lidars and front hawk camera running from the robot frame. Please follow  :ref:`Multiple Sensors in RViz2 section <isaac_sim_app_tutorial_ros2_tf_multiple_sensors>`
 for visualizing the sensors and install ``teleop-twist-keyboard`` by following the :ref:`Driving Turtlebot Tutorial<isaac_sim_app_tutorial_ros2_drive_turtlebot>`.
 
 .. raw:: html

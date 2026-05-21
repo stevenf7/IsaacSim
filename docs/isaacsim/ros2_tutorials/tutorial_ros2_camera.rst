@@ -36,9 +36,6 @@ Getting Started
 - Completed tutorial on :ref:`isaac_sim_app_tutorial_gui_omnigraph` and :ref:`isaac_sim_app_tutorial_gui_camera_sensors`.
 - Completed :ref:`isaac_sim_app_tutorial_ros2_turtlebot` so that there is a Turtlebot ready on stage.
 
-
-.. note:: In Windows 10 or 11, depending on your machine's configuration, RViz2 might not open properly.
-
 .. note::
 
     In |isaac-sim_short| 6.0, the ``frameSkipCount`` input on ``ROS2 Camera Helper`` and
@@ -75,8 +72,9 @@ Open additional Viewports to observe multiple camera views at the same time. To 
 Building the Graph for an RGB Publisher
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+#. In the **Stage** panel, select ``/World/Camera_1`` so the new Action Graph is created adjacent to the camera prim it publishes for. Parenting the graph to the sensor it directly affects keeps the asset composable: when ``Camera_1`` is referenced into another scene, the publisher graph travels with it.
 #. Open the Graph Editors, **Window > Graph Editors > Action Graph**.
-#. Click on the **New Action Graph** Icon in the middle of the **Action Graph** window, or **Edit Action Graph** if you want to append the camera publisher to an existing action graph.
+#. Click on the **New Action Graph** Icon in the middle of the **Action Graph** window, or **Edit Action Graph** if you want to append the camera publisher to an existing action graph. Name the graph ``Camera_1_Graph``; the resulting graph path is ``/World/Camera_1/Camera_1_Graph``.
 #. Build an Action Graph with: 
 
     * the nodes and connections of the following *image*
@@ -251,15 +249,17 @@ This tutorial introduces how to publish camera and perception data in ROS 2.
 Next Steps
 ^^^^^^^^^^^^^^^^^^^^^^
 
-- Review :ref:`isaac_sim_app_tutorial_ros2_camera_publishing` to learn how to publish camera's data through Python scripting.
+Continue on to the next tutorial in our ROS 2 Tutorials series, :ref:`isaac_sim_app_tutorial_ros2_rtx_lidar`, to learn how to add an RTX Lidar sensor to the Turtlebot3.
 
 
 
 Further Learning
 ^^^^^^^^^^^^^^^^^^^^^^
 
+- Review :ref:`isaac_sim_app_tutorial_ros2_camera_publishing` to learn how to publish camera data through Python scripting.
 - Additional information about synthetic data generation can be found in the Replicator Tutorial Series.
 - Examples of running a similar environment using Standalone Python workflow are outlined :ref:`here<isaac_sim_app_tutorial_ros2_python_stereo>`.
+- Auto-generated topic namespaces driven by the camera prim path are covered in :ref:`isaac_sim_app_tutorial_ros2_auto_namespace`.
 
 
 

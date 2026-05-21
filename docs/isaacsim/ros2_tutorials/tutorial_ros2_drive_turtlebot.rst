@@ -80,8 +80,9 @@ Putting It Together
 Building the Graph
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+#. In the **Stage** panel, select the main robot prim ``/World/turtlebot3_burger`` so the new Action Graph is created directly under it. Drive controller graphs (differential, Ackermann, holonomic, and so on) act on the robot's articulation as a whole, so they belong at the robot root rather than under a single link.
 #. Open Visual Scripting: **Window > Graph Editors > Action Graph**. An **Action Graph** window will appear on the bottom, you can dock it wherever convenient.
-#. Click on the **New Action Graph** icon in the middle of the **Action Graph** window.
+#. Click on the **New Action Graph** icon in the middle of the **Action Graph** window. Name the graph ``ROS_Drive``. The resulting graph path is ``/World/turtlebot3_burger/ROS_Drive``.
 #. Inside the **Action Graph** window, there is a panel on the left hand side with all the |omnigraph_short| Nodes (or OG nodes). All ROS2 related OG nodes are listed under *Isaac Ros2*. You can also search for nodes by name. To place a node into the graph, drag it from the node list into the graph window.
 #. Build a graph that matches the one below.
 
@@ -122,13 +123,13 @@ Graph Explained
 
 - **Articulation Controller Node**: This node is assigned to a target robot, then takes in the names or the indices of the joints that need to be moved, and moves them by the commands given in *Position Commands*, *Velocity Commands*, or *Effort Commands*.
 
-    - The Articulation Controller node is ticked by *On Playback Tick*. So that if no new Twist message arrives, it will continue to execute whatever command it had received before.
-    
-    #. To assign the *Articulation Controller* node's target to be the Turtlebot. In the property tab, click on *Add Target* and search for the Turtlebot prim in the popup box. Make sure the robot prim you select is also where the Articulation Root API is applied. Sometimes it is the robot's parent prim. But often times for mobile robots, it is the chassis prim instead. If you imported the URDF following our previous tutorial, the Articulation Root API can be found on ``/World/turtlebot3_burger/base_footprint``. More about Articulation API can be found in :ref:`isaac_sim_app_tutorial_gui_simple_robot_articulation`. If the articulation root is set on the `base_footprint` prim, remove the articulation root property from ``/World/turtlebot3_burger/base_footprint`` and :ref:`add the articulation root property <isaac_sim_app_tutorial_gui_simple_robot_articulation>` on the main robot prim of ``/World/turtlebot3_burger``.
-    
-    #. To put the names of the wheel joints in an array format, type in the names of the wheel joints inside each of the **Constant Token** nodes, and feed the array of the names into the **Make Array** Node. The names of the joints for the Turtlebot are ``wheel_left_joint`` and ``wheel_right_joint``.
-    
-    - Do not put the names in *Constant String* node, because |omnigraph_short| does not have a string-array data type. If strings are needed in an array format, to be used by a node, it must be *token* type.
+    - Tick *Exec In* with **On Playback Tick** so the last command keeps executing between Twist messages.
+
+    #. Set the **target** to ``/World/turtlebot3_burger``. The asset's ``IsaacRobotAPI`` and ``ArticulationRootAPI`` resolve the articulation automatically (see :ref:`isaac_sim_app_tutorial_gui_simple_robot_articulation`).
+
+    #. Wire two **Constant Token** nodes into the **Make Array** node, in this order: ``wheel_left_joint`` first, then ``wheel_right_joint``. The order must match the **Differential Controller**'s output.
+
+    - Use **Constant Token** (not **Constant String**) — |omnigraph_short| arrays require the *token* type.
 
 
 
@@ -189,7 +190,7 @@ This tutorial covered the following topics:
 Next Steps
 ^^^^^^^^^^^^^^^^^^^^^^
 
-- Continue on to the next tutorial in our ROS2 Tutorials series, :ref:`isaac_sim_app_tutorial_ros2_clock` to learn to setup ROS2 Clock publishers and subscribers with |isaac-sim|.
+- Continue on to the next tutorial in our ROS2 Tutorials series, :ref:`isaac_sim_app_tutorial_ros2_clock`, to learn how to set up ROS 2 Clock publishers and subscribers with |isaac-sim|.
 
 .. _isaac_sim_app_tutorial_ros2_drive_turtlebot_further_reading:
 
@@ -201,4 +202,5 @@ Further Learning
 - Scripting |omnigraph_short| nodes is introduced in :ref:`isaac_sim_app_tutorial_advanced_omnigraph_scripting`.
 - Building custom OmniGraph Python nodes is introduced in :ref:`isaac_sim_app_omnigraph_custom_python_nodes`
 - Building custom OmniGraph C++ nodes is introduced in :ref:`isaac_sim_app_tutorial_advanced_omnigraph_custom_cpp_nodes`
+- Auto-generated topic namespaces driven by the graph's prim path are covered in :ref:`isaac_sim_app_tutorial_ros2_auto_namespace`.
 
