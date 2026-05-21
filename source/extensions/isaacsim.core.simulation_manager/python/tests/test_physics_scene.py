@@ -55,7 +55,6 @@ class TestPhysicsScene(omni.kit.test.AsyncTestCase):
         physics_scene = PhysicsScene("/World/physicsScene")
 
         self.assertTrue(physics_scene.prim.HasAPI("NewtonSceneAPI"))
-        self.assertTrue(physics_scene.prim.HasAPI(PhysxSchema.PhysxSceneAPI))
 
     async def test_dt(self):
         """Test dt."""
@@ -106,6 +105,25 @@ class TestPhysicsScene(omni.kit.test.AsyncTestCase):
         self.assertEqual(physics_scene.get_max_solver_iterations(), -1)
         # exceptions
         self.assertRaises(ValueError, physics_scene.set_max_solver_iterations, -2)
+
+    async def test_engine_switch_cleans_up_scene_apis(self):
+        """Test that switching engines removes stale solver APIs and applies the new one."""
+        if SimulationManager.get_active_physics_engine() != "newton":
+            return
+
+        physics_scene = PhysicsScene("/World/physicsScene")
+        self.assertFalse(physics_scene.prim.HasAPI(PhysxSchema.PhysxSceneAPI))
+
+        try:
+            SimulationManager.switch_physics_engine("physx")
+            self.assertTrue(physics_scene.prim.HasAPI(PhysxSchema.PhysxSceneAPI))
+            self.assertFalse(physics_scene.prim.HasAPI("MjcSceneAPI"))
+
+            SimulationManager.switch_physics_engine("newton")
+            self.assertFalse(physics_scene.prim.HasAPI(PhysxSchema.PhysxSceneAPI))
+        finally:
+            if SimulationManager.get_active_physics_engine() != "newton":
+                SimulationManager.switch_physics_engine("newton")
 
 
 class TestPhysxScene(omni.kit.test.AsyncTestCase):
