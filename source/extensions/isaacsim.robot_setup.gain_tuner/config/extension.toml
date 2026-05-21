@@ -15,6 +15,7 @@ writeTarget.kit = true
 [dependencies]
 "isaacsim.core.deprecation_manager" = {}
 "isaacsim.core.experimental.prims" = {}
+"isaacsim.core.simulation_manager" = {}
 "isaacsim.gui.components" = {}
 "isaacsim.robot.schema" = {}
 "omni.kit.uiapp" = {}
@@ -25,9 +26,15 @@ writeTarget.kit = true
 name = "isaacsim.robot_setup.gain_tuner"
 
 [[test]]
-
-stdoutFailPatterns.exclude = [    
+name = "default"
+timeout = 900
+dependencies = [
+    "isaacsim.test.utils",
+]
+stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
+    '*SyntheticData extension needs at least a stageFrameHistoryCount*',
+    '*Stage opening or closing already in progress*',
 ]
 
 [documentation]

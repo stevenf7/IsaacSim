@@ -38,6 +38,7 @@ UNIT_COLOR = 0xFF6E6E6E
 LINE_COLOR = 0xFF8F8F8F
 TRIANGLE_COLOR = 0xFF8F8F8F
 TREEVIEW_BG_COLOR = 0xFF23211F
+TREEVIEW_INAPPLICABLE_BG_COLOR = 0xFF3A3937
 TREEVIEW_SELECTED_COLOR = 0xFF4B4A42
 TREEVIEW_ITEM_COLOR = 0xFF343432
 TREEVIEW_HEADER_BG_COLOR = 0xFF2D2D2D
@@ -213,6 +214,11 @@ def get_style() -> dict[str, dict[str, any]]:
         "Rectangle::reset_invalid": {"background_color": 0xFF505050, "border_radius": 1},
         "Rectangle::reset": {"background_color": 0xFFA07D4F, "border_radius": 1},
         "Rectangle::reset:disabled": {"background_color": 0x0, "border_radius": 1},
+        "Rectangle::treeview_item_inapplicable": {
+            "background_color": TREEVIEW_INAPPLICABLE_BG_COLOR,
+            "border_width": 1,
+            "border_color": 0xFF4A4A48,
+        },
         "Rectangle::treeview_item": {
             "background_color": TREEVIEW_BG_COLOR,
             "border_width": 1,

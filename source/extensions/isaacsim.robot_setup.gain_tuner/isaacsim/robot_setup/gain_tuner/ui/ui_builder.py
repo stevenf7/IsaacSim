@@ -28,23 +28,20 @@ import pxr
 from isaacsim.gui.components.element_wrappers import StateButton
 from omni.kit.window.file import StageSaveDialog
 from omni.physics.tensors import DofType
-from pxr import Usd
+from pxr import Sdf, Usd
 from usd.schema.isaac.robot_schema import Classes
 
 from ..gains_tuner import GainsTestMode, GainTuner
+from ..usd_layer_utils import (
+    collect_gain_save_edits,
+    find_layer_by_save_identifier,
+    get_layer_save_identifier,
+    is_layer_savable,
+)
 from .color_table_widget import ColorJointWidget
 from .dropdown_widget import create_combo_list_model
 from .frame_widget import CustomCollapsableFrame as CollapsableFrame
-from .joint_table_widget import (
-    JointSettingMode,
-    JointWidget,
-    get_damping_attr,
-    get_joint_drive_type_attr,
-    get_mimic_damping_ratio_attr,
-    get_mimic_natural_frequency_attr,
-    get_stiffness_attr,
-    is_joint_mimic,
-)
+from .joint_table_widget import JointSettingMode, JointWidget
 from .plot_widget import CustomXYPlot
 from .style import get_style
 from .test_table_widget import TestJointWidget
@@ -77,6 +74,7 @@ class UIBuilder:
         self._timeline = omni.timeline.get_timeline_interface()
 
         self._gains_tuner = GainTuner()
+        self._gains_tuner.add_inertia_updated_callback(self._on_joint_inertia_updated)
 
         self._test_mode = GainsTestMode.SNAP_TO_LIMITS
         self._test_running = False
@@ -367,6 +365,8 @@ class UIBuilder:
                                 joint_entries,
                                 lambda joint: self._gains_tuner._joint_accumulated_inertia.get(joint, 0.0),
                             )
+                            if self._gains_tuner._joint_accumulated_inertia:
+                                self._gains_table_widget.refresh_inertia_derived_columns()
 
                         self._gains_splitter = ui.Placer(
                             offset_y=self._initial_table_height,
@@ -440,46 +440,40 @@ class UIBuilder:
             *args: Variable arguments passed from the UI callback.
         """
         joint_gains = self._gains_table_widget.model.get_item_children()
-        edits = {}
         self._no_permision_frame.visible = False
-        for joint_gain in joint_gains:
-            joint = joint_gain.joint
-            attrs = []
-            if is_joint_mimic(joint):
-                attrs = [get_mimic_natural_frequency_attr(joint), get_mimic_damping_ratio_attr(joint)]
-            else:
-                attrs = [
-                    get_stiffness_attr(joint, joint_gain.drive_axis),
-                    get_damping_attr(joint, joint_gain.drive_axis),
-                    get_joint_drive_type_attr(joint, joint_gain.drive_axis),
-                ]
-            for attr in attrs:
-                if attr is None:
-                    continue
-                current_value = attr.Get()
-                spec_stack = attr.GetPropertyStack()
-                if spec_stack:
-                    defining_spec = spec_stack[-1]
-                    if defining_spec.layer not in edits:
-                        edits[defining_spec.layer] = []
-                    edits[defining_spec.layer].append((defining_spec.path, current_value))
+        stage = omni.usd.get_context().get_stage()
+        edits, physics_layer = collect_gain_save_edits(joint_gains, stage)
 
-        def on_save(edits: dict, selected_layers: list, comment: str = "") -> None:
+        def on_save(edits: dict[str, list[tuple[Sdf.Path, object]]], selected_layers: list, comment: str = "") -> None:
             for layer_path in selected_layers:
-                layer = pxr.Sdf.Layer.Find(layer_path)
-                edit_stage = Usd.Stage.Open(layer)
-                layer = edit_stage.GetRootLayer()
-                for path, value in edits[layer]:
+                layer_edits = edits.get(layer_path)
+                if not layer_edits:
+                    continue
+                layer = find_layer_by_save_identifier(layer_path)
+                open_path = get_layer_save_identifier(layer) or layer_path
+                edit_stage = Usd.Stage.Open(open_path)
+                for path, value in layer_edits:
                     attr = edit_stage.GetAttributeAtPath(path)
-                    attr.Set(value)
+                    if attr:
+                        attr.Set(value)
                 edit_stage.Save()
 
         savable_layers = []
-        for layer in edits:
-            if layer.permissionToEdit and layer.permissionToSave:
-                savable_layers.append(layer.identifier)
+        for layer_id in edits:
+            layer = find_layer_by_save_identifier(layer_id)
+            if is_layer_savable(layer):
+                savable_layers.append(layer_id)
             else:
                 self._no_permision_frame.visible = True
+
+        if physics_layer is not None and is_layer_savable(physics_layer):
+            physics_id = get_layer_save_identifier(physics_layer)
+            if physics_id is None:
+                pass
+            elif physics_id in savable_layers:
+                savable_layers = [physics_id] + [layer_id for layer_id in savable_layers if layer_id != physics_id]
+            elif physics_id in edits:
+                savable_layers = [physics_id]
 
         if self._save_stage_prompt:
             self._save_stage_prompt.destroy()
@@ -1073,6 +1067,11 @@ class UIBuilder:
         """
         self._gains_tuner.reset()
         self._gains_tuning_frame.rebuild()
+
+    def _on_joint_inertia_updated(self) -> None:
+        """Refresh NF/DR table columns after deferred inertia computation completes."""
+        if self._gains_table_widget is not None:
+            self._gains_table_widget.refresh_inertia_derived_columns()
 
     def _on_articulation_selection(self, articulation_path: str) -> None:
         """Handles articulation selection changes and updates the gains tuner with the new robot.

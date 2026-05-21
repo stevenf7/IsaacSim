@@ -17,19 +17,54 @@
 
 from __future__ import annotations
 
-from enum import Enum, IntEnum
+from enum import IntEnum
 from functools import partial
+from types import SimpleNamespace
 
 import numpy as np
 import omni.ui as ui
 import pxr
 
+from ..gain_tuner_drive_math import (
+    damping_from_damping_ratio_revolute_position,
+    damping_ratio_from_stiffness_damping_revolute_position,
+    natural_frequency_hz_from_stiffness_revolute_position,
+    stiffness_stored_and_damping_from_natural_frequency_revolute_position,
+)
 from .base_table_widget import TableWidget
 from .resetable_widget import ResetableLabelField
 
 ITEM_HEIGHT = 28
-DEG_TO_RAD = np.pi / 180.0
-RAD_TO_DEG = 180.0 / np.pi
+_CELL_BG_ACTIVE = "treeview_item"
+_CELL_BG_INAPPLICABLE = "treeview_item_inapplicable"
+
+
+def _set_gain_cell_field_state(item: object, column_id: int, *, applicable: bool) -> None:
+    """Show an editable cell, or a blank lighter-gray cell when the parameter does not apply."""
+    field = item.value_field.get(column_id)
+    backgrounds = getattr(item, "_cell_backgrounds", {})
+    rect = backgrounds.get(column_id)
+    if applicable:
+        if field is not None:
+            field.visible = True
+            field.enabled = True
+        if rect is not None:
+            rect.visible = True
+            rect.name = _CELL_BG_ACTIVE
+    else:
+        if field is not None:
+            field.visible = False
+            field.enabled = False
+        if rect is not None:
+            rect.visible = True
+            rect.name = _CELL_BG_INAPPLICABLE
+
+
+def _tunable_value_column_ids(item: object) -> tuple[int, int]:
+    """Return the two numeric column ids used for the current table tuning mode."""
+    if item.mode == JointSettingMode.STIFFNESS:
+        return WidgetColumns.STIFFNESS, WidgetColumns.DAMPING
+    return WidgetColumns.NATURAL_FREQUENCY, WidgetColumns.DAMPING_RATIO
 
 
 class WidgetColumns(IntEnum):
@@ -129,20 +164,20 @@ class JointDriveType(IntEnum):
             raise ValueError(f"Invalid joint drive type: {self}")
 
 
-class JointDriveMode(Enum):
-    """The mode of setting joint parameters."""
+class JointDriveMode(IntEnum):
+    """Drive mode for a joint row in the gain tuner table."""
 
     NONE = 0
-    """Set the joint parameters by stiffness."""
+    """No position or velocity drive is active."""
 
     POSITION = 1
-    """Set the joint parameters by stiffness."""
+    """Position drive (non-zero stiffness)."""
 
     VELOCITY = 2
-    """Set the joint parameters by stiffness."""
+    """Velocity-only drive (zero stiffness, non-zero damping)."""
 
-    MIMIC = 0
-    """Set the joint parameters by stiffness."""
+    MIMIC = 3
+    """Mimic joint (parameters from PhysX MimicJointAPI)."""
 
 
 class ComboListModel(ui.AbstractItemModel):
@@ -482,7 +517,10 @@ class JointItem(ui.AbstractItem):
             damping = 0
         self.model_cols = [None] * 7
         self.model_cols[WidgetColumns.NAME] = ui.SimpleStringModel(joint_entry.display_name)
-        self.model_cols[WidgetColumns.DRIVE_MODE] = ComboListModel(target_type, drive_mode)
+        drive_mode_combo_index = 0 if is_joint_mimic(self.joint) else drive_mode.value
+        self.model_cols[WidgetColumns.DRIVE_MODE] = ComboListModel(
+            target_type, SimpleNamespace(value=drive_mode_combo_index)
+        )
         self.model_cols[WidgetColumns.DRIVE_TYPE] = ComboListModel(
             joint_drive_type, JointDriveType.from_token(jointdrive.Get() if jointdrive else "")
         )
@@ -530,6 +568,7 @@ class JointItem(ui.AbstractItem):
             )
         )
         self.value_field = {}
+        self._cell_backgrounds = {}
         self.mode = JointSettingMode.STIFFNESS
 
     def _get_inertia(self) -> float:
@@ -619,12 +658,14 @@ class JointItem(ui.AbstractItem):
                 attr = get_mimic_damping_ratio_attr(self.joint)
                 if attr:
                     attr.Set(model.get_value_as_float())
-        m_eq = 1
-        if self.drive_type == JointDriveType.FORCE:
-            m_eq = self._get_inertia()
         if self.mode == JointSettingMode.NATURAL_FREQUENCY:
             self.updating_damping_ratio = True
-            self.damping = self.damping_ratio * (2 * np.sqrt(m_eq * self.stiffness))
+            self.damping = damping_from_damping_ratio_revolute_position(
+                self.damping_ratio,
+                self.stiffness,
+                use_force_drive=(self.drive_type == JointDriveType.FORCE),
+                m_eq=self._get_inertia(),
+            )
             self.updating_damping_ratio = False
 
     def compute_damping_ratio(self) -> float:
@@ -639,14 +680,13 @@ class JointItem(ui.AbstractItem):
                 return mimic_attr.Get()
             else:
                 return 0
-        m_eq = 1
-        if self.drive_type == JointDriveType.FORCE:
-            m_eq = self._get_inertia()
         if self.natural_frequency > 0:
-            if m_eq == 0:
-                m_eq = 1
-            damping_ratio = self.damping / (2 * np.sqrt(m_eq * self.stiffness))
-            return damping_ratio
+            return damping_ratio_from_stiffness_damping_revolute_position(
+                self.damping,
+                self.stiffness,
+                use_force_drive=(self.drive_type == JointDriveType.FORCE),
+                m_eq=self._get_inertia(),
+            )
         return 0
 
     @property
@@ -709,6 +749,8 @@ class JointItem(ui.AbstractItem):
         Returns:
             Current drive mode of the joint.
         """
+        if is_joint_mimic(self.joint):
+            return JointDriveMode.MIMIC
         return JointDriveMode(self.model_cols[WidgetColumns.DRIVE_MODE].get_item_value_model().get_value_as_int())
 
     @drive_mode.setter
@@ -741,7 +783,7 @@ class JointItem(ui.AbstractItem):
             value: Target type value to set.
         """
         if is_joint_mimic(self.joint):
-            value = 1
+            value = 0
         self.model_cols[WidgetColumns.DRIVE_MODE].set_current_index(value)
 
     def _get_item_target_type(self) -> int:
@@ -751,9 +793,8 @@ class JointItem(ui.AbstractItem):
             Target type value of the joint item.
         """
         if is_joint_mimic(self.joint):
-            return 1
-        else:
-            return self.model_cols[WidgetColumns.DRIVE_MODE].get_item_value_model().get_value_as_int()
+            return 0
+        return self.model_cols[WidgetColumns.DRIVE_MODE].get_item_value_model().get_value_as_int()
 
     def _on_value_changed(self, col_id: int = 1, _: object = None) -> None:
         """Handles value changes in the joint item UI columns.
@@ -789,28 +830,27 @@ class JointItem(ui.AbstractItem):
             else:
                 return 0
         else:
-            m_eq = 1
-            if self.drive_type == JointDriveType.FORCE:
-                m_eq = self._get_inertia()
-                if m_eq == 0:
-                    m_eq = 1
-            stiffness_rad = self.stiffness / DEG_TO_RAD
-            return (np.sqrt(stiffness_rad / m_eq)) / (2 * np.pi)
+            return natural_frequency_hz_from_stiffness_revolute_position(
+                self.stiffness,
+                use_force_drive=(self.drive_type == JointDriveType.FORCE),
+                m_eq=self._get_inertia(),
+            )
 
     def compute_drive_stiffness(self) -> None:
         """Computes and updates the drive stiffness based on natural frequency mode."""
-        m_eq = 1
-        if self.drive_type == JointDriveType.FORCE:
-            m_eq = self._get_inertia()
-        stiffness_rad = m_eq * ((2 * np.pi * self.natural_frequency) ** 2)
-        stiffness_deg = stiffness_rad / RAD_TO_DEG
+        stiffness_deg, damping_val = stiffness_stored_and_damping_from_natural_frequency_revolute_position(
+            self.natural_frequency,
+            self.damping_ratio,
+            use_force_drive=(self.drive_type == JointDriveType.FORCE),
+            m_eq=self._get_inertia(),
+        )
         value_changed = self.stiffness != stiffness_deg
         if value_changed and self.mode == JointSettingMode.NATURAL_FREQUENCY:
             self.stiffness = stiffness_deg
             # print(self.joint.drive.target_type)
             if self.drive_mode == JointDriveMode.POSITION:
                 self.updating_damping_ratio = True
-                self.damping = self.damping_ratio * (2 * np.sqrt(m_eq * stiffness_rad))
+                self.damping = damping_val
                 self.updating_damping_ratio = False
                 # damping_attr = get_damping_attr(self.joint)
                 # if damping_attr:
@@ -912,6 +952,8 @@ class JointItemDelegate(ui.AbstractItemDelegate):
         """
         self.__mode = mode
         self.update_mimic()
+        for item in self.__model.get_item_children():
+            self.__on_target_change(item, self.__model.get_item_value(item, WidgetColumns.DRIVE_MODE))
 
     def build_branch(
         self, model: object, item: object = None, column_id: int = 0, level: int = 0, expanded: bool = False
@@ -1055,7 +1097,7 @@ class JointItemDelegate(ui.AbstractItemDelegate):
                         ui.Spacer()
             elif index in [WidgetColumns.DRIVE_MODE, WidgetColumns.DRIVE_TYPE]:
                 with ui.ZStack(height=ITEM_HEIGHT, style_type_name_override="TreeView"):
-                    ui.Rectangle(name="treeview_item")
+                    item._cell_backgrounds[index] = ui.Rectangle(name=_CELL_BG_ACTIVE)
                     with ui.HStack():
                         ui.Spacer(width=2)
                         with ui.VStack():
@@ -1072,10 +1114,6 @@ class JointItemDelegate(ui.AbstractItemDelegate):
                                     item.value_field[index].model.add_item_changed_fn(
                                         lambda m, i: self.on_joint_mode_changed(item, m.get_current_index())
                                     )
-                                if model.get_item_value(item, WidgetColumns.DRIVE_MODE) == "Mimic":
-                                    item.value_field[index].enabled = False
-                                    # item.value_field[index].visible = False
-
                                 with ui.HStack():
                                     ui.Spacer()
                                     ui.Rectangle(name="mask", width=15)
@@ -1094,17 +1132,18 @@ class JointItemDelegate(ui.AbstractItemDelegate):
 
             elif index in [WidgetColumns.STIFFNESS, WidgetColumns.DAMPING]:
                 with ui.ZStack(height=ITEM_HEIGHT):
-                    ui.Rectangle(name="treeview_item")
+                    if self.__mode == JointSettingMode.STIFFNESS:
+                        index_offset = 0
+                    else:
+                        index_offset = 2
+                    model_col_id = index + index_offset
+                    item._cell_backgrounds[model_col_id] = ui.Rectangle(name=_CELL_BG_ACTIVE)
                     with ui.VStack():
                         ui.Spacer()
-                        if self.__mode == JointSettingMode.STIFFNESS:
-                            index_offset = 0
-                        else:
-                            index_offset = 2
-                        item.value_field[index + index_offset] = ResetableLabelField(
-                            model.get_item_value_model(item, index + index_offset), ui.FloatDrag, ".2f"
+                        item.value_field[model_col_id] = ResetableLabelField(
+                            model.get_item_value_model(item, model_col_id), ui.FloatDrag, ".2f"
                         )
-                        item.value_field[index + index_offset].field.min = 0.0
+                        item.value_field[model_col_id].field.min = 0.0
                         self.__on_target_change(item, model.get_item_value(item, WidgetColumns.DRIVE_MODE))
                         ui.Spacer()
             self.update_mimic()
@@ -1170,53 +1209,28 @@ class JointItemDelegate(ui.AbstractItemDelegate):
             item: The joint item being modified.
             current_target: The new target mode selected.
         """
-        # None: disables all
+        # None: disables all gain parameters
         # Position: enables all
-        # Velocity: enables stiffness (2) and natural frequency (4)
+        # Velocity: no stiffness; NF/DR are not meaningful (k=0) — tune damping in Stiffness mode
         # Mimic: disables drive mode, type, stiffness, damping
-        for field in item.value_field.values():
-            field.enabled = True
-            field.visible = True
+        for col_id in list(item.value_field.keys()):
+            _set_gain_cell_field_state(item, col_id, applicable=True)
+        tunable_a, tunable_b = _tunable_value_column_ids(item)
         if current_target == "Mimic":
-            for i in [
-                WidgetColumns.DRIVE_MODE,
-                WidgetColumns.DRIVE_TYPE,
-                WidgetColumns.STIFFNESS,
-                WidgetColumns.DAMPING,
-            ]:
-                if field := item.value_field.get(i):
-                    field.enabled = False
-                    if i in [
-                        WidgetColumns.DRIVE_MODE,
-                        WidgetColumns.DRIVE_TYPE,
-                        WidgetColumns.STIFFNESS,
-                        WidgetColumns.DAMPING,
-                    ]:
-                        field.visible = False
-        if current_target == "None":
-            for i in [
-                WidgetColumns.STIFFNESS,
-                WidgetColumns.DAMPING,
-                WidgetColumns.NATURAL_FREQUENCY,
-                WidgetColumns.DAMPING_RATIO,
-            ]:
-                if field := item.value_field.get(i):
-                    field.enabled = False
-                    field.visible = False
-        # elif current_target == "Position":
-        # for field in item.value_field.values():
-        #     field.enabled = True
-        #     field.visible = True
+            for i in [WidgetColumns.DRIVE_MODE, WidgetColumns.DRIVE_TYPE]:
+                _set_gain_cell_field_state(item, i, applicable=False)
+            if item.mode == JointSettingMode.STIFFNESS:
+                _set_gain_cell_field_state(item, tunable_a, applicable=False)
+                _set_gain_cell_field_state(item, tunable_b, applicable=False)
+        elif current_target == "None":
+            _set_gain_cell_field_state(item, tunable_a, applicable=False)
+            _set_gain_cell_field_state(item, tunable_b, applicable=False)
         elif current_target == "Velocity":
-            if field := item.value_field.get(WidgetColumns.STIFFNESS):
-                field.enabled = False
-                field.visible = False
-            # if field := item.value_field.get(WidgetColumns.DAMPING):
-            #     field.enabled = True
-            #     field.visible = True
-            # if field := item.value_field.get(WidgetColumns.DAMPING_RATIO):
-            #     field.enabled = False
-            #     field.visible = False
+            if item.mode == JointSettingMode.STIFFNESS:
+                _set_gain_cell_field_state(item, WidgetColumns.STIFFNESS, applicable=False)
+            else:
+                _set_gain_cell_field_state(item, tunable_a, applicable=False)
+                _set_gain_cell_field_state(item, tunable_b, applicable=False)
 
 
 class JointListModel(ui.AbstractItemModel):
@@ -1378,6 +1392,13 @@ class JointListModel(ui.AbstractItemModel):
             self._item_changed(item)
         self._item_changed(None)
 
+    def refresh_inertia_derived_columns(self) -> None:
+        """Recompute natural frequency and damping ratio after joint inertia is available."""
+        for item in self._children:
+            item.natural_frequency = item.compute_natural_frequency()
+            item.damping_ratio = item.compute_damping_ratio()
+        self._item_changed(None)
+
 
 class JointWidget(TableWidget):
     """A widget for tuning joint drive parameters in Isaac Sim.
@@ -1408,6 +1429,10 @@ class JointWidget(TableWidget):
     def update_mimic(self) -> None:
         """Updates the mimic joint settings in the delegate."""
         self.delegate.update_mimic()
+
+    def refresh_inertia_derived_columns(self) -> None:
+        """Refresh NF/DR columns after accumulated joint inertia is computed."""
+        self.model.refresh_inertia_derived_columns()
 
     def build_tree_view(self) -> None:
         """Builds the tree view widget for displaying joint parameters.
