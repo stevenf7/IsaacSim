@@ -8,6 +8,7 @@ from isaacsim.core.utils.extensions import enable_extension
 
 # Enable the incident extension
 enable_extension("isaacsim.replicator.incident.core")
+enable_extension("isaacsim.storage.native")
 simulation_app.update()
 
 
@@ -19,22 +20,24 @@ import omni.usd
 from isaacsim.replicator.incident.core import get_instance
 from isaacsim.replicator.incident.core.extension import IncidentExt
 from isaacsim.replicator.incident.core.settings import IncidentSettings
+from isaacsim.storage.native import get_assets_root_path
 from omni.metropolis.pipeline.triggers import TriggersManager
-from pxr import Gf
+from pxr import Gf, UsdLux
 
 SEED = 12345
-stage = omni.usd.get_context().get_stage()
+SKY_TEXTURE = "/NVIDIA/Assets/Skies/Clear/evening_road_01_4k.hdr"
 
-# Create a background plane in the y-z plane behind the objects
-omni.kit.commands.execute(
-    "AddGroundPlaneCommand",
-    stage=stage,
-    planePath="/World/BackgroundPlane",
-    axis="X",  # Normal along X-axis for y-z plane
-    size=10.0,
-    position=Gf.Vec3f(-2.0, 0.0, 0.5),
-    color=Gf.Vec3f(0.5, 0.5, 0.5),
-)
+stage = omni.usd.get_context().get_stage()
+assets_root = get_assets_root_path()
+
+# Skybox backdrop via dome light HDRI (skipped if assets are unreachable)
+if assets_root is not None:
+    dome = UsdLux.DomeLight.Define(stage, "/World/SkyDome")
+    dome.GetIntensityAttr().Set(1000.0)
+    dome.GetTextureFileAttr().Set(assets_root + SKY_TEXTURE)
+    dome.GetTextureFormatAttr().Set(UsdLux.Tokens.latlong)
+else:
+    carb.log_warn("Could not find Isaac Sim assets folder; skipping sky backdrop")
 
 # Get the incident manager and create pyro event manager
 incident_manager = get_instance().get_incident_manager()
@@ -119,3 +122,5 @@ spill_event_manager.generate_spill_event(
 
 
 # <end-tutorial-snippet>
+
+simulation_app.close()
