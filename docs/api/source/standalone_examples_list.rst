@@ -80,6 +80,8 @@ isaacsim.replicator.examples
 * ``sdg_getting_started_03.py``
 * ``sdg_getting_started_04.py``
 * ``sdg_getting_started_05.py``
+* ``sdg_workflow_01.py``
+* ``sdg_workflow_02.py``
 * ``simready_assets_sdg.py``
 * ``simulation_get_data.py``
 * ``subscribers_and_events.py``
@@ -168,6 +170,7 @@ isaacsim.sensors.experimental.rtx
 * ``camera_opencv_pinhole.py``
 * ``camera_ros.py``
 * ``camera_stereoscopic_depth.py``
+* ``camera_structured_light.py``
 * ``camera_tiled.py``
 * ``create_acoustic_basic.py``
 * ``create_camera_basic.py``
