@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test for throttling."""
+"""Tests for timeline-driven throttling behavior."""
 
 import contextlib
 import sys
@@ -24,12 +24,19 @@ import carb
 import carb.settings
 import omni.ext
 import omni.kit.test
+from isaacsim.core.throttling.extension import get_instance
 
 
 @contextlib.contextmanager
 def _fake_replicator_capture(
     status: str = "STARTED", has_attached_annotators: bool = True
 ) -> Generator[None, None, None]:
+    """Temporarily install a minimal Replicator module graph for capture-state tests.
+
+    Args:
+        status: Fake orchestrator status returned during the context.
+        has_attached_annotators: Whether the fake annotator registry reports attached annotators.
+    """
     module_names = [
         "omni.replicator",
         "omni.replicator.core",
@@ -91,10 +98,10 @@ def _fake_replicator_capture(
 
 
 class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
-    """Test isaac throttling."""
+    """Validate throttling reactions to timeline and Replicator state changes."""
 
     async def setUp(self) -> None:
-        """Set up test environment."""
+        """Reset timeline bounds and async rendering settings before each test."""
         self._timeline = omni.timeline.get_timeline_interface()
         self._timeline.set_start_time(0)
         self._timeline.set_end_time(1)
@@ -105,14 +112,14 @@ class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
         self._settings.set("/app/asyncRenderingLowLatency", False)
 
     async def tearDown(self) -> None:
-        """Tear down test environment."""
+        """Restore async rendering settings after each test."""
         # Reset state after each test
         self._settings.set("/app/asyncRendering", False)
         self._settings.set("/app/asyncRenderingLowLatency", False)
 
     # async rendering always off
     async def test_on_stop_play_toggles_off(self) -> None:
-        """Test on stop play toggles off."""
+        """Verify play/stop toggles eco mode and gizmos while async rendering remains disabled."""
         self._settings.set("/rtx/ecoMode/enabled", True)
         self._settings.set("/app/asyncRendering", False)
         self._settings.set("/app/asyncRenderingLowLatency", False)
@@ -142,7 +149,7 @@ class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
         self.assertFalse(self._settings.get("/app/asyncRendering"))
 
     async def test_on_stop_play_callback(self) -> None:
-        """Test on stop play callback."""
+        """Verify play/stop callbacks toggle eco mode and gizmos with throttling enabled."""
         self._settings.set("/rtx/ecoMode/enabled", True)
         self._settings.set("/app/asyncRendering", False)
         self._settings.set("/app/asyncRenderingLowLatency", False)
@@ -167,8 +174,86 @@ class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._settings.get("/rtx/ecoMode/enabled"), True)
         self.assertEqual(self._settings.get("/exts/omni.kit.hydra_texture/gizmos/enabled"), True)
 
+    async def test_play_defers_async_rendering_disable(self) -> None:
+        """Verify play defers async rendering shutdown until after the play callback returns."""
+        self._settings.set("/exts/isaacsim.core.throttling/enable_async", True)
+        self._settings.set("/exts/isaacsim.core.throttling/enable_manualmode", True)
+        self._settings.set("/app/asyncRendering", True)
+        self._settings.set("/app/asyncRenderingLowLatency", True)
+
+        extension = get_instance()
+        self.assertIsNotNone(extension)
+        assert extension is not None
+        try:
+            self._timeline.play()
+
+            self.assertTrue(self._settings.get("/app/asyncRendering"))
+            self.assertTrue(self._settings.get("/app/asyncRenderingLowLatency"))
+
+            for _ in range(2):
+                await omni.kit.app.get_app().next_update_async()
+
+            self.assertFalse(self._settings.get("/app/asyncRendering"))
+            self.assertFalse(self._settings.get("/app/asyncRenderingLowLatency"))
+        finally:
+            self._timeline.stop()
+            self._settings.set("/exts/isaacsim.core.throttling/enable_manualmode", False)
+            extension._set_loop_manual_mode(False)
+
+    async def test_play_deferred_async_rendering_disable_is_ignored_after_pause_or_stop(self) -> None:
+        """Verify a stale play task does not disable async rendering after pause or stop."""
+        for action_name in ("pause", "stop"):
+            with self.subTest(timeline_action=action_name):
+                self._settings.set("/exts/isaacsim.core.throttling/enable_async", True)
+                self._settings.set("/app/asyncRendering", True)
+                self._settings.set("/app/asyncRenderingLowLatency", True)
+
+                extension = get_instance()
+                self.assertIsNotNone(extension)
+                assert extension is not None
+                extension._on_play(None)
+                getattr(extension, f"_on_{action_name}")(None)
+
+                for _ in range(2):
+                    await omni.kit.app.get_app().next_update_async()
+
+                self.assertTrue(self._settings.get("/app/asyncRendering"))
+                self.assertTrue(self._settings.get("/app/asyncRenderingLowLatency"))
+
+                for _ in range(10):
+                    await omni.kit.app.get_app().next_update_async()
+
+    async def test_stop_frame_delay_restarts_after_play_interrupts_previous_delay(self) -> None:
+        """Verify a play event cancels an older stop-delay window before the next stop."""
+        self._settings.set("/exts/isaacsim.core.throttling/enable_async", True)
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        self.assertFalse(self._settings.get("/app/asyncRendering"))
+
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+        for _ in range(5):
+            await omni.kit.app.get_app().next_update_async()
+        self.assertFalse(self._settings.get("/app/asyncRendering"))
+
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        for frame in range(1, 10):
+            await omni.kit.app.get_app().next_update_async()
+            self.assertFalse(
+                self._settings.get("/app/asyncRendering"),
+                f"Async rendering should remain disabled {frame} frames after the latest stop",
+            )
+
+        await omni.kit.app.get_app().next_update_async()
+        self.assertTrue(self._settings.get("/app/asyncRendering"))
+
     async def test_async_rendering_10_frame_delay(self) -> None:
-        """Test that async rendering is re-enabled after 10 frames when timeline stops."""
+        """Verify async rendering is re-enabled only after the stop-frame delay elapses."""
         # Enable async toggle
         self._settings.set("/exts/isaacsim.core.throttling/enable_async", True)
 
@@ -196,7 +281,7 @@ class TestIsaacThrottling(omni.kit.test.AsyncTestCase):
         self.assertTrue(self._settings.get("/app/asyncRendering"))
 
     async def test_async_rendering_stays_disabled_while_replicator_is_capturing(self) -> None:
-        """Test that timeline pause/stop does not re-enable async rendering during Replicator captures."""
+        """Verify pause/stop keep async rendering disabled while Replicator is capturing."""
         for action_name in ("pause", "stop"):
             with self.subTest(timeline_action=action_name):
                 self._settings.set("/exts/isaacsim.core.throttling/enable_async", True)
