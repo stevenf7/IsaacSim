@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.18.10] - 2026-05-20
+### Changed
+- `test_rtx_sensor.TestROS2LaserScanRTX`: replace the per-frame annotator-polling + closest-timestamp lookup with a Writer-based collection. A custom `_GmoCollectorWriter` attached to the render product captures every GMO produced by the SD pipeline in arrival order (deduped by `gmo.timestampNs`), and the ROS subscriber now appends every delivered `LaserScan` rather than only keeping the most recent. The writer is attached only after the publisher discovers the subscriber so both streams begin from the same simulation frame. With the static scene and non-rotational `SICK_nanoScan3` pattern the tail of each stream describes the same ray set, so the test compares `messages[-1]` against `snapshots[-1]` via the bin-tolerant helper. Eliminates the wall-clock-proximity correlation between message stamp and snapshot identity, removing the entire class of "snap picked the wrong scan" flakes.
+
+## [1.18.9] - 2026-05-20
+### Fixed
+- `test_rtx_sensor.TestROS2LaserScanRTX`: dedup GMO snapshots by `gmo.timestampNs` so each unique scan has a single entry, and look up by the closest annotator wall-clock across every frame the scan was observed (fixes a flaky wrong-scan match when the GMO annotator and the publisher latched different scans on the same simulation frame). Reconstruct the flat-scan bin index using float32 arithmetic to mirror `OgnROS2PublishLaserScan::publishFromGMO` and accept a ±1 bin shift between the publisher's prim-authored `azimuthRange`/`horizontalResolution` and the test's deg→rad→deg round-trip of `angle_min`/`angle_increment` (the C++ binning and the Python recovery can disagree on the integer slot for rays within one ULP of a bin boundary). Adds a diagnostic `carb.log_warn` whenever a strict elementwise comparison would have failed so future regressions surface scan identity, observation history, and per-slot diffs.
+
 ## [1.18.8] - 2026-05-17
 ### Fixed
 - `test_joint_state_position_publisher_from_sensor`: command the target via `Articulation.set_dof_position_targets` and wait for joints to converge before asserting (previously compared an uncommanded transient).

@@ -155,8 +155,18 @@ class TestRos2JointStatePublisher(ROS2TestCase):
         art_handle.set_dof_gains(stiffnesses=[0.0, 0.0, 0.0], dampings=[1e4, 1e4, 1e4])
         art_handle.set_dof_velocity_targets(test_velocities)
 
+        # Wait for the joints to actually converge to the commanded velocities, not
+        # just for any velocity sample to arrive. The prismatic joint reproducibly
+        # overshoots its target on the very first published sample because the drive
+        # is configured *after* timeline.play() + one update, so the first physics
+        # step runs with the original (zero-damping) drive before the new gains take
+        # effect. Mirror the convergence-based condition used by the sibling
+        # test_joint_state_position_publisher.
         await self.simulate_until_condition(
-            lambda: len(self.js_ros.velocity) > 0, max_frames=60, per_frame_callback=spin
+            lambda: len(self.js_ros.velocity) > 0
+            and all(abs(self.js_ros.velocity[i] - test_velocities[i]) < 1e-3 for i in range(len(test_velocities))),
+            max_frames=120,
+            per_frame_callback=spin,
         )
         received_velocity = self.js_ros.velocity
 

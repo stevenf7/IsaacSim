@@ -1,5 +1,5 @@
 [package]
-version = "1.18.8"
+version = "1.18.10"
 category = "Simulation"
 title = "ROS 2 Nodes"
 description = "The ROS 2 Nodes extension provides OmniGraph nodes for ROS 2 communication. It contains publisher, subscriber, and service nodes that can be used in Action graphs to interface with ROS 2 systems. This extension depends on the isaacsim.ros2.core extension for underlying ROS 2 functionality."
@@ -78,6 +78,11 @@ dependencies = [
 pythonTests.exclude = [
     "isaacsim.ros2.nodes.tests.test_camera*test_rgb_golden_image_comparison*",
     "isaacsim.ros2.nodes.tests.test_camera.TestRos2Camera.test_tick_rate_reduces_publish_frequency",
+]
+
+# TestConfiguredSrtxSensorSets is unsupported on Windows
+"filter:platform"."windows-x86_64".pythonTests.exclude = [
+    "isaacsim.ros2.nodes.tests.test_srtx_sensor_set_config.TestConfiguredSrtxSensorSets.*",
 ]
 
 stdoutFailPatterns.exclude = [

@@ -89,7 +89,7 @@ class TestCameraLifecycle(omni.kit.test.AsyncTestCase):
             "get_annotator",
             side_effect=AssertionError("attach_annotator should not request annotators before initialize()"),
         ):
-            with self.assertRaisesRegex(RuntimeError, "Call initialize\\(\\) before attach_annotator"):
+            with self.assertRaisesRegex(RuntimeError, r"initialize\(\) must be called before attach_annotator"):
                 camera.attach_annotator("rgb")
 
         self.assertEqual(len(camera._custom_annotators), 0)
