@@ -22,6 +22,8 @@ from dataclasses import dataclass
 import cumotion
 import isaacsim.core.experimental.utils.app as app_utils
 
+from .urdf_normalize import normalize_urdf_for_urdfdom
+
 
 @dataclass
 class CumotionRobot:
@@ -95,8 +97,16 @@ def load_cumotion_robot(
     if not full_urdf_path.exists():
         raise FileNotFoundError(f"{full_urdf_path} is not a valid file path.")
 
+    # urdfdom (the parser statically linked into libcumotion.so) rejects valid
+    # URDFs that omit attributes it considers mandatory - most commonly
+    # ``effort`` / ``velocity`` on ``<limit>`` elements emitted by the Isaac
+    # Sim USD->URDF exporter. Normalize the text in-memory and hand it to the
+    # ``load_robot_from_memory`` binding so disk content is never mutated.
+    xrdf_text = full_xrdf_path.read_text(encoding="utf-8")
+    urdf_text = normalize_urdf_for_urdfdom(full_urdf_path.read_text(encoding="utf-8"))
+
     # if doesn't succeed, will throw. That is the desired behaviour.
-    robot_description: cumotion.RobotDescription = cumotion.load_robot_from_file(full_xrdf_path, full_urdf_path)
+    robot_description: cumotion.RobotDescription = cumotion.load_robot_from_memory(xrdf_text, urdf_text)
     kinematics: cumotion.Kinematics = robot_description.kinematics()
 
     return CumotionRobot(

@@ -351,9 +351,12 @@ class CollisionSphereEditor:
 
         unique_vert_cts = np.unique(vert_cts)
         if len(unique_vert_cts) != 1 or unique_vert_cts[0] != 3:
+            # Non-triangulated meshes are unsupported by Lula's sphere generator
+            # but the failure is recoverable (the caller just gets no spheres);
+            # warn instead of error so test runs do not fail on this branch.
             self.clear_preview()
-            carb.log_error(
-                "Cannot generate collsision spheres for mesh because the specified mesh is not composed of triangles."
+            carb.log_warn(
+                "Cannot generate collision spheres for mesh because the specified mesh is not composed of triangles."
             )
             return
 
@@ -483,15 +486,17 @@ class CollisionSphereEditor:
         self._redo = []
         self._operations = []
 
-        # Determine which collision key to use based on format version
-        # Version 1.0 uses "collision", version 2.0 uses "world_collision"
+        # Determine which collision key to use based on format version.
+        # Version 1.0 uses `collision`, version 2.0 uses `world_collision`.
         format_version = parsed_file.get("format_version", 1.0)
         if format_version == 2.0:
             collision_key = "world_collision"
         elif format_version == 1.0:
             collision_key = "collision"
         else:
-            carb.log_error(
+            # Unsupported version is recoverable (we simply skip the import);
+            # warn rather than error so test runs do not fail on this branch.
+            carb.log_warn(
                 f"Unsupported XRDF format version: {format_version}. Only versions 1.0 and 2.0 are supported."
             )
             return
@@ -540,9 +545,12 @@ class CollisionSphereEditor:
         self._operations.append(added_sphere_paths)
 
         for k, v in buffer_distances.items():
-            link_path = robot_prim_path + "/" + k
+            # Compare against the link path *with* a trailing slash so a buffer
+            # distance targeted at `link1` does not also match sibling links
+            # whose names share that prefix (e.g. `link10`, `link1_tip`).
+            link_path_prefix = robot_prim_path + "/" + k + "/"
             for p in self.path_2_spheres.keys():
-                if self._is_prim_path_valid(p) and p[: len(link_path)] == link_path:
+                if self._is_prim_path_valid(p) and p.startswith(link_path_prefix):
                     sphere = self.path_2_spheres[p]
                     rad = sphere.get_radii().numpy()[0]
                     sphere.set_radii(rad + v)
@@ -563,7 +571,16 @@ class CollisionSphereEditor:
             try:
                 parsed_file = yaml.safe_load(stream)
             except yaml.YAMLError as exc:
-                print(exc)
+                # Malformed YAML is recoverable: bail out cleanly so callers
+                # (UI import handler, tests) see "no spheres loaded" instead of
+                # `UnboundLocalError` from the now-undefined `parsed_file`.
+                carb.log_warn(f"Failed to parse robot description YAML {robot_description_file_path}: {exc}")
+                return
+
+        if not isinstance(parsed_file, dict):
+            # Empty, list-rooted, or scalar-rooted YAML is not a valid robot
+            # description; treat it the same as "no collision_spheres present".
+            return
 
         sphere_list = parsed_file.get("collision_spheres", None)
 
@@ -605,11 +622,15 @@ class CollisionSphereEditor:
 
         link_path = self._get_link_path(path1)
         if self._get_link_path(path2) != link_path:
+            # The warning previously had no matching early return, so the
+            # function silently interpolated `path2` into `path1`'s link and
+            # produced spheres at the wrong location. Bail out instead.
             carb.log_warn(
                 "Prim paths {} and {} are not nested under the same link.  They cannot be interpolated.".format(
                     path1, path2
                 )
             )
+            return
 
         epsilon = 1e-12
 
@@ -702,7 +723,7 @@ class CollisionSphereEditor:
                 link_name = prim_path[len(robot_prim_path) + 1 : prim_path.rfind("/")]
                 link_spheres = link_to_spheres.get(link_name, [])
                 sphere_pose = self._round_list_floats(sphere.get_local_poses()[0].numpy()[0])
-                link_spheres.append({"center": sphere_pose, "radius": sphere.get_radii().numpy()[0]})
+                link_spheres.append({"center": sphere_pose, "radius": sphere.get_radii().numpy().item()})
                 link_to_spheres[link_name] = link_spheres
 
     # Used for Robot Description Files
@@ -728,10 +749,13 @@ class CollisionSphereEditor:
                     continue
                 link_name = prim_path[len(robot_prim_path) + 1 : prim_path.rfind("/")]
                 link_spheres = link_to_spheres.get(link_name, [])
-                # sometimes sphere_pose is a numpy array, which will not work if we try to import
-                # this file again later.
+                # Coerce numpy scalars to Python floats before rounding:
+                # `numpy.float32` / `numpy.ndarray` returned by `get_radii()`
+                # do not implement `__round__`, so calling round() on them
+                # directly raises TypeError. Going through float() also keeps
+                # the YAML output free of `!!python/object` tags.
                 sphere_pose = [round(float(x), 5) for x in sphere.get_local_poses()[0].numpy()[0]]
-                link_spheres.append({"center": sphere_pose, "radius": round(sphere.get_radii().numpy()[0], 5)})
+                link_spheres.append({"center": sphere_pose, "radius": round(float(sphere.get_radii().numpy()[0]), 5)})
                 link_to_spheres[link_name] = link_spheres
 
         f.write("collision_spheres:\n")

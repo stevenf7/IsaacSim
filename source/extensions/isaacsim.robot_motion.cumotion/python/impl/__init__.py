@@ -24,3 +24,4 @@ from .graph_based_motion_planner import GraphBasedMotionPlanner as GraphBasedMot
 from .rmp_flow_controller import RmpFlowController as RmpFlowController
 from .trajectory_generator import TrajectoryGenerator as TrajectoryGenerator
 from .trajectory_optimizer import TrajectoryOptimizer as TrajectoryOptimizer
+from .urdf_normalize import normalize_urdf_for_urdfdom as normalize_urdf_for_urdfdom

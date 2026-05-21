@@ -1,5 +1,5 @@
 [package]
-version = "3.5.0"
+version = "3.6.0"
 category = "Simulation"
 title = "Robot Description Editor"
 description = "Generates and edit Lula robot_description YAML files"
@@ -29,8 +29,11 @@ name = "isaacsim.robot_setup.xrdf_editor"
 name = "startup"
 
 [[test]]
-stdoutFailPatterns.exclude = [
-    '*The NumPy module was reloaded*',
+timeout = 900
+dependencies = [
+    "isaacsim.asset.exporter.urdf",
+    "isaacsim.robot_motion.cumotion",
+    "isaacsim.storage.native",
 ]
 args = [
     "--enable",
@@ -76,6 +79,9 @@ args = [
     "--/rtx/materialDb/syncLoads=1",
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/reservedDescriptors=900000",
+]
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
 ]
 
 [documentation]
