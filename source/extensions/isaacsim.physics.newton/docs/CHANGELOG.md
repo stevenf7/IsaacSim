@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.12] - 2026-05-19
+### Added
+- Unit test that tests imported urdf and mjcf asset behavior in both physx and newton
+
+
 ## [0.7.11] - 2026-05-18
 ### Changed
 - Add return type annotations and mypy type:ignore comments across all source files to pass mypy and ruff linting

@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.11.0] - 2026-05-14
+### Added
+- `URDFImporterConfig.fix_base` is now a tri-state `bool | None`. `True` adds a world-to-root fixed joint (existing behavior), `False` removes any existing world-to-root fixed joint so the robot becomes floating-base, and the new default `None` leaves the source asset's base authoring untouched.
+
+### Changed
+- `URDFImporter.import_urdf()` has tighter checks for urdf file names
+- Only adds Mass API when the user sets a non-default density to the links, otherwise links with no mass will not have a massAPI
+
 ## [3.10.0] - 2026-05-07
 ### Changed
 - Imported URDF mimic joints are now expressed exclusively through `NewtonMimicAPI` (via `newton:mimicJoint`, `newton:mimicCoef0`, `newton:mimicCoef1`). The transformer-driven authoring of the equivalent `PhysxMimicJointAPI` has been removed; the runtime consumes the Newton mimic schema directly.

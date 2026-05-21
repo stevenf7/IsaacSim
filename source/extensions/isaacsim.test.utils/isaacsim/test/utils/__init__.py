@@ -339,6 +339,7 @@ __all__ = [
     "find_widget_with_retry",
     "find_enabled_widget_with_retry",
     "wait_for_widget_enabled",
+    "scroll_to_widget",
     "menu_click_with_retry",
     "list_menu_paths",
     "perform_widget_action",

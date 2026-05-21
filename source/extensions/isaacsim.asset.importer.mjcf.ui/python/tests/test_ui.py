@@ -168,9 +168,10 @@ class TestImporterUI(MenuUITestCase):
         self.assertAlmostEqual(front_left_leg_joint.GetAttribute("physics:upperLimit").Get(), 40)
         self.assertAlmostEqual(front_left_leg_joint.GetAttribute("physics:lowerLimit").Get(), -40)
 
+        # note: mass api is not automatically applied to the leg, so we expect None
         front_left_leg = stage.GetPrimAtPath("/ant/Geometry/torso/front_left_leg")
-        self.assertAlmostEqual(front_left_leg.GetAttribute("physics:diagonalInertia").Get()[0], 0.0)
-        self.assertAlmostEqual(front_left_leg.GetAttribute("physics:mass").Get(), 0.0)
+        self.assertAlmostEqual(front_left_leg.GetAttribute("physics:diagonalInertia").Get(), None)
+        self.assertAlmostEqual(front_left_leg.GetAttribute("physics:mass").Get(), None)
 
         actuator_1 = stage.GetPrimAtPath("/ant/Physics/Actuator_1")
         self.assertNotEqual(actuator_1.GetPath(), Sdf.Path.emptyPath)
@@ -219,9 +220,14 @@ class TestImporterUI(MenuUITestCase):
         )
         output_path_field.model.set_value(os.path.join(self._extension_path, "data", "mjcf", "temp/"))
 
+        # As option widgets grow, lower controls get pushed below the file
+        # picker's scrolling viewport. Always scroll the target into view
+        # before clicking so the click coordinate lands on the intended
+        # widget rather than the Import button at the bottom.
         collision_from_visuals_btn = await self.find_widget_with_retry(
             "Select File//Frame/**/CheckBox[*].identifier=='mjcf_collision_from_visuals'"
         )
+        await self.scroll_to_widget(collision_from_visuals_btn)
         await collision_from_visuals_btn.click()
         await ui_test.human_delay()
 
@@ -234,24 +240,34 @@ class TestImporterUI(MenuUITestCase):
         allow_self_collision_btn = await self.find_widget_with_retry(
             "Select File//Frame/**/CheckBox[*].identifier=='mjcf_allow_self_collision'"
         )
+        await self.scroll_to_widget(allow_self_collision_btn)
         await allow_self_collision_btn.click()
+        await ui_test.human_delay()
+
+        base_type_dropdown = await self.find_widget_with_retry(
+            "Select File//Frame/**/ComboBox[*].identifier=='mjcf_base_type'"
+        )
+        base_type_dropdown.model.get_item_value_model(None, 0).set_value(1)
         await ui_test.human_delay()
 
         import_scene_btn = await self.find_widget_with_retry(
             "Select File//Frame/**/CheckBox[*].identifier=='mjcf_import_scene'"
         )
+        await self.scroll_to_widget(import_scene_btn)
         await import_scene_btn.click()
         await ui_test.human_delay()
 
         merge_mesh_btn = await self.find_widget_with_retry(
             "Select File//Frame/**/CheckBox[*].identifier=='mjcf_merge_mesh'"
         )
+        await self.scroll_to_widget(merge_mesh_btn)
         await merge_mesh_btn.click()
         await ui_test.human_delay()
 
         debug_mode_btn = await self.find_widget_with_retry(
             "Select File//Frame/**/CheckBox[*].identifier=='mjcf_debug_mode'"
         )
+        await self.scroll_to_widget(debug_mode_btn)
         await debug_mode_btn.click()
         await ui_test.human_delay()
 
@@ -278,6 +294,7 @@ class TestImporterUI(MenuUITestCase):
         self.assertEqual(config.collision_from_visuals, True)
         self.assertEqual(config.collision_type, "Bounding Sphere")
         self.assertEqual(config.allow_self_collision, True)
+        self.assertEqual(config.fix_base, True)
 
         await omni.kit.app.get_app().next_update_async()
         output_path = os.path.normpath(os.path.join(self._extension_path, "data", "mjcf", "temp"))

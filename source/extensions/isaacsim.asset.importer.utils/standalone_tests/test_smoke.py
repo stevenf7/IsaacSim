@@ -45,6 +45,55 @@ class TestSmoke(unittest.TestCase):
         omni_mods = [m for m in sys.modules if m.startswith("omni.")]
         self.assertEqual(omni_mods, [], f"Unexpected omni modules: {omni_mods}")
 
+    def test_top_level_function_reexports(self) -> None:
+        """Public helpers documented in ``python_api.md`` must be importable from the package root."""
+        # If the package's ``__init__.py`` forgets to re-export these names, this import block raises ``ImportError``.
+        from isaacsim.asset.importer.utils import (  # noqa: F401
+            MESH_APPROXIMATION_MAP,
+            PHYSICS_AXIS_MAP,
+            ROBOT_TYPE_TOKENS,
+            USD_GEOMETRY_TYPES,
+            PhysxAttr,
+            PhysxMimicAttr,
+            PhysxMimicRel,
+            PhysxSchema,
+            add_joint_schemas,
+            add_rigid_body_schemas,
+            apply_fix_base,
+            apply_joint_drives,
+            apply_link_density,
+            apply_mjc_actuator_gains,
+            clean_mesh_operation,
+            collision_from_visuals,
+            create_robot_schema,
+            delete_scope,
+            enable_self_collision,
+            fix_articulation_root_for_fixed_base,
+            generate_mesh_uv_normals_operation,
+            get_stage_id,
+            merge_mesh,
+            merge_meshes_operation,
+            open_stage,
+            parse_robot_name,
+            remove_custom_scopes,
+            resolve_unique_path,
+            run_asset_transformer_profile,
+            save_stage,
+        )
+
+    def test_submodules_still_accessible(self) -> None:
+        """Importing the submodules through the package root must still work."""
+        from isaacsim.asset.importer.utils import (  # noqa: F401
+            asset_utils,
+            importer_utils,
+            merge_mesh_utils,
+            physx_types,
+            stage_utils,
+        )
+
+        # Spot-check that the submodule actually re-exports a real attribute.
+        self.assertTrue(callable(importer_utils.collision_from_visuals))
+
 
 class TestFunctional(unittest.TestCase):
     """PhysX type enum correctness tests."""

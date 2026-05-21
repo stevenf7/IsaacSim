@@ -38,6 +38,7 @@
 - def add_joint_schemas(stage: Usd.Stage)
 - def add_rigid_body_schemas(stage: Usd.Stage)
 - def remove_custom_scopes(stage: Usd.Stage)
+- def parse_robot_name(path: str, *, expected_extension: str) -> str
 - def create_robot_schema(stage: Usd.Stage, robot_type: str = 'Default', *, prim_path: str | None = None, add_sites: bool = True, sites_last: bool = False) -> tuple[Usd.Prim | None, Usd.Prim | None]
 
 ## Variables

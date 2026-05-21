@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.6] - 2026-05-18
+### Added
+- "Base Type" dropdown in the Options frame with three choices (Source / Fixed / Mobile) that drives the tri-state `URDFImporterConfig.fix_base` field.
+
 ## [2.3.5] - 2026-05-14
 ### Fixed
 - Fixed Windows UI test flakiness for the ROS 2 URDF import menu by aligning test dependencies and window scaling arguments with other UI menu tests.

@@ -82,7 +82,15 @@ Import Options
 **General Options**:
     - **Robot Type**: Sets the ``isaac:robotType`` attribute on the imported robot's schema. Choose from: Default, End Effector,
       Manipulator, Humanoid, Wheeled, Holonomic, Quadruped, Mobile Manipulators, or Aerial.
-      
+
+    - **Base Type**: Tri-state control of how the robot's root link is anchored.
+
+        - **Source** (default): leaves the source MJCF authoring untouched.
+        - **Fixed**: adds a world-to-root fixed joint and relocates ``ArticulationRootAPI`` to the correct ancestor prim.
+        - **Mobile**: removes any existing world-to-root fixed joint so the robot is free to translate and rotate.
+
+      Maps directly onto the ``fix_base: bool | None`` field on :py:class:`MJCFImporterConfig` (``None`` / ``True`` / ``False``).
+
     - **Import Scene**: When enabled, imports the MJCF simulation settings along with the model.
     - **Allow Self-Collision**: When enabled, allows the robot model to collide with itself. This can be useful for certain simulation
       scenarios but may cause instability if collision meshes between links are self-intersecting.
@@ -217,16 +225,21 @@ The MJCF importer applies the standard ``UsdPhysics.ArticulationRootAPI`` and th
 Known Issues
 =======================
 
-In USD, a joint is defined as a kinematics constraint between two rigid bodies. When a joint is created, the DOF is limited only to the axis of the joint.
-For example, a revolute joint has only one DOF, and removes the other five DOFs. 
+Multi-DOF Joints Between the Same Body Pair
+---------------------------------------------
 
-In mujoco, a joint is defined as a degree of freedom, enabling multiple joints to be combined together to create more degrees of freedoms. For example, 
-an x-axis revolute joint and a y-axis revolute joint can be combined together to create a 2D x-y axis revolute joint.
-This is not supported in USD, if two revolute joints between two bodies are defined, the system would form a kinematic loop, and become overconstrained.
+In USD, a joint is a kinematic constraint between two rigid bodies and locks every degree of freedom except the joint's own axis. A revolute joint, for example, has one DOF and removes the other five.
 
-The current solution is to place a dummy link between the two bodies, and create a joint between the dummy link and the other body in the MJCF file.
-For example, if two revolute joints are defined between the body and the ground, a dummy link can be placed between the body and the ground, and a joint 
-can be created between the dummy link and the ground and a joint between the dummy link and the body. This will create a 2D x-y axis revolute joint.
+MuJoCo treats a joint as a single degree of freedom and lets you stack several single-axis joints between the same body pair to express a multi-DOF connection. An ``x``-axis revolute joint and a ``y``-axis revolute joint between the same parent and child body together form a 2-DOF rotational joint. PhysX rejects this layout because it produces multiple constraints between the same body pair (a "closed articulation").
+
+When ``run_multi_physics_conversion`` is enabled (the default), the MJCF importer fixes this automatically in the PhysX variant after the asset transformer runs. The post-processing pass walks every joint in ``payloads/Physics/physx.usda``, groups them by their ``(body0, body1)`` targets, retypes the first joint in each over-constrained group to a ``PhysicsJoint`` (D6) with per-axis ``LimitAPI``/``DriveAPI`` instances, deactivates the remaining joints via ``active = false``, and redirects any ``NewtonMimicAPI.newton:mimicJoint`` reference at the new D6 host. All edits are confined to the PhysX overlay layer; the base ``physics.usda`` is untouched, so the MuJoCo/Newton variants still see the original per-DOF joints. As a result, a control policy trained against one variant cannot be transferred directly to the other.
+
+Two MJCF authoring patterns produce a result the D6 cannot represent exactly:
+
+- **Off-axis joints** that share the same nominal ``physics:axis`` token. The MJCF→USD converter normalizes any vec3 axis to one of ``"X"``/``"Y"``/``"Z"`` and bakes the actual direction into ``localRot0``/``localRot1``. If two joints in the same group end up with the same token, only the first one is folded into the D6; the second is deactivated and its DOF is dropped. A warning is logged for the dropped joint.
+- **No recognizable ``physics:axis``**. The joint cannot be assigned a D6 axis and is treated the same as the duplicate-axis case (deactivated, DOF dropped).
+
+If you want to retain every DOF and you can edit the MJCF, the manual workaround is to insert a zero-mass dummy link between the parent and child and split the multi-DOF joint into one single-DOF joint per intermediate edge.
 
 References
 ==========

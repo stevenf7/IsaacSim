@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.10.0] - 2026-05-14
+### Added
+- After `run_asset_transformer_profile` finishes (and `run_multi_physics_conversion` is enabled), `MJCFImporter.import_mjcf()` now post-processes `<output_dir>/payloads/Physics/physx.usda` to combine over-constrained joints (multiple single-axis joints sharing the same body pair) into a single PhysX D6 joint
+- The redundant single-axis joints are removed from the PhysX variant. All edits are confined to the PhysX overlay layer; the MuJoCo/Newton variants keep the original per-DOF joint authoring intact
+- `MJCFImporterConfig.fix_base` is now a tri-state `bool | None`. `True` adds a world-to-root fixed joint (existing behavior), `False` removes any existing world-to-root fixed joint so the robot becomes floating-base, and the new default `None` leaves the source asset's base authoring untouched.
+
+### Changed
+- `MJCFImporter.import_mjcf()` has tighter checks around mjcf xml file names.
+- Only adds `MassAPI` when the user sets a non-default density on the links; otherwise links with no mass will not have a `MassAPI` applied.
+
 ## [3.9.0] - 2026-05-07
 ### Changed
 - Imported MJCF mimic joints are now expressed exclusively through `NewtonMimicAPI` (via `newton:mimicJoint`, `newton:mimicCoef0`, `newton:mimicCoef1`). The transformer-driven authoring of the equivalent `PhysxMimicJointAPI` has been removed; the runtime consumes the Newton mimic schema directly.

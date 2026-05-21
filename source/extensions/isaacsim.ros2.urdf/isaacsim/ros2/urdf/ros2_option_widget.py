@@ -307,6 +307,13 @@ class Ros2UrdfOptionWidget:
 
         _option_frame("Colliders", build_colliders_content)
 
+    _BASE_TYPE_ITEMS = ["Source", "Fixed", "Mobile"]
+    _BASE_TYPE_TO_FIX_BASE = {"Source": None, "Fixed": True, "Mobile": False}
+
+    def _set_base_type(self, value: str) -> None:
+        """Map the Base Type dropdown selection onto ``config.fix_base``."""
+        self._config.fix_base = self._BASE_TYPE_TO_FIX_BASE[value]
+
     def _build_options_frame(self) -> None:
         """Build the Options frame."""
 
@@ -330,6 +337,27 @@ class Ros2UrdfOptionWidget:
                     items=ROBOT_TYPE_TOKENS,
                     on_clicked_fn=set_robot_type,
                     identifier="ros2_urdf_robot_type",
+                    show_flourish=False,
+                    label_width=90,
+                )
+
+                base_type_default = 0
+                if self._config.fix_base is True:
+                    base_type_default = 1
+                elif self._config.fix_base is False:
+                    base_type_default = 2
+                self._models["base_type"] = dropdown_builder(
+                    "Base Type",
+                    tooltip=(
+                        "How to anchor the robot's root link. "
+                        "Source leaves the source URDF authoring untouched; "
+                        "Fixed adds a world-to-root fixed joint; "
+                        "Mobile removes any world-to-root fixed joint."
+                    ),
+                    default_val=base_type_default,
+                    items=self._BASE_TYPE_ITEMS,
+                    on_clicked_fn=self._set_base_type,
+                    identifier="ros2_urdf_base_type",
                     show_flourish=False,
                     label_width=90,
                 )

@@ -120,6 +120,13 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
             mesh = UsdGeom.Mesh(prim)
             self.assertGreater(len(mesh.GetFaceVertexCountsAttr().Get()), 0)
 
+        self._timeline.play()
+        for _ in range(30):
+            await omni.kit.app.get_app().next_update_async()
+        self._timeline.stop()
+
+        await omni.kit.app.get_app().next_update_async()
+
     def _import_urdf(
         self,
         urdf_path: str,
@@ -237,8 +244,8 @@ class TestUrdf(omni.kit.test.AsyncTestCase):
         no_mass_no_collision_no_inertia = self._stage.GetPrimAtPath(
             "/test_massless/Geometry/root_link/no_mass_no_collision_no_inertia"
         )
-        self.assertAlmostEqual(no_mass_no_collision_no_inertia.GetAttribute("physics:diagonalInertia").Get()[0], 0.0)
-        self.assertAlmostEqual(no_mass_no_collision_no_inertia.GetAttribute("physics:mass").Get(), 0.0)
+        self.assertEqual(no_mass_no_collision_no_inertia.GetAttribute("physics:diagonalInertia").Get(), None)
+        self.assertEqual(no_mass_no_collision_no_inertia.GetAttribute("physics:mass").Get(), None)
 
         mass_no_collision_no_inertia = self._stage.GetPrimAtPath(
             "/test_massless/Geometry/root_link/no_mass_no_collision_no_inertia/mass_no_collision_no_inertia"

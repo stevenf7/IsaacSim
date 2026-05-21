@@ -60,7 +60,7 @@ class TestImporterUtils(omni.kit.test.AsyncTestCase):
         self.assertTrue(prismatic.HasAPI(PhysxSchema.JOINT_STATE_API, "linear"))
 
     async def test_add_rigid_body_schemas(self) -> None:
-        """Apply MassAPI to rigid bodies discovered via USDRT."""
+        """Apply MassAPI to rigid bodies discovered via stage traversal."""
         stage = Usd.Stage.CreateInMemory()
         UsdGeom.Xform.Define(stage, "/World")
         body_prim = stage.DefinePrim("/World/Body", "Xform")
@@ -91,3 +91,42 @@ class TestImporterUtils(omni.kit.test.AsyncTestCase):
         newton_attr = default_prim.GetAttribute("newton:selfCollisionEnabled")
         self.assertTrue(newton_attr.IsValid())
         self.assertTrue(newton_attr.Get())
+
+    async def test_parse_robot_name_basic(self) -> None:
+        """Standard names are returned as the stem with the extension stripped."""
+        self.assertEqual(importer_utils.parse_robot_name("/tmp/franka.urdf", expected_extension=".urdf"), "franka")
+        self.assertEqual(
+            importer_utils.parse_robot_name("/tmp/sub/dir/humanoid.xml", expected_extension=".xml"),
+            "humanoid",
+        )
+
+    async def test_parse_robot_name_case_insensitive_extension(self) -> None:
+        """Extension matching is case-insensitive."""
+        self.assertEqual(importer_utils.parse_robot_name("/tmp/Franka.URDF", expected_extension=".urdf"), "Franka")
+
+    async def test_parse_robot_name_hidden_file(self) -> None:
+        """Hidden-style names (leading dot) still produce a non-empty robot name."""
+        self.assertEqual(importer_utils.parse_robot_name("/tmp/.franka.urdf", expected_extension=".urdf"), "franka")
+        self.assertEqual(importer_utils.parse_robot_name("/tmp/..humanoid.xml", expected_extension=".xml"), "humanoid")
+
+    async def test_parse_robot_name_wrong_extension_raises(self) -> None:
+        """Non-matching extensions raise ``ValueError``."""
+        with self.assertRaises(ValueError):
+            importer_utils.parse_robot_name("/tmp/franka.txt", expected_extension=".urdf")
+        with self.assertRaises(ValueError):
+            importer_utils.parse_robot_name("/tmp/franka", expected_extension=".urdf")
+        with self.assertRaises(ValueError):
+            importer_utils.parse_robot_name("/tmp/humanoid.urdf", expected_extension=".xml")
+
+    async def test_parse_robot_name_dotfile_only_raises(self) -> None:
+        """A bare dotfile basename (e.g. ``.urdf``) is treated by ``os.path.splitext`` as
+        a hidden filename with no extension, so it fails the extension check."""
+        with self.assertRaisesRegex(ValueError, "no extension"):
+            importer_utils.parse_robot_name("/tmp/.urdf", expected_extension=".urdf")
+
+    async def test_parse_robot_name_warns_on_dotted_stem(self) -> None:
+        """A stem with embedded ``.`` characters logs a warning but still returns the stem."""
+        with self.assertLogs("isaacsim.asset.importer.utils.impl.importer_utils", level="WARNING") as cm:
+            result = importer_utils.parse_robot_name("/tmp/franka.v2.urdf", expected_extension=".urdf")
+        self.assertEqual(result, "franka.v2")
+        self.assertTrue(any("'.' characters" in msg for msg in cm.output))
