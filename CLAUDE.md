@@ -3,7 +3,10 @@
 At the start of every conversation, read the following in full to load all project rules and skills:
 
 - All `*.mdc` files in `.cursor/rules/`
-- All `SKILL.md` files in `.cursor/skills/` (search recursively)
+- All `SKILL.md` files anywhere under `skills/`. Use a traversal that includes every nested directory even when search tools would normally skip ignored paths, for example:
+  ```bash
+  find skills -type f -name SKILL.md -print
+  ```
 
 ## Sandbox Setup (recommended, run once)
 
@@ -85,4 +88,3 @@ Headless (no display required):
 - **Packman cache** lives at `~/.cache/packman` (outside the repo). It is sandbox-allowlisted so builds can download packages.
 - **Extension cache** lives at `~/.local/share/ov` and `~/.nvidia-omniverse`. Both are sandbox-allowlisted.
 - Verify GPU is visible inside the sandbox at any time: `nvidia-smi`
-

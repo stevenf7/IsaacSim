@@ -770,8 +770,14 @@ github_repo_url = "${env:GITHUB_REPO_URL}"
 
 exclude = [
     ".clang-tidy",
-    ".cursor",
-    ".claude",
+    ".cursor/mcp.json",
+    ".cursor/prompts/cpp_doxygen_prompt.md",
+    ".cursor/rules/docs_style_guide.mdc",
+    ".cursor/rules/kit_packages_and_packman.mdc",
+    "skills/_internal",
+    ".claude/skills/build-docs",
+    ".claude/skills/cicd",
+    ".claude/skills/debug-with-local-kit",
     ".dependabot.toml",
     ".eula_accepted",
     ".git",
