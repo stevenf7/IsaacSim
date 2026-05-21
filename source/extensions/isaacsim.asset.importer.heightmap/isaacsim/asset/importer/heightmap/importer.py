@@ -23,7 +23,7 @@ import numpy as np
 import omni.usd
 from isaacsim.core.experimental.objects import GroundPlane
 from PIL import Image
-from pxr import Gf, Sdf, UsdGeom, UsdLux, UsdPhysics
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdLux, UsdPhysics
 
 # Heightmap generation constants
 DEFAULT_CUBE_HEIGHT = 2.0
@@ -125,11 +125,6 @@ class HeightmapImporter:
         carb.log_info("Setting up stage properties...")
         self._setup_stage_properties()
 
-        # Create ground plane if requested
-        if create_ground_plane:
-            carb.log_info("Creating ground plane...")
-            self._create_ground_plane(image_width, image_height, cell_scale)
-
         # Create lighting if requested
         if create_lighting:
             carb.log_info("Setting up lighting...")
@@ -138,6 +133,11 @@ class HeightmapImporter:
         # Generate heightmap instances
         carb.log_info("Generating heightmap instances...")
         num_cells = self._create_heightmap_instances(image, cell_scale)
+
+        # Create ground plane sized to the heightmap's actual XY bounds (after instances exist)
+        if create_ground_plane:
+            carb.log_info("Creating ground plane...")
+            self._create_ground_plane()
 
         carb.log_info(f"Heightmap generation complete! Created {num_cells} cells.")
 
@@ -153,20 +153,28 @@ class HeightmapImporter:
             world_prim = self._stage.GetPrimAtPath(WORLD_PATH)
         self._stage.SetDefaultPrim(world_prim)
 
-    def _create_ground_plane(self, image_width: int, image_height: int, cell_scale: float) -> None:
-        """Create a ground plane for the heightmap.
+    def _create_ground_plane(self) -> None:
+        """Create a ground plane sized to fit the heightmap's XY bounds.
 
-        Args:
-            image_width: Width of the image in pixels.
-            image_height: Height of the image in pixels.
-            cell_scale: The scale of each cell in meters.
+        Must be called after :py:meth:`_create_heightmap_instances` so the bounding box
+        computed from the occupancy map prim reflects the generated geometry.
         """
-        ground_plane_size = max(image_width, image_height) * cell_scale / 2.0 + GROUND_PLANE_MARGIN
-        ground_plane_position = Gf.Vec3f((image_width * cell_scale / 2), -(image_height * cell_scale / 2), 0.0)
+        bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_])
+        bounds = bbox_cache.ComputeWorldBound(self._stage.GetPrimAtPath(OCCUPANCY_MAP_PATH)).GetRange()
+        if bounds.IsEmpty():
+            carb.log_warn("Occupancy map has empty bounds; skipping ground plane creation.")
+            return
+        min_pt, max_pt = bounds.GetMin(), bounds.GetMax()
+
+        # Use the longer XY dimension so a square plane fully covers the heightmap without stretching.
+        size = max(max_pt[0] - min_pt[0], max_pt[1] - min_pt[1]) + 2 * GROUND_PLANE_MARGIN
+        center_x = (min_pt[0] + max_pt[0]) / 2.0
+        center_y = (min_pt[1] + max_pt[1]) / 2.0
+
         GroundPlane(
             GROUND_PLANE_PATH,
-            sizes=ground_plane_size,
-            positions=[[ground_plane_position[0], ground_plane_position[1], ground_plane_position[2]]],
+            sizes=size,
+            positions=[[center_x, center_y, 0.0]],
             colors=[1.0, 1.0, 1.0],
         )
 
@@ -187,7 +195,7 @@ class HeightmapImporter:
         """
         cell_offset = cell_scale / 2.0
 
-        parent_xform = self._create_parent_transform(cell_offset)
+        self._create_parent_transform(cell_offset)
         point_instancer = self._create_point_instancer()
         cube_prototype = self._create_cube_prototype(cell_scale)
         occupied_positions = self._generate_occupied_positions(image, cell_scale, cell_offset)
