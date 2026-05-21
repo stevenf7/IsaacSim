@@ -10,91 +10,161 @@ This is the first manipulator tutorial in a series of four tutorials. This tutor
 
 *30 Minutes Tutorial*
 
+|isaac-sim_short| always uses Python 3.12, so the UR description package and any ROS packages used in this tutorial must be available in a Python 3.12 environment. How you obtain the package depends on your platform:
+
+- **Ubuntu 24.04 + ROS 2 Jazzy** — install the prebuilt ``ros-jazzy-ur-description`` apt package; the system Python (3.12) already matches |isaac-sim_short|.
+- **Ubuntu 22.04 + ROS 2 Humble or Jazzy** — the system Python is 3.10, so the workspace must be cloned and rebuilt against Python 3.12 using the included ``build_ros.sh`` script.
+- **Windows + Pixi-based ROS 2 Jazzy** — add the UR description package to your Pixi environment (``pixi add ros-jazzy-ur-description``); Pixi-managed ROS 2 Jazzy already runs on Python 3.12. See :ref:`isaac_sim_app_install_ros_other_platforms` for Pixi setup. WSL2 is not supported for the ROS-based URDF import workflow — use the prebuilt USD files in the content browser instead.
+
+.. attention::
+   ROS 2 Humble on Windows (Pixi) is not a supported configuration for this tutorial. On Windows, only ROS 2 Jazzy with Pixi is supported. Switch to ROS 2 Jazzy on Windows, or move to a Linux configuration, to follow this tutorial as written.
+
+Verify or choose your configuration in the **Build Environment** banner at the top of this page to see the steps for your setup. Your selection drives the platform-specific commands throughout the rest of this page.
+
+.. config-selector::
+   :title: Build Environment
+   :options: platform=Linux|Windows,ubuntu_version=Ubuntu 24.04|Ubuntu 22.04,ros_distro=Jazzy|Humble
+   :dependencies: ubuntu_version=platform:Linux
+
 Prerequisites
 ==============
 
 - If you are new to |isaac-sim|, complete the :ref:`Wheeled Robot Set Up Tutorials <isaac_sim_app_tutorial_intro_environment_setup>` tutorial prior to beginning this tutorial.
 - Review the ROS 2 installations :ref:`isaac_sim_app_install_ros` prior to beginning this tutorial.
 - Review the URDF importer :ref:`isaac_sim_urdf_importer` tutorial.
-- In a ROS sourced terminal, install xacro using the following command (Linux only):
+- In a ROS sourced terminal, install xacro for your selected configuration (see the **Build Environment** banner at the top of the page):
 
-  .. code-block:: bash
+  .. config-content::
+     :show-when: platform=Linux
 
-      sudo apt install ros-$ROS_DISTRO-xacro
+     .. code-block:: bash
+
+        sudo apt install ros-$ROS_DISTRO-xacro
+
+  .. config-content::
+     :show-when: platform=Windows,ros_distro=Jazzy
+
+     .. code-block:: bash
+
+        pixi add ros-$ROS_DISTRO-xacro
+
+  .. config-content::
+     :show-when: platform=Windows,ros_distro=Humble
+
+     .. attention::
+        ROS 2 Humble on Windows (Pixi) is not a supported configuration. Switch to ROS 2 Jazzy on Windows, or move to a Linux configuration, to follow this tutorial as written.
 
 - Locate the ``import_manipulator`` folder in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/``.
 
-.. Note::
-   The ROS URDF import steps are tested on Linux only, it may not work on Windows (WSL). On Windows with Pixi-based installation, these steps are supported. If you are using Windows (WSL), you can skip the ROS import steps and use the USD files provided in the content browser.
-   
-Build and Install the UR Description Package (Linux only)
+Build and Install the UR Description Package
 ==============================================================
 
-|isaac-sim_short| requires Python 3.10 on Ubuntu 22.04 and Python 3.12 on Ubuntu 24.04, which is not natively supported by the ROS 2 UR description package, so we need to build the package from source.
+Follow the steps for the configuration you selected in the **Build Environment** selector at the top of this page.
 
-.. Note::
-   See :ref:`isaac_sim_ros_workspace` for more information on setting up your custom ROS 2 package in your ROS workspace.
+.. config-content::
+   :show-when: platform=Linux,ubuntu_version=Ubuntu 24.04,ros_distro=Jazzy
 
-Clone the UR Description Package
----------------------------------
-
-#. Clone the UR description package from the `Universal Robots ROS 2 Description repository <https://github.com/UniversalRobots/Universal_Robots_ROS2_Description>`_.
+   Install the prebuilt UR description package and source ROS 2 Jazzy:
 
    .. code-block:: bash
 
-      git clone https://github.com/UniversalRobots/Universal_Robots_ROS2_Description.git
+      sudo apt install ros-jazzy-ur-description
+      source /opt/ros/jazzy/setup.bash
 
-#. Switch to the branch that matches your ROS distribution.
+   Then launch |isaac-sim_short| from the same terminal:
 
-   .. tab-set::
-      
-      .. tab-item:: ROS 2 Humble
+   .. code-block:: bash
+
+      ./isaac-sim.sh
+
+.. config-content::
+   :show-when: platform=Linux,ubuntu_version=Ubuntu 22.04
+
+   On Ubuntu 22.04, the system Python (3.10) does not match the Python 3.12 used by |isaac-sim_short|, and the UR description package is not natively available for Python 3.12. Clone the package and rebuild it with the included ``build_ros.sh`` script.
+
+   .. Note::
+      See :ref:`isaac_sim_ros_workspace` for more information on setting up your custom ROS 2 package in your ROS workspace.
+
+   #. Change into your Isaac Sim ROS Workspace, then into the distro-specific workspace's ``src`` folder:
+
+      .. config-content::
+         :show-when: ros_distro=Jazzy
 
          .. code-block:: bash
 
-            git checkout humble
+            cd <path to Isaac Sim ROS Workspace>
+            cd jazzy_ws/src
 
-      .. tab-item:: ROS 2 Jazzy
+      .. config-content::
+         :show-when: ros_distro=Humble
 
          .. code-block:: bash
 
-            git checkout jazzy
+            cd <path to Isaac Sim ROS Workspace>
+            cd humble_ws/src
 
-#. Copy the repository into your Isaac Sim ROS Workspace ``src`` folder.
+   #. Clone the branch of the `Universal Robots ROS 2 Description repository <https://github.com/UniversalRobots/Universal_Robots_ROS2_Description>`_ that matches your ROS distribution:
 
-Build the UR Description Package Using Python 3.11
---------------------------------------------------
+      .. config-content::
+         :show-when: ros_distro=Jazzy
 
-#. Go to the Isaac Sim ROS Workspace, and run the following command to build the UR description package using Python 3.11.
+         .. code-block:: bash
 
-   .. code-block:: bash
+            git clone --branch jazzy https://github.com/UniversalRobots/Universal_Robots_ROS2_Description.git
 
-      ./build_ros.sh
+      .. config-content::
+         :show-when: ros_distro=Humble
 
-#. Source the Python 3.11 ROS environment and launch Isaac Sim. Replace ``<ROS distro>`` with your ROS distribution (for example, ``humble`` or ``jazzy``).
+         .. code-block:: bash
 
-   .. code-block:: bash
+            git clone --branch humble https://github.com/UniversalRobots/Universal_Robots_ROS2_Description.git
 
-      source build_ws/<ROS distro>/<ROS distro>_ws/install/local_setup.bash
-      source build_ws/<ROS distro>/isaac_sim_ros_ws/install/local_setup.bash
-      ./path/to/isaac-sim.sh
-   
+   #. Return to the Isaac Sim ROS Workspace root and build against Python 3.12:
+
+      .. code-block:: bash
+
+         cd ../..
+         ./build_ros.sh
+
+   #. Source the Python 3.12 ROS environment and launch |isaac-sim_short|.
+
+      .. config-content::
+         :show-when: ros_distro=Jazzy
+
+         .. code-block:: bash
+
+            source build_ws/jazzy/jazzy_ws/install/local_setup.bash
+            source build_ws/jazzy/isaac_sim_ros_ws/install/local_setup.bash
+            ./isaac-sim.sh
+
+      .. config-content::
+         :show-when: ros_distro=Humble
+
+         .. code-block:: bash
+
+            source build_ws/humble/humble_ws/install/local_setup.bash
+            source build_ws/humble/isaac_sim_ros_ws/install/local_setup.bash
+            ./isaac-sim.sh
+
+.. config-content::
+   :show-when: platform=Linux,ubuntu_version=Ubuntu 24.04,ros_distro=Humble
+
+   .. attention::
+      ROS 2 Humble on Ubuntu 24.04 is not an officially supported configuration in :ref:`isaac_sim_app_install_ros`. Switch to ROS 2 Jazzy on Ubuntu 24.04, or move to ROS 2 Humble on Ubuntu 22.04, to follow this tutorial as written.
+
+.. config-content::
+   :show-when: platform=Windows,ros_distro=Jazzy
+
+   On Windows, the URDF import workflow in this tutorial is supported only with a `Pixi-based <https://pixi.sh/>`_ ROS 2 Jazzy installation. Follow :ref:`isaac_sim_app_install_ros_other_platforms` for Windows ROS 2 setup and to install or build the UR description package against the Pixi environment. If you are using WSL2, skip the ROS-based import steps and use the prebuilt USD files in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/``.
+
+.. config-content::
+   :show-when: platform=Windows,ros_distro=Humble
+
+   .. attention::
+      ROS 2 Humble on Windows (Pixi) is not a supported configuration in :ref:`isaac_sim_app_install_ros`. Switch to ROS 2 Jazzy on Windows, or move to a Linux configuration, to follow this tutorial as written. If you need to use the UR10e on Windows without ROS, use the prebuilt USD files in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/``.
 
 
-Build the UR Description Package Using System ROS
--------------------------------------------------
-
-#. Source your system ROS environment. Refer to :ref:`isaac_sim_ros_workspace_setup` for more information on setting up your ROS 2 workspace.
-#. Navigate to your Isaac Sim ROS Workspace and run the following commands to build it:
-
-   .. code-block:: bash
-
-      rosdep install -i --from-path src --rosdistro $ROS_DISTRO -y 
-      colcon build
-      source install/setup.sh
-   
-
-Import the UR10e Robot (Linux only)
+Import the UR10e Robot
 ======================================
 
 Enable the ROS 2 Robot Description URDF Importer Extension
@@ -110,11 +180,56 @@ Enable the ROS 2 Robot Description URDF Importer Extension
 Launch the URDF Publisher Topic
 ---------------------------------
 
-#. In the system ROS sourced terminal that you created earlier, launch the UR10e description by running:
+#. Open a new terminal with a **native** ROS 2 environment, source ROS 2 for your configuration, and launch the UR10e description.
 
-   .. code-block:: bash
+   .. important::
+      Do not reuse the Python 3.12 ``build_ws`` shell used to launch |isaac-sim_short| above. The ``build_ws`` paths exist only to source the matching ROS 2 bridge into |isaac-sim_short|; for ``ros2 launch`` commands, use your OS-native ROS 2 install (or a Docker container for distros that are not natively available on your OS).
 
-      ros2 launch ur_description view_ur.launch.py ur_type:=ur10e
+   .. config-content::
+      :show-when: platform=Linux,ubuntu_version=Ubuntu 24.04,ros_distro=Jazzy
+
+      .. code-block:: bash
+
+         source /opt/ros/jazzy/setup.bash
+         ros2 launch ur_description view_ur.launch.py ur_type:=ur10e
+
+   .. config-content::
+      :show-when: platform=Linux,ubuntu_version=Ubuntu 22.04,ros_distro=Humble
+
+      Source your native ROS 2 Humble install. If ``ur_description`` is not already available, install it from apt:
+
+      .. code-block:: bash
+
+         sudo apt install ros-humble-ur-description
+         source /opt/ros/humble/setup.bash
+         ros2 launch ur_description view_ur.launch.py ur_type:=ur10e
+
+      Alternatively, build ``ur_description`` natively (Python 3.10) into ``humble_ws`` with ``colcon build``, then source ``humble_ws/install/local_setup.bash`` instead of using the apt package.
+
+   .. config-content::
+      :show-when: platform=Linux,ubuntu_version=Ubuntu 22.04,ros_distro=Jazzy
+
+      ROS 2 Jazzy is not natively available on Ubuntu 22.04, so run the launch command from a ROS 2 Jazzy Docker container with ``jazzy_ws`` mounted and built natively. Follow :ref:`isaac_ros_docker_other_platforms` to start an ``osrf/ros:jazzy-desktop`` container, build ``jazzy_ws`` inside it, then from inside the container run:
+
+      .. code-block:: bash
+
+         source /jazzy_ws/install/local_setup.bash
+         ros2 launch ur_description view_ur.launch.py ur_type:=ur10e
+
+   .. config-content::
+      :show-when: platform=Windows,ros_distro=Jazzy
+
+      Activate the Pixi environment, then run:
+
+      .. code-block:: bash
+
+         ros2 launch ur_description view_ur.launch.py ur_type:=ur10e
+
+   .. config-content::
+      :show-when: platform=Windows,ros_distro=Humble
+
+      .. attention::
+         ROS 2 Humble on Windows (Pixi) is not a supported configuration. Switch to ROS 2 Jazzy on Windows, or move to a Linux configuration, to follow this tutorial as written.
 
 #. Verify that you see a window similar to the image below:
 
@@ -159,7 +274,7 @@ Import the UR10e Robot into Isaac Sim
 
 For reference, the resulting USD file is available in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/ur10e/ur/ur.usd``.
 
-Import the Robotiq 2F-140 Gripper (Linux only)
+Import the Robotiq 2F-140 Gripper
 =====================================================
 
 Use the URDF file provided by `ros-industrial-attic <https://github.com/ros-industrial-attic/robotiq/tree/kinetic-devel>`_. 
@@ -210,13 +325,27 @@ Convert XACRO to URDF
 
       xacro robotiq_arg2f_140_model.xacro > robotiq_2f_140.urdf
 
-   If you encounter the error ``xacro: command not found``, you need to install xacro.
+   If you encounter the error ``xacro: command not found``, install xacro for your configuration:
 
-   * Install xacro using the following command:
+   .. config-content::
+      :show-when: platform=Linux
 
-    .. code-block:: bash
+      .. code-block:: bash
 
-        sudo apt install ros-$ROS_DISTRO-xacro
+         sudo apt install ros-$ROS_DISTRO-xacro
+
+   .. config-content::
+      :show-when: platform=Windows,ros_distro=Jazzy
+
+      .. code-block:: bash
+
+         pixi add ros-$ROS_DISTRO-xacro
+
+   .. config-content::
+      :show-when: platform=Windows,ros_distro=Humble
+
+      .. attention::
+         ROS 2 Humble on Windows (Pixi) is not a supported configuration. Switch to ROS 2 Jazzy on Windows, or move to a Linux configuration, to follow this tutorial as written.
 
 
 For reference, the resulting URDF files is available in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/robotiq_2f_140_urdf/urdf/robotiq_2f_140.urdf``.
