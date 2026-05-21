@@ -17,6 +17,7 @@
 
 
 import numpy as np
+import omni.timeline
 from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.experimental.utils.stage import add_reference_to_stage
 from isaacsim.core.simulation_manager import SimulationManager
@@ -50,6 +51,7 @@ class FrankaExample(BaseSample):
         self._physics_ready = False
         self.franka = None
         self.cabinet = None
+        self._timeline = omni.timeline.get_timeline_interface()
         self._physics_callback_id = None
         self._time_elapsed = 0.0
 
