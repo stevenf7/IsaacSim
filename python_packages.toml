@@ -24,7 +24,6 @@ pyproject.optional-dependencies.all = [
         "isaacsim-cortex==${version}",
         "isaacsim-example==${version}",
         "isaacsim-gui==${version}",
-        "isaacsim-hsb-bridge==${version}",
         "isaacsim-replicator==${version}",
         "isaacsim-rl==${version}",
         "isaacsim-robot==${version}",
@@ -34,7 +33,6 @@ pyproject.optional-dependencies.all = [
         "isaacsim-ros2==${version}",
         "isaacsim-sensor==${version}",
         "isaacsim-storage==${version}",
-        "isaacsim-streaming==${version}",
         "isaacsim-template==${version}",
         "isaacsim-test==${version}",
         "isaacsim-utils==${version}",
@@ -667,23 +665,6 @@ inventory.includes.all = [
     "VERSION",
 ]
 
-[isaacsim-streaming]
-# pyproject.toml
-pyproject.description = "Isaac Sim components for sensor streaming"
-pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "streaming"]
-pyproject.dependencies.all = [
-    "isaacsim-core==${version}",
-]
-# inventory (relative to the build config)
-inventory.includes.all = [
-    # license
-    "LICENSE.txt",
-    # extensions
-    "exts/isaacsim.streaming.rtsp",
-    # others
-    "VERSION",
-]
-
 [isaacsim-template]
 # pyproject.toml
 pyproject.description = "Isaac Sim templates"
@@ -715,41 +696,6 @@ inventory.includes.all = [
     "exts/isaacsim.test.utils",
 ]
 
-[isaacsim-ucx]
-# pyproject.toml
-pyproject.description = "Isaac Sim components for UCX communication"
-pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "ucx"]
-pyproject.dependencies.all = [
-    "isaacsim-sensor==${version}",
-]
-# inventory (relative to the build config)
-inventory.includes.all = [
-    # license
-    "LICENSE.txt",
-    # extensions
-    "exts/isaacsim.ucx.bridge",
-    "exts/isaacsim.ucx.core",
-    "exts/isaacsim.ucx.nodes",
-]
-
-[isaacsim-hsb-bridge]
-# pyproject.toml
-pyproject.description = "Isaac Sim Holoscan Sensor Bridge (HSB) - OmniGraph nodes for high-performance sensor data transfer"
-pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "holoscan", "hsb", "sensor", "bridge"]
-pyproject.dependencies.all = [
-    "isaacsim-sensor==${version}",
-]
-# inventory (relative to the build config)
-inventory.includes.all = [
-    # license
-    "LICENSE.txt",
-    # extensions
-    "exts/isaacsim.hsb.bridge",
-    "exts/isaacsim.hsb.core",
-    "exts/isaacsim.hsb.nodes",
-]
-
-
 [isaacsim-utils]
 # pyproject.toml
 pyproject.description = "Isaac Sim utilities"
@@ -765,6 +711,17 @@ inventory.includes.all = [
     "exts/isaacsim.util.camera_inspector",
     "extsDeprecated/isaacsim.util.merge_mesh",
     "exts/isaacsim.util.physics",
+    # others
+    # - streaming
+    "exts/isaacsim.streaming.rtsp",
+    # - ucx
+    "exts/isaacsim.ucx.bridge",
+    "exts/isaacsim.ucx.core",
+    "exts/isaacsim.ucx.nodes",
+    # - hsb
+    "exts/isaacsim.hsb.bridge",
+    "exts/isaacsim.hsb.core",
+    "exts/isaacsim.hsb.nodes",
 # AUTOREMOVE: BEGIN
     # internal extensions (not included in extscache)
     [ "extsInternal/isaacsim.kit.xr.teleop.bridge", "exts" ],
