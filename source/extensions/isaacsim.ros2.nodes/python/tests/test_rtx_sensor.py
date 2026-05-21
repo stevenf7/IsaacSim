@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
 import json
 import math
 import time
@@ -20,6 +21,7 @@ from typing import List
 from uuid import uuid4
 
 import carb
+import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.sensors.experimental.rtx.generic_model_output as gmo_utils
 import numpy as np
 import omni
@@ -30,10 +32,62 @@ import omni.replicator.core as rep
 import rclpy
 from isaacsim.ros2.core.impl.ros2_test_case import ROS2TestCase
 from isaacsim.sensors.experimental.rtx import Lidar, parse_generic_model_output_data
+from omni.replicator.core import Writer
 from sensor_msgs.msg import LaserScan, PointCloud2
 from std_msgs.msg import String
 
 from .common import create_sarcophagus, get_qos_profile
+
+
+class _GmoCollectorWriter(Writer):
+    """Replicator Writer that captures every ``GenericModelOutput`` in arrival order,
+    deduped by ``gmo.timestampNs`` (the lidar's authoritative scan-start time).
+
+    A Writer is used instead of per-frame annotator polling so every GMO produced by
+    the SD pipeline is observed in lockstep with the publisher writers on the same
+    render product.
+    """
+
+    def __init__(self) -> None:
+        # initialize() re-invokes __init__, so per-test state lives here.
+        self.version = "0.0.1"
+        self.data_structure = "renderProduct"
+        self.annotators = [rep.annotators.get("GenericModelOutput")]
+        self.snapshots: List[dict] = []
+        self._seen_timestamp_ns: set = set()
+
+    def write(self, data: dict) -> None:
+        rps = data.get("renderProducts") if isinstance(data, dict) else None
+        if not rps:
+            return
+        for rp_data in rps.values():
+            entry = rp_data.get("GenericModelOutput")
+            if isinstance(entry, dict):
+                entry = entry.get("data")
+            if entry is None:
+                continue
+            try:
+                gmo = parse_generic_model_output_data(entry)
+            except Exception:
+                continue
+            if gmo.magicNumber != gmo_utils.getMagicNumberGMO() or gmo.numElements == 0:
+                continue
+            ts_ns = int(gmo.timestampNs)
+            if ts_ns in self._seen_timestamp_ns:
+                continue
+            self._seen_timestamp_ns.add(ts_ns)
+            self.snapshots.append(
+                {
+                    "x": gmo.x.copy(),
+                    "y": gmo.y.copy(),
+                    "z": gmo.z.copy(),
+                    "scalar": gmo.scalar.copy(),
+                    "numElements": int(gmo.numElements),
+                    "elementsCoordsType": gmo.elementsCoordsType,
+                    "timestampNs": ts_ns,
+                    "timeOffsetNs": gmo.timeOffsetNs.copy(),
+                }
+            )
 
 
 class TestROS2SensorMsgRTX(ROS2TestCase):
@@ -202,8 +256,22 @@ class TestROS2SensorMsgRTX(ROS2TestCase):
             return test_duration_s * 60 - 4
 
     def _get_closest_timestamp(self, message_timestamp):
-        closest_key = min(self._mapped_annotator_data.keys(), key=lambda key: abs(key - message_timestamp))
-        return self._mapped_annotator_data[closest_key]
+        """Return the snapshot whose annotator-observed wall-clock is closest to *message_timestamp*.
+
+        Snapshots are keyed by ``gmo.timestampNs`` (scan identity) and each entry tracks
+        every annotator-side timestamp at which the scan was observed; we search across
+        all observations so a snapshot still matches if the GMO annotator and the
+        publisher latched the same scan on different simulation frames.
+        """
+        best_key = None
+        best_diff = float("inf")
+        for scan_key, snap in self._mapped_annotator_data.items():
+            for ts in snap["annotator_timestamps"]:
+                diff = abs(ts - message_timestamp)
+                if diff < best_diff:
+                    best_diff = diff
+                    best_key = scan_key
+        return self._mapped_annotator_data[best_key]
 
     async def _test_message_data(self, full_scan: bool = False, test_duration_s: float = 1.5, metadata: List[str] = []):
         raise NotImplementedError("Subclasses must implement this method.")
@@ -277,37 +345,45 @@ class TestROS2SensorMsgRTX(ROS2TestCase):
             return fields
 
         def spin():
-            # Keep ROS communications responsive while the timeline is running.
+            # Drive ROS callbacks and snapshot the latest GMO, deduping repeat frames
+            # by gmo.timestampNs (scan identity) while still recording every observed
+            # annotator wall-clock for _get_closest_timestamp(). Arrays are copied
+            # eagerly because the GMO struct points into a buffer that gets overwritten
+            # on the next frame.
             rclpy.spin_once(self._ros_node, timeout_sec=0.01)
             rclpy.spin_once(self._ros_object_id_map_node, timeout_sec=0.01)
 
-            # Get the latest GMO annotator data and map it to the message timestamp.
-            # Copy all arrays eagerly since the GMO struct holds pointers into the
-            # raw buffer which may be overwritten on the next frame.
             raw_data = self._annotator_rtx.get_data(do_array_copy=True)
             timestamp_data = self._annotator_timestamp.get_data()
             timestamp = timestamp_data.get(timestamp_output) if timestamp_data is not None else None
-            if timestamp is not None and raw_data is not None and raw_data.size > 0:
-                gmo = parse_generic_model_output_data(raw_data)
-                if gmo.magicNumber == gmo_utils.getMagicNumberGMO() and gmo.numElements > 0:
-                    snapshot = {
-                        "x": gmo.x.copy(),
-                        "y": gmo.y.copy(),
-                        "z": gmo.z.copy(),
-                        "scalar": gmo.scalar.copy(),
-                        "numElements": gmo.numElements,
-                        "elementsCoordsType": gmo.elementsCoordsType,
-                        "timestampNs": gmo.timestampNs,
-                        "timeOffsetNs": gmo.timeOffsetNs.copy(),
-                    }
-                    # Copy auxiliary fields based on the GMO aux level.
-                    # Accessing fields beyond the reported auxType causes a
-                    # segfault in the C++ GMO extension (null auxiliaryData pointer).
-                    for field, attr in _aux_fields_for_level(gmo.auxType):
-                        arr = getattr(gmo, attr)
-                        if arr is not None and hasattr(arr, "copy"):
-                            snapshot[field] = arr.copy()
-                    self._mapped_annotator_data[timestamp] = snapshot
+            if timestamp is None or raw_data is None or raw_data.size == 0:
+                return
+            gmo = parse_generic_model_output_data(raw_data)
+            if gmo.magicNumber != gmo_utils.getMagicNumberGMO() or gmo.numElements == 0:
+                return
+            scan_key = int(gmo.timestampNs)
+            existing = self._mapped_annotator_data.get(scan_key)
+            if existing is not None:
+                existing["annotator_timestamps"].append(timestamp)
+                return
+            snapshot = {
+                "x": gmo.x.copy(),
+                "y": gmo.y.copy(),
+                "z": gmo.z.copy(),
+                "scalar": gmo.scalar.copy(),
+                "numElements": gmo.numElements,
+                "elementsCoordsType": gmo.elementsCoordsType,
+                "timestampNs": gmo.timestampNs,
+                "timeOffsetNs": gmo.timeOffsetNs.copy(),
+                "annotator_timestamps": [timestamp],
+            }
+            # Aux fields are only safe to access at or below the reported auxType
+            # (otherwise the C++ GMO extension segfaults on a null auxiliaryData).
+            for field, attr in _aux_fields_for_level(gmo.auxType):
+                arr = getattr(gmo, attr)
+                if arr is not None and hasattr(arr, "copy"):
+                    snapshot[field] = arr.copy()
+            self._mapped_annotator_data[scan_key] = snapshot
 
         system_time_start = time.time() if use_system_time else None
 
@@ -539,26 +615,156 @@ class TestROS2LaserScanRTX(TestROS2SensorMsgRTX):
     _ros_msg_type = LaserScan
     _helper_type = "laser_scan"
 
-    async def _test_message_data(self, full_scan: bool = False, test_duration_s: float = 1.5, metadata: List[str] = []):
-        if self._sensor_type == "radar":
-            self.assertIsNone(self._ros_msg_data)
-            return
+    _writer_registered = False
 
-        self.assertIsNotNone(self._ros_msg_data)
-        message_timestamp = self._ros_msg_data.header.stamp.sec + self._ros_msg_data.header.stamp.nanosec / 1e9
-        snap = self._get_closest_timestamp(message_timestamp)
+    async def setUp(self):
+        await super().setUp()
 
-        self.assertGreater(
-            self._ros_msg_count,
-            0,
-            f"No message received for {self._sensor_type} after {test_duration_s} simulated seconds.",
+        # Re-subscribe with a list-appending callback routed through a background
+        # MultiThreadedExecutor. start_async_spinning must come before
+        # create_subscription so the new sub binds to the executor's
+        # ReentrantCallbackGroup; the base tearDown shuts the executor down.
+        self.destroy_subscription(self._ros_node, self._ros_sub)
+        self._ros_messages: List[LaserScan] = []
+        self.start_async_spinning(self._ros_node)
+
+        def ros_callback(data):
+            self._ros_messages.append(data)
+            self._ros_msg_count += 1
+            self._ros_msg_data = data  # keep for base-class introspection
+
+        self._ros_sub = self.create_subscription(
+            self._ros_node,
+            self._ros_msg_type,
+            self._ros_topic,
+            ros_callback,
+            get_qos_profile(depth=100),
         )
 
-        # Compute azimuth and distance from snapshot, handling both coordinate types
+        # Attached in _test_sensor, detached in tearDown so assertions can bubble.
+        self._gmo_writer = None
+
+        if not TestROS2LaserScanRTX._writer_registered:
+            rep.WriterRegistry.register(_GmoCollectorWriter)
+            TestROS2LaserScanRTX._writer_registered = True
+
+    async def tearDown(self):
+        if self._gmo_writer is not None:
+            self._gmo_writer.detach()
+            self._gmo_writer = None
+        await super().tearDown()
+
+    def _assert_match_with_bin_tolerance(self, expected, actual, atol, name):
+        """Elementwise match with ±1 slot tolerance.
+
+        The publisher's per-ray binning uses the original float32 prim attributes
+        (``OgnROS2PublishLaserScan::publishFromGMO``) while the test recovers them
+        from the message's deg→rad-converted ``angle_min`` / ``angle_increment``. The
+        round-trip can shift the integer bin by 1 for rays within one ULP of a
+        boundary; the tolerance accepts that without letting data go missing.
+        """
+        expected = np.asarray(expected)
+        actual = np.asarray(actual)
+        n = len(expected)
+        self.assertEqual(len(actual), n, f"{name}: array length mismatch")
+
+        def _find_mismatches(a, b):
+            mismatches = []
+            for i in range(n):
+                lo = max(i - 1, 0)
+                hi = min(i + 1, n - 1)
+                if not np.any(np.isclose(a[i], b[lo : hi + 1], atol=atol)):
+                    mismatches.append((i, float(a[i]), [float(x) for x in b[lo : hi + 1]]))
+            return mismatches
+
+        forward = _find_mismatches(expected, actual)
+        reverse = _find_mismatches(actual, expected)
+        if forward or reverse:
+            self.fail(
+                f"{name}: bin-tolerant comparison failed -- "
+                f"{len(forward)} expected->actual and {len(reverse)} actual->expected mismatches. "
+                f"First 5 expected->actual (idx, expected, actual_neighbours): {forward[:5]}. "
+                f"First 5 actual->expected (idx, actual, expected_neighbours): {reverse[:5]}."
+            )
+
+    async def _test_sensor(
+        self,
+        sensor_type: str,
+        aux_output_level: str = "NONE",
+        full_scan: bool = False,
+        use_system_time: bool = False,
+        metadata: List[str] = [],
+        test_duration_s: float = 1.5,
+        **kwargs,
+    ):
+        """Writer-driven LaserScan validation.
+
+        A ``_GmoCollectorWriter`` captures every GMO from the SD pipeline and the
+        list-appending ROS callback captures every published message. The writer is
+        attached only after the publisher discovers our subscriber so both streams
+        start at the same frame. ``SICK_nanoScan3`` is a non-rotational scanner over
+        a static scene, so the tail (snapshot, message) pair compared by
+        :meth:`_test_message_data` is representative.
+
+        ``accumulate_outputs`` is forced True regardless of the ``full_scan`` kwarg
+        because the LaserScan publisher's per-message contract is one complete scan;
+        feeding it interleaved partial-scan slices would mismatch the per-frame ray
+        set between snapshots[-1] and messages[-1].
+        """
+        self.assertEqual(sensor_type, "lidar", "Writer-based path only supports lidar")
+        self._is_full_scan = True
+
+        await self._create_sensor(sensor_type, aux_output_level=aux_output_level, accumulate_outputs=True, **kwargs)
+        await self._create_omnigraph(enable_full_scan=True, use_system_time=use_system_time, metadata=metadata)
+
+        app_utils.play()
+        await app_utils.update_app_async()
+
+        # Publisher returns early when subscription_count == 0; wait for handshake
+        # then drop any pre-discovery messages so both streams start at the same frame.
+        await self.wait_for_publishers_on_topic(self._ros_node, self._ros_topic, count=1, timeout_sec=5.0)
+        self._ros_messages.clear()
+
+        # WriterRegistry.get() only runs __new__ on Writer subclasses, so initialize()
+        # must be called explicitly to populate __init__ state. Stash on self so
+        # tearDown detaches unconditionally and assertions below can bubble up.
+        self._gmo_writer = rep.WriterRegistry.get("_GmoCollectorWriter")
+        self._gmo_writer.initialize()
+        self._gmo_writer.attach([self._render_product_path])
+
+        await self.simulate_until_condition(
+            condition_func=lambda: (len(self._gmo_writer.snapshots) >= 1 and len(self._ros_messages) >= 1),
+            max_frames=max(int(test_duration_s * 60) + 30, 60),
+        )
+        # Yield wall-clock to let DDS deliver any in-flight messages from the final
+        # frames; the background executor picks them up automatically.
+        await asyncio.sleep(0.2)
+
+        self.assertGreater(len(self._gmo_writer.snapshots), 0, "Writer captured no GMO scans")
+        self.assertGreater(len(self._ros_messages), 0, "No LaserScan messages received")
+
+        await self._test_message_data(
+            snapshots=self._gmo_writer.snapshots,
+            messages=self._ros_messages,
+            full_scan=full_scan,
+            test_duration_s=test_duration_s,
+            metadata=metadata,
+        )
+
+    async def _test_message_data(
+        self,
+        snapshots: List[dict],
+        messages: List[LaserScan],
+        full_scan: bool = False,
+        test_duration_s: float = 1.5,
+        metadata: List[str] = [],
+    ):
+        """Compare the final published LaserScan against the final captured GMO."""
+        msg = messages[-1]
+        snap = snapshots[-1]
+
         if snap["elementsCoordsType"] == gmo_utils.CoordsType.CARTESIAN:
-            x_data = snap["x"]
-            y_data = snap["y"]
-            z_data = snap["z"]
+            x_data, y_data, z_data = snap["x"], snap["y"], snap["z"]
             azimuth_data = np.degrees(np.arctan2(y_data, x_data))
             distance_data = np.sqrt(x_data**2 + y_data**2 + z_data**2)
         else:
@@ -566,30 +772,31 @@ class TestROS2LaserScanRTX(TestROS2SensorMsgRTX):
             distance_data = snap["z"]
         intensity_data = (snap["scalar"] * 255.0).astype(np.uint8)
 
-        # Reconstruct the flat scan from GMO data using the ROS message parameters
-        h_res = np.degrees(self._ros_msg_data.angle_increment)
-        az_start = np.degrees(self._ros_msg_data.angle_min)
-        num_output = len(self._ros_msg_data.ranges)
+        h_res = np.degrees(msg.angle_increment)
+        az_start = np.degrees(msg.angle_min)
+        num_output = len(msg.ranges)
+
+        # Reproduce publishFromGMO's float32 binning. The np.where call mirrors the
+        # publisher's size_t cast for negative diffs (wraps then clamps to last slot).
+        az_start_f32 = np.float32(az_start)
+        h_res_f32 = np.float32(h_res)
+        azimuth_f32 = np.asarray(azimuth_data, dtype=np.float32)
+        diff_f32 = azimuth_f32 - az_start_f32
+        bin_indices = (diff_f32 / h_res_f32).astype(np.int64)
+        bin_indices = np.where(diff_f32 < 0, num_output - 1, bin_indices)
+        bin_indices = np.clip(bin_indices, 0, num_output - 1)
 
         expected_ranges = np.full(num_output, -1.0, dtype=np.float32)
         expected_intensities = np.zeros(num_output, dtype=np.float32)
         for i in range(snap["numElements"]):
-            out_idx = int((azimuth_data[i] - az_start) / h_res)
-            if out_idx >= num_output:
-                out_idx = num_output - 1
-            expected_ranges[out_idx] = distance_data[i]
-            expected_intensities[out_idx] = float(intensity_data[i])
+            expected_ranges[bin_indices[i]] = distance_data[i]
+            expected_intensities[bin_indices[i]] = float(intensity_data[i])
 
-        ros_ranges = np.array(self._ros_msg_data.ranges, dtype=np.float32)
-        ros_intensities = np.array(self._ros_msg_data.intensities, dtype=np.float32)
-        self.assertTrue(
-            np.allclose(expected_ranges, ros_ranges, atol=1e-5),
-            "Range data mismatch between GMO-derived flat scan and ROS LaserScan message. expected_ranges: {expected_ranges}, ros_ranges: {ros_ranges}",
-        )
-        self.assertTrue(
-            np.allclose(expected_intensities, ros_intensities, atol=1e-5),
-            "Intensity data mismatch between GMO-derived flat scan and ROS LaserScan message. expected_intensities: {expected_intensities}, ros_intensities: {ros_intensities}",
-        )
+        ros_ranges = np.array(msg.ranges, dtype=np.float32)
+        ros_intensities = np.array(msg.intensities, dtype=np.float32)
+
+        self._assert_match_with_bin_tolerance(expected_ranges, ros_ranges, atol=1e-5, name="ranges")
+        self._assert_match_with_bin_tolerance(expected_intensities, ros_intensities, atol=1e-5, name="intensities")
 
     async def test_rtx_lidar_full_scan_simulation_time(self):
         await self._test_sensor(

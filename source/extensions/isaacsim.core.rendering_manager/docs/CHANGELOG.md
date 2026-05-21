@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.2] - 2026-05-20
+### Fixed
+- `test_callback` no longer asserts an exact 1:1 mapping between `RenderingManager.render_async()` calls and `NEW_FRAME` dispatches.
+
 ## [0.4.1] - 2026-05-17
 ### Fixed
 - `RenderingManager.set_dt()` now updates Fabric's default simulation period settings (`/app/settings/fabricDefaultSimPeriodNumerator` and `/app/settings/fabricDefaultSimPeriodDenominator`) along with USD/timeline timing. Kit reads these defaults when creating Fabric history stages, so newly-created graph/fabric caches use a render-product period that matches the requested rendering dt instead of Fabric's 1/30 s default.
