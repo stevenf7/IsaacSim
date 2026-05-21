@@ -194,7 +194,7 @@ class ResetableLabelField:
                 with ui.VStack(height=0):
                     ui.Spacer(height=2)
                     self._field = self._field_type(
-                        name="resetable", style_type_name_override="Field", alignment=self._alignment, height=18
+                        name="cell", style_type_name_override="Field", alignment=self._alignment, height=18
                     )
                     ui.Spacer(height=2)
             self._field.model.set_value(self._init_value)

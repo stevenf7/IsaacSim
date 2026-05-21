@@ -15,9 +15,10 @@
 
 """Module for tuning joint gains on articulated robots through test signal generation and inertia analysis."""
 
+from __future__ import annotations
 
 import asyncio
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from dataclasses import dataclass
 from enum import IntEnum
 
@@ -235,6 +236,10 @@ def project_inertia_onto_axis(inertia_matrix: Gf.Matrix3f, axis: Gf.Vec3f) -> fl
     axis_np = np.array([axis[0], axis[1], axis[2]])
     axis_norm = np.linalg.norm(axis_np)
     if axis_norm < 1e-9:
+        carb.log_warn(
+            f"GainTuner: degenerate joint rotation axis {axis_np.tolist()} (norm={axis_norm:.3e}); "
+            "projected inertia is 0, so gain recommendations for affected joints may be invalid."
+        )
         return 0.0
     axis_normalized = axis_np / axis_norm
     inertia_np = _gf_matrix3f_to_numpy(inertia_matrix)
@@ -408,6 +413,7 @@ class GainTuner:
         self._test_duration = 5.0
         self._test_registry: dict[int, RobotTest] = {}
         self._active_test: RobotTest = None
+        self._inertia_updated_callbacks: list[Callable[[], None]] = []
         self.reset()
 
     def reset(self) -> None:
@@ -435,6 +441,18 @@ class GainTuner:
         self._active_test = None
         self._test_result_metrics = {}
         self.step = 0
+
+    def add_inertia_updated_callback(self, callback: Callable[[], None]) -> None:
+        """Register a callback invoked after joint accumulated inertia is recomputed."""
+        if callback not in self._inertia_updated_callbacks:
+            self._inertia_updated_callbacks.append(callback)
+
+    def _notify_inertia_updated(self) -> None:
+        for callback in self._inertia_updated_callbacks:
+            try:
+                callback()
+            except Exception as exc:
+                carb.log_warn(f"GainTuner: inertia-updated callback failed: {exc}")
 
     def stop_test(self) -> None:
         """Stop the current test and reset the articulation to default state."""
@@ -481,14 +499,20 @@ class GainTuner:
             self.setup(None)
         self.step = 0
 
-    def setup(self, robot_path: str) -> None:
+    def setup(self, robot_path: str | None) -> None:
         """Configure the gain tuner for a specific robot.
 
         Args:
-            robot_path: USD path to the robot prim.
+            robot_path: USD path to the robot prim, or ``None`` to skip binding.
         """
-        if robot_path == self._robot_prim_path or robot_path is None:
+        if robot_path is None:
             return
+        # Re-bind when the path is unchanged but the stage was rebuilt (prim at ``robot_path`` is new
+        # USD, or articulation was cleared by :meth:`reset`).
+        if robot_path == self._robot_prim_path and self._articulation is not None:
+            stage = omni.usd.get_context().get_stage()
+            if stage and self._robot and self._robot.IsValid():
+                return
 
         stage = omni.usd.get_context().get_stage()
         self._robot_prim_path = robot_path
@@ -520,7 +544,14 @@ class GainTuner:
             if not was_playing:
                 self._timeline.play()
             await omni.kit.app.get_app().next_update_async()
-            self.compute_joints_accumulated_inertia()
+            try:
+                self.compute_joints_accumulated_inertia()
+                self._notify_inertia_updated()
+            except AssertionError:
+                carb.log_warn(
+                    "GainTuner: compute_joints_accumulated_inertia skipped in deferred link-mass update "
+                    "(physics tensor not ready yet)."
+                )
             if not was_playing:
                 self._timeline.stop()
 
