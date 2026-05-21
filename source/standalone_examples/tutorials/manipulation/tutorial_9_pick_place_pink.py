@@ -93,7 +93,7 @@ class UR10ePickPlace:
     _PHYSICS_DT: float = 1.0 / 60.0
 
     _POSITION_COST: float = 0.5
-    _ORIENTATION_COST: float = 0.5
+    _ORIENTATION_COST: float = 1.0
     _POSTURE_COST: float = 1e-3
 
     _ELBOW_UP_ARM: np.ndarray = np.array([-np.pi, -np.pi / 2, -np.pi / 2, -np.pi / 2, np.pi / 2, 0.0])
