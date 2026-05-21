@@ -207,6 +207,12 @@ def _compute_year_range(existing_year: str | None) -> str:
     return current_year if existing_year == current_year else f"{existing_year}-{current_year}"
 
 
+def _copyright_year_needs_update(existing_year: str) -> bool:
+    current_year = int(_current_year())
+    latest_year = int(existing_year.split("-", 1)[-1].strip())
+    return latest_year < current_year
+
+
 def should_skip_path(path: Path) -> bool:
     """Return whether a path should be excluded from license checks.
 
@@ -290,8 +296,11 @@ def check_file_header(file_path: Path) -> tuple[bool, list[str]]:
         content = _normalize_content(line, comment_symbol)
         if "SPDX-FileCopyrightText:" in content:
             copyright_line_count += 1
-            if not COPYRIGHT_RE.fullmatch(content):
+            match = COPYRIGHT_RE.fullmatch(content)
+            if not match:
                 issues.append(f"Line {idx}: Invalid SPDX copyright format")
+            elif _copyright_year_needs_update(match.group(1)):
+                issues.append(f"Line {idx}: SPDX copyright year does not include current year")
         if "SPDX-License-Identifier:" in content:
             license_line_count += 1
             license_valid = LICENSE_RE.fullmatch(content)
