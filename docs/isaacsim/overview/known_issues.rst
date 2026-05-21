@@ -148,6 +148,15 @@ General
 
 #. On Windows 11, the viewport may flicker and SDG pipelines may write black images. To resolve this, update the NVIDIA display driver to version 595 or higher.
 
+#. Starting in Isaac Sim 5.0, the full Isaac Sim experience (``isaacsim.exp.full.kit``) enables Fixed Time Stepping by default so that ``SimulationApp`` workflows step the timeline deterministically. As a side effect, USD scenes that contain keyframe animations and that render below the target rate (typically 60 Hz) will appear slow or choppy in the GUI, because the timeline advances by a fixed ``dt`` per loop tick rather than by wall-clock time. The same scenes play back smoothly in USD Composer and in Isaac Sim 4.5, which use Variable stepping. To opt the GUI into Variable stepping for animation review/authoring, launch with all three of the following flags (the third prevents the ``isaacsim.core.throttling`` extension from re-enabling manual mode on every Play); see :ref:`isaac_sim_troubleshooting_animation_playback_slow` for the full discussion.
+
+    .. code-block:: bash
+
+        ./isaac-sim.sh \
+            --/app/player/useFixedTimeStepping=false \
+            --/app/runLoops/main/manualModeEnabled=false \
+            --/exts/isaacsim.core.throttling/enable_manualmode=false
+
 
 .. _isaac_sim_known_issues_warnings:
 

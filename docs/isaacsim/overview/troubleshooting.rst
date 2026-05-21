@@ -98,6 +98,30 @@ If the rate is set coherently and the issue persists, try:
 
 2. Check your computer's CPU usage to identify bottlenecks. If Isaac Sim is exhibiting incredibly high usage, try running with *Fabric* enabled.
 
+.. _isaac_sim_troubleshooting_animation_playback_slow:
+
+Choppy or Slow Animation Playback (Fixed Time Stepping)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If USD scenes containing keyframe animations play back smoothly in USD Composer (or in Isaac Sim 4.5) but appear slow, choppy, or lag wall-clock when played in Isaac Sim 5.0 or later, the cause is **Fixed Time Stepping**.
+
+The full Isaac Sim experience enables Fixed Time Stepping by default (in ``isaacsim.exp.full.kit``) so that ``SimulationApp`` and other scripted workflows step the timeline deterministically. Under Fixed Time Stepping, the timeline advances by a fixed ``dt`` per loop tick rather than by wall-clock time, so if the renderer cannot sustain the target rate (typically 60 Hz on heavy scenes), simulated time — including animation playback — falls behind real time. This behavior is documented for ``/app/player/useFixedTimeStepping`` in the ``omni.timeline`` Kit reference, which recommends **Variable** stepping for animation-only scenarios.
+
+For interactive GUI animation playback on heavy scenes, launch with the following overrides to opt the experience into Variable stepping:
+
+.. code-block:: bash
+
+    ./isaac-sim.sh \
+        --/app/player/useFixedTimeStepping=false \
+        --/app/runLoops/main/manualModeEnabled=false \
+        --/exts/isaacsim.core.throttling/enable_manualmode=false
+
+All three flags are required: the first two switch the timeline and main loop out of fixed/manual stepping at startup, and the third prevents the ``isaacsim.core.throttling`` extension from re-enabling manual mode on every Play (see ``_on_play`` in ``source/extensions/isaacsim.core.throttling/isaacsim/core/throttling/extension.py``). Disabling these defaults gives up determinism for scripted simulation runs, so use them for animation review / authoring workflows rather than for ``SimulationApp`` jobs that rely on a fixed per-step ``dt``.
+
+The Isaac Sim Base experience (``isaacsim.exp.base.kit``) already sets ``player.useFixedTimeStepping = false`` for the same reason, which is why scenes played from Base or from USD Composer do not exhibit this lag.
+
+If you are authoring the scene rather than just reviewing it, prefer one of the alternatives described in :ref:`isaac_sim_animated_usd_fixed_step_alternatives` over relying on the GUI launch-flag workaround — those keep determinism for ``SimulationApp`` and remain correct under any time-stepping mode.
+
 Reducing Log Output
 ~~~~~~~~~~~~~~~~~~~~
 
