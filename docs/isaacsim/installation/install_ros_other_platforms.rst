@@ -1096,7 +1096,7 @@ Enabling the ROS 2 Bridge using Cyclone DDS
 .. config-content::
    :show-when: platform=Ubuntu 22.04
 
-   |isaac-sim_short| supports Cyclone DDS middleware for Linux, ROS 2 Humble, and Jazzy. To use Cyclone DDS, you must disable the default bridge that uses Fast DDS. After the bridge is disabled, you can enable the bridge using Cyclone DDS.
+   |isaac-sim_short| supports Cyclone DDS middleware on Linux with ROS 2 Humble and Jazzy. The ROS 2 bridge uses Fast DDS when ``RMW_IMPLEMENTATION`` is unset. To switch to Cyclone DDS, stop |isaac-sim_short|, run ``export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp`` in the terminal, and relaunch.
 
 .. config-content::
    :show-when: platform=Windows,install_method=WSL2 (Deprecated)
