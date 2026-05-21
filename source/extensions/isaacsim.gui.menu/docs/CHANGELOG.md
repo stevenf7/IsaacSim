@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.10.5] - 2026-05-19
+### Fixed
+- Help menu: `OpenUSD Reference Guide`, `Warp Getting Started`, and `Warp Documentation` now render reliably in `isaacsim.exp.full.kit`. Previously they bound to `source=` items not provided by the app's dependency closure and rendered as orphan separators. Register the actions and `MenuItemDescription`s locally instead.
+
 ## [2.10.4] - 2026-03-16
 ### Changed
 - Migrate extension implementation to core experimental API
