@@ -42,9 +42,11 @@ Building the Graph for a Compressed Image Publisher
 
 #. Open the turtlebot scene by going to the Isaac Sim Content browser and clicking **Isaac Sim > Samples > ROS2 > Scenario > turtlebot_tutorial.usd**.
 
+#. In the **Stage** panel, select ``/World/Camera_1`` so the new Action Graph is created adjacent to the camera prim it publishes for. Parenting the graph to the sensor it directly affects keeps the asset composable: when ``Camera_1`` is referenced into another scene, the publisher graph travels with it.
+
 #. Open the Graph Editors: **Window** > **Graph Editors** > **Action Graph**.
 
-#. Click on the **New Action Graph** icon in the middle of the *Action Graph* window.
+#. Click on the **New Action Graph** icon in the middle of the *Action Graph* window. Name the graph ``Camera_1_Graph``; the resulting graph path is ``/World/Camera_1/Camera_1_Graph``.
 
 #. Build an Action Graph with the nodes and connections shown below, using the parameters from the table:
 
@@ -187,4 +189,9 @@ This tutorial covered the following topics:
 Next Steps
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Continue on to the next tutorial in our ROS 2 Tutorials series, :ref:`isaac_sim_app_tutorial_ros2_rtx_lidar`, to learn how to add an RTX Lidar sensor to the Turtlebot3.
+Continue on to the next tutorial in our ROS 2 Tutorials series, :ref:`isaac_sim_app_tutorial_ros2_rtx_radar`, to learn how to add an RTX Radar sensor to the Turtlebot3.
+
+Further Learning
+^^^^^^^^^^^^^^^^^^^^^^
+
+- Auto-generated topic namespaces driven by the camera prim path are covered in :ref:`isaac_sim_app_tutorial_ros2_auto_namespace`.

@@ -15,7 +15,7 @@
 ROS 2 Tutorials (Linux and Windows)
 ====================================
 
-Getting Started with Importing and Controlling
+Getting Started with the Turtlebot
 -------------------------------------------------
 
 .. toctree::
@@ -23,30 +23,23 @@ Getting Started with Importing and Controlling
 
     ./tutorial_ros2_turtlebot
     ./tutorial_ros2_drive_turtlebot
-    
-Timing
----------------
-
-.. toctree::
-    :maxdepth: 1
-
     ./tutorial_ros2_clock
     ./tutorial_ros2_rtf
+    ./tutorial_ros2_camera
+    ./tutorial_ros2_rtx_lidar
+    ./tutorial_ros2_tf
+    ./tutorial_ros2_publish_rate
 
-Sensors and Control
---------------------
+Additional Sensors and Control
+-------------------------------
 
 .. toctree::
     :maxdepth: 1
 
-    ./tutorial_ros2_camera
     ./tutorial_ros2_camera_noise
     ./tutorial_ros2_camera_publishing
     ./tutorial_ros2_compressed_image
-    ./tutorial_ros2_rtx_lidar
     ./tutorial_ros2_rtx_radar
-    ./tutorial_ros2_tf
-    ./tutorial_ros2_publish_rate
     ./tutorial_ros2_qos
     ./tutorial_ros2_manipulation
     ./tutorial_ros2_name_override

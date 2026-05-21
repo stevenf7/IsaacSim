@@ -45,15 +45,17 @@ Assuming you've already gone through the ROS 2 camera tutorial and have two came
 Transform Publisher
 ^^^^^^^^^^^^^^^^^^^^
 
-#. In a new or existing **Action Graph** window, add a *ROS 2 Publish Transform Tree* node, and connect it up with *On Playback Tick*, and *Isaac Read Simulation Time*, like the image below.
-#. In the **Property** tab for the *ROS 2 Publish Transform Tree* node, add both *Camera_1* and *Camera_2* to the *targetPrims* field.
+In Isaac Sim 6.0 and later, **ROS 2 Publish Transform Tree** consumes pre-computed frames from an **Isaac Compute Transform Tree** node rather than resolving prims internally. See :ref:`isaac_ros2_migration_publish_tf` if you are upgrading an older graph.
+
+#. In the **Stage** panel, select ``/World`` so the new Action Graph is created next to the cameras it publishes for. Open **Window > Graph Editors > Action Graph**, click **New Action Graph**, and name it ``ROS_CameraTF`` (resulting graph path: ``/World/ROS_CameraTF``). Add an **Isaac Compute Transform Tree** node and a **ROS 2 Publish Transform Tree** node. Wire **On Playback Tick** to the Compute node's *execIn*, and **Isaac Read Simulation Time** to the Publish node's *timeStamp*.
+#. Wire the Compute node's outputs into the Publish node: *execOut* → *execIn*, *parentFrames* → *parentFrames*, *childFrames* → *childFrames*, *translations* → *translations*, *orientations* → *orientations*.
+#. In the **Property** tab for the **Isaac Compute Transform Tree** node, add both *Camera_1* and *Camera_2* to the *targetPrims* field.
 #. Examine the transform tree in a ROS 2-enabled terminal: ``ros2 topic echo /tf``. Verify that both cameras are on the transform tree. Move the camera around inside the viewport and observe how the camera's pose changes.
 
-
-.. figure:: /images/isim_4.5_ros_tut_gui_ros2_tf_graph.png
+.. figure:: /images/isim_6.0_ros_tut_gui_ros2_camera_tf_graph.png
     :align: center
     :width: 800
-    :alt: Turtlebot transform Graph
+    :alt: Camera transform tree graph with Isaac Compute Transform Tree feeding ROS 2 Publish Transform Tree
 
 
 .. _isaac_sim_app_tutorial_ros2_tf_articulation_transforms:
@@ -61,7 +63,7 @@ Transform Publisher
 Articulation Transforms
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To get the transforms of each linkage on an articulated robot, you can add the robot's articulation root to the **targetPrims** field in a **ROS2 Publish Transform Tree** node. All the linkages subsequent to the articulation root will be published automatically. 
+To get the transforms of each linkage on an articulated robot, add the robot's articulation root to the **targetPrims** field on the **Isaac Compute Transform Tree** node feeding a **ROS 2 Publish Transform Tree** node. All the linkages subsequent to the articulation root will be published automatically.
 
 .. important::
 
@@ -75,7 +77,7 @@ To get the transforms of each linkage on an articulated robot, you can add the r
 
 Publish Relative Transforms
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-By default, the transforms are in reference to the world frame. You can check that the ``/base_link`` transform of the Turtlebot is published relative to the ``/World``. If you want to get the transforms relative to something else, such as a camera, make sure to indicate that in the *parentPrim* field. Add *Camera_1* in the *parentPrim* field, **Stop** and **Play** the simulation between property changes, and you can observe that the ``/base_link`` transform is now relative to *Camera_1*.
+By default, the transforms are in reference to the world frame. You can check that the ``/base_link`` transform of the Turtlebot is published relative to the ``/World``. If you want to get the transforms relative to something else, such as a camera, set the *parentPrim* field on the **Isaac Compute Transform Tree** node. Add *Camera_1* in the Compute node's *parentPrim* field, **Stop** and **Play** the simulation between property changes, and you can observe that the ``/base_link`` transform is now relative to *Camera_1*.
 
 
 .. _isaac_sim_app_tutorial_ros2_tf_odometry:
@@ -85,15 +87,16 @@ Setting Up Odometry
 
 To setup odometry for a robot, publish the odometry ROS message and its corresponding transforms.
 
-#. Ensure the articulation root for your imported Turtlebot3 robot is ``/World/turtlebot3_burger``. Otherwise, remove the articulation root from ``/World/turtlebot3_burger/base_footprint`` and add it for ``/World/turtlebot3_burger``. Follow the steps in :ref:`isaac_sim_app_tutorial_ros2_tf_articulation_transforms` section to change the articulation root of the Turtlebot3 robot. 
+#. The Turtlebot3 robot has the **Articulation Root API** applied on ``/World/turtlebot3_burger/Geometry/base_footprint/base_link`` and the ``IsaacRobotAPI`` applied on ``/World/turtlebot3_burger`` with ``isaac:physics:robotLinks`` populated, so no manual articulation-root setup is required.
 
-    - (Optional Exercise) Add */World/turtlebot3_burger* (the default) to the **targetPrims** field in any **ROS2 Publish Transform Tree** node, and observe that the transforms of all the links of the robot, fixed or articulated, will be published on the ``/tf`` topic.  
+    - (Optional Exercise) Add */World/turtlebot3_burger* (the default) to the **targetPrims** field on the **Isaac Compute Transform Tree** node feeding any **ROS 2 Publish Transform Tree**, and observe that the transforms of all the links of the robot, fixed or articulated, will be published on the ``/tf`` topic.
 
-#. To set up the odometry publisher, compose an Action Graph that matches the following image.
+#. To set up the odometry publisher, in the **Stage** panel select the main robot prim ``/World/turtlebot3_burger`` so the new Action Graph is created directly under it. Robot-state publisher graphs (odometry, TF tree, ground-truth pose, and so on) act on the robot's articulation as a whole, so they belong at the robot root rather than under a single link. Open the visual scripting editor by going to **Window > Graph Editors > Action Graph** and click **New Action Graph**; name it ``ROS_OdomTF``. The resulting graph path is ``/World/turtlebot3_burger/ROS_OdomTF``. Compose an Action Graph that matches the following image.
 
-    .. figure:: /images/isim_5.0_ros_tut_gui_ros2_odometry_graph.png
+    .. figure:: /images/isim_6.0_ros_tut_gui_ros2_odometry_graph.png
         :align: center
         :width: 800
+        :alt: Odometry Action Graph with Isaac Compute Odometry, ROS 2 Publish Odometry, and ROS 2 Publish Raw Transform Tree
 
 
 
@@ -114,21 +117,26 @@ To setup odometry for a robot, publish the odometry ROS message and its correspo
 .. note::
     The **ROS2 Publish Odometry** node publishes full 3D velocity information. Both linear velocity and angular velocity are published with all three dimensions (x, y, and z), allowing for a more complete representation of the robot's motion state.
 
-#. At this point we are publishing odometry data and our transform tree only consists of `odom -> base_link`. We would also like to add the relevant robot prims under `base_link` to the transform tree. To do this, add a **ROS2 Publish Transform Tree** node to the graph and attach the `Exec In`, `Context`, and `Timestamp` fields similarly to previous nodes above. 
+#. At this point we are publishing odometry data and our transform tree only consists of `odom -> base_link`. We would also like to add the relevant robot prims under `base_link` to the transform tree. To do this, add an **Isaac Compute Transform Tree** node and a **ROS 2 Publish Transform Tree** node to the graph. Wire the Compute node's outputs (*execOut*, *parentFrames*, *childFrames*, *translations*, *orientations*) into the matching inputs on the Publish node, and attach the `Exec In`, `Context`, and `Timestamp` fields on the Publish node similarly to the other nodes above.
 
-    - In the Property tab for the **ROS2 Publish Transform Tree** node:
+    - In the Property tab for the **Isaac Compute Transform Tree** node:
 
-        - Set the *parentPrim* input field to the path to your base_link inside your Turtlebot Prim: ``/World/turtlebot3_burger/base_link``. 
+        - Set the *parentPrim* input field to the path to your base_link inside your Turtlebot Prim: ``/World/turtlebot3_burger/Geometry/base_footprint/base_link``.
 
 
-        - Set the *targetPrims* input field to the following prims: 
-            
-            - ``/World/turtlebot3_burger/base_footprint``
-            - ``/World/turtlebot3_burger/base_scan``
-            - ``/World/turtlebot3_burger/caster_back_link``
-            - ``/World/turtlebot3_burger/base_link/imu_link``
-            - ``/World/turtlebot3_burger/wheel_left_link``
-            - ``/World/turtlebot3_burger/wheel_right_link``
+        - Set the *targetPrims* input field to the following prims:
+
+            - ``/World/turtlebot3_burger/Geometry/base_footprint``
+            - ``/World/turtlebot3_burger/Geometry/base_footprint/base_link/base_scan``
+            - ``/World/turtlebot3_burger/Geometry/base_footprint/base_link/caster_back_link``
+            - ``/World/turtlebot3_burger/Geometry/base_footprint/base_link/imu_link``
+            - ``/World/turtlebot3_burger/Geometry/base_footprint/base_link/wheel_left_link``
+            - ``/World/turtlebot3_burger/Geometry/base_footprint/base_link/wheel_right_link``
+
+        .. tip::
+
+            Because ``IsaacRobotAPI`` is applied on ``/World/turtlebot3_burger`` with ``isaac:physics:robotLinks`` populated, you can simply add ``/World/turtlebot3_burger`` to the *targetPrims* field instead of the explicit list above and the full articulation chain will be published.
+
         
 
 #. Publish a transform tree that consists of `odom -> base_link -> <other robot links>`. This next step is only required when you want to have ground truth localization of the robot. Usually, a ROS package for localization, such as `Nav2 AMCL <https://index.ros.org/p/nav2_amcl/>`_,  would be responsible for setting the transform between a global frame and the odom frame. To setup ground truth localization, add in another *ROS2 Publish Raw Transform Tree* node to the graph and attach the `Exec In`, `Context`, and `Timestamp` fields similarly to previous nodes above.
@@ -141,9 +149,10 @@ To setup odometry for a robot, publish the odometry ROS message and its correspo
 
 Verify that your final graph is similar to the following:
 
-    .. figure:: /images/isim_5.0_ros_tut_gui_ros2_odometry_graph_final.png
+    .. figure:: /images/isim_6.0_ros_tut_gui_ros2_odometry_TF_graph_final.png
         :align: center
         :width: 800
+        :alt: Final odometry and TF graph with Isaac Compute Transform Tree feeding ROS 2 Publish Transform Tree
 
 
 |
@@ -236,6 +245,67 @@ The Isaac Sim's ransform viewer allows you to draw on the simulated scene itself
         :align: center
         :width: 90%
 
+.. _isaac_sim_app_tutorial_ros2_tf_multiple_sensors:
+
+
+Multiple Sensors in RViz2
+==========================
+
+.. note:: In Windows 10 or 11, depending on your machine's configuration some bandwidth-heavy topics might not be available to visualize in RViz2 in WSL.
+
+To display multiple sensors in RViz2, there are a few things that are important to make sure all the messages are synced up and timestamped correctly.
+
+
+**Simulation Timestamp**
+
+Use **Isaac Read Simulation Time** as the node that feeds the timestamp into all of the publishing nodes' timestamps.
+
+
+
+**ROS 2 clock**
+
+To publish the simulation time to the ROS 2 clock topic, you can setup the graph as shown in the :ref:`isaac_sim_app_tutorial_ros2_clock_publisher` tutorial:
+
+.. figure:: /images/isim_4.5_ros_tut_gui_ros2_clock_publisher.png
+    :align: center
+    :width: 800
+    :alt: ROS2 Clock publisher
+
+**frameId and topicName**
+
+#. To visualize all the sensors as well as the tf tree all at once inside RViz, the frameId and topicNames must follow a certain convention for RViz to recognize them all. The table below roughly describes these conventions. To observe the multi-sensor example below, consult the USD asset, which can be found by going to the Isaac Sim Content browser and clicking **Isaac Sim>Samples>ROS2>Scenario>turtlebot_tutorial.usd**.
+
+        =======================  =========================  ============================  ======================== ========================
+        Source		 	         frameId                     nodeNamespace                 topicName                Type
+        =======================  =========================  ============================  ======================== ========================
+        Camera RGB               (device_name)_(data_type)   (device_name)/(data_type)      image_raw                 rgb
+        Camera Depth             (device_name)_(data_type)   (device_name)/(data_type)      image_rect_raw            depth
+        Lidar                    base_scan                                                  scan                      laser scan
+        Lidar                    base_scan                                                  point_cloud               point_cloud
+        TF                                                                                  tf                        tf
+        =======================  =========================  ============================  ======================== ========================
+
+
+#. To observe the RViz image below, make sure the simulation is playing. In a ROS2-sourced terminal, open with the configuration provided using the command:
+
+     ``ros2 run rviz2 rviz2 -d <ros2_ws>/src/isaac_tutorials/rviz2/camera_lidar.rviz``
+
+ After the RViz window finishes loading, you can enable and disable the sensor streams inside the **Display** panel on the left hand side.
+
+.. figure:: /images/isim_4.5_ros_tut_external_rtx_lidar_multisensor_rviz2.png
+    :align: center
+    :width: 800
+    :alt: Example Multisensor RViz2 configuration
+
+.. important:: Ensure that the ``use_sim_time`` ROS2 param is set to true after running the RViz2 node.
+               This ensures that the RViz2 node is synchronized with the simulation data especially when RViz2 interpolates position of Lidar data points.
+               Set the parameter using the following command in a new ROS2-sourced terminal:
+
+               .. code-block:: bash
+
+	                ros2 param set /rviz use_sim_time true
+
+
 Summary
 =======================
 
@@ -250,5 +320,10 @@ This tutorial covered:
 Next Steps
 ^^^^^^^^^^^^^^^^^^^^^^
 Continue on to the next tutorial in our ROS2 Tutorials series, :ref:`isaac_sim_app_tutorial_ros2_publish_rate` to learn how to set publish rates for ROS2 |omnigraph_short| nodes.
+
+Further Learning
+^^^^^^^^^^^^^^^^^^^^^^
+
+- Auto-generated topic namespaces — including the special "highest ancestor wins" rule used by **ROS 2 Publish Transform Tree** — are covered in :ref:`isaac_sim_app_tutorial_ros2_auto_namespace`.
 
 

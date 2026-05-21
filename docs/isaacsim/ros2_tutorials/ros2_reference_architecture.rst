@@ -92,7 +92,7 @@ racks and shelves.
 
 
 Isaac Sim also contains a few :ref:`isaac_assets_environments` like a simple room, warehouse, hospital and office.
-Developers can leverage various tools like :ref:`isaac_sim_warehouse_creator` and  :ref:`isaac_conveyor` to build an environment for their use case.
+Developers can leverage various tools like :ref:`Warehouse Creator <isaac_sim_warehouse_creator>` and  :ref:`isaac_conveyor` to build an environment for their use case.
 People assets can also be added to the scene performing tasks like walking, sitting, standing and looking around through the :ref:`Replicator Agents <isaac_sim_app_tutorial_replicator_character>` 
 extension. 3D scenes built in other digital content creation tools can also be imported using OpenUSD.
 
