@@ -117,7 +117,6 @@ folders = [
 "isaacsim.ros2.urdf" = {}
 "isaacsim.sensors.camera.ui" = {}
 "isaacsim.sensors.camera" = {}
-"isaacsim.sensors.experimental.camera" = {}
 "isaacsim.sensors.experimental.physics" = {}
 "isaacsim.sensors.experimental.rtx" = {}
 "isaacsim.sensors.physics.examples" = {}
@@ -350,8 +349,9 @@ folders = [
 "isaacsim.ucx.core" = {}
 "isaacsim.ucx.nodes" = {}
 
-# XR
-"isaacsim.xr.input_devices" = {version = "1.0.4", exact = true}
+# srtx
+"omni.replicator.srtx" = { version = "1.1.11", exact = true }
+
 
 # XR Extensions
 "omni.kit.xr.core" = {}
@@ -360,7 +360,8 @@ folders = [
 "omni.kit.xr.ui.stage" = {}
 "omni.kit.xr.ui.window.profile" = {}
 "omni.kit.xr.ui.window.viewport" = {}
-"isaacsim.kit.xr.teleop.bridge" = {}
+"isaacsim.xr.input_devices" = {version = "1.0.4", exact = true}
+"isaacsim.kit.xr.teleop.bridge" = {version = "1.1.2", exact = true}
 
 # Content Ingestion Pipeline
 "omni.cip.core" = { version = "2.0.13", exact = true }
@@ -386,7 +387,7 @@ folders = [
 "omni.kit.xr.ui.stage" = {}
 "omni.kit.xr.ui.window.profile" = {}
 "omni.kit.xr.ui.window.viewport" = {}
-"isaacsim.kit.xr.teleop.bridge" = {}
+"isaacsim.kit.xr.teleop.bridge" = {version = "1.1.2", exact = true}
 
 # Content Ingestion Pipeline
 "omni.cip.core" = { version = "2.0.13", exact = true }
@@ -409,15 +410,15 @@ folders = [
 # Kit SDK Version: 110.1.1+production.305458.6312fa25.gl
 
 # Exact Version dependencies:
+# 	isaacsim.kit.xr.teleop.bridge-1.1.2
 # 	isaacsim.xr.input_devices-1.0.4
 # 	omni.behavior.tree.core-110.1.6
-# 	omni.cip.core-2.0.9
-# 	omni.cip.mega-2.0.7
-# 	omni.cip.mega.asset_validator-2.0.0
-# 	omni.cip.mega.occupancy_map_ui-2.0.3
-# 	omni.cip.mega.scenario_payload_ui-2.0.4
-# 	omni.cip.mega.ui-2.0.7
-# 	omni.cip.mega.waypoints_ui-2.0.2
+# 	omni.cip.core-2.0.13
+# 	omni.cip.mega-2.0.12
+# 	omni.cip.mega.occupancy_map_ui-2.0.4
+# 	omni.cip.mega.scenario_payload_ui-2.0.5
+# 	omni.cip.mega.ui-2.0.12
+# 	omni.cip.mega.waypoints_ui-2.0.4
 # 	omni.cip.pip-2.0.1
 # 	omni.cip.ui-2.0.2
 # 	omni.cip.workspace-2.0.1
@@ -430,6 +431,8 @@ folders = [
 # 	omni.physx.tensors-110.1.9
 # 	omni.physx.tests-110.1.9
 # 	omni.physx.tests.visual-110.1.9
+# 	omni.replicator.srtx-1.1.11
+# 	omni.wrapp.package_explorer-2.4.3
 
 # Version lock for all dependencies:
 [settings.app.exts]
@@ -661,7 +664,6 @@ enabled = [
 	"omni.warehouse.creator.ui-1.3.0",
 	"omni.warehouse_creator-1.0.0",
 	"omni.warp.core-1.13.0",
-	"omni.wrapp.package_explorer-2.4.3",
 	"semantics.schema.editor-2.0.2",
 	"semantics.schema.property-2.0.1",
 ]
