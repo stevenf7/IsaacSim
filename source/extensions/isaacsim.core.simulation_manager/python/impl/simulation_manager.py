@@ -262,6 +262,16 @@ class SimulationManager:
 
         cls._warmup_needed = True
 
+        for path in list(cls._physics_scenes):
+            prim = cls._physics_scenes[path].prim
+            if engine_name == "physx":
+                prim.RemoveAPI("MjcSceneAPI")
+                prim.RemoveAPI("NewtonXpbdSceneAPI")
+            else:
+                if prim.HasAPI(PhysxSchema.PhysxSceneAPI):
+                    prim.RemoveAPI(PhysxSchema.PhysxSceneAPI)
+            cls._physics_scenes[path] = cls._create_physics_scene(path)
+
     @classmethod
     def _sync_engine_state(cls) -> None:
         """Sync the _engine variable with the actual active physics engine.

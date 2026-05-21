@@ -171,10 +171,8 @@ class PhysicsScene:
             >>> physics_scene.get_dt()
             0.001
         """
-        from .simulation_manager import SimulationManager
-
-        if SimulationManager.get_active_physics_engine() == "physx":
-            physx_scene_api = prim_utils.ensure_api(self._prim, PhysxSchema.PhysxSceneAPI)
+        if self._prim.HasAPI(PhysxSchema.PhysxSceneAPI):
+            physx_scene_api = PhysxSchema.PhysxSceneAPI(self._prim)
             steps_per_second = physx_scene_api.GetTimeStepsPerSecondAttr().Get()
             return 1.0 / steps_per_second if steps_per_second else 0.0
 
@@ -201,10 +199,9 @@ class PhysicsScene:
         if dt < 0.0 or dt > 1.0:
             raise ValueError(f"The delta time (DT) must be in the range [0.0, 1.0], got {dt}")
         steps_per_second = int(1.0 / dt) if dt else 0
-        from .simulation_manager import SimulationManager
 
-        if SimulationManager.get_active_physics_engine() == "physx":
-            physx_scene_api = prim_utils.ensure_api(self._prim, PhysxSchema.PhysxSceneAPI)
+        if self._prim.HasAPI(PhysxSchema.PhysxSceneAPI):
+            physx_scene_api = PhysxSchema.PhysxSceneAPI(self._prim)
             physx_scene_api.GetTimeStepsPerSecondAttr().Set(steps_per_second)
             return
 

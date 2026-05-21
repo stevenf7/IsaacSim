@@ -81,7 +81,7 @@ void UsdNoticeListener::handle(const pxr::UsdNotice::ObjectsChanged& objectsChan
                         static pxr::TfToken s_physicsSceneType("PhysicsScene");
                         if (prim.GetTypeName() == s_physicsSceneType)
                         {
-                            this->m_physicsScenes.emplace(primPath, pxr::PhysxSchemaPhysxSceneAPI::Apply(prim));
+                            this->m_physicsScenes.emplace(primPath, pxr::PhysxSchemaPhysxSceneAPI(prim));
                             for (auto const& [key, AdditionFunc] : this->m_physicsSceneAdditionCallbacks)
                             {
                                 (void)key;

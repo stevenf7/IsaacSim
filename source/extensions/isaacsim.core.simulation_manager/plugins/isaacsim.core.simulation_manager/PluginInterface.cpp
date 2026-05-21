@@ -628,8 +628,7 @@ private:
                     pxr::UsdPrim prim = stage->GetPrimAtPath(primPath);
                     if (m_usdNoticeListener->getPhysicsScenes().count(primPath) == 0)
                     {
-                        m_usdNoticeListener->getPhysicsScenes().emplace(
-                            primPath, pxr::PhysxSchemaPhysxSceneAPI::Apply(prim));
+                        m_usdNoticeListener->getPhysicsScenes().emplace(primPath, pxr::PhysxSchemaPhysxSceneAPI(prim));
                         for (auto const& [key, AdditionFunc] : m_usdNoticeListener->getPhysicsSceneAdditionCallbacks())
                         {
                             (void)key;

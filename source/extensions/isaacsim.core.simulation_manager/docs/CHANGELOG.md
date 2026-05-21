@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.15.4] - 2026-05-21
+### Changed
+- `PhysicsScene.get_dt()` and `set_dt()` dispatch based on `PhysxSceneAPI` presence on the prim instead of querying the active engine.
+- Remove stale solver APIs (`PhysxSceneAPI`, `MjcSceneAPI`, `NewtonXpbdSceneAPI`) and re-create physics scene wrappers in `SimulationManager._on_engine_switched()` when switching engines.
+- Stop unconditionally applying `PhysxSceneAPI` in C++ `UsdNoticeListener` and `PluginInterface`; the API is now applied by the engine-specific Python wrapper (`PhysxScene`).
+
 ## [1.15.3] - 2026-05-19
 ### Fixed
 - Raise `RuntimeError` in `PhysicsScene.set_dt()`, `set_enabled_gravity()`, and `set_max_solver_iterations()` when `NewtonSceneAPI` is not applied, matching the `PhysxScene` error-handling pattern.
