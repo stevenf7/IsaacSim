@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.18.3] - 2026-05-20
+### Added
+- Added `MinimalRendering` renderer support in `SimulationApp` via the `renderer` launch config option
+- Added `minimal_shading_mode` launch config option to set `/rtx/minimal/mode` when using Minimal rendering
+
 ## [2.18.2] - 2026-05-17
 ### Fixed
 - `SimulationApp.close()` now flushes Python stdout/stderr before shutdown paths that can terminate the process through fast shutdown, preventing piped test output from being dropped.
