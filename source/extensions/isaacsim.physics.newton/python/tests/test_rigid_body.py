@@ -15,6 +15,10 @@
 
 """Unit tests for isaacsim.physics.newton.tensors rigid body view."""
 
+import os
+import shutil
+import tempfile
+
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.physics.newton
 import isaacsim.physics.newton.tensors
@@ -24,14 +28,68 @@ import omni.kit.test
 import omni.timeline
 import omni.usd
 import warp as wp
+from isaacsim.asset.importer.mjcf import MJCFImporter, MJCFImporterConfig
+from isaacsim.asset.importer.urdf import URDFImporter, URDFImporterConfig
 from isaacsim.core.simulation_manager import SimulationManager
-from pxr import Gf, UsdGeom, UsdPhysics
+from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 
 async def wait_for_stage_loading():
     """Wait until USD stage loading is complete."""
     while omni.usd.get_context().get_stage_loading_status()[2] > 0:
         await omni.kit.app.get_app().next_update_async()
+
+
+_DEFAULT_VARIANT_TO_ENGINE = {"physx": "physx", "mujoco": "newton"}
+
+
+async def step_physics_variants(
+    prim,
+    timeline,
+    *,
+    variants=("physx", "mujoco"),
+    variant_to_engine=None,
+    num_frames: int = 30,
+    settle_frames: int = 5,
+) -> None:
+    """Step the simulation through each ``Physics`` USD variant on ``prim``.
+
+    For each variant the helper sets the selection on the prim's ``Physics``
+    variant set, switches the runtime physics engine to the one that
+    consumes that variant's schemas via
+    :meth:`SimulationManager.switch_physics_engine`, plays the timeline,
+    ticks ``num_frames`` simulation frames via ``next_update_async``,
+    stops the timeline, and ticks ``settle_frames`` more frames so the
+    stop event is fully processed before the next variant switch.  The
+    assertion is implicit: nothing should crash while stepping.
+
+    Args:
+        prim: USD prim that carries the ``Physics`` variant set.
+        timeline: ``omni.timeline`` timeline interface to drive.
+        variants: Variant names to exercise in order.
+        variant_to_engine: Optional mapping from variant name to the
+            :meth:`SimulationManager.switch_physics_engine` engine name
+            (``"physx"``, ``"newton"``, or ``"remotesim"``).  Defaults to
+            ``{"physx": "physx", "mujoco": "newton"}``.
+        num_frames: Number of frames to step while the timeline is playing.
+        settle_frames: Number of frames to tick after stopping the timeline.
+    """
+    mapping = _DEFAULT_VARIANT_TO_ENGINE if variant_to_engine is None else variant_to_engine
+    for variant in variants:
+        prim.GetVariantSet("Physics").SetVariantSelection(variant)
+        await omni.kit.app.get_app().next_update_async()
+
+        engine = mapping.get(variant)
+        if engine is not None:
+            assert SimulationManager.switch_physics_engine(engine), f"Failed to switch to {engine} physics engine"
+            await omni.kit.app.get_app().next_update_async()
+
+        timeline.play()
+        for _ in range(num_frames):
+            await omni.kit.app.get_app().next_update_async()
+        timeline.stop()
+        for _ in range(settle_frames):
+            await omni.kit.app.get_app().next_update_async()
 
 
 class TestNewtonRigidBodyView(omni.kit.test.AsyncTestCase):
@@ -438,3 +496,100 @@ class TestNewtonRigidBodyView(omni.kit.test.AsyncTestCase):
 
         result = bodies.check()
         self.assertTrue(result, "check() should return True for valid rigid body view")
+
+    async def test_ur10(self):
+        """Import the UR10 URDF and run a few simulation frames in both physx and mujoco variants."""
+        # Stop the timeline started in setUp before swapping the stage to avoid
+        # stepping a stage we're about to replace.
+        self.timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Locate the UR10 URDF shipped with the URDF importer extension.
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("isaacsim.asset.importer.urdf")
+        ext_path = ext_manager.get_extension_path(ext_id)
+        urdf_path = os.path.normpath(
+            os.path.abspath(os.path.join(ext_path, "data", "urdf", "robots", "ur10", "urdf", "ur10.urdf"))
+        )
+
+        # Import the URDF to a temporary location and open it as the active stage.
+        tmpdir = tempfile.mkdtemp(prefix="ur10_test_")
+        try:
+            importer = URDFImporter()
+            config = URDFImporterConfig()
+            config.urdf_path = urdf_path
+            config.usd_path = tmpdir
+            importer.config = config
+            output_path = os.path.normpath(importer.import_urdf())
+
+            omni.usd.get_context().open_stage(output_path)
+            await wait_for_stage_loading()
+            self.stage = omni.usd.get_context().get_stage()
+
+            prim = self.stage.GetPrimAtPath("/ur10")
+            self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath, "UR10 root prim should exist after import")
+
+            # Add a minimal physics scene so the timeline has something to step against.
+            scene = UsdPhysics.Scene.Define(self.stage, "/physicsScene")
+            scene.CreateGravityDirectionAttr(Gf.Vec3f(0.0, 0.0, -1.0))
+            scene.CreateGravityMagnitudeAttr(9.81)
+
+            # Exercise both Physics USD variants; the Newton runtime consumes either schema set,
+            # the assertion here is simply that nothing crashes while stepping.
+            await step_physics_variants(prim, self.timeline)
+
+            self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(self.stage), 1.0)
+        finally:
+            # Detach the open stage from tmpdir before deleting so USD
+            # listeners don't fault on disappearing layer files.
+            self.timeline.stop()
+            await omni.usd.get_context().new_stage_async()
+            await wait_for_stage_loading()
+            shutil.rmtree(tmpdir, ignore_errors=True)
+
+    async def test_mjcf_humanoid(self):
+        """Import the humanoid MJCF and run a few simulation frames in both physx and mujoco variants."""
+        # Stop the timeline started in setUp before swapping the stage to avoid
+        # stepping a stage we're about to replace.
+        self.timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Locate the humanoid MJCF shipped with the MJCF importer extension.
+        ext_manager = omni.kit.app.get_app().get_extension_manager()
+        ext_id = ext_manager.get_enabled_extension_id("isaacsim.asset.importer.mjcf")
+        ext_path = ext_manager.get_extension_path(ext_id)
+        mjcf_path = os.path.normpath(os.path.abspath(os.path.join(ext_path, "data", "mjcf", "nv_humanoid.xml")))
+
+        # Import the MJCF to a temporary location and open it as the active stage.
+        tmpdir = tempfile.mkdtemp(prefix="humanoid_test_")
+        try:
+            importer = MJCFImporter()
+            config = MJCFImporterConfig(mjcf_path=mjcf_path)
+            config.usd_path = tmpdir
+            importer.config = config
+            output_path = os.path.normpath(importer.import_mjcf())
+
+            omni.usd.get_context().open_stage(output_path)
+            await wait_for_stage_loading()
+            self.stage = omni.usd.get_context().get_stage()
+
+            prim = self.stage.GetPrimAtPath("/humanoid")
+            self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath, "Humanoid root prim should exist after import")
+
+            # Add a minimal physics scene so the timeline has something to step against.
+            scene = UsdPhysics.Scene.Define(self.stage, "/physicsScene")
+            scene.CreateGravityDirectionAttr(Gf.Vec3f(0.0, 0.0, -1.0))
+            scene.CreateGravityMagnitudeAttr(9.81)
+
+            # Exercise both Physics USD variants; the Newton runtime consumes either schema set,
+            # the assertion here is simply that nothing crashes while stepping.
+            await step_physics_variants(prim, self.timeline)
+
+            self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(self.stage), 1.0)
+        finally:
+            # Detach the open stage from tmpdir before deleting so USD
+            # listeners don't fault on disappearing layer files.
+            self.timeline.stop()
+            await omni.usd.get_context().new_stage_async()
+            await wait_for_stage_loading()
+            shutil.rmtree(tmpdir, ignore_errors=True)

@@ -92,7 +92,8 @@ class MJCFImporter:
             Path to the generated USD file.
 
         Raises:
-            ValueError: If the MJCF path is not configured.
+            ValueError: If the MJCF path is not configured or if the file
+                does not have a ``.xml`` extension.
             FileNotFoundError: If the MJCF file does not exist at the given path.
 
         Example:
@@ -116,7 +117,7 @@ class MJCFImporter:
         if not os.path.exists(mjcf_path):
             raise FileNotFoundError(f"MJCF file does not exist at path: {mjcf_path}")
 
-        robot_name = os.path.basename(mjcf_path).split(".")[0]
+        robot_name = importer_utils.parse_robot_name(mjcf_path, expected_extension=".xml")
 
         if self.config.usd_path is None:
             self.config.usd_path = os.path.normpath(os.path.dirname(mjcf_path))
@@ -150,11 +151,12 @@ class MJCFImporter:
             if not self.stage:
                 raise ValueError(f"Failed to open usdex stage at path: {asset.path}")
 
-            importer_utils.add_rigid_body_schemas(self.stage)
             importer_utils.add_joint_schemas(self.stage)
 
-            if self.config.fix_base:
+            if self.config.fix_base is True:
                 asset_utils.apply_fix_base(self.stage)
+            elif self.config.fix_base is False:
+                asset_utils.apply_floating_base(self.stage)
 
             if self.config.link_density:
                 asset_utils.apply_link_density(self.stage, self.config.link_density)
@@ -207,6 +209,9 @@ class MJCFImporter:
                     profile_json_path=DEFAULT_PROFILE_PATH,
                     log_path=log_path,
                 )
+                if self.config.run_multi_physics_conversion:
+                    physx_layer_path = os.path.normpath(os.path.join(output_dir, "payloads", "Physics", "physx.usda"))
+                    mjc_to_physx_conversion_utils.combine_overconstrained_joints_in_physx_layer(physx_layer_path)
             else:
                 os.makedirs(output_dir, exist_ok=True)
                 stage_utils.save_stage(self.stage, final_path)

@@ -90,6 +90,71 @@ async def find_widget_with_retry(query: str, max_frames: int = _DEFAULT_MAX_WAIT
     return result
 
 
+async def scroll_to_widget(widget_ref: Any, settle_frames: int = 3) -> bool:
+    """Scroll the enclosing ``ui.ScrollingFrame`` so ``widget_ref`` is visible.
+
+    Walks the window tree containing ``widget_ref`` to find the nearest
+    ``ui.ScrollingFrame`` ancestor, then sets ``scroll_y`` so the widget lies
+    inside the visible viewport. Use this before ``click()`` when a widget may
+    have been pushed off-screen by sibling content (e.g. a dynamic list
+    growing above the target).
+
+    Args:
+        widget_ref: A ``WidgetRef`` (e.g. returned by :func:`find_widget_with_retry`).
+        settle_frames: Number of frames to wait after scrolling so the layout settles.
+
+    Returns:
+        True if the widget was scrolled into view, False if no enclosing
+        ``ScrollingFrame`` was found.
+    """
+    target = widget_ref.widget
+    window = getattr(widget_ref, "window", None)
+    if window is None or window.frame is None:
+        return False
+
+    def _find_ancestors(root: ui.Widget, needle: ui.Widget, trail: list) -> list | None:
+        for child in ui.Inspector.get_children(root):
+            if child is None:
+                continue
+            if child is needle:
+                return trail
+            if isinstance(child, (ui.Container, ui.TreeView)):
+                found = _find_ancestors(child, needle, trail + [child])
+                if found is not None:
+                    return found
+        return None
+
+    ancestors = _find_ancestors(window.frame, target, [window.frame])
+    if not ancestors:
+        return False
+
+    scrolling_frame = next((a for a in reversed(ancestors) if isinstance(a, ui.ScrollingFrame)), None)
+    if scrolling_frame is None:
+        return False
+
+    # Use widget vs frame screen positions to compute the needed scroll
+    # offset, then clamp into ``[0, scroll_y_max]``. Falling back to
+    # ``scroll_y_max`` covers cases where the widget is below the viewport
+    # but layout hasn't reported usable coordinates yet.
+    widget_top = target.screen_position_y
+    widget_bottom = widget_top + target.computed_height
+    frame_top = scrolling_frame.screen_position_y
+    frame_bottom = frame_top + scrolling_frame.computed_height
+
+    if widget_bottom > frame_bottom:
+        delta = widget_bottom - frame_bottom
+        scrolling_frame.scroll_y = min(scrolling_frame.scroll_y + delta, scrolling_frame.scroll_y_max)
+    elif widget_top < frame_top:
+        delta = frame_top - widget_top
+        scrolling_frame.scroll_y = max(scrolling_frame.scroll_y - delta, 0)
+    else:
+        return True
+
+    for _ in range(settle_frames):
+        await omni.kit.app.get_app().next_update_async()
+    return True
+
+
 async def wait_for_widget_enabled(widget: Any, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES) -> bool:
     """Poll until ``widget.widget.enabled`` becomes True.
 

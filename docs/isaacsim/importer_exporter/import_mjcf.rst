@@ -84,7 +84,7 @@ Do the exact same thing with Python standalone instead.
         - ``--collision-from-visuals``: Generate collision geometry from visuals.
         - ``--collision-type``: Collision geometry type (e.g. "Convex Hull", "Convex Decomposition", "Bounding Sphere", "Bounding Cube").
         - ``--allow-self-collision``: Allow self-collision for the imported asset.
-        - ``--fix-base``: Add a fixed joint from the world to the root rigid-body link.
+        - ``--fix-base`` / ``--no-fix-base``: Tri-state base-type toggle. Pass ``--fix-base`` to anchor the robot to the world via a fixed joint. Pass ``--no-fix-base`` to strip any existing world-to-root fixed joint so the robot is floating-base. Omit the flag entirely to leave the source asset's base authoring untouched (default).
         - ``--link-density``: Default density (kg/m^3) for rigid body links with no explicit mass.
         - ``--override-gain-type``: MuJoCo actuator gain type (e.g. ``"fixed"``).
         - ``--override-bias-type``: MuJoCo actuator bias type (e.g. ``"affine"``).
@@ -110,9 +110,12 @@ In MuJoCo, a joint is defined as a degree of freedom, enabling multiple joints t
 an x-axis revolute joint and a y-axis revolute joint can be combined together to create a 2D x-y axis revolute joint.
 This is not supported in USD, if two revolute joints between two bodies are defined, the system would form a kinematic loop, and become overconstrained.
 
-The current solution is to place a dummy link between the two bodies, and create a joint between the dummy link and the other body in the MJCF file.
-For example, if two revolute joints are defined between the body and the ground, a dummy link can be placed between the body and the ground, and a joint 
-can be created between the dummy link and the ground and a joint between the dummy link and the body. This will create a 2D x-y axis revolute joint.
+The MJCF importer will automatically convert multi-DOF joints between the same body pair into a single D6 joint in the PhysX variant, the physics and mujoco/newton
+variants will keep the original per-DOF joints. Because of this, mujoco and physx assets cannot transfer directly between each other.
+
+If you want to retain every DOF and avoid this conversion, you can edit the MJCF to insert a zero-mass dummy link between the parent and child and split the multi-DOF 
+joint into one single-DOF joint per intermediate edge. For example, two revolute joints between body A and body B become: a revolute between A and a dummy link, plus 
+a revolute between the dummy link and B.
 
 Summary
 =======================

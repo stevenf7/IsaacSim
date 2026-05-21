@@ -99,7 +99,8 @@ class URDFImporter:
             Path to the generated USD file.
 
         Raises:
-            ValueError: If the URDF path is not configured.
+            ValueError: If the URDF path is not configured or if the file
+                does not have a ``.urdf`` extension.
 
         Example:
 
@@ -120,7 +121,7 @@ class URDFImporter:
 
         urdf_path = os.path.normpath(self.config.urdf_path)
         source_urdf_dir = os.path.dirname(urdf_path)
-        robot_name = os.path.basename(urdf_path).split(".")[0]
+        robot_name = importer_utils.parse_robot_name(urdf_path, expected_extension=".urdf")
 
         if self.config.usd_path is None:
             self.config.usd_path = os.path.normpath(source_urdf_dir)
@@ -150,6 +151,7 @@ class URDFImporter:
             if self.converter is None:
                 urdf_usd_converter = importlib.import_module("urdf_usd_converter")
                 self.converter = urdf_usd_converter.Converter(layer_structure=False, scene=False)
+            self.converter.params.ros_packages = list(self.config.ros_package_paths)
             asset: Sdf.AssetPath = self.converter.convert(urdf_path, usdex_path)
 
             # Now open the flattened stage in the USD context
@@ -171,7 +173,6 @@ class URDFImporter:
                     _logger.info(f"Reconstructed {n} source joint types from breadcrumbs")
 
             importer_utils.remove_custom_scopes(self.stage)
-            importer_utils.add_rigid_body_schemas(self.stage)
             importer_utils.add_joint_schemas(self.stage)
 
             drive_breadcrumbs = parse_source_drive_breadcrumbs(urdf_path)
@@ -179,8 +180,10 @@ class URDFImporter:
                 n = reconstruct_source_drives(self.stage, drive_breadcrumbs)
                 if n:
                     _logger.info(f"Reconstructed {n} joint drive configurations from breadcrumbs")
-            if self.config.fix_base:
+            if self.config.fix_base is True:
                 asset_utils.apply_fix_base(self.stage)
+            elif self.config.fix_base is False:
+                asset_utils.apply_floating_base(self.stage)
 
             if self.config.link_density:
                 asset_utils.apply_link_density(self.stage, self.config.link_density)

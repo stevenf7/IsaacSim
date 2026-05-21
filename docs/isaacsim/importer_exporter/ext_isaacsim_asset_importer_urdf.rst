@@ -84,6 +84,14 @@ Import Options
     - **Robot Type**: Sets the ``isaac:robotType`` attribute on the imported robot's schema. Choose from: Default, End Effector,
       Manipulator, Humanoid, Wheeled, Holonomic, Quadruped, Mobile Manipulators, or Aerial.
 
+    - **Base Type**: Tri-state control of how the robot's root link is anchored.
+
+        - **Source** (default): leaves the source URDF authoring untouched.
+        - **Fixed**: adds a world-to-root fixed joint and relocates ``ArticulationRootAPI`` to the correct ancestor prim.
+        - **Mobile**: removes any existing world-to-root fixed joint so the robot is free to translate and rotate.
+
+      Maps directly onto the ``fix_base: bool | None`` field on :py:class:`URDFImporterConfig` (``None`` / ``True`` / ``False``).
+
     - **Allow Self-Collision**: When enabled, allows the robot model to collide with itself. This can be useful for certain simulation
       scenarios but may cause instability if collision meshes between links are self-intersecting.
 

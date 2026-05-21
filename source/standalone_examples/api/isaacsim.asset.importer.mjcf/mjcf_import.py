@@ -58,7 +58,7 @@ parser.add_argument(
 parser.add_argument(
     "--import-scene",
     action=argparse.BooleanOptionalAction,
-    default=True,
+    default=None,
     help="Import the MJCF simulation settings along with the model.",
 )
 parser.add_argument(
@@ -107,7 +107,11 @@ parser.add_argument(
     "--fix-base",
     action=argparse.BooleanOptionalAction,
     default=None,
-    help="Add a fixed joint from the world to the root rigid-body link.",
+    help=(
+        "Tri-state base-type toggle. --fix-base anchors the robot to the world via a fixed joint; "
+        "--no-fix-base strips any existing world-to-root fixed joint so the robot is floating-base; "
+        "omitting the flag leaves the source asset's base authoring untouched."
+    ),
 )
 parser.add_argument(
     "--link-density",
@@ -142,13 +146,13 @@ parser.add_argument(
 parser.add_argument(
     "--run-asset-transformer",
     action=argparse.BooleanOptionalAction,
-    default=True,
+    default=None,
     help="Run asset transformer after conversion.",
 )
 parser.add_argument(
     "--run-multi-physics-conversion",
     action=argparse.BooleanOptionalAction,
-    default=True,
+    default=None,
     help="Run multi-physics conversion after conversion.",
 )
 args, unknown = parser.parse_known_args()
@@ -258,24 +262,30 @@ def main():
         succeeded, failed = [], []
         for mjcf_file in mjcf_files:
             print(f"\nImporting: {mjcf_file}")
-            import_config = MJCFImporterConfig()
-            import_config.mjcf_path = mjcf_file
-            _apply_cli_overrides(import_config, usd_path_override=usd_paths[mjcf_file])
+            try:
+                import_config = MJCFImporterConfig()
+                import_config.mjcf_path = mjcf_file
+                _apply_cli_overrides(import_config, usd_path_override=usd_paths[mjcf_file])
 
-            importer = MJCFImporter(import_config)
-            output_usd = importer.import_mjcf()
+                importer = MJCFImporter(import_config)
+                output_usd = importer.import_mjcf()
+            except Exception as exc:
+                print(f"Failed to import {mjcf_file}: {exc!r}")
+                failed.append((mjcf_file, repr(exc)))
+                continue
+
             if output_usd:
                 print(f"Success: {output_usd}")
                 succeeded.append(output_usd)
             else:
                 print(f"Failed to import: {mjcf_file}")
-                failed.append(mjcf_file)
+                failed.append((mjcf_file, "importer returned no output path"))
 
         print(f"\nImport complete - {len(succeeded)} succeeded, {len(failed)} failed.")
         if failed:
             print("Failed files:")
-            for f in failed:
-                print(f"  - {f}")
+            for path, reason in failed:
+                print(f"  - {path}: {reason}")
 
         simulation_app.update()
         simulation_app.update()

@@ -24,6 +24,15 @@ from collections.abc import Callable
 
 from pxr import Sdf, Usd, UsdPhysics, Vt
 
+__all__ = [
+    "apply_fix_base",
+    "apply_floating_base",
+    "fix_articulation_root_for_fixed_base",
+    "apply_link_density",
+    "apply_joint_drives",
+    "apply_mjc_actuator_gains",
+]
+
 _logger = logging.getLogger(__name__)
 
 
@@ -178,6 +187,51 @@ def apply_fix_base(stage: Usd.Stage) -> None:
         _logger.info("Relocated ArticulationRootAPI on %d rigid body(ies).", relocated)
 
 
+def apply_floating_base(stage: Usd.Stage) -> None:
+    """Remove any fixed joint anchoring the articulation root link to the world.
+
+    The inverse of :func:`apply_fix_base`. Drops every ``FixedJoint`` whose
+    body pair is ``(world | non-rigid prim, articulation root link)`` (in
+    either order), turning a fixed-base robot into a floating-base one.
+    Internal fixed joints between two rigid bodies are left alone.
+
+    Args:
+        stage: The USD stage to modify.
+    """
+    root_link = _find_articulation_root_link(stage)
+    if root_link is None:
+        _logger.warning("Cannot apply floating_base - no rigid body link found.")
+        return
+
+    root_path = str(root_link.GetPath())
+    joints_to_remove: list[Sdf.Path] = []
+
+    for joint in [p for p in stage.Traverse() if p.IsA(UsdPhysics.FixedJoint)]:
+        body0 = _get_joint_body(joint, 0)
+        body1 = _get_joint_body(joint, 1)
+
+        if body1 and str(body1) == root_path:
+            other_body = body0
+        elif body0 and str(body0) == root_path:
+            other_body = body1
+        else:
+            continue
+
+        if other_body is None:
+            joints_to_remove.append(joint.GetPath())
+            continue
+        other_prim = stage.GetPrimAtPath(other_body)
+        if other_prim is None or not other_prim.IsValid() or not other_prim.HasAPI(UsdPhysics.RigidBodyAPI):
+            joints_to_remove.append(joint.GetPath())
+
+    for path in joints_to_remove:
+        _logger.info("Removing world-anchoring fixed joint %s for floating base.", path)
+        stage.RemovePrim(path)
+
+    if not joints_to_remove:
+        _logger.info("No world-anchoring fixed joint found on %s - already floating-base.", root_path)
+
+
 def fix_articulation_root_for_fixed_base(stage: Usd.Stage) -> int:
     """Move ArticulationRootAPI from rigid bodies to their parent prims.
 
@@ -299,8 +353,10 @@ def apply_link_density(stage: Usd.Stage, density: float) -> None:
         density: The density value in kg/m^3.
     """
     for prim in stage.Traverse():
-        if not prim.HasAPI(UsdPhysics.MassAPI):
+        if not (prim.HasAPI(UsdPhysics.RigidBodyAPI) or prim.HasAPI("PhysicsRigidBodyAPI")):
             continue
+        if not prim.HasAPI(UsdPhysics.MassAPI):
+            UsdPhysics.MassAPI.Apply(prim)
         mass_api = UsdPhysics.MassAPI(prim)
         mass_attr = mass_api.GetMassAttr()
         if mass_attr and mass_attr.HasValue() and mass_attr.Get() > 0.0:

@@ -229,9 +229,15 @@ class TestImporterUI(MenuUITestCase):
         ros_package_table_path_field.model.set_value("test_path")
         await ui_test.human_delay()
 
+        # As ROS package rows and option widgets get added, lower controls
+        # are pushed below the file picker's scrolling viewport. Always
+        # scroll the target into view before clicking so the click
+        # coordinate lands on the intended widget instead of bleeding into
+        # whatever sits at the bottom of the panel (e.g. the Import button).
         add_ros_package_row_btn = await self.find_widget_with_retry(
             "Select File//Frame/**/Button[*].identifier=='urdf_add_ros_package_row'"
         )
+        await self.scroll_to_widget(add_ros_package_row_btn)
         await add_ros_package_row_btn.click()
         await ui_test.human_delay()
 
@@ -250,6 +256,7 @@ class TestImporterUI(MenuUITestCase):
         collision_from_visuals_btn = await self.find_widget_with_retry(
             "Select File//Frame/**/CheckBox[*].identifier=='urdf_collision_from_visuals'"
         )
+        await self.scroll_to_widget(collision_from_visuals_btn)
         await collision_from_visuals_btn.click()
         await ui_test.human_delay()
 
@@ -262,18 +269,27 @@ class TestImporterUI(MenuUITestCase):
         allow_self_collision_btn = await self.find_widget_with_retry(
             "Select File//Frame/**/CheckBox[*].identifier=='urdf_allow_self_collision'"
         )
+        await self.scroll_to_widget(allow_self_collision_btn)
         await allow_self_collision_btn.click()
+        await ui_test.human_delay()
+
+        base_type_dropdown = await self.find_widget_with_retry(
+            "Select File//Frame/**/ComboBox[*].identifier=='urdf_base_type'"
+        )
+        base_type_dropdown.model.get_item_value_model(None, 0).set_value(1)
         await ui_test.human_delay()
 
         merge_mesh_btn = await self.find_widget_with_retry(
             "Select File//Frame/**/CheckBox[*].identifier=='urdf_merge_mesh'"
         )
+        await self.scroll_to_widget(merge_mesh_btn)
         await merge_mesh_btn.click()
         await ui_test.human_delay()
 
         debug_mode_btn = await self.find_widget_with_retry(
             "Select File//Frame/**/CheckBox[*].identifier=='urdf_debug_mode'"
         )
+        await self.scroll_to_widget(debug_mode_btn)
         await debug_mode_btn.click()
         await ui_test.human_delay()
 
@@ -296,6 +312,7 @@ class TestImporterUI(MenuUITestCase):
         self.assertEqual(config.collision_from_visuals, True)
         self.assertEqual(config.collision_type, "Bounding Sphere")
         self.assertEqual(config.allow_self_collision, True)
+        self.assertEqual(config.fix_base, True)
         self.assertEqual(
             config.ros_package_paths,
             [{"name": "test_package", "path": "test_path"}, {"name": "test_package_row_1", "path": "test_path_row_1"}],

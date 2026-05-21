@@ -13,6 +13,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .impl import asset_utils, importer_utils, merge_mesh_utils, physx_types, stage_utils
+"""Public API for the asset importer utilities.
 
-__all__ = ["asset_utils", "importer_utils", "merge_mesh_utils", "physx_types", "stage_utils"]
+Re-exports the contents of every implementation submodule so callers can use
+short top-level imports (matching the documented ``python_api.md`` surface)::
+
+    from isaacsim.asset.importer.utils import collision_from_visuals, parse_robot_name
+
+The implementation submodules remain accessible via their original names::
+
+    from isaacsim.asset.importer.utils import importer_utils
+    importer_utils.collision_from_visuals(...)
+"""
+
+from .impl import asset_utils, importer_utils, merge_mesh_utils, physx_types, stage_utils
+from .impl.asset_utils import *  # noqa: F401,F403
+from .impl.importer_utils import *  # noqa: F401,F403
+from .impl.merge_mesh_utils import *  # noqa: F401,F403
+from .impl.physx_types import *  # noqa: F401,F403
+from .impl.stage_utils import *  # noqa: F401,F403
+
+# Submodule names re-exported for ``isaacsim.asset.importer.utils.<submodule>`` access.
+_SUBMODULES = ("asset_utils", "importer_utils", "merge_mesh_utils", "physx_types", "stage_utils")
+
+# De-duplicated union of every submodule's ``__all__`` plus the submodule names themselves.
+__all__ = list(
+    dict.fromkeys(
+        [
+            *_SUBMODULES,
+            *asset_utils.__all__,
+            *importer_utils.__all__,
+            *merge_mesh_utils.__all__,
+            *physx_types.__all__,
+            *stage_utils.__all__,
+        ]
+    )
+)

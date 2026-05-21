@@ -114,7 +114,7 @@ Getting Started
                 - ``--collision-from-visuals``: Generate collision geometry from visuals.
                 - ``--collision-type``: Collision geometry type (e.g. "Convex Hull", "Convex Decomposition", "Bounding Sphere", "Bounding Cube").
                 - ``--allow-self-collision``: Allow self-collision for the imported asset.
-                - ``--fix-base``: Add a fixed joint from the world to the root rigid-body link.
+                - ``--fix-base`` / ``--no-fix-base``: Tri-state base-type toggle. Pass ``--fix-base`` to anchor the robot to the world via a fixed joint. Pass ``--no-fix-base`` to strip any existing world-to-root fixed joint so the robot is floating-base. Omit the flag entirely to leave the source asset's base authoring untouched (default).
                 - ``--link-density``: Default density (kg/m^3) for rigid body links with no explicit mass.
                 - ``--joint-drive-type``: Joint drive type applied to all joints (``force`` or ``acceleration``).
                 - ``--joint-target-type``: Joint target type applied to all joints (``none``, ``position``, or ``velocity``).

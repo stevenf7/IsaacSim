@@ -238,11 +238,29 @@ class TestAssetUtils(omni.kit.test.AsyncTestCase):
         if has_value:
             self.assertNotAlmostEqual(density_attr.Get(), 1000.0)
 
-    async def test_density_no_massapi_is_noop(self) -> None:
-        """Links without MassAPI should be left untouched."""
+    async def test_density_applies_mass_api_when_missing(self) -> None:
+        """Rigid body links without MassAPI should have it applied and the
+        density set in a single pass.
+        """
         stage = _make_stage()
-        _add_rigid_link(stage, "/robot/link")
+        link = _add_rigid_link(stage, "/robot/link")
+        # No explicit MassAPI applied here.
+        self.assertFalse(link.HasAPI(UsdPhysics.MassAPI))
+
         asset_utils.apply_link_density(stage, 500.0)
+
+        self.assertTrue(link.HasAPI(UsdPhysics.MassAPI))
+        density_attr = UsdPhysics.MassAPI(link).GetDensityAttr()
+        self.assertTrue(density_attr.IsValid())
+        self.assertAlmostEqual(density_attr.Get(), 500.0)
+
+    async def test_density_skips_non_rigid_body_prims(self) -> None:
+        """Prims without RigidBodyAPI should never get MassAPI added."""
+        stage = _make_stage()
+        prim = stage.DefinePrim("/robot/decoration", "Xform")
+        # No RigidBodyAPI -> apply_link_density must not touch it.
+        asset_utils.apply_link_density(stage, 500.0)
+        self.assertFalse(prim.HasAPI(UsdPhysics.MassAPI))
 
     async def test_density_multiple_links(self) -> None:
         """Only massless links should receive density when multiple links exist."""
@@ -339,6 +357,78 @@ class TestAssetUtils(omni.kit.test.AsyncTestCase):
         """apply_fix_base should not crash when no rigid body exists."""
         stage = _make_stage()
         asset_utils.apply_fix_base(stage)
+
+    # -- apply_floating_base -------------------------------------------------
+
+    async def test_floating_base_removes_world_anchor(self) -> None:
+        """A FixedJoint with body0 unset (world) anchored to root must be removed."""
+        stage = _make_stage()
+        _add_rigid_link(stage, "/robot/base")
+        _add_fixed_joint(stage, "/robot/world_fj", None, "/robot/base")
+
+        asset_utils.apply_floating_base(stage)
+
+        self.assertFalse(stage.GetPrimAtPath("/robot/world_fj").IsValid())
+
+    async def test_floating_base_removes_anchor_to_non_rigid(self) -> None:
+        """A FixedJoint anchoring root to a non-rigid Xform must be removed."""
+        stage = _make_stage()
+        _add_rigid_link(stage, "/robot/base")
+        _add_fixed_joint(stage, "/robot/scene_fj", "/robot", "/robot/base")
+
+        asset_utils.apply_floating_base(stage)
+
+        self.assertFalse(stage.GetPrimAtPath("/robot/scene_fj").IsValid())
+
+    async def test_floating_base_removes_anchor_with_root_on_body0(self) -> None:
+        """Root on body0 side with no body1 must also be removed."""
+        stage = _make_stage()
+        root = _add_rigid_link(stage, "/robot/base")
+        fj = UsdPhysics.FixedJoint.Define(stage, "/robot/world_fj")
+        fj.CreateBody0Rel().SetTargets([root.GetPath()])
+
+        asset_utils.apply_floating_base(stage)
+
+        self.assertFalse(stage.GetPrimAtPath("/robot/world_fj").IsValid())
+
+    async def test_floating_base_preserves_internal_fixed_joints(self) -> None:
+        """A FixedJoint between two rigid bodies must NOT be removed."""
+        stage = _make_stage()
+        _add_rigid_link(stage, "/robot/base")
+        _add_rigid_link(stage, "/robot/sensor_mount")
+        _add_fixed_joint(stage, "/robot/mount_fj", "/robot/base", "/robot/sensor_mount")
+
+        asset_utils.apply_floating_base(stage)
+
+        self.assertTrue(stage.GetPrimAtPath("/robot/mount_fj").IsValid())
+
+    async def test_floating_base_preserves_other_joint_types(self) -> None:
+        """Non-FixedJoint joints must be untouched even when anchored to root."""
+        stage = _make_stage()
+        _add_rigid_link(stage, "/robot/base")
+        _add_rigid_link(stage, "/robot/link1")
+        _add_revolute_joint(stage, "/robot/rj", "/robot/base", "/robot/link1")
+
+        asset_utils.apply_floating_base(stage)
+
+        self.assertTrue(stage.GetPrimAtPath("/robot/rj").IsValid())
+
+    async def test_floating_base_no_rigid_body(self) -> None:
+        """apply_floating_base should not crash when no rigid body exists."""
+        stage = _make_stage()
+        asset_utils.apply_floating_base(stage)
+
+    async def test_floating_base_no_anchor_present(self) -> None:
+        """When there's no world-anchoring fixed joint, the stage stays untouched."""
+        stage = _make_stage()
+        _add_rigid_link(stage, "/robot/base")
+        _add_rigid_link(stage, "/robot/link1")
+        _add_revolute_joint(stage, "/robot/rj", "/robot/base", "/robot/link1")
+
+        before = {p.GetPath().pathString for p in stage.Traverse()}
+        asset_utils.apply_floating_base(stage)
+        after = {p.GetPath().pathString for p in stage.Traverse()}
+        self.assertEqual(before, after)
 
     async def test_fix_base_targets_articulation_root(self) -> None:
         """The created FixedJoint should target the articulation root link."""

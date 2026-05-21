@@ -34,6 +34,7 @@ from .menu_utils import (
 from .menu_utils import find_enabled_widget_with_retry as _find_enabled_widget_with_retry
 from .menu_utils import find_widget_with_retry as _find_widget_with_retry
 from .menu_utils import menu_click_with_retry as _menu_click_with_retry
+from .menu_utils import scroll_to_widget as _scroll_to_widget
 from .menu_utils import wait_for_widget_enabled as _wait_for_widget_enabled
 
 
@@ -199,6 +200,22 @@ class MenuUITestCase(OmniUiTest):
             TimeoutError: If the widget is not found and enabled within *max_frames*.
         """
         return await _find_enabled_widget_with_retry(query, max_frames=max_frames, parent=parent)
+
+    async def scroll_to_widget(self, widget_ref: Any, settle_frames: int = 3) -> bool:
+        """Scroll the enclosing ``ScrollingFrame`` so ``widget_ref`` is visible.
+
+        Convenience wrapper around :func:`~isaacsim.test.utils.menu_utils.scroll_to_widget`.
+
+        Args:
+            widget_ref: A ``WidgetRef`` returned by ``ui_test.find`` /
+                :meth:`find_widget_with_retry`.
+            settle_frames: Number of frames to wait after scrolling.
+
+        Returns:
+            True if the widget was scrolled into view, False if no enclosing
+            ``ScrollingFrame`` was found.
+        """
+        return await _scroll_to_widget(widget_ref, settle_frames=settle_frames)
 
     async def wait_for_widget_enabled(self, widget: Any, max_frames: int = _DEFAULT_MAX_WAIT_FRAMES) -> bool:
         """Poll until ``widget.widget.enabled`` becomes True.

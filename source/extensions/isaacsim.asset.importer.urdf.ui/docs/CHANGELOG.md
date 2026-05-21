@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.2] - 2026-05-18
+### Added
+- "Base Type" dropdown in the Options frame with three choices (Source / Fixed / Mobile) that drives the new tri-state `URDFImporterConfig.fix_base` field.
+
 ## [1.4.1] - 2026-04-22
 ### Fixed
 - Multi-select import: build an independent `OptionWidget` / config / models per selected URDF file so edits to one file's panel no longer bleed into another's settings or ROS package table

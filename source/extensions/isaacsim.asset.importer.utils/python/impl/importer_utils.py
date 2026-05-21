@@ -33,6 +33,7 @@ __all__ = [
     "USD_GEOMETRY_TYPES",
     "MESH_APPROXIMATION_MAP",
     "PHYSICS_AXIS_MAP",
+    "ROBOT_TYPE_TOKENS",
     "collision_from_visuals",
     "enable_self_collision",
     "run_asset_transformer_profile",
@@ -41,6 +42,8 @@ __all__ = [
     "add_rigid_body_schemas",
     "remove_custom_scopes",
     "resolve_unique_path",
+    "parse_robot_name",
+    "create_robot_schema",
 ]
 
 _logger = logging.getLogger(__name__)
@@ -99,6 +102,65 @@ def resolve_unique_path(path: str, *, is_file: bool | None = None) -> str:
         if not _collides(candidate):
             return candidate
     raise RuntimeError(f"Could not find a unique path after 1000 attempts for: {path}")
+
+
+def parse_robot_name(path: str, *, expected_extension: str) -> str:
+    """Derive a robot name from a URDF/MJCF file path and validate its extension.
+
+    The robot name is the file's basename with its trailing extension
+    removed.  Hidden-file style names (e.g. ``.franka.urdf``) are handled
+    by stripping leading dots so the result is non-empty.  When the stem
+    still contains ``.`` characters (e.g. ``franka.v2.urdf``) a warning
+    is emitted because the stem is used verbatim as a USD prim / file
+    name and dots there can cause downstream issues.
+
+    Args:
+        path: Path to the URDF or MJCF source file.
+        expected_extension: Required extension including the leading dot
+            (e.g. ``".urdf"`` or ``".xml"``).  Matched case-insensitively.
+
+    Returns:
+        The derived robot name (never empty).
+
+    Raises:
+        ValueError: If the file does not end with ``expected_extension``.
+
+    Example:
+
+    .. code-block:: python
+
+        >>> from isaacsim.asset.importer.utils import parse_robot_name
+        >>> parse_robot_name("/tmp/franka.urdf", expected_extension=".urdf")
+        'franka'
+        >>> parse_robot_name("/tmp/.franka.urdf", expected_extension=".urdf")
+        'franka'
+    """
+    if not expected_extension.startswith("."):
+        raise ValueError(f"expected_extension must start with '.', got: {expected_extension!r}")
+
+    basename = os.path.basename(path)
+    stem, ext = os.path.splitext(basename)
+
+    if ext.lower() != expected_extension.lower():
+        raise ValueError(
+            f"Expected file with extension '{expected_extension}', got '{ext or '<no extension>'}' for path: {path}"
+        )
+
+    # Strip leading dots so hidden-file names (e.g. ".franka.urdf") still yield a usable robot name.
+    # The result is always non-empty here: ``os.path.splitext`` only returns a non-empty ``ext`` when
+    # the basename has at least one non-dot character before the trailing extension.
+    stem = stem.lstrip(".")
+
+    if "." in stem:
+        _logger.warning(
+            "Robot name '%s' derived from '%s' contains '.' characters; "
+            "USD prim and file names with dots may cause downstream issues. "
+            "Consider renaming the source file.",
+            stem,
+            path,
+        )
+
+    return stem
 
 
 # Mapping from UI-friendly labels to mesh collision approximation tokens.
@@ -349,7 +411,9 @@ def add_joint_schemas(stage: Usd.Stage) -> None:
 
 
 def add_rigid_body_schemas(stage: Usd.Stage) -> None:
-    """Apply rigid body-related physics schemas to all rigid body prims.
+    """Apply :class:`UsdPhysics.MassAPI` to every rigid body that lacks it.
+
+    This function is deprecated, and will be removed in a future version. Use `asset_utils.apply_link_density()` instead.
 
     Args:
         stage: USD stage to update with rigid body schemas.

@@ -165,9 +165,10 @@ class TestMJCF(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(front_left_leg_joint.GetAttribute("physics:upperLimit").Get(), 40)
         self.assertAlmostEqual(front_left_leg_joint.GetAttribute("physics:lowerLimit").Get(), -40)
 
+        # note: mass api is not automatically applied to the leg, so we expect None
         front_left_leg = stage.GetPrimAtPath("/ant/Geometry/torso/front_left_leg")
-        self.assertAlmostEqual(front_left_leg.GetAttribute("physics:diagonalInertia").Get()[0], 0.0)
-        self.assertAlmostEqual(front_left_leg.GetAttribute("physics:mass").Get(), 0.0)
+        self.assertAlmostEqual(front_left_leg.GetAttribute("physics:diagonalInertia").Get(), None)
+        self.assertAlmostEqual(front_left_leg.GetAttribute("physics:mass").Get(), None)
 
         front_left_foot_joint = stage.GetPrimAtPath("/ant/Geometry/torso/front_left_leg/front_left_foot/ankle_1")
         self.assertNotEqual(front_left_foot_joint.GetPath(), Sdf.Path.emptyPath)
@@ -176,8 +177,9 @@ class TestMJCF(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(front_left_foot_joint.GetAttribute("physics:lowerLimit").Get(), 30)
 
         front_left_foot = stage.GetPrimAtPath("/ant/Geometry/torso/front_left_leg/front_left_foot")
-        self.assertAlmostEqual(front_left_foot.GetAttribute("physics:diagonalInertia").Get()[0], 0.0)
-        self.assertAlmostEqual(front_left_foot.GetAttribute("physics:mass").Get(), 0.0)
+        self.assertAlmostEqual(front_left_foot.GetAttribute("physics:diagonalInertia").Get(), None)
+        self.assertAlmostEqual(front_left_foot.GetAttribute("physics:mass").Get(), None)
+        # note: mass api is not automatically applied to the foot, so we expect None
 
         actuator_0 = stage.GetPrimAtPath("/ant/Physics/Actuator_0")
         self.assertNotEqual(actuator_0.GetPath(), Sdf.Path.emptyPath)
@@ -252,12 +254,42 @@ class TestMJCF(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(abdomen_z_actuator.GetAttribute("mjc:gear").Get(), [67.5, 0, 0, 0, 0, 0])
 
         left_foot = stage.GetPrimAtPath("/humanoid/Geometry/torso/lower_waist/pelvis/left_thigh/left_shin/left_foot")
-        self.assertAlmostEqual(left_foot.GetAttribute("physics:diagonalInertia").Get()[0], 0.0)
-        self.assertAlmostEqual(left_foot.GetAttribute("physics:mass").Get(), 0.0)
+        self.assertAlmostEqual(left_foot.GetAttribute("physics:diagonalInertia").Get(), None)
+        self.assertAlmostEqual(left_foot.GetAttribute("physics:mass").Get(), None)
 
         self._timeline.play()
         await omni.kit.app.get_app().next_update_async()
         await asyncio.sleep(1.0)
+        self._timeline.stop()
+
+        self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 1.0)
+
+        self._success = True
+
+    async def test_mjcf_humanoid_physx(self) -> None:
+        """Import the humanoid MJCF and validate no crashes in physx.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> from isaacsim.asset.importer.mjcf import MJCFImporterConfig
+            >>> MJCFImporterConfig()
+            <...>
+        """
+        output_path = self._import_mjcf(os.path.join(self._extension_path, "data", "mjcf", "nv_humanoid.xml"))
+        stage = stage_utils.open_stage(output_path)
+
+        self.assertIsNotNone(stage, f"Failed to open stage at path: {output_path}")
+        await omni.kit.app.get_app().next_update_async()
+
+        prim = stage.GetPrimAtPath("/humanoid")
+        prim.GetVariantSet("Physics").SetVariantSelection("physx")
+        self.assertNotEqual(prim.GetPath(), Sdf.Path.emptyPath)
+
+        self._timeline.play()
+        for i in range(10):
+            await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
 
         self.assertAlmostEqual(UsdGeom.GetStageMetersPerUnit(stage), 1.0)
