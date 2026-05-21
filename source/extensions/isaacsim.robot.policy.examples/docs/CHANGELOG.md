@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.2.9] - 2026-05-21
+### Fixed
+- Spot fall over issue in example by reverting the physics dt to 500hz
+
 ## [5.2.8] - 2026-05-20
 ### Fixed
 - Select the asset's `Physics` variant before constructing the `Articulation` in `PolicyController.__init__`, so `UsdPhysics.ArticulationRootAPI` is authored on a descendant prim before `Articulation.fetch_articulation_root_api_prim_paths` resolves the root (prevents `Path.IsValidPathString(NoneType)` crashes)
