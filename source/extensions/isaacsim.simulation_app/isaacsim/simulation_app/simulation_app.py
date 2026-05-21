@@ -104,7 +104,8 @@ class SimulationApp:
         "window_height": 900,
         "display_options": 3094,
         "subdiv_refinement_level": 0,
-        "renderer": "RealTimePathTracing",  # Can also be PathTracing or RaytracedLighting
+        "renderer": "RealTimePathTracing",  # Can also be PathTracing, RaytracedLighting, or MinimalRendering
+        "minimal_shading_mode": 0,
         "anti_aliasing": 3,
         "samples_per_pixel_per_frame": 64,
         "denoiser": True,
@@ -155,7 +156,8 @@ class SimulationApp:
         window_height (int): Height of the application window, independent of viewport, defaults to 900,
         display_options (int): used to specify whats visible in the stage by default. Defaults to 3094 so extra objects do not appear in synthetic data. 3286 is another good default, used for the regular isaac-sim editor experience
         subdiv_refinement_level (int): Number of subdivisons to perform on supported geometry. Defaults to 0
-        renderer (str): Rendering mode, can be  `RaytracedLighting`, `PathTracing`, `RealTimePathTracing`. Defaults to `RealTimePathTracing`
+        renderer (str): Rendering mode, can be `RaytracedLighting`, `PathTracing`, `RealTimePathTracing`, or `MinimalRendering` (also accepts `Minimal`). Defaults to `RealTimePathTracing`
+        minimal_shading_mode (int): Minimal shading mode for `MinimalRendering`, maps to `/rtx/minimal/mode`. 0: Real-Time 2.0 (reference), 1: Diffuse/Glossy/Emission, 2: Textured Diffuse, 3: Constant Diffuse, 4: No Rendering. Defaults to 0
         anti_aliasing (int): Antialiasing mode, 0: Disabled, 1: TAA, 2: FXAA, 3: DLSS, 4:RTXAA
         samples_per_pixel_per_frame (int): The number of samples to render per frame, increase for improved quality, used for `PathTracing` only. Defaults to 64
         denoiser (bool):  Enable this to use AI denoising to improve image quality, used for `PathTracing` only. Defaults to True
@@ -602,14 +604,20 @@ class SimulationApp:
             rtx_mode = "/rtx"
 
         # Set renderer mode, handle case where user may have entered incorrect case
-        if self.config["renderer"].lower() == "raytracedlighting":
-            set_carb_setting(self._carb_settings, rtx_mode + "/rendermode", "RaytracedLighting")
-        elif self.config["renderer"].lower() == "pathtracing":
-            set_carb_setting(self._carb_settings, rtx_mode + "/rendermode", "PathTracing")
-        elif self.config["renderer"].lower() == "realtimepathtracing":
-            set_carb_setting(self._carb_settings, rtx_mode + "/rendermode", "RealTimePathTracing")
+        renderer_lower = self.config["renderer"].lower()
+        if renderer_lower == "raytracedlighting":
+            render_mode = "RaytracedLighting"
+        elif renderer_lower == "pathtracing":
+            render_mode = "PathTracing"
+        elif renderer_lower == "realtimepathtracing":
+            render_mode = "RealTimePathTracing"
+        elif renderer_lower in ("minimal", "minimalrendering"):
+            render_mode = "MinimalRendering"
         else:
-            set_carb_setting(self._carb_settings, rtx_mode + "/rendermode", self.config["renderer"])
+            render_mode = self.config["renderer"]
+        set_carb_setting(self._carb_settings, rtx_mode + "/rendermode", render_mode)
+        if render_mode == "MinimalRendering":
+            set_carb_setting(self._carb_settings, rtx_mode + "/minimal/mode", self.config["minimal_shading_mode"])
         # Raytrace mode settings
         set_carb_setting(self._carb_settings, rtx_mode + "/post/aa/op", self.config["anti_aliasing"])
 
