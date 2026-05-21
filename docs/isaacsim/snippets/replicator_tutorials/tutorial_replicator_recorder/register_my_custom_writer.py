@@ -106,7 +106,12 @@ rep.writers.register_writer(MyCustomWriter)
 import asyncio
 import os
 
+import omni.kit.app
 import omni.usd
+
+ext_manager = omni.kit.app.get_app().get_extension_manager()
+ext_manager.set_extension_enabled_immediate("isaacsim.replicator.synthetic_recorder", True)
+
 from isaacsim.replicator.synthetic_recorder.synthetic_recorder import SyntheticRecorder
 
 

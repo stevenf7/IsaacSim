@@ -21,3 +21,9 @@ replicator_tutorials/tutorial_replicator_isaac_snippets/cosmos_writer_simple_scr
 # collection it can consume the per-snippet timeout and kill the whole suite
 # before expected-failure matching can run.
 ros2_tutorials/tutorial_ros2_manipulation/position_and_velocity_control_modes.py
+
+# These migration snippets are intentionally top-level await examples.  Running
+# them through snippet tests would require wrapping them in asyncio.ensure_future,
+# and these APIs are not expected to change.
+sensors/isaacsim_sensors_multitick_rendering/migration_render_wait_new.py
+sensors/isaacsim_sensors_multitick_rendering/migration_render_wait_old.py
