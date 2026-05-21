@@ -385,7 +385,7 @@ Setup Tips
     |isaac-sim_short| :ref:`isaac_sim_setup_assets_content_pack` are available to be used locally and in an air-gapped environment.
 
     1. Download the **Isaac Sim Assets Complete Pack** from the :ref:`isaac_sim_latest_release` section.
-       The example below shows using Aria2 to download the complete assets zip file.
+       The example below shows using Aria2 to resume interrupted downloads and verify each file with its MD5 checksum.
 
     .. tab-set::
         .. tab-item:: Linux
@@ -394,9 +394,9 @@ Setup Tips
 
                 sudo apt install aria2
                 cd ~/Downloads
-                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.001.zip"
-                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.002.zip"
-                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.003.zip"
+                aria2c -c --checksum=md5=0d1d98f46780d13bf83779c79360f883 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.001.zip"
+                aria2c -c --checksum=md5=9a03f3a32a2962fce4f464fc784a9da9 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.002.zip"
+                aria2c -c --checksum=md5=37ee649b2b35c6bc72958f12e625f862 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.003.zip"
 
         .. tab-item:: Windows
 
@@ -404,9 +404,11 @@ Setup Tips
 
                 winget install --id=aria2.aria2 -e
                 cd %USERPROFILE%/Downloads
-                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.001.zip"
-                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.002.zip"
-                aria2c "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.003.zip"
+                aria2c -c --checksum=md5=0d1d98f46780d13bf83779c79360f883 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.001.zip"
+                aria2c -c --checksum=md5=9a03f3a32a2962fce4f464fc784a9da9 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.002.zip"
+                aria2c -c --checksum=md5=37ee649b2b35c6bc72958f12e625f862 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.003.zip"
+
+    If Aria2 reports a checksum failure, remove the failed part and rerun the command for that file before combining the parts.
 
     2. Unzip packages to a folder.
 

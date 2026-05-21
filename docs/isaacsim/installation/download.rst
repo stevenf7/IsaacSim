@@ -85,3 +85,18 @@ Latest Release
     +                                          +          +                  +-----------------------------------+
     |                                          |          |                  | |isassets_c3_510_zip|             |
     +------------------------------------------+----------+------------------+-----------------------------------+
+
+.. list-table:: Isaac Sim Assets Complete Pack MD5 Checksums
+    :header-rows: 1
+    :widths: 45 55
+
+    * - File
+      - MD5
+    * - ``isaac-sim-assets-complete-5.1.0.001.zip``
+      - ``0d1d98f46780d13bf83779c79360f883``
+    * - ``isaac-sim-assets-complete-5.1.0.002.zip``
+      - ``9a03f3a32a2962fce4f464fc784a9da9``
+    * - ``isaac-sim-assets-complete-5.1.0.003.zip``
+      - ``37ee649b2b35c6bc72958f12e625f862``
+
+Use the checksums with the :ref:`isaac_sim_setup_assets_content_pack` Aria2 examples to resume interrupted downloads and verify each file before extraction.
