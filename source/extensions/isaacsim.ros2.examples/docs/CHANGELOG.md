@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.3] - 2026-05-19
+### Changed
+- MoveIt extension and standalone samples: feed `ROS2PublishJointState` from a dedicated `IsaacReadJointState` node and use its `sensorTime` for the published timestamp
+
 ## [1.2.2] - 2026-05-14
 ### Changed
 - Add missing type annotations and replace bare `except` clauses across the MoveIt, waypoint follower, and sample loader extensions

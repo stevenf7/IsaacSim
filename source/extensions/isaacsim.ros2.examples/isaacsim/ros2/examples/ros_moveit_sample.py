@@ -89,6 +89,7 @@ class Extension(omni.ext.IExt):
                     og.Controller.Keys.CREATE_NODES: [
                         ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                         ("ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
+                        ("ReadJointState", "isaacsim.sensors.physics.IsaacReadJointState"),
                         ("Context", "isaacsim.ros2.bridge.ROS2Context"),
                         ("PublishJointState", "isaacsim.ros2.bridge.ROS2PublishJointState"),
                         ("SubscribeJointState", "isaacsim.ros2.bridge.ROS2SubscribeJointState"),
@@ -96,14 +97,21 @@ class Extension(omni.ext.IExt):
                         ("PublishClock", "isaacsim.ros2.bridge.ROS2PublishClock"),
                     ],
                     og.Controller.Keys.CONNECT: [
-                        ("OnPlaybackTick.outputs:tick", "PublishJointState.inputs:execIn"),
+                        ("OnPlaybackTick.outputs:tick", "ReadJointState.inputs:execIn"),
+                        ("ReadJointState.outputs:execOut", "PublishJointState.inputs:execIn"),
+                        ("ReadJointState.outputs:jointNames", "PublishJointState.inputs:jointNames"),
+                        ("ReadJointState.outputs:jointPositions", "PublishJointState.inputs:jointPositions"),
+                        ("ReadJointState.outputs:jointVelocities", "PublishJointState.inputs:jointVelocities"),
+                        ("ReadJointState.outputs:jointEfforts", "PublishJointState.inputs:jointEfforts"),
+                        ("ReadJointState.outputs:jointDofTypes", "PublishJointState.inputs:jointDofTypes"),
+                        ("ReadJointState.outputs:stageMetersPerUnit", "PublishJointState.inputs:stageMetersPerUnit"),
+                        ("ReadJointState.outputs:sensorTime", "PublishJointState.inputs:sensorTime"),
                         ("OnPlaybackTick.outputs:tick", "SubscribeJointState.inputs:execIn"),
                         ("OnPlaybackTick.outputs:tick", "PublishClock.inputs:execIn"),
                         ("OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"),
                         ("Context.outputs:context", "PublishJointState.inputs:context"),
                         ("Context.outputs:context", "SubscribeJointState.inputs:context"),
                         ("Context.outputs:context", "PublishClock.inputs:context"),
-                        ("ReadSimTime.outputs:simulationTime", "PublishJointState.inputs:timeStamp"),
                         ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
                         ("SubscribeJointState.outputs:jointNames", "ArticulationController.inputs:jointNames"),
                         (
@@ -119,9 +127,9 @@ class Extension(omni.ext.IExt):
                     og.Controller.Keys.SET_VALUES: [
                         # Setting the /Franka target prim to Articulation Controller node
                         ("ArticulationController.inputs:robotPath", franka_stage_path),
+                        ("ReadJointState.inputs:prim", [usdrt.Sdf.Path(franka_stage_path)]),
                         ("PublishJointState.inputs:topicName", "isaac_joint_states"),
                         ("SubscribeJointState.inputs:topicName", "isaac_joint_commands"),
-                        ("PublishJointState.inputs:targetPrim", [usdrt.Sdf.Path(franka_stage_path)]),
                     ],
                 },
             )
