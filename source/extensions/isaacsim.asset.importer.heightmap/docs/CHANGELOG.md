@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.3] - 2026-05-18
+### Changed
+- Size the heightmap ground plane from the generated occupancy map's world-space bounds (via `UsdGeom.BBoxCache`) instead of the raw image dimensions, and create it after the heightmap instances so it always fully covers the geometry.
+
+### Added
+- Added unit tests to capture edge cases.
+
 ## [2.3.2] - 2026-05-10
 ### Fixed
 - Show the Heightmap Importer file picker after the Load Image button creates it, unblocking PNG selection from the UI (6083539)

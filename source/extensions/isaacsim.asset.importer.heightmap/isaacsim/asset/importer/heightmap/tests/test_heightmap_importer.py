@@ -21,6 +21,8 @@ from unittest.mock import MagicMock, Mock, patch
 
 import omni.kit.test
 from isaacsim.asset.importer.heightmap.importer import (
+    GROUND_PLANE_MARGIN,
+    OCCUPANCY_MAP_PATH,
     OCCUPIED_PIXEL_THRESHOLD,
     HeightmapImporter,
 )
@@ -173,6 +175,13 @@ class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
         mock_cube.CreateDisplayColorPrimvar.return_value.Set = MagicMock()
         mock_cube.GetPath.return_value = "/test/path"
         mock_usd_geom.Cube.return_value = mock_cube
+
+        # Mock BBoxCache so the ground-plane sizing path returns a non-empty range.
+        mock_bbox_range = MagicMock()
+        mock_bbox_range.IsEmpty.return_value = False
+        mock_bbox_range.GetMin.return_value = Gf.Vec3d(0.0, 0.0, 0.0)
+        mock_bbox_range.GetMax.return_value = Gf.Vec3d(1.0, 1.0, 1.0)
+        mock_usd_geom.BBoxCache.return_value.ComputeWorldBound.return_value.GetRange.return_value = mock_bbox_range
 
         # Mock lighting
         mock_light = MagicMock()
@@ -336,6 +345,139 @@ class TestHeightmapImporter(omni.kit.test.AsyncTestCase):
             self.importer._generate_occupied_positions(test_image, 1.0, 0.5)
 
         self.assertIn("Failed to generate occupied positions", str(context.exception))
+
+    def _stub_bbox_cache(self, mock_usd_geom: object, min_pt: tuple, max_pt: tuple) -> None:
+        """Configure ``UsdGeom.BBoxCache`` to return the given world-space extents."""
+        mock_bbox_range = MagicMock()
+        mock_bbox_range.IsEmpty.return_value = False
+        mock_bbox_range.GetMin.return_value = Gf.Vec3d(*min_pt)
+        mock_bbox_range.GetMax.return_value = Gf.Vec3d(*max_pt)
+        mock_world_bound = MagicMock()
+        mock_world_bound.GetRange.return_value = mock_bbox_range
+        mock_bbox_cache = MagicMock()
+        mock_bbox_cache.ComputeWorldBound.return_value = mock_world_bound
+        mock_usd_geom.BBoxCache.return_value = mock_bbox_cache
+
+    @patch("isaacsim.asset.importer.heightmap.importer.GroundPlane")
+    @patch("isaacsim.asset.importer.heightmap.importer.Usd")
+    @patch("isaacsim.asset.importer.heightmap.importer.UsdGeom")
+    def test_create_ground_plane_sizes_to_square_bounds(
+        self, mock_usd_geom: object, _mock_usd: object, mock_ground_plane: object
+    ) -> None:
+        """Ground plane size for a square heightmap is dim + 2 * margin, centered on bbox."""
+        # 10x10 heightmap occupying X:[0,10], Y:[-10,0]
+        self._stub_bbox_cache(mock_usd_geom, min_pt=(0.0, -10.0, 0.0), max_pt=(10.0, 0.0, 1.0))
+
+        self.importer._create_ground_plane()
+
+        mock_usd_geom.BBoxCache.return_value.ComputeWorldBound.assert_called_once()
+        # The world-bound was computed against the occupancy map prim, not some other prim.
+        self.mock_stage.GetPrimAtPath.assert_any_call(OCCUPANCY_MAP_PATH)
+
+        mock_ground_plane.assert_called_once()
+        _, kwargs = mock_ground_plane.call_args
+        self.assertAlmostEqual(kwargs["sizes"], 10.0 + 2 * GROUND_PLANE_MARGIN)
+        self.assertEqual(kwargs["positions"], [[5.0, -5.0, 0.0]])
+        # No non-uniform scaling — that distorts the wireframe material.
+        self.assertNotIn("scales", kwargs)
+
+    @patch("isaacsim.asset.importer.heightmap.importer.GroundPlane")
+    @patch("isaacsim.asset.importer.heightmap.importer.Usd")
+    @patch("isaacsim.asset.importer.heightmap.importer.UsdGeom")
+    def test_create_ground_plane_uses_max_dim_for_wide_bounds(
+        self, mock_usd_geom: object, _mock_usd: object, mock_ground_plane: object
+    ) -> None:
+        """A wider-than-tall heightmap sizes the (square) ground plane to the longer dimension."""
+        # X width = 20, Y height = 5 — wider than tall.
+        self._stub_bbox_cache(mock_usd_geom, min_pt=(0.0, -5.0, 0.0), max_pt=(20.0, 0.0, 1.0))
+
+        self.importer._create_ground_plane()
+
+        _, kwargs = mock_ground_plane.call_args
+        self.assertAlmostEqual(kwargs["sizes"], 20.0 + 2 * GROUND_PLANE_MARGIN)
+        self.assertEqual(kwargs["positions"], [[10.0, -2.5, 0.0]])
+
+    @patch("isaacsim.asset.importer.heightmap.importer.GroundPlane")
+    @patch("isaacsim.asset.importer.heightmap.importer.Usd")
+    @patch("isaacsim.asset.importer.heightmap.importer.UsdGeom")
+    def test_create_ground_plane_uses_max_dim_for_tall_bounds(
+        self, mock_usd_geom: object, _mock_usd: object, mock_ground_plane: object
+    ) -> None:
+        """A taller-than-wide heightmap sizes the (square) ground plane to the longer dimension."""
+        # X width = 4, Y height = 30 — taller than wide.
+        self._stub_bbox_cache(mock_usd_geom, min_pt=(0.0, -30.0, 0.0), max_pt=(4.0, 0.0, 1.0))
+
+        self.importer._create_ground_plane()
+
+        _, kwargs = mock_ground_plane.call_args
+        self.assertAlmostEqual(kwargs["sizes"], 30.0 + 2 * GROUND_PLANE_MARGIN)
+        self.assertEqual(kwargs["positions"], [[2.0, -15.0, 0.0]])
+
+    @patch("isaacsim.asset.importer.heightmap.importer.GroundPlane")
+    @patch("isaacsim.asset.importer.heightmap.importer.Usd")
+    @patch("isaacsim.asset.importer.heightmap.importer.UsdGeom")
+    def test_create_ground_plane_handles_off_origin_bounds(
+        self, mock_usd_geom: object, _mock_usd: object, mock_ground_plane: object
+    ) -> None:
+        """Ground plane center follows the bbox midpoint even when bounds don't start at the origin."""
+        # Heightmap shifted into positive Y as well: X:[10, 20], Y:[5, 15]
+        self._stub_bbox_cache(mock_usd_geom, min_pt=(10.0, 5.0, 0.0), max_pt=(20.0, 15.0, 1.0))
+
+        self.importer._create_ground_plane()
+
+        _, kwargs = mock_ground_plane.call_args
+        self.assertEqual(kwargs["positions"], [[15.0, 10.0, 0.0]])
+        self.assertAlmostEqual(kwargs["sizes"], 10.0 + 2 * GROUND_PLANE_MARGIN)
+
+    @patch("isaacsim.asset.importer.heightmap.importer.carb")
+    @patch("isaacsim.asset.importer.heightmap.importer.GroundPlane")
+    @patch("isaacsim.asset.importer.heightmap.importer.Usd")
+    @patch("isaacsim.asset.importer.heightmap.importer.UsdGeom")
+    def test_create_ground_plane_skips_creation_for_empty_bounds(
+        self,
+        mock_usd_geom: object,
+        _mock_usd: object,
+        mock_ground_plane: object,
+        mock_carb: object,
+    ) -> None:
+        """If the occupancy map has no occupied cells, the bbox is empty and the plane is skipped."""
+        mock_world_bound = MagicMock()
+        empty_range = MagicMock()
+        empty_range.IsEmpty.return_value = True
+        mock_world_bound.GetRange.return_value = empty_range
+        mock_usd_geom.BBoxCache.return_value.ComputeWorldBound.return_value = mock_world_bound
+
+        self.importer._create_ground_plane()
+
+        mock_ground_plane.assert_not_called()
+        mock_carb.log_warn.assert_called_once()
+
+    @patch("isaacsim.asset.importer.heightmap.importer.UsdPhysics")
+    @patch("isaacsim.asset.importer.heightmap.importer.stage_utils")
+    @patch("isaacsim.asset.importer.heightmap.importer.UsdGeom")
+    @patch("isaacsim.asset.importer.heightmap.importer.GroundPlane")
+    @patch("isaacsim.asset.importer.heightmap.importer.UsdLux")
+    def test_create_heightmap_skips_ground_plane_when_disabled(
+        self,
+        _mock_usd_lux: object,
+        mock_ground_plane: object,
+        mock_usd_geom: object,
+        _mock_stage_utils: object,
+        _mock_usd_physics: object,
+    ) -> None:
+        """No ground plane is created when ``create_ground_plane=False``."""
+        test_image = Image.new("RGBA", (3, 3), color=(0, 0, 0, 255))
+        self.mock_stage.GetPrimAtPath.return_value = MagicMock()
+        self.mock_stage.DefinePrim.return_value = MagicMock()
+        mock_usd_geom.Xform.return_value = MagicMock()
+        mock_usd_geom.PointInstancer.return_value = MagicMock()
+        mock_usd_geom.Cube.return_value = MagicMock()
+
+        self.importer.create_heightmap(test_image, cell_scale=1.0, create_ground_plane=False, create_lighting=False)
+
+        mock_ground_plane.assert_not_called()
+        # BBoxCache shouldn't be hit either — there's no ground plane to size.
+        mock_usd_geom.BBoxCache.assert_not_called()
 
 
 class TestHeightmapExtension(omni.kit.test.AsyncTestCase):
