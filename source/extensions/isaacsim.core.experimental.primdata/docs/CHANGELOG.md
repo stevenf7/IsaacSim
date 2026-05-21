@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.2] - 2026-05-20
+### Fixed
+- Release the stage handle on stage close
+
 ## [0.3.1] - 2026-04-22
 ### Changed
 - Query active physics engine at runtime via shared utility and pass it to `createSimulationView` instead of only supporting PhysX

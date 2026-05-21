@@ -20,6 +20,7 @@
 #include "BufferRegistry.h"
 
 #include <carb/PluginUtils.h>
+#include <carb/eventdispatcher/IEventDispatcher.h>
 #include <carb/events/EventsUtils.h>
 
 #include <isaacsim/core/experimental/prims/IPrimDataReader.h>
@@ -743,6 +744,13 @@ public:
         PXR_NS::UsdStageCache& cache = PXR_NS::UsdUtilsStageCache::Get();
         m_usdStage = cache.Find(PXR_NS::UsdStageCache::Id::FromLongInt(stageId));
 
+        // Subscribe to UsdContext::eClosing so we release m_usdStage / m_usdrtStage
+        // before closeStageInternal's refcount sanity check (NVBug 6169671). Without
+        // this the strong UsdStageRefPtr lives until shutdown() / next initialize(),
+        // which keeps the stage alive past close and produces "Unexpected reference
+        // count of 2 for UsdStage" warnings on every stage-close-after-play.
+        _subscribeStageClosingEvent();
+
         if (m_usdStage)
         {
             omni::fabric::UsdStageId fabricStageId = { static_cast<uint64_t>(stageId) };
@@ -782,6 +790,8 @@ public:
 
     void shutdown() override
     {
+        m_stageClosingObserver = {};
+
         for (auto& [id, data] : m_viewData)
             _releasePhysxHandles(data);
         m_views.clear();
@@ -1369,6 +1379,35 @@ private:
         angularVelocity.callback = linearVelocity.callback;
     }
 
+    void _subscribeStageClosingEvent()
+    {
+        // Drop the strong UsdStageRefPtr in m_usdStage before
+        // UsdContext::closeStageInternal runs its refcount sanity check
+        // (NVBug 6169671). Kit fires eClosing synchronously from closeStageTask
+        // and waits for all observers before calling closeStageInternal.
+        auto ed = carb::getCachedInterface<carb::eventdispatcher::IEventDispatcher>();
+        omni::usd::UsdContext* usdContext = omni::usd::UsdContext::getContext();
+        if (!ed || !usdContext)
+        {
+            return;
+        }
+
+        static const carb::RStringKey kObserverName("isaacsim.core.experimental.primdata.PrimDataReader");
+
+        m_stageClosingObserver = ed->observeEvent(kObserverName, carb::eventdispatcher::kDefaultOrder,
+                                                  usdContext->stageEventName(omni::usd::StageEventType::eClosing),
+                                                  [this](const carb::eventdispatcher::Event&)
+                                                  {
+                                                      if (m_simulationView)
+                                                      {
+                                                          m_simulationView->release(true);
+                                                          m_simulationView = nullptr;
+                                                      }
+                                                      m_usdrtStage = nullptr;
+                                                      m_usdStage = nullptr;
+                                                  });
+    }
+
     long m_stageId = 0;
     int m_deviceOrdinal = -1;
     uint64_t m_generation = 0;
@@ -1377,6 +1416,7 @@ private:
     ISimulationView* m_simulationView = nullptr;
     pxr::UsdStageRefPtr m_usdStage;
     usdrt::UsdStageRefPtr m_usdrtStage;
+    carb::eventdispatcher::ObserverGuard m_stageClosingObserver;
 
     std::unordered_map<std::string, ViewData> m_viewData;
     std::unordered_map<std::string, std::unique_ptr<IXformDataView>> m_views;
