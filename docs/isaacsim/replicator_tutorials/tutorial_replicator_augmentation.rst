@@ -34,7 +34,7 @@ Scenario
 
 The depicted figure showcases the example augmentations used throughout the examples. The first image is an illustrative example switching the red and blue channels of the image. The second image is a composed augmentation of converting the rgb data to hsv, adding gaussian noise, and converting back to rgb. The third and forth image are results of applying gaussian noise filters with various sigma values to the depth data.
 
-For the example scenario a red cube is spawned with a camera looking at it from a top view. For the cube a replicator randomization graph is created which will trigger a random rotation for every frame capture.
+For the example scenario a red cube is spawned with a camera looking at it from a top view. For the cube a replicator randomization graph is created which is triggered by a custom event sent before each capture step, producing a random rotation for every frame capture.
 
 Implementation
 ---------------
