@@ -35,6 +35,10 @@ Getting Started
 - Enable the ``isaacsim.ros2.bridge`` Extension in the **Extension Manager** window by navigating to **Window** > **Extensions**.
 - Have cloned the `IsaacSim-ros_workspaces <https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_ repo and sourced the workspace.
 
+.. warning::
+
+   This tutorial supports the |physx| backend only; Newton is not supported because these assets use negatively scaled meshes. See :ref:`Newton asset compatibility <newton_physics_asset_compatibility>`.
+
 Importing the URDF
 =============================
 
