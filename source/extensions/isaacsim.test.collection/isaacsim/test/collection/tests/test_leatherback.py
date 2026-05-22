@@ -125,14 +125,22 @@ class TestLeatherback(ROS2TestCase):
 
         # Start Simulation and wait
         self._timeline.play()
-        await self.wait_for_publishers_on_topic(node, ros_rgb_topic, per_frame_callback=spin)
-        await self.wait_for_publishers_on_topic(node, ros_depth_topic, per_frame_callback=spin)
+        # Multitick rendering can delay ROS 2 camera publisher discovery and first-real-frame
+        # under warm-cache runs; extend wait + drain extra frames.
+        await self.wait_for_publishers_on_topic(node, ros_rgb_topic, timeout_sec=30.0, per_frame_callback=spin)
+        await self.wait_for_publishers_on_topic(node, ros_depth_topic, timeout_sec=30.0, per_frame_callback=spin)
 
         condition_met = await self.simulate_until_condition(
             lambda: self._rgb is not None and self._depth is not None,
             max_frames=600,
             per_frame_callback=spin,
         )
+        # Drain additional frames so the camera sensor has ticked past any sentinel/zero
+        # first-frame buffer republished by the writer under multitick.
+        if condition_met:
+            # Drain additional frames so the camera sensor has ticked past any sentinel/zero
+            # first-frame buffer republished by the writer under multitick.
+            await self.simulate_until_condition(lambda: False, max_frames=60, per_frame_callback=spin)
         self.assertTrue(condition_met, "No RGB/depth data received from Leatherback cameras within timeout")
         self.assertIsNotNone(self._rgb, "No RGB data received from Leatherback camera")
         self.assertIsNotNone(self._depth, "No depth data received from Leatherback camera")
