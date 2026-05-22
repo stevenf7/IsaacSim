@@ -153,6 +153,8 @@ To compare simulation results between Newton and PhysX:
 * play the simulation again
 
 
+.. _newton_physics_asset_compatibility:
+
 Asset Compatibility
 ===================
 
