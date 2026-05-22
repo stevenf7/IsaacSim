@@ -687,6 +687,39 @@ build-windows-x86_64-debug:
         when: never
       - !reference [.rules-workflow, rules]
 
+# ==============================================================================================================
+# Fast CPU-only test of the isaacsim_design and isaacsim_homepage parser
+# and validator behavior. Belongs in the `test` stage semantically (it's
+# pytest, not a lint check) — but we cannot extend .test-common, which
+# gates on $RUN_TESTS == "true" and would skip on standard MRs. Instead
+# we inherit .check-common's "always-run-on-MRs" rules, override the
+# stage to `test`, and use `needs: []` so the job starts immediately
+# instead of waiting for the check stage to finish. The first rule
+# overrides the "[X] User docs only change" MR shortcut (which sets
+# RUN_CHECKS=false and would otherwise skip .check-common) — docs-only
+# MRs are exactly when this job needs to run. Dependency versions are
+# pinned so the job stays reproducible even as upstream releases churn;
+# bump them together with the main docs build's pinned Sphinx /
+# docutils.
+test-docs-isaacsim-design:
+    extends:
+      - .check-common
+      - .ipp_lnx_x86_64_cpu_small
+    stage: test
+    needs: []
+    image: python:3.11-alpine
+    rules:
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"'
+      - !reference [.check-common, rules]
+    script:
+      - pip install --quiet --no-cache-dir
+          'pytest==8.3.4'
+          'docutils==0.21.2'
+          'sphinx==7.4.7'
+      - PYTHONPATH=docs/conf/ext python3 -m pytest -v
+          docs/conf/ext/isaacsim_design/tests/test_parsers.py
+          docs/conf/ext/isaacsim_homepage/tests/test_parsers.py
+
 .test-nightly:
     stage: nightly-test
     variables:

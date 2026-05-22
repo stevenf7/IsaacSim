@@ -25,7 +25,7 @@ This framework simplifies simulation customization with features like:
 * **High-Fidelity Data**: Leverages Omniverse's SimReady assets, physics, and rendering to produce realistic imagery and accurate annotations essential for AI training.
 * **Seamless Integration**: As part of Kit extensions, it works natively with ``omni.anim.behavior``, ``omni.anim.navigation``, and ``omni.replicator.core``.
 
-Before enabling this extension, read :doc:`What Is Isaac Sim? </overview/overview>` to learn about |isaac-sim_short| and follow :doc:`Installation </installation/index>` to install |isaac-sim_short|.
+Before enabling this extension, read :ref:`What Is Isaac Sim? <isaac_sim_app_overview>` to learn about |isaac-sim_short| and follow :doc:`Installation </installation/index>` to install |isaac-sim_short|.
 
 .. image:: /images/isim_4.5_full_ext-isaacsim.replicator.agent-5.0.0_viewport_IRA_overview.png
     :width: 900

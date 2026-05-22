@@ -18,7 +18,7 @@ The behavior tree generation workflow is packaged under the ``omni.ai.behavior_t
 ``omni.ai.behavior_tree_gen.core`` provides the reusable scripted API that turns natural-language
 scenarios into behavior tree outputs.
 
-Before using this workflow, read :doc:`What Is Isaac Sim? </overview/overview>` to learn about
+Before using this workflow, read :ref:`What Is Isaac Sim? <isaac_sim_app_overview>` to learn about
 |isaac-sim_short| and follow :doc:`Installation </installation/index>` to install |isaac-sim_short|.
 
 Enable Extensions
