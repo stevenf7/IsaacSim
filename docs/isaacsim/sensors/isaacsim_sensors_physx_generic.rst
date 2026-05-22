@@ -17,7 +17,7 @@
 .. deprecated:: 6.0
    The |physx| sensor extensions (``isaacsim.sensors.physx``) are deprecated. Use
    ``isaacsim.sensors.experimental.physics.RaycastSensor`` as the replacement.
-   See the `isaacsim.sensors.experimental.physics API Documentation <../py/source/extensions/isaacsim.sensors.experimental.physics/docs/index.html>`_.
+   See :ref:`isaacsim_sensors_physx_generic_migration` for step-by-step migration instructions, or the `isaacsim.sensors.experimental.physics API Documentation <../py/source/extensions/isaacsim.sensors.experimental.physics/docs/index.html>`_ for the replacement APIs.
 
 The |physx| generic sensor in |isaac-sim_short| uses |physx| raycasts to measure depth between two prims. It demonstrates
 how to build a |physx|-based sensor in Isaac Sim to measure ground truth depth.
@@ -132,43 +132,3 @@ When the sensor processes each batch of ``[azimuth, zenith]`` pairs and is about
     :end-before: # [/batch-callback]
 
 
-.. _isaacsim_sensors_physx_generic_migration:
-
-Migrating to the physics raycast sensor
-========================================
-
-The |physx| generic sensor is deprecated. Use the :ref:`Physics Raycast Sensor <isaacsim_sensors_physics_raycast>` (``isaacsim.sensors.experimental.physics.RaycastSensor``) as the replacement. The raycast sensor accepts explicit per-ray origin offsets and direction vectors, making it a direct replacement for custom scanning patterns.
-
-.. _isaacsim_sensors_physx_generic_concept_mapping:
-
-Concept mapping
----------------
-
-.. list-table::
-   :header-rows: 1
-   :widths: 40 60
-
-   * - |physx| Generic Sensor
-     - Physics Raycast Sensor
-   * - ``sensor_pattern`` (Nx2 azimuth/zenith array)
-     - ``rayDirections`` (Nx3 Cartesian direction vectors). Convert azimuth/zenith to Cartesian: ``dx = cos(zenith) * cos(azimuth)``, ``dy = cos(zenith) * sin(azimuth)``, ``dz = sin(zenith)``.
-   * - ``origin_offsets`` (Nx3 array)
-     - ``rayOrigins`` (Nx3 array). Same semantics.
-   * - ``batch_size`` / ``sampling_rate`` / streaming mode
-     - ``rayTimeOffsets`` (per-ray time offsets in seconds). The sensor fires only rays whose time offsets fall within the current physics step, producing a sweeping pattern without manual batching.
-   * - ``_range_sensor`` Python interface
-     - ``RaycastSensor`` class.
-   * - ``send_next_batch()`` / ``set_next_batch_rays()``
-     - Not needed. All rays are defined at creation time and the sensor handles timing internally via ``rayTimeOffsets``.
-
-.. _isaacsim_sensors_physx_generic_interactive_example:
-
-Interactive example
--------------------
-
-The **Physics Raycast Sensor** example demonstrates all three sensor configurations (solid state, rotating, and beam curtain) in a single scene:
-
-- **GUI**: Open **Robotics Examples > Sensors > Physics Raycast Sensor** and click **Load Scene**.
-- **Source code**: ``source/extensions/isaacsim.sensors.physics.examples/isaacsim/sensors/physics/examples/raycast_sensor.py``
-
-See :ref:`isaacsim_sensors_physics_raycast` for the full documentation, including Python API usage and OmniGraph workflows.

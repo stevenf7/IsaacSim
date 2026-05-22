@@ -65,10 +65,7 @@ URDF Import and Export
 Migration
 ---------
 
-.. toctree::
-    :maxdepth: 1
-
-    ./ros2_omnigraph_migration
+Upgrading an Action Graph from Isaac Sim 5.1 or earlier? See :ref:`isaac_ros2_omnigraph_migration` for the required ROS 2 publisher node updates.
 
 ROS 2 FAQ
 ----------------------------

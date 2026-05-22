@@ -8,9 +8,9 @@
 
 .. _isaac_ros2_omnigraph_migration:
 
-====================================
-ROS 2 OmniGraph node migration guide
-====================================
+=====================
+ROS 2 OmniGraph Nodes
+=====================
 
 This guide covers migrating Action Graphs from Isaac Sim 5.1 and earlier to Isaac Sim 6.0
 and later. Two ROS 2 OmniGraph publisher nodes have been updated to accept pre-computed data

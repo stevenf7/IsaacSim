@@ -120,7 +120,6 @@
    ./reference_material/rendering_modes
    ./reference_material/sim_performance_optimization_handbook
    ./reference_material/benchmarks
-   ./overview/extensions_renaming
    ./omniverse_usd/index
 
 .. toctree::

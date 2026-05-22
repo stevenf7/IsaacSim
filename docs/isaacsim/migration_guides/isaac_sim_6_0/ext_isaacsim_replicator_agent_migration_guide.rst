@@ -9,9 +9,9 @@
 
 .. _ira_migration_guide_0x_to_1x:
 
-======================================
-IRA Migration Guide: 0.x.x to 1.x.x
-======================================
+=======================
+Replicator Agent (IRA)
+=======================
 
 This guide covers breaking changes and migration steps for users upgrading
 from IRA 0.x.x (shipped with Isaac Sim 5.1 and before) to IRA 1.x.x

@@ -316,12 +316,12 @@ extension(s) APIs have been moved.
 To remove those deprecation warnings when running your own workflows, migrate your workflows to the new extensions by updating Python import statements to use the
 new extensions, eg.
 
-.. literalinclude:: ../snippets/overview/extensions_renaming/renaming_extension_apis.py
+.. literalinclude:: ../../snippets/overview/extensions_renaming/renaming_extension_apis.py
     :language: python
 
 would become
 
-.. literalinclude:: ../snippets/overview/extensions_renaming/renaming_extension_apis_1.py
+.. literalinclude:: ../../snippets/overview/extensions_renaming/renaming_extension_apis_1.py
     :language: python
 
 .. _extension_renaming_deprecated_to_new:
