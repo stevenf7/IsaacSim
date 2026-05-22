@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.4] - 2026-05-21
+### Fixed
+- Made `test_publish_clock.py` more robust by waiting for the UCX listener to accept the client connection and by arming clock receives before triggering manual publish impulses.
+
 ## [1.6.3] - 2026-05-14
 ### Changed
 - Add type annotations and docstrings to `OgnUCXCameraHelper`, extension lifecycle methods, and tests to satisfy ruff lint rules.
