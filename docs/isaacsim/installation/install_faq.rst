@@ -73,8 +73,6 @@ Setup Tips
                   - |isaac-sim_short| Python executable
                 * - ``setup_python_env.sh``
                   - |isaac-sim_short| Python environment setup
-                * - ``setup_conda_env.sh``
-                  - |isaac-sim_short| Conda environment setup
                 * - ``clear_caches.sh``
                   - Script to clear local caches
                 * - ``post_install.sh``
@@ -127,8 +125,6 @@ Setup Tips
                   - |isaac-sim_short| Python executable
                 * - ``setup_python_env.sh``
                   - |isaac-sim_short| Python environment setup
-                * - ``setup_conda_env.sh``
-                  - |isaac-sim_short| Conda environment setup
                 * - ``clear_caches.sh``
                   - Script to clear local caches
                 * - ``warmup.sh``
@@ -148,8 +144,6 @@ Setup Tips
                   - |isaac-sim_short| Python executable
                 * - ``setup_python_env.sh``
                   - |isaac-sim_short| Python environment setup
-                * - ``setup_conda_env.sh``
-                  - |isaac-sim_short| Conda environment setup
                 * - ``clear_caches.sh``
                   - Script to clear local caches
                 * - ``warmup.sh``
