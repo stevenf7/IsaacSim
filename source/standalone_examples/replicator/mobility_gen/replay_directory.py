@@ -52,6 +52,7 @@ simulation_app.update()
 from isaacsim.replicator.experimental.mobility_gen import (
     MobilityGenReader,
     MobilityGenWriter,
+    apply_nurec_replay_overrides,
     apply_sensor_overrides,
     load_scenario,
     log_camera_properties,
@@ -128,19 +129,31 @@ if __name__ == "__main__":
         "some timesteps missing images.",
     )
 
-    args, unknown = parser.parse_known_args()
+    cli_args, unknown = parser.parse_known_args()
 
-    args.input = os.path.expanduser(args.input)
-    args.output = os.path.expanduser(args.output)
+    cli_args.input = os.path.expanduser(cli_args.input)
+    cli_args.output = os.path.expanduser(cli_args.output)
 
-    recording_paths = glob.glob(os.path.join(args.input, "*"))
+    recording_paths = glob.glob(os.path.join(cli_args.input, "*"))
 
     for i, recording_path in enumerate(recording_paths, start=1):
+        # Per-iteration copy of the CLI namespace: apply_nurec_replay_overrides
+        # mutates this in place when a NuRec stage is detected. Without a fresh
+        # copy each iteration, a NuRec recording would silently disable non-RGB
+        # modalities for every subsequent non-NuRec recording in the batch.
+        args = argparse.Namespace(**vars(cli_args))
+
         name = os.path.basename(recording_path)
 
         output_path = os.path.join(args.output, name)
 
         scenario = load_scenario(recording_path)
+
+        # If the loaded stage is NuRec (contains ParticleField prims), force
+        # the per-modality replay flags to the supported subset (RGB only)
+        # and re-assert the gaussian-pass tonemap setting (which the stage's
+        # customLayerData can revert on open). No-op on non-NuRec stages.
+        apply_nurec_replay_overrides(args, get_current_stage())
 
         SimulationManager.initialize_physics()
 
