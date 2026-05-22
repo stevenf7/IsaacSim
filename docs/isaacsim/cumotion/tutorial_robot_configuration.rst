@@ -8,8 +8,6 @@ This tutorial covers configuring robots for use with the |cumotion| integration 
 
 By the end of this tutorial, you'll understand:
 
-* What XRDF files contain and how to generate them using the Robot Description Editor
-* How to edit and merge existing XRDF files
 * How to load pre-configured or custom robot configurations using :func:`load_cumotion_supported_robot` and :func:`load_cumotion_robot`
 * How to use robot configurations with |cumotion| components
 
@@ -29,130 +27,55 @@ A key aspect of the XRDF is defining the robot's configuration space. Joints are
 
 **Collision Spheres**
 
-|cumotion| uses a set of spheres attached to each robot link for collision avoidance. These spheres must roughly cover the robot's surface. The Robot Description Editor provides tools to generate and tune this sphere set for any robot.
+|cumotion| uses a set of spheres attached to each robot link for collision avoidance. These spheres must roughly cover the robot's surface. The *cuMotion/Lula Robot Description Editor* provides tools to generate and tune this sphere set for any robot.
+For a full tutorial on XRDF and URDF file generation, see :ref:`isaac_sim_app_tutorial_generate_robot_config_lula`.
 
-A :class:`CumotionRobot` encapsulates all data needed to work with |cumotion|:
+Robot Configuration Files
+=========================
+
+|cumotion| expects the following files for each robot, organized in a single directory:
+
+.. code-block:: text
+
+    robot_config/
+    ├── robot.urdf
+    ├── robot.xrdf
+    ├── rmp_flow.yaml                          (optional)
+    ├── graph_based_motion_planner_config.yaml (optional)
+    └── meshes/
+        ├── link_0.stl
+        ├── link_1.stl
+        └── ...
+
+* ``robot.urdf`` — The URDF file describing the robot's kinematic structure, joint limits, and link geometries.
+* ``robot.xrdf`` — The XRDF file containing |cumotion|-specific configuration: collision-sphere geometries, active/fixed joint assignments, default joint positions, tool frames, and self-collision rules.
+* ``meshes/`` — Directory containing the mesh files referenced by the URDF.
+* ``rmp_flow.yaml`` (optional) — RMPflow configuration for reactive control.
+* ``graph_based_motion_planner_config.yaml`` (optional) — Graph-based motion planner configuration.
+
+Both the URDF and XRDF files can be generated directly from a robot USD asset using extensions provided with Isaac Sim:
+
+* The :ref:`Isaac Sim USD to URDF Exporter <isaac_sim_app_extension_urdf_exporter>` exports a URDF file from a USD asset.
+* The :ref:`Robot Description Editor <isaac_sim_app_tutorial_motion_generation_robot_description_editor>` (extension: ``isaacsim.robot_setup.xrdf_editor``) generates the XRDF file, including collision spheres, joint properties, tool frames, and self-collision rules.
+
+.. note::
+   For a complete step-by-step walkthrough generating XRDF and URDF files for a UR10e with a Robotiq 2F-140 gripper, see :ref:`isaac_sim_app_tutorial_generate_robot_config_lula`.
+
+
+Loading Robot Configurations
+=============================
+
+Once you have URDF and XRDF files, load them into a :class:`CumotionRobot` object, which encapsulates all data needed to work with |cumotion|:
 
 * ``robot_description``: The |cumotion| robot description loaded from URDF/XRDF files, including default joint positions and tool frame names
 * ``kinematics``: The |cumotion| kinematics solver for forward kinematics and Jacobian computation
 * ``controlled_joint_names``: List of joint names controlled by |cumotion|
 * ``directory``: Path to the robot configuration directory (useful for loading related config files)
 
-.. note::
-   The Robot Description Editor also supports exporting to the Lula robot description format (``.yaml``), though Lula is deprecated as of Isaac Sim 6.0.
+The provided functions for loading a :class:`CumotionRobot` object are:
 
-Generating an XRDF File
-========================
-
-The **Robot Description Editor** (extension: ``isaacsim.robot_setup.xrdf_editor``) is the primary tool for generating XRDF files. For a full step-by-step walkthrough using a UR10e and Robotiq 2F-140 gripper, see the :ref:`isaac_sim_app_tutorial_generate_robot_config_lula` tutorial.
-
-Enable the Extension
---------------------
-
-* Go to **Window > Extensions**.
-* Search for ``isaacsim.robot_setup.xrdf_editor`` and enable it, checking **AUTOLOAD**.
-
-Prepare the Robot Asset
------------------------
-
-The Robot Description Editor does not support instanceable meshes.
-
-* Open your robot's USD file.
-* Select all ``visuals`` and ``collisions`` prims on the stage.
-* In the **Property** panel, uncheck the **Instanceable** checkbox for each.
-
-.. figure:: /manipulators/images/isim_6.0_full_tut_gui_lula_description_editor_instanceable_disable.png
-   :align: center
-   :alt: Property panel showing the Instanceable checkbox that should be unchecked
-
-   The **Instanceable** checkbox (highlighted in red) should be unchecked for all geometry prims.
-
-Configure Joint Properties
---------------------------
-
-* Press **Play** to start the simulation.
-* Open the editor via **Tools > Robotics > Robot Description Editor**.
-* In the **Selection Panel**, set **Select Articulation** to your robot's articulation prim path.
-* In **Set Joint Properties**, assign each joint a **Joint Status** and **Joint Position**:
-
-  * Mark arm joints as **Active Joint** — these are directly controlled by |cumotion|.
-  * Mark end-effector/gripper joints as **Fixed Joint** — |cumotion| holds these at the specified position.
-  * Choose fixed-joint positions that represent a reasonable open or rest configuration.
-
-.. image:: /images/isim_6.0_full_tut_gui_robot_description_editor.png
-   :width: 80%
-   :align: center
-
-Generate Collision Spheres
---------------------------
-
-.. important::
-   Do not stop the simulation or exit the Robot Description Editor during this step.
-
-Repeat the following for each link in the articulation:
-
-* Select the link from **Selection Panel > Select Link**.
-* In **Link Sphere Editor > Generate Spheres**, select a mesh from the **Select Mesh** dropdown.
-* Set **Radius Offset** and **Number of Spheres**, then click **GENERATE SPHERES**.
-* Spheres turn cyan when finalized.
-
-.. image:: /images/isim_6.0_full_tut_gui_link_sphere_editor.png
-   :width: 80%
-   :align: center
-
-.. image:: /images/isim_6.0_full_tut_gui_link_sphere_editor_add_spheres.png
-   :width: 80%
-   :align: center
-
-Tuning tips:
-
-* Size spheres to cover the link without being oversized — large spheres cause solver conservatism.
-* More spheres improves accuracy but reduces solver performance.
-* For long cylindrical links, generate spheres on the ends and use **Connect Spheres** to fill the middle.
-* Use **Scale Spheres in Link** to resize spheres uniformly across a link.
-* The auto-generator requires water-tight triangle meshes; otherwise, add and connect spheres manually.
-
-Export to XRDF
---------------
-
-.. important::
-   Do not stop the simulation or exit the Robot Description Editor before exporting.
-
-* At the bottom of the editor, expand **Export To File > Export to cuMotion XRDF**.
-* Click the file icon and specify a path ending in ``.xrdf`` or ``.yaml``.
-* Select the XRDF version to export (version 2.0 is recommended).
-* Click **Save**.
-
-Editing an XRDF File
-====================
-
-An existing XRDF file can be imported back into the Robot Description Editor for inspection or modification.
-
-Importing an XRDF File
-----------------------
-
-* Open **Import From File > Import XRDF File** in the editor.
-* Both XRDF format version 1.0 and 2.0 are supported.
-* Only collision-group spheres are imported; modifiers, tool frames, and self-collision groups are not used.
-* Importing overwrites all current editor state.
-
-Merging with an Existing XRDF File
------------------------------------
-
-Because XRDF files can contain more information than the editor represents (tool frames, modifiers, custom self-collision rules), the editor can merge its output into an existing file rather than overwriting it.
-
-When exporting, if you select a path to an existing XRDF file, an option to **Merge With Existing XRDF** appears. When merging, the editor:
-
-* Copies tool frames from the existing file.
-* Copies modifiers from the existing file.
-* Copies ``self_collision > ignore`` from the existing file if the collision geometry matches.
-* Copies collision spheres from the existing file for any links not represented in the editor.
-
-Loading Robot Configurations
-=============================
-
-Once you have URDF and XRDF files, load them into your application using the |cumotion| robot loading utilities.
-
+* :func:`load_cumotion_supported_robot` - Load a pre-configured robot from the extension's robot_configurations directory.
+* :func:`load_cumotion_robot` - Load a custom robot from a given directory.
 
 Loading Supported Robots
 ------------------------
@@ -188,34 +111,6 @@ If your URDF or XRDF files have different names, specify them explicitly:
 
 The function will raise a :class:`FileNotFoundError` if the specified files cannot be found.
 
-Robot Configuration Directory Structure
------------------------------------------
-
-A robot configuration directory should contain:
-
-* **robot.urdf** - The URDF file describing the robot's kinematic structure
-* **robot.xrdf** - The XRDF file containing additional |cumotion|-specific configuration
-* **meshes/** - Directory containing mesh files referenced by the URDF
-* **rmp_flow.yaml** (optional) - RMPflow configuration file for reactive control
-* **graph_based_motion_planner_config.yaml** (optional) - Graph planner configuration
-
-Example directory structure:
-
-.. code-block:: text
-
-    robot_configurations/
-    └── franka/
-        ├── robot.urdf
-        ├── robot.xrdf
-        ├── rmp_flow.yaml
-        ├── graph_based_motion_planner_config.yaml
-        └── meshes/
-            ├── panda_link0.stl
-            ├── panda_link1.stl
-            └── ...
-
-The URDF file describes the robot's kinematic structure, joint limits, and link geometries. The XRDF file provides |cumotion|-specific information such as collision-sphere geometries and self-collision settings.
-
 Accessing Robot Description and Kinematics
 -------------------------------------------
 
@@ -233,8 +128,8 @@ The controlled joint names are automatically extracted from the robot descriptio
    :end-before: <end-access-controlled-joints-snippet>
    :language: python
 
-Loading Configuration Files
------------------------------
+Loading Configuration Files for Reactive Control and Path Planning
+------------------------------------------------------------------
 
 The ``directory`` attribute of the :class:`CumotionRobot` object is useful for loading related configuration files.
 
@@ -266,18 +161,14 @@ Or specify an absolute path:
    :end-before: <end-load-graph-planner-absolute-snippet>
    :language: python
 
+The configuration files are subsequently used by all of the integrated |cumotion| planners and controllers:
 
-Using the Configuration Files
------------------------------
+* :class:`RmpFlowController`
+* :class:`GraphBasedMotionPlanner`
+* :class:`TrajectoryGenerator`
+* :class:`TrajectoryOptimizer`
 
-The configuration files are subsequently used by the :class:`CumotionRobot` class for all |cumotion| components:
-
-* :class:`RmpFlowController` - Reactive motion control
-* :class:`GraphBasedMotionPlanner` - Path planning
-* :class:`TrajectoryGenerator` - Trajectory generation
-* :class:`TrajectoryOptimizer` - Trajectory optimization
-
-See the following tutorials in the Isaac Sim |cumotion| documentation for more information.
+See the relevant tutorials under *Next Steps* at the end of this tutorial for more information on each of the |cumotion| components.
 
 Summary
 =======
@@ -285,12 +176,10 @@ Summary
 This tutorial covered:
 
 1. **XRDF Overview**: The structure of XRDF files and the concepts of active/fixed joints and collision spheres
-2. **Generating XRDF Files**: Using the Robot Description Editor to configure joints, generate collision spheres, and export
-3. **Editing XRDF Files**: Importing and merging XRDF files in the editor
-4. **Loading Supported Robots**: Using :func:`load_cumotion_supported_robot` for pre-configured robots
-5. **Custom Robots**: Using :func:`load_cumotion_robot` for your own URDF/XRDF files
-6. **Directory Structure**: Required files and optional configuration files
-7. **Accessing Robot Data**: Using the robot description and kinematics objects directly
+2. **Robot Configuration Files**: The URDF, XRDF, and optional configuration files required by |cumotion|, and the Isaac Sim tools used to generate them from a USD asset
+3. **Loading Supported Robots**: Using :func:`load_cumotion_supported_robot` for pre-configured robots
+4. **Custom Robots**: Using :func:`load_cumotion_robot` for your own URDF/XRDF files
+5. **Accessing Robot Data**: Using the robot description and kinematics objects directly
 
 Robot configurations are foundational for all |cumotion| motion planning and control. Once you have a configuration, you can use it with any |cumotion| component to generate motions for your robot.
 

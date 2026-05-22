@@ -160,7 +160,7 @@ if objects are not being added or removed from the scene.
    :align: center
    :width: 100%
 
-   Adding an obstacle, resetting the cumotion world, and running the trajectory optimizer again
+   Adding an obstacle, resetting the cuMotion world, and running the trajectory optimizer again
 
 Summary
 =======
