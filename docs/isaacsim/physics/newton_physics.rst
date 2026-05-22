@@ -80,6 +80,7 @@ You can switch between physics engines programmatically using the ``SimulationMa
 .. note::
    Switching physics engines should be done before starting the simulation. The switch deactivates the previous engine and activates the new one.
    Currently, only one physics engine can be active at a time.
+   When running standalone scripts via ``python.sh``, enable ``isaacsim.physics.newton`` and ``isaacsim.physics.newton.tensors`` manually before switching, as these are not loaded automatically outside of ``isaac-sim.newton.sh``.
 
 
 Basic Usage Example
@@ -155,12 +156,34 @@ To compare simulation results between Newton and PhysX:
 Asset Compatibility
 ===================
 
+Not all existing PhysX-based assets in |isaac-sim_short| are compatible with Newton. These assets are tuned for PhysX and may not produce optimal results with Newton/MuJoCo out of the box. You may need to adjust physics parameters (contact settings, solver iterations, timestep) to achieve the desired simulation behavior.
 
-Not all existing PhysX-based assets in |isaac-sim_short| are compatible with Newton. There are certain limitations on the Newton/MuJoCo side that may prevent you from using older assets out of the box.
-For instance:
+The following Newton/MuJoCo constraints may prevent assets from loading or simulating correctly:
 
-  * Meshes with negative scales or zero volume are not yet fully supported. If you use an asset with such meshes, even if the simulation runs, the results may be incorrect.
-  * Legacy assets tuned for PhysX may not produce exactly the same results with Newton/MuJoCo out of the box. You might need to adjust physics parameters (contact settings, solver iterations, and timestep) to achieve desired simulation behavior with Newton/MuJoCo.
+* **Reversed joint direction**: Newton requires that ``physics:body0`` is the parent body and ``physics:body1`` is the child body on every joint prim. Assets authored for PhysX often have these swapped. Newton reports *"Reversed joints are not supported"* and does not start. Fix by swapping ``physics:body0`` and ``physics:body1`` on the affected joint prims, or re-export the asset from a URDF/MJCF importer that targets Newton.
+
+* **Closed kinematic chains**: Newton does not support loop (closed-chain) joints. Robots with parallel linkage mechanisms will fail with *"Joint graph contains a cycle"*. These assets require breaking the loop at one joint or will need to wait for closed-chain support in a future release.
+
+* **Minimum body mass and inertia**: Newton's solver enforces a minimum mass and inertia for all dynamic bodies. Links with near-zero or unset mass will cause initialization to fail with *"mass and inertia of moving bodies must be larger than mjMINVAL"*. Ensure all rigid bodies have non-zero mass and inertia properties set (see :ref:`isaac_sim_app_reference_asset_validation`), or mark the affected links as kinematic.
+
+* **Zero-size collision shapes**: Newton requires all collision geometry to have non-zero dimensions. A box, sphere, or capsule shape with any zero half-extent, often used as a placeholder in PhysX assets, triggers *"Only plane shapes are allowed to have a size of zero"*. Replace zero-size shapes with properly sized geometry or remove them.
+
+* **Joints outside articulation roots**: All joints must belong to an articulation (a prim with ``UsdPhysics.ArticulationRootAPI``). Joints that exist outside any articulation root, which PhysX can simulate as free joints, cause Newton to report *"Found N joint(s) not belonging to any articulation"* and fail initialization.
+
+* **USD stage composition errors**: Newton's stage parser is stricter than PhysX about USD composition validity. Stages with unresolved reference prims, missing payloads, or sublayer cycles that PhysX silently ignores will fail Newton initialization with *"USD stage has composition errors"*. Resolve all composition errors (visible in the USD Composer stage panel) before switching to Newton.
+
+* **Negative scale transforms**: Newton's USD import pipeline does not correctly handle negative scale transforms on collision shapes, leading to incorrect geometry and simulation artifacts, often surfacing as a misleading *"The model must have at least one joint"* error rather than a message about the scale. PhysX handles negative scale by mirroring collision geometry; Newton does not. Avoid negative scale transforms on collision shapes and use explicitly mirrored meshes instead. This is a known issue being worked on for a future Newton release.
+
+* **Scenes without joints**: Newton's MuJoCo solver currently requires at least one joint in the model. A rigid body with no collision geometry and no explicitly authored mass has zero mass from Newton's perspective; zero-mass bodies are skipped when Newton assigns free joints to floating bodies, leaving no joints in the model and failing with *"The model must have at least one joint to be able to convert it to MuJoCo"*. As a workaround, add collision geometry to the rigid body or explicitly author a mass via ``UsdPhysics.MassAPI``. This is a known parser limitation being addressed so that free rigid bodies are handled automatically in a future release.
+
+* **Contact count limit**: The MuJoCo Warp solver pre-allocates a fixed contact buffer (``nconmax``, default 200). Scenes that generate more simultaneous contacts than this limit will drop the excess contacts each step, producing incorrect simulation results. If you see *"Number of Newton contacts (N) exceeded MJWarp limit"* printed to stdout, increase ``nconmax`` via the Newton stage solver config before simulation starts:
+
+  .. code-block:: python
+
+      import isaacsim.physics.newton as newton_ext
+      ns = newton_ext.acquire_stage()
+      if ns is not None:
+          ns.cfg.solver_cfg.nconmax = 1000
 
 With the new asset structure and MJCF/URDF importers, we are working toward converting each asset to both PhysX schemas and MJC USD schemas. This will enable consistent simulation behavior between the original MJCF asset (using MuJoCo) and the converted MJC USD asset (using Newton).
 

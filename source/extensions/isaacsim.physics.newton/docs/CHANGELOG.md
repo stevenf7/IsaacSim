@@ -1,9 +1,13 @@
 # Changelog
 
+## [0.7.13] - 2026-05-21
+### Added
+- Document Newton asset compatibility limitations and workarounds.
+- Regression tests for Newton initialization error handling.
+
 ## [0.7.12] - 2026-05-19
 ### Added
 - Unit test that tests imported urdf and mjcf asset behavior in both physx and newton
-
 
 ## [0.7.11] - 2026-05-18
 ### Changed
