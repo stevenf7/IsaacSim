@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.5] - 2026-05-15
+### Added
+- `nurec_overrides` module exporting `is_nurec_stage` and `apply_nurec_replay_overrides`. Detects NuRec stages by traversing for `ParticleField` prims; when detected, forces replay flags to the supported subset (RGB only) and re-asserts `/rtx/rtpt/gaussian/skipTonemapping/enabled = False` so splat RGB matches the viewport. The RGB-only restriction and tonemap re-assert reflect the current state of NuRec support in Kit/Omniverse; non-RGB modalities and other render settings are gated here until they are addressed in future versions.
+- `replay_directory.py`: invokes `apply_nurec_replay_overrides` after each `load_scenario` so per-recording flag overrides take effect before render-product attachment.
+
 ## [0.2.4] - 2026-05-13
 ### Fixed
 - Broken texture/material references on replay when the source scene uses external assets — recordings are now self-contained.
