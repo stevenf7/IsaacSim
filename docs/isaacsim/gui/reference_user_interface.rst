@@ -12,7 +12,7 @@
 User Interface Reference
 ========================
 
-:doc:`NVIDIA Omniverse™ Isaac Sim </overview/overview>` is built on `NVIDIA Omniverse <https://docs.omniverse.nvidia.com/>`_ platform, so it shares the same UI elements as many Omniverse apps.
+:ref:`NVIDIA Omniverse™ Isaac Sim <isaac_sim_app_overview>` is built on `NVIDIA Omniverse <https://docs.omniverse.nvidia.com/>`_ platform, so it shares the same UI elements as many Omniverse apps.
 
 
 .. _isaac_sim_opening_page:

@@ -90,6 +90,29 @@ try:
     extensions.append("image_lightbox")
 except NameError:
     extensions = ["config_selector", "image_lightbox"]
+
+# Isaac Sim docs design system: shared CSS tokens and reusable
+# content primitives. Page-agnostic; any docs page can compose these.
+extensions.append("isaacsim_design.tokens")
+extensions.append("isaacsim_design.directives.card_body")
+extensions.append("isaacsim_design.directives.difficulty")
+extensions.append("isaacsim_design.directives.lead")
+extensions.append("isaacsim_design.directives.link_grid")
+# Isaac Sim homepage: page-specific glue for overview.rst 
+# Walks raw `.. raw:: html` blocks in the master doc after parse and
+# validates the hrefs they contain, so internal links written inline
+# in raw HTML break the build the same way directive-managed ones do.
+extensions.append("isaacsim_homepage.raw_link_check")
+# Copies and scopes the homepage CSS, JS, and hero image bundle.
+extensions.append("isaacsim_homepage.assets")
+
+# Copy the meta-refresh redirect at docs/isaacsim/_extra/overview/overview.html
+# verbatim into the build output, so the legacy /overview/overview.html
+# URL keeps working after overview.rst became `.. include::`-only.
+try:
+    html_extra_path.append("_extra")
+except NameError:
+    html_extra_path = ["_extra"]
 """
 
 sphinx_exclude_patterns = [
@@ -97,6 +120,10 @@ sphinx_exclude_patterns = [
     "**/license_files/*.md",
     "**/custom/*.rst",
     "${root}/docs/isaacsim/assets/SICK/**/readme.md",
+    # overview.rst is only ever included into index.rst (the landing page);
+    # excluding it here prevents Sphinx from building a standalone
+    # overview/overview.html, which would have broken relative links.
+    "overview/overview.rst",
 ]
 
 deps = [
