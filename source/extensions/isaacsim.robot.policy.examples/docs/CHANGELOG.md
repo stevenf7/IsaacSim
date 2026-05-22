@@ -1,6 +1,6 @@
 # Changelog
 
-## [5.9.10] - 2026-05-21
+## [5.2.10] - 2026-05-21
 ### Fixed
 - Restore the prior physics sim device and fabric state in the cleanup paths of the interactive Quadruped, Go2, and Humanoid examples so the PhysX direct-GPU API flag is not left enabled, which previously caused `PxArticulationJointReducedCoordinate::setDriveTarget` errors when modifying USD in subsequent sessions
 
