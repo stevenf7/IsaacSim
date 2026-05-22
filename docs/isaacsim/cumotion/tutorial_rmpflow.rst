@@ -48,7 +48,7 @@ The controller needs:
 * **Joint and site spaces**: The full ordered control spaces for the robot joints and sites (see the :doc:`Motion Generation API documentation <../motion_generation/mobile_robot_control_example>` for more details)
 * **Tool frame**: The name of the end-effector frame to control - at initialization, the controller will confirm that the tool frame is in the site space
 
-If the tool frame is not provided, the controller will use the first tool frame defined in the cumotion robot description.
+If the tool frame is not provided, the controller will use the first tool frame defined in the cuMotion robot description.
 
 Creating RobotState Objects
 ===========================
@@ -196,7 +196,7 @@ Example Usage
 
 The following videos show RMPflow as demonstrated in the ``isaacsim.robot_motion.cumotion.examples`` extension. 
 Note that in these videos, the setting ``visualize_debug_prims`` is left at the default ``False``. Therefore,
-there are no prims to visualize the internal cumotion World objects.
+there are no prims to visualize the internal cuMotion World objects.
 
 The first video shows RMPflow controlling the robot to reach a target while avoiding obstacles in the scene.
 
@@ -215,7 +215,7 @@ if objects are not being added or removed from the scene.
    :align: center
    :width: 100%
 
-   Adding an obstacle, resetting the cumotion world, and running RMPflow again
+   Adding an obstacle, resetting the cuMotion world, and running RMPflow again
 
 Summary
 =======

@@ -10,7 +10,7 @@
 .. _isaac_sim_app_tutorial_advanced_joint_tuning:
 
 ==========================================
-Tutorial: Tuning joint drive gains
+Tutorial 11: Tuning Joint Drive Gains
 ==========================================
 
 Learning Objectives
