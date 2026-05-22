@@ -50,14 +50,18 @@ if asset_root is not None:
     PRESETS = {
         "production": f"{S3_PROD}/5.0",
         "staging": f"{S3_STAGING}/6.0",
-        "nucleus": "omniverse://isaac-dev.ov.nvidia.com",
     }
 
     url = PRESETS.get(asset_root, asset_root)
 
     s = carb.settings.get_settings()
     old = s.get("/persistent/isaac/asset_root/default")
-    s.set("/persistent/isaac/asset_root/default", url)
+
+    if asset_root == "nucleus":
+        s.destroy_item("/persistent/isaac/asset_root/default")
+        url = s.get("/persistent/isaac/asset_root/default") or "(unset)"
+    else:
+        s.set("/persistent/isaac/asset_root/default", url)
 
     print(f"Asset root changed: {old} -> {url}")
 
