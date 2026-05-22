@@ -1123,6 +1123,7 @@ Removed
 	:maxdepth: 2
 
 	./known_issues
+	../migration_guides/index
 
 
 

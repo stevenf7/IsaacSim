@@ -204,13 +204,8 @@ Key reasons for the redesign:
     schemas and prims, making them inspectable and editable directly in the
     stage.
 
-The migration guide below walks through every breaking change with before and after
-examples, and a step-by-step checklist:
-
-.. toctree::
-    :maxdepth: 1
-
-    ./ext_replicator-agent/ext_isaacsim_replicator_agent_migration_guide.rst
+For the full migration guide covering every breaking change with before/after
+examples and a step-by-step checklist, see :ref:`ira_migration_guide_0x_to_1x`.
 
 For editing the configuration files through UI or code, refer to the :ref:`Configuration Editor API <ira_configuration_editor_api>`:
 

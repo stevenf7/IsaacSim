@@ -230,6 +230,12 @@ After recording a trajectory (robot poses and joint state), you can *replay* it 
 to render sensor images (RGB, depth, segmentation, normals) without re-running the physics
 simulation.
 
+.. note::
+
+   Recordings made with Isaac Sim 5.x use a different on-disk format than 6.0 and must be
+   converted before replay. See :ref:`mobility_gen_recordings_migration` for the conversion
+   script.
+
 Isaac Sim ships a standalone replay script for this. Run it from the Isaac Sim root directory
 (replace ``~/omni_isaac_sim`` with your actual Isaac Sim installation path):
 
@@ -458,24 +464,6 @@ Use a NuRec Scene
    bounds as needed before recording trajectories.
 
 
-Migrate Older Recordings
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Recordings made with Isaac Sim 5.x store robot state in ``state/common/*.npy`` files
-(pickled Python dicts).  Starting with Isaac Sim 6.0, MobilityGen switched to
-``state/common/*.npz`` (named NumPy arrays).  The reader only supports the new format,
-so older recordings must be converted before replay.
-
-To convert all recordings in a directory in-place, run:
-
-.. code-block:: bash
-
-   ./python.sh \
-       standalone_examples/replicator/mobility_gen/migrate_recordings.py \
-       --input ~/MobilityGenData/recordings
-
-If a recording still uses the old format, the reader will log an error and produce
-zero steps — convert it with the script above before replaying.
 
 Next Steps
 ----------

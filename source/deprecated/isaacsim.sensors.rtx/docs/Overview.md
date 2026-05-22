@@ -14,7 +14,7 @@ New code should use the `isaacsim.sensors.experimental.rtx` extension. The mappi
 | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `IsaacSensorCreateRtxLidar` Kit command               | {class}`Lidar.create(path, config=...) <isaacsim.sensors.experimental.rtx.Lidar>`                                      |
 | `IsaacSensorCreateRtxRadar` Kit command               | {class}`Radar(path, ...) <isaacsim.sensors.experimental.rtx.Radar>`                                                    |
-| `IsaacSensorCreateRtxIDS` Kit command                 | {class}`SingleViewDepthCameraSensor <isaacsim.sensors.experimental.rtx.SingleViewDepthCameraSensor>` (depth-sensor flow) |
+| `IsaacSensorCreateRtxIDS` Kit command                 | No equivalent in `isaacsim.sensors.experimental.rtx` today; may be supported in a future release. In the meantime, continue to use this deprecated command or author the IDS occupancy prim directly in USD. |
 | `LidarRtx` runtime class                              | {class}`LidarSensor <isaacsim.sensors.experimental.rtx.LidarSensor>` wrapping a {class}`Lidar <isaacsim.sensors.experimental.rtx.Lidar>` authoring object |
 | `omni:sensor:Core:auxOutputType` USD attribute (Lidar) | `_replicator:rendervar:GenericModelOutput:channels = ["FULL"]` on the `OmniLidar` prim, or `aux_output_level="FULL"` on the constructor |
 | `omni:sensor:WpmDmat:auxOutputType` USD attribute (Radar) | `_replicator:rendervar:GenericModelOutput:channels = ["BASIC"]` on the `OmniRadar` prim, or `aux_output_level="BASIC"` on the constructor |
