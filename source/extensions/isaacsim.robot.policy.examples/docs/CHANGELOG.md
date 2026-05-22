@@ -1,5 +1,16 @@
 # Changelog
 
+## [5.9.10] - 2026-05-21
+### Fixed
+- Restore the prior physics sim device and fabric state in the cleanup paths of the interactive Quadruped, Go2, and Humanoid examples so the PhysX direct-GPU API flag is not left enabled, which previously caused `PxArticulationJointReducedCoordinate::setDriveTarget` errors when modifying USD in subsequent sessions
+
+### Added
+- Unit tests covering the snapshot/restore helpers in `isaacsim.robot.policy.examples.interactive.utils`, plus per-example roundtrip tests that verify the Quadruped, Go2, and Humanoid examples leave the physics sim device and fabric flag unchanged after cleanup
+
+### Changed
+- Extract the snapshot/restore physics-state logic shared by the interactive Quadruped, Go2, and Humanoid examples into `isaacsim.robot.policy.examples.interactive.utils`
+
+
 ## [5.2.9] - 2026-05-21
 ### Fixed
 - Spot fall over issue in example by reverting the physics dt to 500hz
