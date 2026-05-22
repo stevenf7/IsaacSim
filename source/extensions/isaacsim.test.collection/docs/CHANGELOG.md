@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.7] - 2026-05-21
+### Fixed
+- Make Leatherback `test_cameras` resilient to multitick-rendering publisher-discovery latency by extending `wait_for_publishers_on_topic` timeout and draining additional frames before sampling pixels.
+
 ## [2.6.6] - 2026-05-18
 ### Fixed
 - Improve Leatherback ROS2 test reliability by using ROS2TestCase helpers and waiting for ROS publishers, subscribers, and camera data.
