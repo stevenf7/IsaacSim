@@ -16,7 +16,7 @@ Publishing Camera's Data
 Learning Objectives
 =======================
 
-In this tutorial, you learn how to programmatically set up publishers for Isaac Sim Cameras at an approximate frequency.
+In this tutorial, you learn how to programmatically set up ROS 2 publishers for Isaac Sim Cameras. Under multitick rendering, the publish cadence is driven by the camera's ``tick_rate`` (set on the ``RtxCamera``), so no per-publisher rate-divider is needed. To configure different publish rates per sensor, see :ref:`isaac_sim_app_tutorial_ros2_publish_rate`.
 
 
 Getting Started
@@ -182,7 +182,7 @@ From the side view:
 Summary
 =======================
 
-This tutorial demonstrated how to programmatically set up ROS 2 publishers for Isaac Sim Cameras at an approximate frequency.
+This tutorial demonstrated how to programmatically set up ROS 2 publishers for Isaac Sim Cameras. With multitick rendering, the publish cadence follows the camera's ``tick_rate`` directly. As opposed to earlier releases, there is no longer a separate gate-step divider per publisher. To configure different publish rates across sensor types (IMU, RTX Lidar, Camera), see :ref:`isaac_sim_app_tutorial_ros2_publish_rate`.
 
 Next Steps
 ^^^^^^^^^^^^^^^^^^^^^^
