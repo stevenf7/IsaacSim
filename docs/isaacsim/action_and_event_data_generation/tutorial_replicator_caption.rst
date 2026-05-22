@@ -68,7 +68,7 @@ IRC provides a Python API (``CaptionAPI``) for programmatic model configuration 
    def setup_irc_model():
        CaptionAPI.set_model_params(
            url="https://integrate.api.nvidia.com/v1",
-           name="meta/llama3-8b-instruct",
+           name="meta/llama-3.1-8b-instruct",
            key=os.environ["NVIDIA_API_KEY"],
        )
        print("IRC model params set successfully.")
@@ -199,13 +199,10 @@ To launch scene caption generation with the UI panel:
    .. note::
 
       The default service URL and model name are provided as a convenience. The services are hosted by NVIDIA and provided free of charge on a trial basis.
-      If the service associated with the default model is not reachable, a different model can be selected. Examples include:
+      If the service associated with the default model is not reachable, a different model can be selected from the models available on
+      the `NVIDIA NIM API reference page <https://docs.api.nvidia.com/nim/reference/llm-apis>`_. Enter the model identifier in the **Model Name** field of the **Model Settings** panel.
 
-      * ``meta/llama3-8b-instruct``
-      * ``meta/llama3-70b-instruct``
-      * ``meta/llama-3.1-405b-instruct``
-
-      It's also possible to obtain the NVIDIA NIMs listed on the `LLM API reference page <https://docs.api.nvidia.com/nim/reference/llm-apis>`_ and host them locally.
+      It's also possible to obtain NVIDIA NIMs and host them locally.
       Visit `NVIDIA's NIM page <https://build.nvidia.com>`_ for more details.
 
 7. The scene graph, the caption, and the corresponding images are generated and saved in the output directory.
