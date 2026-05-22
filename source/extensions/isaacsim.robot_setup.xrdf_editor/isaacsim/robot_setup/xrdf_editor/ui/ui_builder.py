@@ -139,12 +139,12 @@ class UIBuilder:
         self._selection_panel.refresh_articulations()
 
     def on_stage_closed(self, event: object) -> None:
-        """Refresh available articulations when the stage is closed.
+        """No-op handler for stage-closed events.
 
         Args:
             event: Stage closed event payload (unused).
         """
-        self._selection_panel.refresh_articulations()
+        pass
 
     def on_simulation_start_play(self, event: object) -> None:
         """Begin tracking the selected articulation when simulation starts.

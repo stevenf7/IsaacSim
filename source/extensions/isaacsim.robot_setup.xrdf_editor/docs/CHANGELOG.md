@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.6.1] - 2026-05-22
+### Changed
+- Info paragraphs to prioritize cuMotion over Lula.
+- Documentation link.
+
+### Fixed
+- `UIBuilder.on_stage_closed` was referencing the stage, causing a ValueError to be raised.
+
 ## [3.6.0] - 2026-05-20
 ### Changed
 - Decompose monolithic `extension.py` into focused modules.
