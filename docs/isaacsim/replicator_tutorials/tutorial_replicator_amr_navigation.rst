@@ -379,6 +379,16 @@ The following section provides an overview and explanation of the implementation
         * If set to ``True``, the render products are only enabled during data capture. 
         * ``False`` is the default. It renders the render products and processes every frame.
 
+        .. note::
+
+            ``_setup_sdg`` sets ``omni:sensor:tickRate = 0`` (autotrigger) on the Nova Carter
+            ``front_hawk`` left and right cameras. Under multi-tick rendering, the per-sensor
+            tick scheduler can fall out of sync with ``rep.orchestrator.step_async`` and the
+            writer may receive no frames; forcing autotrigger keeps these sensor cameras in
+            step with the orchestrator. This workaround is expected to be removed in a future
+            release. See :ref:`isaac_sim_sensors_multitick_rendering` for details on the
+            ``omni:sensor:tickRate`` attribute.
+
         .. raw:: html
 
             <details closed>

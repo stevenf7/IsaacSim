@@ -282,13 +282,13 @@ class NavSDGDemo:
         # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
         carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
 
-        # Set camera sensors fStop to 0.0 to get well lit sharp images
-        left_camera_path = self._carter_chassis.GetPath().AppendPath(self.LEFT_CAMERA_REL_PATH)
-        left_camera_prim = self._stage.GetPrimAtPath(left_camera_path)
-        left_camera_prim.GetAttribute("fStop").Set(0.0)
-        right_camera_path = self._carter_chassis.GetPath().AppendPath(self.RIGHT_CAMERA_REL_PATH)
-        right_camera_prim = self._stage.GetPrimAtPath(right_camera_path)
-        right_camera_prim.GetAttribute("fStop").Set(0.0)
+        # fStop=0 for well-lit sharp images; tickRate=0 forces autotrigger so the sensor
+        # cameras stay in sync with rep.orchestrator.step_async under multi-tick rendering.
+        for rel_path in (self.LEFT_CAMERA_REL_PATH, self.RIGHT_CAMERA_REL_PATH):
+            camera_prim = self._stage.GetPrimAtPath(self._carter_chassis.GetPath().AppendPath(rel_path))
+            camera_prim.GetAttribute("fStop").Set(0.0)
+            if camera_prim.HasAttribute("omni:sensor:tickRate"):
+                camera_prim.GetAttribute("omni:sensor:tickRate").Set(0.0)
 
         backend = rep.backends.get("DiskBackend")
         backend.initialize(output_dir=self._out_dir)
