@@ -3,7 +3,7 @@ import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", action="store_true", help="Run in test mode.")
-args, unknown = parser.parse_known_args()
+args, _ = parser.parse_known_args()
 
 import carb
 from isaacsim import SimulationApp
@@ -56,11 +56,10 @@ def _get_sensor_info(sensor: CameraSensor) -> tuple[str, str, str]:
     return rp_path, prim_path, frame_id
 
 
-def publish_camera_info(sensor: CameraSensor, freq):
+def publish_camera_info(sensor: CameraSensor):
     from isaacsim.ros2.core import read_camera_info
 
     rp_path, _, frame_id = _get_sensor_info(sensor)
-    step_size = int(60 / freq)
     topic_name = frame_id + "_camera_info"
 
     writer = rep.writers.get("ROS2PublishCameraInfo")
@@ -81,13 +80,9 @@ def publish_camera_info(sensor: CameraSensor, freq):
     )
     writer.attach([rp_path])
 
-    gate_path = omni.syntheticdata.SyntheticData._get_node_path("PostProcessDispatch" + "IsaacSimulationGate", rp_path)
-    og.Controller.attribute(gate_path + ".inputs:step").set(step_size)
 
-
-def publish_pointcloud_from_depth(sensor: CameraSensor, freq):
+def publish_pointcloud_from_depth(sensor: CameraSensor):
     rp_path, _, frame_id = _get_sensor_info(sensor)
-    step_size = int(60 / freq)
     topic_name = frame_id + "_pointcloud"
 
     # Note, this pointcloud publisher will convert the Depth image to a pointcloud using the Camera intrinsics.
@@ -97,13 +92,9 @@ def publish_pointcloud_from_depth(sensor: CameraSensor, freq):
     writer.initialize(frameId=frame_id, nodeNamespace="", queueSize=1, topicName=topic_name)
     writer.attach([rp_path])
 
-    gate_path = omni.syntheticdata.SyntheticData._get_node_path(rv + "IsaacSimulationGate", rp_path)
-    og.Controller.attribute(gate_path + ".inputs:step").set(step_size)
 
-
-def publish_rgb(sensor: CameraSensor, freq):
+def publish_rgb(sensor: CameraSensor):
     rp_path, _, frame_id = _get_sensor_info(sensor)
-    step_size = int(60 / freq)
     topic_name = frame_id + "_rgb"
 
     rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
@@ -111,22 +102,15 @@ def publish_rgb(sensor: CameraSensor, freq):
     writer.initialize(frameId=frame_id, nodeNamespace="", queueSize=1, topicName=topic_name)
     writer.attach([rp_path])
 
-    gate_path = omni.syntheticdata.SyntheticData._get_node_path(rv + "IsaacSimulationGate", rp_path)
-    og.Controller.attribute(gate_path + ".inputs:step").set(step_size)
 
-
-def publish_depth(sensor: CameraSensor, freq):
+def publish_depth(sensor: CameraSensor):
     rp_path, _, frame_id = _get_sensor_info(sensor)
-    step_size = int(60 / freq)
     topic_name = frame_id + "_depth"
 
     rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.DistanceToImagePlane.name)
     writer = rep.writers.get(rv + "ROS2PublishImage")
     writer.initialize(frameId=frame_id, nodeNamespace="", queueSize=1, topicName=topic_name)
     writer.attach([rp_path])
-
-    gate_path = omni.syntheticdata.SyntheticData._get_node_path(rv + "IsaacSimulationGate", rp_path)
-    og.Controller.attribute(gate_path + ".inputs:step").set(step_size)
 
 
 def publish_camera_tf(sensor: CameraSensor):
@@ -227,26 +211,27 @@ def publish_camera_tf(sensor: CameraSensor):
 
 ###################################################################
 
-# Create a CameraSensor. RtxCamera handles prim creation with position/orientation;
-# CameraSensor wraps it and creates a render product at the desired resolution.
+# RtxCamera creates the USD Camera prim; CameraSensor wraps it with a render product
+# and the rgb / distance_to_image_plane annotators that the ROS 2 writers below consume.
 rtx_camera = RtxCamera(
     "/World/floating_camera",
+    tick_rate=30.0,
     positions=np.array([-3.11, -1.87, 1.0]),
-    orientations=transform_utils.euler_angles_to_quaternion(np.array([0, 0, 0]), degrees=True).numpy(),
+    # Rotate the USD camera (default: -Z forward, +Y up) so it looks along world +X with +Z up.
+    orientations=transform_utils.euler_angles_to_quaternion(np.array([90, 0, -90]), degrees=True).numpy(),
 )
 
 simulation_app.update()
 
-camera_sensor = CameraSensor(rtx_camera, resolution=(256, 256))
+camera_sensor = CameraSensor(rtx_camera, resolution=(256, 256), annotators=["rgb", "distance_to_image_plane"])
 
 ############### Calling Camera publishing functions ###############
 
-approx_freq = 30
 publish_camera_tf(camera_sensor)
-publish_camera_info(camera_sensor, approx_freq)
-publish_rgb(camera_sensor, approx_freq)
-publish_depth(camera_sensor, approx_freq)
-publish_pointcloud_from_depth(camera_sensor, approx_freq)
+publish_camera_info(camera_sensor)
+publish_rgb(camera_sensor)
+publish_depth(camera_sensor)
+publish_pointcloud_from_depth(camera_sensor)
 
 ####################################################################
 
