@@ -23,6 +23,10 @@ from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.simulation_manager.impl.isaac_events import IsaacEvents
 from isaacsim.examples.base.base_sample_experimental import BaseSample
+from isaacsim.robot.policy.examples.interactive.utils import (
+    restore_physics_simulation_state,
+    snapshot_physics_simulation_state,
+)
 from isaacsim.robot.policy.examples.robots import Go2FlatTerrainPolicy
 from isaacsim.storage.native import get_assets_root_path
 from pxr import UsdPhysics, UsdShade
@@ -54,6 +58,8 @@ class Go2Example(BaseSample):
         self._sub_keyboard = None
         self._input = None
         self._keyboard = None
+        self._prev_physics_sim_device: str | None = None
+        self._prev_fabric_enabled: bool | None = None
 
         # Bindings for keyboard to command
         self._input_keyboard_mapping = {
@@ -108,6 +114,9 @@ class Go2Example(BaseSample):
 
     def setup_scene(self) -> None:
         """Set up the scene with robot and environment."""
+        # Snapshot prior physics device/fabric state so cleanup can restore it.
+        self._prev_physics_sim_device, self._prev_fabric_enabled = snapshot_physics_simulation_state()
+
         # Set device and backend BEFORE creating robot so it uses GPU
         SimulationManager.set_backend(self._world_settings["backend"])
         SimulationManager.set_physics_sim_device(self._world_settings["device"])
@@ -171,6 +180,7 @@ class Go2Example(BaseSample):
         self._unsubscribe_keyboard()
         self.go2 = None
         self._physics_ready = False
+        self._restore_physics_simulation_state()
 
     def on_physics_step(self, dt: float, context: object) -> None:
         """Physics step callback - initialize on first step, then run policy at decimated rate.
@@ -237,3 +247,10 @@ class Go2Example(BaseSample):
         self._unsubscribe_keyboard()
         self.go2 = None
         self._physics_ready = False
+        self._restore_physics_simulation_state()
+
+    def _restore_physics_simulation_state(self) -> None:
+        """Restore the physics sim device and fabric state captured in ``setup_scene``."""
+        restore_physics_simulation_state(self._prev_physics_sim_device, self._prev_fabric_enabled)
+        self._prev_physics_sim_device = None
+        self._prev_fabric_enabled = None
