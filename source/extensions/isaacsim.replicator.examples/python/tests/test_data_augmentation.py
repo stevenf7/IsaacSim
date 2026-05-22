@@ -25,11 +25,12 @@ from isaacsim.test.utils.image_comparison import compare_images_in_directories
 
 class TestDataAugmentation(omni.kit.test.AsyncTestCase):
 
-    # Per-channel mean-diff tolerances. RGB augmentations stay close to the golden
-    # because the channel swap / HSV roundtrip is bit-stable, while depth is amplified
-    # by the min/max normalization in convert_depth_to_uint8 plus tiny rendering deltas.
-    RGB_MEAN_DIFF_TOLERANCE = 5
-    DEPTH_MEAN_DIFF_TOLERANCE = 30
+    # Per-channel mean-diff tolerances. Bit-stable augmentations (annotator RGB channel
+    # swap) stay close to the golden, while noisy augmentations (gaussian noise on RGB
+    # or depth, amplified for depth by the min/max normalization in convert_depth_to_uint8)
+    # accumulate larger per-pixel deltas.
+    NO_NOISE_MEAN_DIFF_TOLERANCE = 5
+    NOISE_MEAN_DIFF_TOLERANCE = 30
 
     async def setUp(self):
         await omni.kit.app.get_app().next_update_async()
@@ -170,11 +171,11 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             depth_annot_1.attach(rp)
             depth_annot_2.attach(rp)
 
-            # Create a red cube and randomize its rotation every capture frame using a replicator randomizer graph
+            # Create a red cube and randomize its rotation on a custom event sent before each capture step
             red_cube = rep.functional.create.cube(position=(0, 0, 0.71))
             rep.functional.create.material(mdl="OmniPBR.mdl", bind_prims=[red_cube], diffuse_color_constant=(1, 0, 0))
 
-            with rep.trigger.on_frame():
+            with rep.trigger.on_custom_event(event_name="randomize_red_cube"):
                 red_cube_node = rep.get.prim_at_path(red_cube.GetPath())
                 with red_cube_node:
                     rep.randomizer.rotation()
@@ -187,6 +188,7 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             capture_start = time.time()
             for frame_idx in range(num_frames):
                 print(f"  Capturing frame {frame_idx + 1}/{num_frames}")
+                rep.utils.send_og_event(event_name="randomize_red_cube")
                 await rep.orchestrator.step_async(rt_subframes=32)
 
                 # Get the data from the annotators
@@ -251,12 +253,12 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
                 path_pattern=r"^annot_rgb_.*\.png$",
                 allclose_rtol=None,
                 allclose_atol=None,
-                mean_tolerance=self.RGB_MEAN_DIFF_TOLERANCE,
+                mean_tolerance=self.NO_NOISE_MEAN_DIFF_TOLERANCE,
                 print_all_stats=False,
             )
             self.assertTrue(
                 rgb_result["all_passed"],
-                f"RGB image comparison failed ({mode_label}, tol={self.RGB_MEAN_DIFF_TOLERANCE}). Output dir: {out_dir}",
+                f"RGB image comparison failed ({mode_label}, tol={self.NO_NOISE_MEAN_DIFF_TOLERANCE}). Output dir: {out_dir}",
             )
 
             depth_result = compare_images_in_directories(
@@ -265,12 +267,12 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
                 path_pattern=r"^annot_depth_.*\.png$",
                 allclose_rtol=None,
                 allclose_atol=None,
-                mean_tolerance=self.DEPTH_MEAN_DIFF_TOLERANCE,
+                mean_tolerance=self.NOISE_MEAN_DIFF_TOLERANCE,
                 print_all_stats=False,
             )
             self.assertTrue(
                 depth_result["all_passed"],
-                f"Depth image comparison failed ({mode_label}, tol={self.DEPTH_MEAN_DIFF_TOLERANCE}). Output dir: {out_dir}",
+                f"Depth image comparison failed ({mode_label}, tol={self.NOISE_MEAN_DIFF_TOLERANCE}). Output dir: {out_dir}",
             )
 
     async def test_data_augmentation_writer(self):
@@ -419,10 +421,10 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             rp = rep.create.render_product(cam, resolution)
             writer.attach(rp)
 
-            # Create a red cube and randomize its rotation every capture frame using a replicator randomizer graph
+            # Create a red cube and randomize its rotation on a custom event sent before each capture step
             red_cube = rep.functional.create.cube(position=(0, 0, 0.71))
             rep.functional.create.material(mdl="OmniPBR.mdl", bind_prims=[red_cube], diffuse_color_constant=(1, 0, 0))
-            with rep.trigger.on_frame():
+            with rep.trigger.on_custom_event(event_name="randomize_red_cube"):
                 red_cube_node = rep.get.prim_at_path(red_cube.GetPath())
                 with red_cube_node:
                     rep.randomizer.rotation()
@@ -430,6 +432,7 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             capture_start = time.time()
             for frame_idx in range(num_frames):
                 print(f"  Capturing frame {frame_idx + 1}/{num_frames}")
+                rep.utils.send_og_event(event_name="randomize_red_cube")
                 await rep.orchestrator.step_async(rt_subframes=32)
 
             # Wait for the data to be written to disk and release resources
@@ -476,12 +479,12 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
                 path_pattern=r"^rgb_.*\.png$",
                 allclose_rtol=None,
                 allclose_atol=None,
-                mean_tolerance=self.RGB_MEAN_DIFF_TOLERANCE,
+                mean_tolerance=self.NOISE_MEAN_DIFF_TOLERANCE,
                 print_all_stats=False,
             )
             self.assertTrue(
                 rgb_result["all_passed"],
-                f"RGB image comparison failed ({mode_label}, tol={self.RGB_MEAN_DIFF_TOLERANCE}). Output dir: {out_dir}",
+                f"RGB image comparison failed ({mode_label}, tol={self.NOISE_MEAN_DIFF_TOLERANCE}). Output dir: {out_dir}",
             )
 
             depth_result = compare_images_in_directories(
@@ -490,10 +493,10 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
                 path_pattern=r"^distance_to_camera_.*\.png$",
                 allclose_rtol=None,
                 allclose_atol=None,
-                mean_tolerance=self.DEPTH_MEAN_DIFF_TOLERANCE,
+                mean_tolerance=self.NOISE_MEAN_DIFF_TOLERANCE,
                 print_all_stats=False,
             )
             self.assertTrue(
                 depth_result["all_passed"],
-                f"Depth image comparison failed ({mode_label}, tol={self.DEPTH_MEAN_DIFF_TOLERANCE}). Output dir: {out_dir}",
+                f"Depth image comparison failed ({mode_label}, tol={self.NOISE_MEAN_DIFF_TOLERANCE}). Output dir: {out_dir}",
             )

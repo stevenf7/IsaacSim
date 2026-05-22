@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.11.4] - 2026-05-21
+### Changed
+- Augmentation examples now use custom event-based randomization
+- Renamed augmentation test tolerances to reflect noise vs no-noise comparisons
+
 ## [1.11.3] - 2026-05-20
 ### Changed
 - Update test_data_augmentation to use different tolerance values for RGB and depth images
