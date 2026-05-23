@@ -140,6 +140,8 @@ keywords = ["experience", "app", "usd", "isaacsim"] # That makes it browsable in
 [settings]
 # default internal ros2 bridge distro to use if no ros2 distro is sourced
 exts."isaacsim.ros2.bridge".ros_distro = "system_default"
+# keep Test Runner populated with Isaac tests even if dependency extensions set narrower filters
+exts."omni.kit.test".includeTests = ["*isaac*"]
 # enable async rendering runtime toggle
 exts."isaacsim.core.throttling".enable_async = true
 # enable manual mode runtime toggle
