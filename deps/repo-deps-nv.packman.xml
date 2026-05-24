@@ -19,7 +19,7 @@
   </dependency>
   <!-- For API docs -->
   <dependency name="repo_docs" linkPath="../_repo/deps/repo_docs">
-    <package name="repo_docs" version="2.7.0-dev.3485+mr536.4defac86" />
+    <package name="repo_docs" version="2.8.1" />
   </dependency>
   <!-- For building pip prebundles -->
   <dependency name="repo_licensing" linkPath="../_repo/deps/repo_licensing">

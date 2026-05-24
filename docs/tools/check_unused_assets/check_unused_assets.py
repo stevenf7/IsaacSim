@@ -7,10 +7,14 @@ which can then be removed to keep the documentation clean.
 
 Usage:
     python check_unused_assets.py [--print-all] [--output-file FILENAME]
+    python check_unused_assets.py --files-from changed_files.txt
+    python check_unused_assets.py --files docs/isaacsim/images/example.png
 
 Options:
     --print-all       Print all files and their reference status instead of only unreferenced ones
     --output-file     Specify an output file for the report (default: unused_assets_report.log)
+    --files           Validate only the listed image/video files
+    --files-from      Validate only image/video files listed in the given file
 """
 
 import argparse
@@ -21,6 +25,16 @@ import sys
 import time
 from collections import defaultdict
 from pathlib import Path
+
+MEDIA_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".mp4", ".webm", ".mov")
+
+
+def is_media_file(file_path):
+    """Return True for image/video files handled by the unused asset check."""
+    mime_type, _ = mimetypes.guess_type(str(file_path))
+    if mime_type and (mime_type.startswith("image/") or mime_type.startswith("video/")):
+        return True
+    return Path(file_path).suffix.lower() in MEDIA_EXTENSIONS
 
 
 def get_all_images(image_dir):
@@ -44,16 +58,59 @@ def get_all_images(image_dir):
             # Use only filename as the key to avoid path separator issues
             filename = os.path.basename(relative_path)
 
-            # Check if it's an image or video file
-            mime_type, _ = mimetypes.guess_type(file_path)
-            if mime_type and (mime_type.startswith("image/") or mime_type.startswith("video/")):
+            if is_media_file(file_path):
                 images[filename] = file_path
-            # Include files with known image/video extensions
-            elif any(
-                file.lower().endswith(ext)
-                for ext in (".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".mp4", ".webm", ".mov")
-            ):
-                images[filename] = file_path
+
+    return images
+
+
+def expand_file_args(files):
+    expanded_files = []
+    for file_arg in files or []:
+        expanded_files.extend(path for path in file_arg.split() if path)
+    return expanded_files
+
+
+def load_changed_files(files, files_from):
+    changed_files = expand_file_args(files)
+
+    if files_from:
+        with open(files_from, "r", encoding="utf-8") as f:
+            changed_files.extend(line.strip() for line in f if line.strip())
+
+    return changed_files
+
+
+def get_changed_images(changed_files, repo_root, image_dir):
+    """
+    Return only changed media files under the docs image directory.
+
+    Deleted files are ignored because the MR job only needs to reject newly added
+    or modified assets that are not referenced by docs.
+    """
+    images = {}
+    image_prefix = image_dir.relative_to(repo_root).as_posix() + "/"
+
+    for changed_file in changed_files:
+        file_path = Path(changed_file)
+
+        try:
+            if file_path.is_absolute():
+                relative_path = file_path.resolve().relative_to(repo_root)
+            else:
+                relative_path = Path(os.path.normpath(changed_file))
+        except ValueError:
+            continue
+
+        relative_posix = relative_path.as_posix()
+        if not relative_posix.startswith(image_prefix):
+            continue
+
+        full_path = (repo_root / relative_path).resolve()
+        if not full_path.exists() or not is_media_file(full_path):
+            continue
+
+        images[full_path.relative_to(repo_root).as_posix()] = str(full_path)
 
     return images
 
@@ -134,7 +191,8 @@ def check_image_references(images, rst_files, image_dir):
     referenced_images = {}
 
     # Check each image against the reference dictionary
-    for filename, full_path in images.items():
+    for image_key, full_path in images.items():
+        filename = os.path.basename(image_key)
         # Check if the image is referenced by its filename
         if filename in referenced_image_dict:
             # Image is referenced, store the first file that references it
@@ -155,6 +213,13 @@ def main():
         default="unused_assets_report.log",
         help="Output file name (saved in _validate_asset_references directory)",
     )
+    parser.add_argument(
+        "--files",
+        nargs="*",
+        default=None,
+        help="Validate only these changed image/video files",
+    )
+    parser.add_argument("--files-from", help="Read changed file paths from this file")
     args = parser.parse_args()
 
     # Set paths
@@ -163,20 +228,26 @@ def main():
         # Track script execution time
         script_start = time.time()
 
-        # Default image directory and docs directory using relative paths from the root
-        image_dir = os.path.abspath("docs/isaacsim/images")
-        docs_dir = os.path.abspath("docs/isaacsim")
+        repo_root = Path.cwd().resolve()
+        image_dir = repo_root / "docs/isaacsim/images"
+        docs_dir = repo_root / "docs/isaacsim"
 
         # Check if the directories exist
-        if not os.path.exists(image_dir):
+        if not image_dir.exists():
             raise FileNotFoundError(f"Image directory not found: {image_dir}")
 
-        if not os.path.exists(docs_dir):
+        if not docs_dir.exists():
             raise FileNotFoundError(f"Documentation directory not found: {docs_dir}")
 
-        # Get all images
-        images = get_all_images(image_dir)
-        print(f"Found {len(images)} image files in {image_dir}")
+        changed_file_mode = args.files is not None or args.files_from
+        if changed_file_mode:
+            changed_files = load_changed_files(args.files, args.files_from)
+            images = get_changed_images(changed_files, repo_root, image_dir)
+            print(f"Found {len(images)} changed image or video files in {image_dir}")
+        else:
+            # Get all images
+            images = get_all_images(image_dir)
+            print(f"Found {len(images)} image files in {image_dir}")
 
         # Get all RST files
         rst_files = find_rst_files(docs_dir)
@@ -187,7 +258,10 @@ def main():
 
         # Prepare output text
         output_lines = []
-        output_lines.append(f"Found {len(images)} image files in {image_dir}")
+        if changed_file_mode:
+            output_lines.append(f"Found {len(images)} changed image or video files in {image_dir}")
+        else:
+            output_lines.append(f"Found {len(images)} image files in {image_dir}")
         output_lines.append(f"Found {len(rst_files)} RST files in {docs_dir}")
 
         if args.print_all:
