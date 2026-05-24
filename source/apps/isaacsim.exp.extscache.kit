@@ -675,3 +675,11 @@ enabled = [
 ########################################################################################################################
 # END GENERATED PART
 ########################################################################################################################
+
+
+# FOR DEVELOPMENT #
+[settings.exts."omni.kit.registry.nucleus".registries]
+'++' = [
+    { name = "kit/default", url = "https://pdx.s8k.io/v1/AUTH_team-ov-kit-exts/exts/kit/default" },
+    { name = "kit/sdk", url = "https://pdx.s8k.io/v1/AUTH_team-ov-kit-exts/exts/kit/sdk/${kit_version_short}/${kit_git_hash}" },
+]
