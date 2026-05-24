@@ -439,6 +439,50 @@ check-code-format:
       - ./repo.sh format --verify
 
 # ==============================================================================================================
+check-docs-image-filenames:
+    extends:
+      - .check-common
+      - .ipp_lnx_x86_64_cpu_small
+    image: python:3.11-alpine
+    variables:
+        GIT_DEPTH: 0
+    rules:
+      - if: $RUN_BUMP_VERSION == "true"
+        when: never
+      - if: $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
+        when: never
+      # Docs-only MRs set RUN_CHECKS=false globally, but image filename validation still needs to run there.
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_DESCRIPTION =~ "/\[[Xx]\] User docs only change/"'
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $RUN_CHECKS != "false"'
+      - when: never
+    script:
+      - apk add --no-cache git
+      - git diff --name-only --diff-filter=ACMR "$CI_MERGE_REQUEST_DIFF_BASE_SHA" "$CI_COMMIT_SHA" > changed_files.txt
+      - grep '^docs/' changed_files.txt > docs_changed_files.txt || true
+      - python3 docs/tools/validate_filenames/validate_filenames.py --files-from docs_changed_files.txt
+
+# ==============================================================================================================
+check-docs-unused-assets:
+    extends:
+      - .check-common
+      - .ipp_lnx_x86_64_cpu_small
+    image: python:3.11-alpine
+    variables:
+        GIT_DEPTH: 0
+    rules:
+      - if: $RUN_BUMP_VERSION == "true"
+        when: never
+      - if: $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
+        when: never
+      # The script only checks changed docs media, so keep this lightweight guard on every MR.
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      - when: never
+    script:
+      - apk add --no-cache git
+      - git diff --name-only --diff-filter=ACMR "$CI_MERGE_REQUEST_DIFF_BASE_SHA" "$CI_COMMIT_SHA" > changed_files.txt
+      - python3 docs/tools/check_unused_assets/check_unused_assets.py --files-from changed_files.txt
+
+# ==============================================================================================================
 check-python-packages:
     extends:
       - .check-common

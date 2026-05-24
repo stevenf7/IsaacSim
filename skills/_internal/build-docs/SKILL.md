@@ -39,13 +39,28 @@ For changes to RST/MD files under `docs/`:
 ```bash
 # Linux — capture full log to a file, then pull warnings/errors from it (single build)
 ./repo.sh docs --project isaac-sim -c release --warn-as-error=0 2>&1 | tee /tmp/docs_build.log | tail -5
-grep -nE "WARNING|ERROR" /tmp/docs_build.log
+grep -nE "WARNING|ERROR" /tmp/docs_build.log || true
 
 # Windows
 repo.bat docs --project isaac-sim -c release --warn-as-error=0
 ```
 
 DO NOT run the build twice just to filter warnings — pipe to `tee` and grep the saved log. Builds take ~2-3 minutes; rerunning wastes time.
+
+### Fast Incremental User Guide Rebuild
+
+After one successful user-guide build, use this faster Sphinx-only loop while iterating on RST/MD page content:
+
+```bash
+# Linux — reuses installed docs deps and existing Sphinx output
+./repo.sh docs --project isaac-sim -c release --stage sphinx --no-clean --no-install --warn-as-error=0 2>&1 | tee /tmp/docs_incremental.log | tail -5
+grep -nE "WARNING|ERROR" /tmp/docs_incremental.log || true
+
+# Windows
+repo.bat docs --project isaac-sim -c release --stage sphinx --no-clean --no-install --warn-as-error=0
+```
+
+Use the normal user-guide command above for the first build, after changing Sphinx config/theme files, after changing generated API/extension docs inputs, or whenever the incremental build appears stale. `--stage sphinx` skips clean and Doxygen stages; `--no-clean` keeps the previous output; `--no-install` assumes docs dependencies are already installed. A warm no-op rebuild should finish quickly and may report `no targets are out of date`.
 
 ### API Docs Only
 
@@ -57,7 +72,7 @@ For changes to extension API docstrings or `docs/api/`:
 ./repo.sh extension_docs --error-as-warn
 ./repo.sh extension_toc --error-as-warn
 ./repo.sh docs --project api -c release --warn-as-error=0 2>&1 | tee /tmp/api_docs_build.log | tail -5
-grep -nE "WARNING|ERROR" /tmp/api_docs_build.log
+grep -nE "WARNING|ERROR" /tmp/api_docs_build.log || true
 
 # Windows
 repo.bat extension_docs --error-as-warn
@@ -99,6 +114,27 @@ The server serves `_build/docs/isaac-sim/latest/` at `http://localhost:<port>`.
 API docs are at `http://localhost:<port>/py/`.
 
 When running from the agent, background the server process so the terminal stays usable, then tell the developer the URL.
+
+## MR Docs Media Checks
+
+Two lightweight MR jobs protect docs media:
+
+- `check-docs-image-filenames` validates changed docs image/video filenames against the Isaac Sim naming convention.
+- `check-docs-unused-assets` runs on every MR, but only checks added/copied/modified/renamed media under `docs/isaacsim/images`. Existing unused assets do not fail the job unless the MR touches them.
+
+To reproduce both checks locally against the target branch:
+
+```bash
+git fetch upstream develop
+git diff --name-only --diff-filter=ACMR upstream/develop...HEAD > /tmp/docs_changed_files.txt
+grep '^docs/' /tmp/docs_changed_files.txt > /tmp/docs_only_changed_files.txt || true
+python3 docs/tools/validate_filenames/validate_filenames.py --files-from /tmp/docs_only_changed_files.txt
+python3 docs/tools/check_unused_assets/check_unused_assets.py --files-from /tmp/docs_changed_files.txt
+```
+
+If `check-docs-image-filenames` fails, rename the changed media file to the required `isim_<VERSION_NUM>_<APP_TYPE>_<DOC_TYPE>_<APP_VIEW>_<YOUR_FILE_NAME>.<ext>` pattern and update every RST reference.
+
+If `check-docs-unused-assets` fails, either reference the changed media from an RST page, remove it from the MR, or move it outside `docs/isaacsim/images` if it is not user-guide media. The full manual scan (`./docs/check_unused_assets.sh`) may report existing backlog items; do not treat those as MR blockers unless they are changed by the MR.
 
 ## Pre-Commit: Format Code
 
