@@ -42,7 +42,6 @@ simulation_app = SimulationApp({"headless": True})  #  "max_gpu_count": n_gpus
 
 import numpy as np
 import omni.timeline
-from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.core.simulation_manager import SimulationEvent, SimulationManager
 from isaacsim.core.utils.extensions import enable_extension
 
@@ -125,12 +124,8 @@ physics_timing = _PhysicsStepTimingRecorder(buffer=np.empty(n_frames, dtype=np.f
 print("Loading phase...")
 benchmark.set_phase("loading", start_recording_frametime=False, start_recording_runtime=True)
 
-stage_utils.create_new_stage()
-stage_utils.set_stage_up_axis("Z")
-stage_utils.set_stage_units(meters_per_unit=1.0)
-
 scenario = FrankaRmpFlowExample()
-simulation_app.run_coroutine(scenario.load_example_assets())
+simulation_app.run_coroutine(scenario.load())
 
 simulation_app.update()
 
@@ -144,11 +139,6 @@ for _ in range(5):
 timeline.stop()
 simulation_app.update()
 
-benchmark.store_measurements()
-
-print("RMPflow setup phase...")
-benchmark.set_phase("rmpflow_setup", start_recording_frametime=False, start_recording_runtime=True)
-scenario.setup()
 benchmark.store_measurements()
 
 timeline.play()

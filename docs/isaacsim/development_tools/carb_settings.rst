@@ -18,7 +18,7 @@ Modify Carb Settings
 :ref:`isaac_sim_glossary_carb` settings are used to configure default behaviors of Omniverse and |isaac-sim_short|. They can control a wide ranges of features, such as window properties, ROS versions,  browser folders, and more. You may wish to change these settings to suit your needs. Here we show the four ways to change the Carb settings in |isaac-sim_short|. 
 
 
-For this tutorial, we will set a parameter inside extension ``isaacsim.my.extension`` named ``data.foo`` to the value ``True``. Replace these with your actual extension name, setting parameter, and value when you are working with your project.
+For this tutorial, we will set a parameter inside extension ``isaacsim.code_editor.python_server`` named ``keepalive_interval`` to the value ``5``. Replace these with your actual extension name, setting parameter, and value when you are working with your project.
 
 
 Script Editor Snippet
@@ -42,13 +42,13 @@ At the root of your |isaac-sim_short| installation, run the following command:
 
                 .. code-block:: bash
 
-                    ./isaac-sim.sh --/exts/isaacsim.my.extension/data/foo=True
+                    ./isaac-sim.sh --/exts/isaacsim.code_editor.python_server/keepalive_interval=5
 
             .. tab-item:: Windows
 
                 .. code-block:: bash
 
-                    .\isaac-sim.bat --/exts/isaacsim.my.extension/data/foo=True
+                    .\isaac-sim.bat --/exts/isaacsim.code_editor.python_server/keepalive_interval=5
 
 
 
@@ -59,13 +59,13 @@ Edit .toml File
 For more permanent changes, you can edit the extension's `.toml` file. The changes made this way will persist after you close the application.
 
 
-#. Navigate to the extension's folder. For example, if you are changing the settings for the `isaacsim.my.extension`, navigate to `<isaac-sim-root_dir>/exts/isaacsim.my.extension/config`.
+#. Navigate to the extension's folder. For example, if you are changing the settings for the ``isaacsim.code_editor.python_server`` extension, navigate to ``<isaac-sim-root_dir>/exts/isaacsim.code_editor.python_server/config``.
 #. Open the `.toml` file with a text editor, and add the following line to the file:
 
     .. code-block:: 
 
         [settings]
-        exts."isaacsim.my.extension".data.foo = true
+        exts."isaacsim.code_editor.python_server".keepalive_interval = 5
 
 
 #. Launch |isaac-sim_short| to see the changes.
@@ -86,6 +86,6 @@ If you have multiple settings in multiple extensions that you want to change, yo
     .. code-block:: 
 
         [settings]
-        exts."isaacsim.my.extension".data.foo = true
+        exts."isaacsim.code_editor.python_server".keepalive_interval = 5
 
 #. Launch |isaac-sim_short| to see the changes.
