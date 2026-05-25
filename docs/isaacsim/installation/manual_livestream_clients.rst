@@ -35,7 +35,7 @@ This section shows you the methods of livestreaming a headless instance of |isaa
     * Livestreaming is not supported when |isaac-sim_short| is run on the A100 GPU. NVENC (NVIDIA Encoder) is required for livestreaming and is not included in the A100 GPU.
     * See `Video Encode and Decode Support Matrix`_ for supported GPU with NVENC.
     * By downloading or using the NVIDIA Isaac Sim WebRTC Streaming Client, you agree to the :doc:`NVIDIA Isaac Sim WebRTC Streaming Client License Agreement </common/license-isaac-sim-webrtc-streaming-client>`.
-    * |isaac-sim_short| WebRTC Streaming Client is not yet supported on aarch64. See: :ref:`aarch64 Limitations<isaac_sim_requirements_aarch64_limitations>`.
+    * Client platform support and |isaac-sim_short| host platform support are separate. Use the downloads listed in the :ref:`isaac_sim_latest_release` section for supported client packages.
 
     There are two ways to connect to a livestreaming |isaac-sim_short| instance:
 
@@ -109,6 +109,8 @@ This section shows you the methods of livestreaming a headless instance of |isaa
 
 .. note::
 
+    * The machine running |isaac-sim_short| must have an NVIDIA GPU with NVENC support and a compatible NVIDIA driver. On Linux hosts, ``nvidia-smi`` confirms the GPU and driver version. In containers, confirm the NVIDIA Container Toolkit exposes the encode library with ``ldconfig -p | grep libnvidia-encode``.
+
     * To run Isaac Sim on remote instance to be connected via the Internet, add these flags: ``--/exts/omni.kit.livestream.app/primaryStream/publicIp=<PUBLIC_IP> --/exts/omni.kit.livestream.app/primaryStream/signalPort=49100 --/exts/omni.kit.livestream.app/primaryStream/streamPort=47998``
 
     * For an example in a Docker container:
@@ -138,6 +140,8 @@ This section shows you the methods of livestreaming a headless instance of |isaa
             - TCP
             - Web viewer (Docker Compose only)
 
+    * If the client shows a black screen or the ports are not listening, first confirm the |isaac-sim_short| app reached the loaded state. For containers, confirm the container was started with ``--network=host``. For cloud or remote hosts, confirm the public IP passed to |isaac-sim_short| is the same IP used by the client. Firewalls must allow both TCP ``49100`` and UDP ``47998``; opening only TCP ports is not sufficient for WebRTC media.
+
 
 2. Make sure that the |isaac-sim_short| app is loaded and ready. It can take a few minutes for |isaac-sim_short| to be completely loaded the first time.
 
@@ -151,7 +155,7 @@ This section shows you the methods of livestreaming a headless instance of |isaa
 
 5. Run the **Isaac Sim WebRTC Streaming Client** app.
 
-.. figure:: /images/isim_4.5_full_ref_gui_iswsc_1.0.6.png
+.. figure:: /images/isim_6.0_full_ref_gui_iswsc_2.0.0.png
     :align: center
 
 6. Use the default **127.0.0.1** IP address as the server to connect to a local instance of Isaac Sim.
@@ -224,6 +228,11 @@ For full details on Docker Compose configuration, multi-instance deployment, and
 
 This method does not require downloading or installing a native application. The web viewer is built from the `NVIDIA Omniverse Web SDK <https://docs.omniverse.nvidia.com/ov-web-sdk/latest/web-sample/overview.html>`_ (``@nvidia/create-ov-web-rtc-app``) and connects to |isaac-sim_short| over WebRTC.
 
+.. note::
+
+    Docker Compose web viewer deployment is supported only on Ubuntu hosts and |spark_short| systems.
+    Windows hosts, including WSL, are not supported.
+
 **Quick Start:**
 
 .. code-block:: bash
@@ -248,6 +257,9 @@ This method does not require downloading or installing a native application. The
    On DGX Spark, use ``--aarch64`` instead of ``--x86_64`` in the build commands above.
 
 Open the URL shown in the logs (e.g. ``http://<host-ip>:8210``) in a Chromium-based browser.
+
+If Docker Compose reports a Hub startup or connectivity issue after a previous test, restart the Hub container from
+:ref:`isaac_sim_hub_workstation_cache` and retry Docker Compose.
 
 To use a prebuilt NGC image instead of building locally:
 

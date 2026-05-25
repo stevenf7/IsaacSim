@@ -176,7 +176,7 @@ For example, from the command line, execute the following commands:
 
             mkdir ~/isaacsim
             cd ~/Downloads
-            unzip "isaac-sim-standalone-5.1.0-linux-x86_64.zip" -d ~/isaacsim
+            unzip "isaac-sim-standalone-6.0.0-linux-x86_64.zip" -d ~/isaacsim
             cd ~/isaacsim
             ./post_install.sh
             ./isaac-sim.sh
@@ -187,7 +187,7 @@ For example, from the command line, execute the following commands:
 
             mkdir ~/isaacsim
             cd ~/Downloads
-            unzip "isaac-sim-standalone-5.1.0-linux-aarch64.zip" -d ~/isaacsim
+            unzip "isaac-sim-standalone-6.0.0-linux-aarch64.zip" -d ~/isaacsim
             cd ~/isaacsim
             ./post_install.sh
             ./isaac-sim.sh
@@ -198,7 +198,7 @@ For example, from the command line, execute the following commands:
 
             mkdir C:\isaacsim
             cd %USERPROFILE%/Downloads
-            tar -xvzf "isaac-sim-standalone-5.1.0-windows-x86_64.zip" -C C:\isaacsim
+            tar -xvzf "isaac-sim-standalone-6.0.0-windows-x86_64.zip" -C C:\isaacsim
             cd C:\isaacsim
             post_install.bat
             isaac-sim.bat
@@ -219,5 +219,4 @@ build instructions, and advanced build options.
 
 To build and deploy a Docker container from source, see the
 `Docker Build Tools README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_.
-
 

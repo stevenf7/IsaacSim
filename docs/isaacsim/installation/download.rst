@@ -11,19 +11,20 @@
     :keywords: lang=en isaac isaac-sim isaacsim download distributions releases
 
 
-.. |isim_510_linux_x86_64| replace:: `Linux (x86_64) <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-5.1.0-linux-x86_64.zip>`__
-.. |isim_510_linux_aarch64| replace:: `Linux (aarch64) <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-5.1.0-linux-aarch64.zip>`__
-.. |isim_510_windows| replace:: `Windows <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-5.1.0-windows-x86_64.zip>`__
-.. |iswsc_115_linux_x86_64| replace:: `Linux (x86_64) <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-1.1.5-linux-x64.AppImage>`__
-.. |iswsc_115_windows| replace:: `Windows <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-1.1.5-windows-x64.exe>`__
-.. |iswsc_115_mac_x64| replace:: `macOS (x86_64) <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-1.1.5-macos-x64.dmg>`__
-.. |iswsc_115_mac_arm64| replace:: `macOS (arm64) <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-1.1.5-macos-arm64.dmg>`__
-.. |isassets1_510_zip| replace:: `Robots & Sensors <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-robots_and_sensors-5.1.0.zip>`__
-.. |isassets2_510_zip| replace:: `Materials & Props <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-materials_and_props-5.1.0.zip>`__
-.. |isassets3_510_zip| replace:: `Environments <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-environments-5.1.0.zip>`__
-.. |isassets_c1_510_zip| replace:: `Complete (Part 1 of 3) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.001.zip>`__
-.. |isassets_c2_510_zip| replace:: `Complete (Part 2 of 3) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.002.zip>`__
-.. |isassets_c3_510_zip| replace:: `Complete (Part 3 of 3) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.003.zip>`__
+.. |isim_linux_x86_64| replace:: `Linux (x86_64) <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-6.0.0-linux-x86_64.zip>`__
+.. |isim_linux_aarch64| replace:: `Linux (aarch64) <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-6.0.0-linux-aarch64.zip>`__
+.. |isim_windows| replace:: `Windows <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-6.0.0-windows-x86_64.zip>`__
+.. |iswsc_linux_x86_64| replace:: `Linux (x86_64) <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-2.0.0-linux-x86_64.deb>`__
+.. |iswsc_linux_aarch64| replace:: `Linux (aarch64) <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-2.0.0-linux-aarch64.deb>`__
+.. |iswsc_windows| replace:: `Windows <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-2.0.0-windows-x86_64.exe>`__
+.. |iswsc_mac_x86_64| replace:: `macOS (x86_64) <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-2.0.0-macos-x86_64.dmg>`__
+.. |iswsc_mac_aarch64| replace:: `macOS (aarch64) <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-2.0.0-macos-aarch64.dmg>`__
+.. |isassets_robots_sensors_zip| replace:: `Robots & Sensors <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-robots_and_sensors-6.0.0.zip>`__
+.. |isassets_materials_props_zip| replace:: `Materials & Props <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-materials_and_props-6.0.0.zip>`__
+.. |isassets_environments_zip| replace:: `Environments <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-environments-6.0.0.zip>`__
+.. |isassets_complete_part1_zip| replace:: `Complete (Part 1 of 3) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.001.zip>`__
+.. |isassets_complete_part2_zip| replace:: `Complete (Part 2 of 3) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.002.zip>`__
+.. |isassets_complete_part3_zip| replace:: `Complete (Part 3 of 3) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.003.zip>`__
 
 
 .. _isaac_sim_download:
@@ -59,31 +60,33 @@ Latest Release
     +------------------------------------------+----------+------------------+-----------------------------------+
     | Name                                     | Version  | Release Date     | Links                             |
     +==========================================+==========+==================+===================================+
-    | Isaac Sim                                | 5.1.0    | October 2025     | |isim_510_linux_x86_64|           |
+    | Isaac Sim                                | 6.0.0    | June 2026        | |isim_linux_x86_64|               |
     +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |isim_510_linux_aarch64|          |
+    |                                          |          |                  | |isim_linux_aarch64|              |
     +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |isim_510_windows|                |
+    |                                          |          |                  | |isim_windows|                    |
     +------------------------------------------+----------+------------------+-----------------------------------+
-    | Isaac Sim WebRTC Streaming Client        | 1.1.5    | October 2025     | |iswsc_115_linux_x86_64|          |
+    | Isaac Sim WebRTC Streaming Client        | 2.0.0    | June 2026        | |iswsc_linux_x86_64|              |
     +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |iswsc_115_windows|               |
+    |                                          |          |                  | |iswsc_linux_aarch64|             |
     +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |iswsc_115_mac_x64|               |
+    |                                          |          |                  | |iswsc_windows|                   |
     +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |iswsc_115_mac_arm64|             |
+    |                                          |          |                  | |iswsc_mac_x86_64|                |
+    +                                          +          +                  +-----------------------------------+
+    |                                          |          |                  | |iswsc_mac_aarch64|               |
     +------------------------------------------+----------+------------------+-----------------------------------+
-    | Isaac Sim Assets                         | 5.1.0    | October 2025     | |isassets1_510_zip|               |
+    | Isaac Sim Assets                         | 6.0.0    | June 2026        | |isassets_robots_sensors_zip|     |
     +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |isassets2_510_zip|               |
+    |                                          |          |                  | |isassets_materials_props_zip|    |
     +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |isassets3_510_zip|               |
+    |                                          |          |                  | |isassets_environments_zip|       |
     +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |isassets_c1_510_zip|             |
+    |                                          |          |                  | |isassets_complete_part1_zip|     |
     +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |isassets_c2_510_zip|             |
+    |                                          |          |                  | |isassets_complete_part2_zip|     |
     +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |isassets_c3_510_zip|             |
+    |                                          |          |                  | |isassets_complete_part3_zip|     |
     +------------------------------------------+----------+------------------+-----------------------------------+
 
 .. list-table:: Isaac Sim Assets Complete Pack MD5 Checksums
@@ -92,11 +95,11 @@ Latest Release
 
     * - File
       - MD5
-    * - ``isaac-sim-assets-complete-5.1.0.001.zip``
+    * - ``isaac-sim-assets-complete-6.0.0.001.zip``
       - ``0d1d98f46780d13bf83779c79360f883``
-    * - ``isaac-sim-assets-complete-5.1.0.002.zip``
+    * - ``isaac-sim-assets-complete-6.0.0.002.zip``
       - ``9a03f3a32a2962fce4f464fc784a9da9``
-    * - ``isaac-sim-assets-complete-5.1.0.003.zip``
+    * - ``isaac-sim-assets-complete-6.0.0.003.zip``
       - ``37ee649b2b35c6bc72958f12e625f862``
 
 Use the checksums with the :ref:`isaac_sim_setup_assets_content_pack` Aria2 examples to resume interrupted downloads and verify each file before extraction.
