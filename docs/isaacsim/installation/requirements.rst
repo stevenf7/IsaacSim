@@ -12,6 +12,10 @@
 
 .. _Unix Driver Archive: https://www.nvidia.com/en-us/drivers/unix/
 
+.. |linux_driver_580_65_06| replace:: `580.65.06 <https://www.nvidia.com/en-us/drivers/details/251387/>`__
+.. |linux_driver_580_95_05_aarch64| replace:: `580.95.05 <https://www.nvidia.com/en-us/drivers/details/254667/>`__
+.. |windows_driver_580_88| replace:: `580.88 <https://www.nvidia.com/download/driverResults.aspx/251353/en-us/>`__
+
 
 .. _isaac_sim_requirements:
 
@@ -45,8 +49,8 @@ System Requirements
     Storage                             | 50GB SSD                             | 500GB SSD                                | 1TB NVMe SSD
     GPU                                 | GeForce RTX 4080                     | GeForce RTX 5080                         | RTX PRO 6000 Blackwell
     VRAM [1]_                           | 16GB [2]_                            | 16GB                                     | 48GB
-    Driver [3]_                         | Linux: 580.65.06                     | Linux: 580.65.06                         | Linux: 580.65.06
-                                        | Windows: 580.88                      | Windows: 580.88                          | Windows: 580.88
+    Driver [3]_                         | Linux: |linux_driver_580_65_06|      | Linux: |linux_driver_580_65_06|          | Linux: |linux_driver_580_65_06|
+                                        | Windows: |windows_driver_580_88|     | Windows: |windows_driver_580_88|         | Windows: |windows_driver_580_88|
     =================================== ====================================== ========================================== =============================================
 
     .. [1] More RAM and VRAM is recommended for advanced usage of |isaac-sim_short|. Isaac Lab usage will require additional RAM and VRAM for training.
@@ -55,7 +59,7 @@ System Requirements
 
     .. note::
         - The |isaac-sim_short| container is only supported on Linux.
-        - An Internet connection is required to access the |isaac-sim_short| assets online and to run some extensions.
+        - An Internet connection is required to access the |isaac-sim_short| assets online and to run some extensions. Allow outbound HTTPS access to ``omniverse-content-production.s3-us-west-2.amazonaws.com`` when using the default online asset root.
         - GPUs without RT Cores (A100, H100) are not supported.
         - Due to VRAM constraints, some tutorials and benchmarks may not run on GPU below the minimum specifications. Workflows leveraging a large number of sensors are particularly affected.
         - See :doc:`Linux Troubleshooting<dev-guide:linux-troubleshooting>` to resolve driver installation issues on Linux.
@@ -71,7 +75,7 @@ System Requirements
     =================================== ======================================
     Device                              | |spark_long|
     OS                                  | NVIDIA DGX OS 7.2.3
-    Driver [4]_                         | 580.95.05
+    Driver [4]_                         | |linux_driver_580_95_05_aarch64|
     =================================== ======================================
 
     .. [4] Isaac Sim was tested on these driver versions. See :doc:`Technical Requirements<dev-guide:common/technical-requirements>` for recommended driver versions.
@@ -86,9 +90,7 @@ System Requirements
     .. rubric:: Limitations
 
     .. warning::
-        Here are the limitations of running |isaac-sim_short| 5.1 on |spark_short|:
-            - :doc:`Hub Workstation Cache<utilities:cache/hub-workstation>` is not supported.
-            - :ref:`Livestreaming <isaac_sim_setup_livestream_webrtc>` is not supported.
+        Here are the limitations of running |isaac-sim_short| 6.0 on |spark_short|:
             - Importing OBJ files is not supported. This impacts the ability to use the :ref:`urdf importer <isaac_sim_urdf_importer>` for assets that contain OBJ meshes.
             - :ref:`isaac_sim_app_template` is not supported.
             - :ref:`isaac_sim_app_tutorial_cuRobo` is not supported.

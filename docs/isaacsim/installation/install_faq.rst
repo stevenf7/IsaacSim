@@ -388,9 +388,9 @@ Setup Tips
 
                 sudo apt install aria2
                 cd ~/Downloads
-                aria2c -c --checksum=md5=0d1d98f46780d13bf83779c79360f883 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.001.zip"
-                aria2c -c --checksum=md5=9a03f3a32a2962fce4f464fc784a9da9 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.002.zip"
-                aria2c -c --checksum=md5=37ee649b2b35c6bc72958f12e625f862 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.003.zip"
+                aria2c -c --checksum=md5=0d1d98f46780d13bf83779c79360f883 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.001.zip"
+                aria2c -c --checksum=md5=9a03f3a32a2962fce4f464fc784a9da9 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.002.zip"
+                aria2c -c --checksum=md5=37ee649b2b35c6bc72958f12e625f862 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.003.zip"
 
         .. tab-item:: Windows
 
@@ -398,9 +398,9 @@ Setup Tips
 
                 winget install --id=aria2.aria2 -e
                 cd %USERPROFILE%/Downloads
-                aria2c -c --checksum=md5=0d1d98f46780d13bf83779c79360f883 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.001.zip"
-                aria2c -c --checksum=md5=9a03f3a32a2962fce4f464fc784a9da9 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.002.zip"
-                aria2c -c --checksum=md5=37ee649b2b35c6bc72958f12e625f862 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-5.1.0.003.zip"
+                aria2c -c --checksum=md5=0d1d98f46780d13bf83779c79360f883 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.001.zip"
+                aria2c -c --checksum=md5=9a03f3a32a2962fce4f464fc784a9da9 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.002.zip"
+                aria2c -c --checksum=md5=37ee649b2b35c6bc72958f12e625f862 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.003.zip"
 
     If Aria2 reports a checksum failure, remove the failed part and rerun the command for that file before combining the parts.
 
@@ -413,8 +413,8 @@ Setup Tips
 
                 mkdir ~/isaacsim_assets
                 cd ~/Downloads
-                cat isaac-sim-assets-complete-5.1.0.001.zip isaac-sim-assets-complete-5.1.0.002.zip isaac-sim-assets-complete-5.1.0.003.zip > isaac-sim-assets-complete-5.1.0.zip
-                unzip "isaac-sim-assets-complete-5.1.0.zip" -d ~/isaacsim_assets
+                cat isaac-sim-assets-complete-6.0.0.001.zip isaac-sim-assets-complete-6.0.0.002.zip isaac-sim-assets-complete-6.0.0.003.zip > isaac-sim-assets-complete-6.0.0.zip
+                unzip "isaac-sim-assets-complete-6.0.0.zip" -d ~/isaacsim_assets
 
         .. tab-item:: Windows
 
@@ -422,14 +422,14 @@ Setup Tips
 
                 mkdir C:\isaacsim_assets
                 cd %USERPROFILE%/Downloads
-                copy /b isaac-sim-assets-complete-5.1.0.001.zip + isaac-sim-assets-complete-5.1.0.002.zip + isaac-sim-assets-complete-5.1.0.003.zip isaac-sim-assets-complete-5.1.0.zip
-                tar -xvzf "isaac-sim-assets-complete-5.1.0.zip" -C C:\isaacsim_assets
+                copy /b isaac-sim-assets-complete-6.0.0.001.zip + isaac-sim-assets-complete-6.0.0.002.zip + isaac-sim-assets-complete-6.0.0.003.zip isaac-sim-assets-complete-6.0.0.zip
+                tar -xvzf "isaac-sim-assets-complete-6.0.0.zip" -C C:\isaacsim_assets
 
     .. note::
 
-        All three assets packs are required and they need to be combined into a single root folder (for example, *~/isaacsim_assets/Assets/Isaac/5.1*).
+        All three assets packs are required and they need to be combined into a single root folder (for example, *~/isaacsim_assets/Assets/Isaac/6.0*).
 
-        This root folder (*~/isaacsim_assets/Assets/Isaac/5.1*) must contain both the *NVIDIA* and *Isaac* folders.
+        This root folder (*~/isaacsim_assets/Assets/Isaac/6.0*) must contain both the *NVIDIA* and *Isaac* folders.
 
 
     3. Follow the instructions to :ref:`setup Isaac Sim<isaac_sim_install_workstation>`, then edit the **isaacsim.exp.base.kit** file.
@@ -442,17 +442,17 @@ Setup Tips
             .. code-block:: console
 
                 [settings]
-                persistent.isaac.asset_root.default = "/home/<username>/isaacsim_assets/Assets/Isaac/5.1"
+                persistent.isaac.asset_root.default = "/home/<username>/isaacsim_assets/Assets/Isaac/6.0"
 
                 exts."isaacsim.gui.content_browser".folders = [
-                    "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/Robots",
-                    "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/People",
-                    "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/IsaacLab",
-                    "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/Props",
-                    "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/Environments",
-                    "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/Materials",
-                    "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/Samples",
-                    "/home/<username>/isaacsim_assets/Assets/Isaac/5.1/Isaac/Sensors",
+                    "/home/<username>/isaacsim_assets/Assets/Isaac/6.0/Isaac/Robots",
+                    "/home/<username>/isaacsim_assets/Assets/Isaac/6.0/Isaac/People",
+                    "/home/<username>/isaacsim_assets/Assets/Isaac/6.0/Isaac/IsaacLab",
+                    "/home/<username>/isaacsim_assets/Assets/Isaac/6.0/Isaac/Props",
+                    "/home/<username>/isaacsim_assets/Assets/Isaac/6.0/Isaac/Environments",
+                    "/home/<username>/isaacsim_assets/Assets/Isaac/6.0/Isaac/Materials",
+                    "/home/<username>/isaacsim_assets/Assets/Isaac/6.0/Isaac/Samples",
+                    "/home/<username>/isaacsim_assets/Assets/Isaac/6.0/Isaac/Sensors",
                 ]
 
         .. tab-item:: Windows
@@ -462,17 +462,17 @@ Setup Tips
             .. code-block:: console
 
                 [settings]
-                persistent.isaac.asset_root.default = "C:/isaacsim_assets/Assets/Isaac/5.1"
+                persistent.isaac.asset_root.default = "C:/isaacsim_assets/Assets/Isaac/6.0"
 
                 exts."isaacsim.gui.content_browser".folders = [
-                    "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/Robots",
-                    "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/People",
-                    "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/IsaacLab",
-                    "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/Props",
-                    "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/Environments",
-                    "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/Materials",
-                    "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/Samples",
-                    "C:/isaacsim_assets/Assets/Isaac/5.1/Isaac/Sensors",
+                    "C:/isaacsim_assets/Assets/Isaac/6.0/Isaac/Robots",
+                    "C:/isaacsim_assets/Assets/Isaac/6.0/Isaac/People",
+                    "C:/isaacsim_assets/Assets/Isaac/6.0/Isaac/IsaacLab",
+                    "C:/isaacsim_assets/Assets/Isaac/6.0/Isaac/Props",
+                    "C:/isaacsim_assets/Assets/Isaac/6.0/Isaac/Environments",
+                    "C:/isaacsim_assets/Assets/Isaac/6.0/Isaac/Materials",
+                    "C:/isaacsim_assets/Assets/Isaac/6.0/Isaac/Samples",
+                    "C:/isaacsim_assets/Assets/Isaac/6.0/Isaac/Sensors",
                 ]
 
 
@@ -483,17 +483,17 @@ Setup Tips
 
             .. code-block:: console
 
-                ./isaac-sim.sh --/persistent/isaac/asset_root/default="/home/<username>/isaacsim_assets/Assets/Isaac/5.1"
+                ./isaac-sim.sh --/persistent/isaac/asset_root/default="/home/<username>/isaacsim_assets/Assets/Isaac/6.0"
 
         .. tab-item:: Windows
 
             .. code-block:: console
 
-                .\isaac-sim.bat --/persistent/isaac/asset_root/default="C:/isaacsim_assets/Assets/Isaac/5.1"
+                .\isaac-sim.bat --/persistent/isaac/asset_root/default="C:/isaacsim_assets/Assets/Isaac/6.0"
 
     .. note::
 
-        * The `persistent.isaac.asset_root.default` setting can either be set in the .kit settings file (Step 3) or using the  commandline (Step 4). The default is set to `https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1`
+        * The `persistent.isaac.asset_root.default` setting can either be set in the .kit settings file (Step 3) or using the  commandline (Step 4). The default is set to `https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0`
         * The `persistent.isaac.asset_root.default` setting is used in the Python code that calls the `get_assets_root_path_async`` or `get_assets_root_path`` functions.
         * The `exts."isaacsim.gui.content_browser".folders` setting is used in the :ref:`Content Browser <isaac_sim_app_gui_content_browser>`.
 
@@ -542,7 +542,7 @@ Setup Tips
             .. code-block:: console
 
                 [139.213s] Checking for Isaac Sim Assets...
-                [139.218s] Isaac Sim assets found: /home/<username>/isaacsim_assets/Assets/Isaac/5.1
+                [139.218s] Isaac Sim assets found: /home/<username>/isaacsim_assets/Assets/Isaac/6.0
 
         .. tab-item:: Windows
 
@@ -556,7 +556,7 @@ Setup Tips
     .. code-block:: console
 
         [139.213s] Checking for Isaac Sim Assets...
-        [139.218s] Isaac Sim assets found: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1
+        [139.218s] Isaac Sim assets found: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0
 
 
 .. dropdown:: Docker
@@ -878,7 +878,7 @@ Setup Tips
         "persistent": {
             "isaac": {
                 "asset_root": {
-                    "default": "omniverse://localhost/NVIDIA/Assets/Isaac/5.1",
+                    "default": "omniverse://localhost/NVIDIA/Assets/Isaac/6.0",
                 }
             },
         },
@@ -898,13 +898,13 @@ Setup Tips
 
     .. code-block:: console
 
-        --/persistent/isaac/asset_root/default="omniverse://<ip_address>/NVIDIA/Assets/Isaac/5.1"
+        --/persistent/isaac/asset_root/default="omniverse://<ip_address>/NVIDIA/Assets/Isaac/6.0"
 
-    4. To set the default |nuc_short| server when running in Docker, use the flag ``-e "OMNI_SERVER=omniverse://<ip_address>/NVIDIA/Assets/Isaac/5.1"``, where ``<ip_address>`` is the IP address of the |nuc_short| server.
+    4. To set the default |nuc_short| server when running in Docker, use the flag ``-e "OMNI_SERVER=omniverse://<ip_address>/NVIDIA/Assets/Isaac/6.0"``, where ``<ip_address>`` is the IP address of the |nuc_short| server.
 
     .. code-block:: console
 
-        $ sudo docker run --gpus all -e "ACCEPT_EULA=Y" -e "OMNI_SERVER=omniverse://<ip_address>/NVIDIA/Assets/Isaac/5.1" --rm --network=host nvcr.io/nvidia/isaac-sim:6.0.0-dev2
+        $ sudo docker run --gpus all -e "ACCEPT_EULA=Y" -e "OMNI_SERVER=omniverse://<ip_address>/NVIDIA/Assets/Isaac/6.0" --rm --network=host nvcr.io/nvidia/isaac-sim:6.0.0-dev2
 
     .. _isaac_sim_setup_set_omni_user:
 

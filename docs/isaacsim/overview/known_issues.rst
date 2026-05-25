@@ -303,7 +303,12 @@ Errors
     .. code-block:: bash
 
         [Error] [carb.livestream.plugin] nvstPushStreamData timeout for eye 0, stream (nil).
+        [Error] [omni.kit.livestream.webrtc.plugin] NVST Error: NVST_R_FRAME_DROPPED
+        [Error] [omni.kit.livestream.webrtc.plugin] NVST Error: NVST_R_BUSY
 
+    If the stream remains connected and interactive, these messages do not require action.
+    ``NVST_R_BUSY`` can appear while disconnecting one WebRTC client and reconnecting another;
+    close the existing client session or reload the browser-based viewer before reconnecting.
 
 #. Errors when using a Jupyter notebook. These errors can be ignored.
 

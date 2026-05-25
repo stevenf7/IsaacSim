@@ -254,11 +254,6 @@ If the host firewall is active (e.g. UFW), allow the following ports:
 
 If you override ports via ``ISAACSIM_SIGNAL_PORT``, ``ISAACSIM_STREAM_PORT``, or ``WEB_VIEWER_PORT``, open those ports instead.
 
-.. warning::
-
-    * :ref:`Livestreaming <isaac_sim_setup_livestream_webrtc>` is not supported on aarch64 systems like |spark_short| for Isaac Sim 5.1.0.
-    * See :ref:`isaac_sim_setup_local_gui_container`.
-
 .. note::
 
     * Before running a livestream client, you must have the |isaac-sim_short| app loaded and ready.
@@ -342,10 +337,14 @@ Start the Hub container **before** launching |isaac-sim_short|:
 
 .. code-block:: console
 
+    $ mkdir -p ~/.cache/ov/hub
+    $ sudo chown -R 1234:1234 ~/.cache/ov/hub
     $ docker run --name hub-cache --rm -d --network=host \
         -v ~/.cache/ov/hub:/var/cache/hub:rw \
-        -u 1234:$(id -g ${USER}) \
+        -u 1234:1234 \
         nvcr.io/nvidia/omniverse/hub_workstation_cache:2.0.0
+
+Once the container is running, the Hub settings UI is available at ``http://localhost:14090/index.html``.
 
 The |isaac-sim_short| container is pre-configured to discover Hub at runtime via the following environment variables
 baked into the image:
@@ -387,6 +386,11 @@ For full details on Docker Compose configuration, multi-instance deployment, and
 
 The ``docker-compose.yml`` in ``tools/docker/`` handles volume mounts, GPU assignment, networking, and health checks automatically. The web viewer is built from the `NVIDIA Omniverse Web SDK <https://docs.omniverse.nvidia.com/ov-web-sdk/latest/web-sample/overview.html>`_.
 
+.. note::
+
+    Docker Compose web viewer deployment is supported only on Ubuntu hosts and |spark_short| systems.
+    Windows hosts, including WSL, are not supported.
+
 .. warning::
 
     |isaac-sim_short| and the web viewer are designed for use on private/trusted networks. They do not include authentication or encryption. If you need to expose them over the Internet, add a reverse proxy with HTTPS/TLS and authentication (e.g. nginx with SSL certificates and basic auth). Users are responsible for securing any public-facing deployments.
@@ -415,6 +419,9 @@ The ``docker-compose.yml`` in ``tools/docker/`` handles volume mounts, GPU assig
    On DGX Spark, use ``--aarch64`` instead of ``--x86_64`` in the build commands above.
 
 Open the URL shown in the logs (e.g. ``http://<host-ip>:8210``) in a Chromium-based browser.
+
+If Docker Compose reports a Hub startup or connectivity issue after a previous test, restart the Hub container from
+:ref:`isaac_sim_hub_workstation_cache` and retry Docker Compose.
 
 To use a prebuilt NGC image instead of building locally:
 

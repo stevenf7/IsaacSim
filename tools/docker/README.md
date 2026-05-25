@@ -278,6 +278,8 @@ If you override ports via `ISAACSIM_SIGNAL_PORT`, `ISAACSIM_STREAM_PORT` or `WEB
 
 A `docker-compose.yml` is provided that launches both Isaac Sim (headless streaming) and a WebRTC web-viewer container side by side. The web viewer is built from `@nvidia/create-ov-web-rtc-app` in local streaming mode and connects the browser directly to the Isaac Sim WebRTC endpoints.
 
+> **Support note:** Docker Compose web viewer deployment is supported only on Ubuntu hosts and DGX Spark systems. Windows hosts, including WSL, are not supported.
+
 > **Security notice:** Isaac Sim and the web viewer are designed for use on private/trusted networks. They do not include authentication or encryption. Do **not** expose them on the public Internet without additional safeguards. If you need remote access, restrict the ports with firewall rules or add a reverse proxy with HTTPS/TLS and authentication (e.g. nginx with SSL certificates and basic auth). See [Cloud Deployment](#cloud-deployment-aws-gcp-azure) for cloud-specific guidance. Users are responsible for securing any public-facing deployments.
 
 ### Quick start
@@ -414,11 +416,15 @@ docker compose -p isim2 -f tools/docker/docker-compose.yml down
 Start the Hub container **before** launching Isaac Sim:
 
 ```bash
+mkdir -p ~/.cache/ov/hub
+sudo chown -R 1234:1234 ~/.cache/ov/hub
 docker run --name hub-cache --rm -d --network=host \
   -v ~/.cache/ov/hub:/var/cache/hub:rw \
-  -u 1234:$(id -g ${USER}) \
+  -u 1234:1234 \
   nvcr.io/nvidia/omniverse/hub_workstation_cache:2.0.0
 ```
+
+Once the container is running, the Hub settings UI is available at `http://localhost:14090/index.html`.
 
 The Isaac Sim container is already configured to discover Hub at runtime via the following environment variables baked into the image:
 
@@ -516,7 +522,8 @@ gcloud compute firewall-rules create allow-isaacsim \
 
 ## Troubleshooting
 
-- **Cannot connect to livestream**: (1) Ensure you are using `--network=host` (required for WebRTC streaming). (2) Set `ISAACSIM_HOST` to the IP address the client uses to reach the host (e.g. LAN IP). (3) Allow ports 8210/tcp, 49100/tcp, and 47998/udp in the host firewall (e.g. UFW).
+- **Cannot connect to livestream / black screen / ports not listening**: (1) Confirm the Isaac Sim app reached the loaded state. (2) Ensure you are using `--network=host` (required for WebRTC streaming). (3) Set `ISAACSIM_HOST` to the IP address the client uses to reach the host (e.g. LAN IP or cloud public IP). (4) Allow ports 8210/tcp, 49100/tcp, and 47998/udp in the host firewall (e.g. UFW). Opening TCP ports alone is not sufficient because WebRTC media uses UDP 47998.
+- **Hub startup or connectivity issues after a previous test**: Restart the Hub container from the [Hub Workstation Cache](#hub-workstation-cache) section, then retry Docker Compose.
 - **Stale volume mounts causing issues (e.g. crashes, config errors, or livestream failures)**: Old cached data in the Docker volume mount directories can cause unexpected behavior. Remove the existing mounts and recreate them:
   ```bash
   sudo rm -rf ~/docker

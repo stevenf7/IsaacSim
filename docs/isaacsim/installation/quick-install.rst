@@ -15,11 +15,15 @@ The Quick Install can be used for demos and to get a quick working idea of what 
 
 For a quick install on Linux or Windows:
 
-#. Download one of the following:
+#. Download the current |isaac-sim_short| standalone package for your platform from the :ref:`isaac_sim_latest_release` section.
 
-    * `Linux (x86_64) <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-5.1.0-linux-x86_64.zip>`__.
-    * `Linux (aarch64) <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-5.1.0-linux-aarch64.zip>`__.
-    * `Windows <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-5.1.0-windows-x86_64.zip>`__.
+    .. note::
+
+        * On Linux, install ``unzip`` before extracting the package.
+        * Keep at least 50 GB of free disk space available. The downloaded package and extracted installation can temporarily require about 40 GB together.
+        * Running on a remote or headless machine? Use ``isaac-sim.streaming.sh`` or ``isaac-sim.streaming.bat`` and connect with the :ref:`isaac_sim_setup_livestream_webrtc`.
+        * The first launch can take several minutes while the shader cache warms up. Watch the terminal output until the final load message appears.
+        * The **Simple Room** and **Franka Emika Panda Arm** steps download assets over HTTPS from the |isaac-sim_short| asset service. Hosts on restricted networks need outbound HTTPS access to the asset service, or can use :ref:`Local Assets Packs <isaac_sim_setup_assets_content_pack>` for air-gapped environments.
 
 #. From the terminal or command line, execute the following commands:
 
@@ -30,7 +34,7 @@ For a quick install on Linux or Windows:
 
                 mkdir ~/isaacsim
                 cd ~/Downloads
-                unzip "isaac-sim-standalone-5.1.0-linux-x86_64.zip" -d ~/isaacsim
+                unzip "isaac-sim-standalone-<version>-linux-x86_64.zip" -d ~/isaacsim
                 cd ~/isaacsim
                 ./post_install.sh
                 ./isaac-sim.sh
@@ -41,7 +45,7 @@ For a quick install on Linux or Windows:
 
                 mkdir ~/isaacsim
                 cd ~/Downloads
-                unzip "isaac-sim-standalone-5.1.0-linux-aarch64.zip" -d ~/isaacsim
+                unzip "isaac-sim-standalone-<version>-linux-aarch64.zip" -d ~/isaacsim
                 cd ~/isaacsim
                 ./post_install.sh
                 ./isaac-sim.sh
@@ -52,7 +56,7 @@ For a quick install on Linux or Windows:
 
                 mkdir C:\isaacsim
                 cd %USERPROFILE%/Downloads
-                tar -xvzf "isaac-sim-standalone-5.1.0-windows-x86_64.zip" -C C:\isaacsim
+                tar -xvzf "isaac-sim-standalone-<version>-windows-x86_64.zip" -C C:\isaacsim
                 cd C:\isaacsim
                 post_install.bat
                 isaac-sim.bat
@@ -90,5 +94,3 @@ Try out the following tutorials:
    * :ref:`isaac_sim_app_intro_quickstart_robot`
 
 Then you can try :ref:`isaac_sim_robot_setup_tutorials`.
-
-
