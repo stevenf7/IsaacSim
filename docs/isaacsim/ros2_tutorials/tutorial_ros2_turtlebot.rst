@@ -46,9 +46,19 @@ Getting Started
 - Basic understanding of ROS workspaces.
 - Install xacro using the following command:
 
-  .. code-block:: bash
+  .. tab-set::
 
-      sudo apt install ros-$ROS_DISTRO-xacro
+      .. tab-item:: Linux
+
+          .. code-block:: bash
+
+              sudo apt install ros-$ROS_DISTRO-xacro
+
+      .. tab-item:: Windows (Pixi)
+
+          .. code-block:: bash
+
+              pixi add ros-$ROS_DISTRO-xacro
 
 
 Importing TurtleBot URDF
@@ -68,10 +78,34 @@ Importing TurtleBot URDF
 
 - In the same terminal, pre-process the URDF file to manually remove the namespace argument values and save to the ``tb3_burger_processed.urdf`` file:
 
-    .. code-block:: bash
+    .. tab-set::
 
-        namespace=""
-        xacro ./turtlebot3_burger.urdf "namespace:=${namespace:+$namespace/}" > tb3_burger_processed.urdf
+        .. tab-item:: Linux
+
+            .. code-block:: bash
+
+                namespace=""
+                xacro ./turtlebot3_burger.urdf "namespace:=${namespace:+$namespace/}" > tb3_burger_processed.urdf
+
+        .. tab-item:: Windows (Pixi)
+
+            The :ref:`isaac_sim_app_install_ros_other_platforms` instructions prescribe Command Prompt. Use the matching tab below for the shell you launched ``pixi shell`` from:
+
+            .. tab-set::
+
+                .. tab-item:: Command Prompt
+
+                    .. code-block:: winbatch
+
+                        xacro .\turtlebot3_burger.urdf "namespace:=" > tb3_burger_processed.urdf
+
+                .. tab-item:: PowerShell
+
+                    In PowerShell, the ``>`` redirect operator writes UTF-16 LE, which the URDF importer cannot parse. Pipe through ``Out-File -Encoding utf8`` so the file is written as UTF-8:
+
+                    .. code-block:: powershell
+
+                        xacro .\turtlebot3_burger.urdf "namespace:=" | Out-File -Encoding utf8 tb3_burger_processed.urdf
 
 
 #. Click **File > Import**, then locate the URDF file and select it.
