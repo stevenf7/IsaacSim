@@ -86,7 +86,7 @@ Setting QoS Profile for ROS 2 |omnigraph_short| Nodes
 
     The output for QoS Profile should match the ones defined from |isaac-sim_short|.
 	
-	.. note:: By default Fast DDS (formerly Fast RTPS) does not store depth so depth policy might appear as UNKNOWN. Try running |isaac-sim_short| and ROS2 nodes using :ref:`Cyclone DDS <isaac_sim_app_install_cyclonedds>` to retrieve depth info. If depth policy still appears as UNKNOWN after switching to Cyclone DDS, this might be related to your hardware configuration. 
+	.. note:: By default Fast DDS (formerly Fast RTPS) does not store depth so depth policy might appear as UNKNOWN. Try running |isaac-sim_short| and ROS2 nodes using :ref:`Cyclone DDS <isaac_sim_app_install_cyclonedds>` or :ref:`Zenoh <isaac_sim_app_install_zenoh>` to retrieve depth info. Both ``rmw_cyclonedds_cpp`` and ``rmw_zenoh_cpp`` report the configured depth value via ``ros2 topic info -v``. If depth policy still appears as UNKNOWN after switching middlewares, this might be related to your hardware configuration.
 
 Creating Static Publishers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

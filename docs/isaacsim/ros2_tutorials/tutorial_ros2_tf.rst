@@ -87,11 +87,11 @@ Setting Up Odometry
 
 To setup odometry for a robot, publish the odometry ROS message and its corresponding transforms.
 
-#. The Turtlebot3 robot has the **Articulation Root API** applied on ``/World/turtlebot3_burger/Geometry/base_footprint/base_link`` and the ``IsaacRobotAPI`` applied on ``/World/turtlebot3_burger`` with ``isaac:physics:robotLinks`` populated, so no manual articulation-root setup is required.
+#. The Turtlebot3 robot has the **Articulation Root API** applied on ``/World/tb3_burger_processed/Geometry/base_footprint/base_link`` and the ``IsaacRobotAPI`` applied on ``/World/tb3_burger_processed`` with ``isaac:physics:robotLinks`` populated, so no manual articulation-root setup is required.
 
-    - (Optional Exercise) Add */World/turtlebot3_burger* (the default) to the **targetPrims** field on the **Isaac Compute Transform Tree** node feeding any **ROS 2 Publish Transform Tree**, and observe that the transforms of all the links of the robot, fixed or articulated, will be published on the ``/tf`` topic.
+    - (Optional Exercise) Add */World/tb3_burger_processed* (the default) to the **targetPrims** field on the **Isaac Compute Transform Tree** node feeding any **ROS 2 Publish Transform Tree**, and observe that the transforms of all the links of the robot, fixed or articulated, will be published on the ``/tf`` topic.
 
-#. To set up the odometry publisher, in the **Stage** panel select the main robot prim ``/World/turtlebot3_burger`` so the new Action Graph is created directly under it. Robot-state publisher graphs (odometry, TF tree, ground-truth pose, and so on) act on the robot's articulation as a whole, so they belong at the robot root rather than under a single link. Open the visual scripting editor by going to **Window > Graph Editors > Action Graph** and click **New Action Graph**; name it ``ROS_OdomTF``. The resulting graph path is ``/World/turtlebot3_burger/ROS_OdomTF``. Compose an Action Graph that matches the following image.
+#. To set up the odometry publisher, in the **Stage** panel select the main robot prim ``/World/tb3_burger_processed`` so the new Action Graph is created directly under it. Robot-state publisher graphs (odometry, TF tree, ground-truth pose, and so on) act on the robot's articulation as a whole, so they belong at the robot root rather than under a single link. Open the visual scripting editor by going to **Window > Graph Editors > Action Graph** and click **New Action Graph**; name it ``ROS_OdomTF``. The resulting graph path is ``/World/tb3_burger_processed/ROS_OdomTF``. Compose an Action Graph that matches the following image.
 
     .. figure:: /images/isim_6.0_ros_tut_gui_ros2_odometry_graph.png
         :align: center
@@ -102,7 +102,7 @@ To setup odometry for a robot, publish the odometry ROS message and its correspo
 
     - In the Property tab for the **Isaac Compute Odometry Node**: 
 
-        - Add the Turtlebot prim (that is, ``/World/turtlebot3_burger``) to its **Chassis Prim** input field. This node calculates the position of the robot relative to its start location. Its output will be fed into both a publisher for the ``/odom`` ROS 2 topic, and a TF publisher that publishes the singular transform from ``/odom`` frame to ``/base_link`` frame.
+        - Add the Turtlebot prim (that is, ``/World/tb3_burger_processed``) to its **Chassis Prim** input field. This node calculates the position of the robot relative to its start location. Its output will be fed into both a publisher for the ``/odom`` ROS 2 topic, and a TF publisher that publishes the singular transform from ``/odom`` frame to ``/base_link`` frame.
     
     - In the Property tab for the **ROS2 Publish Raw Transform Tree** node:
 
@@ -121,21 +121,21 @@ To setup odometry for a robot, publish the odometry ROS message and its correspo
 
     - In the Property tab for the **Isaac Compute Transform Tree** node:
 
-        - Set the *parentPrim* input field to the path to your base_link inside your Turtlebot Prim: ``/World/turtlebot3_burger/Geometry/base_footprint/base_link``.
+        - Set the *parentPrim* input field to the path to your base_link inside your Turtlebot Prim: ``/World/tb3_burger_processed/Geometry/base_footprint/base_link``.
 
 
         - Set the *targetPrims* input field to the following prims:
 
-            - ``/World/turtlebot3_burger/Geometry/base_footprint``
-            - ``/World/turtlebot3_burger/Geometry/base_footprint/base_link/base_scan``
-            - ``/World/turtlebot3_burger/Geometry/base_footprint/base_link/caster_back_link``
-            - ``/World/turtlebot3_burger/Geometry/base_footprint/base_link/imu_link``
-            - ``/World/turtlebot3_burger/Geometry/base_footprint/base_link/wheel_left_link``
-            - ``/World/turtlebot3_burger/Geometry/base_footprint/base_link/wheel_right_link``
+            - ``/World/tb3_burger_processed/Geometry/base_footprint``
+            - ``/World/tb3_burger_processed/Geometry/base_footprint/base_link/base_scan``
+            - ``/World/tb3_burger_processed/Geometry/base_footprint/base_link/caster_back_link``
+            - ``/World/tb3_burger_processed/Geometry/base_footprint/base_link/imu_link``
+            - ``/World/tb3_burger_processed/Geometry/base_footprint/base_link/wheel_left_link``
+            - ``/World/tb3_burger_processed/Geometry/base_footprint/base_link/wheel_right_link``
 
         .. tip::
 
-            Because ``IsaacRobotAPI`` is applied on ``/World/turtlebot3_burger`` with ``isaac:physics:robotLinks`` populated, you can simply add ``/World/turtlebot3_burger`` to the *targetPrims* field instead of the explicit list above and the full articulation chain will be published.
+            Because ``IsaacRobotAPI`` is applied on ``/World/tb3_burger_processed`` with ``isaac:physics:robotLinks`` populated, you can simply add ``/World/tb3_burger_processed`` to the *targetPrims* field instead of the explicit list above and the full articulation chain will be published.
 
         
 

@@ -80,9 +80,9 @@ Putting It Together
 Building the Graph
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-#. In the **Stage** panel, select the main robot prim ``/World/turtlebot3_burger`` so the new Action Graph is created directly under it. Drive controller graphs (differential, Ackermann, holonomic, and so on) act on the robot's articulation as a whole, so they belong at the robot root rather than under a single link.
+#. In the **Stage** panel, select the main robot prim ``/World/tb3_burger_processed`` so the new Action Graph is created directly under it. Drive controller graphs (differential, Ackermann, holonomic, and so on) act on the robot's articulation as a whole, so they belong at the robot root rather than under a single link.
 #. Open Visual Scripting: **Window > Graph Editors > Action Graph**. An **Action Graph** window will appear on the bottom, you can dock it wherever convenient.
-#. Click on the **New Action Graph** icon in the middle of the **Action Graph** window. Name the graph ``ROS_Drive``. The resulting graph path is ``/World/turtlebot3_burger/ROS_Drive``.
+#. Click on the **New Action Graph** icon in the middle of the **Action Graph** window. Name the graph ``ROS_Drive``. The resulting graph path is ``/World/tb3_burger_processed/ROS_Drive``.
 #. Inside the **Action Graph** window, there is a panel on the left hand side with all the |omnigraph_short| Nodes (or OG nodes). All ROS2 related OG nodes are listed under *Isaac Ros2*. You can also search for nodes by name. To place a node into the graph, drag it from the node list into the graph window.
 #. Build a graph that matches the one below.
 
@@ -125,7 +125,7 @@ Graph Explained
 
     - Tick *Exec In* with **On Playback Tick** so the last command keeps executing between Twist messages.
 
-    #. Set the **target** to ``/World/turtlebot3_burger``. The asset's ``IsaacRobotAPI`` and ``ArticulationRootAPI`` resolve the articulation automatically (see :ref:`isaac_sim_app_tutorial_gui_simple_robot_articulation`).
+    #. Set the **target** to ``/World/tb3_burger_processed``. The asset's ``IsaacRobotAPI`` and ``ArticulationRootAPI`` resolve the articulation automatically (see :ref:`isaac_sim_app_tutorial_gui_simple_robot_articulation`).
 
     #. Wire two **Constant Token** nodes into the **Make Array** node, in this order: ``wheel_left_joint`` first, then ``wheel_right_joint``. The order must match the **Differential Controller**'s output.
 

@@ -61,13 +61,13 @@ Adding a RTX Radar ROS 2 Bridge
 
 #. Start with the turtlebot scene from the :ref:`isaac_sim_app_tutorial_ros2_turtlebot` tutorial.
 #. Add a Radar sensor by going to **Create > Sensors > RTX Radar > NVIDIA > Generic RTX Radar**.
-#. To place the radar sensor on the robot, drag the Radar prim under ``/World/turtlebot3_burger/Geometry/base_footprint/base_link/base_scan``. Modify the **Transform** fields inside the **Property** tab as follows:
+#. To place the radar sensor on the robot, drag the Radar prim under ``/World/tb3_burger_processed/Geometry/base_footprint/base_link/base_scan``. Modify the **Transform** fields inside the **Property** tab as follows:
 
     #. Zero out any displacement.
     #. Set **Rotate Z** to ``90.0``, so the Radar prim is pointing forward.
     #. Set **Translate Z** to ``1.0``, so the Radar prim is slightly above the robot base and returns are more visible.
 
-#. Connect the ROS 2 bridge with the sensor output using OmniGraph nodes. In the **Stage** panel, select ``/World/turtlebot3_burger/Geometry/base_footprint/base_link/base_scan`` so the new Action Graph is created adjacent to the radar sensor link, then open the visual scripting editor by going to **Window > Graph Editors > Action Graph**. Click **New Action Graph** and name it ``ROS_RadarRTX``; the resulting graph path is ``/World/turtlebot3_burger/Geometry/base_footprint/base_link/base_scan/ROS_RadarRTX``. Parenting the graph to the sensor link it publishes for keeps the robot asset composable: when the Turtlebot is referenced into another scene, the radar graph travels with it instead of being stranded at the stage root. Add the following nodes to the graph:
+#. Connect the ROS 2 bridge with the sensor output using OmniGraph nodes. In the **Stage** panel, select ``/World/tb3_burger_processed/Geometry/base_footprint/base_link/base_scan`` so the new Action Graph is created adjacent to the radar sensor link, then open the visual scripting editor by going to **Window > Graph Editors > Action Graph**. Click **New Action Graph** and name it ``ROS_RadarRTX``; the resulting graph path is ``/World/tb3_burger_processed/Geometry/base_footprint/base_link/base_scan/ROS_RadarRTX``. Parenting the graph to the sensor link it publishes for keeps the robot asset composable: when the Turtlebot is referenced into another scene, the radar graph travels with it instead of being stranded at the stage root. Add the following nodes to the graph:
 
     #. ``On Playback Tick``: Triggers all downstream nodes after **Play** is pressed.
     #. ``ROS2 Context Node``: Creates a ROS 2 context with a given Domain ID (default 0).
