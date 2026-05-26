@@ -452,7 +452,10 @@ class SimulationControl:
                 setattr(self, f"{class_name}_{interface_kind}_name", endpoint_name)
                 carb.log_info(f"Successfully imported {interface_kind} {class_name}")
             except (ImportError, AttributeError) as e:
-                carb.log_error(f"Failed to import {interface_kind} {class_name}: {e}")
+                carb.log_warn(
+                    f"{interface_kind.capitalize()} {class_name} not available in this "
+                    f"simulation_interfaces release; skipping registration ({e})"
+                )
                 setattr(self, class_name, None)
                 setattr(self, f"{class_name}_{interface_kind}_name", None)
 
@@ -483,7 +486,10 @@ class SimulationControl:
                 service_name = getattr(self, f"{service_class_name}_service_name")
                 self.service_manager.register_service(f"{SERVICE_PREFIX}{service_name}", service_class, handler)
             else:
-                carb.log_error(f"{service_class_name} service type not available")
+                carb.log_warn(
+                    f"{service_class_name} service type not available in this "
+                    "simulation_interfaces release; skipping registration"
+                )
 
     def _register_action_server_if_available(
         self,
@@ -513,7 +519,10 @@ class SimulationControl:
                     cancel_callback=cancel_callback,
                 )
             else:
-                carb.log_error(f"{action_class_name} action type not available")
+                carb.log_warn(
+                    f"{action_class_name} action type not available in this "
+                    "simulation_interfaces release; skipping registration"
+                )
 
     def _initialize_ros2_services(self) -> None:
         """Initialize ROS2 services for simulation control.
@@ -2076,32 +2085,45 @@ class SimulationControl:
         try:
             from simulation_interfaces.msg import SimulatorFeatures
 
-            # Define the features supported by our implementation.
-            # Order follows SimulatorFeatures.msg definition.
-            features = [
-                SimulatorFeatures.SPAWNING,
-                SimulatorFeatures.DELETING,
-                SimulatorFeatures.ENTITY_BOUNDS,
-                SimulatorFeatures.ENTITY_BOUNDS_BOX,
-                SimulatorFeatures.ENTITY_STATE_GETTING,
-                SimulatorFeatures.ENTITY_STATE_SETTING,
-                SimulatorFeatures.ENTITY_INFO_GETTING,
-                SimulatorFeatures.SPAWNABLES,
-                SimulatorFeatures.SIMULATION_RESET,
-                SimulatorFeatures.SIMULATION_RESET_SPAWNED,
-                SimulatorFeatures.SIMULATION_STATE_GETTING,
-                SimulatorFeatures.SIMULATION_STATE_SETTING,
-                SimulatorFeatures.SIMULATION_STATE_PAUSE,
-                SimulatorFeatures.STEP_SIMULATION_SINGLE,
-                SimulatorFeatures.STEP_SIMULATION_MULTIPLE,
-                SimulatorFeatures.STEP_SIMULATION_ACTION,
-                SimulatorFeatures.WORLD_LOADING,
-                SimulatorFeatures.WORLD_TAGS,
-                SimulatorFeatures.WORLD_UNLOADING,
-                SimulatorFeatures.WORLD_INFO_GETTING,
-                SimulatorFeatures.AVAILABLE_WORLDS,
-                SimulatorFeatures.SPAWNING_ENTITIES,
+            # Resolve via getattr so older simulation_interfaces releases
+            # advertise the subset they define instead of crashing on a
+            # missing constant.
+            feature_names = [
+                "SPAWNING",
+                "DELETING",
+                "ENTITY_BOUNDS",
+                "ENTITY_BOUNDS_BOX",
+                "ENTITY_STATE_GETTING",
+                "ENTITY_STATE_SETTING",
+                "ENTITY_INFO_GETTING",
+                "SPAWNABLES",
+                "SIMULATION_RESET",
+                "SIMULATION_RESET_SPAWNED",
+                "SIMULATION_STATE_GETTING",
+                "SIMULATION_STATE_SETTING",
+                "SIMULATION_STATE_PAUSE",
+                "STEP_SIMULATION_SINGLE",
+                "STEP_SIMULATION_MULTIPLE",
+                "STEP_SIMULATION_ACTION",
+                "WORLD_LOADING",
+                "WORLD_TAGS",
+                "WORLD_UNLOADING",
+                "WORLD_INFO_GETTING",
+                "AVAILABLE_WORLDS",
+                "SPAWNING_ENTITIES",
             ]
+            features = []
+            unavailable = []
+            for name in feature_names:
+                if hasattr(SimulatorFeatures, name):
+                    features.append(getattr(SimulatorFeatures, name))
+                else:
+                    unavailable.append(name)
+            if unavailable:
+                carb.log_warn(
+                    "SimulatorFeatures constants not present in this simulation_interfaces "
+                    f"release; omitting from response: {', '.join(unavailable)}"
+                )
 
             # Set the features in the response
             response.features.features = features

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.6.5] - 2026-05-24
+### Fixed
+- `GetSimulatorFeatures` advertises the subset of constants present in the installed `simulation_interfaces` instead of returning an empty list when a constant is missing.
+- Missing service/action types now skip registration with a warning naming the type, instead of a generic error.
+
 ## [1.6.4] - 2026-05-14
 ### Changed
 - Add missing type annotations across `entity_utils.py` and `simulation_control.py`, and drop unused `rclpy.node.Node` / `Result` / `SimulationState` imports flagged by ruff
