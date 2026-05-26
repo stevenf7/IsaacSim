@@ -697,6 +697,170 @@ class TestGeometriesRoutingRule(omni.kit.test.AsyncTestCase):
 
         self._success = True
 
+    async def test_process_rule_inherits_guide_from_grandparent_and_separates_visual(self) -> None:
+        """Verify inherited purpose=guide on an ancestor is propagated and visual/collision usages are not merged.
+
+        Builds a stage where the same prototype mesh is referenced both by a visual Xform
+        (effective purpose=default) and by a collision Xform whose grandparent (not the
+        immediate parent) authors purpose=guide. Verifies that:
+
+        1. The deduplicated visual and collision sources end up referencing different
+           ``/Instances`` entries -- without per-effective-purpose deduplication they
+           would share one instance and the visual usage would be incorrectly hidden.
+        2. The collision-side prototype mesh carries an authored purpose=guide attribute
+           inside the instances layer, even though the value is inherited from an
+           ancestor several levels above the mesh rather than from the immediate parent.
+        3. The visual-side prototype mesh does NOT carry an authored purpose attribute.
+        """
+        os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
+        temp_input = os.path.join(self._tmpdir, "grandparent_guide.usda")
+
+        # Build a stage with a shared prototype mesh under /meshes, referenced once for
+        # visuals (no purpose) and once via a collisions group whose GRANDPARENT carries
+        # purpose=guide. Purpose inheritance must be picked up from the grandparent.
+        stage = Usd.Stage.CreateNew(temp_input)
+        stage.SetMetadata("metersPerUnit", 1.0)
+        stage.SetMetadata("upAxis", "Z")
+        root = UsdGeom.Xform.Define(stage, "/root")
+        stage.SetDefaultPrim(root.GetPrim())
+
+        proto = UsdGeom.Xform.Define(stage, "/meshes/proto")
+        proto_mesh = UsdGeom.Mesh.Define(stage, "/meshes/proto/mesh")
+        proto_mesh.GetFaceVertexCountsAttr().Set([3])
+        proto_mesh.GetFaceVertexIndicesAttr().Set([0, 1, 2])
+        proto_mesh.GetPointsAttr().Set([Gf.Vec3f(0, 0, 0), Gf.Vec3f(1, 0, 0), Gf.Vec3f(0, 1, 0)])
+
+        visual = UsdGeom.Xform.Define(stage, "/root/visuals/part")
+        visual.GetPrim().GetReferences().AddInternalReference("/meshes/proto")
+
+        collisions_group = UsdGeom.Xform.Define(stage, "/root/collisions")
+        collisions_group.GetPrim().GetAttribute("purpose").Set(UsdGeom.Tokens.guide)
+        collision_link = UsdGeom.Xform.Define(stage, "/root/collisions/link")
+        collision = UsdGeom.Xform.Define(stage, "/root/collisions/link/part")
+        collision.GetPrim().GetReferences().AddInternalReference("/meshes/proto")
+
+        stage.Export(temp_input)
+
+        base_stage = Usd.Stage.Open(temp_input)
+        rule = GeometriesRoutingRule(
+            source_stage=base_stage,
+            package_root=self._tmpdir,
+            destination_path="payloads",
+            args={
+                "params": {
+                    "geometries_layer": "geometries.usd",
+                    "instance_layer": "instances.usda",
+                }
+            },
+        )
+
+        updated_stage_path = rule.process_rule()
+        self.assertIsNotNone(updated_stage_path)
+        updated_stage = Usd.Stage.Open(updated_stage_path)
+        instances_stage = Usd.Stage.Open(os.path.join(self._tmpdir, "payloads", "instances.usda"))
+
+        def _instance_path_for(prim_path: str) -> str:
+            prim_spec = updated_stage.GetRootLayer().GetPrimAtPath(prim_path)
+            self.assertIsNotNone(prim_spec, f"No spec at {prim_path}")
+            refs = list(prim_spec.referenceList.GetAddedOrExplicitItems())
+            refs.extend(prim_spec.referenceList.prependedItems)
+            self.assertTrue(refs, f"Expected reference on {prim_path}")
+            return refs[0].primPath.pathString
+
+        visual_inst_path = _instance_path_for("/root/visuals/part")
+        collision_inst_path = _instance_path_for("/root/collisions/link/part")
+        self.assertNotEqual(
+            visual_inst_path,
+            collision_inst_path,
+            "Visual and collision usages of the same prototype must not share an instance",
+        )
+
+        def _proto_mesh_purpose(instance_root_path: str) -> tuple[bool, str]:
+            instance_root = instances_stage.GetPrimAtPath(instance_root_path)
+            self.assertTrue(instance_root.IsValid(), f"Missing instance root {instance_root_path}")
+            for child in instance_root.GetChildren():
+                if child.IsA(UsdGeom.Mesh):
+                    attr = child.GetAttribute("purpose")
+                    return bool(attr and attr.HasAuthoredValue()), attr.Get() if attr else ""
+            self.fail(f"No Mesh child in {instance_root_path}")
+
+        collision_authored, collision_value = _proto_mesh_purpose(collision_inst_path)
+        self.assertTrue(
+            collision_authored,
+            "Collision prototype mesh must carry an authored purpose from inherited ancestor value",
+        )
+        self.assertEqual(collision_value, UsdGeom.Tokens.guide)
+
+        visual_authored, _ = _proto_mesh_purpose(visual_inst_path)
+        self.assertFalse(visual_authored, "Visual prototype mesh must not carry an authored purpose")
+
+        self._success = True
+
+    async def test_process_rule_is_idempotent_with_existing_instances_layer(self) -> None:
+        """Verify re-running the rule against an existing instances layer is safe.
+
+        Re-running must not crash AND must not mutate the source asset on disk.
+
+        Reproduces two regressions:
+        1. ``Sdf.Layer.FindOrOpen`` reuses a previously written ``instances.usda`` that
+           already contains the propagated purpose attribute spec on a prototype mesh.
+           The second run must not raise
+           ``Cannot create spec ... because it already exists`` when re-authoring the spec.
+        2. ``_make_references_non_instanceable`` used to flatten-and-export back to the
+           source layer's ``realPath``, silently mutating the caller's input between
+           runs. ``process_rule`` must treat its source as read-only; the working copy
+           lives inside ``package_root`` instead.
+        """
+        os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)
+        temp_input = os.path.join(self._tmpdir, "test_advanced.usda")
+
+        source_stage = Usd.Stage.Open(_TEST_ADVANCED_USD)
+        source_stage.Export(temp_input)
+
+        # Snapshot the input bytes so we can assert the rule does not mutate it.
+        with open(temp_input, "rb") as fh:
+            input_bytes_before = fh.read()
+        input_mtime_before = os.path.getmtime(temp_input)
+
+        def _run() -> str:
+            base_stage = Usd.Stage.Open(temp_input)
+            rule = GeometriesRoutingRule(
+                source_stage=base_stage,
+                package_root=self._tmpdir,
+                destination_path="payloads",
+                args={
+                    "params": {
+                        "geometries_layer": "geometries.usd",
+                        "instance_layer": "instances.usda",
+                    }
+                },
+            )
+            return rule.process_rule()
+
+        first_path = _run()
+        self.assertIsNotNone(first_path, "Initial rule run failed")
+
+        # Source file must be unchanged after first run (no in-place mutation).
+        with open(temp_input, "rb") as fh:
+            input_bytes_after_first = fh.read()
+        self.assertEqual(
+            input_bytes_before,
+            input_bytes_after_first,
+            "process_rule mutated the source asset file in place; it must operate on a working copy",
+        )
+        self.assertEqual(
+            input_mtime_before,
+            os.path.getmtime(temp_input),
+            "Source file mtime changed; process_rule mutated the source asset",
+        )
+
+        # Second run on the same (unmutated) input must not raise. The instances
+        # layer from the first run is reopened via Sdf.Layer.FindOrOpen and
+        # previously-authored purpose specs must be reused.
+        second_path = _run()
+        self.assertIsNotNone(second_path, "Re-running the rule with existing instances layer failed")
+        self._success = True
+
     async def test_process_rule_preserves_parent_properties_on_merge(self) -> None:
         """Verify merged parent retains authored properties and schemas."""
         os.makedirs(os.path.join(self._tmpdir, "payloads"), exist_ok=True)

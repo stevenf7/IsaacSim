@@ -29,6 +29,7 @@
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
 #include <pxr/usd/usdPhysics/articulationRootAPI.h>
+#include <pxr/usd/usdPhysics/rigidBodyAPI.h>
 
 #include <OgnIsaacComputeOdometryDatabase.h>
 #include <atomic>
@@ -150,8 +151,25 @@ private:
         const char* pathStr = primSdfPath.GetText();
         const char* engine = isaacsim::core::includes::getActivePhysicsEngineName();
 
-        if (usdPrim.HasAPI<pxr::UsdPhysicsArticulationRootAPI>())
+        // Prefer RigidBodyView when the chassis prim is itself a rigid body: the articulation
+        // view's root pose tracks PhysX's auto-selected root link, which may not match the
+        // user-specified chassis (e.g. after Robot Assembler attaches bodies via fixed joints).
+        const bool hasRigidBody = usdPrim.HasAPI<pxr::UsdPhysicsRigidBodyAPI>();
+        const bool hasArticulationRoot = usdPrim.HasAPI<pxr::UsdPhysicsArticulationRootAPI>();
+
+        if (hasRigidBody)
         {
+            m_rigidBodyView = m_reader->createRigidBodyView(m_viewId.c_str(), &pathStr, 1, engine);
+            if (!m_rigidBodyView)
+            {
+                db.logError("Failed to create rigid body view for '%s'", pathStr);
+                return false;
+            }
+        }
+        else if (hasArticulationRoot)
+        {
+            // Articulation root is not a rigid body (e.g. ancestor Xform); odometry follows
+            // PhysX's auto-selected root link. Point chassisPrim at the rigid body to override.
             m_articulationView = m_reader->createArticulationView(m_viewId.c_str(), &pathStr, 1, engine);
             if (!m_articulationView)
             {
@@ -161,12 +179,8 @@ private:
         }
         else
         {
-            m_rigidBodyView = m_reader->createRigidBodyView(m_viewId.c_str(), &pathStr, 1, engine);
-            if (!m_rigidBodyView)
-            {
-                db.logError("The prim at path '%s' is not a valid rigid body or articulation root", pathStr);
-                return false;
-            }
+            db.logError("The prim at path '%s' is not a valid rigid body or articulation root", pathStr);
+            return false;
         }
 
         readTransformAndVelocity();

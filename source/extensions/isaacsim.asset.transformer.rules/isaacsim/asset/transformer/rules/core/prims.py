@@ -164,6 +164,11 @@ class PrimRoutingRule(RuleInterface):
         Returns:
             None (this rule does not change the working stage).
 
+        Raises:
+            ValueError: If ``prim_types`` is missing or empty. ``prim_types`` is
+                the rule's primary selector; without it the rule has no defined
+                work surface and the caller almost certainly misconfigured it.
+
         Example:
 
         .. code-block:: python
@@ -175,8 +180,12 @@ class PrimRoutingRule(RuleInterface):
         prim_types = params.get("prim_types") or []
 
         if not prim_types:
-            self.log_operation("No prim types specified, skipping")
-            return None
+            raise ValueError(
+                "PrimRoutingRule requires 'prim_types' to be configured with at least one type "
+                "pattern. To disable a rule without removing its entry, set the rule spec's "
+                "'enabled = false' flag instead -- the manager honors it and skips execution "
+                "with no error reported."
+            )
 
         destination_path = self.destination_path
         stage_name = params.get("stage_name") or "prims.usda"

@@ -17,7 +17,6 @@
 
 
 import asyncio
-from typing import List
 
 import carb
 import isaacsim.core.experimental.utils.app as app_utils
@@ -57,7 +56,7 @@ class UIBuilder:
     AUTO_CREATE = "AUTO_CREATE_FRAME"
     """String identifier for automatically creating an attachment frame when one is not manually selected."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Get access to the timeline to control stop/pause/play programmatically
         self._timeline = omni.timeline.get_timeline_interface()
 
@@ -69,7 +68,7 @@ class UIBuilder:
     #           The Functions Below Are Called Automatically By extension.py
     ###################################################################################
 
-    def on_menu_callback(self):
+    def on_menu_callback(self) -> None:
         """Callback for when the UI is opened from the toolbar.
 
         This is distinct from the creation of the UI in build_ui()
@@ -83,14 +82,14 @@ class UIBuilder:
         if self._timeline.is_playing():
             self._repopulate_all_dropdowns()
 
-    def on_timeline_event(self, event: object):
+    def on_timeline_event(self, event: object) -> None:
         """Callback for Timeline events (Play, Pause, Stop).
 
         Args:
             event: Event Type
         """
 
-    def on_physics_step(self, step: float):
+    def on_physics_step(self, step: float) -> None:
         """Callback for Physics Step.
 
         Physics steps only occur when the timeline is playing.
@@ -99,7 +98,7 @@ class UIBuilder:
             step: Size of physics step
         """
 
-    def reset_ui(self):
+    def reset_ui(self) -> None:
         """Reset the UI to its initial state.
 
         Resets all frames to their default visibility and state, clears selections, and repopulates dropdowns.
@@ -122,7 +121,7 @@ class UIBuilder:
 
         self._repopulate_all_dropdowns()
 
-    def on_stage_event(self, event: object):
+    def on_stage_event(self, event: object) -> None:
         """Callback for Stage Events.
 
         Args:
@@ -149,7 +148,7 @@ class UIBuilder:
                     stage.SetEditTarget(self._robot_assembler._assembly_layer)
                     self._is_assembly_pending = False
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Called when the stage is closed or the extension is hot reloaded.
 
         Perform any necessary cleanup such as removing active callback functions
@@ -163,7 +162,7 @@ class UIBuilder:
     #                                           Build UI
     ######################################################################################################
 
-    def build_ui(self):
+    def build_ui(self) -> None:
         """Build a custom UI tool to run your extension.
 
         This function will be called once when your extension is opened.
@@ -256,12 +255,12 @@ class UIBuilder:
                             tooltip="The namespace to use for the assembly.",
                         )
 
-                    def on_toggle_joint_gizmos_btn_clicked():
+                    def on_toggle_joint_gizmos_btn_clicked() -> None:
                         settings = carb.settings.get_settings()
                         joint_gizmo_setting = "/persistent/physics/visualizationDisplayJoints"
                         settings.set(joint_gizmo_setting, not settings.get(joint_gizmo_setting))
 
-                    def on_begin_assemble_btn_clicked():
+                    def on_begin_assemble_btn_clicked() -> None:
                         """If (.
 
                             self._robot_dropdowns[0].get_selection() in self._articulation_options
@@ -301,7 +300,7 @@ class UIBuilder:
 
         self._make_assemble_frame(names)
 
-    def apply_rotation(self, axis: tuple, angle: float):
+    def apply_rotation(self, axis: tuple, angle: float) -> None:
         """Apply rotation to the attachment robot.
 
         Args:
@@ -324,42 +323,42 @@ class UIBuilder:
             new_transform_matrix=new_matrix,
         )
 
-    def on_rotate_x_90_pos_clicked(self):
+    def on_rotate_x_90_pos_clicked(self) -> None:
         """Callback for rotating the attachment robot 90 degrees around the positive X axis."""
         self.apply_rotation((1, 0, 0), 90)
 
-    def on_rotate_x_90_neg_clicked(self):
+    def on_rotate_x_90_neg_clicked(self) -> None:
         """Callback for rotating the attachment robot -90 degrees around the X axis."""
         self.apply_rotation((1, 0, 0), -90)
 
-    def on_rotate_y_90_pos_clicked(self):
+    def on_rotate_y_90_pos_clicked(self) -> None:
         """Rotates the attachment robot 90 degrees positive around the Y-axis."""
         self.apply_rotation((0, 1, 0), 90)
 
-    def on_rotate_y_90_neg_clicked(self):
+    def on_rotate_y_90_neg_clicked(self) -> None:
         """Rotates the attachment robot 90 degrees negative around the Y-axis."""
         self.apply_rotation((0, 1, 0), -90)
 
-    def on_rotate_z_90_pos_clicked(self):
+    def on_rotate_z_90_pos_clicked(self) -> None:
         """Rotates the attachment robot 90 degrees positive around the Z-axis."""
         self.apply_rotation((0, 0, 1), 90)
 
-    def on_rotate_z_90_neg_clicked(self):
+    def on_rotate_z_90_neg_clicked(self) -> None:
         """Rotates the attachment robot 90 degrees negative around the Z-axis."""
         self.apply_rotation((0, 0, 1), -90)
 
-    def _make_assemble_frame(self, names: list):
+    def _make_assemble_frame(self, names: list) -> None:
         """Creates the robot assembly frame with transformation controls and simulation buttons.
 
         Args:
             names: List of robot names for the assembly process.
         """
 
-        def on_cancel_assemble_btn_clicked():
+        def on_cancel_assemble_btn_clicked() -> None:
             if self._timeline.is_playing():
                 self._timeline.stop()
 
-            async def async_cancel():
+            async def async_cancel() -> None:
                 await omni.kit.app.get_app().next_update_async()
                 self._robot_assembler.cancel_assembly()
 
@@ -367,9 +366,9 @@ class UIBuilder:
 
             self.reset_ui()
 
-        def on_simulate_and_assemble_button_clicked(make_single_robot):
+        def on_simulate_and_assemble_button_clicked(make_single_robot: bool) -> None:
 
-            async def async_assemble():
+            async def async_assemble() -> None:
                 self._robot_assembler.assemble()
                 # Mute and unmute the assembly layer to ensure that the assembly layer is updated in the scenegraph instance
                 stage = omni.usd.get_context().get_stage()
@@ -391,10 +390,10 @@ class UIBuilder:
             self.end_simulation_and_continue_button.enabled = True
             self.end_simulation_and_continue_button.visible = True
 
-        def on_end_simulation_and_continue_button_clicked(make_single_robot):
+        def on_end_simulation_and_continue_button_clicked(make_single_robot: bool) -> None:
             #
 
-            async def async_finish_assemble():
+            async def async_finish_assemble() -> None:
                 if self._timeline.is_playing():
                     self._timeline.stop()
                     await omni.kit.app.get_app().next_update_async()
@@ -467,7 +466,7 @@ class UIBuilder:
                         )
                 ui.Spacer(width=12)
 
-    def _build_set_robot_position_frame(self, idx: int):
+    def _build_set_robot_position_frame(self, idx: int) -> None:
         """Builds the UI frame for setting robot position controls.
 
         Args:
@@ -478,7 +477,7 @@ class UIBuilder:
     #                              Robot Assembler Frame Functions
     ##########################################################################################
 
-    def _get_attach_point(self, ind: int):
+    def _get_attach_point(self, ind: int) -> str:
         """Gets the attach point path for the specified robot.
 
         Args:
@@ -516,7 +515,7 @@ class UIBuilder:
         # no payload found
         return attach_path
 
-    def _attach_selection(self):
+    def _attach_selection(self) -> None:
         """Initiates the robot attachment process using the selected robots and attach points."""
         stage = omni.usd.get_context().get_stage()
 
@@ -556,7 +555,7 @@ class UIBuilder:
 
         self._select_attach_point_prim()
 
-    def _select_attach_point_prim(self):
+    def _select_attach_point_prim(self) -> None:
         """Selects the attach point prim of the attachment robot in the stage viewport."""
         stage = omni.usd.get_context().get_stage()
         asset_path = self._find_payload_path(stage, self._robot_assembler._attachment_robot_prim)
@@ -571,7 +570,7 @@ class UIBuilder:
     #                               Assembly Frame Functions
     ############################################################################################
 
-    def _attach_point_populate_fn(self, art_ind: int) -> List[str]:
+    def _attach_point_populate_fn(self, art_ind: int) -> list[str]:
         """Populates the attach point dropdown with available attachment points for the selected robot.
 
         Args:
@@ -592,10 +591,10 @@ class UIBuilder:
             self._attach_map[art_ind] = {self.AUTO_CREATE: ""}
         else:
             self._attach_map[art_ind] = {pxr.Sdf.Path(p).name: p for p in attach_points}
-        attach_points = [p for p in self._attach_map[art_ind].keys()]
+        attach_points = list(self._attach_map[art_ind])
         return attach_points
 
-    def _get_attach_points(self, selected_robot: str):
+    def _get_attach_points(self, selected_robot: str) -> list[str]:
         """Retrieves all available attach points for the specified robot.
 
         Args:
@@ -626,23 +625,23 @@ class UIBuilder:
     #                            Robot Selection Frame Functions
     ##########################################################################################
 
-    def _wait_and_reselect_articulations(self):
+    def _wait_and_reselect_articulations(self) -> None:
         """Waits for physics initialization and re-triggers selection callbacks for all robot dropdowns."""
 
         # Certain physics things will occasionally take two frames to start working.
-        async def wait_and_reselect():
+        async def wait_and_reselect() -> None:
             await app_utils.update_app_async(steps=2)
             for dropdown in self._robot_dropdowns:
                 dropdown.trigger_on_selection_fn_with_current_selection()
 
         asyncio.ensure_future(wait_and_reselect())
 
-    def _reselect_articulations(self):
+    def _reselect_articulations(self) -> None:
         """Re-triggers the selection callback functions for all robot dropdowns with their current selections."""
         for dropdown in self._robot_dropdowns:
             dropdown.trigger_on_selection_fn_with_current_selection()
 
-    def _on_prim_selection(self, art_ind: int, selection: str):
+    def _on_prim_selection(self, art_ind: int, selection: str) -> None:
         """Handles selection events from robot and attach point dropdowns.
 
         Args:
@@ -653,7 +652,7 @@ class UIBuilder:
 
         # self._articulation_attach_point_dropdowns[art_ind].repopulate()
 
-    def _on_set_joint_position_target(self, robot_index: int, joint_index: int, position_target: float):
+    def _on_set_joint_position_target(self, robot_index: int, joint_index: int, position_target: float) -> None:
         """Handles setting joint position targets for robot articulations.
 
         Args:
@@ -662,7 +661,7 @@ class UIBuilder:
             position_target: Target position value for the joint.
         """
 
-    def _repopulate_all_dropdowns(self):
+    def _repopulate_all_dropdowns(self) -> None:
         """Refreshes the contents of all robot and attach point dropdowns by repopulating their options."""
         for d in self._robot_dropdowns:
             d.repopulate()
@@ -685,7 +684,7 @@ class UIBuilder:
             return True
         return False
 
-    def _dropdown_populate_robot_asset_fn(self, ind: int) -> List[str]:
+    def _dropdown_populate_robot_asset_fn(self, ind: int) -> list[str]:
         """Populates robot selection dropdown with available robot assets, excluding already selected robots.
 
         Args:
@@ -715,7 +714,7 @@ class UIBuilder:
 
         return options
 
-    def _find_all_robot_assets(self) -> List[str]:
+    def _find_all_robot_assets(self) -> list[str]:
         """Searches the current USD stage for all robot assets that have the robot API.
 
         Returns:
@@ -733,7 +732,7 @@ class UIBuilder:
 
         return robots
 
-    def _make_heading(self, heading_title: str, width: int = 0):
+    def _make_heading(self, heading_title: str, width: int = 0) -> None:
         """Create a heading with title text and a horizontal line.
 
         Args:
@@ -746,7 +745,7 @@ class UIBuilder:
             ui.Line(width=ui.Fraction(1.0))
             ui.Spacer(width=5)
 
-    def _make_info_display(self, info_text: str):
+    def _make_info_display(self, info_text: str) -> None:
         """Create an informational display with an info icon and text.
 
         Args:
@@ -764,7 +763,7 @@ class UIBuilder:
                 ui.Spacer()
             ui.Spacer(width=25)
 
-    def _make_info_heading(self, heading_title: str, info_text: str):
+    def _make_info_heading(self, heading_title: str, info_text: str) -> None:
         """Create a heading followed by an informational display.
 
         Args:
@@ -775,7 +774,7 @@ class UIBuilder:
         self._make_info_display(info_text)
 
     # handle loading robot assets
-    def _robot_file_asset_selected(self, filepicker: object, dirname: str, filename: str, index: int):
+    def _robot_file_asset_selected(self, filepicker: object, dirname: str, filename: str, index: int) -> None:
         """Handle selection of a robot asset file from the file picker dialog.
 
         Args:
@@ -807,7 +806,7 @@ class UIBuilder:
         #
         self._repopulate_all_dropdowns()
 
-    def _on_load_asset(self, index: int):
+    def _on_load_asset(self, index: int) -> None:
         """Open a file picker dialog to select and load a robot asset.
 
         Args:

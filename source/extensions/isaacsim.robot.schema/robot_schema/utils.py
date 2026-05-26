@@ -971,8 +971,103 @@ def GetLinksFromJoint(root: RobotLinkNode, joint_prim: pxr.Usd.Prim) -> tuple[li
     return backward_links, forward_links
 
 
+def _collect_sub_robot_kinematics(
+    robot_link_prim: pxr.Usd.Prim,
+) -> tuple[list[pxr.Usd.Prim], list[pxr.Usd.Prim]]:
+    """Collect link and joint prims inside every sub-robot subtree.
+
+    The parent robot's ``robotLinks`` / ``robotJoints`` relationships
+    intentionally exclude sub-robot internals so the articulation graph
+    is well defined (see ``PopulateRobotSchemaFromArticulation``). The
+    kinematic tree, however, needs every link and joint reachable from
+    the parent so forward-kinematics propagation can move sub-robot
+    components (for example, a gripper attached at a wrist link) along
+    with the rest of the assembly.
+
+    For each sub-robot, this function prefers prims carrying the schema
+    APIs (``IsaacRobotLinkAPI`` / ``IsaacRobotJointAPI``). It falls back
+    to bare ``UsdPhysicsRigidBodyAPI`` / ``UsdPhysicsJoint`` prims **only
+    when the sub-robot has none of the corresponding tagged prims**, so
+    that unrelated rigid bodies under a properly authored sub-robot (for
+    example sensor housings or decorative props) are not added to the
+    kinematic tree.
+
+    Args:
+        robot_link_prim: The root prim of the parent robot.
+
+    Returns:
+        Tuple of (sub_robot_links, sub_robot_joints) discovered under any
+        descendant prim carrying ``IsaacRobotAPI``.
+
+    """
+    sub_links: list[pxr.Usd.Prim] = []
+    sub_joints: list[pxr.Usd.Prim] = []
+    seen_links: set[pxr.Sdf.Path] = set()
+    seen_joints: set[pxr.Sdf.Path] = set()
+
+    # Pre-compute every sub-robot root so a single ``PrimRange`` over the
+    # parent suffices: when we encounter a sub-robot root we record the
+    # subtree it owns and skip re-descending into nested sub-robots that
+    # have already been processed.
+    root_path = robot_link_prim.GetPath()
+    sub_robot_roots: list[pxr.Usd.Prim] = []
+    for child in pxr.Usd.PrimRange(robot_link_prim):
+        if child.GetPath() == root_path:
+            continue
+        if child.HasAPI(Classes.ROBOT_API.value):
+            sub_robot_roots.append(child)
+
+    for sub_root in sub_robot_roots:
+        tagged_links: list[pxr.Usd.Prim] = []
+        tagged_joints: list[pxr.Usd.Prim] = []
+        rigid_bodies: list[pxr.Usd.Prim] = []
+        raw_joints: list[pxr.Usd.Prim] = []
+
+        for sub_prim in pxr.Usd.PrimRange(sub_root):
+            if sub_prim.HasAPI(Classes.LINK_API.value):
+                tagged_links.append(sub_prim)
+            elif sub_prim.HasAPI(pxr.UsdPhysics.RigidBodyAPI):
+                rigid_bodies.append(sub_prim)
+
+            if sub_prim.HasAPI(Classes.JOINT_API.value):
+                tagged_joints.append(sub_prim)
+            elif sub_prim.IsA(pxr.UsdPhysics.Joint):
+                raw_joints.append(sub_prim)
+
+        # Prefer schema-tagged prims; only fall back to raw physics types
+        # when the sub-robot has none of the tagged variety.
+        link_candidates = tagged_links if tagged_links else rigid_bodies
+        joint_candidates = tagged_joints if tagged_joints else raw_joints
+
+        for lnk in link_candidates:
+            lnk_path = lnk.GetPath()
+            if lnk_path in seen_links:
+                continue
+            sub_links.append(lnk)
+            seen_links.add(lnk_path)
+
+        for jnt in joint_candidates:
+            jnt_path = jnt.GetPath()
+            if jnt_path in seen_joints:
+                continue
+            joint = pxr.UsdPhysics.Joint(jnt)
+            excl = joint.GetExcludeFromArticulationAttr() if joint else None
+            if excl and excl.Get():
+                continue
+            sub_joints.append(jnt)
+            seen_joints.add(jnt_path)
+    return sub_links, sub_joints
+
+
 def GenerateRobotLinkTree(stage: pxr.Usd.Stage, robot_link_prim: pxr.Usd.Prim = None) -> RobotLinkNode:
     """Generate a tree structure of robot links using an iterative approach.
+
+    The tree spans every rigid body reachable through joint connectivity
+    from the parent robot, including bodies inside nested sub-robots
+    (for example a gripper variant attached at a wrist link).  Sub-robot
+    internals are excluded from the parent's articulation schema
+    relationships by design, but the kinematic tree must include them so
+    forward-kinematics propagation moves the entire assembly together.
 
     Args:
         stage: The USD stage containing the robot.
@@ -988,25 +1083,35 @@ def GenerateRobotLinkTree(stage: pxr.Usd.Stage, robot_link_prim: pxr.Usd.Prim = 
         tree_root = GenerateRobotLinkTree(stage, robot_root_prim)
 
     """
-    # Get all links and joints
     all_links = GetAllRobotLinks(stage, robot_link_prim)
     all_joints = GetAllRobotJoints(stage, robot_link_prim)
 
-    # Get root link and initialize mappings
-    links = GetAllRobotLinks(stage, robot_link_prim)
-    if not links:
+    # Augment with rigid bodies and joints from sub-robot subtrees so FK
+    # propagation reaches every body in the assembly.  See
+    # ``_collect_sub_robot_kinematics`` for the rationale.
+    sub_links, sub_joints = _collect_sub_robot_kinematics(robot_link_prim)
+    existing_link_paths = {lnk.GetPath() for lnk in all_links}
+    existing_joint_paths = {j.GetPath() for j in all_joints}
+    for lnk in sub_links:
+        if lnk.GetPath() not in existing_link_paths:
+            all_links.append(lnk)
+            existing_link_paths.add(lnk.GetPath())
+    for j in sub_joints:
+        if j.GetPath() not in existing_joint_paths:
+            all_joints.append(j)
+            existing_joint_paths.add(j.GetPath())
+
+    if not all_links:
         return None
-    root = RobotLinkNode(links[0])
+    root = RobotLinkNode(all_links[0])
     joints_per_body = [{link.GetPath(): [] for link in all_links} for _ in range(2)]
 
-    # Build joint mappings
     for joint in all_joints:
         for body_index in (0, 1):
             body = GetJointBodyRelationship(joint, body_index)
             if body and body in joints_per_body[body_index]:
                 joints_per_body[body_index][body].append(joint)
 
-    # Use a stack for iterative traversal
     stack = [root]
     processed_joints = []
     unprocessed_joints = list(all_joints)
@@ -1020,9 +1125,9 @@ def GenerateRobotLinkTree(stage: pxr.Usd.Stage, robot_link_prim: pxr.Usd.Prim = 
                     processed_joints.append(joint)
                     if joint in unprocessed_joints:
                         unprocessed_joints.remove(joint)
-                    # Note: the original correct logic for body1 assignment is likely using 1 - i for proper traversal (as in one parent, one child).
+                    # The other body of the joint (index 1 - i) is the
+                    # child link in a parent-to-child traversal.
                     body1 = GetJointBodyRelationship(joint, 1 - i)
-                    # Check if it's not connecting to its parent
                     if body1 and (current.parent is None or current.parent.path != body1):
                         child = RobotLinkNode(stage.GetPrimAtPath(body1), current, joint)
                         current._joints.append(joint)

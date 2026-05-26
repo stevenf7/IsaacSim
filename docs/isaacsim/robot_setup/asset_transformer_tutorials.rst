@@ -415,6 +415,7 @@ The simplest approach is to load an existing profile JSON file and execute it ag
    :start-after: <start-load-and-run-saved-profile-snippet>
    :end-before: <end-load-and-run-saved-profile-snippet>
    :language: python
+   :dedent:
 
 
 Build a Profile Programmatically
@@ -426,6 +427,7 @@ To define a profile entirely in code without a JSON file:
    :start-after: <start-build-profile-programmatically-snippet>
    :end-before: <end-build-profile-programmatically-snippet>
    :language: python
+   :dedent:
 
 
 Use the Isaac Sim Structure Profile in Code
@@ -437,6 +439,7 @@ To use the built-in Isaac Sim Structure profile programmatically, load it from t
    :start-after: <start-use-isaac-sim-structure-profile-snippet>
    :end-before: <end-use-isaac-sim-structure-profile-snippet>
    :language: python
+   :dedent:
 
 
 Batch-Process Multiple Assets
@@ -448,6 +451,7 @@ Combine the API with standard Python to transform multiple assets:
    :start-after: <start-batch-process-multiple-assets-snippet>
    :end-before: <end-batch-process-multiple-assets-snippet>
    :language: python
+   :dedent:
 
 
 Save and Inspect the Execution Report
@@ -459,6 +463,7 @@ The ``ExecutionReport`` returned by ``manager.run()`` can be serialized to JSON 
    :start-after: <start-save-and-inspect-report-snippet>
    :end-before: <end-save-and-inspect-report-snippet>
    :language: python
+   :dedent:
 
 
 Discover Available Rule Types
@@ -470,5 +475,6 @@ To list all registered transformation rules at runtime:
    :start-after: <start-discover-available-rule-types-snippet>
    :end-before: <end-discover-available-rule-types-snippet>
    :language: python
+   :dedent:
 
 This prints all fully qualified rule class names that can be used in ``RuleSpec.type``. Refer to :ref:`Asset Transformer Rules Reference <isaac_sim_app_asset_transformer_rules>` for documentation on each rule.

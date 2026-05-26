@@ -194,7 +194,7 @@ In This Example, we will use the ``UR10e`` robot from ``UniversalRobots``, with 
 1. Select the Robot
 -------------------
 
-Open the Robot Poser window via **Window > Robot Poser**. In the **Active Robot** dropdown, ensure the UR10e is selected.
+Open the Robot Poser window via **Tools > Robotics > Robot Poser**. In the **Active Robot** dropdown, ensure the UR10e is selected.
 
 .. image:: ../images/isim_6.0_base_ref_gui_robot_poser_example_select_robot.png
    :width: 500px

@@ -32,20 +32,76 @@ from .utils import make_explicit_relative
 _LOGGER = logging.getLogger(__name__)
 
 
-def _collect_assets(layer: Sdf.Layer, package_root: str) -> None:
+def _collect_source_anchor_dirs(source_path: str) -> list[str]:
+    """Return candidate anchor directories for resolving relative asset paths.
+
+    When the source stage is composed from multiple sublayers, a relative
+    asset path written in a sublayer (e.g. ``../textures/foo.png``) is
+    anchored at THAT sublayer's directory, not at the root layer's. After
+    flattening, the asset path string survives verbatim in the output but
+    the sublayer-anchor information is lost.
+
+    To recover the original anchor without round-tripping every path through
+    USD's resolver one by one, the output remap step tries each candidate
+    anchor in priority order: root layer dir first (most common case), then
+    every sublayer dir present in the source stage's used-layers list.
+
+    Args:
+        source_path: Absolute path to the source root layer.
+
+    Returns:
+        Ordered list of unique anchor directories (root first, then sublayers).
+        Falls back to ``[os.path.dirname(source_path)]`` if the source stage
+        cannot be opened.
+    """
+    root_dir = os.path.dirname(source_path)
+    ordered: list[str] = [root_dir]
+    seen: set[str] = {root_dir}
+    try:
+        # Open the stage without populating: we only want the layer stack.
+        source_stage = Usd.Stage.Open(source_path, load=Usd.Stage.LoadNone)
+    except Exception:  # noqa: BLE001
+        return ordered
+    if source_stage is None:
+        return ordered
+    for layer in source_stage.GetUsedLayers(includeClipLayers=True):
+        layer_real = getattr(layer, "realPath", "") or ""
+        if not layer_real:
+            continue
+        d = os.path.dirname(layer_real)
+        if d and d not in seen:
+            ordered.append(d)
+            seen.add(d)
+    return ordered
+
+
+def _collect_assets(layer: Sdf.Layer, package_root: str, source_layer_path: str | None = None) -> None:
     """Copy external assets to package_root and update layer paths.
 
     Args:
-        layer: The USD layer to process.
+        layer: The USD layer to process. Asset paths are rewritten in place
+            to point at the copied assets, relative to the layer's directory.
         package_root: Destination directory for collected assets.
+        source_layer_path: Original source layer location used to anchor
+            relative asset path resolution. When ``layer`` was produced by
+            exporting a source layer to a different filesystem depth, the
+            relative asset path strings inside it still refer to locations
+            anchored at the source layer's (or its sublayers') directory.
+            Falls back to ``layer.realPath`` when not supplied.
 
     """
     layer_path = layer.realPath
+    # Anchor dependency discovery and relative-path resolution to the source
+    # layer so that paths copied verbatim from the source (e.g. "../foo.png")
+    # resolve to the file the source meant, not whatever happens to sit at
+    # that relative location from the output directory.
+    source_path = source_layer_path or layer_path
+    layer_dir = os.path.dirname(layer_path)
     assets_dir = os.path.join(package_root, "source_assets")
     copied_assets: dict[str, str] = {}
 
-    # Compute all asset dependencies from this layer
-    _, all_assets, _ = UsdUtils.ComputeAllDependencies(layer_path)
+    # Compute all asset dependencies from the source layer
+    _, all_assets, _ = UsdUtils.ComputeAllDependencies(source_path)
 
     for asset_path in all_assets:
         resolved = str(asset_path.GetResolvedPath()) if hasattr(asset_path, "GetResolvedPath") else str(asset_path)
@@ -69,7 +125,10 @@ def _collect_assets(layer: Sdf.Layer, package_root: str) -> None:
             shutil.copy2(resolved, local_path)
             copied_assets[resolved] = local_path
 
-    layer_dir = os.path.dirname(layer_path)
+    # Candidate anchor dirs in priority order (root first, then sublayer dirs).
+    # A relative asset path in the output layer is resolved by trying each
+    # anchor until one produces a path present in ``copied_assets``.
+    candidate_anchor_dirs = _collect_source_anchor_dirs(source_path)
 
     def remap_path(original_path: str) -> str:
         """Remap asset paths to collected local copies.
@@ -78,18 +137,31 @@ def _collect_assets(layer: Sdf.Layer, package_root: str) -> None:
             original_path: Asset path from the layer metadata.
 
         Returns:
-            Updated asset path, or the original path if no copy exists.
+            Updated asset path relative to the output layer, or the original
+            path if it does not correspond to a copied asset.
 
         """
         if not original_path:
             return original_path
-        # Resolve relative paths against the layer directory
+        # Preserve URI-style asset paths (e.g. ``omni://``, ``http://``,
+        # ``file://``). They are not filesystem paths and the source-relative
+        # resolution below would produce nonsense. Note: Windows drive-letter
+        # paths like ``C:\foo`` do NOT contain ``://`` and fall through to the
+        # ``os.path.isabs`` branch, which correctly handles them.
+        if "://" in original_path:
+            return original_path
         if os.path.isabs(original_path):
             resolved = original_path
-        else:
-            resolved = os.path.normpath(os.path.join(layer_dir, original_path))
-        if resolved in copied_assets:
-            return make_explicit_relative(os.path.relpath(copied_assets[resolved], layer_dir))
+            if resolved in copied_assets:
+                return make_explicit_relative(os.path.relpath(copied_assets[resolved], layer_dir))
+            return original_path
+        # Relative path: try each candidate anchor dir in priority order.
+        # Root first (most common); sublayer dirs after, for paths authored
+        # in sublayers that survived flatten with their original strings.
+        for anchor_dir in candidate_anchor_dirs:
+            resolved = os.path.normpath(os.path.join(anchor_dir, original_path))
+            if resolved in copied_assets:
+                return make_explicit_relative(os.path.relpath(copied_assets[resolved], layer_dir))
         return original_path
 
     UsdUtils.ModifyAssetPaths(layer, remap_path)
@@ -364,7 +436,7 @@ class AssetTransformerManager:
         # Collect external assets and update paths in base.usda
         base_layer = Sdf.Layer.FindOrOpen(base_usda_path)
         if base_layer:
-            _collect_assets(base_layer, package_root_final)
+            _collect_assets(base_layer, package_root_final, source_layer_path=input_stage_path)
             _canonicalize_orient_quats(base_layer)
             base_layer.Save()
 

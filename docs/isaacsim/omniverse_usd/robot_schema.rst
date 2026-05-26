@@ -750,6 +750,10 @@ The ``isaacsim.robot.poser`` extension provides higher-level CRUD and I/O operat
    * - ``import_poses(stage, robot_prim, filepath)``
      - Imports named poses from a JSON file and stores them on the robot.
 
+.. note::
+
+   ``pose_name`` is sanitized via :func:`pxr.Tf.MakeValidIdentifier` before being used as a prim name. Characters outside ASCII ``[A-Za-z0-9_]`` are replaced with ``_``, and a leading ``_`` is prepended when the input would otherwise start with a digit. Distinct inputs that sanitize to the same identifier (for example ``"home:v2"`` and ``"home/v2"``) refer to the same stored pose; ``store_named_pose`` logs a warning when this overwrites an existing pose.
+
 For interactive authoring of named poses, see the :ref:`Robot Poser <isaac_sim_robot_poser>` documentation.
 
 The ``isaacsim.robot.schema`` extension provides a comprehensive set of utility functions in the ``utils`` module, accessible via:

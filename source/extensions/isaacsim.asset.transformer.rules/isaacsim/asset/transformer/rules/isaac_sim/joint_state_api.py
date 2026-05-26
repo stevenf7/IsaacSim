@@ -37,14 +37,14 @@ import os
 
 from isaacsim.asset.importer.utils.impl.physx_types import PhysxSchema as PhysxSchemaTokens
 from isaacsim.asset.transformer import RuleConfigurationParam, RuleInterface
-from pxr import UsdPhysics
+from pxr import Usd, UsdPhysics
 
 
-def _has_joint_state_api(prim, instance: str) -> bool:
+def _has_joint_state_api(prim: Usd.Prim, instance: str) -> bool:
     return prim.HasAPI(PhysxSchemaTokens.JOINT_STATE_API, instance)
 
 
-def _apply_joint_state_api(prim, instance: str) -> None:
+def _apply_joint_state_api(prim: Usd.Prim, instance: str) -> None:
     prim.ApplyAPI(PhysxSchemaTokens.JOINT_STATE_API, instance)
 
 

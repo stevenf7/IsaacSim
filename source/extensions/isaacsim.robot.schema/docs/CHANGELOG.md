@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.3.4] - 2026-05-21
+### Fixed
+- `GenerateRobotLinkTree` now grafts links and physics joints from nested sub-robots (for example a gripper variant attached at a wrist link) onto the parent's kinematic tree, so forward-kinematics propagation moves the entire assembly. Previously, only the sub-robot's bridging link was reachable from the parent tree, leaving sibling links such as gripper knuckles and fingers behind when the arm was teleported by the Robot Poser. Per sub-robot, prims carrying `IsaacRobotLinkAPI` / `IsaacRobotJointAPI` are preferred; bare `UsdPhysicsRigidBodyAPI` / `UsdPhysicsJoint` prims are picked up only when the sub-robot has no tagged equivalents, so unrelated rigid bodies inside a properly authored sub-robot are not added to the tree.
+
 ## [6.3.3] - 2026-05-18
 ### Fixed
 - `robot_schema` now imports `pxr.Usd` during module initialization so `pxr.Usd` annotations resolve in standalone wheel environments.

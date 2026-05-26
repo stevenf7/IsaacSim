@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.10.2] - 2026-05-21
+### Fixed
+- `OgnIsaacComputeOdometry`: bind `chassisPrim` to a rigid body view whenever the prim has `UsdPhysicsRigidBodyAPI`, even if it also has `UsdPhysicsArticulationRootAPI`. Previously the node read `IArticulationDataView::getRootTransforms()`, which returns the pose of the link PhysX auto-selects as the articulation root by minimum graph eccentricity. Attaching extra bodies (for example via Robot Assembler) extended the articulation graph and shifted the auto-selected root onto a non-chassis link, producing incorrect odometry position/velocity.
+
 ## [5.10.1] - 2026-05-12
 ### Fixed
 - `IsaacArticulationController`: promote silent `db.log_warn` failures to `db.log_error` for both the catch-all exception path and the command-validation path so OmniGraph users see actionable errors instead of a stationary robot with no diagnostic. Errors now include the prim path and the original exception text. (6109472, 6113767)

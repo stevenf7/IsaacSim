@@ -1,4 +1,8 @@
 # Changelog
+## [1.2.2] - 2026-05-22
+### Fixed
+- `create_conveyor_belt` now applies `UsdPhysics.MeshCollisionAPI` with the `convexHull` approximation when authoring the physics APIs on a `UsdGeomMesh` prim (i.e. when the target mesh and its ancestors do not already have `UsdPhysics.RigidBodyAPI`). Without it PhysX rejected the default `meshSimplification` approximation on the resulting dynamic body and emitted a per-parse error. The API is only authored for mesh prims; analytic shapes (Cube/Sphere/Cylinder/Capsule) keep their schema-correct collision representation.
+
 ## [1.2.1] - 2026-04-29
 ### Fixed
 - Restore conveyor texture animation on stop: the StopPlay handler in `OgnIsaacConveyor::initInstance` now performs the texture-translate restore work synchronously from the event callback (subscribing to `omni::timeline::kGlobalEventStop`, mirroring `BaseResetNode`). The previous flow depended on `requestCompute` re-entering the node after the action-graph evaluator had already paused, which silently dropped the restore on stop. Regression introduced in the Kit 107.3 event-dispatcher migration.

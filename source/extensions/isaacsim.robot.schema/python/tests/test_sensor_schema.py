@@ -439,7 +439,7 @@ class TestIsaacSensorSchemaCompatWrapper(omni.kit.test.AsyncTestCase):
 
     def test_raycast_sensor_array_attrs(self):
         import omni.isaac.IsaacSensorSchema as ISS
-        from pxr import Gf, Vt
+        from pxr import Vt
 
         sensor = ISS.IsaacRaycastSensor.Define(self._stage, "/TestRaycast")
         origins = Vt.Vec3fArray([(0, 0, 0), (0, 0.1, 0)])
