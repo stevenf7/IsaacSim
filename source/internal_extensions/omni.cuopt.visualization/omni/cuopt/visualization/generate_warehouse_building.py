@@ -7,6 +7,7 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+import omni.kit.commands
 from pxr import Gf, UsdGeom, UsdLux
 
 from .common import read_json, translate_rotate_scale_prim
