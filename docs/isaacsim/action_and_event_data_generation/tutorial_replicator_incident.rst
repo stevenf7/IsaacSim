@@ -54,6 +54,8 @@ as JSON (by default ``incidents_report.json`` in the output directory) to record
 
 .. Note:: No adjustment is made to the viewport camera during an event, so you must manually find the event in the scene and move the viewport camera there to view it.
 
+.. _iri_fire_multitick_warning:
+
 .. warning::
 
     If fire effects do not render correctly during a fire event, disable multi-tick

@@ -95,7 +95,8 @@ For first-time users, start with the UI. Refer to the :ref:`Running from script 
 
 6. When data generation finishes, the output data is available in the **Output Directory** specified in the **Replicator** panel.
 
-    * By default, it is in the User folder for Windows and the home folder for Linux.
+    * By default, it is ``%USERPROFILE%\IRA_output`` on Windows and ``~/IRA_output`` on Linux.
+    * For the folder layout, expected filenames, and a checklist to confirm a successful run, refer to :ref:`Expected Output <actor_sim_expected_output>`.
 
 
 .. _actor_sim_running_from_script:
@@ -119,6 +120,37 @@ To run from script, open a terminal from where Isaac Sim is installed and run th
     * You must use the ``python.sh`` or ``python.bat`` bundled with Isaac Sim to run the script.
 
     * An example config file is also provided in the ``/tools/actor_sdg`` folder. For a sample Linux run, execute: ``./python.sh tools/actor_sdg/actor_sdg.py -c tools/actor_sdg/sample_config.yaml``
+
+.. _actor_sim_expected_output:
+
+Expected Output
+---------------
+
+After data generation finishes, IRA writes the simulation output to the directory specified by ``output_dir`` in the ``replicator`` block of the configuration. If ``output_dir`` is not set, the default location is:
+
+* **Linux:** ``~/IRA_output``
+* **Windows:** ``%USERPROFILE%\IRA_output``
+
+The exact layout depends on the writer that is active (refer to :ref:`Writer Configuration <ira_configuration_file>` for the full parameter list). With the default **IRABasicWriter** and the bundled ``full_pipeline.yaml`` sample config, you should expect a structure similar to the following:
+
+.. code-block:: text
+
+    <output_dir>/
+    ├── <render_product_or_camera_subfolder>/
+    │   ├── rgb/                          # one file per captured frame
+    │   │   ├── rgb_0030.png
+    │   │   ├── rgb_0031.png
+    │   │   └── ...
+    │   ├── camera_params/                # camera intrinsics and pose per frame
+    │   │   ├── camera_params_0030.json
+    │   │   └── ...
+    │   ├── object_detection.json         # consolidated bounding boxes, skeleton data,
+    │   │                                 # and per-actor action data.
+    │   └── ...                           # one folder per additional annotator that
+    │                                     # was enabled (semantic_segmentation,
+    │                                     # instance_segmentation, distance_to_camera,
+    │                                     # normals, motion_vectors, ...)
+    └── ...
 
 API Usage
 --------------------------
@@ -205,7 +237,7 @@ Key reasons for the redesign:
     stage.
 
 For the full migration guide covering every breaking change with before/after
-examples and a step-by-step checklist, see :ref:`ira_migration_guide_0x_to_1x`.
+examples and a step-by-step checklist, refer to :ref:`ira_migration_guide_0x_to_1x`.
 
 For editing the configuration files through UI or code, refer to the :ref:`Configuration Editor API <ira_configuration_editor_api>`:
 
