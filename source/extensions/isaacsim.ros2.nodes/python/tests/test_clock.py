@@ -49,7 +49,7 @@ class TestRos2NodeCommands(ROS2TestCase):
         from rosgraph_msgs.msg import Clock
 
         keys = og.Controller.Keys
-        (graph, nodes, _, _) = og.Controller.edit(
+        graph, nodes, _, _ = og.Controller.edit(
             {"graph_path": "/controller_graph", "evaluator_name": "execution"},
             {
                 keys.CREATE_NODES: [
@@ -89,7 +89,7 @@ class TestRos2NodeCommands(ROS2TestCase):
         from rosgraph_msgs.msg import Clock
 
         keys = og.Controller.Keys
-        (graph, nodes, _, _) = og.Controller.edit(
+        graph, nodes, _, _ = og.Controller.edit(
             {
                 "graph_path": "/physics_step_clock_graph",
                 "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND,
@@ -131,7 +131,7 @@ class TestRos2NodeCommands(ROS2TestCase):
         from rosgraph_msgs.msg import Clock
 
         keys = og.Controller.Keys
-        (graph, nodes, _, _) = og.Controller.edit(
+        graph, nodes, _, _ = og.Controller.edit(
             {"graph_path": "/controller_graph", "evaluator_name": "execution"},
             {
                 keys.CREATE_NODES: [
@@ -184,7 +184,7 @@ class TestRos2NodeCommands(ROS2TestCase):
         from rosgraph_msgs.msg import Clock
 
         keys = og.Controller.Keys
-        (graph, nodes, _, _) = og.Controller.edit(
+        graph, nodes, _, _ = og.Controller.edit(
             {"graph_path": "/controller_graph", "evaluator_name": "execution"},
             {
                 keys.CREATE_NODES: [

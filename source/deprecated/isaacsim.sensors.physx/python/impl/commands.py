@@ -15,7 +15,6 @@
 
 """Provides command classes for creating and managing PhysX range sensor prims in Isaac Sim."""
 
-
 from typing import Any, Optional
 
 import carb

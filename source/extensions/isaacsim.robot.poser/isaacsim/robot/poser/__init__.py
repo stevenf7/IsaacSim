@@ -15,7 +15,6 @@
 
 """Provides high-level inverse kinematics solving and pose management for robots in Isaac Sim."""
 
-
 from usd.schema.isaac.robot_schema.ik_solver import IKSolver as IKSolver
 from usd.schema.isaac.robot_schema.ik_solver import IKSolverRegistry as IKSolverRegistry
 from usd.schema.isaac.robot_schema.math import Transform as Transform

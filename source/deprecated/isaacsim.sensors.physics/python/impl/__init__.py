@@ -15,7 +15,6 @@
 
 """Implementation module for physics sensors in Isaac Sim, providing contact, effort, and IMU sensor classes."""
 
-
 from .commands import *
 from .contact_sensor import ContactSensor as ContactSensor
 from .effort_sensor import EffortSensor as EffortSensor

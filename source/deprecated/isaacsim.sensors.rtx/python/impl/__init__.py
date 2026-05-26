@@ -15,7 +15,6 @@
 
 """Implementation module for RTX sensor functionality in Isaac Sim."""
 
-
 from .commands import *
 from .extension import *
 from .lidar_rtx import LidarRtx as LidarRtx

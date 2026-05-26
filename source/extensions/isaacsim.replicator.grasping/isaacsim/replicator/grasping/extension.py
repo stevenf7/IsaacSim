@@ -15,7 +15,6 @@
 
 """Extension for generating grasping-related synthetic data using Isaac Sim Replicator."""
 
-
 import omni.ext
 
 

@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Temporary FixMe menu for legacy or placeholder entries."""
+
 import omni.kit.menu.utils
 import omni.ui as ui
 from omni.kit.menu.utils import MenuAlignment, MenuItemDescription, MenuLayout

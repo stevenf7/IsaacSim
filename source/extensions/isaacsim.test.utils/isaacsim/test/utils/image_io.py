@@ -15,7 +15,6 @@
 
 """Utilities for image file input/output operations including RGB, depth, and general image reading functionality."""
 
-
 import os
 from typing import Any
 

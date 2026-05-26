@@ -15,7 +15,6 @@
 
 """Interactive demonstration extension for PhysX LIDAR sensors in Isaac Sim."""
 
-
 import asyncio
 import weakref
 

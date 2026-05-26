@@ -15,7 +15,6 @@
 
 """Entry point extension for Isaac Sim Replicator examples, providing reference implementations of synthetic data generation capabilities for robotics simulation and machine learning workflows."""
 
-
 import omni.ext
 
 

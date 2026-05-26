@@ -21,7 +21,6 @@ USD stage changes.  All scene-loading and controller state live on the
 scenario.
 """
 
-
 import asyncio
 from typing import Any
 

@@ -47,7 +47,7 @@ class TestTimeSplitter(ogts.OmniGraphTestCase):
                 graph_count = graph_count + 1
                 controller = og.Controller()
                 keys = controller.Keys
-                (graph, (const, time_splitter), _, _) = controller.edit(
+                graph, (const, time_splitter), _, _ = controller.edit(
                     f"/World/Graph{graph_count}",
                     {
                         keys.CREATE_NODES: [

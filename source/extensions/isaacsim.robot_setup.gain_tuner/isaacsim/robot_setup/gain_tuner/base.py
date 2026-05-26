@@ -15,7 +15,6 @@
 
 """Base class and result type for robot articulation tests used by the Gains Tuner."""
 
-
 from collections.abc import Generator
 from dataclasses import dataclass, field
 

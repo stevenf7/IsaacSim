@@ -16,7 +16,6 @@
 
 """Timeline-driven rendering and run loop throttling for Isaac Sim."""
 
-
 import asyncio
 import sys
 

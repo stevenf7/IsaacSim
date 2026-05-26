@@ -15,7 +15,6 @@
 
 """Isaac Sim content browser collection implementation for browsing Isaac Sim asset folders."""
 
-
 from datetime import datetime
 from pathlib import Path
 from typing import Optional

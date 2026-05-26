@@ -17,7 +17,6 @@
 
 """Provides benchmark services for measuring Isaac Sim performance with data recorders and metrics collection."""
 
-
 from .base_benchmark import (
     DEFAULT_RECORDERS,
     BaseIsaacBenchmark,

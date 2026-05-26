@@ -15,7 +15,6 @@
 
 """Base class for creating and wrapping USD geometry shape primitives."""
 
-
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

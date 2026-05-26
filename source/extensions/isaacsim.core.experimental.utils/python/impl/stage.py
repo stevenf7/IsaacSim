@@ -372,7 +372,7 @@ async def open_stage_async(usd_path: str) -> tuple[bool, Usd.Stage | None]:
         raise ValueError(f"The file ({usd_path}) is not USD open-able")
     usd_context = omni.usd.get_context()
     usd_context.disable_save_to_recent_files()
-    (result, error) = await omni.usd.get_context().open_stage_async(usd_path)
+    result, error = await omni.usd.get_context().open_stage_async(usd_path)
     usd_context.enable_save_to_recent_files()
     return result, usd_context.get_stage()
 

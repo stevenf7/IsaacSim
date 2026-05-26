@@ -19,6 +19,7 @@ Reads full joint state from an articulated robot in a single call via the
 C++ ``IJointStateSensor`` Carbonite interface. The sensor inherits the C++
 interface lifecycle from :class:`_PhysicsSensorRuntimeBase`.
 """
+
 from __future__ import annotations
 
 from typing import Any

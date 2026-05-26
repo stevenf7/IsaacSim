@@ -15,7 +15,6 @@
 
 """Style configuration module for the robot gain tuner UI extension."""
 
-
 import pathlib
 
 import omni

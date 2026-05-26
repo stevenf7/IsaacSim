@@ -15,7 +15,6 @@
 
 """Interactive Franka robot control system using the Cortex framework for behavior-based manipulation tasks."""
 
-
 import numpy as np
 import omni
 from isaacsim.core.api.objects import DynamicCuboid

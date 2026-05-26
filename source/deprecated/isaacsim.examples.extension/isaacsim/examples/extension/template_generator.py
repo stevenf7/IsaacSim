@@ -15,7 +15,6 @@
 
 """Provides template generation functionality for creating Isaac Sim extension templates from predefined source files."""
 
-
 import os
 import shutil
 from datetime import datetime

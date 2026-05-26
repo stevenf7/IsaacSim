@@ -15,7 +15,6 @@
 
 """RMPflow extension for cuMotion robot motion planning with Isaac Sim integration."""
 
-
 import asyncio
 import gc
 from typing import Any

@@ -15,5 +15,4 @@
 
 """Unit tests for the MJCF importer functionality."""
 
-
 scan_for_test_modules = True

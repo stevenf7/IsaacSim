@@ -15,7 +15,6 @@
 
 """Module defining attribute constants for domain randomization across simulation contexts, rigid bodies, articulations, and tendons."""
 
-
 SIMULATION_CONTEXT_ATTRIBUTES = ["gravity"]
 
 RIGID_PRIM_ATTRIBUTES = [

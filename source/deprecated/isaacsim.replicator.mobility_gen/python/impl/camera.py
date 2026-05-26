@@ -15,7 +15,6 @@
 
 """Camera interface module for the mobility generation system that provides various rendering outputs."""
 
-
 import omni.replicator.core as rep
 from isaacsim.core.utils.prims import get_prim_at_path
 

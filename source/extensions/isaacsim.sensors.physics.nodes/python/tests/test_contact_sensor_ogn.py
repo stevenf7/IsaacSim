@@ -187,7 +187,7 @@ class TestContactSensorOgnWithAnt(omni.kit.test.AsyncTestCase):
         if self._stage.GetPrimAtPath(graph_path).IsValid():
             stage_utils.delete_prim(graph_path)
 
-        (_, (_, test_node), _, _) = og.Controller.edit(
+        _, (_, test_node), _, _ = og.Controller.edit(
             {"graph_path": graph_path, "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [

@@ -15,7 +15,6 @@
 
 """Test suite for the OgnWritePhysicsRigidPrimView node in the experimental DR extension."""
 
-
 import isaacsim.replicator.experimental.domain_randomization as dr
 import numpy as np
 import omni.graph.core as og

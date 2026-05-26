@@ -15,7 +15,6 @@
 
 """A comprehensive interface for the cuMotion robotic motion planning and control library within Isaac Sim."""
 
-
 from .extension import *
 from .impl import *
 

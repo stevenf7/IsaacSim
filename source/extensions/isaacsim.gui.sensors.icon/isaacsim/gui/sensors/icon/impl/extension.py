@@ -15,7 +15,6 @@
 
 """Extension for displaying sensor icons in Isaac Sim with visual representations and viewport controls for sensor prims."""
 
-
 from pathlib import Path
 
 import omni.ext

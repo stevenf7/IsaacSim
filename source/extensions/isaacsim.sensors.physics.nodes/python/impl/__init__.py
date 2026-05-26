@@ -15,5 +15,4 @@
 
 """Implementation nodes for physics sensor extensions in Isaac Sim."""
 
-
 from .extension import Extension  # noqa: F401 (Extension loaded for side effects)

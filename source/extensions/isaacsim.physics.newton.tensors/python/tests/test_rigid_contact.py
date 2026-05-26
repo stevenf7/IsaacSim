@@ -184,7 +184,7 @@ class TestRawContactData(NewtonTensorTestBase):
         dt = self.get_sim_dt()
         self.step(n=120, dt=dt)
 
-        (forces, points, normals, separations, counts, start_indices, other_actor_ids) = (
+        forces, points, normals, separations, counts, start_indices, other_actor_ids = (
             top_contacts.get_raw_contact_data(dt)
         )
 
@@ -283,7 +283,7 @@ class TestRigidContactMultiSensorMultiFilter(NewtonTensorTestBase):
         nf_np = net_forces.numpy().reshape(contacts.sensor_count, 3)
         self.assertTrue(np.all(np.isfinite(nf_np)), "Net forces contain NaN/Inf values")
 
-        (_forces, _points, _normals, _separations, counts, start_indices, _ids) = contacts.get_raw_contact_data(dt)
+        _forces, _points, _normals, _separations, counts, start_indices, _ids = contacts.get_raw_contact_data(dt)
         counts_np = counts.numpy().flatten()
         starts_np = start_indices.numpy().flatten()
         expected_slots = contacts.sensor_count

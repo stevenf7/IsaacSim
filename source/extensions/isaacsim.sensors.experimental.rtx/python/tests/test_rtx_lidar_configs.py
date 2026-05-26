@@ -15,7 +15,6 @@
 
 """Tests for validating all supported lidar configurations and variants in the isaacsim.sensors.experimental.rtx extension."""
 
-
 from pathlib import Path
 
 import isaacsim.core.experimental.utils.app as app_utils

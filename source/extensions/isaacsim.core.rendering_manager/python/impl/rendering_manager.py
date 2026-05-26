@@ -15,7 +15,6 @@
 
 """Core rendering management APIs for controlling rendering operations and frame updates."""
 
-
 from __future__ import annotations
 
 import weakref

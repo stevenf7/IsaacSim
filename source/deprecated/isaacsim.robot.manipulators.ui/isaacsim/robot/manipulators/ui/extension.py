@@ -15,7 +15,6 @@
 
 """Provides user interface components for robotic manipulator control through OmniGraph controllers."""
 
-
 import omni.ext
 from omni.kit.menu.utils import MenuHelperExtensionFull
 

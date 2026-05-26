@@ -15,7 +15,6 @@
 
 """Recorder for wall-clock runtime per benchmark phase."""
 
-
 import omni.kit.app
 
 from .. import utils

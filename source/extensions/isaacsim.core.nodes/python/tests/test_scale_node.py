@@ -32,7 +32,7 @@ class TestScaleFromStageUnit(omni.kit.test.AsyncTestCase):
         graph_path = "/ActionGraph"
         nodeName = "isaac_test_node"
 
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": graph_path, "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [

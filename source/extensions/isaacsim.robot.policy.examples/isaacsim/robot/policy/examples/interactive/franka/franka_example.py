@@ -15,7 +15,6 @@
 
 """Example demonstration of a Franka robot performing an open drawer task using a policy-based approach."""
 
-
 import numpy as np
 import omni.timeline
 from isaacsim.core.experimental.prims import Articulation

@@ -15,7 +15,6 @@
 
 """Tests pattern matching functionality for articulation views."""
 
-
 import re
 
 import omni.kit.test

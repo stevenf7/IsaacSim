@@ -15,7 +15,6 @@
 
 """A specialized USD property widget for displaying exposed variables from scripted prims."""
 
-
 import re
 
 from omni.kit.property.usd.usd_property_widget import UsdPropertiesWidget, UsdPropertyUiEntry

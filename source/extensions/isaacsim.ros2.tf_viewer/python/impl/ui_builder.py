@@ -15,7 +15,6 @@
 
 """Provides UI management for the ROS 2 TF viewer extension."""
 
-
 from collections.abc import Callable
 
 import isaacsim.gui.components.ui_utils as ui_utils

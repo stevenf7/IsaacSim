@@ -15,7 +15,6 @@
 
 """Material validation rules for Isaac Sim assets."""
 
-
 from collections.abc import Iterator
 
 from omni.asset_validator.core import registerRule

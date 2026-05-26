@@ -15,7 +15,6 @@
 
 """Base class for creating Isaac Sim simulation samples with structured lifecycle management."""
 
-
 import gc
 from abc import abstractmethod
 

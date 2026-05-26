@@ -15,7 +15,6 @@
 
 """Implementation module containing experimental prim classes for Isaac Sim core functionality."""
 
-
 from .articulation import Articulation
 from .buffer_dtype import BufferDtype
 from .deformable_prim import DeformablePrim

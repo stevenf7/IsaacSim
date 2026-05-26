@@ -15,7 +15,6 @@
 
 """Extension demonstrating quadruped robot control using a Boston Dynamics Spot with a trained policy."""
 
-
 import os
 
 import omni.ext

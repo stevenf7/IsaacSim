@@ -15,7 +15,6 @@
 
 """Utilities for inspecting and working with camera properties and configurations in Isaac Sim."""
 
-
 from .extension import *
 
 __all__: list[str] = []

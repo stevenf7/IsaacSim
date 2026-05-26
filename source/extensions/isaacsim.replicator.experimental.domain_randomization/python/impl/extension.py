@@ -15,7 +15,6 @@
 
 """Define the extension lifecycle management for the Isaac Sim Replicator experimental domain randomization implementation."""
 
-
 import omni.ext
 import omni.usd
 from isaacsim.replicator.experimental.domain_randomization.scripts import physics_view

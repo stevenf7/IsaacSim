@@ -15,7 +15,6 @@
 
 """UI builder for managing Jupyter Code Editor extension menu integration."""
 
-
 import os
 import weakref
 import webbrowser

@@ -15,7 +15,6 @@
 
 """ROS 2 transform listener interface for querying and managing TF data in Isaac Sim."""
 
-
 import threading
 
 import carb

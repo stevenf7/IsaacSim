@@ -15,7 +15,6 @@
 
 """High level wrapper for creating/encapsulating Omniverse Glass (``OmniGlass``) material prims."""
 
-
 from __future__ import annotations
 
 import isaacsim.core.experimental.utils.ops as ops_utils

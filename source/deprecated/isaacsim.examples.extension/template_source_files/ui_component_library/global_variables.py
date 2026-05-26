@@ -15,7 +15,6 @@
 
 """Global variables for the UI component library template."""
 
-
 EXTENSION_TITLE = {EXTENSION_TITLE}
 
 EXTENSION_DESCRIPTION = {EXTENSION_DESCRIPTION}

@@ -15,7 +15,6 @@
 
 """UI components for the gain tuner frame widget interface."""
 
-
 from collections.abc import Callable
 
 import omni.ui as ui

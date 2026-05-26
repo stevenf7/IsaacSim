@@ -15,7 +15,6 @@
 
 """Nucleus server utilities for Isaac Sim asset storage and management operations."""
 
-
 import asyncio
 import json
 import os

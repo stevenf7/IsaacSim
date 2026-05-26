@@ -15,7 +15,6 @@
 
 """Test suite for CumotionWorldInterface functionality including obstacle management and robot base transforms."""
 
-
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.robot_motion.cumotion as cu_mg
 import numpy as np

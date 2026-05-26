@@ -15,7 +15,6 @@
 
 """Provides writer functionality for mobility generation data output including sensor states, configurations, and USD stages."""
 
-
 import os
 import shutil
 

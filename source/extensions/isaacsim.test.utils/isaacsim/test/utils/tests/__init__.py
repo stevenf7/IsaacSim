@@ -15,5 +15,4 @@
 
 """Provides configuration for scanning test modules in the Isaac Sim test utilities."""
 
-
 scan_for_test_modules = True

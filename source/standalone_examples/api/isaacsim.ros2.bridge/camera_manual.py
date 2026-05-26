@@ -78,7 +78,7 @@ simulation_app.update()
 
 # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
 keys = og.Controller.Keys
-(ros_camera_graph, _, _, _) = og.Controller.edit(
+ros_camera_graph, _, _, _ = og.Controller.edit(
     {
         "graph_path": ROS_CAMERA_GRAPH_PATH,
         "evaluator_name": "push",

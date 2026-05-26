@@ -15,7 +15,6 @@
 
 """Provides an extension demonstrating keyboard input control through Omnigraph programming in Isaac Sim."""
 
-
 import os
 
 import omni.ext

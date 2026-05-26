@@ -15,7 +15,6 @@
 
 """Extension template for scripting workflow."""
 
-
 import asyncio
 import gc
 

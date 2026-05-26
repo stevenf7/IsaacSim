@@ -15,7 +15,6 @@
 
 """Context menu implementation for the asset browser interface."""
 
-
 import os
 from urllib.parse import unquote
 

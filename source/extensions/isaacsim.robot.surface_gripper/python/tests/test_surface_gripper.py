@@ -15,7 +15,6 @@
 
 """Test suite for the surface gripper functionality in Isaac Sim."""
 
-
 import os
 
 import isaacsim.core.experimental.utils.app as app_utils

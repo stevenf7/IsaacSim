@@ -15,5 +15,4 @@
 
 """Examples demonstrating PhysX sensor functionality in Isaac Sim."""
 
-
 __all__ = []

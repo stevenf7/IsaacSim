@@ -15,7 +15,6 @@
 
 """Reactive inverse kinematics controller using the PINK library for differential IK solving."""
 
-
 from __future__ import annotations
 
 from collections.abc import Callable

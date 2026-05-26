@@ -15,7 +15,6 @@
 
 """Utility functions for sampling grasp poses and converting between different coordinate and mesh representations."""
 
-
 import numpy as np
 import trimesh
 import trimesh.transformations as tra

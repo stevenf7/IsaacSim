@@ -15,7 +15,6 @@
 
 """Browser model implementation for organizing and managing examples in the Isaac Sim Examples Browser."""
 
-
 import asyncio
 import os
 from typing import List, Optional

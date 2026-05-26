@@ -15,7 +15,6 @@
 
 """Tests for the NVIDIA JetBot robot simulation including loading, movement, acceleration, braking, spinning, and circular motion behaviors."""
 
-
 import carb
 import carb.tokens
 import isaacsim.core.experimental.utils.app as app_utils
@@ -51,7 +50,7 @@ class TestJetBot(omni.kit.test.AsyncTestCase):
 
         # add in jetbot (from nucleus)
         self.usd_path = self._assets_root_path + "/Isaac/Robots/NVIDIA/Jetbot/jetbot.usd"
-        (result, error) = await open_stage_async(self.usd_path)
+        result, error = await open_stage_async(self.usd_path)
         # Make sure the stage loaded
         self.assertTrue(result)
 

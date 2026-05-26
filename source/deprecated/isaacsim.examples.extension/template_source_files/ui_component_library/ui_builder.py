@@ -15,7 +15,6 @@
 
 """UI builder for the UI component library template."""
 
-
 import os
 
 import omni.ui as ui

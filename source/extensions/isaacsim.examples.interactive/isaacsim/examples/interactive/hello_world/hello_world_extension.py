@@ -15,7 +15,6 @@
 
 """Extension that provides a Hello World example demonstrating basic Isaac Sim scripting concepts through interactive tutorials."""
 
-
 import os
 
 import omni.ext

@@ -15,7 +15,6 @@
 
 """Interactive example demonstrating multiple robots performing stacking tasks in a factory environment."""
 
-
 from isaacsim.robot.experimental.manipulators.examples.interactive.robo_factory.robo_factory import RoboFactory
 from isaacsim.robot.experimental.manipulators.examples.interactive.robo_factory.robo_factory_extension import (
     RoboFactoryExtension,

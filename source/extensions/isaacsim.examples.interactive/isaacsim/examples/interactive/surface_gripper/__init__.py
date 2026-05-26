@@ -15,7 +15,6 @@
 
 """Interactive surface gripper example demonstrating contact-based grasping mechanics."""
 
-
 from isaacsim.examples.interactive.surface_gripper.surface_gripper import *
 
 __all__ = []

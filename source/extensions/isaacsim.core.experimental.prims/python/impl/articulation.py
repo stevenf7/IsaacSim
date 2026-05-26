@@ -15,7 +15,6 @@
 
 """High level wrapper for manipulating USD prims with Articulation Root API applied and their properties."""
 
-
 from __future__ import annotations
 
 import weakref

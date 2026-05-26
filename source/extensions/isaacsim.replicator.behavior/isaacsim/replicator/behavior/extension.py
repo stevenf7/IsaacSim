@@ -15,7 +15,6 @@
 
 """Extension module that provides behavior-based functionality for Isaac Sim Replicator."""
 
-
 import omni.ext
 
 

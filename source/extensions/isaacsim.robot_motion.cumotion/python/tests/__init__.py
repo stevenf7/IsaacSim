@@ -15,5 +15,4 @@
 
 """Tests for the cumotion robot motion functionality."""
 
-
 scan_for_test_modules = True

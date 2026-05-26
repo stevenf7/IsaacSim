@@ -15,7 +15,6 @@
 
 """Spot quadruped robot policy controller for flat terrain locomotion."""
 
-
 import isaacsim.core.experimental.utils.transform as transform_utils
 import warp as wp
 from isaacsim.core.deprecation_manager import import_module

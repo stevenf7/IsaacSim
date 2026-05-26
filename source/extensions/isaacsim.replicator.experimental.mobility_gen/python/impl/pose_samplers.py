@@ -15,7 +15,6 @@
 
 """Pose samplers for generating robot spawn poses from occupancy maps."""
 
-
 import math
 import random
 

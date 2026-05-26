@@ -15,5 +15,4 @@
 
 """Tests for the wheeled robots UI module."""
 
-
 scan_for_test_modules = True

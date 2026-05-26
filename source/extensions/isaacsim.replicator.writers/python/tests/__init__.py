@@ -15,5 +15,4 @@
 
 """Test modules for replicator writers functionality."""
 
-
 scan_for_test_modules = True

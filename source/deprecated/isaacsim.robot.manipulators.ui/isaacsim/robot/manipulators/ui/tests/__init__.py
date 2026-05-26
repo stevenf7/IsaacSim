@@ -15,5 +15,4 @@
 
 """Tests for the robot manipulators UI components."""
 
-
 scan_for_test_modules = True

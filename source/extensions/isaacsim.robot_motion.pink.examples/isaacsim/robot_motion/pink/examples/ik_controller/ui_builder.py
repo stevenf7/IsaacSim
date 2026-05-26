@@ -15,7 +15,6 @@
 
 """UI builder for the PINK IK Controller example."""
 
-
 from __future__ import annotations
 
 import asyncio

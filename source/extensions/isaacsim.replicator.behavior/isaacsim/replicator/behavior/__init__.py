@@ -15,7 +15,6 @@
 
 """Module for behavior-based simulation and procedural content generation in Isaac Sim."""
 
-
 from .extension import *
 
 __all__ = []

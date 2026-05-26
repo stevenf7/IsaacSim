@@ -17,7 +17,6 @@
 
 """Interactive humanoid robot policy example demonstrating a Unitree H1 robot with flat terrain locomotion using Isaac Lab."""
 
-
 from .humanoid_example import HumanoidExample
 from .humanoid_example_extension import HumanoidExampleExtension
 

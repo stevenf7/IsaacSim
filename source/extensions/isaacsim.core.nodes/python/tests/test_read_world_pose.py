@@ -50,7 +50,7 @@ class TestIsaacReadWorldPose(ogts.OmniGraphTestCase):
         graph_path = "/ActionGraph"
         node_name = "readWorldPoseNode"
 
-        (graph, nodes, _, _) = og.Controller.edit(
+        graph, nodes, _, _ = og.Controller.edit(
             {"graph_path": graph_path, "evaluator_name": "push"},
             {
                 og.Controller.Keys.CREATE_NODES: [

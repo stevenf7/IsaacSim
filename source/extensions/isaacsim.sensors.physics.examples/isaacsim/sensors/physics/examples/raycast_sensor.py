@@ -356,7 +356,7 @@ class Extension(omni.ext.IExt):
             connections.append((f"{read_node}.outputs:beamEndPoints", f"{draw_node}.inputs:beamEndPoints"))
             connections.append((f"{read_node}.outputs:numRays", f"{draw_node}.inputs:numRays"))
 
-        (action_graph, _, _, _) = og.Controller.edit(
+        action_graph, _, _, _ = og.Controller.edit(
             {"graph_path": "/World/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: create_nodes,

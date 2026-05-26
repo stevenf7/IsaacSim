@@ -144,7 +144,7 @@ def create_scene(
     conv_belt0_orientation = (1.0, 0.0, 0.0, 0.0)
     conv_belt0_half_extent = (conveyor_belt_half_width, 5.0, conveyor_belt_half_thickness)
 
-    (conv_belt0_prim, conv_belt0_geom_prim) = create_conveyor_belt_box(
+    conv_belt0_prim, conv_belt0_geom_prim = create_conveyor_belt_box(
         stage,
         conv_belt_path,
         conv_belt0_position,
@@ -201,7 +201,7 @@ def create_scene(
     )
     conv_belt1_orientation = (math.cos(-math.pi / 4.0), 0.0, 0.0, math.sin(-math.pi / 4.0))
 
-    (conv_belt1_prim, conv_belt1_geom_prim) = create_conveyor_belt_turn(
+    conv_belt1_prim, conv_belt1_geom_prim = create_conveyor_belt_turn(
         stage,
         conv_belt_path,
         conv_belt1_position,
@@ -278,7 +278,7 @@ def create_scene(
     )
     conv_belt2_orientation = (math.cos(-math.pi / 2.0), 0.0, 0.0, math.sin(-math.pi / 2.0))
 
-    (conv_belt2_prim, conv_belt2_geom_prim) = create_conveyor_belt_turn(
+    conv_belt2_prim, conv_belt2_geom_prim = create_conveyor_belt_turn(
         stage,
         conv_belt_path,
         conv_belt2_position,
@@ -368,7 +368,7 @@ def create_scene(
         0.0,
     )
 
-    (conv_belt3_prim, conv_belt3_geom_prim) = create_conveyor_belt_box(
+    conv_belt3_prim, conv_belt3_geom_prim = create_conveyor_belt_box(
         stage,
         conv_belt_path,
         conv_belt3_position,
@@ -453,7 +453,7 @@ def create_scene(
     )
     conv_belt4_orientation = (1.0, 0.0, 0.0, 0.0)
 
-    (conv_belt4_prim, conv_belt4_geom_prim) = create_conveyor_belt_box(
+    conv_belt4_prim, conv_belt4_geom_prim = create_conveyor_belt_box(
         stage,
         conv_belt_path,
         conv_belt4_position,
@@ -508,7 +508,7 @@ def create_scene(
     )
     conv_belt5_orientation = (1.0, 0.0, 0.0, 0.0)
 
-    (conv_belt5_prim, conv_belt5_geom_prim) = create_conveyor_belt_box(
+    conv_belt5_prim, conv_belt5_geom_prim = create_conveyor_belt_box(
         stage,
         conv_belt_path,
         conv_belt5_position,
@@ -570,7 +570,7 @@ def create_scene(
     )
     conv_belt6_orientation = (math.cos(math.pi / 4.0), 0.0, 0.0, math.sin(math.pi / 4.0))
 
-    (conv_belt6_prim, conv_belt6_geom_prim) = create_conveyor_belt_box(
+    conv_belt6_prim, conv_belt6_geom_prim = create_conveyor_belt_box(
         stage,
         conv_belt_path,
         conv_belt6_position,
@@ -672,7 +672,7 @@ def create_scene(
         0.0,
     )
 
-    (conv_belt7_prim, conv_belt7_geom_prim) = create_conveyor_belt_box(
+    conv_belt7_prim, conv_belt7_geom_prim = create_conveyor_belt_box(
         stage,
         conv_belt_path,
         conv_belt7_position,

@@ -15,7 +15,6 @@
 
 """Interactive tutorial extension for getting started with robots in Isaac Sim, demonstrating manipulator and mobile robot operations."""
 
-
 import os
 
 import carb.eventdispatcher

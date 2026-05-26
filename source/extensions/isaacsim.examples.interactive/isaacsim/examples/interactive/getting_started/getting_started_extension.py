@@ -15,7 +15,6 @@
 
 """Extension that provides an interactive tutorial for getting started with Isaac Sim basics."""
 
-
 import os
 
 import omni.ext

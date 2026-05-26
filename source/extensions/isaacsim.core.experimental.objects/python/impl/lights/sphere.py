@@ -15,7 +15,6 @@
 
 """High level class for creating/wrapping USD Sphere Light prims that emit light outward from a sphere."""
 
-
 from __future__ import annotations
 
 import isaacsim.core.experimental.utils.ops as ops_utils

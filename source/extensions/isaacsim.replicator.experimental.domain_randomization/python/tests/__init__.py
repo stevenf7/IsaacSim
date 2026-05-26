@@ -15,5 +15,4 @@
 
 """Tests for the experimental domain randomization extension."""
 
-
 scan_for_test_modules = True

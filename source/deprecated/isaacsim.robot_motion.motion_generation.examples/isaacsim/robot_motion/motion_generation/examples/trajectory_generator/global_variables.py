@@ -15,7 +15,6 @@
 
 """Global variables for the trajectory generator tutorial extension."""
 
-
 EXTENSION_TITLE = "Trajectory Generation Example"
 
 MENU_PARENT_NAME = "Motion Generation Examples"

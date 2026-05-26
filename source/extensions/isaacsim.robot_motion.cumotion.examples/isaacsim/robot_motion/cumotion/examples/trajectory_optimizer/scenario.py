@@ -15,7 +15,6 @@
 
 """Trajectory optimization example using cuMotion for Franka motion planning."""
 
-
 from typing import Any
 
 import cumotion

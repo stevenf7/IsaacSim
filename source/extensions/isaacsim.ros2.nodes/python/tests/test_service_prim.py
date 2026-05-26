@@ -194,7 +194,7 @@ class TestRos2ServicePrim(ROS2TestCase):
         import rclpy
 
         # define graph
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
@@ -247,7 +247,7 @@ class TestRos2ServicePrim(ROS2TestCase):
         import rclpy
 
         # define graph
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
@@ -299,7 +299,7 @@ class TestRos2ServicePrim(ROS2TestCase):
         import rclpy
 
         # define graph
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [

@@ -15,7 +15,6 @@
 
 """An Isaac Sim extension that provides a user interface for generating different types of extension templates to help users create custom extensions."""
 
-
 import asyncio
 import gc
 from collections.abc import Callable

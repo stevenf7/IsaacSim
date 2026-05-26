@@ -15,7 +15,6 @@
 
 """UI module for the conveyor builder extension providing interactive interfaces for creating and managing conveyor belt systems in Isaac Sim."""
 
-
 from .impl import *
 
 __all__ = []

@@ -15,7 +15,6 @@
 
 """A basic Isaac Sim example module that demonstrates fundamental scene setup and lifecycle management."""
 
-
 import isaacsim.core.experimental.utils.stage as stage_utils
 from isaacsim.examples.base.base_sample_experimental import BaseSample
 from isaacsim.storage.native import get_assets_root_path

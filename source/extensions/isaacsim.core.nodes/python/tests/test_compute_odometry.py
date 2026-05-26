@@ -93,7 +93,7 @@ class TestComputeOdometry(ogts.OmniGraphTestCase):
 
     def _create_odometry_graph(self, prim_path: str):
         """Create action graph with OnPlaybackTick -> IsaacComputeOdometry, chassisPrim set to prim_path."""
-        (_, _, _, _) = og.Controller.edit(
+        _, _, _, _ = og.Controller.edit(
             {"graph_path": self.GRAPH_PATH, "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [

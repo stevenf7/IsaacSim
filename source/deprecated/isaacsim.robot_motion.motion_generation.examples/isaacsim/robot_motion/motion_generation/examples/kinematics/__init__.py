@@ -15,7 +15,6 @@
 
 """Provides an extension for robot motion generation tutorials with a kinematics example using the Franka robot."""
 
-
 from .extension import *
 
 __all__ = ["UIBuilder", "Extension"]

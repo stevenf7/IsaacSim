@@ -15,5 +15,4 @@
 
 """Tests for the isaacsim.replicator.mobility_gen extension."""
 
-
 scan_for_test_modules = True

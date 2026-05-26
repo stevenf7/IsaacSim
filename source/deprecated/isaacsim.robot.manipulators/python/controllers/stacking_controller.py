@@ -15,7 +15,6 @@
 
 """Module providing a stacking controller for manipulating objects in a specified order using a pick and place controller."""
 
-
 import typing
 
 import numpy as np

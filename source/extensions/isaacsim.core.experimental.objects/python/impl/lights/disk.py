@@ -15,7 +15,6 @@
 
 """High level class for creating/wrapping USD Disk Light prims that emit light from one side of a circular disk."""
 
-
 from __future__ import annotations
 
 import isaacsim.core.experimental.utils.ops as ops_utils

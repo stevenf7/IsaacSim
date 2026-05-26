@@ -15,7 +15,6 @@
 
 """Isaac Sim Asset Validation Extension that provides custom validation rules for physics, robot schemas, and materials."""
 
-
 import omni.ext
 
 

@@ -15,7 +15,6 @@
 
 """High level wrapper for creating/encapsulating Rigid Body material prims."""
 
-
 from __future__ import annotations
 
 from typing import Literal

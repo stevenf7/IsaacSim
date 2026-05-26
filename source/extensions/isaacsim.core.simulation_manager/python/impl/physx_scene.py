@@ -15,7 +15,6 @@
 
 """Module providing PhysX-specific scene management with GPU configuration and solver settings."""
 
-
 from __future__ import annotations
 
 import dataclasses

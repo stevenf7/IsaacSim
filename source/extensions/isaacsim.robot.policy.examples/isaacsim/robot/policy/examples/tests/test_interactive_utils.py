@@ -15,7 +15,6 @@
 
 """Tests for ``isaacsim.robot.policy.examples.interactive.utils``."""
 
-
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
 from isaacsim.core.simulation_manager import SimulationManager

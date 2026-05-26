@@ -15,7 +15,6 @@
 
 """Implementation of effort sensors for measuring joint forces and torques in articulated bodies."""
 
-
 import copy
 
 import carb

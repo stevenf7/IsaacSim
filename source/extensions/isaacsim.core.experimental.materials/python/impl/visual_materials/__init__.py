@@ -15,7 +15,6 @@
 
 """Provide visual material implementations including PBR, glass, and preview surface materials for scene rendering."""
 
-
 from .omni_glass import OmniGlassMaterial as OmniGlassMaterial
 from .omni_pbr import OmniPbrMaterial as OmniPbrMaterial
 from .preview_surface import PreviewSurfaceMaterial as PreviewSurfaceMaterial

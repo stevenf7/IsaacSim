@@ -17,7 +17,6 @@
 
 """Data recorders for capturing various performance and system metrics during Isaac Sim benchmark execution."""
 
-
 from .app_frametime import AppFrametimeRecorder
 from .cpu_continuous import CPUContinuousRecorder
 from .gpu_frametime import GPUFrametimeRecorder

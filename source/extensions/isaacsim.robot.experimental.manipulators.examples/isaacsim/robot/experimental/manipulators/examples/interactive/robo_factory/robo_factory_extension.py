@@ -15,7 +15,6 @@
 
 """Extension module for the RoboFactory interactive example that provides UI components and extension lifecycle management."""
 
-
 import asyncio
 import os
 

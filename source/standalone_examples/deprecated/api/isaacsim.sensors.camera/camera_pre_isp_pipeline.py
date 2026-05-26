@@ -89,7 +89,7 @@ wrapped_graph = wrapper_node.get_wrapped_graph()
 
 # Create graph for pre-ISP pipeline
 keys = og.Controller.Keys
-(_, nodes, _, _) = og.Controller.edit(
+_, nodes, _, _ = og.Controller.edit(
     wrapped_graph,
     {
         keys.CREATE_NODES: [

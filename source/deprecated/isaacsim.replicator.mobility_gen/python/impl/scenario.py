@@ -15,7 +15,6 @@
 
 """Implements base functionality for mobility generation scenarios with robot navigation in occupancy map environments."""
 
-
 from typing import NoReturn
 
 from PIL import Image

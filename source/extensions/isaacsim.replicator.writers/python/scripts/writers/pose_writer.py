@@ -15,7 +15,6 @@
 
 """A Replicator writer that outputs pose data including 3D bounding box annotations, camera parameters, and optional debug images for object pose estimation tasks."""
 
-
 from functools import partial
 
 import numpy as np

@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Layout menu definitions for Isaac Sim."""
+
 import omni.kit.menu.utils
 from omni.kit.menu.utils import LayoutSourceSearch, MenuItemDescription, MenuLayout
 

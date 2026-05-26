@@ -15,7 +15,6 @@
 
 """Extension module for RTX sensor UI integration in Isaac Sim."""
 
-
 import gc
 from pathlib import Path
 from typing import Callable

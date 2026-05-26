@@ -15,7 +15,6 @@
 
 """Utility functions for managing Isaac Sim World instances and SDF path operations in the mobility generation system."""
 
-
 import isaacsim.core
 from pxr import Sdf
 

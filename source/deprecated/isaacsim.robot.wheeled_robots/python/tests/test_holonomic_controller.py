@@ -15,7 +15,6 @@
 
 """Tests for the HolonomicController class and its OmniGraph node implementation."""
 
-
 import omni.kit.test
 from isaacsim.robot.wheeled_robots.controllers.holonomic_controller import HolonomicController
 

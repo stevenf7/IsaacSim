@@ -15,7 +15,6 @@
 
 """Global variables for the trajectory optimizer example extension."""
 
-
 EXTENSION_TITLE = "cuMotion Trajectory Optimizer Example"
 
 EXTENSION_DESCRIPTION = (

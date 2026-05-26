@@ -15,7 +15,6 @@
 
 """Extension module that provides a browser interface for Isaac Sim examples."""
 
-
 from typing import Optional
 
 import carb.settings

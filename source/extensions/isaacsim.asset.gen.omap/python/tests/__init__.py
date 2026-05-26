@@ -15,5 +15,4 @@
 
 """Tests for the isaacsim.asset.gen.omap module."""
 
-
 scan_for_test_modules = True

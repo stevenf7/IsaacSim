@@ -15,7 +15,6 @@
 
 """Provides comprehensive UI component examples and patterns for Isaac Sim extension development."""
 
-
 import gc
 import math
 import weakref

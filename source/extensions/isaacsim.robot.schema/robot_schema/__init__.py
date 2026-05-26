@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Robot schema helpers and applied schema utilities."""
+
 import logging
 import os
 from enum import Enum

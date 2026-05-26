@@ -37,7 +37,7 @@ class TestOgnHSBSend(omni.kit.test.AsyncTestCase):
         """Test that the HSB sender node can be created."""
         graph_path = "/TestGraph"
 
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": graph_path, "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [

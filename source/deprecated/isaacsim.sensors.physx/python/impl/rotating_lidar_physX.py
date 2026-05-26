@@ -15,7 +15,6 @@
 
 """Implementation of rotating lidar sensor using PhysX simulation for range detection and data acquisition."""
 
-
 from typing import Optional
 
 import carb

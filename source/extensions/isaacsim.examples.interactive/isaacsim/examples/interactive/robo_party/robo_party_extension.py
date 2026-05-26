@@ -15,7 +15,6 @@
 
 """Extension for running the RoboParty interactive multi-robot example with UI controls and browser integration."""
 
-
 import asyncio
 import os
 

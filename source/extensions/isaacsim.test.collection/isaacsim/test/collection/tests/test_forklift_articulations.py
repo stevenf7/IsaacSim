@@ -15,7 +15,6 @@
 
 """Test module for forklift robot articulation and movement functionality."""
 
-
 import carb
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils

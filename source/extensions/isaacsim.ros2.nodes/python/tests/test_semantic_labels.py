@@ -64,7 +64,7 @@ class TestRos2SemanticLabels(ROS2TestCase):
         BACKGROUND_USD_PATH = "/Isaac/Environments/Grid/default_environment.usd"
 
         # Add Small Warehouse environment to the stage
-        (result, error) = await stage_utils.open_stage_async(self._assets_root_path + BACKGROUND_USD_PATH)
+        result, error = await stage_utils.open_stage_async(self._assets_root_path + BACKGROUND_USD_PATH)
         await omni.kit.app.get_app().next_update_async()
         cube_1 = Cube("/cube_1", sizes=1.0, positions=[0, 0, 0], scales=[1.5, 1, 1])
         semantics_utils.add_labels(cube_1.prims[0], labels=["Cube0"])

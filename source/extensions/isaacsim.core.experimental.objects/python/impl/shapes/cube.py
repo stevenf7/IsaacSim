@@ -15,7 +15,6 @@
 
 """High level class for creating/wrapping USD Cube (primitive rectilinear cube centered at the origin) prims."""
 
-
 from __future__ import annotations
 
 import isaacsim.core.experimental.utils.ops as ops_utils

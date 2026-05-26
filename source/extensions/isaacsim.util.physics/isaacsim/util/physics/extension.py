@@ -15,7 +15,6 @@
 
 """Isaac Sim physics utilities extension that provides a UI for applying and removing physics APIs on USD prims."""
 
-
 import asyncio
 import gc
 import weakref

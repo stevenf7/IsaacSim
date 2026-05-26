@@ -15,7 +15,6 @@
 
 """Implementation of PhysX-based sensors including proximity sensors and rotating LiDAR for Isaac Sim."""
 
-
 from .commands import *
 from .extension import *
 from .proximity_sensor import *

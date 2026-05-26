@@ -15,7 +15,6 @@
 
 """Provides high level functions to deal with camera prims and their attributes/properties in Isaac Sim."""
 
-
 from __future__ import annotations
 
 import copy
@@ -94,7 +93,7 @@ def point_to_theta(camera_matrix: object, x: object, y: object) -> float:
         The theta angle of the point.
 
     """
-    ((fx, _, cx), (_, fy, cy), (_, _, _)) = camera_matrix
+    (fx, _, cx), (_, fy, cy), (_, _, _) = camera_matrix
     pt_x, pt_y, _pt_z = (x - cx) / fx, (y - cy) / fy, 1.0
     r2 = pt_x * pt_x + pt_y * pt_y
     theta = np.arctan2(np.sqrt(r2), 1.0)
@@ -134,7 +133,7 @@ def distort_point_rational_polynomial(
         "distort_point_rational_polynomial is deprecated."
         'Please use the the "opencvFisheye" distortion model to directly specify OpenCV distortion parameters.'
     )
-    ((fx, _, cx), (_, fy, cy), (_, _, _)) = camera_matrix
+    (fx, _, cx), (_, fy, cy), (_, _, _) = camera_matrix
     K, P = list(distortion_model[:2]) + list(distortion_model[4:]), list(distortion_model[2:4])
     pt_x, pt_y = (x - cx) / fx, (y - cy) / fy
     r2 = pt_x * pt_x + pt_y * pt_y
@@ -191,7 +190,7 @@ def distort_point_kannala_brandt(camera_matrix: object, distortion_model: object
         "distort_point_rational_polynomial is deprecated."
         'Please use the the "opencvFisheye" distortion model to directly specify OpenCV distortion parameters.'
     )
-    ((fx, _, cx), (_, fy, cy), (_, _, _)) = camera_matrix
+    (fx, _, cx), (_, fy, cy), (_, _, _) = camera_matrix
     pt_x, pt_y, _pt_z = (x - cx) / fx, (y - cy) / fy, 1.0
     r2 = pt_x * pt_x + pt_y * pt_y
     r = np.sqrt(r2)

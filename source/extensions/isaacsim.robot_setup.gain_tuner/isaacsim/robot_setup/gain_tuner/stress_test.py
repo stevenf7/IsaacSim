@@ -15,7 +15,6 @@
 
 """Stress test: bombards joints with extreme random commands to surface PhysX solver instabilities."""
 
-
 from collections.abc import Generator
 from enum import IntEnum
 

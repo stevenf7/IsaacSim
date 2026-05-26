@@ -15,5 +15,4 @@
 
 """Implementation module for robot manipulator extensions in Isaac Sim."""
 
-
 from .extension import Extension as Extension

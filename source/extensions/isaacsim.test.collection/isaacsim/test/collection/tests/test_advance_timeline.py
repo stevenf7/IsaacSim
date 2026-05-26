@@ -15,7 +15,6 @@
 
 """Test suite for timeline advancement and physics stepping behavior in Isaac Sim."""
 
-
 import carb
 import numpy as np
 import omni.kit.app

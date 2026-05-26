@@ -15,7 +15,6 @@
 
 """Deprecated surface gripper command implementations."""
 
-
 import carb
 import omni.kit.commands
 from pxr import Usd

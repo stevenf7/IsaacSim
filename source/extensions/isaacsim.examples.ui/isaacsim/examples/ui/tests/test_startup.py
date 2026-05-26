@@ -19,7 +19,6 @@
 
 """Tests for the isaacsim.examples.ui extension startup and basic functionality."""
 
-
 import omni.kit.test
 from isaacsim.examples.ui.extension import Extension
 

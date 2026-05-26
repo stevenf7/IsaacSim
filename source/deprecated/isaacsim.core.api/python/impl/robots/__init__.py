@@ -15,6 +15,5 @@
 
 """Classes for creating and managing robots and robot views in Isaac Sim."""
 
-
 from isaacsim.core.api.robots.robot import Robot as Robot
 from isaacsim.core.api.robots.robot_view import RobotView as RobotView

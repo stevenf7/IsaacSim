@@ -15,7 +15,6 @@
 
 """About dialog extension for Isaac Sim."""
 
-
 from .extension import *
 
 __all__ = []

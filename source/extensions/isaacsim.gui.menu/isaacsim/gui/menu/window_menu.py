@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Window menu layout for Isaac Sim."""
+
 import omni.kit.menu.utils
 from omni.kit.menu.utils import MenuItemDescription, MenuLayout, add_menu_items
 

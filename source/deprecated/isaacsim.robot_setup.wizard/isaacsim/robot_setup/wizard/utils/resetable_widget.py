@@ -15,7 +15,6 @@
 
 """Provides UI components with reset functionality for input fields, combo boxes, and labels that can revert to initial values."""
 
-
 from typing import Any
 
 import omni.ui as ui

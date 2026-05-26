@@ -15,5 +15,4 @@
 
 """Unit tests for the mobility generation UI components."""
 
-
 scan_for_test_modules = True

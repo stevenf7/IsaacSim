@@ -15,7 +15,6 @@
 
 """Trajectory generation example with cuMotion for a UR10 robot."""
 
-
 import carb
 import cumotion
 import numpy as np

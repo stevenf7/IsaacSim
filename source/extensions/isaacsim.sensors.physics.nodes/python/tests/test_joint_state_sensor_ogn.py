@@ -59,7 +59,7 @@ class TestJointStateSensorOgn(omni.kit.test.AsyncTestCase):
 
         keys = og.Controller.Keys
         try:
-            (_, new_nodes, _, _) = og.Controller.edit(
+            _, new_nodes, _, _ = og.Controller.edit(
                 {"graph_path": self.graph_path, "evaluator_name": "execution"},
                 {
                     keys.CREATE_NODES: [

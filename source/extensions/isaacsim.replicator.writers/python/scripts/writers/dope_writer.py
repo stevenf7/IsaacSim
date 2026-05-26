@@ -15,7 +15,6 @@
 
 """Writer for the DOPE (Deep Object Pose Estimation) dataset format."""
 
-
 import io
 import json
 from typing import Dict, List

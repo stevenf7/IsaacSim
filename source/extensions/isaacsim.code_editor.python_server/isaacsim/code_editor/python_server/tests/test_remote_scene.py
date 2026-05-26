@@ -65,14 +65,10 @@ class TestRemoteScene(omni.kit.test.AsyncTestCase):
         """Set up the TCP connection port and import utility modules."""
         settings = carb.settings.get_settings()
         self._port: int = settings.get(f"{_SETTINGS_PREFIX}/port")
-        await self._exec(
-            textwrap.dedent(
-                """\
+        await self._exec(textwrap.dedent("""\
                 import isaacsim.core.experimental.utils.stage as stage_utils
                 import isaacsim.core.experimental.utils.app as app_utils
-            """
-            )
-        )
+            """))
 
     async def tearDown(self) -> None:
         """Stop the simulation and close the stage."""
@@ -122,16 +118,12 @@ class TestRemoteScene(omni.kit.test.AsyncTestCase):
     async def test_define_prims(self) -> None:
         """Verify that multiple prims can be defined on a new stage."""
         await self._exec("await stage_utils.create_new_stage_async(template='empty')")
-        await self._exec(
-            textwrap.dedent(
-                """\
+        await self._exec(textwrap.dedent("""\
                 stage_utils.define_prim("/World", "Xform")
                 stage_utils.define_prim("/World/MyCube", "Cube")
                 stage_utils.define_prim("/World/MySphere", "Sphere")
                 stage_utils.define_prim("/World/MyCylinder", "Cylinder")
-            """
-            )
-        )
+            """))
 
         for path in ["/World", "/World/MyCube", "/World/MySphere", "/World/MyCylinder"]:
             exists = await self._eval(f"stage_utils.get_current_stage().GetPrimAtPath('{path}').IsValid()")
@@ -141,16 +133,12 @@ class TestRemoteScene(omni.kit.test.AsyncTestCase):
         """Verify that shape objects can be created via remote execution."""
         await self._exec("await stage_utils.create_new_stage_async(template='empty')")
         await self._exec("stage_utils.define_prim('/World', 'Xform')")
-        await self._exec(
-            textwrap.dedent(
-                """\
+        await self._exec(textwrap.dedent("""\
                 from isaacsim.core.experimental.objects import Cube, Sphere, Capsule
                 Cube("/World/BoxA", sizes=0.5)
                 Sphere("/World/Ball", radii=0.25)
                 Capsule("/World/Pill", radii=0.1, heights=0.5)
-            """
-            )
-        )
+            """))
 
         for path in ["/World/BoxA", "/World/Ball", "/World/Pill"]:
             exists = await self._eval(f"stage_utils.get_current_stage().GetPrimAtPath('{path}').IsValid()")
@@ -160,16 +148,12 @@ class TestRemoteScene(omni.kit.test.AsyncTestCase):
         """Verify that light objects can be created via remote execution."""
         await self._exec("await stage_utils.create_new_stage_async(template='empty')")
         await self._exec("stage_utils.define_prim('/World', 'Xform')")
-        await self._exec(
-            textwrap.dedent(
-                """\
+        await self._exec(textwrap.dedent("""\
                 from isaacsim.core.experimental.objects import DomeLight, DistantLight, SphereLight
                 DomeLight("/World/DomeLight")
                 DistantLight("/World/DistantLight")
                 SphereLight("/World/SphereLight", radii=0.5)
-            """
-            )
-        )
+            """))
 
         for path in ["/World/DomeLight", "/World/DistantLight", "/World/SphereLight"]:
             exists = await self._eval(f"stage_utils.get_current_stage().GetPrimAtPath('{path}').IsValid()")
@@ -178,17 +162,13 @@ class TestRemoteScene(omni.kit.test.AsyncTestCase):
     async def test_create_rigid_body(self) -> None:
         """Verify that a rigid body with collision can be created."""
         await self._exec("await stage_utils.create_new_stage_async(template='empty')")
-        await self._exec(
-            textwrap.dedent(
-                """\
+        await self._exec(textwrap.dedent("""\
                 from pxr import UsdPhysics
                 stage_utils.define_prim("/World", "Xform")
                 cube_prim = stage_utils.define_prim("/World/RigidCube", "Cube")
                 UsdPhysics.RigidBodyAPI.Apply(cube_prim)
                 UsdPhysics.CollisionAPI.Apply(cube_prim)
-            """
-            )
-        )
+            """))
 
         has_rigid = await self._eval(
             "stage_utils.get_current_stage().GetPrimAtPath('/World/RigidCube')" ".HasAPI(UsdPhysics.RigidBodyAPI)"
@@ -204,14 +184,10 @@ class TestRemoteScene(omni.kit.test.AsyncTestCase):
         """Verify that a ground plane prim can be created."""
         await self._exec("await stage_utils.create_new_stage_async(template='empty')")
         await self._exec("stage_utils.define_prim('/World', 'Xform')")
-        await self._exec(
-            textwrap.dedent(
-                """\
+        await self._exec(textwrap.dedent("""\
                 from isaacsim.core.experimental.objects import GroundPlane
                 GroundPlane("/World/GroundPlane")
-            """
-            )
-        )
+            """))
 
         exists = await self._eval("stage_utils.get_current_stage().GetPrimAtPath('/World/GroundPlane').IsValid()")
         self.assertTrue(exists, "GroundPlane prim should exist")

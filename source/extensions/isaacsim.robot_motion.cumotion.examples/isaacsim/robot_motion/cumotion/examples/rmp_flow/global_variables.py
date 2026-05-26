@@ -15,7 +15,6 @@
 
 """Global variables for the RMP Flow example extension."""
 
-
 EXTENSION_TITLE = "cuMotion RMPflow Example"
 
 EXTENSION_DESCRIPTION = "Demonstrates RMPflow reactive motion control using cuMotion integration."

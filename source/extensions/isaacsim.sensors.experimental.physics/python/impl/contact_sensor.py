@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Contact sensor runtime providing frame-based data access via the C++ interface."""
+
 from __future__ import annotations
 
 from typing import cast

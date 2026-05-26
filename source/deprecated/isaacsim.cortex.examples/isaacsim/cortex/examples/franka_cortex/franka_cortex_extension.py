@@ -15,7 +15,6 @@
 
 """Extension providing interactive examples for integrating the Cortex framework with Franka robotic arm behaviors in Isaac Sim."""
 
-
 import asyncio
 import os
 

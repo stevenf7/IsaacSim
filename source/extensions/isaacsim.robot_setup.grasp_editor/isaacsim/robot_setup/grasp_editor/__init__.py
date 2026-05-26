@@ -15,7 +15,6 @@
 
 """Utilities for importing and managing grasp specifications from isaac_grasp YAML files."""
 
-
 from isaacsim.robot_setup.grasp_editor.extension import *
 from isaacsim.robot_setup.grasp_editor.grasp_importer import GraspSpec, import_grasps_from_file
 

@@ -16,7 +16,6 @@
 
 """Extension for PINK inverse kinematics integration within Isaac Sim."""
 
-
 import omni.ext
 
 

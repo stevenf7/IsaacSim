@@ -15,5 +15,4 @@
 
 """Tests for the heightmap importer module."""
 
-
 scan_for_test_modules = True

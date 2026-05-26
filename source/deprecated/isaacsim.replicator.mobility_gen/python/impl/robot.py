@@ -15,7 +15,6 @@
 
 """Provides robot implementations and utilities for the Mobility Generation replicator module."""
 
-
 import math
 from typing import NoReturn
 

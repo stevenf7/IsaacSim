@@ -119,14 +119,14 @@ class TestStage(omni.kit.test.AsyncTestCase):
         assets_root_path = await get_assets_root_path_async(skip_check=True)
         # test cases
         # - sync
-        (result, stage) = stage_utils.open_stage(
+        result, stage = stage_utils.open_stage(
             usd_path=assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd",
         )
         self.assertTrue(result, "Failed to open stage")
         self.assertTrue(stage.GetPrimAtPath("/panda/panda_hand").IsValid())
         # - async
         await stage_utils.create_new_stage_async()
-        (result, stage) = await stage_utils.open_stage_async(
+        result, stage = await stage_utils.open_stage_async(
             usd_path=assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd",
         )
         self.assertTrue(result, "Failed to open stage")

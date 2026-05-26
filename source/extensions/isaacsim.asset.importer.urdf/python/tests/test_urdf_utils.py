@@ -108,8 +108,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_no_fixed_joints_unchanged(self) -> None:
         """URDF with only revolute joints should be returned unchanged."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base"/>
               <link name="link1">
@@ -122,8 +121,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <axis xyz="0 0 1"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -154,8 +152,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_single_fixed_joint_removes_child_link(self) -> None:
         """A single fixed joint should remove the child link and the joint."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base"/>
               <link name="child">
@@ -167,8 +164,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <origin xyz="0 0 0" rpy="0 0 0"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -179,8 +175,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_visual_transferred_to_parent(self) -> None:
         """Child's <visual> elements should appear on the parent after merge."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base">
                 <visual><geometry><sphere radius="0.1"/></geometry></visual>
@@ -194,8 +189,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <origin xyz="0 0 0" rpy="0 0 0"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -207,8 +201,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_collision_transferred_to_parent(self) -> None:
         """Child's <collision> elements should appear on the parent after merge."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base"/>
               <link name="child">
@@ -221,8 +214,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <origin xyz="0 0 0" rpy="0 0 0"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -235,8 +227,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_visual_origin_composed(self) -> None:
         """Visual origin in child frame should be composed with the fixed joint transform."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base"/>
               <link name="child">
@@ -251,8 +242,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <origin xyz="1 0 0" rpy="0 0 0"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -265,8 +255,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_collision_origin_composed(self) -> None:
         """Collision origin should be composed with the fixed joint transform."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base"/>
               <link name="child">
@@ -281,8 +270,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <origin xyz="0 0 3" rpy="0 0 0"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -296,8 +284,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
     async def test_rotation_composition(self) -> None:
         """A 90-deg yaw in the joint plus a child translation should be rotated."""
         yaw = math.pi / 2
-        urdf = textwrap.dedent(
-            f"""\
+        urdf = textwrap.dedent(f"""\
             <robot name="test">
               <link name="base"/>
               <link name="child">
@@ -312,8 +299,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <origin xyz="0 0 0" rpy="0 0 {yaw}"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -328,8 +314,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_revolute_reparented_to_parent(self) -> None:
         """A revolute joint from the child link should be re-parented to the parent."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base"/>
               <link name="adapter"/>
@@ -346,8 +331,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <axis xyz="0 0 1"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -364,8 +348,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_reparented_joint_origin_composed(self) -> None:
         """Re-parented joint's origin should be composed with the fixed joint transform."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base"/>
               <link name="adapter"/>
@@ -382,8 +365,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <axis xyz="0 0 1"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -395,8 +377,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_multiple_downstream_joints_reparented(self) -> None:
         """All downstream joints from the merged child should be re-parented."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base"/>
               <link name="adapter"/>
@@ -420,8 +401,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <axis xyz="0 0 1"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -435,8 +415,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_chain_of_two_fixed_joints(self) -> None:
         """base --(fixed)--> mid --(fixed)--> tip should collapse to just base."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base"/>
               <link name="mid">
@@ -456,8 +435,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <origin xyz="0 2 0" rpy="0 0 0"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -472,8 +450,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_chain_transform_accumulation(self) -> None:
         """Transforms should accumulate correctly through a chain of fixed joints."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base"/>
               <link name="mid"/>
@@ -494,8 +471,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <origin xyz="0 2 0" rpy="0 0 0"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -508,8 +484,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_chain_with_trailing_revolute(self) -> None:
         """base --(fixed)--> mid --(fixed)--> adapter --(revolute)--> end."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base"/>
               <link name="mid"/>
@@ -532,8 +507,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <axis xyz="0 0 1"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -552,8 +526,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_mass_is_summed(self) -> None:
         """Total mass should be the sum of parent and child masses."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base">
                 <inertial>
@@ -575,8 +548,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <origin xyz="0 0 0" rpy="0 0 0"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -588,8 +560,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_com_weighted_average(self) -> None:
         """Combined CoM should be the mass-weighted average."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base">
                 <inertial>
@@ -611,8 +582,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <origin xyz="2 0 0" rpy="0 0 0"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -624,8 +594,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_inertia_parallel_axis_theorem(self) -> None:
         """Inertia tensor should reflect parallel axis shifts for both bodies."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base">
                 <inertial>
@@ -647,8 +616,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <origin xyz="2 0 0" rpy="0 0 0"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -666,8 +634,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_child_without_inertial(self) -> None:
         """If the child has no <inertial>, parent's inertial should be unchanged."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base">
                 <inertial>
@@ -683,8 +650,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <origin xyz="1 0 0" rpy="0 0 0"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -695,8 +661,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_parent_without_inertial_inherits_child(self) -> None:
         """If the parent has no <inertial>, it should get the child's."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base"/>
               <link name="child">
@@ -712,8 +677,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <origin xyz="1 0 0" rpy="0 0 0"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -728,8 +692,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_fixed_between_two_revolutes(self) -> None:
         """base --(revolute)--> A --(fixed)--> B --(revolute)--> C."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base"/>
               <link name="A"/>
@@ -755,8 +718,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <axis xyz="0 0 1"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)
@@ -776,8 +738,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
 
     async def test_only_fixed_joints_removed(self) -> None:
         """Non-fixed joints should never be removed."""
-        urdf = textwrap.dedent(
-            """\
+        urdf = textwrap.dedent("""\
             <robot name="test">
               <link name="base"/>
               <link name="A"/>
@@ -801,8 +762,7 @@ class TestUrdfUtils(omni.kit.test.AsyncTestCase):
                 <origin xyz="0 0 0" rpy="0 0 0"/>
               </joint>
             </robot>
-        """
-        )
+        """)
         inp = _write_urdf(urdf, self._tmpdir)
         merge_fixed_joints(inp, self._output_path)
         root = _parse_output(self._output_path)

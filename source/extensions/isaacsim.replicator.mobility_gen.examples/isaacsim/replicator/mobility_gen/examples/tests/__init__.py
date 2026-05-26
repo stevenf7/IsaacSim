@@ -15,5 +15,4 @@
 
 """Tests for mobility generation examples."""
 
-
 scan_for_test_modules = True

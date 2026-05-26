@@ -15,7 +15,6 @@
 
 """Page for adding and configuring robots in the Isaac Sim robot setup wizard."""
 
-
 import os
 from functools import partial
 from typing import Any

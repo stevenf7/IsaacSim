@@ -15,7 +15,6 @@
 
 """Base classes for creating wrappers around Omni UI widgets to provide simplified interfaces for specific widget types."""
 
-
 import omni.ui as ui
 
 

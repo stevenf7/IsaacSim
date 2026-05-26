@@ -15,7 +15,6 @@
 
 """Base class for nodes that manage replicator writers with automatic reset capabilities."""
 
-
 import copy
 
 import carb.eventdispatcher

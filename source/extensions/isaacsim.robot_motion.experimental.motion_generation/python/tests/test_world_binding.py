@@ -17,7 +17,6 @@
 
 """Tests for WorldBinding functionality that synchronizes USD stage objects with planning world interfaces."""
 
-
 import numpy as np
 import omni.kit.test
 from isaacsim.core.experimental.objects import (

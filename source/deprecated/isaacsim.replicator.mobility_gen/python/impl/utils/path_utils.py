@@ -15,7 +15,6 @@
 
 """Utilities for path manipulation and querying operations in mobility generation."""
 
-
 import numpy as np
 
 

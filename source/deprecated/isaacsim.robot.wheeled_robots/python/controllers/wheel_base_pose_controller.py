@@ -15,7 +15,6 @@
 
 """WheelBasePoseController implements a pose controller for wheeled robots that drives them to desired positions using underlying wheel commands."""
 
-
 import math
 
 import numpy as np

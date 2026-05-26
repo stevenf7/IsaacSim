@@ -15,7 +15,6 @@
 
 """Global variables and constants for the RMP Flow tutorial."""
 
-
 EXTENSION_TITLE = "RMPflow Example"
 
 MENU_PARENT_NAME = "Motion Generation Examples"

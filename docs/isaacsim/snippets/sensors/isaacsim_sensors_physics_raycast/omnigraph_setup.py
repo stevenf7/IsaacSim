@@ -3,7 +3,7 @@ import omni.graph.core as og
 
 sensor_prim_path = "/World/Sensors/Solid_State_Physics_Raycast_Sensor"
 
-(action_graph, _, _, _) = og.Controller.edit(
+action_graph, _, _, _ = og.Controller.edit(
     {"graph_path": "/World/ActionGraph", "evaluator_name": "execution"},
     {
         og.Controller.Keys.CREATE_NODES: [

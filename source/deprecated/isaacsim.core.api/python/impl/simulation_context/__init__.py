@@ -15,5 +15,4 @@
 
 """Provides the SimulationContext API for managing simulation state and execution in Isaac Sim."""
 
-
 from isaacsim.core.api.simulation_context.simulation_context import SimulationContext as SimulationContext

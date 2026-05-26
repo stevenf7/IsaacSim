@@ -1594,7 +1594,7 @@ class CumotionWorldInterface(mg.WorldInterface):
         Returns:
             CollisionData object containing indices and metadata for the added object.
         """
-        (obstacle_handles, debug_prim_paths, n_colliders) = _vectorize_cumotion_collider_data(cumotion_colliders)
+        obstacle_handles, debug_prim_paths, n_colliders = _vectorize_cumotion_collider_data(cumotion_colliders)
 
         obstacle_handle_starting_index = len(self._all_obstacle_handles)
 

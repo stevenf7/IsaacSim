@@ -15,7 +15,6 @@
 
 """Utilities for creating tree view components with searchable items, filtering, and placeholder support in Isaac Sim robot setup wizard."""
 
-
 import asyncio
 from enum import Enum
 from functools import partial

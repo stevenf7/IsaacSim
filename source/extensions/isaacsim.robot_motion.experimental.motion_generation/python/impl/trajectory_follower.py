@@ -15,7 +15,6 @@
 
 """Implementation for robot motion trajectory following controllers."""
 
-
 from typing import Optional
 
 from .base_controller import BaseController

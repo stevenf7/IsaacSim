@@ -15,7 +15,6 @@
 
 """Test suite for validating the OgnWritePhysicsArticulationView node in the experimental DR extension."""
 
-
 import isaacsim.replicator.experimental.domain_randomization as dr
 import numpy as np
 import omni.graph.core as og

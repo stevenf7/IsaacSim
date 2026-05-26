@@ -15,7 +15,6 @@
 
 """Unit tests for the DifferentialController OmniGraph node."""
 
-
 import carb
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -59,7 +58,7 @@ class TestDifferentialControllerNode(ogts.OmniGraphTestCase):
     # ----------------------------------------------------------------------
     async def test_differential_controller_node(self) -> None:
         """Test basic differential controller node functionality with velocity commands."""
-        (test_diff_graph, [play_node, diff_node], _, _) = og.Controller.edit(
+        test_diff_graph, [play_node, diff_node], _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
@@ -86,7 +85,7 @@ class TestDifferentialControllerNode(ogts.OmniGraphTestCase):
 
     async def test_differential_controller_node_acceleration_limits(self) -> None:
         """Test differential controller node with acceleration and deceleration limits applied."""
-        (test_diff_graph, [play_node, diff_node], _, _) = og.Controller.edit(
+        test_diff_graph, [play_node, diff_node], _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
@@ -117,7 +116,7 @@ class TestDifferentialControllerNode(ogts.OmniGraphTestCase):
 
     async def test_differential_controller_node_reset(self) -> None:
         """Test differential controller node reset behavior when timeline is stopped and restarted."""
-        (test_diff_graph, [play_node, diff_node], _, _) = og.Controller.edit(
+        test_diff_graph, [play_node, diff_node], _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
@@ -166,7 +165,7 @@ class TestDifferentialControllerNode(ogts.OmniGraphTestCase):
             return
         await stage_utils.open_stage_async(assets_root_path + "/Isaac/Robots/NVIDIA/Jetbot/jetbot.usd")
 
-        (test_graph, [play_node, diff_node, art_node], _, _) = og.Controller.edit(
+        test_graph, [play_node, diff_node, art_node], _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [

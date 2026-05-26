@@ -15,7 +15,6 @@
 
 """Module for managing two-wheeled differential robot bases with articulation control and action application."""
 
-
 import re
 from typing import Any, Optional
 

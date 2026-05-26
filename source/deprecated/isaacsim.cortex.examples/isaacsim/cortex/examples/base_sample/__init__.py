@@ -15,6 +15,5 @@
 
 """Base sample framework for creating interactive Isaac Sim examples with UI templates."""
 
-
 from .base_sample import BaseSample as BaseSample
 from .base_sample_extension import BaseSampleUITemplate as BaseSampleUITemplate

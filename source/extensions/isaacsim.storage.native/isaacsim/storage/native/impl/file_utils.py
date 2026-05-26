@@ -262,7 +262,7 @@ def get_stage_references(stage_path: str, resolve_relatives: bool = True):
         >>> refs
         ['/path/to/material.usd', '/path/to/mesh.usd']
     """
-    (all_layers, all_assets, unresolved_paths) = UsdUtils.ComputeAllDependencies(stage_path)
+    all_layers, all_assets, unresolved_paths = UsdUtils.ComputeAllDependencies(stage_path)
     paths = []
 
     def add_path(path):
@@ -533,7 +533,7 @@ def find_missing_references(base_path: str):
     """
     items = {item: 0 for item in find_files_recursive(base_path, lambda item: is_valid_usd_file(item, []))}
     for item in items.keys():
-        (all_layers, all_assets, unresolved_paths) = UsdUtils.ComputeAllDependencies(item)
+        all_layers, all_assets, unresolved_paths = UsdUtils.ComputeAllDependencies(item)
         if unresolved_paths:
             print(item, unresolved_paths)
 

@@ -15,7 +15,6 @@
 
 """Style definitions for the browser interface components."""
 
-
 from omni.ui import color as cl
 
 # Use same context menu style with content browser

@@ -15,7 +15,6 @@
 
 """Utilities for validating file system contents and structures in Isaac Sim tests."""
 
-
 from collections import Counter
 from pathlib import Path
 

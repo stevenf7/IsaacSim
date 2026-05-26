@@ -15,7 +15,6 @@
 
 """UI builder for the configuration tooling workflow template."""
 
-
 import numpy as np
 import omni.timeline
 import omni.ui as ui

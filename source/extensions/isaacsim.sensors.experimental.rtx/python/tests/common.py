@@ -15,7 +15,6 @@
 
 """Common utilities for RTX sensor tests."""
 
-
 import numpy as np
 from isaacsim.core.experimental.materials import NonVisualMaterial
 from isaacsim.core.experimental.objects import Cube

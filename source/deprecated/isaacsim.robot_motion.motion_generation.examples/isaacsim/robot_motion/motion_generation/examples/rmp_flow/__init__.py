@@ -15,7 +15,6 @@
 
 """Provides an Isaac Sim extension for robot motion generation tutorials using RMP Flow algorithms."""
 
-
 from .extension import *
 
 __all__ = ["UIBuilder", "Extension"]

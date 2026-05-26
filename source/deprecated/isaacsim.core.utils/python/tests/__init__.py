@@ -15,5 +15,4 @@
 
 """Tests for the isaacsim.core.utils module."""
 
-
 scan_for_test_modules = True

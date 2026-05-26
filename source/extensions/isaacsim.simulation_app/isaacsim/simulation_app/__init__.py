@@ -15,7 +15,6 @@
 
 """Helper classes for launching and managing Omniverse Toolkit applications in Isaac Sim."""
 
-
 import builtins
 import os
 import sys

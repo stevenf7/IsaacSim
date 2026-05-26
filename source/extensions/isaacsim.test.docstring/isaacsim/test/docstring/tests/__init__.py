@@ -15,5 +15,4 @@
 
 """Test configuration module for Isaac Sim docstring testing."""
 
-
 scan_for_test_modules = True

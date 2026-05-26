@@ -15,7 +15,6 @@
 
 """Provides UI components for creating resettable input fields with reset functionality."""
 
-
 import omni.ui as ui
 
 

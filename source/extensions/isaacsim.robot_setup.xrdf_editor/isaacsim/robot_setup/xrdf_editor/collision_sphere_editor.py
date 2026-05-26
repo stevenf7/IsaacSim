@@ -15,7 +15,6 @@
 
 """Provides interactive editing capabilities for collision spheres in robot descriptions."""
 
-
 from collections import OrderedDict
 from typing import Generator
 

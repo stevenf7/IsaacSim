@@ -15,7 +15,6 @@
 
 """A cuMotion graph-based motion planning example for Franka robot with configuration and task space targets."""
 
-
 from typing import Any
 
 import numpy as np

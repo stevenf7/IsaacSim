@@ -50,7 +50,7 @@ class TestRos2JointStatePublisher(ROS2TestCase):
         ## load asset and setup ROS bridge
         # open simple_articulation asset (with one drivable revolute and one drivable prismatic joint)
         self.usd_path = self._assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/articulation_3_joints.usd"
-        (result, error) = await stage_utils.open_stage_async(self.usd_path)
+        result, error = await stage_utils.open_stage_async(self.usd_path)
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(result)  # Make sure the stage loaded
         self._stage = omni.usd.get_context().get_stage()
@@ -191,7 +191,7 @@ class TestRos2JointStatePublisherFromSensor(ROS2TestCase):
         if SimulationManager.get_active_physics_engine() == "newton":
             self.skipTest("IsaacReadJointState sensor node requires PhysX backend")
         self.usd_path = self._assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/articulation_3_joints.usd"
-        (result, error) = await stage_utils.open_stage_async(self.usd_path)
+        result, error = await stage_utils.open_stage_async(self.usd_path)
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(result)
         self._stage = omni.usd.get_context().get_stage()
@@ -332,7 +332,7 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
         ## load asset and setup ROS bridge
         # open simple_articulation asset (with one drivable revolute and one drivable prismatic joint)
         self.usd_path = self._assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/articulation_3_joints.usd"
-        (result, error) = await stage_utils.open_stage_async(self.usd_path)
+        result, error = await stage_utils.open_stage_async(self.usd_path)
         await omni.kit.app.get_app().next_update_async()
         self.assertTrue(result)  # Make sure the stage loaded
         self._stage = omni.usd.get_context().get_stage()
@@ -341,7 +341,7 @@ class TestRos2JointStateSubscriber(ROS2TestCase):
 
         # setup the graph
         try:
-            (test_graph, new_nodes, _, _) = og.Controller.edit(
+            test_graph, new_nodes, _, _ = og.Controller.edit(
                 {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
                 {
                     og.Controller.Keys.CREATE_NODES: [

@@ -15,5 +15,4 @@
 
 """Tests for wheeled robot functionality."""
 
-
 scan_for_test_modules = True

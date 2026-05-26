@@ -15,7 +15,6 @@
 
 """High level wrapper for creating/encapsulating USD Mesh (points that are connected into edges and faces) prims."""
 
-
 from __future__ import annotations
 
 from typing import Literal

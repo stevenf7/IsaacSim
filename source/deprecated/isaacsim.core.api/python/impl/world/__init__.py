@@ -15,5 +15,4 @@
 
 """High-level world management API for Isaac Sim that provides the main World class for scene orchestration."""
 
-
 from isaacsim.core.api.world.world import World as World

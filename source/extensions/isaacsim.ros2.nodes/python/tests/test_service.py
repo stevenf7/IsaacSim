@@ -101,7 +101,7 @@ class TestRos2Service(ROS2TestCase):
 
     def _create_service_graph(self, graph_path, service_name, package, subfolder, message):
         """Create a service client/server action graph and return (graph, server_req_node, client_node)."""
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": graph_path, "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [

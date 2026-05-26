@@ -345,7 +345,7 @@ def make_references_relative(usd_path: Union[str, Path]) -> None:
 
     base_dir = path_dirname(stage_path)
 
-    (all_layers, _, _) = UsdUtils.ComputeAllDependencies(stage_path)
+    all_layers, _, _ = UsdUtils.ComputeAllDependencies(stage_path)
 
     def make_relative(asset_path):
         if is_absolute_path(asset_path):

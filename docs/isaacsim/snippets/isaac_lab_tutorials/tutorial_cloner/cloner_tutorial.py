@@ -12,7 +12,6 @@ from isaacsim.core.cloner import Cloner  # import Cloner interface
 from isaacsim.core.experimental.utils.stage import get_current_stage
 from pxr import UsdGeom
 
-
 # create our base environment with one cube
 base_env_path = "/World/Cube_0"
 UsdGeom.Cube.Define(get_current_stage(), base_env_path)

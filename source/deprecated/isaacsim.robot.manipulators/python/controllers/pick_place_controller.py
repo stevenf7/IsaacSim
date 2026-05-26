@@ -15,7 +15,6 @@
 
 """A state machine controller that manages pick and place operations for robotic manipulators through a sequence of 10 predefined phases."""
 
-
 import typing
 
 import numpy as np

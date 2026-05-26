@@ -15,5 +15,4 @@
 
 """Module for configuring test scanning behavior in IsaacSim UI examples."""
 
-
 scan_for_test_modules = True

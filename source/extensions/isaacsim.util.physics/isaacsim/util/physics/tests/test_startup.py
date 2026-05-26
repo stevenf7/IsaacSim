@@ -19,7 +19,6 @@
 
 """Test module for verifying Physics API Editor extension startup functionality."""
 
-
 import omni.kit.test
 
 

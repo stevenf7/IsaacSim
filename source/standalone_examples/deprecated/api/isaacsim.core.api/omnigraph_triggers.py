@@ -31,7 +31,7 @@ This script demonstrates how Push and Action graphs differ, and how to trigger g
 ## build the Push graph with a printout that says "Push Graph Running"
 try:
     keys = og.Controller.Keys
-    (push_graph, _, _, _) = og.Controller.edit(
+    push_graph, _, _, _ = og.Controller.edit(
         {
             "graph_path": "/Push_Graph",
             "evaluator_name": "push",
@@ -58,7 +58,7 @@ except Exception as e:
 ## build an Action graph with a printout that says "Action Graph Running"
 try:
     keys = og.Controller.Keys
-    (action_graph, _, _, _) = og.Controller.edit(
+    action_graph, _, _, _ = og.Controller.edit(
         {
             "graph_path": "/Action_Graph",
             "evaluator_name": "execution",

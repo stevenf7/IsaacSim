@@ -15,7 +15,6 @@
 
 """High level class for creating/wrapping USD Distant Light prims that emit light from a distant source along the -Z axis."""
 
-
 from __future__ import annotations
 
 import isaacsim.core.experimental.utils.ops as ops_utils

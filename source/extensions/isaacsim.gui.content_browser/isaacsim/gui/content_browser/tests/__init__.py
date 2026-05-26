@@ -15,5 +15,4 @@
 
 """Tests for the Isaac Sim GUI content browser functionality."""
 
-
 scan_for_test_modules = True

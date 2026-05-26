@@ -15,7 +15,6 @@
 
 """A module for robot collision detection functionality in Isaac Sim."""
 
-
 from .extension import *
 
 __all__ = []

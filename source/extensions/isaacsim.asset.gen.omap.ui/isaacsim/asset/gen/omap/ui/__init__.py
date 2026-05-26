@@ -15,7 +15,6 @@
 
 """UI extension for generating occupancy maps from USD stages in Isaac Sim."""
 
-
 from .extension import *
 
 __all__ = []

@@ -1,7 +1,7 @@
 import omni.graph.core as og
 
 keys = og.Controller.Keys
-(graph_handle, list_of_nodes, _, _) = og.Controller.edit(
+graph_handle, list_of_nodes, _, _ = og.Controller.edit(
     {"graph_path": "/action_graph", "evaluator_name": "execution"},
     {
         keys.CREATE_NODES: [("tick", "omni.graph.action.OnTick"), ("print", "omni.graph.ui_nodes.PrintText")],

@@ -15,7 +15,6 @@
 
 """Utility functions for 3D-to-2D point projection and camera coordinate transformations in replicator writers."""
 
-
 import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.core.experimental.utils.xform as xform_utils

@@ -15,5 +15,4 @@
 
 """Unit tests for the Isaac Sim code editor Jupyter integration."""
 
-
 scan_for_test_modules = True

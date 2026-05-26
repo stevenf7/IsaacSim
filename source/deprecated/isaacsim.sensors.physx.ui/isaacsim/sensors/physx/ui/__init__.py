@@ -15,7 +15,6 @@
 
 """UI components for PhysX-based sensors in Isaac Sim."""
 
-
 from .extension import *
 
 __all__ = []

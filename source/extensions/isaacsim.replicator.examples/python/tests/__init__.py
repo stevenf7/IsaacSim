@@ -15,5 +15,4 @@
 
 """Test module for Isaac Sim replicator examples."""
 
-
 scan_for_test_modules = True

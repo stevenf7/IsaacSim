@@ -15,7 +15,6 @@
 
 """Data writer for managing grasp data in the Isaac Grasp format."""
 
-
 from collections import OrderedDict
 
 import carb

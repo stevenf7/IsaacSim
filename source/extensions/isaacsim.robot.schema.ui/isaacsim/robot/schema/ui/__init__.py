@@ -15,7 +15,6 @@
 
 """Isaac Sim Robot Schema UI extension for managing robot schema interfaces."""
 
-
 from .extension import SchemaUIExtension
 
 __all__ = ["SchemaUIExtension"]

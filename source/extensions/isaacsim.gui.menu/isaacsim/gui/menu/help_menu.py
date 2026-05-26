@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Help menu registration and documentation helpers."""
+
 from functools import partial
 
 import omni.ext

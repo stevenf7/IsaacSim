@@ -15,7 +15,6 @@
 
 """Builds the user interface for the Robot Setup Assembler extension that enables assembly of multiple robots through joint connections."""
 
-
 import asyncio
 
 import carb

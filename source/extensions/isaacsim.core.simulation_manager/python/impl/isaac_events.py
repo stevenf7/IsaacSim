@@ -15,7 +15,6 @@
 
 """Defines deprecated Isaac events enumeration for simulation lifecycle management."""
 
-
 from enum import Enum
 
 

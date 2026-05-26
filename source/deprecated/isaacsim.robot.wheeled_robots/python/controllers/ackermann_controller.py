@@ -15,7 +15,6 @@
 
 """Ackermann steering controller that computes wheel angles and velocities for wheeled robots using a bicycle model."""
 
-
 import carb
 import numpy as np
 

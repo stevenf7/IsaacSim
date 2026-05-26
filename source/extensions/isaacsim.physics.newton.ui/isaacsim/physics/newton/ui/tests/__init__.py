@@ -15,5 +15,4 @@
 
 """Tests for the Newton physics UI components."""
 
-
 scan_for_test_modules = True

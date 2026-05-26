@@ -15,7 +15,6 @@
 
 """Property delegates for the Isaac Sim browser example that handle displaying asset properties in different selection states."""
 
-
 import asyncio
 from typing import Optional
 

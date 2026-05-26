@@ -15,7 +15,6 @@
 
 """Handle synthetic data recording with state management and asynchronous recording operations."""
 
-
 from enum import Enum
 
 import carb.settings

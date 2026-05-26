@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Test suite for TrajectoryOptimizer class."""
+
 import cumotion
 import isaacsim.core.experimental.utils.stage as stage_utils
 import isaacsim.robot_motion.cumotion as cu_mg

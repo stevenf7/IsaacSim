@@ -15,7 +15,6 @@
 
 """Robot assembly utilities for combining multiple robot assets into a single composed structure."""
 
-
 from .extension import *
 from .robot_assembler import AssembledBodies, AssembledRobot, RobotAssembler
 

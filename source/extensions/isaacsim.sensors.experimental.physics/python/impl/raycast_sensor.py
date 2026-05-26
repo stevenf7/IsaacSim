@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Raycast sensor runtime providing frame-based data access via the C++ interface."""
+
 from __future__ import annotations
 
 import numpy as np

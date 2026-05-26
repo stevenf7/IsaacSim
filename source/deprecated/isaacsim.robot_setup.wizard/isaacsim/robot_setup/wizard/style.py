@@ -15,7 +15,6 @@
 
 """Provides UI styling and color definitions for the robot setup wizard interface components."""
 
-
 import pathlib
 from typing import Any
 

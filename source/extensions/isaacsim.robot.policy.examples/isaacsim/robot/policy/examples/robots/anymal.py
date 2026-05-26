@@ -15,7 +15,6 @@
 
 """Provides a policy controller for ANYmal quadruped robot executing flat terrain locomotion using an LSTM-based SEA network."""
 
-
 import io
 
 import omni

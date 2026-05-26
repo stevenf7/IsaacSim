@@ -15,7 +15,6 @@
 
 """Reader module for accessing mobility generation recording data from structured directories."""
 
-
 import glob
 import os
 from collections import OrderedDict

@@ -18,6 +18,7 @@
 These tests exercise the C++ contact processing path directly, verifying that
 readings and raw contact data are produced without any Python callback relay.
 """
+
 import asyncio
 
 import isaacsim.core.experimental.utils.prim as prim_utils

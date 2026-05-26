@@ -15,7 +15,6 @@
 
 """Provides high level functions for controlling parallel grippers with two fingers through joint position control."""
 
-
 from collections.abc import Callable
 
 import numpy as np

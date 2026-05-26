@@ -15,7 +15,6 @@
 
 """Physics materials implementations for rigid body, surface deformable, and volume deformable materials."""
 
-
 from .physics_material import PhysicsMaterial as PhysicsMaterial
 from .rigid_body import RigidBodyMaterial as RigidBodyMaterial
 from .surface_deformable import SurfaceDeformableMaterial as SurfaceDeformableMaterial

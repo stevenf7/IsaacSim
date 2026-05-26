@@ -15,7 +15,6 @@
 
 """Tests for the HolonomicController OmniGraph node."""
 
-
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.graph.core as og
@@ -54,7 +53,7 @@ class TestHolonomicControllerOgn(ogts.OmniGraphTestCase):
     # ----------------------------------------------------------------------
     async def test_holonomic_drive_ogn(self) -> None:
         """Verify the HolonomicController node computes correct joint velocity outputs from velocity inputs."""
-        (test_holo_graph, [holo_node, _, _, _, array_node], _, _) = og.Controller.edit(
+        test_holo_graph, [holo_node, _, _, _, array_node], _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph"},
             {
                 og.Controller.Keys.CREATE_NODES: [
@@ -101,7 +100,7 @@ class TestHolonomicControllerOgn(ogts.OmniGraphTestCase):
     # ----------------------------------------------------------------------
     async def test_holonomic_drive_ogn_reset(self) -> None:
         """Verify joint velocities reset to zero when timeline stops."""
-        (test_holo_graph, [holo_node, _], _, _) = og.Controller.edit(
+        test_holo_graph, [holo_node, _], _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph"},
             {
                 og.Controller.Keys.CREATE_NODES: [

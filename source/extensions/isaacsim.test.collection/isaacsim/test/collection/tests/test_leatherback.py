@@ -15,7 +15,6 @@
 
 """Tests for the Leatherback Ackermann-steering robot with ROS2 integration."""
 
-
 import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
@@ -48,7 +47,7 @@ class TestLeatherback(ROS2TestCase):
             return
 
         self.usd_path = self._assets_root_path + "/Isaac/Samples/ROS2/Robots/leatherback_ROS.usd"
-        (result, error) = await open_stage_async(self.usd_path)
+        result, error = await open_stage_async(self.usd_path)
 
         # Make sure the stage loaded
         self.assertTrue(result, error)

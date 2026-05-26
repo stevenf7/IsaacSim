@@ -15,7 +15,6 @@
 
 """Provide a comprehensive simulation context for managing physics simulation, rendering, and time-related events in Isaac Sim."""
 
-
 from __future__ import annotations
 
 import builtins

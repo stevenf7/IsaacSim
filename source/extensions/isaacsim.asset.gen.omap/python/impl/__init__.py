@@ -15,5 +15,4 @@
 
 """Implementation module for the Isaac Sim Asset Generator OmniMap extension."""
 
-
 from .extension import *

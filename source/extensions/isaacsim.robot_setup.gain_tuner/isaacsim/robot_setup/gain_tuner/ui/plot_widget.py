@@ -15,7 +15,6 @@
 
 """A customizable XY plot widget module for displaying multiple data series with enhanced visualization features."""
 
-
 import numpy as np
 import omni.ui as ui
 from isaacsim.gui.components.element_wrappers import Frame, XYPlot

@@ -15,7 +15,6 @@
 
 """UI extension for PhysX sensors that adds sensor functionality to the Kit interface."""
 
-
 import carb
 import omni.ext
 from pxr import Sdf, UsdShade

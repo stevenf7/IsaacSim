@@ -15,7 +15,6 @@
 
 """Isaac Sim Occupancy Map extension that provides core functionality for generating 2D and 3D occupancy maps from USD stages."""
 
-
 import omni.ext
 
 from ..bindings import _omap

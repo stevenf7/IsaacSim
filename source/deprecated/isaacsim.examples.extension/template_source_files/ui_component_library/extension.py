@@ -15,7 +15,6 @@
 
 """Extension template for UI component library."""
 
-
 import asyncio
 import gc
 

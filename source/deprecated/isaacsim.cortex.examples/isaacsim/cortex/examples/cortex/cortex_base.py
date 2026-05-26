@@ -15,7 +15,6 @@
 
 """Base class for Cortex-based interactive examples with CortexWorld integration."""
 
-
 from isaacsim.core.utils.stage import create_new_stage_async
 from isaacsim.cortex.examples.base_sample import BaseSample
 from isaacsim.cortex.framework.cortex_world import CortexWorld

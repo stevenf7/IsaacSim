@@ -15,7 +15,6 @@
 
 """Interactive tutorials for getting started with Isaac Sim, providing step-by-step guided examples for basic scene setup, physics simulation, and robot integration."""
 
-
 from isaacsim.examples.interactive.getting_started.getting_started import GettingStarted
 from isaacsim.examples.interactive.getting_started.getting_started_extension import GettingStartedExtension
 from isaacsim.examples.interactive.getting_started.start_with_robot import GettingStartedRobot

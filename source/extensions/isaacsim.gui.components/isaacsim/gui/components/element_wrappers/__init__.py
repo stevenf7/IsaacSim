@@ -15,7 +15,6 @@
 
 """UI element wrappers providing high-level interfaces for common Omni UI components and widgets."""
 
-
 from .base_ui_element_wrappers import UIWidgetWrapper
 from .ui_widget_wrappers import (
     Button,

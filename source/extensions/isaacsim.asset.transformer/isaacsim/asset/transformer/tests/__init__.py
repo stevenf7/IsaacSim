@@ -15,5 +15,4 @@
 
 """Test utilities and modules for asset transformer functionality."""
 
-
 scan_for_test_modules = True

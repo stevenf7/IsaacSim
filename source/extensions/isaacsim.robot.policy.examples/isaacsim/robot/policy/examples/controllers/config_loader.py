@@ -15,7 +15,6 @@
 
 """Utilities for loading and parsing robot policy environment configuration files."""
 
-
 import fnmatch
 import io
 import sys

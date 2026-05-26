@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Hook utilities for menu post-processing."""
+
 import omni.kit.menu.utils
 from omni.kit.menu.utils import MenuItemDescription
 

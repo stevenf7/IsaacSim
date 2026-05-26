@@ -15,7 +15,6 @@
 
 """Test module for physics simulation behavior and USD integration in Isaac Sim."""
 
-
 import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
@@ -241,7 +240,7 @@ class TestPhysics(omni.kit.test.AsyncTestCase):
         timeline = omni.timeline.get_timeline_interface()
         extension_path = get_extension_path("isaacsim.test.collection")
         usd_path = extension_path + "/data/tests/articulation_drives_opposite.usd"
-        (result, error) = await stage_utils.open_stage_async(usd_path)
+        result, error = await stage_utils.open_stage_async(usd_path)
         # Make sure the stage loaded
         self.assertTrue(result)
 

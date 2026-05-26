@@ -15,7 +15,6 @@
 
 """Implementation module providing concrete object classes for ground planes, lights, meshes, and geometric shapes."""
 
-
 from .camera import Camera as Camera
 from .ground_plane import GroundPlane as GroundPlane
 from .lights import CylinderLight as CylinderLight

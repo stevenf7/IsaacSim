@@ -15,5 +15,4 @@
 
 """Tests for the robot setup assembler functionality."""
 
-
 scan_for_test_modules = True

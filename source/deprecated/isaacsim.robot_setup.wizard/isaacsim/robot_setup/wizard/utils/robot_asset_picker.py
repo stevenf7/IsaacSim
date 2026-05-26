@@ -15,7 +15,6 @@
 
 """Provides UI components for selecting robot assets from USD stages with type filtering and selection constraints."""
 
-
 import weakref
 from functools import partial
 from typing import Optional

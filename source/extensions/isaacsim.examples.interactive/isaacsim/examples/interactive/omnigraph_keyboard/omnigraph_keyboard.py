@@ -15,7 +15,6 @@
 
 """Interactive sample demonstrating keyboard control of a cube's size using Omni Graph."""
 
-
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.graph.core as og
 from isaacsim.core.experimental.materials import PreviewSurfaceMaterial

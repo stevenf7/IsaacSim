@@ -15,7 +15,6 @@
 
 """Provides a comprehensive testing interface for robot motion planning using Lula kinematics solvers and RmpFlow motion generation."""
 
-
 from .extension import *
 
 __all__ = [

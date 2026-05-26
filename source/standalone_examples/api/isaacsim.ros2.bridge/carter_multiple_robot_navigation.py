@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Demonstrate multi-robot navigation with Carter robots using ROS 2."""
+
 import argparse
 import sys
 

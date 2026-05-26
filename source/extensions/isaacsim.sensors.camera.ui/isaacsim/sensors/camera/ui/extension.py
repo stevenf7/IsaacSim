@@ -15,7 +15,6 @@
 
 """Extension for the isaacsim.sensors.camera.ui extension that provides UI integration for camera and depth sensor creation."""
 
-
 import gc
 from pathlib import Path
 

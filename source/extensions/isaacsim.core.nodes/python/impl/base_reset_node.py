@@ -15,7 +15,6 @@
 
 """Base class for nodes that automatically reset when the timeline stops."""
 
-
 import carb.eventdispatcher
 import carb.events
 import omni.timeline

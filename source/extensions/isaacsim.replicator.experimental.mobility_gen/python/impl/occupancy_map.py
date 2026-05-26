@@ -15,7 +15,6 @@
 
 """Occupancy map representation and utilities for robot navigation."""
 
-
 import enum
 import os
 

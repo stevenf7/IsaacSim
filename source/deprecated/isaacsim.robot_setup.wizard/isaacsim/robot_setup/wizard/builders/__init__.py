@@ -15,7 +15,6 @@
 
 """Robot setup wizard builder components for constructing and configuring robots in Isaac Sim."""
 
-
 from .collider_helper import *
 from .hierarchy_helper import *
 from .joint_helper import *

@@ -15,7 +15,6 @@
 
 """High level wrapper for manipulating prims that have Deformable Schema applied and their attributes."""
 
-
 from __future__ import annotations
 
 import weakref

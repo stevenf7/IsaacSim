@@ -15,7 +15,6 @@
 
 """UI widget wrapper classes for creating Isaac Sim GUI components with standardized interfaces."""
 
-
 import sys
 from cmath import inf
 from collections.abc import Callable, Iterable

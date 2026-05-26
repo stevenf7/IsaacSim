@@ -15,5 +15,4 @@
 
 """Physics context API for managing physics simulation settings and environments in Isaac Sim."""
 
-
 from isaacsim.core.api.physics_context.physics_context import PhysicsContext as PhysicsContext

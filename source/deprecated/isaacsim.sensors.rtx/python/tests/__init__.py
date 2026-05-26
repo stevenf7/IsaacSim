@@ -15,5 +15,4 @@
 
 """Tests for the RTX sensors module."""
 
-
 scan_for_test_modules = True

@@ -17,7 +17,6 @@
 
 """Framework for defining and executing transformation rules on USD stages."""
 
-
 try:
     from .extension import Extension  # noqa: F401
 except ImportError:

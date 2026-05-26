@@ -15,7 +15,6 @@
 
 """Version parsing and retrieval utilities for Isaac Sim extensions."""
 
-
 import os
 
 import carb.settings

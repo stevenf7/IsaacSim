@@ -15,7 +15,6 @@
 
 """Stacking controller for the Franka robot."""
 
-
 import isaacsim.robot.manipulators.controllers as manipulators_controllers
 from isaacsim.core.prims import SingleArticulation
 from isaacsim.robot.manipulators.examples.franka.controllers.pick_place_controller import PickPlaceController

@@ -15,6 +15,5 @@
 
 """Implementation components for conveyor builder UI functionality."""
 
-
 from .conveyor_system import *
 from .conveyor_track import *

@@ -15,7 +15,6 @@
 
 """Input modules for capturing keyboard and gamepad inputs in mobility generation scenarios."""
 
-
 import carb
 import numpy as np
 import omni

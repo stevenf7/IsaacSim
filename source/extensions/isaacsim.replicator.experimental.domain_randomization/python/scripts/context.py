@@ -15,7 +15,6 @@
 
 """Context management for domain randomization triggers and tendon execution in Isaac Sim replicator."""
 
-
 import omni.graph.core as og
 from omni.replicator.core.utils import utils
 

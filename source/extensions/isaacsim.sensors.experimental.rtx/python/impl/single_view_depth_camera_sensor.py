@@ -15,7 +15,6 @@
 
 """High level class for creating and operating single view depth camera sensors using simulated stereo disparity computation."""
 
-
 from __future__ import annotations
 
 from typing import Literal, get_args

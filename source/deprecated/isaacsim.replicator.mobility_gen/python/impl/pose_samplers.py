@@ -15,7 +15,6 @@
 
 """Provides pose sampling implementations for 2D navigation in occupancy maps."""
 
-
 import math
 import random
 

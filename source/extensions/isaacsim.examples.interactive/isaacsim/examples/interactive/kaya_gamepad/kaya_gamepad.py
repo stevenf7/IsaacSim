@@ -15,7 +15,6 @@
 
 """Interactive sample demonstrating gamepad control of a Kaya robot in Isaac Sim."""
 
-
 import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.usd

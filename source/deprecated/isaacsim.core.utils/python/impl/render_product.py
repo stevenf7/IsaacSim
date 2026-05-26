@@ -15,7 +15,6 @@
 
 """Deprecated render product utility functions."""
 
-
 from isaacsim.core.utils.prims import set_prim_hide_in_stage_window, set_prim_no_delete
 from isaacsim.core.utils.stage import get_current_stage
 from pxr import Gf, Sdf, Usd, UsdRender

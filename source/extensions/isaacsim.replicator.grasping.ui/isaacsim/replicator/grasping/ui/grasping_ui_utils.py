@@ -15,7 +15,6 @@
 
 """Utility functions for the grasping UI including prim selection, visualization, and grasp phase management."""
 
-
 import carb
 import isaacsim.replicator.grasping.grasping_utils as grasping_utils
 import isaacsim.replicator.grasping.sampler_utils as sampler_utils

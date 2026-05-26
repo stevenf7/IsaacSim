@@ -15,7 +15,6 @@
 
 """Provides Jupyter notebook integration for the Isaac Sim code editor."""
 
-
 from .extension import *
 
 __all__ = []

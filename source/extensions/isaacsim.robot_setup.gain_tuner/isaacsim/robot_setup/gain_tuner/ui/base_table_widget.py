@@ -15,7 +15,6 @@
 
 """Base table widget components for the robot setup gain tuner interface."""
 
-
 from enum import Enum
 from functools import partial
 

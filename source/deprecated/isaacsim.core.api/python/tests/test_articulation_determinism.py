@@ -76,7 +76,7 @@ class TestArticulationDeterminism(CoreTestCase):
             Number of frames to converge to target joint positions.
         """
         World.clear_instance()
-        (result, error) = await open_stage_async(
+        result, error = await open_stage_async(
             self._assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
         )
         robot_prim_path = "/panda"

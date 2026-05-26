@@ -15,7 +15,6 @@
 
 """Global variables for the scripting workflow template."""
 
-
 EXTENSION_TITLE = {EXTENSION_TITLE}
 
 EXTENSION_DESCRIPTION = {EXTENSION_DESCRIPTION}

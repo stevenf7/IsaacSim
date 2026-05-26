@@ -15,7 +15,6 @@
 
 """Provides UI components and models for managing collision physics setup in the Isaac Sim robot setup wizard."""
 
-
 from typing import Any
 
 import omni.ui as ui

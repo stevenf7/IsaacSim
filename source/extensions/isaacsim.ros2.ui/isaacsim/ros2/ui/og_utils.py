@@ -68,7 +68,7 @@ class Ros2ClockGraph(MenuHelperWindow):
         self._timeline.stop()
 
         keys = og.Controller.Keys
-        (graph, nodes, _, _) = og.Controller.edit(
+        graph, nodes, _, _ = og.Controller.edit(
             {"graph_path": self._og_path, "evaluator_name": "execution"},
             {
                 keys.CREATE_NODES: [
@@ -223,7 +223,7 @@ class Ros2GenericPubGraph(MenuHelperWindow):
         self._timeline.stop()
 
         keys = og.Controller.Keys
-        (graph, nodes, _, _) = og.Controller.edit(
+        graph, nodes, _, _ = og.Controller.edit(
             {"graph_path": self._og_path, "evaluator_name": "execution"},
             {
                 keys.CREATE_NODES: [
@@ -260,7 +260,7 @@ class Ros2GenericPubGraph(MenuHelperWindow):
         self._timeline.stop()
 
         keys = og.Controller.Keys
-        (graph, nodes, _, _) = og.Controller.edit(
+        graph, nodes, _, _ = og.Controller.edit(
             {"graph_path": self._og_path, "evaluator_name": "execution"},
             {
                 keys.CREATE_NODES: [
@@ -298,7 +298,7 @@ class Ros2GenericPubGraph(MenuHelperWindow):
         self._timeline.stop()
 
         keys = og.Controller.Keys
-        (graph, nodes, _, _) = og.Controller.edit(
+        graph, nodes, _, _ = og.Controller.edit(
             {"graph_path": self._og_path, "evaluator_name": "execution"},
             {
                 keys.CREATE_NODES: [
@@ -336,7 +336,7 @@ class Ros2GenericPubGraph(MenuHelperWindow):
         self._timeline.stop()
 
         keys = og.Controller.Keys
-        (graph, nodes, _, _) = og.Controller.edit(
+        graph, nodes, _, _ = og.Controller.edit(
             {"graph_path": self._og_path, "evaluator_name": "execution"},
             {
                 keys.CREATE_NODES: [
@@ -515,7 +515,7 @@ class Ros2JointStatesGraph(MenuHelperWindow):
         # if starting from a new graph, start it with just a tick,context, and sim_time node, the rest is the same for adding to exsiting graph
         if not self._add_to_existing_graph:
             self._og_path = stage_utils.generate_next_free_path(self._og_path, prepend_default_prim=False)
-            (graph_handle, nodes, _, _) = og.Controller.edit(
+            graph_handle, nodes, _, _ = og.Controller.edit(
                 {"graph_path": self._og_path, "evaluator_name": "execution"},
                 {
                     keys.CREATE_NODES: [
@@ -862,7 +862,7 @@ class Ros2TfPubGraph(MenuHelperWindow):
         # if starting from a new graph, start it with just a tick,context, and sim_time node, the rest is the same for adding to exsiting graph
         if not self._add_to_existing_graph:
             self._og_path = stage_utils.generate_next_free_path(self._og_path, prepend_default_prim=False)
-            (graph_handle, nodes, _, _) = og.Controller.edit(
+            graph_handle, nodes, _, _ = og.Controller.edit(
                 {"graph_path": self._og_path, "evaluator_name": "execution"},
                 {
                     keys.CREATE_NODES: [
@@ -1151,7 +1151,7 @@ class Ros2OdometryGraph(MenuHelperWindow):
         # if starting from a new graph, start it with just a tick,context, and sim_time node, the rest is the same for adding to exsiting graph
         if not self._add_to_existing_graph:
             self._og_path = stage_utils.generate_next_free_path(self._og_path, prepend_default_prim=False)
-            (graph_handle, nodes, _, _) = og.Controller.edit(
+            graph_handle, nodes, _, _ = og.Controller.edit(
                 {"graph_path": self._og_path, "evaluator_name": "execution"},
                 {
                     keys.CREATE_NODES: [

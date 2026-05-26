@@ -15,7 +15,6 @@
 
 """A manipulator that displays clickable icons in 3D viewport space for USD prims."""
 
-
 __all__ = ["IconManipulator", "PreventOthers"]
 
 import asyncio

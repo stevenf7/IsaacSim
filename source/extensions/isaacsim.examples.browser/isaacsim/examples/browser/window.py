@@ -15,7 +15,6 @@
 
 """Module providing a specialized browser window for displaying Isaac Sim robotics examples with custom widget components."""
 
-
 import os
 
 import carb.settings

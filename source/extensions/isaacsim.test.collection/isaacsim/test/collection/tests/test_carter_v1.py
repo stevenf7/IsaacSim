@@ -15,7 +15,6 @@
 
 """Tests for Carter v1 robot simulation functionality including loading, movement, acceleration, braking, and circular motion."""
 
-
 import carb
 import carb.tokens
 import isaacsim.core.experimental.utils.app as app_utils
@@ -84,7 +83,7 @@ class TestCarterv1(omni.kit.test.AsyncTestCase):
 
         # add in carter (from nucleus)
         self.usd_path = self._assets_root_path + "/Isaac/Robots/NVIDIA/Carter/carter_v1_physx_lidar.usd"
-        (result, error) = await open_stage_async(self.usd_path)
+        result, error = await open_stage_async(self.usd_path)
 
         # Make sure the stage loaded
         self.assertTrue(result)

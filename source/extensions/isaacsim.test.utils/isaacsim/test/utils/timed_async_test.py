@@ -15,7 +15,6 @@
 
 """Provides a base test class that automatically times test method execution for performance monitoring."""
 
-
 import gc
 import time
 

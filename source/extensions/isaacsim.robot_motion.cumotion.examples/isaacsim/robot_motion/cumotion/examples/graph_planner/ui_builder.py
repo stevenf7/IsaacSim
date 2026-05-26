@@ -21,7 +21,6 @@ USD stage changes.  All scene-loading, planning, and trajectory state
 live on the scenario.
 """
 
-
 import asyncio
 from collections.abc import Callable
 from typing import Any

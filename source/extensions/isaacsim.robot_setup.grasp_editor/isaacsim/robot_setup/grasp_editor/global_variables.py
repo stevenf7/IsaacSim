@@ -15,7 +15,6 @@
 
 """Global variables and constants for the grasp editor extension."""
 
-
 EXTENSION_TITLE = "Grasp Editor"
 
 EXTENSION_DESCRIPTION = "Author grasps by hand for a specific robot gripper and USD asset."

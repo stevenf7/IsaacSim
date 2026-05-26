@@ -15,7 +15,6 @@
 
 """Global variables and constants used throughout the kinematics tutorials in the robot motion generation module."""
 
-
 EXTENSION_TITLE = "Lula Kinematics Example"
 
 MENU_PARENT_NAME = "Motion Generation Examples"

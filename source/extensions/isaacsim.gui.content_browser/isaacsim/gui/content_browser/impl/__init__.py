@@ -15,5 +15,4 @@
 
 """Implementation module for the Content Browser extension's core functionality."""
 
-
 from .extension import *
