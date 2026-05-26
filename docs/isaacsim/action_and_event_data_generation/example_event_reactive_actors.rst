@@ -150,7 +150,7 @@ From the Isaac Sim install directory:
 
 .. code-block:: bash
 
-    ./isaac-sim.action_and_event_data_generation.sh
+    ./isaac-sim.action_and_event_data_generation.sh --/rtx/hydra/supportMultiTickRate=false
 
 This opens ``isaacsim.exp.action_and_event_data_generation.full.kit``, which enables both Actor SDG and Event Generation UIs. Two menu entries appear under **Tools > Action and Event Data Generation**:
 
@@ -158,6 +158,13 @@ This opens ``isaacsim.exp.action_and_event_data_generation.full.kit``, which ena
 - **Event Config File** -- Event Generation's config window.
 
 Open both from the **Tools** menu and they dock side by side.
+
+.. note::
+
+    The ``--/rtx/hydra/supportMultiTickRate=false`` override is required for fire effects
+    to render correctly during the ``FireEvent``. Refer to
+    :ref:`the multi-tick rendering warning <iri_fire_multitick_warning>`
+    for background and alternative ways to apply the setting.
 
 Step 4 - Set Up Actor SDG
 =========================
