@@ -54,6 +54,12 @@ Getting Started
 
    For reference, see the source code for the Simulation Interfaces package `here <https://github.com/ros-simulation/simulation_interfaces>`_.
 
+.. note::
+
+   This extension targets ``simulation_interfaces`` 1.5.0 or newer. If a service or ``SimulatorFeatures`` constant is missing from the installed package, the corresponding service skips registration and the feature is omitted from the ``GetSimulatorFeatures`` response — startup will log a warning naming the unavailable type.
+
+   `RoboStack Jazzy <https://github.com/RoboStack/ros-jazzy>`_ (used by the pixi-based ROS 2 workspaces) currently ships ``simulation_interfaces`` 1.2.0 which does not include ``SpawnEntities``. ``simulation_interfaces`` 1.5.0+ adds ``SpawnEntities`` and is expected to land in RoboStack Jazzy soon. Until then, that service will be unavailable on pixi/jazzy workspaces.
+
 Overview
 =======================
 
