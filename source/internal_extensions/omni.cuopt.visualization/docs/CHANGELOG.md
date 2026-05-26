@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.1] - 2026-06-02
+### Fixed
+- Import errors
+
 ## [1.4.0] - 2025-12-17
 ### Changed
 - Migrate extension implementation to core experimental API
