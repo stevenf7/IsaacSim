@@ -15,13 +15,40 @@
 
 """Tests for the asset transformer manager and registry."""
 
+import os
+import struct
+import tempfile
 import types
+import zlib
 from unittest.mock import patch
 
 import omni.kit.test
-from isaacsim.asset.transformer.manager import AssetTransformerManager, RuleRegistry
+from isaacsim.asset.transformer.manager import AssetTransformerManager, RuleRegistry, _collect_assets
 from isaacsim.asset.transformer.models import RuleConfigurationParam, RuleProfile, RuleSpec
 from isaacsim.asset.transformer.rule_interface import RuleInterface
+from pxr import Sdf, Usd, UsdGeom
+
+
+def _write_1x1_png(path: str) -> None:
+    """Write a valid 1x1 RGBA PNG so any consumer can decode it.
+
+    PNG layout: 8-byte signature + IHDR + IDAT + IEND chunks with correct CRC32
+    values. Used by tests that copy texture assets and verify the copied files
+    remain valid images on disk.
+    """
+
+    def _chunk(tag: bytes, data: bytes) -> bytes:
+        return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
+
+    signature = b"\x89PNG\r\n\x1a\n"
+    ihdr = struct.pack(">IIBBBBB", 1, 1, 8, 6, 0, 0, 0)  # 1x1, 8-bit, RGBA
+    # Filter byte 0 + 4 bytes of RGBA pixel data, then zlib-compressed.
+    idat = zlib.compress(b"\x00" + b"\x00\x00\x00\x00", level=9)
+    with open(path, "wb") as fh:
+        fh.write(signature)
+        fh.write(_chunk(b"IHDR", ihdr))
+        fh.write(_chunk(b"IDAT", idat))
+        fh.write(_chunk(b"IEND", b""))
 
 
 class _DummyRule(RuleInterface):
@@ -211,3 +238,164 @@ class TestManager(omni.kit.test.AsyncTestCase):
             with self.assertRaises(RuntimeError) as excinfo:
                 mgr.run(input_stage="missing.usda", profile=profile)
             self.assertIn("Failed to open source stage", str(excinfo.exception))
+
+    async def test_collect_assets_rewrites_source_relative_paths(self) -> None:
+        """Regression test: relative asset paths must remap when source and output sit at different depths.
+
+        Reproduces the original Bug 1 scenario: a source stage references an
+        asset via a relative path; the output ``base.usd`` is written under a
+        ``payloads/`` subdirectory at a different filesystem depth. Without
+        anchoring dependency resolution to the source layer, the relative path
+        survives verbatim in the output and resolves to a non-existent file.
+        """
+        with tempfile.TemporaryDirectory() as root:
+            # Layout:
+            #   <root>/src/stage/source.usda   <-- source stage
+            #   <root>/src/textures/grid.png   <-- referenced via ../textures/grid.png
+            #   <root>/out/                    <-- package_root (different depth)
+            src_stage_dir = os.path.join(root, "src", "stage")
+            textures_dir = os.path.join(root, "src", "textures")
+            out_dir = os.path.join(root, "out")
+            os.makedirs(src_stage_dir, exist_ok=True)
+            os.makedirs(textures_dir, exist_ok=True)
+            os.makedirs(out_dir, exist_ok=True)
+
+            texture_path = os.path.join(textures_dir, "grid.png")
+            _write_1x1_png(texture_path)
+
+            source_stage_path = os.path.join(src_stage_dir, "source.usda")
+            stage = Usd.Stage.CreateNew(source_stage_path)
+            prim = UsdGeom.Xform.Define(stage, "/World")
+            attr = prim.GetPrim().CreateAttribute("inputs:diffuse", Sdf.ValueTypeNames.Asset)
+            attr.Set(Sdf.AssetPath("../textures/grid.png"))
+            stage.GetRootLayer().Save()
+
+            out_base_dir = os.path.join(out_dir, "payloads")
+            os.makedirs(out_base_dir, exist_ok=True)
+            out_base_path = os.path.join(out_base_dir, "base.usda")
+            stage.GetRootLayer().Export(out_base_path)
+
+            out_layer = Sdf.Layer.FindOrOpen(out_base_path)
+            self.assertIsNotNone(out_layer, f"Failed to open exported layer at {out_base_path}")
+
+            _collect_assets(out_layer, out_dir, source_layer_path=source_stage_path)
+
+            # The texture must have been copied into <out>/source_assets/.
+            copied_texture = os.path.join(out_dir, "source_assets", "grid.png")
+            self.assertTrue(
+                os.path.isfile(copied_texture),
+                f"Asset was not copied to {copied_texture}",
+            )
+
+            # Every asset path in the output layer must resolve to an existing
+            # file from the output layer's directory.
+            out_layer_dir = os.path.dirname(out_base_path)
+            reloaded = Usd.Stage.Open(out_base_path)
+            broken: list[str] = []
+            for p in reloaded.Traverse():
+                for a in p.GetAttributes():
+                    v = a.Get()
+                    if isinstance(v, Sdf.AssetPath) and v.path:
+                        path = v.path
+                        if "://" in path:
+                            continue
+                        if os.path.isabs(path):
+                            resolved = path
+                        else:
+                            resolved = os.path.normpath(os.path.join(out_layer_dir, path))
+                        if not os.path.isfile(resolved):
+                            broken.append(f"{p.GetPath()}.{a.GetName()} -> {resolved}")
+            self.assertEqual(
+                broken,
+                [],
+                f"Output layer still contains unresolvable asset paths: {broken}",
+            )
+
+    async def test_collect_assets_handles_sublayer_anchored_relative_paths(self) -> None:
+        """Regression: relative asset paths authored in a SUBLAYER must remap correctly after flatten.
+
+        The sublayer is *not* the root layer.
+
+        Layout:
+
+        ::
+
+            <root>/src/main.usda       <-- root layer, sublayers ./detail/sub.usda
+            <root>/src/detail/sub.usda <-- authors  ../../assets/tex.png
+            <root>/assets/tex.png      <-- target asset
+
+        The sublayer's relative path ``../../assets/tex.png`` is anchored at
+        ``<root>/src/detail/``, NOT at the root layer's directory. Anchoring
+        only at the root layer dir would resolve to ``<root>/assets/tex.png``
+        in this case by accident, so to actually trigger the sublayer-anchor
+        bug we put the asset somewhere only the sublayer's anchor reaches.
+        """
+        with tempfile.TemporaryDirectory() as root:
+            src_dir = os.path.join(root, "src")
+            sub_dir = os.path.join(src_dir, "detail")
+            asset_dir = os.path.join(src_dir, "detail_assets")
+            out_dir = os.path.join(root, "out")
+            os.makedirs(sub_dir, exist_ok=True)
+            os.makedirs(asset_dir, exist_ok=True)
+            os.makedirs(out_dir, exist_ok=True)
+
+            # Asset lives at <src>/detail_assets/tex.png. The sublayer's
+            # relative path ``../detail_assets/tex.png`` resolves correctly
+            # only when anchored at the SUBLAYER's directory (<src>/detail/).
+            # Anchoring at the root layer's dir would produce
+            # <src>/detail_assets/tex.png via ``./detail_assets/tex.png`` --
+            # different STRING, so the bare-root anchor lookup misses.
+            texture_path = os.path.join(asset_dir, "tex.png")
+            _write_1x1_png(texture_path)
+
+            # Sublayer that authors the asset reference.
+            sub_path = os.path.join(sub_dir, "sub.usda")
+            sub_stage = Usd.Stage.CreateNew(sub_path)
+            prim = UsdGeom.Xform.Define(sub_stage, "/World/Detail")
+            attr = prim.GetPrim().CreateAttribute("inputs:diffuse", Sdf.ValueTypeNames.Asset)
+            # Path is RELATIVE to the sublayer's location.
+            attr.Set(Sdf.AssetPath("../detail_assets/tex.png"))
+            sub_stage.GetRootLayer().Save()
+
+            # Root layer that sublayers the detail layer.
+            root_path = os.path.join(src_dir, "main.usda")
+            root_stage = Usd.Stage.CreateNew(root_path)
+            root_stage.GetRootLayer().subLayerPaths.append("./detail/sub.usda")
+            root_stage.GetRootLayer().Save()
+
+            # Export the flattened stage to a different filesystem depth.
+            out_base_dir = os.path.join(out_dir, "payloads")
+            os.makedirs(out_base_dir, exist_ok=True)
+            out_base_path = os.path.join(out_base_dir, "base.usda")
+            flat_stage = Usd.Stage.Open(root_path)
+            flat_layer = flat_stage.Flatten()
+            self.assertTrue(flat_layer.Export(out_base_path))
+
+            out_layer = Sdf.Layer.FindOrOpen(out_base_path)
+            self.assertIsNotNone(out_layer)
+            _collect_assets(out_layer, out_dir, source_layer_path=root_path)
+
+            copied = os.path.join(out_dir, "source_assets", "tex.png")
+            self.assertTrue(os.path.isfile(copied), f"Asset was not copied to {copied}")
+
+            out_layer_dir = os.path.dirname(out_base_path)
+            reloaded = Usd.Stage.Open(out_base_path)
+            broken: list[str] = []
+            for p in reloaded.Traverse():
+                for a in p.GetAttributes():
+                    v = a.Get()
+                    if isinstance(v, Sdf.AssetPath) and v.path:
+                        path = v.path
+                        if "://" in path:
+                            continue
+                        if os.path.isabs(path):
+                            resolved = path
+                        else:
+                            resolved = os.path.normpath(os.path.join(out_layer_dir, path))
+                        if not os.path.isfile(resolved):
+                            broken.append(f"{p.GetPath()}.{a.GetName()} -> {resolved} (raw: {path})")
+            self.assertEqual(
+                broken,
+                [],
+                f"Output layer still contains unresolvable asset paths: {broken}",
+            )

@@ -65,8 +65,13 @@ class TestPrimRoutingRule(omni.kit.test.AsyncTestCase):
         self.assertIn("ignore_prim_names", param_names)
         self._success = True
 
-    async def test_process_rule_no_prim_types_skips(self) -> None:
-        """Verify rule skips when no prim types are provided."""
+    async def test_process_rule_no_prim_types_raises(self) -> None:
+        """Verify rule raises ValueError when prim_types is unconfigured.
+
+        ``prim_types`` is the rule's primary selector; running without it is a
+        misconfiguration, not a legitimate no-op, so the rule must surface a
+        failure rather than silently skipping with success=True.
+        """
         stage = Usd.Stage.Open(_TEST_USD)
         rule = PrimRoutingRule(
             source_stage=stage,
@@ -75,10 +80,18 @@ class TestPrimRoutingRule(omni.kit.test.AsyncTestCase):
             args={"params": {"prim_types": []}},
         )
 
-        rule.process_rule()
+        with self.assertRaises(ValueError):
+            rule.process_rule()
 
-        log = rule.get_operation_log()
-        self.assertTrue(any("No prim types" in msg for msg in log))
+        # Same expectation when the param is missing entirely (default None).
+        rule_missing = PrimRoutingRule(
+            source_stage=stage,
+            package_root=self._tmpdir,
+            destination_path="payloads",
+            args={"params": {}},
+        )
+        with self.assertRaises(ValueError):
+            rule_missing.process_rule()
 
     async def test_process_rule_with_scope(self) -> None:
         """Verify scope filter limits routed prims."""

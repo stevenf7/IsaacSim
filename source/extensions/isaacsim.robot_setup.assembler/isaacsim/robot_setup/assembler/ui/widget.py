@@ -16,7 +16,7 @@
 """UI widget components for robot setup assembler interface."""
 
 
-from typing import Callable
+from collections.abc import Callable
 
 import omni.ui as ui
 from isaacsim.gui.components.element_wrappers import CheckBox, DropDown, Frame
@@ -37,7 +37,7 @@ class CheckBoxWithNoReset(CheckBox):
     with other form elements.
     """
 
-    def _create_ui_widget(self, label: str, default_value: bool, tooltip: str):
+    def _create_ui_widget(self, label: str, default_value: bool, tooltip: str) -> ui.Frame:
         """Creates the UI widget components for the checkbox.
 
         Args:
@@ -78,11 +78,11 @@ class DropDownWithPicker(DropDown):
             Special keyword arguments include on_selection_fn for handling picker button clicks.
     """
 
-    def __init__(self, *args: object, **kwargs: object):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
         self.selection_fn = kwargs.get("on_selection_fn", None)
 
-    def _create_ui_widget(self, label: str, tooltip: str):
+    def _create_ui_widget(self, label: str, tooltip: str) -> ui.Frame:
         """Creates the UI widget for the dropdown with picker.
 
         Creates a horizontal layout containing a label, a picker image button, and a combobox.
@@ -147,14 +147,14 @@ class DropDownWithSelect(DropDown):
         **kwargs: Additional keyword arguments passed to the parent DropDown class.
     """
 
-    def __init__(self, *args: object, **kwargs: object):
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
         self._articulation_path_to = None
         self.selection_fn = kwargs.get("on_selection_fn", None)
         self.populate_fn = kwargs.get("populate_fn", None)
 
     @property
-    def articulation_path_to(self):
+    def articulation_path_to(self) -> str | None:
         """The path to the articulation prim.
 
         Returns:
@@ -163,10 +163,10 @@ class DropDownWithSelect(DropDown):
         return self._articulation_path_to
 
     @articulation_path_to.setter
-    def articulation_path_to(self, path):
+    def articulation_path_to(self, path: str | None) -> None:
         self._articulation_path_to = path
 
-    def _create_ui_widget(self, label: str, tooltip: str):
+    def _create_ui_widget(self, label: str, tooltip: str) -> ui.Frame:
         """Creates the UI widget components for the dropdown with select functionality.
 
         Args:
@@ -210,7 +210,7 @@ class DropDownWithSelect(DropDown):
             self.selection_fn(b)
 
 
-def help_frame_header(collapsed: bool, title: str):
+def help_frame_header(collapsed: bool, title: str) -> None:
     """Creates a collapsible header UI with a triangle indicator, title label, and help icon.
 
     Creates a horizontal stack containing a triangle that changes orientation based on collapsed state,
@@ -251,7 +251,7 @@ class ButtonWithIcon:
         **kwargs: Additional keyword arguments passed to ui.ZStack and child components.
     """
 
-    def __init__(self, text: str = "", image_width: int = 14, *args, **kwargs):
+    def __init__(self, text: str = "", image_width: int = 14, *args: object, **kwargs: object) -> None:
         with ui.ZStack(*args, **kwargs):
             self.button = ui.InvisibleButton(*args, **kwargs)
             self.rect = ui.Rectangle(style_type_name_override="Button.Rect", *args, **kwargs)
@@ -268,13 +268,13 @@ class ButtonWithIcon:
         return self.button.enabled
 
     @enabled.setter
-    def enabled(self, value):
+    def enabled(self, value: bool) -> None:
         self.button.enabled = value
         self.rect.enabled = value
         self.image.enabled = value
         self.label.enabled = value
 
-    def set_clicked_fn(self, fn: Callable[[], None]):
+    def set_clicked_fn(self, fn: Callable[[], None]) -> None:
         """Sets the callback function to be called when the button is clicked.
 
         Args:

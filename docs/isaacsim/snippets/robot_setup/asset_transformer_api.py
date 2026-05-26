@@ -317,6 +317,8 @@ def snippet_save_execution_report(report):
 
 def snippet_accessing_rule_logs(report):
     # <start-accessing-rule-logs-snippet>
+    # report = manager.run(input_stage, profile, package_root)
+
     # Iterate through rule results
     for result in report.results:
         print(f"\n=== {result.rule.name} ===")

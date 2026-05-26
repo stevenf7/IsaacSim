@@ -17,8 +17,8 @@
 
 
 import asyncio
+import os
 from enum import IntEnum
-from typing import List
 
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -36,7 +36,7 @@ AXES_INDICES = {"X": 0, "Y": 1, "Z": 2}
 
 def set_opposite_body_transform(
     stage: object, cache: object, prim: object, body0base: bool, fixpos: bool, fixrot: bool
-):
+) -> None:
     """Set the transform of one joint body to align with the opposite body.
 
     This function updates the local position and rotation attributes of a joint body to match the
@@ -89,7 +89,7 @@ def set_opposite_body_transform(
     omni.kit.undo.end_group()
 
 
-def get_aligned_body_transform(stage: object, cache: object, joint: object, body0base: bool):
+def get_aligned_body_transform(stage: object, cache: object, joint: object, body0base: bool) -> Gf.Transform:
     """Calculate the relative transform between two bodies connected by a joint.
 
     This function computes the transform needed to align one body frame with another based on their world
@@ -183,10 +183,10 @@ class AssembledBodies:
         base_path: str,
         attach_path: str,
         fixed_joint: UsdPhysics.FixedJoint,
-        root_joints: List[UsdPhysics.Joint],
+        root_joints: list[UsdPhysics.Joint],
         attach_body_articulation_root: Usd.Prim,
         collision_mask: object = None,
-    ):
+    ) -> None:
         self._base_path = base_path
         self._attach_path = attach_path
         self._fixed_joint = fixed_joint
@@ -234,7 +234,7 @@ class AssembledBodies:
         return self._articulation_root
 
     @property
-    def root_joints(self) -> List[UsdPhysics.Joint]:
+    def root_joints(self) -> list[UsdPhysics.Joint]:
         """Root joints that tie the floating body to the USD stage. These are disabled in an assembled body,.
 
             and will be re-enabled by the disassemble() function.
@@ -253,13 +253,13 @@ class AssembledBodies:
         """
         return self._collision_mask
 
-    def _unmask_collisions(self):
+    def _unmask_collisions(self) -> None:
         """Remove collision masking between the assembled bodies."""
         if self._collision_mask is not None:
             [self._collision_mask.RemoveTarget(target) for target in self._collision_mask.GetTargets()]
             self._collision_mask = None
 
-    def _refresh_asset(self, prim_path: str):
+    def _refresh_asset(self, prim_path: str) -> None:
         """Refresh payloads and references to update articulation immediately during timeline playback.
 
         Args:
@@ -301,7 +301,7 @@ class AssembledRobot:
         assembled_robots: The AssembledBodies instance containing the robot assembly data.
     """
 
-    def __init__(self, assembled_robots: AssembledBodies):
+    def __init__(self, assembled_robots: AssembledBodies) -> None:
         self.assembled_robots = assembled_robots
 
     @property
@@ -332,7 +332,7 @@ class AssembledRobot:
         return self.assembled_robots.fixed_joint
 
     @property
-    def root_joints(self) -> List[UsdPhysics.Joint]:
+    def root_joints(self) -> list[UsdPhysics.Joint]:
         """Root joints that tie the floating body to the USD stage.  These are disabled in an assembled body,.
 
         and will be re-enabled by the disassemble() function.
@@ -369,15 +369,29 @@ class RobotAssembler:
     If the variant set already exists in the source asset, it creates a new entry to it, otherwise it creates a new variant set.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
 
         self._timeline = omni.timeline.get_timeline_interface()
+        # ``_status`` must be initialized BEFORE ``reset()`` so the
+        # cancel-if-assembling guard in ``reset()`` has a defined value to read.
         self._status = AssemblyStatus.IDLE
-        # Session layer to store temporary assembly status
         self.reset()
 
-    def reset(self):
-        """Reset the assembler to its initial state and cancel any active assembly operations."""
+    def reset(self) -> None:
+        """Reset the assembler to its initial state.
+
+        Performs three responsibilities:
+
+        1. If an assembly is in progress (``self._status == AssemblyStatus.ASSEMBLING``)
+           cancels it via :meth:`cancel_assembly`.
+        2. Clears the references to the active stage and to the base/attachment
+           robot and mount prim paths.
+        3. Initializes the assembly-sublayer bookkeeping fields
+           (``_assembly_identifier``, ``_local_assembly_identifier``,
+           ``_assembly_layer``, ``_direct_edit``, ``_variant_set``,
+           ``_variant_name``) to safe defaults so that :meth:`cancel_assembly`
+           remains valid to call on a fresh or already-reset instance.
+        """
         if self._status == AssemblyStatus.ASSEMBLING:
             self.cancel_assembly()
         self._assembly_session = None
@@ -395,6 +409,16 @@ class RobotAssembler:
 
         # Destination file where the assembly will be saved
         self._configuration_destination = None
+
+        # Assembly sublayer state. Initialized here (in addition to ``begin_assembly``)
+        # so that ``cancel_assembly`` is safe to call on an idle/fresh instance and
+        # after teardown, instead of raising AttributeError on the guard clause.
+        self._assembly_identifier = None
+        self._local_assembly_identifier = None
+        self._assembly_layer = None
+        self._direct_edit = False
+        self._variant_set = None
+        self._variant_name = None
 
     def is_root_joint(self, prim: object) -> bool:
         """Check if a prim is a root joint (has no body0 or body1 target).
@@ -423,7 +447,7 @@ class RobotAssembler:
         prim = prim_utils.get_first_matching_child_prim(prim_path, predicate=predicate, include_self=True)
         return prim_utils.get_prim_path(prim) if prim is not None else ""
 
-    def _set_joint_states_to_zero(self, prim_path: str):
+    def _set_joint_states_to_zero(self, prim_path: str) -> None:
         """Set all joint state values to zero for a prim and its children.
 
         Args:
@@ -453,9 +477,29 @@ class RobotAssembler:
         rel.AddTarget(Sdf.Path(prim_path_b))
         return rel
 
-    def __del__(self):
-        """Cleanup the assembler when the instance is destroyed."""
-        self.reset()
+    def __del__(self) -> None:
+        """Best-effort cleanup when the instance is garbage collected.
+
+        Deliberately does not call :meth:`reset` / :meth:`cancel_assembly` here:
+        those paths touch USD (``stop_assembly_session_sublayer``) and schedule
+        coroutines on the Kit event loop. During interpreter shutdown the
+        ``omni.usd`` context and the asyncio loop may already be torn down, so
+        executing them from a finalizer can crash or raise spurious exceptions.
+        Callers that need to terminate an in-flight assembly must call
+        :meth:`reset` explicitly while the application is still alive.
+        """
+        try:
+            self._status = AssemblyStatus.IDLE
+            self._assembly_session = None
+            self._stage = None
+            self._base_robot_prim = None
+            self._base_mount_frame_prim = None
+            self._attachment_robot_prim = None
+            self._attachment_mount_frame_prim = None
+            self._configuration_destination = None
+        except Exception:
+            # Finalizers must never raise; swallow any teardown-order failure.
+            pass
 
     def begin_assembly(
         self,
@@ -466,7 +510,7 @@ class RobotAssembler:
         attachment_mount_path: str,
         variant_set: str,
         variant_name: str,
-    ):
+    ) -> None:
         """Start the robot assembly process.
 
         Places the attachment robot relative to the base robot but does not compose them yet.
@@ -490,15 +534,15 @@ class RobotAssembler:
 
         stage_identifier = self._stage.GetRootLayer().identifier
         self._direct_edit = False
-        self._assembly_identifier = f"{self._variant_set}_{self._variant_name}.usd"
-        self._local_assembly_identifier = f"configuration/{self._assembly_identifier}"
+        self._assembly_identifier = f"{self._variant_name}.usd"
+        self._local_assembly_identifier = f"payloads/{self._variant_set}/{self._assembly_identifier}"
         if self._stage.GetDefaultPrim().GetPath().pathString == self._base_robot_prim:
             self._direct_edit = True
-            # Editing the robot asset directly
+            # Editing the robot asset directly. Resolve the payload to an absolute path
+            # alongside the robot asset, under ``payloads/<variant_set>/<variant_name>.usd``.
             stage_path = "/".join(stage_identifier.split("/")[:-1])
-            stage_name = stage_identifier.split("/")[-1].split(".")[0]
-            self._local_assembly_identifier = f"configuration/{stage_name}_{self._assembly_identifier}"
-            self._assembly_identifier = stage_path + f"/configuration/{stage_name}_{self._assembly_identifier}"
+            self._assembly_identifier = f"{stage_path}/{self._local_assembly_identifier}"
+            os.makedirs(os.path.dirname(self._assembly_identifier), exist_ok=True)
 
             base_prim = self._stage.GetPrimAtPath(self._base_robot_prim)
             variant_set = base_prim.GetVariantSet(self._variant_set)
@@ -530,13 +574,13 @@ class RobotAssembler:
             "TransformPrimCommand", path=attachment_prim.GetPath(), new_transform_matrix=attachment_pose_local
         )
 
-    def cancel_assembly(self):
+    def cancel_assembly(self) -> None:
         """Cancel the current assembly operation and reset state."""
         if self._assembly_identifier:
             stop_assembly_session_sublayer(self._stage, self._assembly_identifier, save=False)
         self._status = AssemblyStatus.IDLE
 
-        async def _end_assembly():
+        async def _end_assembly() -> None:
             await omni.kit.app.get_app().next_update_async()
             while omni.usd.get_context().get_stage_loading_status()[2] > 0:
                 await omni.kit.app.get_app().next_update_async()
@@ -544,7 +588,7 @@ class RobotAssembler:
 
         asyncio.ensure_future(_end_assembly())
 
-    def assemble(self):
+    def assemble(self) -> None:
         """Composes the attachment robot onto the base robot, so that the attachment robot is a child of the base robot, and ready to simulate."""
         attachment_prim = self._stage.GetPrimAtPath(self._attachment_robot_prim)
         attachment_mount_frame_prim = self._stage.GetPrimAtPath(self._attachment_mount_frame_prim)
@@ -552,7 +596,7 @@ class RobotAssembler:
         base_prim = self._stage.GetPrimAtPath(self._base_robot_prim)
         base_mount_frame_prim = self._stage.GetPrimAtPath(self._base_mount_frame_prim)
 
-        self.assemble_rigid_bodies(
+        self._assemble_rigid_bodies(
             self._base_robot_prim,
             self._attachment_robot_prim,
             self._base_mount_frame_prim,
@@ -560,11 +604,11 @@ class RobotAssembler:
             mask_all_collisions=False,
         )
 
-    def finish_assemble(self):
+    def finish_assemble(self) -> None:
         """Finalize the assembly process by configuring variant sets and saving the assembly to a USD file."""
         if self._direct_edit:
 
-            async def stop_sublayer():
+            async def stop_sublayer() -> None:
                 omni.kit.commands.execute(
                     "MovePrimSpecsToLayer",
                     src_layer_identifier=self._stage.GetRootLayer().identifier,
@@ -599,7 +643,7 @@ class RobotAssembler:
 
         else:
 
-            async def stop_sublayer():
+            async def stop_sublayer() -> None:
                 base_prim = self._stage.GetPrimAtPath(self._base_robot_prim)
                 links_rel = base_prim.GetRelationship(robot_schema.Relations.ROBOT_LINKS.name)
                 links_rel.AddTarget(self._stage.GetPrimAtPath(self._attachment_robot_prim).GetPath())
@@ -619,7 +663,7 @@ class RobotAssembler:
             asyncio.ensure_future(stop_sublayer())
         self._status = AssemblyStatus.IDLE
 
-    def assemble_rigid_bodies(
+    def _assemble_rigid_bodies(
         self,
         base_path: str,
         attach_path: str,
@@ -686,7 +730,7 @@ class RobotAssembler:
             attach_prim.GetAttribute("physics:kinematicEnabled").Set(False)
 
         # Create fixed Joint between attach frames
-        fixed_joint = self.create_fixed_joint(attach_mount_path, base_mount_path, attach_mount_path)
+        fixed_joint = self._create_fixed_joint(attach_mount_path, base_mount_path, attach_mount_path)
 
         # Make sure that Articulation B is not parsed as a part of Articulation A.
         # fixed_joint.GetExcludeFromArticulationAttr().Set(True)
@@ -708,7 +752,7 @@ class RobotAssembler:
 
         return AssembledBodies(base_path, attach_path, fixed_joint, root_joints, articulation_root, collision_mask)
 
-    def create_fixed_joint(
+    def _create_fixed_joint(
         self,
         prim_path: str,
         target0: str = None,
@@ -742,7 +786,7 @@ class RobotAssembler:
 
         return fixed_joint
 
-    def _refresh_asset(self, prim_path: str):
+    def _refresh_asset(self, prim_path: str) -> None:
         """Refresh asset payloads and references to update the articulation immediately.
 
         This manually refreshes payloads to get the articulation to update while the timeline is still

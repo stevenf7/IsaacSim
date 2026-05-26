@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.7.7] - 2026-05-22
+### Fixed
+- `GeometriesRoutingRule._create_deduplicated_instance` no longer crashes with `pxr.Tf.ErrorException: Cannot create spec </Instances/<name>/<name>.purpose> because it already exists` when the prototype mesh's `purpose` attribute spec was already authored. The attribute spec is now reused if one already exists (e.g. when the template mesh authored `purpose` directly, or when the rule is re-run against an `instances.usda` reopened from disk via `Sdf.Layer.FindOrOpen`). The fallback catches the narrow `pxr.Tf.ErrorException` only, so typos and bad type-name arguments still surface as errors.
+- `GeometriesRoutingRule` now propagates the *effective* purpose computed via `UsdGeom.Imageable.ComputePurpose()` rather than only checking the immediate parent's authored value. Collision meshes whose `purpose=guide` is authored on a grandparent (or any ancestor) -- e.g. a `collisions` Xform several levels above the mesh -- are now correctly kept hidden through the routed instance.
+- `GeometriesRoutingRule._compute_instance_delta_hash` now incorporates the effective inherited purpose so that a prototype mesh referenced by both a visual Xform (purpose=default) and a collision Xform (purpose=guide) is split into separate `/Instances` entries. Previously the two usages were deduplicated into a single instance, which either left collisions visible or incorrectly hid visuals depending on which source was selected as the template.
+- `GeometriesRoutingRule._make_references_non_instanceable` no longer writes the flattened stage back to the source layer's `realPath` on disk. The pre-process step now exports onto a working file at `<package_root>/<destination_path>/<basename>` and reopens the source stage there. When the rule runs via `AssetTransformerManager`, the source stage is already opened at that path so the mutation happens in place and `output_stage_path` continues to point at the manager's working file (preserving `f(f(x)) == f(x)` idempotency for the full Isaac Sim profile). When the rule runs directly with a caller-owned input outside `<destination_path>`, the working file lands under `<destination_path>` and the caller's input asset is left untouched.
+
+## [1.7.6] - 2026-05-22
+### Changed
+- `PrimRoutingRule.process_rule()` now raises `ValueError` when `prim_types` is unconfigured (missing, `None`, or empty) instead of silently logging and returning `None`. The error message directs users to the `enabled = false` rule-spec flag as the canonical way to disable a rule entry. The "No matching prims found" path remains a successful no-op.
+
 ## [1.7.5] - 2026-05-18
 ### Added
 - Standalone smoke tests now import every shipped rule module and statically reject `pxr` schema imports that are unavailable in isolated pip wheel environments.

@@ -392,7 +392,7 @@ private:
                                          const std::vector<std::pair<std::string, float>>& clearanceOffsets);
 
     /**
-     * @brief Returns cached forward axis for an attachment or default 'Z'.
+     * @brief Returns cached forward axis for an attachment or default 'X'.
      */
     Axis _getJointForwardAxis(size_t attachmentIndex) const;
 

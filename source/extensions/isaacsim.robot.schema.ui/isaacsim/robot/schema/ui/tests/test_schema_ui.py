@@ -527,8 +527,24 @@ class TestMaskingState(omni.kit.test.AsyncTestCase):
     """Tests for MaskingState singleton state tracking."""
 
     async def setUp(self) -> None:
-        """Reset the MaskingState singleton before each test."""
+        """Reset the MaskingState singleton before each test.
+
+        The production singleton is created when the extension loads and
+        wires a real ``MaskingOperations`` backend into ``state.operations``.
+        These tests substitute a ``mock.Mock`` for that backend, which
+        cannot be allowed to leak across class boundaries — subsequent test
+        classes call ``get_masking_layer_id()`` indirectly through
+        ``generate_robot_hierarchy_stage`` and a stray Mock makes
+        ``Stage.MuteLayer`` raise ``Boost.Python.ArgumentError``.
+
+        Snapshot the live singleton in setUp and restore it in tearDown.
+        """
+        self._saved_masking_state_instance = ms.MaskingState._instance
         ms.MaskingState._instance = None
+
+    async def tearDown(self) -> None:
+        """Restore the production MaskingState singleton."""
+        ms.MaskingState._instance = self._saved_masking_state_instance
 
     async def test_singleton_identity(self) -> None:
         """get_instance always returns the same object."""
@@ -684,8 +700,8 @@ class TestMaskingState(omni.kit.test.AsyncTestCase):
         joint_path = "/World/Robot/backward_joint"
 
         mock_ops = mock.Mock()
-        mock_ops.bypass_prim.return_value = (joint_path, "enabled")
-        mock_ops.unbypass_prim.return_value = None
+        mock_ops.bypass_prim.return_value = (True, (joint_path, "enabled"))
+        mock_ops.unbypass_prim.return_value = (True, None)
         state.operations = mock_ops
 
         state.toggle_bypassed(link_path)
@@ -712,6 +728,159 @@ class TestMaskingState(omni.kit.test.AsyncTestCase):
         mock_ops.get_masking_layer_id.return_value = "layer-abc-123"
         state.operations = mock_ops
         self.assertEqual(state.get_masking_layer_id(), "layer-abc-123")
+
+    async def test_toggle_bypassed_backend_rejection_does_not_pollute_state(self) -> None:
+        """Regression: a rejected bypass must not record in-memory state.
+
+        Reproduces the silent-success defect where toggle_bypassed() returned
+        True and populated ``_bypassed_paths`` even when ``bypass_prim`` was
+        rejected (no USD opinion was ever written).
+        """
+        state = ms.MaskingState.get_instance()
+        mock_ops = mock.Mock()
+        mock_ops.bypass_prim.return_value = (False, None)
+        state.operations = mock_ops
+
+        path = "/World/Rejected"
+        self.assertFalse(state.toggle_bypassed(path))
+        self.assertFalse(state.is_bypassed(path))
+        self.assertFalse(state.is_deactivated(path))
+        self.assertEqual(state.get_bypassed_paths(), set())
+        self.assertEqual(state.get_deactivated_paths(), set())
+
+    async def test_set_bypassed_backend_rejection_does_not_pollute_state(self) -> None:
+        """Regression: set_bypassed must not record state when backend rejects."""
+        state = ms.MaskingState.get_instance()
+        mock_ops = mock.Mock()
+        mock_ops.bypass_prim.return_value = (False, None)
+        state.operations = mock_ops
+
+        path = "/World/Rejected"
+        state.set_bypassed(path, True)
+        self.assertFalse(state.is_bypassed(path))
+        self.assertFalse(state.is_deactivated(path))
+
+    async def test_toggle_bypassed_failure_restores_prior_mask(self) -> None:
+        """A rejected bypass on an already-masked prim restores the mask."""
+        state = ms.MaskingState.get_instance()
+        mock_ops = mock.Mock()
+        # Mask + unmask succeed; bypass is rejected.
+        mock_ops.mask_prim.return_value = True
+        mock_ops.unmask_prim.return_value = True
+        mock_ops.bypass_prim.return_value = (False, None)
+        state.operations = mock_ops
+
+        path = "/World/Rejected"
+        state.set_deactivated(path, True)
+        self.assertTrue(state.is_deactivated(path))
+
+        self.assertFalse(state.toggle_bypassed(path))
+        self.assertFalse(state.is_bypassed(path))
+        # Prior mask should be restored.
+        self.assertTrue(state.is_deactivated(path))
+
+    async def test_toggle_anchored_backend_rejection_does_not_pollute_state(self) -> None:
+        """Regression: a rejected anchor must not record in-memory state."""
+        state = ms.MaskingState.get_instance()
+        mock_ops = mock.Mock()
+        mock_ops.anchor_link.return_value = False
+        state.operations = mock_ops
+
+        path = "/World/Rejected"
+        self.assertFalse(state.toggle_anchored(path))
+        self.assertFalse(state.is_anchored(path))
+        self.assertEqual(state.get_anchored_paths(), set())
+
+    async def test_set_anchored_backend_rejection_does_not_pollute_state(self) -> None:
+        """Regression: set_anchored must not record state when backend rejects."""
+        state = ms.MaskingState.get_instance()
+        mock_ops = mock.Mock()
+        mock_ops.anchor_link.return_value = False
+        state.operations = mock_ops
+
+        path = "/World/Rejected"
+        state.set_anchored(path, True)
+        self.assertFalse(state.is_anchored(path))
+
+    async def test_toggle_deactivated_backend_rejection_does_not_pollute_state(self) -> None:
+        """Regression: a rejected mask must not record in-memory state."""
+        state = ms.MaskingState.get_instance()
+        mock_ops = mock.Mock()
+        mock_ops.mask_prim.return_value = False
+        state.operations = mock_ops
+
+        path = "/World/Rejected"
+        self.assertFalse(state.toggle_deactivated(path))
+        self.assertFalse(state.is_deactivated(path))
+
+    async def test_toggle_unbypass_backend_rejection_preserves_in_memory_state(self) -> None:
+        """Regression: a rejected unbypass must not clear the in-memory sets.
+
+        Mirrors ``test_toggle_bypassed_backend_rejection_does_not_pollute_state``
+        for the opposite direction. If ``unbypass_prim`` reports failure the
+        USD opinions are unchanged, so the in-memory sets must remain
+        unchanged to avoid the same divergence on the way out.
+        """
+        state = ms.MaskingState.get_instance()
+        joint_path = "/World/Robot/joint_back"
+        link_path = "/World/Robot/link_fwd"
+        mock_ops = mock.Mock()
+        mock_ops.bypass_prim.return_value = (True, (joint_path, "enabled"))
+        # First unbypass succeeds (during arrange); the one under test rejects.
+        mock_ops.unbypass_prim.return_value = (False, None)
+        state.operations = mock_ops
+
+        # Arrange: enter bypass state.
+        self.assertTrue(state.toggle_bypassed(link_path))
+        self.assertTrue(state.is_bypassed(link_path))
+        self.assertTrue(state.is_deactivated(link_path))
+
+        # Act: try to unbypass; backend rejects.
+        result = state.toggle_bypassed(link_path)
+
+        # Toggle returned True (still bypassed). In-memory state preserved.
+        self.assertTrue(result)
+        self.assertTrue(state.is_bypassed(link_path))
+        self.assertTrue(state.is_deactivated(link_path))
+
+    async def test_set_bypassed_false_backend_rejection_preserves_in_memory_state(self) -> None:
+        """Regression: set_bypassed(False) must not clear sets when backend rejects."""
+        state = ms.MaskingState.get_instance()
+        joint_path = "/World/Robot/joint_back"
+        link_path = "/World/Robot/link_fwd"
+        mock_ops = mock.Mock()
+        mock_ops.bypass_prim.return_value = (True, (joint_path, "enabled"))
+        mock_ops.unbypass_prim.return_value = (False, None)
+        state.operations = mock_ops
+
+        state.set_bypassed(link_path, True)
+        self.assertTrue(state.is_bypassed(link_path))
+
+        state.set_bypassed(link_path, False)
+        # Rejected: in-memory state unchanged.
+        self.assertTrue(state.is_bypassed(link_path))
+        self.assertTrue(state.is_deactivated(link_path))
+
+    async def test_toggle_bypassed_with_modern_backend_tuple(self) -> None:
+        """A backend returning (True, joint_info) correctly records bypass + joint."""
+        state = ms.MaskingState.get_instance()
+        joint_path = "/World/Robot/joint_back"
+        link_path = "/World/Robot/link_fwd"
+
+        mock_ops = mock.Mock()
+        mock_ops.bypass_prim.return_value = (True, (joint_path, "enabled"))
+        mock_ops.unbypass_prim.return_value = (True, None)
+        state.operations = mock_ops
+
+        self.assertTrue(state.toggle_bypassed(link_path))
+        self.assertTrue(state.is_bypassed(link_path))
+        self.assertTrue(state.is_deactivated(link_path))
+        self.assertTrue(state.is_deactivated(joint_path))
+
+        self.assertFalse(state.toggle_bypassed(link_path))
+        self.assertFalse(state.is_bypassed(link_path))
+        self.assertFalse(state.is_deactivated(link_path))
+        self.assertFalse(state.is_deactivated(joint_path))
 
 
 class TestConnectionItem(OmniUiTest):

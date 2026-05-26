@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.2] - 2026-05-22
+### Fixed
+- `AssetTransformerManager._collect_assets` now anchors dependency discovery and asset-path remapping to the source layer's directory instead of the freshly-exported output layer. Previously, a source stage containing relative asset paths (e.g. `../textures/foo.png`) written to an output `payloads/` directory at a different filesystem depth would leave the relative strings verbatim in `payloads/base.usd`, producing unresolvable references at render time. The new behavior reuses the source resolver context to discover, copy, and rewrite each asset path so the output is portable regardless of the relative depth of `package_root` vs the source.
+- `_collect_assets` now resolves relative asset paths against a priority-ordered list of candidate anchor directories (source root layer first, then every used sublayer's directory). This fixes the multi-sublayer case where an asset path authored in a sublayer was anchored at the sublayer's directory, not the root layer's: previously the path survived flatten verbatim and the remap missed it.
+- `_collect_assets` now skips URI-style asset paths (`omni://`, `http://`, `file://`, etc.) in its remap step rather than attempting filesystem-relative resolution. Windows drive-letter paths (`C:\foo`) do not contain `://` and fall through to the `os.path.isabs` branch, which handles them correctly.
+
 ## [1.2.1] - 2026-05-05
 ### Fixed
 - `make_explicit_relative` now normalizes backslash separators to forward slashes so USD asset paths, sublayer identifiers, and references emitted by the asset transformer are portable across platforms (e.g. avoids `./payloads\base.usda` on Windows).

@@ -22,7 +22,7 @@ __all__ = ["create_conveyor_belt"]
 import omni
 import omni.graph.core as og
 import pxr
-from pxr import PhysxSchema, Usd, UsdPhysics
+from pxr import PhysxSchema, Usd, UsdGeom, UsdPhysics
 
 
 def create_conveyor_belt(
@@ -35,7 +35,13 @@ def create_conveyor_belt(
     Creates an action graph containing OnPlaybackTick, IsaacConveyor, and
     ReadVariable nodes wired to the given prim. If the prim does not already
     have a rigid body API, the function walks up the hierarchy to find one
-    or applies RigidBodyAPI, CollisionAPI, and PhysxSurfaceVelocityAPI.
+    or applies RigidBodyAPI, CollisionAPI, and PhysxSurfaceVelocityAPI. For
+    ``UsdGeomMesh`` prims it additionally applies ``UsdPhysics.MeshCollisionAPI``
+    with the ``convexHull`` approximation, because PhysX rejects the default
+    ``meshSimplification`` (triangle mesh) approximation on dynamic bodies
+    and emits an error per parse otherwise. Non-mesh primitives
+    (Cube/Sphere/Cylinder/Capsule) resolve to their analytic collision shapes
+    and do not need (or accept) ``MeshCollisionAPI``.
 
     Args:
         stage: The USD stage.
@@ -57,6 +63,12 @@ def create_conveyor_belt(
         if not found:
             UsdPhysics.RigidBodyAPI.Apply(conveyor_prim)
             UsdPhysics.CollisionAPI.Apply(conveyor_prim)
+            # MeshCollisionAPI applies only to UsdGeomMesh per the schema's
+            # ``appliesTo`` clause. Applying it to a Cube/Sphere/Cylinder
+            # would author a spec PhysX ignores and produce noisy USD output.
+            if conveyor_prim.IsA(UsdGeom.Mesh):
+                mesh_collision_api = UsdPhysics.MeshCollisionAPI.Apply(conveyor_prim)
+                mesh_collision_api.CreateApproximationAttr().Set("convexHull")
             PhysxSchema.PhysxSurfaceVelocityAPI.Apply(conveyor_prim)
 
     base_path = conveyor_prim.GetPath()

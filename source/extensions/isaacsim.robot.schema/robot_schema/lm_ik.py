@@ -91,7 +91,11 @@ def ik_lm(
     # dominates and pushes the joint toward centre, preventing it from
     # getting stuck.  For unbounded joints the bias is zero (no centre).
     finite_mask = np.isfinite(lo) & np.isfinite(hi)
-    q_center = np.where(finite_mask, 0.5 * (lo + hi), 0.0)
+    # Compute midpoint only on finite entries; for unbounded joints lo+hi would
+    # be -inf + +inf = NaN and emit a RuntimeWarning even though np.where would
+    # discard the value.
+    q_center = np.zeros_like(lo)
+    q_center[finite_mask] = 0.5 * (lo[finite_mask] + hi[finite_mask])
     use_null_bias = null_space_bias > 0.0 and np.any(finite_mask)
 
     # Initial evaluation (fused FK + Jacobian in one pass)

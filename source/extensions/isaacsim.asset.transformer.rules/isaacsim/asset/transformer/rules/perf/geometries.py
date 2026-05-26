@@ -27,7 +27,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 from isaacsim.asset.transformer import RuleConfigurationParam, RuleInterface
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdShade
+from pxr import Gf, Sdf, Tf, Usd, UsdGeom, UsdShade
 
 from .. import utils
 
@@ -1066,6 +1066,59 @@ class GeometriesRoutingRule(RuleInterface):
                 if rel_spec.HasInfo("documentation"):
                     rel_spec.ClearInfo("documentation")
 
+    def _resolve_working_layer_path(self) -> str:
+        """Return the canonical writeback path for the routed source layer.
+
+        Output sits at ``<package_root>/<destination_path>/<basename>`` where
+        ``basename`` is derived from the current source layer. Two properties
+        matter:
+
+        * When run via :class:`AssetTransformerManager`, the source stage is
+          already opened from ``<package_root>/<destination>/base.usd`` (the
+          manager's working file), so this resolves to the same path and the
+          rule mutates in place -- subsequent rules see the routed result.
+        * When run directly with a caller-owned input (e.g. test cases that
+          open a stage from a path outside ``<destination>``), this resolves
+          to a *different* path under ``<destination>``, so the caller's
+          input file is never modified.
+
+        Returns:
+            Absolute filesystem path used as the working layer location.
+        """
+        source_layer = self.source_stage.GetRootLayer()
+        original_path = (source_layer.realPath if source_layer else "") or ""
+        basename = os.path.basename(original_path) if original_path else "base.usda"
+        return os.path.join(self.package_root, self.destination_path, basename)
+
+    def _redirect_source_to_working_path(self, working_path: str) -> None:
+        """Move ``self.source_stage`` onto *working_path* without touching the caller's input.
+
+        Flattens the current source stage to a single self-contained layer and
+        exports it at *working_path*. Flatten is used (instead of
+        ``Sdf.Layer.Export``) because the source may contain references or
+        sublayers whose relative paths would break when relocated. After the
+        export, ``self.source_stage`` is reopened from the working file so
+        the rest of :meth:`process_rule` operates against it.
+
+        Args:
+            working_path: Destination path produced by
+                :meth:`_resolve_working_layer_path`. Must differ from the
+                current source layer's ``realPath``.
+
+        Raises:
+            RuntimeError: If the export or reopen step fails.
+        """
+        os.makedirs(os.path.dirname(working_path), exist_ok=True)
+        flattened_layer = self.source_stage.Flatten()
+        if not flattened_layer.Export(working_path):
+            raise RuntimeError(f"Failed to export source stage to working path {working_path}")
+        cached_layer = Sdf.Layer.Find(working_path)
+        if cached_layer:
+            cached_layer.Reload(force=True)
+        self.source_stage = Usd.Stage.Open(working_path)
+        if not self.source_stage:
+            raise RuntimeError(f"Failed to open source stage at working path {working_path}")
+
     def _make_references_non_instanceable(self) -> None:
         """Pre-process the stage to make all instanceable references non-instanceable.
 
@@ -1077,8 +1130,22 @@ class GeometriesRoutingRule(RuleInterface):
 
         This ensures the stage is in a clean state for geometry processing, where all
         prim contents can be directly accessed and modified.
+
+        Before any mutation, the source stage is rerouted onto the canonical
+        working path under ``<package_root>/<destination_path>/`` (see
+        :meth:`_resolve_working_layer_path`). This guarantees the caller's
+        input file is never written to and that the manager's working file
+        location ends up being the rule's output.
         """
+        # Redirect to the working path FIRST so the caller's input is never
+        # touched, even on the no-instanceable / no-flatten code path.
+        working_path = self._resolve_working_layer_path()
         source_layer = self.source_stage.GetRootLayer()
+        original_path = (source_layer.realPath if source_layer else "") or ""
+        if os.path.abspath(working_path) != os.path.abspath(original_path):
+            self._redirect_source_to_working_path(working_path)
+            source_layer = self.source_stage.GetRootLayer()
+
         deleted_overrides_count = 0
         cleared_instanceable_count = 0
 
@@ -1141,23 +1208,23 @@ class GeometriesRoutingRule(RuleInterface):
                 f"deleted {deleted_overrides_count} child override specs"
             )
 
-            # Get the layer path before releasing references
-            layer_path = source_layer.realPath
-
-            # Flatten and export the stage to disk
+            # Flatten and write to the working path established above. By this
+            # point ``source_layer.realPath == working_path`` (either the
+            # caller already opened from that location, or the redirect step
+            # at the top of this method moved us there), so this is an
+            # in-place mutation of the rule's working file -- never the
+            # caller's input file.
             flattened_layer = self.source_stage.Flatten()
-            flattened_layer.Export(layer_path)
+            if not flattened_layer.Export(working_path):
+                raise RuntimeError(f"Failed to export flattened working stage to {working_path}")
 
-            # Clear the USD layer cache for this path and reload from disk
-            cached_layer = Sdf.Layer.Find(layer_path)
+            cached_layer = Sdf.Layer.Find(working_path)
             if cached_layer:
-                # Reload forces the layer to re-read from disk
                 cached_layer.Reload(force=True)
 
-            # Reopen the stage with the fresh layer data
-            self.source_stage = Usd.Stage.Open(layer_path)
+            self.source_stage = Usd.Stage.Open(working_path)
             if not self.source_stage:
-                raise RuntimeError(f"Failed to reopen source stage from {layer_path}")
+                raise RuntimeError(f"Failed to reopen source stage from {working_path}")
 
     def _delete_child_overrides(self, prim_spec: Sdf.PrimSpec) -> int:
         """Delete all child override specs from a prim spec.
@@ -1828,7 +1895,15 @@ class GeometriesRoutingRule(RuleInterface):
         - Applied API schemas (CollisionAPI, PhysicsAPI, etc.)
         - Non-intrinsic attributes (physics properties, custom attributes)
         - Relationships (material bindings, etc.)
+        - Effective inherited purpose computed from ancestor Xforms
         - Child prim deltas (GeomSubsets with material bindings)
+
+        The effective purpose (via ``UsdGeom.Imageable.ComputePurpose``) is included
+        so that meshes that share geometry and authored deltas but differ in inherited
+        purpose -- for example, the same prototype mesh used by both a ``visuals``
+        Xform (purpose=default) and a ``collisions`` Xform (purpose=guide) -- are not
+        merged into the same instance. Sharing one instance would force the propagated
+        ``purpose=guide`` onto the visual usage too, incorrectly hiding it.
 
         Args:
             prim: The geometry prim to compute delta hash for.
@@ -1841,6 +1916,16 @@ class GeometriesRoutingRule(RuleInterface):
 
         # Get intrinsic properties to exclude
         intrinsic_props = self._get_intrinsic_attributes(prim)
+
+        # Hash the effective inherited purpose so visual/collision instances of the
+        # same prototype stay separate. Only non-default purposes contribute so that
+        # existing default-purpose meshes hash identically to before this change.
+        imageable = UsdGeom.Imageable(prim)
+        if imageable:
+            effective_purpose = imageable.ComputePurpose()
+            if effective_purpose and effective_purpose != UsdGeom.Tokens.default_:
+                hasher.update(b"__effective_purpose__")
+                hasher.update(str(effective_purpose).encode())
 
         # Hash applied API schemas
         for schema in sorted(prim.GetAppliedSchemas()):
@@ -2452,28 +2537,53 @@ class GeometriesRoutingRule(RuleInterface):
         if child_prim_spec:
             utils.clear_composition_arcs(child_prim_spec)
 
-        # Propagate purpose=guide from parent Xform to the child mesh prim in the instances layer.
-        # In USD, purpose inheritance does not cross instanceable prim boundaries, so if the
-        # parent Xform (e.g. collisions/base) carried purpose=guide, that attribute must be
-        # authored directly on the prototype mesh prim inside the instances layer so the
+        # Propagate the effective purpose to the prototype mesh prim in the instances layer.
+        # In USD, purpose inheritance does not cross instanceable prim boundaries, so any
+        # non-default purpose computed for the template prim from its ancestors (e.g. a
+        # ``collisions`` Xform that carries purpose=guide several levels above the mesh)
+        # must be authored directly on the prototype mesh inside the instances layer so the
         # composed prototype renders with the correct (hidden) purpose.
-        parent_prim = template_prim.GetParent()
-        if parent_prim and parent_prim.IsValid():
-            parent_purpose_attr = parent_prim.GetAttribute("purpose")
-            if parent_purpose_attr.IsValid() and parent_purpose_attr.Get() == "guide":
-                if child_prim_spec:
-                    purpose_attr_spec = Sdf.AttributeSpec(
-                        child_prim_spec,
-                        "purpose",
-                        Sdf.ValueTypeNames.Token,
-                        Sdf.VariabilityUniform,
+        #
+        # The lookup intentionally uses ``UsdGeom.Imageable.ComputePurpose`` so that purpose
+        # values authored on any ancestor are honored, not just the immediate parent. The
+        # attribute spec is reused if one already exists -- either because the template
+        # mesh authored ``purpose`` directly (and ``_copy_instance_deltas_from_composed_stage``
+        # created the spec above), or because the instances layer was reopened from disk
+        # via ``Sdf.Layer.FindOrOpen`` from a previous run.
+        if child_prim_spec:
+            # ``template_prim`` is the source-stage prim being read for delta
+            # extraction; it is never an instance proxy in this code path
+            # (instance proxies do not appear in source-stage traversal here),
+            # so ``ComputePurpose`` honors the authoring ancestor chain we want.
+            assert not template_prim.IsInstanceProxy(), (
+                f"Unexpected instance proxy {template_prim.GetPath()} in geometry "
+                "deduplication template; purpose computation would walk the wrong hierarchy."
+            )
+            imageable = UsdGeom.Imageable(template_prim)
+            effective_purpose = imageable.ComputePurpose() if imageable else UsdGeom.Tokens.default_
+            if effective_purpose and effective_purpose != UsdGeom.Tokens.default_:
+                purpose_attr_spec = child_prim_spec.attributes.get("purpose")
+                if purpose_attr_spec is None:
+                    try:
+                        purpose_attr_spec = Sdf.AttributeSpec(
+                            child_prim_spec,
+                            "purpose",
+                            Sdf.ValueTypeNames.Token,
+                            Sdf.VariabilityUniform,
+                        )
+                    except Tf.ErrorException:
+                        # Constructor raises only when a spec with the same
+                        # name was authored concurrently between the get()
+                        # above and this point -- treat it as "spec exists,
+                        # reuse it." A broader except would swallow real
+                        # typos / type-name errors.
+                        purpose_attr_spec = child_prim_spec.attributes.get("purpose")
+                if purpose_attr_spec:
+                    purpose_attr_spec.default = effective_purpose
+                    self.log_operation(
+                        f"Propagated effective purpose={effective_purpose} from ancestors of "
+                        f"{template_prim.GetPath()} to prototype mesh {child_mesh_path}"
                     )
-                    if purpose_attr_spec:
-                        purpose_attr_spec.default = "guide"
-                self.log_operation(
-                    f"Propagated purpose=guide from parent {parent_prim.GetPath()} "
-                    f"to prototype mesh {child_mesh_path}"
-                )
 
         # Create the parent Xform prim that references the geometry wrapper
         parent_prim_spec = utils.create_prim_spec(inst_layer, instance_path, type_name=_XFORM_TYPE_NAME)

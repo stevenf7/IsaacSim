@@ -30,6 +30,8 @@ if result.success:
 
 The poser automatically handles unit conversions between radians (for computation) and native USD units (degrees for revolute joints), manages solution seeding for consistent results, and provides anchored positioning to maintain fixed reference points during pose application.
 
+When {meth}`solve_ik <isaacsim.robot.poser.RobotPoser.solve_ik>` is called without an explicit `seed=` and no previous solution is cached, the poser tries a small ladder of starting configurations — the joint-limit midpoint, a few deterministic random restarts within the joint limits, and finally zeros — and returns the first attempt that converges. This avoids silent failures on redundant arms (e.g. Franka Panda 7-DOF) where the all-zero configuration is in the wrong convergence basin. For latency-sensitive code paths and for targets close to a known configuration, callers should still pass an explicit `seed=` to skip the ladder and run the solver exactly once.
+
 ### {class}`PoseResult <isaacsim.robot.poser.PoseResult>`
 
 {class}`PoseResult <isaacsim.robot.poser.PoseResult>` encapsulates the outcome of IK solving or named pose queries. It contains joint values, success status, kinematic chain information, and target pose details. This data structure serves as the standard format for pose information exchange throughout the system.

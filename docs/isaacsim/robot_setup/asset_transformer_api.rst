@@ -29,6 +29,7 @@ All transformation rules implement the ``RuleInterface`` abstract base class. Th
    :start-after: <start-rule-interface-snippet>
    :end-before: <end-rule-interface-snippet>
    :language: python
+   :dedent:
 
 **Key Methods**:
 
@@ -56,6 +57,7 @@ Every rule implementation must provide adequate logging through the ``log_operat
    :start-after: <start-process-rule-logging-snippet>
    :end-before: <end-process-rule-logging-snippet>
    :language: python
+   :dedent:
 
 **Logging Best Practices**:
 
@@ -105,6 +107,7 @@ To create a custom transformation rule, implement the ``RuleInterface`` abstract
       :start-after: <start-custom-rule-example-snippet>
       :end-before: <end-custom-rule-example-snippet>
       :language: python
+      :dedent:
 
 **Referencing a Custom Rule in a Profile**:
 
@@ -114,6 +117,7 @@ The rule is registered using its fully qualified class name (``{module}.{class_n
    :start-after: <start-rule-spec-snippet>
    :end-before: <end-rule-spec-snippet>
    :language: python
+   :dedent:
 
 Extension-Based Registration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -124,6 +128,7 @@ For Isaac Sim extensions, register rules when the extension loads:
    :start-after: <start-extension-registration-snippet>
    :end-before: <end-extension-registration-snippet>
    :language: python
+   :dedent:
 
 Programmatic API Usage
 ----------------------
@@ -137,6 +142,7 @@ Basic Usage
    :start-after: <start-basic-usage-snippet>
    :end-before: <end-basic-usage-snippet>
    :language: python
+   :dedent:
 
 Loading a Profile from JSON
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -145,6 +151,7 @@ Loading a Profile from JSON
    :start-after: <start-load-profile-from-json-snippet>
    :end-before: <end-load-profile-from-json-snippet>
    :language: python
+   :dedent:
 
 Saving the Execution Report
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -153,6 +160,7 @@ Saving the Execution Report
    :start-after: <start-save-execution-report-snippet>
    :end-before: <end-save-execution-report-snippet>
    :language: python
+   :dedent:
 
 Accessing Rule Logs
 ^^^^^^^^^^^^^^^^^^^
@@ -161,6 +169,7 @@ Accessing Rule Logs
    :start-after: <start-accessing-rule-logs-snippet>
    :end-before: <end-accessing-rule-logs-snippet>
    :language: python
+   :dedent:
 
 Querying Registered Rules
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -169,6 +178,7 @@ Querying Registered Rules
    :start-after: <start-querying-registered-rules-snippet>
    :end-before: <end-querying-registered-rules-snippet>
    :language: python
+   :dedent:
 
 API Classes Reference
 ---------------------
@@ -203,6 +213,7 @@ Error Handling
    :start-after: <start-error-handling-snippet>
    :end-before: <end-error-handling-snippet>
    :language: python
+   :dedent:
 
 **Common Errors**:
 

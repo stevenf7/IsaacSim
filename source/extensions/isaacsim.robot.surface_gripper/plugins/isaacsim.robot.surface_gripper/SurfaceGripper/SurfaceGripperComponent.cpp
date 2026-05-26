@@ -300,7 +300,8 @@ void SurfaceGripperComponent::updateAttachmentPoints()
     m_clearanceOffsetsToPersist.reserve(attachmentPaths.size());
     m_grippedObjectsVector.reserve(attachmentPaths.size());
     m_jointSettlingCounters.resize(attachmentPaths.size(), 0);
-    m_jointForwardAxis.resize(attachmentPaths.size(), Axis::Z);
+    // Default to X to match the IsaacRobotSchema default for `isaac:forwardAxis`.
+    m_jointForwardAxis.resize(attachmentPaths.size(), Axis::X);
     m_jointClearanceOffset.resize(attachmentPaths.size(), 0.0f);
     std::vector<std::string> applyApiPaths;
     std::vector<std::string> excludeFromArticulationPaths;
@@ -344,11 +345,20 @@ void SurfaceGripperComponent::updateAttachmentPoints()
             attachmentPrim
                 .GetAttribute(isaacsim::robot::schema::getAttributeName(isaacsim::robot::schema::Attributes::FORWARD_AXIS))
                 .Get(&jointAxisToken);
-            Axis axisEnum = Axis::Z;
+            // Schema default for `isaac:forwardAxis` is "X"; an unset or
+            // unrecognized token falls back to X to match.
+            Axis axisEnum = Axis::X;
             if (!jointAxisToken.IsEmpty())
             {
                 const char c = std::toupper(jointAxisToken.GetText()[0]);
-                axisEnum = (c == 'X') ? Axis::X : (c == 'Y') ? Axis::Y : Axis::Z;
+                if (c == 'Y')
+                {
+                    axisEnum = Axis::Y;
+                }
+                else if (c == 'Z')
+                {
+                    axisEnum = Axis::Z;
+                }
             }
             m_jointForwardAxis[index] = axisEnum;
 
@@ -870,7 +880,8 @@ Axis SurfaceGripperComponent::_getJointForwardAxis(size_t attachmentIndex) const
     {
         return m_jointForwardAxis[attachmentIndex];
     }
-    return Axis::Z;
+    // Match the IsaacRobotSchema default for `isaac:forwardAxis`.
+    return Axis::X;
 }
 
 physx::PxTransform SurfaceGripperComponent::_computeJointWorldTransform(physx::PxJoint* joint,

@@ -285,72 +285,88 @@ class IsaacRaycastSensor(IsaacBaseSensor):
     # ── IsaacRaycastSensor attributes ───────────────────────────────────
 
     def GetNumRaysAttr(self):
+        """Return the `numRays` uint attribute (number of rays cast per frame)."""
         return self._prim.GetAttribute("numRays")
 
     def CreateNumRaysAttr(self, value=None):
+        """Create the `numRays` uint attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("numRays", Sdf.ValueTypeNames.UInt)
         if value is not None:
             attr.Set(value)
         return attr
 
     def GetMinRangeAttr(self):
+        """Return the `minRange` float attribute (near clip of the sensor)."""
         return self._prim.GetAttribute("minRange")
 
     def CreateMinRangeAttr(self, value=None):
+        """Create the `minRange` float attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("minRange", Sdf.ValueTypeNames.Float)
         if value is not None:
             attr.Set(value)
         return attr
 
     def GetMaxRangeAttr(self):
+        """Return the `maxRange` float attribute (far clip of the sensor)."""
         return self._prim.GetAttribute("maxRange")
 
     def CreateMaxRangeAttr(self, value=None):
+        """Create the `maxRange` float attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("maxRange", Sdf.ValueTypeNames.Float)
         if value is not None:
             attr.Set(value)
         return attr
 
     def GetRayOriginsAttr(self):
+        """Return the `rayOrigins` float3 array attribute (per-ray origin points)."""
         return self._prim.GetAttribute("rayOrigins")
 
     def CreateRayOriginsAttr(self, value=None):
+        """Create the `rayOrigins` float3 array attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("rayOrigins", Sdf.ValueTypeNames.Float3Array)
         if value is not None:
             attr.Set(value)
         return attr
 
     def GetRayDirectionsAttr(self):
+        """Return the `rayDirections` float3 array attribute (per-ray direction vectors)."""
         return self._prim.GetAttribute("rayDirections")
 
     def CreateRayDirectionsAttr(self, value=None):
+        """Create the `rayDirections` float3 array attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("rayDirections", Sdf.ValueTypeNames.Float3Array)
         if value is not None:
             attr.Set(value)
         return attr
 
     def GetRayTimeOffsetsAttr(self):
+        """Return the `rayTimeOffsets` float array attribute (per-ray sub-frame time offsets)."""
         return self._prim.GetAttribute("rayTimeOffsets")
 
     def CreateRayTimeOffsetsAttr(self, value=None):
+        """Create the `rayTimeOffsets` float array attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("rayTimeOffsets", Sdf.ValueTypeNames.FloatArray)
         if value is not None:
             attr.Set(value)
         return attr
 
     def GetOutputFrameOfReferenceAttr(self):
+        """Return the `outputFrameOfReference` token attribute (output coordinate frame)."""
         return self._prim.GetAttribute("outputFrameOfReference")
 
     def CreateOutputFrameOfReferenceAttr(self, value=None):
+        """Create the `outputFrameOfReference` token attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("outputFrameOfReference", Sdf.ValueTypeNames.Token)
         if value is not None:
             attr.Set(value)
         return attr
 
     def GetReportHitPrimPathsAttr(self):
+        """Return the `reportHitPrimPaths` bool attribute (emit hit prim paths in output)."""
         return self._prim.GetAttribute("reportHitPrimPaths")
 
     def CreateReportHitPrimPathsAttr(self, value=None):
+        """Create the `reportHitPrimPaths` bool attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("reportHitPrimPaths", Sdf.ValueTypeNames.Bool)
         if value is not None:
             attr.Set(value)

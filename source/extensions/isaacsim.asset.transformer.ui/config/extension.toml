@@ -1,5 +1,5 @@
 [package]
-version = "1.1.0"
+version = "1.1.1"
 category = "Simulation"
 title = "Isaac Sim Asset Transformer"
 description = "UI tool for applying and previewing asset transformations"
@@ -17,6 +17,7 @@ feature = true
 "isaacsim.asset.transformer" = {}
 "isaacsim.asset.transformer.rules" = {}
 "omni.kit.menu.utils" = {}
+"omni.kit.window.file" = {}
 "omni.kit.window.filepicker" = {}
 "omni.usd" = {}
 
