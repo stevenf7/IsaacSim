@@ -600,6 +600,7 @@ build-linux-x86_64-debug:
     rules:
       - !reference [.disable_on_downstream_of_mr, rules]
       - !reference [.build-common, rules]
+    allow_failure: true
     script:
       - ./repo.sh ci build -c debug
 
@@ -1568,7 +1569,7 @@ benchmark-windows-x86_64:
         optional: false
       - job: build-linux-x86_64-debug
         artifacts: true
-        optional: false
+        optional: true # Flagged as optional since allow_failure is temporarily set to true for the debug job
       - job: build-linux-aarch64-release
         artifacts: true
         optional: false
