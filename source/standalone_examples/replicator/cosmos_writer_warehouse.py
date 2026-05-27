@@ -179,6 +179,11 @@ def run_example(
         print(f"Camera prim not found at path: {CARTER_CAMERA_PATH}, exiting")
         return
 
+    # tickRate=0 forces autotrigger so the sensor cameras stay in sync with rep.orchestrator.step
+    # under multi-tick rendering.
+    if camera_prim.HasAttribute("omni:sensor:tickRate"):
+        camera_prim.GetAttribute("omni:sensor:tickRate").Set(0.0)
+
     # Advance the timeline with the start delay if provided
     if start_delay is not None and start_delay > 0:
         advance_timeline_by_duration(start_delay)
