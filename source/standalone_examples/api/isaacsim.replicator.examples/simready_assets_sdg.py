@@ -28,10 +28,10 @@ import carb.settings
 import numpy as np
 import omni.kit.app
 import omni.replicator.core as rep
-import omni.timeline
 import omni.usd
 from isaacsim.core.experimental.utils.semantics import upgrade_prim_semantics_to_labels
-from pxr import Sdf, Usd, UsdGeom, UsdPhysics
+from isaacsim.core.simulation_manager import SimulationManager
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--num_scenarios", type=int, default=5, help="Number of randomization scenarios to create")
@@ -182,14 +182,12 @@ def run_simready_randomization(
         item_prim.GetAttribute("xformOp:translate").Set(item_position)
         stack_height += item_extent[2]
 
-    # Run physics simulation for items to settle
+    # Run physics simulation for items to settle (SimulationManager handles warmup on init)
     num_sim_steps = 25
     print(f"[SDG]   Running physics simulation ({num_sim_steps} steps)...")
-    timeline = omni.timeline.get_timeline_interface()
-    timeline.play()
-    for _ in range(num_sim_steps):
-        simulation_app.update()
-    timeline.pause()
+    SimulationManager.invalidate_physics()
+    SimulationManager.initialize_physics()
+    SimulationManager.step(steps=num_sim_steps)
 
     print(f"[SDG]   Setting edit target to root layer...")
     stage.SetEditTarget(root_layer)
@@ -224,6 +222,7 @@ def run_simready_randomizations(num_scenarios: int) -> None:
 
     # Data capture will happen manually using step()
     rep.orchestrator.set_capture_on_play(False)
+    SimulationManager.set_physics_dt(1.0 / 60.0)
 
     # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
     carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
