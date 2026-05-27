@@ -658,6 +658,31 @@ class SimulationManager:
                 return
         # initialize physics engine
         cls._physics_stage_update_interface.force_load_physics_from_usd()
+        # Engine-specific pre-initialization, initialize Newton stage before calling simulate
+        if cls._engine == "newton":
+            try:
+                import isaacsim.physics.newton
+
+                newton_stage = isaacsim.physics.newton.acquire_stage()
+                if newton_stage is None:
+                    raise Exception("newton stage not available - isaacsim.physics.newton extension may not be loaded")
+
+                # Update newton device to match requested device
+                requested_device = cls.get_physics_sim_device()
+                requested_device_str = requested_device if isinstance(requested_device, str) else str(requested_device)
+
+                if not newton_stage.initialized or newton_stage.device_str != requested_device_str:
+                    if newton_stage.device_str != requested_device_str:
+                        carb.log_warn(
+                            f"newton device mismatch: initialized on {newton_stage.device_str}, requested {requested_device_str}. Reinitializing..."
+                        )
+                    newton_stage.initialize_newton(requested_device_str)
+
+                newton_stage.device_str = requested_device_str
+                newton_stage.device = wp.get_device(newton_stage.device_str)
+            except Exception as e:
+                carb.log_error(f"Failed to initialize Newton: {e}")
+
         cls._physics_stage_update_interface.start_simulation()
 
         cls._physics_sim_interface.simulate(cls.get_physics_dt(), 0.0)
@@ -676,29 +701,6 @@ class SimulationManager:
                     raise ModuleNotFoundError("torch not found")
             except ModuleNotFoundError:
                 create_simulation_view = False
-        # Engine-specific pre-initialization
-        if cls._engine == "newton":
-            try:
-                import isaacsim.physics.newton
-
-                newton_stage = isaacsim.physics.newton.acquire_stage()
-                if newton_stage is None:
-                    raise Exception("newton stage not available - isaacsim.physics.newton extension may not be loaded")
-
-                # Update newton device to match requested device
-                requested_device = cls.get_physics_sim_device()
-                requested_device_str = requested_device if isinstance(requested_device, str) else str(requested_device)
-
-                if newton_stage.initialized and newton_stage.device_str != requested_device_str:
-                    carb.log_warn(
-                        f"newton device mismatch: initialized on {newton_stage.device_str}, requested {requested_device_str}. Reinitializing..."
-                    )
-                    newton_stage.initialize_newton(requested_device_str)
-
-                newton_stage.device_str = requested_device_str
-                newton_stage.device = wp.get_device(newton_stage.device_str)
-            except Exception as e:
-                carb.log_error(f"Failed to initialize Newton: {e}")
 
         # Create simulation views (unified path for all backends)
         cls._physics_sim_view__warp = omni.physics.tensors.create_simulation_view(
