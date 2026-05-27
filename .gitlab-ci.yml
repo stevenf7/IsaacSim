@@ -203,6 +203,9 @@ variables:
     RUN_DOCS_BUILD:
         value: "false"
         description: "Set to true to build omni docs. Only happens on schedule."
+    RUN_DOCS_LINKCHECK:
+        value: "false"
+        description: "Set to true to run the non-blocking docs linkcheck job. Only happens on schedule or web pipelines."
     RUN_CHECKS:
         value: "true"
         description: "Set to true to run check stage."
@@ -481,6 +484,64 @@ check-docs-unused-assets:
       - apk add --no-cache git
       - git diff --name-only --diff-filter=ACMR "$CI_MERGE_REQUEST_DIFF_BASE_SHA" "$CI_COMMIT_SHA" > changed_files.txt
       - python3 docs/tools/check_unused_assets/check_unused_assets.py --files-from changed_files.txt
+
+# ==============================================================================================================
+check-docs-linkcheck:
+    extends:
+      - .ipp_lnx_x86_64_cpu_small
+      - .osec:vault:v3:prod_token_job
+    stage: check
+    variables:
+        IPP_RUNNER_EXECUTION_DURATION: 7200 # 2 hours
+    before_script:
+      - !reference ['.osec:vault:v3:linux', 'packman_s3:perform_vault_requests']
+    rules:
+      - if: $RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true"
+        when: never
+      - if: '$CI_PIPELINE_SOURCE == "schedule" && $RUN_DOCS_LINKCHECK == "true"'
+        allow_failure: true
+      - if: '$CI_PIPELINE_SOURCE == "web" && $RUN_DOCS_LINKCHECK == "true"'
+        allow_failure: true
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        when: manual
+        allow_failure: true
+      - when: never
+    script:
+      - |
+        set -o pipefail
+        set +e
+        ./repo.sh docs --project isaac-sim --build linkcheck --stage sphinx --warn-as-error=0 2>&1 | tee linkcheck_log.txt
+        LINKCHECK_RC=${PIPESTATUS[0]}
+        set -e
+
+        LINKCHECK_OUTPUT="_build/docs/isaac-sim/latest-linkcheck/output.txt"
+        if [ ! -f "$LINKCHECK_OUTPUT" ]; then
+          echo "ERROR: Sphinx linkcheck output not found: $LINKCHECK_OUTPUT"
+          if [ "$LINKCHECK_RC" -ne 0 ]; then
+            exit "$LINKCHECK_RC"
+          fi
+          exit 1
+        fi
+
+        if grep -n "\\[broken\\]" "$LINKCHECK_OUTPUT"; then
+          echo "ERROR: Broken links found in $LINKCHECK_OUTPUT"
+          exit 1
+        fi
+
+        if [ "$LINKCHECK_RC" -ne 0 ]; then
+          echo "ERROR: Linkcheck command exited with status $LINKCHECK_RC"
+          exit "$LINKCHECK_RC"
+        fi
+
+        echo "No broken links found in $LINKCHECK_OUTPUT"
+    artifacts:
+        when: always
+        expire_in: 2 weeks
+        paths:
+          - _build/docs/isaac-sim/latest-linkcheck
+          - linkcheck_log.txt
+          - _repo/repo.log
+          - _repo/repolog*.txt
 
 # ==============================================================================================================
 check-python-packages:
