@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.18.11] - 2026-05-26
+### Fixed
+- `OgnROS2RtxLidarHelper`: drop the legacy `Camera + IsaacRtxLidarSensorAPI` branch from render-product validation; validation now only accepts `OmniLidar + OmniSensorGenericLidarCoreAPI`.
+
 ## [1.18.10] - 2026-05-20
 ### Changed
 - `test_rtx_sensor.TestROS2LaserScanRTX`: replace the per-frame annotator-polling + closest-timestamp lookup with a Writer-based collection. A custom `_GmoCollectorWriter` attached to the render product captures every GMO produced by the SD pipeline in arrival order (deduped by `gmo.timestampNs`), and the ROS subscriber now appends every delivered `LaserScan` rather than only keeping the most recent. The writer is attached only after the publisher discovers the subscriber so both streams begin from the same simulation frame. With the static scene and non-rotational `SICK_nanoScan3` pattern the tail of each stream describes the same ray set, so the test compares `messages[-1]` against `snapshots[-1]` via the bin-tolerant helper. Eliminates the wall-clock-proximity correlation between message stamp and snapshot identity, removing the entire class of "snap picked the wrong scan" flakes.

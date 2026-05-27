@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.4] - 2026-05-26
+### Fixed
+- `Ros2RtxLidarGraph._check_params`: drop the legacy `Camera + IsaacRtxLidarSensorAPI` branch from lidar-prim validation; validator now only accepts `OmniLidar + OmniSensorGenericLidarCoreAPI`.
+
 ## [1.6.3] - 2026-04-30
 ### Fixed
 - Fixed crash (SIGSEGV) in `test_odometry_null_conditions` and `test_tf_null_conditions` when empty prim fields are submitted; `_check_params` in `Ros2OdometryGraph` and `Ros2TfPubGraph` now rejects empty required prims before graph creation

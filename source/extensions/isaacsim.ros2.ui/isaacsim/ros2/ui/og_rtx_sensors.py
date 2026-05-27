@@ -19,7 +19,6 @@ from pathlib import Path
 
 import carb
 import omni.graph.core as og
-import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 import omni.kit.viewport.utility
 import omni.ui as ui
 import OmniGraphSchema
@@ -1100,9 +1099,7 @@ class Ros2RtxLidarGraph(MenuHelperWindow):
         # check if the lidar prim is valid
         lidar_prim = stage.GetPrimAtPath(self._lidar_prim)
         if lidar_prim.IsValid():
-            if (lidar_prim.IsA(UsdGeom.Camera) and lidar_prim.HasAPI(IsaacSensorSchema.IsaacRtxLidarSensorAPI)) or (
-                lidar_prim.GetTypeName() == "OmniLidar" and lidar_prim.HasAPI("OmniSensorGenericLidarCoreAPI")
-            ):
+            if lidar_prim.GetTypeName() == "OmniLidar" and lidar_prim.HasAPI("OmniSensorGenericLidarCoreAPI"):
                 return True
 
         msg = self._lidar_prim + " is not a valid RTX lidar prim, check the lidar prim"

@@ -21,7 +21,6 @@ import traceback
 
 import carb
 import omni
-import omni.isaac.IsaacSensorSchema as IsaacSensorSchema
 import omni.replicator.core as rep
 import omni.syntheticdata
 from isaacsim.core.nodes import BaseWriterNode
@@ -232,11 +231,9 @@ class OgnROS2RtxLidarHelper:
             carb.log_warn(f"Render product '{render_product_path}' not created yet, retrying on next call")
             return False
         prim = ViewportManager.get_camera(render_product_path).GetPrim()
-        if not (prim.IsA(UsdGeom.Camera) and prim.HasAPI(IsaacSensorSchema.IsaacRtxLidarSensorAPI)) and not (
-            prim.GetTypeName() == "OmniLidar" and prim.HasAPI("OmniSensorGenericLidarCoreAPI")
-        ):
+        if not (prim.GetTypeName() == "OmniLidar" and prim.HasAPI("OmniSensorGenericLidarCoreAPI")):
             carb.log_warn(
-                f"Render product '{render_product_path}' not attached to RTX Lidar (Camera or OmniLidar prims are required)."
+                f"Render product '{render_product_path}' not attached to RTX Lidar (OmniLidar prim is required)."
             )
             return False
 
