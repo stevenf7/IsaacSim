@@ -167,19 +167,11 @@ Now that the asset is set up, create a simulation scenario to place the robot in
 Set Up Simulation Scenario
 --------------------------
 
-1. Create a new file. In the Content Browser, go to ``Isaac/Environments/Simple_Warehouse`` and drag the ``warehouse.usd`` asset into the stage.
-2. Drag and drop the ``h1_ROS.usd`` asset that you made earlier into the stage. Set the Z transform to ``1.0`` so it is above the ground.
-3. Create a ``Physics Scene`` by right-clicking the stage and selecting **Create** > **Physics** > **Physics Scene**.
-
-.. note::
-
-   The next two steps apply when using PhysX. Because this tutorial uses only one robot, use CPU physics for better performance.
-
-4. Select the ``Physics Scene`` and set ``Time Steps Per Second`` to ``200``.
-5. Configure the PhysX settings:
-
-   - Uncheck ``Enable GPU Dynamics``
-   - Set the ``Broadphase Type`` to ``MBP``
+#. Create a new file. In the Content Browser, go to ``Isaac/Environments/Simple_Warehouse`` and drag the ``warehouse.usd`` asset into the stage.
+#. Drag and drop the ``h1_ROS.usd`` asset that you made earlier into the stage. Set the Z transform to ``1.0`` so it is above the ground.
+#. In the **Layer** tab, select the **Root Layer**, and in the Properties panel set **Time Codes Per Second** to ``200``. For more information, see :ref:`simulation_fundamentals_configuring_frame_rate`.
+#. Create a ``Physics Scene`` by right-clicking the stage and selecting **Create** > **Physics** > **Physics Scene**.
+#. If using PhysX, because this tutorial uses only one robot, use CPU physics for better performance. Uncheck ``Enable GPU Dynamics`` and set the ``Broadphase Type`` to ``MBP``. Set ``Time Steps Per Second`` to ``200``.
 
 Set Up ROS 2 Clock Publisher
 -----------------------------
