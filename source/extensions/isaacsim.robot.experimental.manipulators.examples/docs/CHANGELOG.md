@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.0] - 2026-05-27
+### Fixed
+- Improve UR10 bin filling motion stability by allowing the lift phase to settle before moving the bin under the filling spout.
+- Updated bin filling example to use new motion generation/CuMotion APIs
+
 ## [0.1.3] - 2026-05-18
 ### Fixed
 - Improve Robo Factory stacking test reliability by waiting for stacking completion and allowing more time for the Franka move and release phases.
