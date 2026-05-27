@@ -20,7 +20,7 @@ Community Project Highlights
 The following projects are not part of the official |isaac-sim| release. They are community projects that have been shared with the |isaac-sim| community. For more information, please refer to the respective project links.
 
 
-`Isaac Sim MCP Extension and MCP Server <https://github.com/omni-mcp/isaac-sim-mcp>`_
+`Isaac Sim MCP Extension and MCP Server <https://github.com/omni-mcp/isaac-sim-mcp>`_ (community project — for the NVIDIA-published MCP server, see :ref:`isaac_sim_app_mcp_server`)
 
 `Isaac Sim Typings <https://github.com/work-r-labs/isaacsim_typings>`_
 
