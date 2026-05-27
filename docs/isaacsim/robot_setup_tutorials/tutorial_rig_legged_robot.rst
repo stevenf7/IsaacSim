@@ -10,31 +10,31 @@
 .. _isaac_sim_app_tutorial_rig_legged_robot:
 
 =============================================================
-Tutorial 13: Rigging a Legged Robot for Locomotion Policy
+Tutorial 13: Rigging a Legged Robot for a Locomotion Policy
 =============================================================
 
-The objective of this tutorial is to explain the process of rigging a legged robot to match the configuration specified by the locomotion policy.
-The Isaac Sim :ref:`isaac_sim_policy_controller_class` for inference in Isaac Sim is already handling the process of rigging the robot at run time,
-so this tutorial is only relevant if you want to run the robot policy with an external process like ROS.
+This tutorial explains how to rig a legged robot to match the configuration specified by a locomotion policy.
+The Isaac Sim :ref:`isaac_sim_policy_controller_class` already handles robot rigging at runtime for inference in Isaac Sim,
+so this tutorial is only relevant when you want to run the robot policy from an external process, such as ROS.
 
 Learning Objectives
 ===================
 
-In this tutorial, you will walk through the process of rigging a H1 humanoid robot to match the configuration specified by the H1 flat terrain locomotion policy.
+In this tutorial, you will walk through the process of rigging an H1 humanoid robot to match the configuration specified by the H1 flat terrain locomotion policy.
 
-1. Setting initial robot position
-2. Setting joint configuration
-3. Verifying joint configuration
+1. Setting the initial robot position
+2. Setting the joint configuration
+3. Verifying the joint configuration
 
-.. Note:: The H1 flat terrain policy environment definition file is available `here <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/H1_Policies/h1_env.yaml>`_.
+.. note:: The H1 flat terrain policy environment definition file is available `here <https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Samples/Policies/H1_Policies/h1_env.yaml>`_.
 
 
 .. _isaac_sim_tutorial_rig_legged_robot_initial_position:
 
-Setting Initial Robot Position
-==============================
+Setting the Initial Robot Position
+==================================
 
-The initial joint position of the robot is specified under `robot:init_state:joint_pos` section of the environment definition file. The joint names are specified using the `.*` wildcard.
+The initial joint position of the robot is specified under the ``robot:init_state:joint_pos`` section of the environment definition file. The joint names are specified using the ``.*`` wildcard.
 
 .. code-block:: yaml
     :linenos:
@@ -55,68 +55,66 @@ The initial joint position of the robot is specified under `robot:init_state:joi
         joint_vel:
           .*: 0.0
 
-.. Note:: The joint positions are specified in radians, where as in USD, the joint positions are specified in degrees.
+.. note:: The joint positions are specified in radians, whereas USD joint positions are specified in degrees.
 
 To store the initial state of the robot:
 
-#. Open the ``h1.usd`` file from the content browser present at ``Isaac Sim/Robots/Unitree/H1``.
-#. Create a joint state api for reporting the robot joint position and velocity.
+1. Open the ``h1.usd`` file from the Content Browser at ``Isaac Sim/Robots/Unitree/H1``.
+2. In the upper-right corner of the stage, select the ``funnel`` icon and click ``Physics Joints`` to filter the joint list.
 
-#. On the top right corner of the stage, select the ``funnel`` icon and click ``Physics Joints`` to filter the joint list.
+   .. image:: /images/isim_5.0_full_tut_gui_rigging_humanoid_1.png
+       :align: center
+       :width: 80%
 
-  .. image:: /images/isim_5.0_full_tut_gui_rigging_humanoid_1.png
-      :align: center
-      :width: 80%
+3. Left-click the first joint (``left_hip_yaw``), then Shift-left-click the last joint (``right_elbow``) to select all joints.
+4. Right-click any selected joint and click **Add** > **Physics** > **Joint State Angular** to create a Joint State API attribute on the joints.
+5. Right-click any selected joint and click **Add** > **Physics** > **Angular drive** to create a joint drive API attribute on the joints.
 
-#. Left click on the first joint (``left_hip_yaw``), shift left click on the last joint (``right_elbow``) to select all the joints.
-#. Right click on any selected joint, and click **Add** > **Physics** > **Joint State Angular** to create a joint state API attribute to the joints
-#. Right click on any selected joint, and click **Add** > **Physics** > **Angular drive** to create a joint drive API attribute to the joints
+.. note:: The ``Joint State Angular`` API reports the joint position and velocity, and the ``Angular drive`` API drives the joint. If the joint already has a ``Joint State Angular`` API or ``Angular drive`` API, you can skip the previous two steps.
 
-  .. Note:: The ``Joint State Angular`` API is used to report the joint position and velocity, and the ``Angular drive`` API is used to drive the joint. If the joint already has a ``Joint State Angular`` API or ``Angular drive`` API, you can skip the above steps.
+6. For each active joint, convert the ``joint_pos`` and ``joint_vel`` values from radians to degrees.
+7. Left-click the joint you are changing.
+8. In the Property panel, scroll down to the ``Target Position`` attribute.
+9. Set the ``Target Position`` attribute to the converted value from the ``joint_pos`` attribute in the environment definition file.
+10. Set the ``Target Velocity`` attribute to the converted value from the ``joint_vel`` attribute in the environment definition file.
+11. Repeat the previous steps for each active joint.
 
-#. Go to each joint and set the ``Target Position`` attribute in the joint drive API to the value specified in the environment definition file above on the ``joint_pos`` attribute.
-#. Similarly, set the ``Target Velocity`` attribute in the joint drive API to the value specified in the environment definition file above on the ``joint_vel`` attribute.
-#. Make sure you convert the joint positions and velocities from radians to degrees.
+12. Press play.
 
-#. Left click on the joint you are changing.
-#. In the property panel below, scroll down to the ``Target Position`` attribute.
-#. Set the ``Target Position`` attribute to the value specified in the environment definition file above on the ``joint_pos`` attribute
-#. Repeat the same for the ``Target Velocity`` attribute
+.. note:: When using Newton, physics initialization might fail because reversed joints are not supported for ``/h1/Joints/torso``. If this happens, select the ``torso`` joint. In the Property panel, go to **Physics** > **Joint** and swap the joint bodies so ``Body 0`` is ``/h1/torso_link`` and ``Body 1`` is ``/h1/pelvis``.
 
-#. Press play.
-#. Verify that you see the robot moving to the initial position specified in the environment definition file. To make the robot start in the initial position when the simulation starts, store the data in the joint state API.
-
-#. To prevent the robot from falling infinitely, you can add a Fixed Joint between the robot and the world by right clicking on the ``/h1/torso_link`` and click **Create** > **Physics** > **Joint** > **Fixed Joint**.
+13. Verify that the robot moves to the initial position specified in the environment definition file. To make the robot start in the initial position when the simulation starts, store the data in the Joint State API.
+14. To prevent the robot from falling indefinitely, add a fixed joint between the robot and the world by right-clicking ``/h1/torso_link`` and selecting **Create** > **Physics** > **Joint** > **Fixed Joint**.
 
 .. image:: /images/isim_5.0_full_tut_gui_rigging_humanoid_2.webp
     :align: center
     :width: 80%
 
-To prevent the joint state API values from resetting, you need to change the simulation setting to not reset the robot state on stop.
+To prevent the Joint State API values from resetting, change the simulation setting so the robot state does not reset on stop.
 
-#. On the top left corner of the stage, click on the **Edit** and click **Preferences**.
-#. Select the **Preferences** window at the bottom, on the left side, click on the **Physics** tab.
-#. Uncheck **Reset Simulation on Stop**.
+1. In the upper-left corner of the stage, click **Edit** > **Preferences**.
+2. In the **Preferences** window, click the **Physics** tab in the left sidebar.
+3. Uncheck **Reset Simulation on Stop**.
 
-  .. image:: /images/isim_5.0_full_tut_gui_rigging_humanoid_3.png
-      :align: center
-      :width: 80%
+   .. image:: /images/isim_5.0_full_tut_gui_rigging_humanoid_3.png
+       :align: center
+       :width: 80%
 
-  Now you can play the simulation, and when you stop the simulation, the robot will remain in the last state. When you play the simulation again, the robot will start from the last state.
+Now you can play the simulation, and when you stop the simulation, the robot will remain in the last state. When you play the simulation again, the robot will start from the last state.
 
-#. Delete the Fixed Joint between the robot and the world.
-#. Press **Ctrl+S** to save the USD file.
-#. Check **Reset Simulation on Stop** again.
+4. Delete the fixed joint between the robot and the world.
+5. Press **Ctrl+S** to save the USD file.
+6. Check **Reset Simulation on Stop** again.
 
 .. _isaac_sim_tutorial_rig_legged_robot_joint_configuration:
 
-Setting Joint Configuration
-===========================
+Setting the Joint Configuration
+===============================
 
-Set the joint configuration to match the policy's robot configuration, this maybe different from the value stored in the USD file.
-The joint drive configuration is specified under ``scene:robot:actuators`` section of the environment definition file.
+Set the joint configuration to match the policy's robot configuration. This may be different from the values stored in the USD file.
+The joint drive configuration is specified under the ``scene:robot:actuators`` section of the environment definition file.
 
-The snippet below shows the actuator configuration for the H1 robot legs.
+The following snippet shows the actuator configuration for the H1 robot legs.
 
 .. code-block:: yaml
     :linenos:
@@ -147,18 +145,18 @@ The snippet below shows the actuator configuration for the H1 robot legs.
         armature: null
         friction: null
 
-The ``joint_names_expr`` is a list of joint names to be controlled by the actuator. The ``class_type`` is the type of the actuator to be used.
+The ``joint_names_expr`` is a list of joint names to be controlled by the actuator. The ``class_type`` is the actuator type.
 The ``effort_limit`` is the maximum effort that can be applied to the joint. The ``velocity_limit`` is the maximum velocity that can be applied to the joint.
-The ``stiffness`` is the stiffness of the joint. The ``damping`` is the damping of the joint. The ``armature`` is the armature of the joint. The ``friction`` is the friction of the joint.
+The ``stiffness`` defines the joint stiffness. The ``damping`` defines the joint damping. The ``armature`` defines the joint armature, and the ``friction`` defines the joint friction.
 
 To set the joint configurations:
 
-#. Left click on a joint such as ``left_hip_yaw`` for example.
-#. In the property panel, scroll down to ``joint drive`` attribute, and set the ``stiffness``, ``damping`` to the values specified in the environment definition file.
+1. Left-click a joint, such as ``left_hip_yaw``.
+2. In the Property panel, scroll down to the ``Joint Drive`` attribute and set ``stiffness`` and ``damping`` to the values specified in the environment definition file.
 
-.. Note:: Remember to convert stiffness and damping to degrees.
+.. note:: Remember to convert stiffness and damping to degree-based units.
 
-The USD file stiffness is in :math:`\frac{Kg \cdot m^2}{Deg \cdot s^2}` and the damping is in :math:`\frac{Kg \cdot m^2}{Deg \cdot s}`.
+The USD file stiffness is in :math:`\frac{kg \cdot m^2}{deg \cdot s^2}` and the damping is in :math:`\frac{kg \cdot m^2}{deg \cdot s}`.
 To convert radians to degrees, you can use the following formulas:
 
 .. math::
@@ -169,12 +167,12 @@ To convert radians to degrees, you can use the following formulas:
 
     D_{deg} = D_{rad} \times \frac{\pi}{180}
 
-The ``effort_limit`` is the maximum effort that can be applied to the joint, set that value to the ``Max Force`` attribute of the joint drive API.
+The ``effort_limit`` is the maximum effort that can be applied to the joint. Set that value to the ``Max Force`` attribute of the joint drive API.
 
 
-Scroll down to **Raw USD Properties** under the **Advanced** tab, set the **Armature**, **Joint Friction** attribute to the value specified in the environment definition file.
+Scroll down to **Raw USD Properties** under the **Advanced** tab, and set the **Armature** and **Joint Friction** attributes to the values specified in the environment definition file.
 
-For the **Maximum Joint Velocity** attribute, set it to the **velocity_limit** value specified in the environment definition file, remember to convert it to degrees.
+For the **Maximum Joint Velocity** attribute, set it to the **velocity_limit** value specified in the environment definition file. Remember to convert it to degrees.
 
 .. math::
 
@@ -184,23 +182,23 @@ For the **Maximum Joint Velocity** attribute, set it to the **velocity_limit** v
     :align: center
     :width: 80%
 
-.. note:: Remember to set the joint configurations for all active joints in the robot. For example, arms and legs.
+.. note:: Remember to set the joint configurations for all active joints in the robot, such as the arms and legs.
 
-Verify Joint Configuration
-===========================
+Verifying the Joint Configuration
+=================================
 
-To verify the joint configuration, you can play the simulation and run the following snippet in script editor to print the joint configuration.
+To verify the joint configuration, you can play the simulation and run the following snippet in Script Editor to print the joint configuration.
 
-#. Play the simulation.
-#. Open the script editor by clicking on **Window** > **Script Editor**.
-#. Copy and paste the following snippet into the script editor.
-#. Run the snippet by clicking on the **Run** button.
+1. Play the simulation.
+2. Open Script Editor by clicking **Window** > **Script Editor**.
+3. Copy and paste the following snippet into Script Editor.
+4. Run the snippet by clicking the **Run** button.
 
-  .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_rig_legged_robot/run_the_snippet_by_clicking_on_the_run_button.py
-      :language: python
-      :start-after: # -- End test setup --
+   .. literalinclude:: ../snippets/robot_setup_tutorials/tutorial_rig_legged_robot/run_the_snippet_by_clicking_on_the_run_button.py
+       :language: python
+       :start-after: # -- End test setup --
 
-#. Verify that you see the console output like the following:
+5. Verify that you see console output similar to the following:
 
 .. code-block:: console
 
@@ -231,14 +229,13 @@ Verify that the ``maxVelocity``, ``maxEffort``, ``stiffness``, and ``damping`` v
 
 For example, for ``left_hip_yaw``, the max velocity is ``100.0``, the max effort is ``300.0``, the stiffness is ``150.0``, and the damping is ``5.0``.
 
-.. Note:: The rigged H1 robot is available in the content browser at ``Isaac/Samples/Rigging/H1/h1_rigged.usd``.
+.. note:: The rigged H1 robot is available in the Content Browser at ``Isaac/Samples/Rigging/H1/h1_rigged.usd``.
 
 Summary
 =======================
 
-This tutorial covered the following topics:
+This tutorial covers the following topics:
 
-* Setting initial robot position
-* Setting joint configuration
-* Verifying joint configuration
-
+* Setting the initial robot position
+* Setting the joint configuration
+* Verifying the joint configuration
