@@ -146,13 +146,13 @@ Installation Using PIP
 
             .. code-block:: text
 
-                pip install torch==2.10.0 --index-url https://download.pytorch.org/whl/cu128
+                pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cu128
 
         .. tab-item:: CUDA 13
 
             .. code-block:: text
 
-                pip install torch==2.10.0 --index-url https://download.pytorch.org/whl/cu130
+                pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cu130
 
 #. Install *Isaac Sim - Python packages*:
 
@@ -166,14 +166,14 @@ Installation Using PIP
 
                     .. code-block:: text
 
-                        pip install isaacsim[all,extscache]==6.0.0 --extra-index-url https://pypi.nvidia.com
+                        pip install isaacsim[all,extscache]==6.0.0.1 --extra-index-url https://pypi.nvidia.com
 
                 .. tab-item:: Isaac Sim Bundle
                     :sync: package_bundle
 
                     .. code-block:: text
 
-                        pip install isaacsim[BUNDLE]==6.0.0 --extra-index-url https://pypi.nvidia.com
+                        pip install isaacsim[BUNDLE]==6.0.0.1 --extra-index-url https://pypi.nvidia.com
 
                     .. list-table:: Available Bundles
                         :widths: auto
@@ -195,7 +195,7 @@ Installation Using PIP
 
                     .. code-block:: text
 
-                        pip install isaacsim-PACKAGE_SUBNAME==6.0.0 --extra-index-url https://pypi.nvidia.com
+                        pip install isaacsim-PACKAGE_SUBNAME==6.0.0.1 --extra-index-url https://pypi.nvidia.com
 
         .. tab-item:: Notebook (for example: Jupyter, Colab)
             :sync: env_notebook
@@ -206,14 +206,14 @@ Installation Using PIP
 
                     .. code-block:: text
 
-                        !pip install isaacsim[all,extscache]==6.0.0 --extra-index-url https://pypi.nvidia.com
+                        !pip install isaacsim[all,extscache]==6.0.0.1 --extra-index-url https://pypi.nvidia.com
 
                 .. tab-item:: Isaac Sim Bundle
                     :sync: package_bundle
 
                     .. code-block:: text
 
-                        !pip install isaacsim[BUNDLE]==6.0.0 --extra-index-url https://pypi.nvidia.com
+                        !pip install isaacsim[BUNDLE]==6.0.0.1 --extra-index-url https://pypi.nvidia.com
 
                     .. list-table:: Available Bundles
                         :widths: auto
@@ -235,7 +235,7 @@ Installation Using PIP
 
                     .. code-block:: text
 
-                        !pip install isaacsim-PACKAGE_SUBNAME==6.0.0 --extra-index-url https://pypi.nvidia.com
+                        !pip install isaacsim-PACKAGE_SUBNAME==6.0.0.1 --extra-index-url https://pypi.nvidia.com
 
     The installation path can be queried with the command ``pip show isaacsim``.
 
