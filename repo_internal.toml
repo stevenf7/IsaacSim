@@ -142,6 +142,10 @@ deps = [
    ["developer_workstations", "https://docs.omniverse.nvidia.com/developer_workstations/latest"],
 ]
 
+[repo_docs.projects.isaac-sim.builds.linkcheck]
+build_by_default = false
+output_format = "linkcheck"
+
 # ==============================
 # Project: api (API Reference — built into isaac-sim/latest/py/)
 # ==============================
@@ -831,10 +835,12 @@ exclude = [
     "docs/isaacsim",
     "docs/source",
     "docs/tools",
+    "docs/check_unused_assets.bat",
     "docs/check_unused_assets.sh",
     "docs/index.rst",
     "docs/landing.html",
     "docs/terms.py",
+    "docs/validate_filenames.bat",
     "docs/validate_filenames.sh",
     "docs/VERSION",
     "index.rst",

@@ -135,6 +135,19 @@ If `check-docs-image-filenames` fails, rename the changed media file to the requ
 
 If `check-docs-unused-assets` fails, either reference the changed media from an RST page, remove it from the MR, or move it outside `docs/isaacsim/images` if it is not user-guide media. The full manual scan (`./docs/check_unused_assets.sh`) may report existing backlog items; do not treat those as MR blockers unless they are changed by the MR.
 
+## Docs Linkcheck
+
+`check-docs-linkcheck` is a non-blocking/manual MR job and scheduled/web pipeline opt-in. It uses Sphinx's built-in linkcheck builder through the `isaac-sim` repo_docs `linkcheck` build flavor; the legacy custom crawler under `docs/tools/linkcheck/` was removed.
+
+Run it locally with:
+
+```bash
+./repo.sh docs --project isaac-sim --build linkcheck --stage sphinx --warn-as-error=0
+grep -n "\[broken\]" _build/docs/isaac-sim/latest-linkcheck/output.txt || true
+```
+
+Broken links appear in `_build/docs/isaac-sim/latest-linkcheck/output.txt` and are the signal to fix. Redirects and transient network failures should be triaged before making the job blocking.
+
 ## Pre-Commit: Format Code
 
 **CRITICAL**: Always run the formatter before committing docs changes. CI will reject unformatted code.
