@@ -1664,6 +1664,10 @@ publish-extensions:
       IPP_RUNNER_EXECUTION_DURATION: 21600 # 6 hours
     script:
       - ./repo.sh build --fetch-only -r
+      # publish_exts shells out to the Kit-bundled packman; some kit-kernel builds
+      # ship a cloudfront remote that's download-only, which breaks packman push.
+      # No-op once the upstream Kit config includes the upload transport.
+      - python3 tools/ci/ensure_packman_upload_transport.py _build/linux-x86_64/release/kit/dev/tools/packman/config.packman.xml
       - ./repo.sh publish_exts -a --from-package
     needs:
       - !reference [.publish-extensions-common, needs]
@@ -2205,6 +2209,10 @@ publish-etm-list:
     - ./repo.sh build --fetch-only -r
     - ./repo.sh ci generate_etm_list
     - mkdir -p _build/linux-x86_64/release/exts && cp -f source/apps/*.etm.list.*.kit _build/linux-x86_64/release/exts
+    # publish_exts shells out to the Kit-bundled packman; some kit-kernel builds
+    # ship a cloudfront remote that's download-only, which breaks packman push.
+    # No-op once the upstream Kit config includes the upload transport.
+    - python3 tools/ci/ensure_packman_upload_transport.py _build/linux-x86_64/release/kit/dev/tools/packman/config.packman.xml
     - ./repo.sh publish_exts -c release
   # needs: []  # Test it immediately, for development
   needs:
