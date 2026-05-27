@@ -101,26 +101,6 @@ Cameras and RTX Lidars can be configured to publish at a different rate than the
 
 5. You don't need to publish depth images from Camera1 for this tutorial. Disable the camera helper for depth images by unchecking **enabled** attribute in */World/ActionGraph_camera/ros2_camera_helper_02*.
 
-.. _isaac_sim_app_tutorial_ros2_publish_rate_set_simulation_frame_rates:
-
-Setting the Simulation Rate
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Isaac Sim has three rate-related clocks: the physics scene's step rate (``UsdPhysicsScene.timeStepsPerSecond``), the timeline's per-tick dt (``stage.timeCodesPerSecond`` combined with the timeline's ``targetFramerate``), and the application's run-loop tick rate (``/app/runLoops/main/rateLimitFrequency``). For real-time playback you want all three set coherently to the same value. :py:meth:`isaacsim.core.simulation_manager.SimulationManager.setup_simulation` configures the physics scene's step rate; :py:meth:`isaacsim.core.rendering_manager.RenderingManager.set_dt` configures the timeline and run-loop together. Use them as a pair.
-
-1. Open the script editor by going to **Window > Script Editor**.
-
-2. Run the snippet below. Do **not** press Play first - the snippet must run before ``timeline.play()`` so the Play-time loop override matches the values we set.
-
-    .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_publish_rate/set_simulation_rate.py
-        :language: python
-
-    Modify ``target_hz`` to a different value to change the simulation rate. The change is persistent: the physics scene attribute and the stage's ``timeCodesPerSecond`` are written to USD.
-
-3. You can enable the FPS display by going to the viewport show/hide menu **(eye) > Heads Up Display > FPS**.
-
-.. important:: Actual frame rate is dependent on your machine's performance. If the renderer cannot sustain ``target_hz``, sensor publish rates will fall proportionally. For the relationship between the three clocks and what happens when they fall out of sync (slow-motion, fast-forward), see :ref:`isaac_sim_sensors_multitick_clock_relationships`.
-
 Checking ROS 2 Publish Rate
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -152,10 +132,38 @@ Checking ROS 2 Publish Rate
 
     .. note:: If you observe that the */camera_1/rgb/image_raw* topic is publishing at a slower rate than anticipated, it might be because the large size of each image message is causing bottlenecks in network traffic or DDS queue management. To improve the publish rate, you can try reducing the dimensions of the render product resolution. This can be done by going to the render product node that is attached to the image publisher */World/ActionGraph_camera/isaac_create_render_product* and modifying the dimensions before replaying the scene.
 
-Scaling Publish Rates with ``target_hz``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _isaac_sim_app_tutorial_ros2_publish_rate_set_simulation_frame_rates:
 
-If you change ``target_hz`` in :ref:`isaac_sim_app_tutorial_ros2_publish_rate_set_simulation_frame_rates`, each topic scales differently because the topics are gated by two different mechanisms:
+Setting the Simulation Rate (Advanced)
+======================================
+
+Isaac Sim has three rate-related clocks: the physics scene's step rate (``UsdPhysicsScene.timeStepsPerSecond``), the timeline's per-tick dt (``stage.timeCodesPerSecond`` combined with the timeline's ``targetFramerate``), and the application's run-loop tick rate (``/app/runLoops/main/rateLimitFrequency``). For real-time playback you want all three set coherently to the same value. :py:meth:`isaacsim.core.simulation_manager.SimulationManager.setup_simulation` configures the physics scene's step rate; :py:meth:`isaacsim.core.rendering_manager.RenderingManager.set_dt` configures the timeline and run-loop together. Use them as a pair.
+
+.. warning:: In |isaac-sim_short| 6.0, there is a known fatal crash in the full UI app when playing the simulation after modifying the simulation's physics scene's step rate and timeline's per-tick dt from their default values of ``60.0`` and then playing the simulation. This will be fixed in a future release.
+
+Paste the following snippet into a standalone Python script in the Isaac Sim directory, eg. ``test_ros2_publish_rates.py``.
+
+.. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_publish_rate/test_ros2_publish_rates.py
+    :language: python
+
+Then, run the script using the command:
+
+.. code-block:: bash
+
+    ./python.sh test_ros2_publish_rates.py \
+    --/app/runLoops/main/rateLimitEnabled=true \
+    --/app/runLoops/main/rateLimitFrequency=60 \
+    --/app/runLoops/main/manualModeEnabled=true
+
+This will force the simulation to run at 60 frames per wall-clock second (FPS).
+
+In a separate terminal window with ROS2 installed and enabled, check the publish rate for each ROS topic using the command:
+
+.. code-block:: bash
+
+    ros2 topic hz /topic_name
+
+If you change ``target_hz`` in the script, then rerun it with the command provided above, each topic scales differently because the topics are gated by two different mechanisms:
 
 - **OnPlaybackTick-driven helpers** (``/clock`` publisher and the IMU graph through its **Isaac Simulation Gate**) fire once per app update, so their wall-clock rate scales linearly with ``target_hz`` (divided by the gate ``step`` for IMU).
 - **Multi-tick-scheduled RTX sensors** (``/scan``, ``/camera_1/rgb/image_raw``, ``/camera_1/rgb/camera_info``) fire when the renderer's simulation time has advanced by ``1 / omni:sensor:tickRate``, so they hold at the configured Hz independently of ``target_hz`` - until ``target_hz`` drops below the configured tick rate, at which point the sensor is capped at one tick per app update. See :ref:`isaac_sim_sensors_multitick_clock_relationships` for the underlying machinery.
@@ -171,6 +179,10 @@ For the tutorial setup (``R_lidar = omni:sensor:tickRate = 5`` on the Lidar prim
     "120", "120", "60",  "5", "15"
     "240", "240", "120", "5", "15"
     "10",  "10",  "5",   "5", "10 (capped at ``target_hz``)"
+
+The publish rates are estimated. On a high-performance machine the maximum FPS would be closer to the ``target_hz`` that was set in the previous section (default of 60 Hz).
+
+.. important:: Actual frame rate is dependent on your machine's performance. If the renderer cannot sustain ``target_hz``, sensor publish rates will fall proportionally. For the relationship between the three clocks and what happens when they fall out of sync (slow-motion, fast-forward), see :ref:`isaac_sim_sensors_multitick_clock_relationships`.
 
 The general formulas are:
 
@@ -224,5 +236,3 @@ This tutorial covered:
 Next Steps
 ^^^^^^^^^^^^^^^^^^^^^^
 Continue on to the next tutorial in our ROS2 Tutorials series, :ref:`isaac_sim_app_tutorial_ros2_qos` to learn about setting QoS Profiles for ROS 2 |omnigraph_short| nodes in |isaac-sim|.
-
-
