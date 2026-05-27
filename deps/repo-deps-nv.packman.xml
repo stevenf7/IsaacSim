@@ -15,7 +15,7 @@
 <!-- Non-Public Packages that should be removed in OSS repo -->
   <!-- For signing Windows binaries -->
   <dependency name="repo_codesign" linkPath="../_repo/deps/repo_codesign">
-    <package name="repo_codesign" version="7.4.1" />
+    <package name="repo_codesign" version="7.5.0" />
   </dependency>
   <!-- For API docs -->
   <dependency name="repo_docs" linkPath="../_repo/deps/repo_docs">
