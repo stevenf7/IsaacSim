@@ -21,22 +21,22 @@ Open the Asset Transformer from **Tools > Robotics > Asset Editors > Asset Trans
 .. _asset_transformer_tutorial_existing_profile:
 
 Tutorial 1: Transform an Asset Using the Isaac Sim Structure Profile
-====================================================================
+--------------------------------------------------------------------
 
 This tutorial demonstrates how to transform a robot USD asset into the recommended |isaac-sim_short| asset structure using the built-in **Isaac Sim Structure** profile.
 
 
 Prerequisites
--------------
+^^^^^^^^^^^^^
 
 - A robot USD asset loaded in the stage, or available on disk. This tutorial uses a sample robot from ``Isaac/Robots/`` in the Nucleus assets. For this tutorial, we will use the ``Isaac/Robots/Fraunhofer/Evobot/evobot.usd`` asset.
 
 
 Instructions
-------------
+^^^^^^^^^^^^
 
 Select the Input Asset
-^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""
 
 #. In the **Input Section**, select **Active Stage** to transform the currently open stage, or select **Pick File** and browse to a robot USD file on disk.
 #. Set the **Output Directory** to a writable folder where the transformed asset package will be saved (for example, ``/tmp/my_robot_transformed/``).
@@ -48,7 +48,7 @@ Select the Input Asset
    :alt: Selecting the input asset and output directory
 
 Load the Built-in Profile
-^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""
 
 #. In the **Actions Section**, click the **Load Preset** button.
 #. From the recent presets menu, select **Isaac Sim Structure**.
@@ -67,7 +67,7 @@ Load the Built-in Profile
    :alt: Inspecting rule parameters in the action list
 
 Execute the Transformation
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""
 
 #. Click **Execute Actions** in the Execute Section. The button is enabled when at least one action is enabled and an output directory is set.
 #. Wait for the pipeline to complete. The console log displays progress for each rule.
@@ -78,7 +78,7 @@ Execute the Transformation
    :alt: Executing the transformation pipeline
 
 Verify the Output
-^^^^^^^^^^^^^^^^^
+"""""""""""""""""
 
 #. Since **Load Restructured File** was checked, the transformed asset opens automatically. Notice the loaded asset does not contain the ground plane anymore, as it was not in the default prim of the original robot asset. This is expected and desired. 
 #. Inspect the output folder structure. It should follow the :ref:`Isaac Sim Asset Structure <isaac_sim_app_reference_asset_structure>`:
@@ -115,16 +115,16 @@ Verify the Output
 .. _asset_transformer_tutorial_create_profile:
 
 Tutorial 2: Creating a New Profile
-===================================
+----------------------------------
 
 This tutorial demonstrates how to build a custom transformation profile from scratch. The example profile routes physics schemas and materials into dedicated layers, a common workflow for assets that do not need the full Isaac Sim Structure treatment.
 
 
 Instructions
-------------
+^^^^^^^^^^^^
 
 Clear the Action List
-^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""
 
 #. Click **Clear All Actions** to start with an empty pipeline.
 #. Expand the **Profile Settings** frame and fill in the metadata:
@@ -140,7 +140,7 @@ Clear the Action List
    :alt: Configuring profile settings
 
 Add a Schema Routing Rule
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""
 
 #. Click **Add Action** to add a new rule to the pipeline.
 #. Expand the new action and set:
@@ -159,7 +159,7 @@ Add a Schema Routing Rule
    :alt: Configuring the Schema Routing Rule
 
 Add a Materials Routing Rule
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""
 
 #. Click **Add Action** again to add a second rule.
 #. Expand it and set:
@@ -180,7 +180,7 @@ Add a Materials Routing Rule
    :alt: Configuring the Materials Routing Rule
 
 Add a Geometry Deduplication Rule
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""""""""
 
 #. Click **Add Action** one more time.
 #. Expand and set:
@@ -201,7 +201,7 @@ Add a Geometry Deduplication Rule
    :alt: Configuring the Geometries Routing Rule
 
 Review the Pipeline
-^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""
 
 The action list now contains three rules in order:
 
@@ -224,13 +224,13 @@ Verify execution order is correct. Drag actions to reorder if needed. Use the ch
 .. _asset_transformer_tutorial_save_profile:
 
 Tutorial 3: Saving a Profile
-=============================
+-----------------------------
 
 After building the custom profile in :ref:`Tutorial 2 <asset_transformer_tutorial_create_profile>`, save it for reuse.
 
 
 Instructions
-------------
+^^^^^^^^^^^^
 
 #. Verify the profile metadata by expanding the **Profile Settings** frame. Confirm the **Profile Name**, **Version**, and other fields are correct.
 #. Click the **Save Preset** button in the Actions Section.
@@ -302,23 +302,23 @@ Verify the saved file by opening it in a text editor. The structure matches the 
 .. _asset_transformer_tutorial_modify_profile:
 
 Tutorial 4: Modifying a Rule Profile
-=====================================
+-------------------------------------
 
 This tutorial demonstrates how to load an existing profile, modify its rules and parameters, and re-save it. The example modifies the profile saved in :ref:`Tutorial 3 <asset_transformer_tutorial_save_profile>` to add the Interface Connection Rule and change geometry deduplication settings.
 
 
 Instructions
-------------
+^^^^^^^^^^^^
 
 Load the Existing Profile
-^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""
 
 #. Click **Load Preset** and select the ``my_custom_profile.json`` file saved previously. The action list populates with the three rules from Tutorial 3.
 
 
 
 Add a New Rule
-^^^^^^^^^^^^^^
+""""""""""""""
 
 #. Click **Add Action** to add a fourth rule.
 #. Expand it and set:
@@ -338,7 +338,7 @@ Add a New Rule
 
 
 Modify an Existing Rule
-^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""
 
 #. Expand the **Deduplicate Geometries** rule.
 #. Change the ``deduplicate`` parameter from ``true`` to ``false`` to disable deduplication while keeping the geometry routing active.
@@ -346,25 +346,25 @@ Modify an Existing Rule
 
 
 Reorder the Rules
-^^^^^^^^^^^^^^^^^
+"""""""""""""""""
 
 #. Drag the **Deduplicate Geometries** rule to the second position, so that it is executed before the **Route Materials** rule.
 
 
 Disable a Rule
-^^^^^^^^^^^^^^
+""""""""""""""
 
 #. Uncheck the enable checkbox next to **Route Materials** to disable it without removing it from the pipeline. This is useful for iterating on specific transformations.
 
 
 Update Profile Metadata
-^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""
 
 #. Expand **Profile Settings**.
 #. Change the **Version** to ``1.1`` to track the modification.
 
 Save the Modified Profile
-^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""
 
 #. Click **Save Preset**.
 #. Overwrite the existing file or choose a new filename.
@@ -399,7 +399,7 @@ The final action list now contains four rules:
 .. _asset_transformer_tutorial_programmatic:
 
 Tutorial 5: Adding an Asset Transform Pipeline Through Code
-============================================================
+------------------------------------------------------------
 
 This tutorial demonstrates how to use the Asset Transformer API to run a transformation pipeline programmatically. This is useful for batch processing, CI/CD integration, or embedding asset transformation into custom extensions and workflows.
 
@@ -407,7 +407,7 @@ The code blocks below are taken from a single script, :file:`docs/isaacsim/snipp
 
 
 Load and Run a Saved Profile
------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The simplest approach is to load an existing profile JSON file and execute it against an input asset.
 
@@ -419,7 +419,7 @@ The simplest approach is to load an existing profile JSON file and execute it ag
 
 
 Build a Profile Programmatically
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To define a profile entirely in code without a JSON file:
 
@@ -431,7 +431,7 @@ To define a profile entirely in code without a JSON file:
 
 
 Use the Isaac Sim Structure Profile in Code
---------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To use the built-in Isaac Sim Structure profile programmatically, load it from the extension's data directory:
 
@@ -443,7 +443,7 @@ To use the built-in Isaac Sim Structure profile programmatically, load it from t
 
 
 Batch-Process Multiple Assets
-------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Combine the API with standard Python to transform multiple assets:
 
@@ -455,7 +455,7 @@ Combine the API with standard Python to transform multiple assets:
 
 
 Save and Inspect the Execution Report
---------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``ExecutionReport`` returned by ``manager.run()`` can be serialized to JSON for logging or CI validation:
 
@@ -467,7 +467,7 @@ The ``ExecutionReport`` returned by ``manager.run()`` can be serialized to JSON 
 
 
 Discover Available Rule Types
-------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To list all registered transformation rules at runtime:
 

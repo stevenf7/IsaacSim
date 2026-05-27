@@ -17,7 +17,7 @@ Prerequisites
 - Review :doc:`tutorial_configure_manipulator` tutorial prior to beginning this tutorial, continue the following steps from the asset built in the previous tutorial.
 
 .. note::
-    If you have not completed the previous tutorial, you can find the prebuilt asset in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/Configure_Manipulator/ur10e/ur/ur_gripper.usd``.
+    If you have not completed the previous tutorial, you can find the prebuilt asset in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/configure_manipulator/ur10e/ur_set_physx/ur.usd``.
    
 
 Generate Robot URDF

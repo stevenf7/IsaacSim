@@ -16,17 +16,32 @@ Prerequisites
 - Review :doc:`tutorial_import_assemble_manipulator` tutorial prior to beginning this tutorial. The steps here continue from the asset built in the previous tutorial.
 
 .. note::
-    If you have not completed the previous tutorial, you can find the prebuilt asset in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/Import_Manipulator/ur10e/ur/ur_gripper.usd``.
+    If you have not completed the previous tutorial, you can find the prebuilt asset in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/configure_manipulator/ur10e/ur_gripper/ur.usda``.
+    We highly recommend downloading the prebuilt asset to your local machine for easier access.
 
 
 Adjust the Articulation for Manipulation Tasks
 ================================================
 
-Adjust the articulation for the UR10e robot to make it more stable and accurate for manipulation tasks. Open the physics layer for the UR10e robot. 
-The physics layer is located in the ``configuration`` folder with subfix ``_physics``.
+Adjust the articulation for the UR10e robot to make it more stable and accurate for manipulation tasks. Let's first open the physx layer, and create a physx articulation root.
 
-#. In the Stage panel, select the **ur/root_joint** prim.
-#. In the Property Editor at the bottom right, scroll down to the **Physics/Articulation** section.
+#. Open the interface file, ``ur.usda``, and select the layer lab on the top right corner 
+#. Click "Insert Sublayer" icon at the bottom of the layer panel. (orange arrow with stacked layers icon)
+#. In the file dialog, navigate to ``path/to/Manipulator/configure_manipulator/ur10e/ur_gripper/payloads/Physics/``, select ``physx.usda``, and click **Open** to insert it as a sublayer.
+
+.. image:: /images/isim_6.0_full_tut_gui_insert_ur_physx_layer.png
+   :align: center
+   :alt: File dialog with physx.usda selected as the sublayer to insert.
+
+#. Left click on physx.usda layer, then right click to select "Set Authoring Layer". Now all your changes will be saved to the physx.usda layer.
+
+.. image:: /images/isim_6.0_full_tut_gui_set_authoring_layer_physx.png
+   :align: center
+   :alt: Set Authoring Layer context menu for physx.usda layer.
+
+
+#. In the Stage panel, select the **ur/Geometry/World** prim.
+#. In the Property Editor at the bottom right, scroll down to the **Physics/Articulation** section. If you do not see an Articulation(PhysX), create a new one by clicking the **add** > **Physics** > **Articulation(PhysX)**.
 #. Select **Articulation Enabled**.
 #. Increase the **Solver Position Iterations Count** to ``64``.
 #. Increase the **Solver Velocity Iterations Count** to ``4``.
@@ -40,12 +55,35 @@ The physics layer is located in the ``configuration`` folder with subfix ``_phys
 
 #. Decrease **Sleep Threshold** to ``0.00005``, this lowers the threshold for the robot to go to sleep when it is not moving. see `rigid body dynamics documentation <https://nvidia-omniverse.github.io/PhysX/physx/5.6.0/docs/RigidBodyDynamics.html#sleeping>`_ for more information.
 #. Decrease the **Stabilization Threshold** to ``0.00001``, this lowers the threshold for the robot to start stabilizing itself when it is not moving. see `articulation documentation <https://nvidia-omniverse.github.io/PhysX/physx/5.6.0/docs/Articulations.html#articulation-drive-stability>`_ for more information.
-#. **Ctrl + S** to save the changes.
+#. Next to the physx.usda (Authoring Layer) label, click the blue files icon to save the changes to the physx.usda layer.
 
-   .. image:: /images/isim_5.0_full_tut_gui_articulation_properties.png
+   .. image:: /images/isim_6.0_full_tut_gui_save_physx_layer.png
       :width: 80%
       :align: center
 
+#. Verify that in physx.usda layer, the Articulation(PhysX) prim is created and the properties are set correctly.
+
+.. code-block:: bash
+
+   over "Geometry"
+    {
+        over "world" (
+            prepend apiSchemas = ["PhysxArticulationAPI"]
+        )
+        {
+            float physxArticulation:sleepThreshold = 0.00005
+            int physxArticulation:solverPositionIterationCount = 64
+            int physxArticulation:solverVelocityIterationCount = 4
+            float physxArticulation:stabilizationThreshold = 0.00001
+
+            over "base_link"
+            {
+                string isaac:nameOverride (
+                    displayName = "Name Override"
+                )
+            }
+        }
+    }
 
 .. note:: 
    See `PhysX Best Practice Guide <https://nvidia-omniverse.github.io/PhysX/physx/5.6.0/docs/BestPractices.html#jointed-objects-are-unstable>`_ for tuning the articulation for manipulation tasks.
@@ -59,10 +97,9 @@ Add physics materials to the robot gripper to make it more realistic and stable 
 #. Open the physics layer from the 2F-140 gripper asset from the last tutorial. It is located in the ``configuration`` folder with suffix ``_physics``.
 
    .. note:: 
-      If you have not completed the previous tutorial, you can find the prebuilt asset in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/ robotiq_2f_140/configuration/robotiq_2f_140_physics.usd``.
+      If you have not completed the previous tutorial, you can find the prebuilt asset in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/robotiq_2f_140/configuration/robotiq_2f_140_physics.usd``.
 
 #. Right click on the **robotiq_arg2f_140_model** prim and select **Create** > **Physics** > **Physics Material**, select **Rigid Body Material**. This will add a physics material attribute to the gripper. 
-#. Drag the physics material to the **robotiq_arg2f_140_model/Looks** folder.
 #. In the properties panel, scroll down to the **Physics/Rigid Body Material** section and set the **static friction** to **1.0** and **dynamic friction** to **1.0**. For your robot, match the friction values to the robot's surface friction coefficients.
 
 #. Apply the physics material to the gripper finger tip. 
@@ -94,7 +131,7 @@ Let's inspect the robot articulation to verify the joint effort limits are appli
 This asset references the physics layers that you modified, so all the changes you made to the physics layer will be reflected in this asset.
 
 .. Note::
-   You can find the prebuilt asset in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/configure_manipulator/ur10e/ur/ur_gripper.usd``.
+   You can find the prebuilt asset in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/configure_manipulator/ur10e/ur_set_physx/ur.usd``.
 
 #. Open the **Physics Inspector** through **Tools** > **Physics** > **Physics Inspector**.
 #. Select the UR articulation in the stage, click on the circular arrow icon to refresh the articulation.
@@ -110,36 +147,6 @@ This asset references the physics layers that you modified, so all the changes y
 
       Since the Physics Inspector partially initializes ``omni.physx``, it is expected for general simulations to not behave properly when the tool is opened.
 
-Tune Gains Using the Gain Tuner
-=================================
-
-Use the :ref:`isaac_gain_tuner` to verify the gains for the UR robot and the gripper fingers.
-To critically damp the robot gains, set the ``Nat. Freq.`` to ``0.5`` and the ``Damping Ratio`` to ``1.0``.
-
-#. Go to **Tools** > **Robotics** > **Asset Editors** >  **Gain Tuner**.
-#. On the **Gain Tuner** window, on the **Select Robot** dropdown, select the **ur** articulation in the stage.
-#. In the **Tune Gains** panel, you can adjust the gains for the robot and the gripper fingers joints. Test it with the **Test Gains Settings** panel.
-
-.. hint::
-
-   We recommend determining the gains for a small group of joints first, if it is difficult to tune the gains for the whole robot. Below are some tips for tuning the gains:
-
-   * If the resulting plot shows the robot is undershooting the target position, you can increase the ``Nat. Freq.`` slightly.
-   * If the resulting plot shows the robot is overshooting the target position, you can decrease the ``Nat. Freq.`` slightly and increase the ``Damping Ratio``.
-   * Disabling gravity can help you see the gains more clearly.
-   * Only gain test the joints that are expected to be moving together, the gain test order can be selected by the **Sequence** dropdown.
-   * Reduce the maximum speed of a joint that you are tuning, if it is not expected to be commanded to move that fast in practice. The default values in the Gains Test are the maximum velocity written into the USD.
-
-.. image:: /images/isim_5.0_full_tut_gui_gain_tuner_ur10e.png
-   :width: 80%
-   :align: center
-
-.. note::
-   See :ref:`isaac_gain_tuner` for more information on the Gain Tuner.
-
-   See :ref:`isaac_sim_app_tutorial_advanced_joint_tuning` for more information on how to tune the gains for the robot.
-
-   The complete asset for this tutorial can be found in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/configure_manipulator/ur10e/ur/ur_gripper.usd``.
 
 Summary
 =======

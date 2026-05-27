@@ -260,118 +260,167 @@ Import the UR10e Robot into Isaac Sim
 #. Go to Isaac Sim.
 #. Navigate to **File** > **Import from the ROS 2 URDF Node**.
 
-   - In the **Node** field, type ``robot_state_publisher``, click **Refresh**.
-   - In the **Model** field, select the desired output (for example, ``~/Desktop``).
-   - Select **Natural Frequency** for joint configuration.
-   - Select all the joints listed below, then set the **Natural Frequency** to ``300`` to ensure the joints are sufficiently stiff.
+   - In the **ROS2 Node** field, type ``robot_state_publisher``, click **Find Node**.
+   - In the **USD Output** field, select the desired output (for example, ``~/Desktop/``).
+   - In the **Robot Type** field, select ``Manipulator``.
+   - In the **Base Type** field, select ``Fixed``.
 
-   .. image:: /images/isim_5.0_full_tut_gui_ur10_importer.png
+   .. image:: /images/isim_6.0_full_tut_gui_ur10_importer.png
       :width: 80%
       :align: center
       :alt: UR10e Import
 
-#. Click **Import**.
+#. Click **Import**, the importer should automatically open the ur robot.
 
-For reference, the resulting USD file is available in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/ur10e/ur/ur.usd``.
+For reference, the resulting USD file is available in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/ur10e/ur/ur.usda``.
 
-Import the Robotiq 2F-140 Gripper
-=====================================================
+Set Gains Using the Gain Tuner
+=================================
 
-Use the URDF file provided by `ros-industrial-attic <https://github.com/ros-industrial-attic/robotiq/tree/kinetic-devel>`_. 
-Even though this package is built for ROS1 and is deprecated, you can still adopt the URDF files and import the gripper for |isaac-sim|.
+The importer does not set the gains for the UR robot automatically. You can use the Gain Tuner to set the gains for the UR robot.
+In this tutorial, we will use the gain tuner to set the natural frequency and damping ratio for the UR robot, which are defined as:
 
-Convert XACRO to URDF
------------------------
+.. math::
+    \omega_n = \sqrt{\frac{K_p}{m}}
 
-#. Download the Repository from `here <https://github.com/ros-industrial-attic/robotiq/tree/kinetic-devel>`_.
+    \zeta = \frac{K_d}{2 m \omega_n}
 
-   .. code-block:: bash
+Where :math:`\omega_n` is the natural frequency and :math:`\zeta` is the damping ratio, and :math:`m` is the computed joint inertia based on the mass of the robot at both sides of the joint. 
+The damping ratio is such that :math:`\zeta = 1.0` is a critically damped system, :math:`\zeta < 1.0` is underdamped, and :math:`\zeta > 1.0` is overdamped.
 
-      git clone https://github.com/ros-industrial-attic/robotiq.git
+Use the :ref:`isaac_gain_tuner` to set and verify the gains for the UR robot.
 
-#. Navigate to the ``robotiq/robotiq_2f_140_gripper_visualization/urdf`` folder, open each xacro file. 
+#. Go to **Tools** > **Robotics** > **Asset Editors** >  **Gain Tuner**.
+#. On the **Gain Tuner** window, on the **Robot Selection** dropdown, select the **ur** articulation in the stage.
+#. In the **Tune Gains** panel, you can adjust the gains for the robot and the gripper fingers joints. Test it with the **Test Gains Settings** panel. let's start by setting the natural frequency to ``300`` and the damping ratio to ``1.0``. 
 
-   - Replace ``$(find robotiq_2f_140_gripper_visualization)`` with the relative path to the target file (for example, ``robotiq_arg2f_transimission.xacro``) from the current xacro file.
+.. hint::
 
-      For example, in ``robotiq_arg2f_140_model.xacro``, replace:
+   We recommend determining the gains for a small group of joints first, if it is difficult to tune the gains for the whole robot. Below are some tips for tuning the gains:
 
-      .. code-block:: bash
+   * Higher the natural frequency, the faster the robot will respond to the target position. Lower the damping ratio, the faster the robot will reach the target position.
+   * If the resulting plot shows the robot is undershooting the target position, you can increase the ``Nat. Freq.`` slightly.
+   * If the resulting plot shows the robot is overshooting the target position, you can decrease the ``Nat. Freq.`` slightly and increase the ``Damping Ratio``.
+   * Disabling gravity can help you see the gains more clearly.
+   * Only gain test the joints that are expected to be moving together, the gain test order can be selected by the **Sequence** dropdown.
+   * Reduce the maximum speed of a joint that you are tuning, if it is not expected to be commanded to move that fast in practice. The default values in the Gains Test are the maximum velocity written into the USD.
 
-            <xacro:include filename="$(find robotiq_2f_140_gripper_visualization)/urdf/robotiq_arg2f_transmission.xacro" />
+.. image:: /images/isim_5.0_full_tut_gui_gain_tuner_ur10e.png
+   :width: 80%
+   :align: center
 
-      With:
+.. note::
+   See :ref:`isaac_gain_tuner` for more information on the Gain Tuner and :ref:`isaac_sim_app_tutorial_advanced_joint_tuning` for more information on how to tune the gains for the robot.
 
-      .. code-block:: bash
+   For reference, the resulting USD file is available in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/ur10e/ur_gains_tuner/ur.usda``.
+
+
+
+
+.. Import the Robotiq 2F-140 Gripper
+.. =====================================================
+
+.. Use the URDF file provided by `ros-industrial-attic <https://github.com/ros-industrial-attic/robotiq/tree/kinetic-devel>`_. 
+.. Even though this package is built for ROS1 and is deprecated, you can still adopt the URDF files and import the gripper for |isaac-sim|.
+
+.. Convert XACRO to URDF
+.. -----------------------
+
+.. #. Download the Repository from `here <https://github.com/ros-industrial-attic/robotiq/tree/kinetic-devel>`_.
+
+..    .. code-block:: bash
+
+..       git clone https://github.com/ros-industrial-attic/robotiq.git
+
+.. #. Navigate to the ``robotiq/robotiq_2f_140_gripper_visualization/urdf`` folder, open each xacro file. 
+
+..    - Replace ``$(find robotiq_2f_140_gripper_visualization)`` with the relative path to the target file (for example, ``robotiq_arg2f_transimission.xacro``) from the current xacro file.
+
+..       For example, in ``robotiq_arg2f_140_model.xacro``, replace:
+
+..       .. code-block:: bash
+
+..             <xacro:include filename="$(find robotiq_2f_140_gripper_visualization)/urdf/robotiq_arg2f_transmission.xacro" />
+
+..       With:
+
+..       .. code-block:: bash
      
-            <xacro:include filename="./robotiq_arg2f_transmission.xacro" />
+..             <xacro:include filename="./robotiq_arg2f_transmission.xacro" />
 
-   - Replace ``package://`` with the relative path to the target file (for example, ``robotiq_arg2f_${stroke}_inner_finger.stl``) from the current xacro file.  
+..    - Replace ``package://`` with the relative path to the target file (for example, ``robotiq_arg2f_${stroke}_inner_finger.stl``) from the current xacro file.  
 
-      For example, in ``robotiq_arg2f_140_model.xacro``, replace:
+..       For example, in ``robotiq_arg2f_140_model.xacro``, replace:
 
-        .. code-block:: bash
+..         .. code-block:: bash
 
-            <mesh filename="package://robotiq_2f_140_gripper_visualization/meshes/visual/robotiq_arg2f_${stroke}_inner_finger.stl" />
+..             <mesh filename="package://robotiq_2f_140_gripper_visualization/meshes/visual/robotiq_arg2f_${stroke}_inner_finger.stl" />
 
-      With:
+..       With:
 
-      .. code-block:: bash
+..       .. code-block:: bash
 
-            <mesh filename="../meshes/visual/robotiq_arg2f_${stroke}_inner_finger.stl" />
+..             <mesh filename="../meshes/visual/robotiq_arg2f_${stroke}_inner_finger.stl" />
 
-#. Convert the xacro files to URDF format:
+.. #. Convert the xacro files to URDF format:
 
-   .. code-block:: bash
+..    .. code-block:: bash
 
-      xacro robotiq_arg2f_140_model.xacro > robotiq_2f_140.urdf
+..       xacro robotiq_arg2f_140_model.xacro > robotiq_2f_140.urdf
 
-   If you encounter the error ``xacro: command not found``, install xacro for your configuration:
+..    If you encounter the error ``xacro: command not found``, install xacro for your configuration:
 
-   .. config-content::
-      :show-when: platform=Linux
+..    .. config-content::
+..       :show-when: platform=Linux
 
-      .. code-block:: bash
+..       .. code-block:: bash
 
-         sudo apt install ros-$ROS_DISTRO-xacro
+..          sudo apt install ros-$ROS_DISTRO-xacro
 
-   .. config-content::
-      :show-when: platform=Windows,ros_distro=Jazzy
+..    .. config-content::
+..       :show-when: platform=Windows,ros_distro=Jazzy
 
-      .. code-block:: bash
+..       .. code-block:: bash
 
-         pixi add ros-$ROS_DISTRO-xacro
+..          pixi add ros-$ROS_DISTRO-xacro
 
-   .. config-content::
-      :show-when: platform=Windows,ros_distro=Humble
+..    .. config-content::
+..       :show-when: platform=Windows,ros_distro=Humble
 
-      .. attention::
-         ROS 2 Humble on Windows (Pixi) is not a supported configuration. Switch to ROS 2 Jazzy on Windows, or move to a Linux configuration, to follow this tutorial as written.
-
-
-For reference, the resulting URDF files is available in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/robotiq_2f_140_urdf/urdf/robotiq_2f_140.urdf``.
+..       .. attention::
+..          ROS 2 Humble on Windows (Pixi) is not a supported configuration. Switch to ROS 2 Jazzy on Windows, or move to a Linux configuration, to follow this tutorial as written.
 
 
-Import Robotiq 2F-140 Gripper into Isaac Sim
------------------------------------------------
+.. For reference, the resulting URDF files is available in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/robotiq_2f_140_urdf/urdf/robotiq_2f_140.urdf``.
 
-#. Go to Isaac Sim.
-#. Let's create a new stage by going to **File** > **New**.
-#. Navigate to **File** > **Import**.
-#. Select the ``robotiq_2f_140.urdf`` file that you imported from the previous step.
-#. In the import settings:
 
-   - For USD Output, navigate to your desktop using file browser and select **Desktop** this will be the output location of the gripper USD.
-   - For ``finger_joint``, set the Natural Frequency to ``300``.
-   - For the other joints of target ``Mimic``, set the Natural Frequency to ``2500``.
+.. Import Robotiq 2F-140 Gripper into Isaac Sim
+.. -----------------------------------------------
 
-#. Click ``Import`` to complete the process.
+.. #. Go to Isaac Sim.
+.. #. Let's create a new stage by going to **File** > **New**.
+.. #. Navigate to **File** > **Import**.
+.. #. Select the ``robotiq_2f_140.urdf`` file that you imported from the previous step.
+.. #. In the import settings:
 
-   .. image:: /images/isim_5.0_full_tut_gui_robotiq_importer.png
-      :width: 80%
-      :align: center
-      :alt: Gripper Import
+..    - For USD Output, navigate to your desktop using file browser and select **Desktop** this will be the output location of the gripper USD.
+..    - For ``finger_joint``, set the Natural Frequency to ``300``.
+..    - For the other joints of target ``Mimic``, set the Natural Frequency to ``2500``.
 
-For reference, the resulting USD file is available in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/robotiq_2f_140/robotiq_2f_140.usd``.
+.. #. Click ``Import`` to complete the process.
+
+..    .. image:: /images/isim_5.0_full_tut_gui_robotiq_importer.png
+..       :width: 80%
+..       :align: center
+..       :alt: Gripper Import
+
+.. For reference, the resulting USD file is available in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/robotiq_2f_140/robotiq_2f_140.usd``.
+
+
+2F-140 Gripper Parameters
+============================
+
+In the next section of the tutorial, we will be connecting the UR10e robot with the 2F-140 gripper. Let's review the expected parameters for the gripper joints.
 
 
 Expected Parameters for Finger and Knuckle Joints
@@ -406,70 +455,21 @@ Expected Parameters for Mimic Joints
 Connect the UR10e Robot with the Robotiq 2F-140 Gripper
 ========================================================
 
-Much like a real robot can have its tools changed for different tasks, simulated robots benefit from the same capability. This section outlines two methods to connect the UR10e robot with the Robotiq 2F-140 gripper:
+Much like a real robot can have its tools changed for different tasks, simulated robots benefit from the same capability. This section outlines two methods to connect the UR10e robot with the Robotiq 2F-140 gripper
 
-- **Option 1**, shows how to connect the gripper to the robot directly using a fixed joint with a shared articulation. 
-- **Option 2**, shows how to use the robot assembler and variant to connect the end effectors to the robot. Depending on the variant selected, the gripper will be added as a payload, which allows us to load or unload the different end effectors depending on which variant is enabled.
-
-
-Option 1: Connect the UR10e with the Robotiq 2F-140 Gripper using the GUI
----------------------------------------------------------------------------
-
-#. Open the UR10e USD file created from the last activity (``ur.usd``).
-#. Drag and drop the ``robotiq_2f_140.usd`` file, we created earlier, into the stage.
-#. Rename the ``robotiq_2f_140.usd`` prim to ``ee_link``.
-#. Set the ``ee_link`` xform to the position and orientation of ``wrist_3_link``.
-
-   .. code-block:: bash
-
-      Translate (1.18425, 0.2907, 0.06085)
-      Orient (-90, 0, -90)
-
-#. Select ``ee_link/root_joint``.
-#. Go to the ``Physics Articulation Root`` section in the Property Editor, remove the ``Articulation Root``.
-
-    Only select a single articulation for the robot.
-
-#. Go down to the ``Joints`` section in the Property Editor.
-#. Set ``Body0`` to ``/ur/wrist_3_link``, to joint the end effector to the robot.
-
-   .. image:: /images/isim_5.0_full_tut_gui_connect_gripper_manual.png
-      :width: 80%
-      :align: center
-      :alt: UR10e Manual Connection
-
-Nest the UR10e robot schema into the 2F-140 gripper's robot schema:
-
-#. Select the ``ur`` prim.
-#. Go down to the ``IsaacRobotAPI`` section in the Property Editor, and add ``/ur/ee_link`` to both the ``isaac:physics:robotjoints`` and ``isaac:physics:robotLinks`` fields, to make sure that the UR10e robot's robot schema includes the 2F-140 gripper's robot schema.
-
-.. image:: /images/isim_5.0_full_tut_gui_connect_gripper_manual_2.png
-   :width: 80%
-   :align: center
-   :alt: UR10e Manual Connection 2
-
-Your robot is now connected to the gripper, and you can test your robot in :doc:`tutorial_import_assemble_manipulator`.
-
-For reference, we also provide the resulting USD file in Content Browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/ur10e/ur/ur_gripper_manual.usd``.
-
-Option 2: Connect the UR10e with the Robotiq 2F-140 Gripper using the Robot Assembler
--------------------------------------------------------------------------------------
-
-Alternatively, you can use the Robot Assembler to connect the UR10e with the Robotiq 2F-140 gripper. The robot assembler will add the gripper as a variant to a sublayer of the base robot, 
-giving you greater flexibility to switch between different end effectors.
+We will use the Robot Assembler to connect the UR10e robot with the 2F-140 gripper.
 
 #. Open the UR10e USD file created from the last activity (``ur.usd``).
 #. Drag and drop the ``robotiq_2f_140.usd`` file we created earlier into the stage.
-#. Rename the ``robotiq_2f_140`` prim to ``ee_link``.
 #. Open the robot assembler by going to **Tools** > **Robotics** > **Asset Editor** > **Robot Assembler**.
 
    - In **Base Robot**, set **Select Base Robot** to ``/ur``, **Attach Point** to ``wrist_3_link``.
-   - In **Attach Robot**, set **Select Attach Robot** to ``/ur/ee_link``, **Attach Point** to ``robotiq_arg2f_base_link``.
-   - Set **Assembly Namespace** to ``ee_link``.
+   - In **Attach Robot**, set **Select Attach Robot** to ``/ur/robotiq_2f_140``, **Attach Point** to ``robotiq_arg2f_base_link``.
+   - Set **Assembly Namespace** to ``Gripper``.
 
 #. Click **Begin Assembling Process** to start the process.
 
-   .. image:: /images/isim_5.0_full_tut_gui_connect_gripper_assembler.png
+   .. image:: /images/isim_6.0_full_tut_gui_connect_gripper_assembler.png
       :width: 80%
       :align: center
       :alt: UR10e Assembler Connection
@@ -477,24 +477,25 @@ giving you greater flexibility to switch between different end effectors.
 
 #. Adjust the attachment point orientation to make sure the end effector is attached to the gripper correctly. Rotate the gripper 90 degrees around the z-axis by clicking **Z +90**.
 
-   .. image:: /images/isim_5.0_full_tut_gui_connect_gripper_assembler_2.png
+   .. image:: /images/isim_6.0_full_tut_gui_connect_gripper_assembler_2.png
       :width: 80%
       :align: center
       :alt: UR10e Assembler Connection 2
 
 #. Click **Assemble and Simulate** to test the process.
 #. Click **End Simulation And Finish** to complete the process.
+#. Save the asset by going to **File** > **Save** or press **Ctrl+S**.
 
 Run the Simulation
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #. In the Stage panel, select the **ur** prim.
 #. In the Property Editor at the bottom right, find the **Variants** section.
-#. Beside **ee_link**, select **None** and the gripper will be removed from the robot.
-#. Beside **ee_link**, select **robotiq_2f_140** and the gripper will be added to the robot.
+#. Beside **Gripper**, select **None** and the gripper will be removed from the robot.
+#. Beside **Gripper**, select **robotiq_2f_140** and the gripper will be added to the robot.
 #. Save the asset by going to **File** > **Save** or press **Ctrl+S**.
 
-.. image:: /images/isim_5.0_full_tut_gui_variant_editor_4.webp
+.. image:: /images/isim_6.0_full_tut_gui_variant_editor.webp
    :width: 80%
    :align: center
    :alt: UR10e Variant Editor
@@ -502,7 +503,7 @@ Run the Simulation
 
 .. Note::
 
-   The completed robotics arm asset is available in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/ur10e/ur/ur_gripper.usd``.
+   The completed robotics arm asset with the gripper is available in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/ur10e/ur_gripper/ur.usda``.
 
 
 Summary
