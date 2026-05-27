@@ -11,12 +11,12 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 import isaacsim.core.experimental.utils.app as app_utils
-from isaacsim.core.experimental.objects import Cube, DomeLight, GroundPlane
-from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
-from isaacsim.core.simulation_manager import SimulationManager
 
 app_utils.enable_extension("isaacsim.robot.experimental.manipulators.examples")
 
+from isaacsim.core.experimental.objects import Cube, DomeLight, GroundPlane
+from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.robot.experimental.manipulators.examples.franka import Franka
 
 DEVICE = "cpu"

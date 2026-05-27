@@ -46,6 +46,7 @@ When you set :code:`create_robot=True` in the constructor, :code:`Franka` automa
 spawns the Franka robot USD asset at the specified path.
 
 .. literalinclude:: ../snippets/core_api_tutorials/tutorial_core_adding_manipulator/creating_the_scene.py
+    :language: python
     :linenos:
 
 Run the script. A window opens with the Franka robot and cube in the scene; the simulation runs until you close the window.
@@ -123,6 +124,13 @@ Complete code:
 .. image:: /images/core_api_tutorials_4_1.webp
     :align: center
     :width: 600
+
+
+See Also
+========
+
+For a complete standalone pick-and-place example with ``--device``, ``--ik-method``, and ``--test`` options, see
+``standalone_examples/api/isaacsim.robot.experimental.manipulators/franka/pick_place.py``.
 
 
 Summary
