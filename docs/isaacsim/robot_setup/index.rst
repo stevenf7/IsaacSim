@@ -42,7 +42,6 @@ Asset Structure
 
    asset_structure
    asset_transformer
-   asset_transformer_tutorials
    asset_transformer_api
    asset_transformer_rules
 
@@ -55,6 +54,7 @@ Tutorials
 
    ../robot_setup_tutorials/index
    ../openusd_tuning_tutorials/index
+   asset_transformer_tutorials
 
 Troubleshooting
 ===============================

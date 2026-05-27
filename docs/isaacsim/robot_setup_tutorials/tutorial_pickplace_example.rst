@@ -22,7 +22,7 @@ Prerequisites
 - Review :doc:`tutorial_import_assemble_manipulator` and :doc:`tutorial_configure_manipulator` prior to beginning this tutorial to generate robot and the URDF and XRDF files required by the pick-and-place examples.
 
 .. note::
-    If you have not completed the previous tutorial(s), you can find the prebuilt asset in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/configure_manipulator/ur10e/ur/ur_gripper.usd``.
+    If you have not completed the previous tutorial(s), you can find the prebuilt asset in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/configure_manipulator/ur10e/ur_set_physx/ur.usd``.
 
     Additionally, pre-generated URDF, XRDF, and ``rmp_flow.yaml`` files can be found at ``source/extensions/isaacsim.robot_motion.cumotion/robot_configurations/ur10/``. 
 
