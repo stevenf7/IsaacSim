@@ -24,6 +24,12 @@ Learning Objectives
 - Run standalone ROS2 Python examples
 - Manually step ROS2 components
 
+Verify or choose your configuration in the **Standalone Environment** banner at the top of this page to see the launch commands for your setup. Your selection drives the platform-specific commands throughout the rest of this page.
+
+.. config-selector::
+   :title: Standalone Environment
+   :options: platform=Linux|Windows
+
 Getting Started
 =============================
 
@@ -34,6 +40,11 @@ Getting Started
 - Completed :ref:`isaac_sim_app_tutorial_intro_workflows` and :ref:`isaac_sim_app_tutorial_core_hello_world` to understand the two workflows (Standalone and Extension).
 
 - Set the environment variables needed to enable ROS2 messaging in standalone workflow by completing the steps in :ref:`isaac_sim_app_recommended_ros_distros_using_terminal`.
+
+.. config-content::
+   :show-when: platform=Windows
+
+   Windows standalone ROS 2 examples use the Pixi Python environment. Follow the Pixi setup in :ref:`isaac_sim_app_install_ros_other_platforms`, then run these commands from the Pixi workspace.
 
 .. note:: In Windows 10 or 11, depending on your machine's configuration, RViz2 might not open properly.
 
@@ -107,9 +118,19 @@ This sample demonstrates how to create an action graph with ROS 2 component node
 
 The sample can be executed by running the following:
 
-.. code-block:: bash
+.. config-content::
+   :show-when: platform=Linux
 
-    ./python.sh standalone_examples/api/isaacsim.ros2.bridge/clock.py
+   .. code-block:: bash
+
+      ./python.sh standalone_examples/api/isaacsim.ros2.bridge/clock.py
+
+.. config-content::
+   :show-when: platform=Windows
+
+   .. code-block:: bash
+
+      pixi run python standalone_examples/api/isaacsim.ros2.bridge/clock.py
 
 Echo the following topics to observe messages being published:
 
@@ -148,9 +169,19 @@ By setting the execution rate, an image publisher will automatically be ticked e
 
 The sample can be executed by running the following:
 
-.. code-block:: bash
+.. config-content::
+   :show-when: platform=Linux
 
-    ./python.sh standalone_examples/api/isaacsim.ros2.bridge/camera_periodic.py
+   .. code-block:: bash
+
+      ./python.sh standalone_examples/api/isaacsim.ros2.bridge/camera_periodic.py
+
+.. config-content::
+   :show-when: platform=Windows
+
+   .. code-block:: bash
+
+      pixi run python standalone_examples/api/isaacsim.ros2.bridge/camera_periodic.py
 
 
 To exit the sample, you can terminate the process using ``CTRL-C`` from the terminal.
@@ -164,9 +195,19 @@ The Branch nodes act like a custom gate and can be enabled or disabled at any ti
 
 The sample can be executed by running the following:
 
-.. code-block:: bash
+.. config-content::
+   :show-when: platform=Linux
 
-    ./python.sh standalone_examples/api/isaacsim.ros2.bridge/camera_manual.py
+   .. code-block:: bash
+
+      ./python.sh standalone_examples/api/isaacsim.ros2.bridge/camera_manual.py
+
+.. config-content::
+   :show-when: platform=Windows
+
+   .. code-block:: bash
+
+      pixi run python standalone_examples/api/isaacsim.ros2.bridge/camera_manual.py
 
 To exit the sample, you can terminate the process using ``CTRL-C`` from the terminal.
 
@@ -206,9 +247,19 @@ This sample demonstrates how to take an existing USD stage with an action graph 
 
 The sample can be executed by running the following:
 
-.. code-block:: bash
+.. config-content::
+   :show-when: platform=Linux
 
-    ./python.sh standalone_examples/api/isaacsim.ros2.bridge/carter_stereo.py
+   .. code-block:: bash
+
+      ./python.sh standalone_examples/api/isaacsim.ros2.bridge/carter_stereo.py
+
+.. config-content::
+   :show-when: platform=Windows
+
+   .. code-block:: bash
+
+      pixi run python standalone_examples/api/isaacsim.ros2.bridge/carter_stereo.py
 
 To exit the sample, you can terminate the process using ``CTRL-C`` from the terminal.
 
@@ -251,16 +302,36 @@ Run either of the following commands to run the sample with the specified enviro
 
     .. tab-item:: Hospital Environment
 
-        .. code-block:: bash
+        .. config-content::
+           :show-when: platform=Linux
 
-            ./python.sh standalone_examples/api/isaacsim.ros2.bridge/carter_multiple_robot_navigation.py --environment hospital
+           .. code-block:: bash
+
+              ./python.sh standalone_examples/api/isaacsim.ros2.bridge/carter_multiple_robot_navigation.py --environment hospital
+
+        .. config-content::
+           :show-when: platform=Windows
+
+           .. code-block:: bash
+
+              pixi run python standalone_examples/api/isaacsim.ros2.bridge/carter_multiple_robot_navigation.py --environment hospital
 
 
     .. tab-item:: Office Environment
 
-        .. code-block:: bash
+        .. config-content::
+           :show-when: platform=Linux
 
-            ./python.sh standalone_examples/api/isaacsim.ros2.bridge/carter_multiple_robot_navigation.py --environment office
+           .. code-block:: bash
+
+              ./python.sh standalone_examples/api/isaacsim.ros2.bridge/carter_multiple_robot_navigation.py --environment office
+
+        .. config-content::
+           :show-when: platform=Windows
+
+           .. code-block:: bash
+
+              pixi run python standalone_examples/api/isaacsim.ros2.bridge/carter_multiple_robot_navigation.py --environment office
 
 To exit the sample, you can terminate the process using ``CTRL-C`` from the terminal.
 
@@ -286,9 +357,19 @@ To visualize the output refer to the :ref:`interactive version of the sample<isa
 
 The sample can be executed by running the following:
 
-.. code-block:: bash
+.. config-content::
+   :show-when: platform=Linux
 
-    ./python.sh standalone_examples/api/isaacsim.ros2.bridge/moveit.py
+   .. code-block:: bash
+
+      ./python.sh standalone_examples/api/isaacsim.ros2.bridge/moveit.py
+
+.. config-content::
+   :show-when: platform=Windows
+
+   .. code-block:: bash
+
+      pixi run python standalone_examples/api/isaacsim.ros2.bridge/moveit.py
 
 To exit the sample you can terminate using the terminal with ``CTRL-C``
 
@@ -298,10 +379,19 @@ Receiving ROS 2 Messages
 
 This is a basic subscriber example where upon receiving an empty ROS2 message, a cube in the scene teleports to a random location. This one is running with rendering enabled, you can verify that you observe the scene and the cube moving. To run this example:
 
+.. config-content::
+   :show-when: platform=Linux
 
-    .. code-block:: bash
+   .. code-block:: bash
 
-		./python.sh standalone_examples/api/isaacsim.ros2.bridge/subscriber.py
+      ./python.sh standalone_examples/api/isaacsim.ros2.bridge/subscriber.py
+
+.. config-content::
+   :show-when: platform=Windows
+
+   .. code-block:: bash
+
+      pixi run python standalone_examples/api/isaacsim.ros2.bridge/subscriber.py
 
 To exit the sample, you can terminate the process using ``CTRL-C`` from the terminal.
 
@@ -345,5 +435,3 @@ In this tutorial you learned how to manually step ROS 2 components and run stand
 Next Steps
 ****************
 Continue on to the next tutorial in our ROS 2 Tutorials series, :ref:`isaac_sim_app_tutorial_ros2_navigation` to learn to use ROS 2 Nav2 with |isaac-sim|.
-
-

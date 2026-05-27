@@ -635,6 +635,8 @@ Setup ROS 2 Workspaces
 
    .. note:: The ``sim`` task uses the ``isaac_sim_package_path`` environment variable defined under ``[target.win.activation]`` in ``pixi.toml`` (default: ``C:\\isaacsim``). Edit that value if |isaac-sim_short| is installed in a different location.
 
+   .. note:: For Pixi workflows, run standalone scripts with the Pixi Python environment, for example ``pixi run python <path\\to\\script.py>`` or ``python <path\\to\\script.py>`` inside ``pixi shell``. Do not use the bundled ``python.bat`` or ``python.sh`` launchers, because Pixi installs |isaac-sim_short| from PyPI into the active environment.
+
    To verify the ROS 2 bridge from within |isaac-sim_short|:
 
    - Click through **Tools > Robotics > ROS 2 OmniGraphs > Clock > OK**.
@@ -968,6 +970,12 @@ Configuring Options and Enabling Internal ROS Libraries
    :show-when: platform=Windows,ros_distro=Jazzy,install_method=Pixi
 
    With the Pixi workspace, ROS 2 Jazzy and Zenoh middleware are pre-configured. You do not need to set internal ROS 2 library paths manually.
+
+   Run standalone scripts with the Pixi Python environment:
+
+   .. code-block:: winbatch
+
+      pixi run python <path\\to\\standalone\\script.py>
 
 
 Enabling the ROS 2 Bridge
@@ -1378,4 +1386,3 @@ Running ROS in Docker Containers
             source /opt/ros/$ROS_DISTRO/setup.bash
             cd /${ROS_DISTRO}_ws
             source install/local_setup.bash
-
