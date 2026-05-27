@@ -33,8 +33,10 @@ ls -td standalone_examples/benchmarks/validation/captures/benchmark_robots_nova_
 
 ### Run the script
 
+The bundled script is resolved via `${CLAUDE_SKILL_DIR}`; falls back to the canonical repo path `skills/validation-diff-gifs/scripts/`:
+
 ```bash
-bash skills/validation-diff-gifs/scripts/generate_diff_gifs.sh \
+bash "${CLAUDE_SKILL_DIR:-skills/validation-diff-gifs}/scripts/generate_diff_gifs.sh" \
     <captured_run_dir> \
     <golden_benchmark_dir> \
     [amplify] [fps]
@@ -53,7 +55,7 @@ bash skills/validation-diff-gifs/scripts/generate_diff_gifs.sh \
 LATEST=$(ls -td standalone_examples/benchmarks/validation/captures/benchmark_robots_nova_carter_ros2_*/ | head -1)
 GOLDEN="standalone_examples/benchmarks/validation/golden_data/benchmark_robots_nova_carter_ros2"
 
-bash skills/validation-diff-gifs/scripts/generate_diff_gifs.sh "$LATEST" "$GOLDEN"
+bash "${CLAUDE_SKILL_DIR:-skills/validation-diff-gifs}/scripts/generate_diff_gifs.sh" "$LATEST" "$GOLDEN"
 ```
 
 ## Output

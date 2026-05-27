@@ -1,21 +1,20 @@
 ---
 name: isaac-sim-remote
 description: >
-  Connect to a running Isaac Sim instance via the python_server TCP socket to execute Python code remotely.
-  Use when you need to launch Isaac Sim, send code for execution, create/modify USD stages, run simulations,
-  take viewport or full-app screenshots, inspect/modify prim properties and transforms, control the camera,
-  step physics, read console logs, or execute Kit commands.
-  All features work in --no-window headless mode. Requires Isaac Sim running with the python_server extension
-  enabled on port 8226.
+  Connect to a running Isaac Sim via the `isaacsim.code_editor.python_server`
+  TCP socket (port 8226) to execute Python remotely. Launch Isaac Sim, send
+  code, create/modify USD stages, run simulations, take viewport or full-app
+  screenshots, inspect/modify prims, control the camera, step physics, read
+  console logs, execute Kit commands. Works in `--no-window` headless mode.
 ---
 
-# Isaac Sim Remote — Code Execution & Scene Control
+# Isaac Sim Remote
 
-Execute Python code inside a running Isaac Sim instance via the `isaacsim.code_editor.python_server` TCP socket.
+Execute Python inside a running Isaac Sim via the `isaacsim.code_editor.python_server` TCP socket.
 
-**Related skills:**
-- `isaac-sim-ui` — UI automation (menus, widgets, examples browser, OmniUIQuery)
-- `isaac-sim-recording` — Video capture, cursor tracking, tutorial recording
+Related: `debug-with-local-kit` (when behavior depends on a Kit-from-source build), `profile-isaac-sim` (to attach Tracy to the running process), `isaac-sim-validator` (final QA gate on any rendered output).
+
+Upstream `isaac-sim-ui` (menu/widget OmniUIQuery automation) and `isaac-sim-recording` (cursor tracking, tutorial video capture) are not imported. The inline UI patterns here (Play-button click via `OmniUIQuery`, full-app vs viewport screenshots) cover the common cases.
 
 ## Launching Isaac Sim
 
@@ -38,11 +37,9 @@ DISPLAY=:99 bash isaac-sim.sh --reset-user --no-ros-env \
 
 Wait for `app ready` in the output before sending commands. The TCP server listens on `127.0.0.1:8226`.
 
-**⚠️ Extension enable flags:**
+**Extension enable flags (important):**
 - Use `--enable isaacsim.code_editor.python_server` — this is the **only** way to enable it.
-- `--/exts/isaacsim.code_editor.python_server/enabled=true` does **NOT** work. That syntax sets
-  a carb setting, not an extension enable flag. The python_server extension is not enabled by
-  default in the app .kit file, so it must be explicitly enabled via `--enable`.
+- `--/exts/isaacsim.code_editor.python_server/enabled=true` does **NOT** work. That syntax sets a carb setting, not an extension enable flag. The python_server extension is not enabled by default in the app .kit file, so it must be explicitly enabled via `--enable`.
 - The same applies to `isaacsim.test.utils` and any other extension not in the default app config.
 
 **Other notes:**
@@ -64,8 +61,7 @@ done
 grep "python_server" /tmp/isaac_sim.log
 ```
 
-If the port never opens, check that `isaacsim.code_editor.python_server` appears in the
-startup log. If it doesn't, the `--enable` flag was not passed correctly.
+If the port never opens, check that `isaacsim.code_editor.python_server` appears in the startup log. If it doesn't, the `--enable` flag was not passed correctly.
 
 ### Enabling additional extensions
 
@@ -73,7 +69,7 @@ startup log. If it doesn't, the `--enable` flag was not passed correctly.
 bash isaac-sim.sh --no-window --no-ros-env \
     --enable isaacsim.code_editor.python_server \
     --enable isaacsim.test.utils \
-    --enable isaacsim.sensors.camera
+    --enable isaacsim.sensors.experimental.rtx
 ```
 
 ## Health Check
@@ -88,8 +84,7 @@ Reports: Isaac Sim version, asset root, stage state, timeline, display, enabled 
 
 ## Asset Root Configuration
 
-Isaac Sim assets (robots, environments) require either a Nucleus server or S3 cloud fallback.
-If Nucleus is unavailable, configure S3 assets:
+Isaac Sim assets (robots, environments) require either a Nucleus server or S3 cloud fallback. If Nucleus is unavailable, configure S3 assets:
 
 ```bash
 python scripts/isaacsim_send.py --file scripts/set_asset_root.py --arg asset_root=staging
@@ -138,9 +133,7 @@ await stage_utils.create_new_stage_async(template="empty")
 
 ## State Persistence & Named Contexts
 
-The server supports named execution contexts — each is an independent globals dict.
-Variables set in `--context A` are invisible in `--context B`.  The default context
-(no `--context` flag) is a shared namespace where variables persist across calls.
+The server supports named execution contexts — each is an independent globals dict. Variables set in `--context A` are invisible in `--context B`.  The default context (no `--context` flag) is a shared namespace where variables persist across calls.
 
 ```bash
 # Default context — shared globals, variables persist
@@ -166,9 +159,7 @@ python scripts/isaacsim_send.py --introspect delete_context --context rec
 
 ## JSON Envelope Protocol
 
-The client supports a JSON envelope for advanced features.  It auto-detects when to
-use the envelope (any of `--context`, `--fire-and-forget`, `--execution-timeout`, or
-`--args-json` triggers it).  Raw Python source still works for simple calls.
+The client supports a JSON envelope for advanced features.  It auto-detects when to use the envelope (any of `--context`, `--fire-and-forget`, `--execution-timeout`, or `--args-json` triggers it).  Raw Python source still works for simple calls.
 
 ```bash
 # Named context with file
@@ -195,9 +186,7 @@ python scripts/isaacsim_send.py --introspect tasks      # list completed backgro
 
 ### Execution Timeouts
 
-Async code is cancelled cleanly via `asyncio.wait_for()`.  Sync code uses a
-background watchdog — the code finishes running but the client gets a `TimeoutError`
-response.
+Async code is cancelled cleanly via `asyncio.wait_for()`.  Sync code uses a background watchdog — the code finishes running but the client gets a `TimeoutError` response.
 
 ```bash
 # This returns TimeoutError after 5s (the sleep(100) is cancelled)
@@ -206,8 +195,7 @@ python scripts/isaacsim_send.py --execution-timeout 5 'import asyncio; await asy
 
 ### Fire-and-Forget
 
-For deferred UI clicks, background data loading, or any operation where you don't
-need to wait for the result:
+For deferred UI clicks, background data loading, or any operation where you don't need to wait for the result:
 
 ```bash
 ack=$(python scripts/isaacsim_send.py --raw --fire-and-forget 'load_large_usd()')
@@ -335,8 +323,7 @@ await app_utils.update_app_async(steps=30)
 assert app_utils.is_playing(), "Play button click failed"
 ```
 
-**Note:** Toolbar buttons (Play, Pause, Stop) use direct clicks. Browser buttons need
-deferred clicks — see `isaac-sim-ui` skill's **Common Pitfalls** and `references/pitfalls.md`.
+**Note:** Toolbar buttons (Play, Pause, Stop) use direct clicks. Browser buttons (extension/example browsers) need deferred clicks via `omni.kit.ui_test`. See `references/pitfalls.md` for the deferred-click pattern.
 
 ## Command Execution
 
@@ -371,9 +358,7 @@ target = XformPrim(paths="/World/TargetCube")
 target.set_world_poses(positions=np.array([[0.3, 0.2, 0.5]]))
 ```
 
-**During simulation** (after `play()`), `XformPrim.set_world_poses` may fail with
-`RuntimeError: Item indexing is not supported on wp.array objects` because warp arrays
-replace numpy arrays at runtime. Use raw USD instead:
+**During simulation** (after `play()`), `XformPrim.set_world_poses` may fail with `RuntimeError: Item indexing is not supported on wp.array objects` because warp arrays replace numpy arrays at runtime. Use raw USD instead:
 
 ```python
 from pxr import UsdGeom, Gf
@@ -412,10 +397,7 @@ Cube("/World/RedCube", sizes=1.0, colors="red", positions=(0, 0, 0.5))
 
 ### Step the renderer / simulation
 
-**Prefer `await update_app_async()` over `update_app()`** when running code that uses
-`await` (which includes all python_server scripts with top-level `await`). The sync
-`update_app()` pumps the event loop from inside an asyncio Task, which causes
-"Cannot enter into task" errors in other extensions. The async version yields properly.
+**Prefer `await update_app_async()` over `update_app()`** when running code that uses `await` (which includes all python_server scripts with top-level `await`). The sync `update_app()` pumps the event loop from inside an asyncio Task, which causes "Cannot enter into task" errors in other extensions. The async version yields properly.
 
 ```python
 import isaacsim.core.experimental.utils.app as app_utils

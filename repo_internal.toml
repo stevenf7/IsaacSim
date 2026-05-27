@@ -804,10 +804,13 @@ exclude = [
     ".cursor/prompts/cpp_doxygen_prompt.md",
     ".cursor/rules/docs_style_guide.mdc",
     ".cursor/rules/kit_packages_and_packman.mdc",
+    "AGENTS.md",
+    "AGENTS.public.md",
     "skills/_internal",
     ".claude/skills/build-docs",
     ".claude/skills/cicd",
     ".claude/skills/debug-with-local-kit",
+    ".claude/skills/doc-snippets",
     ".dependabot.toml",
     ".eula_accepted",
     ".git",
@@ -892,6 +895,7 @@ end_marker = "# AUTOREMOVE: END"
 files = [
     "deps/kit-sdk-deps.packman.xml",
     "tools/docker/README.md",
+    "skills/SKILLS.md",
 ]
 begin_marker = "<!-- AUTOREMOVE: BEGIN -->"
 end_marker = "<!-- AUTOREMOVE: END -->"
@@ -908,6 +912,10 @@ end_marker = "-- AUTOREMOVE: END"
 [[repo_stage_for_github.file_move]]
 source_file = "tools/ci/config.packman.xml"
 destination_file = "tools/packman/config.packman.xml"
+
+[[repo_stage_for_github.file_move]]
+source_file = "AGENTS.public.md"
+destination_file = "AGENTS.md"
 
 [[repo_stage_for_github.toml_merge]]
 source_file = "repo.toml"
