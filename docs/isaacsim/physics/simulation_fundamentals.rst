@@ -47,6 +47,8 @@ Ideally, simulation and rendering would match or be multiples of each other, but
 
 There are three event streams on the timeline (among a few others, but these are notably the most relevant for |isaac-sim_short|). You can subscribe directly to Simulation Events or to Frame update events, either pre or post-rendering. |omnigraph_short| nodes are typically updated on a pre-render event, but there are ways to set them to update on different events, such as every physics step.
 
+.. _simulation_fundamentals_configuring_frame_rate:
+
 Configuring Frame Rate
 ----------------------
 
