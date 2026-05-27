@@ -1,12 +1,23 @@
 # Isaac Sim — Claude Code Guide
 
-At the start of every conversation, read the following in full to load all project rules and skills:
+The agent guide lives in [`AGENTS.md`](AGENTS.md). Single source of truth
+for every agent platform (Cursor, Codex CLI, Claude Code, ...). Replaces the
+old `.claude/skills/` and `.cursor/skills/` layout with consolidated
+[`skills/`](skills/).
 
-- All `*.mdc` files in `.cursor/rules/`
-- All `SKILL.md` files anywhere under `skills/`. Use a traversal that includes every nested directory even when search tools would normally skip ignored paths, for example:
-  ```bash
-  find skills -type f -name SKILL.md -print
-  ```
+At session start, read:
+
+1. [`AGENTS.md`](AGENTS.md) — request loop, library pointers.
+2. All `*.mdc` files in [`.cursor/rules/`](.cursor/rules/) — repo-wide style
+   and policy rules (C++ / Python codestyle, docs style, extension structure,
+   build instructions, pip packaging, ...). Platform-independent.
+3. [`skills/SKILLS.md`](skills/SKILLS.md) — categorized index of all skills
+   with one-line descriptions, read order, pipeline diagrams, env-var contract.
+
+
+Load individual `SKILL.md` files under `skills/<name>/SKILL.md` on
+demand. Use the index in `SKILLS.md` to route.
+
 
 ## Sandbox Setup (recommended, run once)
 

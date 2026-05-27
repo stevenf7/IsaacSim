@@ -99,10 +99,10 @@ Extract key metrics from the summary report at the end of the `.log`:
 
 ### Zone-level comparison
 
-Run the comparison script bundled with this skill:
+Run the comparison script bundled with this skill (resolved via `${CLAUDE_SKILL_DIR}`; falls back to the canonical repo path):
 
 ```bash
-python3 skills/profile-isaac-sim/scripts/compare_tracy_csvs.py \
+python3 "${CLAUDE_SKILL_DIR:-skills/profile-isaac-sim}/scripts/compare_tracy_csvs.py" \
     <reference.csv> <new.csv> --top 25
 ```
 

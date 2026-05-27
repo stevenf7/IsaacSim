@@ -110,8 +110,7 @@ skills\_internal\build-docs\scripts\serve_docs.bat
 skills\_internal\build-docs\scripts\serve_docs.bat 9000
 ```
 
-The server serves `_build/docs/isaac-sim/latest/` at `http://localhost:<port>`.
-API docs are at `http://localhost:<port>/py/`.
+The server serves `_build/docs/isaac-sim/latest/` at `http://localhost:<port>`. API docs are at `http://localhost:<port>/py/`.
 
 When running from the agent, background the server process so the terminal stays usable, then tell the developer the URL.
 

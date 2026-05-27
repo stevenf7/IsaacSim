@@ -8,9 +8,7 @@ allowed-tools: Bash, Read, Glob, Grep
 
 # CI/CD Assistant — omni_isaac_sim
 
-You are a CI/CD specialist for the `omni_isaac_sim` GitLab repository. Use your knowledge of this
-repo's pipeline architecture below to help the user debug failures, modify CI config, understand
-job behavior, or investigate pipelines via the MaaS-GitLab MCP tools.
+You are a CI/CD specialist for the `omni_isaac_sim` GitLab repository. Use your knowledge of this repo's pipeline architecture below to help the user debug failures, modify CI config, understand job behavior, or investigate pipelines via the MaaS-GitLab MCP tools.
 
 User request: $ARGUMENTS
 
@@ -24,9 +22,7 @@ User request: $ARGUMENTS
 ## Pipeline Architecture
 
 ### Stages (in order)
-`check` → `build` → `docs` → `test` → `nightly-test` → `external-test` → `security` →
-`deploy` → `deploy-test` → `prod-test` → `check-externals` → `github-staging` →
-`verify-github-staging` → `slack-notifications` → `pages`
+`check` → `build` → `docs` → `test` → `nightly-test` → `external-test` → `security` → `deploy` → `deploy-test` → `prod-test` → `check-externals` → `github-staging` → `verify-github-staging` → `slack-notifications` → `pages`
 
 ### Key CI files
 - Main config: `.gitlab-ci.yml` (~2,600 lines)
@@ -48,8 +44,7 @@ User request: $ARGUMENTS
 - `build-windows-x86_64-release-vs2026` (controlled by `USE_VS_2026`)
 
 **Test stage** (parallel matrix)
-- `test-linux-x86_64` — 11 variants: `startuptests`, `pythontests` (9 buckets), `doc_snippets`,
-  `warmuptests`, `postinstalltests`, `nativepythontests` (3 buckets)
+- `test-linux-x86_64` — 11 variants: `startuptests`, `pythontests` (9 buckets), `doc_snippets`, `warmuptests`, `postinstalltests`, `nativepythontests` (3 buckets)
 - `test-windows-x86_64` — similar matrix
 - `test-linux-x86_64-benchmarks-{1,2,4}-gpu` — GPU benchmarks
 - `test-linux-x86_64-isaaclab-integration` — runs on all triggered pipelines
@@ -152,9 +147,7 @@ User request: $ARGUMENTS
 
 ## IsaacLab Dashboard
 
-Script: `tools/ci/isaac_lab_dashboard.py`
-Cache/output dir: `_dashboard_cache/` (underscore-prefix keeps it out of the source tree; git-ignored)
-Published to GitLab Pages at: `/<ISAAC_LAB_BRANCH>/isaac_lab_test_dashboard.html`
+Script: `tools/ci/isaac_lab_dashboard.py` Cache/output dir: `_dashboard_cache/` (underscore-prefix keeps it out of the source tree; git-ignored) Published to GitLab Pages at: `/<ISAAC_LAB_BRANCH>/isaac_lab_test_dashboard.html`
 
 ### Subcommands
 
@@ -202,9 +195,7 @@ python tools/ci/isaac_lab_dashboard.py generate --data-dir _dashboard_cache
 - The `pages` job picks up the output and copies it to `public/<ISAAC_LAB_BRANCH>/`
 
 ### JUnit XML source
-Produced by jobs: `test-linux-x86_64-isaaclab-integration` and
-`test-linux-x86_64-isaaclab-integration-nightly`
-Artifact path inside the archive: `_isaaclab/tests/full_report.xml`
+Produced by jobs: `test-linux-x86_64-isaaclab-integration` and `test-linux-x86_64-isaaclab-integration-nightly` Artifact path inside the archive: `_isaaclab/tests/full_report.xml`
 
 ### Common tasks
 - **Rebuild dashboard locally without re-fetching**: `isaac_lab_dashboard.py generate`
