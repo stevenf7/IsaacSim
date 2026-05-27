@@ -28,6 +28,7 @@ Tools
    python_server
    jupyter_notebook
    omniverse_script_editor
+   isaac_sim_mcp
 
 
 
