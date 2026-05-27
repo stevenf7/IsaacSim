@@ -159,7 +159,7 @@ To set the joint configurations:
 .. Note:: Remember to convert stiffness and damping to degrees.
 
 The USD file stiffness is in :math:`\frac{Kg \cdot m^2}{Deg \cdot s^2}` and the damping is in :math:`\frac{Kg \cdot m^2}{Deg \cdot s}`.
-To convert them to radians, you can use the following formulas:
+To convert radians to degrees, you can use the following formulas:
 
 .. math::
 
@@ -204,26 +204,27 @@ To verify the joint configuration, you can play the simulation and run the follo
 
 .. code-block:: console
 
-    ['left_hip_yaw', 'right_hip_yaw', 'torso', 'left_hip_roll', 'right_hip_roll', 'left_shoulder_pitch', 'right_shoulder_pitch', 'left_hip_pitch', 'right_hip_pitch', 'left_shoulder_roll', 'right_shoulder_roll', 'left_knee', 'right_knee', 'left_shoulder_yaw', 'right_shoulder_yaw', 'left_ankle', 'right_ankle', 'left_elbow', 'right_elbow']
-    left_hip_yaw: lower=-0.4300, upper=0.4300, maxVelocity=23.00, maxEffort=200, stiffness=5729.58, damping=572.96
-    right_hip_yaw: lower=-0.4300, upper=0.4300, maxVelocity=23.00, maxEffort=200, stiffness=5729.58, damping=572.96
-    torso: lower=-2.3500, upper=2.3500, maxVelocity=23.00, maxEffort=200, stiffness=5729.58, damping=572.96
-    left_hip_roll: lower=-0.4300, upper=0.4300, maxVelocity=23.00, maxEffort=200, stiffness=5729.58, damping=572.96
-    right_hip_roll: lower=-0.4300, upper=0.4300, maxVelocity=23.00, maxEffort=200, stiffness=5729.58, damping=572.96
-    left_shoulder_pitch: lower=-2.8700, upper=2.8700, maxVelocity=9.00, maxEffort=40, stiffness=5729.58, damping=572.96
-    right_shoulder_pitch: lower=-2.8700, upper=2.8700, maxVelocity=9.00, maxEffort=40, stiffness=5729.58, damping=572.96
-    left_hip_pitch: lower=-3.1400, upper=2.5300, maxVelocity=23.00, maxEffort=200, stiffness=5729.58, damping=572.96
-    right_hip_pitch: lower=-3.1400, upper=2.5300, maxVelocity=23.00, maxEffort=200, stiffness=5729.58, damping=572.96
-    left_shoulder_roll: lower=-0.3400, upper=3.1100, maxVelocity=9.00, maxEffort=40, stiffness=5729.58, damping=572.96
-    right_shoulder_roll: lower=-3.1100, upper=0.3400, maxVelocity=9.00, maxEffort=40, stiffness=5729.58, damping=572.96
-    left_knee: lower=-0.2600, upper=2.0500, maxVelocity=14.00, maxEffort=300, stiffness=5729.58, damping=572.96
-    right_knee: lower=-0.2600, upper=2.0500, maxVelocity=14.00, maxEffort=300, stiffness=5729.58, damping=572.96
-    left_shoulder_yaw: lower=-1.3000, upper=4.4500, maxVelocity=20.00, maxEffort=18, stiffness=5729.58, damping=572.96
-    right_shoulder_yaw: lower=-4.4500, upper=1.3000, maxVelocity=20.00, maxEffort=18, stiffness=5729.58, damping=572.96
-    left_ankle: lower=-0.8700, upper=0.5200, maxVelocity=9.00, maxEffort=40, stiffness=5729.58, damping=572.96
-    right_ankle: lower=-0.8700, upper=0.5200, maxVelocity=9.00, maxEffort=40, stiffness=5729.58, damping=572.96
-    left_elbow: lower=-1.2500, upper=2.6100, maxVelocity=20.00, maxEffort=18, stiffness=5729.58, damping=572.96
-    right_elbow: lower=-1.2500, upper=2.6100, maxVelocity=20.00, maxEffort=18, stiffness=5729.58, damping=572.96
+  ['left_hip_yaw', 'right_hip_yaw', 'torso', 'left_hip_roll', 'right_hip_roll', 'left_shoulder_pitch', 'right_shoulder_pitch', 'left_hip_pitch', 'right_hip_pitch', 'left_shoulder_roll', 'right_shoulder_roll', 'left_knee', 'right_knee', 'left_shoulder_yaw', 'right_shoulder_yaw', 'left_ankle', 'right_ankle', 'left_elbow', 'right_elbow']
+    left_hip_yaw: lower=-0.4300, upper=0.4300, maxVelocity=100.00, maxEffort=300, stiffness=149.54, damping=5.00
+    right_hip_yaw: lower=-0.4300, upper=0.4300, maxVelocity=100.00, maxEffort=300, stiffness=149.54, damping=5.00
+    torso: lower=-2.3500, upper=2.3500, maxVelocity=100.00, maxEffort=300, stiffness=200.00, damping=4.98
+    left_hip_roll: lower=-0.4300, upper=0.4300, maxVelocity=100.00, maxEffort=300, stiffness=149.54, damping=5.00
+    right_hip_roll: lower=-0.4300, upper=0.4300, maxVelocity=100.00, maxEffort=300, stiffness=149.54, damping=5.00
+    left_shoulder_pitch: lower=-2.8700, upper=2.8700, maxVelocity=100.00, maxEffort=300, stiffness=40.00, damping=10.00
+    right_shoulder_pitch: lower=-2.8700, upper=2.8700, maxVelocity=100.00, maxEffort=300, stiffness=40.00, damping=10.00
+    left_hip_pitch: lower=-3.1400, upper=2.5300, maxVelocity=100.00, maxEffort=300, stiffness=199.96, damping=5.00
+    right_hip_pitch: lower=-3.1400, upper=2.5300, maxVelocity=100.00, maxEffort=300, stiffness=199.96, damping=5.00
+    left_shoulder_roll: lower=-0.3400, upper=3.1100, maxVelocity=100.00, maxEffort=300, stiffness=40.00, damping=10.00
+    right_shoulder_roll: lower=-3.1100, upper=0.3400, maxVelocity=100.00, maxEffort=300, stiffness=40.00, damping=10.00
+    left_knee: lower=-0.2600, upper=2.0500, maxVelocity=100.00, maxEffort=300, stiffness=200.00, damping=4.98
+    right_knee: lower=-0.2600, upper=2.0500, maxVelocity=100.00, maxEffort=300, stiffness=200.00, damping=4.98
+    left_shoulder_yaw: lower=-1.3000, upper=4.4500, maxVelocity=100.00, maxEffort=300, stiffness=40.00, damping=10.00
+    right_shoulder_yaw: lower=-4.4500, upper=1.3000, maxVelocity=100.00, maxEffort=300, stiffness=40.00, damping=10.00
+    left_ankle: lower=-0.8700, upper=0.5200, maxVelocity=100.00, maxEffort=100, stiffness=20.00, damping=4.00
+    right_ankle: lower=-0.8700, upper=0.5200, maxVelocity=100.00, maxEffort=100, stiffness=20.00, damping=4.00
+    left_elbow: lower=-1.2500, upper=2.6100, maxVelocity=100.00, maxEffort=300, stiffness=40.00, damping=10.00
+    right_elbow: lower=-1.2500, upper=2.6100, maxVelocity=100.00, maxEffort=300, stiffness=40.00, damping=10.00
+
 
 The limit values in the console output are in radians. Each line shows the properties for a single DOF.
 Verify that the ``maxVelocity``, ``maxEffort``, ``stiffness``, and ``damping`` values match the values specified in the environment definition file.
