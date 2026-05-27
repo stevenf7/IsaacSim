@@ -15,7 +15,6 @@
 
 """Provides AppFramework class for creating minimal Omniverse applications without application configuration."""
 
-
 import builtins
 import os
 import sys

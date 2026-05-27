@@ -17,7 +17,6 @@
 
 """Test suite for validating the ObstacleStrategy functionality in robot motion generation."""
 
-
 import omni.kit.test
 from isaacsim.core.experimental.objects import Capsule, Cone, Cube, Cylinder, Mesh, Plane, Sphere
 from isaacsim.core.experimental.utils.stage import create_new_stage_async

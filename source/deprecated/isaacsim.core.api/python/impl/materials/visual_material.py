@@ -15,7 +15,6 @@
 
 """Base class for visual material representations in Isaac Sim."""
 
-
 from pxr import Usd, UsdShade
 
 

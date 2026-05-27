@@ -15,7 +15,6 @@
 
 """Provides a UI window for interactive robotic grasp generation and evaluation in Isaac Sim."""
 
-
 import asyncio
 
 import carb

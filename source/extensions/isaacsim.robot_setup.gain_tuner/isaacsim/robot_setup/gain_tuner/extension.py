@@ -15,7 +15,6 @@
 
 """Extension for the isaacsim.robot_setup.gain_tuner that provides a UI-based gain tuner tool for robot setup."""
 
-
 import asyncio
 import gc
 

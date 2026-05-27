@@ -15,7 +15,6 @@
 
 """Contains trigger functions for controlling when domain randomization occurs in Isaac Sim."""
 
-
 from typing import Any
 
 from omni.replicator.core.utils import ReplicatorItem, ReplicatorWrapper, create_node

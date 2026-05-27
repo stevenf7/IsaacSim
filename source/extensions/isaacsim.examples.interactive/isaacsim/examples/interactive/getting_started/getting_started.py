@@ -15,7 +15,6 @@
 
 """Basic example demonstrating the fundamental structure and lifecycle of Isaac Sim samples."""
 
-
 from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.examples.base.base_sample_experimental import BaseSample
 

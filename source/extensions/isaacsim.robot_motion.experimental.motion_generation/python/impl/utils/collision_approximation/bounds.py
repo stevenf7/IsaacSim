@@ -15,7 +15,6 @@
 
 """Provides utilities for computing bounding boxes and collision approximations for USD prims."""
 
-
 from pxr import Usd, UsdGeom
 
 from ._primitive_bounds import compute_obb_primitive, compute_world_aabb_primitive

@@ -47,7 +47,7 @@ class TestROS2QoSProfile(ROS2TestCase):
         if set_values:
             edit_spec[og.Controller.Keys.SET_VALUES] = set_values
 
-        (graph, nodes, _, _) = og.Controller.edit(
+        graph, nodes, _, _ = og.Controller.edit(
             {"graph_path": graph_path, "evaluator_name": "push"},
             edit_spec,
         )
@@ -271,7 +271,7 @@ class TestROS2QoSProfile(ROS2TestCase):
     async def test_connected_to_publisher(self):
         """Verify the QoS profile node can be connected to a publisher node."""
         graph_path = "/TestGraph"
-        (graph, nodes, _, _) = og.Controller.edit(
+        graph, nodes, _, _ = og.Controller.edit(
             {"graph_path": graph_path, "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [

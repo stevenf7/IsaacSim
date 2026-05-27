@@ -15,7 +15,6 @@
 
 """Detail view implementation for the Isaac Sim content browser."""
 
-
 import os
 from collections import namedtuple
 from datetime import datetime

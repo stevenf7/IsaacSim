@@ -15,7 +15,6 @@
 
 """Provides a user interface extension for creating and configuring surface grippers in Isaac Sim."""
 
-
 import gc
 from functools import partial
 from pathlib import Path

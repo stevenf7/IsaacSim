@@ -15,7 +15,6 @@
 
 """Utility functions for drawing annotator data to images for visualization and debugging purposes."""
 
-
 from __future__ import annotations
 
 import io

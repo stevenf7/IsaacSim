@@ -15,7 +15,6 @@
 
 """Utilities for reading camera information and computing relative poses for ROS2 camera configurations."""
 
-
 import carb
 import cv2 as cv
 import numpy as np

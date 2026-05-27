@@ -15,5 +15,4 @@
 
 """Tests for the isaacsim.gui.sensors.icon module."""
 
-
 scan_for_test_modules = True

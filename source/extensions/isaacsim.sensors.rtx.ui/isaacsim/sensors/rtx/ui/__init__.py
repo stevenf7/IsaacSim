@@ -15,7 +15,6 @@
 
 """UI components for RTX sensor visualization and controls."""
 
-
 from .extension import Extension
 
 __all__ = []

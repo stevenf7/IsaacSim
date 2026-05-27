@@ -15,7 +15,6 @@
 
 """Module for ROS2 waypoint following examples and UI integration."""
 
-
 import gc
 import os
 import weakref

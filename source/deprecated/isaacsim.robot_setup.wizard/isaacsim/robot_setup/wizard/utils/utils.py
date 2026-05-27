@@ -15,7 +15,6 @@
 
 """Utility functions for robot setup wizard operations including USD stage manipulation and file management."""
 
-
 import os
 from typing import Any
 

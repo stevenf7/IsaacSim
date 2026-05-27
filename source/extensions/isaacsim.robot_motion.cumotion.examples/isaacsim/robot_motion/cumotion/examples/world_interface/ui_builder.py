@@ -21,7 +21,6 @@ resets widget state on USD stage changes.  All scene-loading and
 world-binding state live on the scenario.
 """
 
-
 import asyncio
 from typing import Any
 

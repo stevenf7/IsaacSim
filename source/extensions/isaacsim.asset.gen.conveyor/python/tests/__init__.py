@@ -15,5 +15,4 @@
 
 """Tests for the conveyor asset generation module."""
 
-
 scan_for_test_modules = True

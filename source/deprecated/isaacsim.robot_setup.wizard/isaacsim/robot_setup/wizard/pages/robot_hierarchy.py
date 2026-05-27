@@ -15,7 +15,6 @@
 
 """Robot hierarchy wizard page for organizing robot meshes into hierarchical link structures."""
 
-
 import asyncio
 import weakref
 from typing import Any

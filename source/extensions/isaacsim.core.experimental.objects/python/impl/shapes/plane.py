@@ -15,7 +15,6 @@
 
 """High level class for creating and wrapping USD Plane primitive prims centered at the origin."""
 
-
 from __future__ import annotations
 
 from typing import Literal

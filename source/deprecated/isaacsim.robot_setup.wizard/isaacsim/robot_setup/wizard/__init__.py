@@ -15,7 +15,6 @@
 
 """Provides a wizard interface for setting up robots in Isaac Sim with step-by-step configuration tools."""
 
-
 from .extension import *
 
 __all__ = []

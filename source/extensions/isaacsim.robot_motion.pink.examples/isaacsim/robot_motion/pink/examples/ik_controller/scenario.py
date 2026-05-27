@@ -15,7 +15,6 @@
 
 """Example demonstrating PINK IK controller for reactive end-effector tracking."""
 
-
 from __future__ import annotations
 
 import isaacsim.robot_motion.experimental.motion_generation as mg

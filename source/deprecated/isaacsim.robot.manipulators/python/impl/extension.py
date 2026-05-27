@@ -15,7 +15,6 @@
 
 """Extension module for robot manipulator functionality in Isaac Sim."""
 
-
 import omni.ext
 
 

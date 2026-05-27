@@ -15,7 +15,6 @@
 
 """Extension providing an interactive GUI for cuMotion robot motion planning examples."""
 
-
 from .extension import *
 
 __all__ = ["UIBuilder"]

@@ -15,7 +15,6 @@
 
 """Unit tests for Spot robot policy examples."""
 
-
 import asyncio
 
 import isaacsim.core.experimental.utils.prim as prim_utils

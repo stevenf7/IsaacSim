@@ -104,7 +104,7 @@ class TestJointNameResolver(ogts.OmniGraphTestCase):
         if create_attributes:
             edit_args[og.Controller.Keys.CREATE_ATTRIBUTES] = create_attributes
 
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": self.GRAPH_PATH, "evaluator_name": "execution"},
             edit_args,
         )
@@ -139,7 +139,7 @@ class TestJointNameResolver(ogts.OmniGraphTestCase):
         if create_attributes:
             edit_args[og.Controller.Keys.CREATE_ATTRIBUTES] = create_attributes
 
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": self.GRAPH_PATH, "evaluator_name": "execution"},
             edit_args,
         )

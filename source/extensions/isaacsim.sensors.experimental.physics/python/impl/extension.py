@@ -21,6 +21,7 @@ This module manages the lifecycle of:
 - The C++ IContactSensor Carbonite interface (acquired here, self-driven via physics events)
 - The C++ IEffortSensor Carbonite interface (acquired here, self-driven via physics events)
 """
+
 from __future__ import annotations
 
 import carb

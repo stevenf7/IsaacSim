@@ -15,6 +15,5 @@
 
 """Provides the Scene API for managing and registering simulation scenes in Isaac Sim."""
 
-
 from isaacsim.core.api.scenes.scene import Scene as Scene
 from isaacsim.core.api.scenes.scene_registry import SceneRegistry as SceneRegistry

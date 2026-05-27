@@ -15,7 +15,6 @@
 
 """UI extension for robot joint gain tuning that provides an interactive interface for adjusting and testing robot control parameters."""
 
-
 from .extension import *
 
 __all__ = ["UIBuilder"]

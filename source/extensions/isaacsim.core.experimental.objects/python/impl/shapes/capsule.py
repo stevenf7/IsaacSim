@@ -15,7 +15,6 @@
 
 """Provide a high-level class for creating and manipulating USD Capsule primitives in Isaac Sim."""
 
-
 from __future__ import annotations
 
 from typing import Literal

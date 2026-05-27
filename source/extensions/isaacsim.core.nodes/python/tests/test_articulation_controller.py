@@ -153,7 +153,7 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
 
     # ----------------------------------------------------------------------
     async def test_joint_name_ogn(self):
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
@@ -200,7 +200,7 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
 
     # ----------------------------------------------------------------------
     async def test_joint_index_ogn(self):
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
@@ -300,7 +300,7 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
 
     # ----------------------------------------------------------------------
     async def test_full_array_no_index_ogn(self):
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
@@ -341,7 +341,7 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
 
     # ----------------------------------------------------------------------
     async def test_single_joint_name_ogn(self):
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
@@ -381,7 +381,7 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
 
     # ----------------------------------------------------------------------
     async def test_single_joint_index_ogn(self):
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [
@@ -421,7 +421,7 @@ class TestArticulationControllerNode(ogts.OmniGraphTestCase):
 
     # ----------------------------------------------------------------------
     async def test_joint_indices_different_shape(self):
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [

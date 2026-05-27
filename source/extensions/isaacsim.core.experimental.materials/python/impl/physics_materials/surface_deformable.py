@@ -15,7 +15,6 @@
 
 """High level wrapper for creating and managing Surface Deformable material prims with properties like friction coefficients, Young's moduli, Poisson's ratios, densities, and surface stiffnesses."""
 
-
 from __future__ import annotations
 
 import isaacsim.core.experimental.utils.ops as ops_utils

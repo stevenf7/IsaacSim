@@ -15,7 +15,6 @@
 
 """Provides YCBVideoWriter for writing annotator groundtruth data in the YCB Video Dataset format."""
 
-
 import io
 import os
 from typing import Dict, List

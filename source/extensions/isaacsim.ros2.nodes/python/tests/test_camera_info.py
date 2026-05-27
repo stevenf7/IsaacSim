@@ -864,7 +864,7 @@ class TestRos2CameraInfo(ROS2TestCase):
 
         try:
             keys = og.Controller.Keys
-            (graph, nodes, _, _) = og.Controller.edit(
+            graph, nodes, _, _ = og.Controller.edit(
                 {"graph_path": graph_path, "evaluator_name": "execution"},
                 {
                     keys.CREATE_NODES: [
@@ -1283,7 +1283,7 @@ class TestRos2CameraInfo(ROS2TestCase):
 
         try:
             keys = og.Controller.Keys
-            (graph, nodes, _, _) = og.Controller.edit(
+            graph, nodes, _, _ = og.Controller.edit(
                 {"graph_path": graph_path, "evaluator_name": "execution"},
                 {
                     keys.CREATE_NODES: [

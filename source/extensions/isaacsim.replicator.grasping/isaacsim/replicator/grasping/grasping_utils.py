@@ -15,7 +15,6 @@
 
 """Utilities for physics simulation, grasping operations, and USD manipulation in Isaac Sim replicator grasping workflows."""
 
-
 import os
 
 import carb

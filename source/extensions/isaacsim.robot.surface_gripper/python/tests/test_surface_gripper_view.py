@@ -18,7 +18,6 @@
 
 """Tests for surface gripper functionality and the GripperView interface in Isaac Sim."""
 
-
 import time
 
 import numpy as np

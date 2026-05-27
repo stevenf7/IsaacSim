@@ -15,7 +15,6 @@
 
 """Newton physics implementation module providing core classes and interfaces for physics simulation."""
 
-
 from .fabric import FabricManager
 from .interface import NewtonPhysicsInterface
 from .newton_config import NewtonConfig

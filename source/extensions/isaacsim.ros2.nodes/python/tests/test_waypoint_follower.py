@@ -15,7 +15,6 @@
 
 """Tests for ROS 2 waypoint follower OmniGraph node."""
 
-
 import asyncio
 
 import omni.appwindow

@@ -15,7 +15,6 @@
 
 """Global variables for the RRT tutorial extension including title and description constants."""
 
-
 EXTENSION_TITLE = "RRT Example"
 
 MENU_PARENT_NAME = "Motion Generation Examples"

@@ -15,5 +15,4 @@
 
 """Implementation module for the rendering manager extension."""
 
-
 from .extension import *

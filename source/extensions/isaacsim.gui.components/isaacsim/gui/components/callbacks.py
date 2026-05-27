@@ -15,7 +15,6 @@
 
 """Callback functions for GUI component interactions including clipboard operations, file browser, IDE integration, and documentation links."""
 
-
 import os
 import shutil
 import subprocess

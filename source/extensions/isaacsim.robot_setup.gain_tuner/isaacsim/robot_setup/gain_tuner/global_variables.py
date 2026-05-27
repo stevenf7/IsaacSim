@@ -15,7 +15,6 @@
 
 """Global variables for the gain tuner extension configuration."""
 
-
 EXTENSION_TITLE = "Gain Tuner"
 
 EXTENSION_DESCRIPTION = "Auto Tuner for Articulation PD Gains"

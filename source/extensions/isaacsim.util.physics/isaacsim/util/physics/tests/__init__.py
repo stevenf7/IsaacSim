@@ -15,5 +15,4 @@
 
 """Test modules for Isaac Sim physics utilities."""
 
-
 scan_for_test_modules = True

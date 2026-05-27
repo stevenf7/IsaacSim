@@ -15,7 +15,6 @@
 
 """Utility functions and classes for domain randomization operations in Isaac Sim Replicator."""
 
-
 import json
 from typing import Dict, List
 

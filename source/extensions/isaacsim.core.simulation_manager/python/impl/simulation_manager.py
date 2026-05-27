@@ -15,7 +15,6 @@
 
 """Provide centralized management of physics simulation operations, events, callbacks, and time-related functionality."""
 
-
 from __future__ import annotations
 
 import weakref

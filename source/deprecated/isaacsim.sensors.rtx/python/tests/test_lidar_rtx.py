@@ -15,7 +15,6 @@
 
 """Test module for RTX-based LiDAR sensor functionality."""
 
-
 import asyncio
 from typing import Any
 

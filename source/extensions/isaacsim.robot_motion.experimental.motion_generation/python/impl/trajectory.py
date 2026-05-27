@@ -15,7 +15,6 @@
 
 """Interface for defining continuous-time robot trajectories in Isaac Sim with abstract methods for duration and state retrieval."""
 
-
 from abc import ABC, abstractmethod
 from typing import Optional
 

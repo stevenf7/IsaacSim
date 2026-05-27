@@ -15,7 +15,6 @@
 
 """Provides an Isaac Sim extension for generating various types of extension templates to help users create custom extensions."""
 
-
 from .extension import *
 
 __all__ = ["TemplateGenerator"]

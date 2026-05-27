@@ -15,7 +15,6 @@
 
 """Defines UI styling constants and functions for the robot setup assembler extension."""
 
-
 import omni
 import omni.kit.app
 

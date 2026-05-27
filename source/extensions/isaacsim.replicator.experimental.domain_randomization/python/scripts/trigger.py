@@ -15,7 +15,6 @@
 
 """Provides trigger functionality for reinforcement learning frame events in domain randomization workflows."""
 
-
 from omni.replicator.core.utils import ReplicatorWrapper, create_node
 
 from .context import initialize_context

@@ -15,7 +15,6 @@
 
 """Tiled camera sensor implementation for batch processing multiple cameras with shared annotators."""
 
-
 from __future__ import annotations
 
 from typing import Any, Literal, get_args

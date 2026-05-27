@@ -15,7 +15,6 @@
 
 """Defines geometric data types for 2D and 3D spatial representations used in mobility generation."""
 
-
 from dataclasses import dataclass
 
 import numpy as np

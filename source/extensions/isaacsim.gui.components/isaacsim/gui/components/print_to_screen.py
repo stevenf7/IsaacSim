@@ -15,7 +15,6 @@
 
 """Provides utilities for displaying text on the viewport screen using OmniGraph visualization nodes."""
 
-
 import numpy as np
 import omni
 import omni.graph.core as og
@@ -55,7 +54,7 @@ class ScreenPrinter:
             omni.usd.get_context().get_stage(), "/World/PrintActionGraph", False
         )
 
-        (self.graph, self.nodes, _, _) = self._controller.edit(
+        self.graph, self.nodes, _, _ = self._controller.edit(
             {"graph_path": self._graph_path, "evaluator_name": "push"},
             {
                 self._keys.CREATE_NODES: [

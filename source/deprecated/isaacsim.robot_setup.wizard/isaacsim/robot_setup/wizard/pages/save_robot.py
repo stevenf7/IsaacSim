@@ -15,7 +15,6 @@
 
 """UI component for saving robot configurations as USD files with articulation APIs and physics setups."""
 
-
 import os
 
 import omni.ui as ui

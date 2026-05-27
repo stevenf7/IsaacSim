@@ -15,7 +15,6 @@
 
 """Interactive example demonstrating replay functionality for recorded robot trajectories and scene data from the Follow Target manipulation task."""
 
-
 from isaacsim.robot.experimental.manipulators.examples.interactive.replay_follow_target.replay_follow_target import (
     ReplayFollowTarget,
 )

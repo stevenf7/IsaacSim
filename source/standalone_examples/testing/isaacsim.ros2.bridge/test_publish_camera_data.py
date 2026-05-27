@@ -179,7 +179,7 @@ def publish_camera_tf(camera: Camera):
 
         # If a camera graph is not found, create a new one.
         if not omni.usd.get_context().get_stage().GetPrimAtPath(ros_camera_graph_path).IsValid():
-            (ros_camera_graph, _, _, _) = og.Controller.edit(
+            ros_camera_graph, _, _, _ = og.Controller.edit(
                 {
                     "graph_path": ros_camera_graph_path,
                     "evaluator_name": "execution",

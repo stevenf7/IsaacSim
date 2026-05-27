@@ -15,7 +15,6 @@
 
 """API for creating and managing primitive geometric objects in Isaac Sim."""
 
-
 from isaacsim.core.api.objects.capsule import DynamicCapsule as DynamicCapsule
 from isaacsim.core.api.objects.capsule import FixedCapsule as FixedCapsule
 from isaacsim.core.api.objects.capsule import VisualCapsule as VisualCapsule

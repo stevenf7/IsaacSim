@@ -21,7 +21,6 @@ state on USD stage changes.  All scene-loading and trajectory state
 live on the scenario.
 """
 
-
 import asyncio
 from typing import Any
 

@@ -15,7 +15,6 @@
 
 """Utility functions for manipulating rigid bodies, physics colliders, and UI elements in the grasp editor."""
 
-
 from typing import List
 
 import carb

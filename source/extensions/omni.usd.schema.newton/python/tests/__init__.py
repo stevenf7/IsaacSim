@@ -15,5 +15,4 @@
 
 """Tests module for the Newton USD schema extensions."""
 
-
 scan_for_test_modules = True

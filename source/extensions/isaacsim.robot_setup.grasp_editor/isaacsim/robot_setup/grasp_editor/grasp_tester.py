@@ -15,7 +15,6 @@
 
 """Testing framework for evaluating robotic grasp stability and effectiveness through automated simulation."""
 
-
 from typing import List
 
 import isaacsim.core.experimental.utils.transform as transform_utils

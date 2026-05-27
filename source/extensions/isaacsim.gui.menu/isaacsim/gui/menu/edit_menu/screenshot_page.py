@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Preferences page for screenshot capture settings."""
+
 import os
 
 import carb.settings

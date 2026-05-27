@@ -21,6 +21,7 @@ This module provides shared functionality for IMU and contact sensors including:
 - Utility functions for vector/quaternion operations
 - Singleton managers for sensor lifecycle and contact events
 """
+
 from __future__ import annotations
 
 import weakref

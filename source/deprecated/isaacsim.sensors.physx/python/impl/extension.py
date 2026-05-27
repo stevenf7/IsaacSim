@@ -15,7 +15,6 @@
 
 """Extension for physics-based sensor simulation capabilities in Isaac Sim including proximity sensors, LiDAR sensors, generic range sensors, and lightbeam sensors."""
 
-
 import omni.ext
 import omni.usd
 from omni.physics.core import get_physics_simulation_interface

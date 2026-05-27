@@ -15,7 +15,6 @@
 
 """Provides synthetic data recording functionality for Isaac Sim through the Replicator framework."""
 
-
 from .synthetic_recorder_extension import *
 
 __all__ = ["SyntheticRecorderWindow"]

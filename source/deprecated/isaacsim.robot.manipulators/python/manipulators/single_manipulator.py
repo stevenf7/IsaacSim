@@ -15,7 +15,6 @@
 
 """High level wrapper for a manipulator with a single end effector and optional gripper."""
 
-
 from collections.abc import Sequence
 from typing import Optional
 

@@ -15,7 +15,6 @@
 
 """Implementation for manipulating USD Physics Scene prims and their attributes."""
 
-
 from __future__ import annotations
 
 import isaacsim.core.experimental.utils.prim as prim_utils

@@ -15,7 +15,6 @@
 
 """Provides the SimulationApp class for launching and managing an Omniverse Toolkit application instance."""
 
-
 from __future__ import annotations  # This allows us to hint types that do not yet exist like omni.usd etc
 
 import argparse

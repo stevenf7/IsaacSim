@@ -15,7 +15,6 @@
 
 """Unit tests for the DifferentialController and DifferentialController node functionality in wheeled robots."""
 
-
 import omni.kit.test
 from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
 

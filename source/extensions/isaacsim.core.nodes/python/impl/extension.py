@@ -15,7 +15,6 @@
 
 """Isaac Sim core nodes extension providing computational nodes for data processing and annotation in robotics simulations."""
 
-
 import carb
 import numpy as np
 import omni.ext

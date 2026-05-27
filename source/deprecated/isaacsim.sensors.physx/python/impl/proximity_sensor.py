@@ -15,7 +15,6 @@
 
 """Implementation of PhysX-based proximity sensors for detecting object overlaps in Isaac Sim simulations."""
 
-
 import time
 
 import carb

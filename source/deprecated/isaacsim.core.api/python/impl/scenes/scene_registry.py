@@ -15,7 +15,6 @@
 
 """Provides a registry system for tracking and managing different types of objects added to Isaac Sim scenes."""
 
-
 from isaacsim.core.api.materials.deformable_material import DeformableMaterial
 from isaacsim.core.api.materials.deformable_material_view import DeformableMaterialView
 from isaacsim.core.api.materials.particle_material import ParticleMaterial

@@ -15,7 +15,6 @@
 
 """Base wrapper class for managing USD prims with support for regex path matching and batch operations."""
 
-
 from __future__ import annotations
 
 import re

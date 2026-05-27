@@ -15,7 +15,6 @@
 
 """Provide data logging functionality for collecting, storing, and replaying simulation data."""
 
-
 import json
 from collections.abc import Callable
 

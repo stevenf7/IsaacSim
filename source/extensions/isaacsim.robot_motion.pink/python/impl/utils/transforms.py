@@ -15,7 +15,6 @@
 
 """Provides utilities for transforming between Isaac Sim (position, quaternion) and Pinocchio SE3 representations."""
 
-
 from __future__ import annotations
 
 import isaacsim.robot_motion.experimental.motion_generation as mg

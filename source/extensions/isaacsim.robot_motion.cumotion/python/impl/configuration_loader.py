@@ -15,7 +15,6 @@
 
 """Provides functionality for loading and configuring cuMotion robots from URDF and XRDF files."""
 
-
 import pathlib
 from dataclasses import dataclass
 

@@ -15,7 +15,6 @@
 
 """Utilities for managing USD session sublayers during robot assembly operations."""
 
-
 import asyncio
 import os
 

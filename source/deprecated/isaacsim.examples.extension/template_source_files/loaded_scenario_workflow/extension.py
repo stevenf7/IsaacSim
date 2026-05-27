@@ -15,7 +15,6 @@
 
 """Extension template for loaded scenario workflow."""
 
-
 import asyncio
 import gc
 

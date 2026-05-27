@@ -15,7 +15,6 @@
 
 """Provides UI components for configuring joints and drives in the robot setup wizard."""
 
-
 from functools import partial
 from typing import Any
 

@@ -17,7 +17,6 @@
 
 """Module defining global UI widget constants for the replicator behavior interface."""
 
-
 WIDGET_TITLE = "Exposed Variables"
 
 # Unique name identifier for the widget

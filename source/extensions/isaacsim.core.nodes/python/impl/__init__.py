@@ -18,6 +18,7 @@
 The extension object must be visible so that this module properly starts up and shuts down.
 The Python bindings are all imported so that they can be used in the omni.graph.scriptnode import space.
 """
+
 from .base_reset_node import BaseResetNode as BaseResetNode
 from .base_writer_node import BaseWriterNode as BaseWriterNode
 from .base_writer_node import WriterRequest as WriterRequest

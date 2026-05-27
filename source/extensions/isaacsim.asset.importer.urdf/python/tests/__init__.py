@@ -15,5 +15,4 @@
 
 """Tests for the URDF importer functionality."""
 
-
 scan_for_test_modules = True

@@ -369,7 +369,7 @@ def get_intrinsics_matrix(viewport_api: Any) -> np.ndarray:
     stage = get_current_stage()
     prim = stage.GetPrimAtPath(viewport_api.get_active_camera())
     focal_length = prim.GetAttribute("focalLength").Get()
-    (width, height) = viewport_api.get_texture_resolution()
+    width, height = viewport_api.get_texture_resolution()
     horizontal_aperture = prim.GetAttribute("horizontalAperture").Get()
     vertical_aperture = horizontal_aperture * (float(height) / width)
     fx = width * focal_length / horizontal_aperture
@@ -409,7 +409,7 @@ def set_intrinsics_matrix(viewport_api: Any, intrinsics_matrix: np.ndarray, foca
         raise ValueError("Viewport does not have a valid camera prim")
     prim = UsdGeom.Camera(camera_prim)
 
-    (width, height) = viewport_api.get_texture_resolution()
+    width, height = viewport_api.get_texture_resolution()
 
     horizontal_aperture = width * focal_length / fx
     vertical_aperture = height * focal_length / fy

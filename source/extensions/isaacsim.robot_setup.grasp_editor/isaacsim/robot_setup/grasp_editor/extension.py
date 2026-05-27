@@ -15,7 +15,6 @@
 
 """Extension for creating a UI-based grasp editor interface in Isaac Sim."""
 
-
 import asyncio
 import gc
 

@@ -15,7 +15,6 @@
 
 """Delegate implementation for displaying example assets in Isaac Sim's browser detail view."""
 
-
 import asyncio
 from pathlib import Path
 from typing import Optional

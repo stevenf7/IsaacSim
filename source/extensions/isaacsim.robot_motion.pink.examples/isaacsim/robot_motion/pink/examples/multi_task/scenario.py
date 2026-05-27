@@ -15,7 +15,6 @@
 
 """Example demonstrating PINK multi-task IK with weighted frame, posture, and damping tasks."""
 
-
 from __future__ import annotations
 
 from typing import Any

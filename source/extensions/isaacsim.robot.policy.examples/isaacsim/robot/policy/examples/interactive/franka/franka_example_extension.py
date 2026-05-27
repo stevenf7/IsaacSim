@@ -15,7 +15,6 @@
 
 """Extension that demonstrates a Franka Panda robot performing a drawer opening task using a trained policy."""
 
-
 import os
 
 import omni.ext

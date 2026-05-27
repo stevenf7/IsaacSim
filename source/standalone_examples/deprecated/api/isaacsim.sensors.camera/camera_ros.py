@@ -122,7 +122,7 @@ timeline.commit()
 camera.initialize()
 
 # Calculate the focal length and aperture size from the camera matrix
-(fx, _, cx, _, fy, cy, _, _, _) = K
+fx, _, cx, _, fy, cy, _, _, _ = K
 horizontal_aperture = pixel_size * 1e-3 * width
 vertical_aperture = pixel_size * 1e-3 * height
 focal_length_x = fx * pixel_size * 1e-3

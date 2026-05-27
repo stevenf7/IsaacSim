@@ -180,9 +180,9 @@ def createTetraVoxels(voxel_dim: int, occupancy_filter_func: callable) -> tuple:
     index = 0
     for (x, y, z), _ in numpy.ndenumerate(grid_to_indices):
         # check adjacent cells
-        (x_b, x_e) = (max(x - 1, 0), min(x + 1, dimx))
-        (y_b, y_e) = (max(y - 1, 0), min(y + 1, dimy))
-        (z_b, z_e) = (max(z - 1, 0), min(z + 1, dimz))
+        x_b, x_e = (max(x - 1, 0), min(x + 1, dimx))
+        y_b, y_e = (max(y - 1, 0), min(y + 1, dimy))
+        z_b, z_e = (max(z - 1, 0), min(z + 1, dimz))
         neighbors = grid[x_b:x_e, y_b:y_e, z_b:z_e]
         if numpy.any(neighbors):
             grid_to_indices[x][y][z] = index

@@ -15,7 +15,6 @@
 
 """Keyboard and gamepad input modules for robot teleoperation."""
 
-
 import carb
 import numpy as np
 import omni

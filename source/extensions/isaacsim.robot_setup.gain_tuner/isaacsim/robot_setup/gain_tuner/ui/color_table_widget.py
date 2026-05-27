@@ -15,7 +15,6 @@
 
 """Provides color-coded table widget for visualizing and selecting robot joints in the gains tuner interface."""
 
-
 import colorsys
 
 import omni.ui as ui

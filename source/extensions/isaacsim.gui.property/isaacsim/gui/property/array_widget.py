@@ -15,7 +15,6 @@
 
 """Property widgets for array-type USD attributes."""
 
-
 import omni
 import omni.ui as ui
 from omni.kit.property.usd.usd_attribute_model import UsdAttributeModel

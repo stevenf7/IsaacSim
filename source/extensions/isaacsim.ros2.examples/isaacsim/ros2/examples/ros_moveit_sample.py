@@ -15,7 +15,6 @@
 
 """Provides a ROS 2 MoveIt integration example extension for controlling a Franka robot in Isaac Sim."""
 
-
 import asyncio
 import gc
 import os

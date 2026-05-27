@@ -15,7 +15,6 @@
 
 """Extension for generating mobility data using teleoperated robots in Omniverse."""
 
-
 import asyncio
 import datetime
 import glob

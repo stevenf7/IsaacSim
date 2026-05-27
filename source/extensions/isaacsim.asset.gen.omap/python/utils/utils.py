@@ -15,7 +15,6 @@
 
 """Utility functions for occupancy map generation and visualization."""
 
-
 import numpy as np
 
 

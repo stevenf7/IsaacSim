@@ -30,7 +30,7 @@ simulation_app.update()
 import omni.graph.core as og
 
 keys = og.Controller.Keys
-(graph, (tick_node, test_node, str_node), _, _) = og.Controller.edit(
+graph, (tick_node, test_node, str_node), _, _ = og.Controller.edit(
     {"graph_path": "/controller_graph", "evaluator_name": "execution"},
     {
         keys.CREATE_NODES: [

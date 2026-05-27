@@ -470,7 +470,7 @@ class TestMotionPolicy(omni.kit.test.AsyncTestCase):
             target_pos: Target position for the end effector.
             obstacle_pos: Position of the obstacle.
         """
-        (result, error) = await open_stage_async(usd_path)
+        result, error = await open_stage_async(usd_path)
 
         rmp_config = interface_config_loader.load_supported_motion_policy_config(robot_name, "RMPflow")
         self._motion_policy = RmpFlow(**rmp_config)

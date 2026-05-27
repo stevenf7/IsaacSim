@@ -15,7 +15,6 @@
 
 """High level class for creating/wrapping USD Cylinder Light prims that emit light outward from a cylinder."""
 
-
 from __future__ import annotations
 
 import isaacsim.core.experimental.utils.ops as ops_utils

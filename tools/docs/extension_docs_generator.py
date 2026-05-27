@@ -455,8 +455,7 @@ def generate_extension_settings(ext_path, ext_name, ext_config, error_as_warn):
                     f"      - ``{item['value']}``",
                 ]
             # extension-settings usage
-            content += [
-                f"""
+            content += [f"""
 The extension-specific settings can be either specified (set) or retrieved (get) in one of the following ways:
 
 .. tab-set::
@@ -508,8 +507,7 @@ The extension-specific settings can be either specified (set) or retrieved (get)
 
                     settings = carb.settings.get_settings()
                     value = settings.get("/exts/{ext_name}/SETTING_NAME")
-"""
-            ]
+"""]
 
         if app_result:
             # app-settings table

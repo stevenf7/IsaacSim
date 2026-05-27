@@ -38,7 +38,7 @@ class TestPhysicsStep(omni.kit.test.AsyncTestCase):
 
         stage.DefinePrim("/Cube", "Cube")
         keys = og.Controller.Keys
-        (self._clock_graph, _, _, _) = og.Controller.edit(
+        self._clock_graph, _, _, _ = og.Controller.edit(
             {
                 "graph_path": "/physics_step",
                 "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND,

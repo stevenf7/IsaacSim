@@ -8,7 +8,7 @@ viewport_api = omni.kit.viewport.utility.get_active_viewport()
 # Set viewport resolution, changes will occur on next frame
 viewport_api.set_texture_resolution((512, 512))
 # get resolution
-(width, height) = viewport_api.get_texture_resolution()
+width, height = viewport_api.get_texture_resolution()
 aspect_ratio = width / height
 # get camera prim attached to viewport
 camera = stage.GetPrimAtPath(viewport_api.get_active_camera())

@@ -15,7 +15,6 @@
 
 """Demonstrates the LightBeam sensor functionality in Isaac Sim with an interactive example showing real-time object detection and distance measurement using physics-based ray casting."""
 
-
 import asyncio
 import weakref
 
@@ -324,7 +323,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
             observer_name="isaacsim.sensors.physx.examples.lightbeam_sensor._on_stage_closed",
         )
 
-        (action_graph, new_nodes, _, _) = og.Controller.edit(
+        action_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [

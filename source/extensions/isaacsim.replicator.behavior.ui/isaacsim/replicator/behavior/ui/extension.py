@@ -15,7 +15,6 @@
 
 """UI extension for Isaac Sim Replicator behavior management with property widgets for exposed variables."""
 
-
 import carb.eventdispatcher
 import omni.ext
 from isaacsim.replicator.behavior.global_variables import EXPOSED_ATTR_NS, EXPOSED_VARS_CHANGED_EVENT

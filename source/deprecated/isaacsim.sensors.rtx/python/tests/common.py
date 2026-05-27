@@ -15,7 +15,6 @@
 
 """Common utilities for RTX sensor tests."""
 
-
 import numpy as np
 from isaacsim.core.api.materials import OmniPBR
 from isaacsim.core.api.objects import VisualCuboid

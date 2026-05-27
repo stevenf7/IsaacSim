@@ -15,6 +15,5 @@
 
 """Defines setup classes and base implementations for wheeled robots in Isaac Sim simulations."""
 
-
 from .holonomic_robot_usd_setup import HolonomicRobotUsdSetup as HolonomicRobotUsdSetup
 from .wheeled_robot import WheeledRobot as WheeledRobot

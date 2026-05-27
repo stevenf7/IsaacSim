@@ -15,7 +15,6 @@
 
 """Extension providing an interactive UI for the UR10 Palletizing example using Cortex behaviors."""
 
-
 import asyncio
 import os
 

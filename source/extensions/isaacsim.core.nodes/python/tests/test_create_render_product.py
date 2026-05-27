@@ -44,7 +44,7 @@ class TestCreateRenderProduct(ogts.OmniGraphTestCase):
     async def test_create_render_product(self):
         rp_3 = rep.create.render_product("/OmniverseKit_Persp", (512, 512), name="RP3")
 
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [

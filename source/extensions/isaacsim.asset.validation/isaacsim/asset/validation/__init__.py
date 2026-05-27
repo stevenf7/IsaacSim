@@ -15,7 +15,6 @@
 
 """Provides validation rules and utilities for Isaac Sim assets including drives, joints, materials, physics, and robots."""
 
-
 from .drive_rules import *  # noqa: F403
 from .extension import IsaacSimAssetValidationExtension  # noqa: F401
 from .joint_rules import *  # noqa: F403

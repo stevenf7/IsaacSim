@@ -15,7 +15,6 @@
 
 """Deprecated bounds computation utilities."""
 
-
 # omniverse
 import carb
 import numpy as np

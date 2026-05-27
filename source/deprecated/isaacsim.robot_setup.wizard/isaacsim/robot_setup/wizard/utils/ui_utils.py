@@ -15,7 +15,6 @@
 
 """Provides UI utility functions and classes for building wizard interfaces in the Isaac Sim robot setup workflow."""
 
-
 import os
 from collections.abc import Callable
 from typing import Any

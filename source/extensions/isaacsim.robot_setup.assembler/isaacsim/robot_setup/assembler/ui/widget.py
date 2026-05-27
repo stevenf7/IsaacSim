@@ -15,7 +15,6 @@
 
 """UI widget components for robot setup assembler interface."""
 
-
 from collections.abc import Callable
 
 import omni.ui as ui

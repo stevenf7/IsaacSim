@@ -15,7 +15,6 @@
 
 """Interactive Franka Cortex extension module for Isaac Sim robotic simulation examples."""
 
-
 from isaacsim.cortex.examples.franka_cortex.franka_cortex_extension import FrankaCortexExtension
 
 __all__ = ["FrankaCortexExtension"]

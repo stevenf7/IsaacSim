@@ -20,7 +20,6 @@
 
 """
 
-
 import omni.usd
 from pxr import PhysxSchema, Usd, UsdGeom, UsdPhysics
 

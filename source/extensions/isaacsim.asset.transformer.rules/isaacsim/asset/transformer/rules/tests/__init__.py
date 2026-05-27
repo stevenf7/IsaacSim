@@ -15,5 +15,4 @@
 
 """Tests for asset transformer rules."""
 
-
 scan_for_test_modules = True

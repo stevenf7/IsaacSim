@@ -117,7 +117,7 @@ timeline.commit()
 camera.initialize()
 
 # Calculate the focal length and aperture size from the camera matrix
-((fx, _, cx), (_, fy, cy), (_, _, _)) = camera_matrix  # fx, fy are in pixels, cx, cy are in pixels
+(fx, _, cx), (_, fy, cy), (_, _, _) = camera_matrix  # fx, fy are in pixels, cx, cy are in pixels
 horizontal_aperture = pixel_size * width * 1e-6  # convert to meters
 vertical_aperture = pixel_size * height * 1e-6  # convert to meters
 focal_length_x = pixel_size * fx * 1e-6  # convert to meters

@@ -15,7 +15,6 @@
 
 """Provide base class for creating and wrapping USD Light prims."""
 
-
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

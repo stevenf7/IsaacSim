@@ -15,7 +15,6 @@
 
 """UI components for the Mobility Gen extension in Isaac Sim's Replicator framework."""
 
-
 from .extension import *
 
 __all__ = []

@@ -15,7 +15,6 @@
 
 """Interactive quadruped robot control example using reinforcement learning policies and keyboard input."""
 
-
 import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni

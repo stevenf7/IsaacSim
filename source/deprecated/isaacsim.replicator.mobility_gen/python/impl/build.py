@@ -15,7 +15,6 @@
 
 """Provides functionality for building and loading mobility generation scenarios with robots, occupancy maps, and camera configurations."""
 
-
 import os
 
 import isaacsim.core.api.objects as objects

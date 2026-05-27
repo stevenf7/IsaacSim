@@ -15,5 +15,4 @@
 
 """Examples and demonstrations for physics-based sensors in Isaac Sim."""
 
-
 __all__ = []

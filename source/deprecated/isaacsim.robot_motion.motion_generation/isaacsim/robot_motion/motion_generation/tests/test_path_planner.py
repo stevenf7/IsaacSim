@@ -15,7 +15,6 @@
 
 """Tests for path planning functionality in the robot motion generation system."""
 
-
 import asyncio
 import json
 import os

@@ -15,7 +15,6 @@
 
 """Provides pre-built scenario implementations for robot mobility generation and control."""
 
-
 import colorsys
 
 import numpy as np

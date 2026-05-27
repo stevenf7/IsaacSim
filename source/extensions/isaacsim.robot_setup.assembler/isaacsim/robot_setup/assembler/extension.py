@@ -15,7 +15,6 @@
 
 """Extension for robot setup and assembly in Isaac Sim."""
 
-
 import asyncio
 import gc
 

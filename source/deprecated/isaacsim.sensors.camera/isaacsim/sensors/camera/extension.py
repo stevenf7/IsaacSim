@@ -15,7 +15,6 @@
 
 """Extension providing camera sensor functionality for Isaac Sim simulation environment."""
 
-
 import omni.ext
 
 EXTENSION_NAME = "Isaac Sensor"

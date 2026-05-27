@@ -15,7 +15,6 @@
 
 """Extension class for managing the lifecycle of the isaacsim.replicator.writers.impl extension."""
 
-
 import omni.ext
 
 

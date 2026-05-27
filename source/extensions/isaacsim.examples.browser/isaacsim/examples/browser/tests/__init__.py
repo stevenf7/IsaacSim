@@ -15,5 +15,4 @@
 
 """Module for configuring test scanning behavior in Isaac Sim examples browser."""
 
-
 scan_for_test_modules = True

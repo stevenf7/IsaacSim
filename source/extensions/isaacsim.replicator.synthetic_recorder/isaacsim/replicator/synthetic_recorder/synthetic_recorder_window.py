@@ -15,7 +15,6 @@
 
 """UI window for configuring and controlling synthetic data recording in Isaac Sim."""
 
-
 import asyncio
 import json
 import os

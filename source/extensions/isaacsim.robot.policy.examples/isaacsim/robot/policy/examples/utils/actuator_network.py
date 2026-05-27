@@ -15,7 +15,6 @@
 
 """Provides neural network implementations for Series Elastic Actuator (SEA) torque computation in robotic control."""
 
-
 import numpy as np
 from isaacsim.core.deprecation_manager import import_module
 from numpy import genfromtxt

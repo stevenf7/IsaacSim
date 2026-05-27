@@ -15,7 +15,6 @@
 
 """Extension that provides a user interface for grasping functionality within Isaac Sim."""
 
-
 import omni.ext
 from omni.kit.menu.utils import MenuHelperExtensionFull
 

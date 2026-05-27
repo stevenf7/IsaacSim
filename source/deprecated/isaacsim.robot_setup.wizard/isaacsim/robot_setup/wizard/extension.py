@@ -15,7 +15,6 @@
 
 """Robot setup wizard extension that provides a guided interface for configuring robots in Isaac Sim."""
 
-
 import weakref
 
 import carb

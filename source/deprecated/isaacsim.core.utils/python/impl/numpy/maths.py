@@ -15,7 +15,6 @@
 
 """Mathematical utility functions for matrix operations and trigonometric computations."""
 
-
 import numpy as np
 
 

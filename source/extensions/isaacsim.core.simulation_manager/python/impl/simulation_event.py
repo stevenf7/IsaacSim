@@ -15,7 +15,6 @@
 
 """Defines simulation event types as an enumeration for tracking various stages of simulation lifecycle and physics steps."""
 
-
 from enum import Enum
 
 

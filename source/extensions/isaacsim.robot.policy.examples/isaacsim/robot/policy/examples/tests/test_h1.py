@@ -15,7 +15,6 @@
 
 """Unit tests for H1 humanoid robot policy examples in Isaac Sim."""
 
-
 import asyncio
 
 import isaacsim.core.experimental.utils.prim as prim_utils

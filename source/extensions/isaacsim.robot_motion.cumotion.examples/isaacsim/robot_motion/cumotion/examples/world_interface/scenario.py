@@ -15,7 +15,6 @@
 
 """CumotionWorldInterface example for obstacle discovery and world synchronization."""
 
-
 from typing import Literal
 
 import omni.kit.app

@@ -64,7 +64,7 @@ def asset_convert(args):
     for folder in args.folders:
         print(f"\nConverting folder {folder}...")
 
-        (result, models) = omni.client.list(folder)
+        result, models = omni.client.list(folder)
         for i, entry in enumerate(models):
             if i >= args.max_models:
                 print(f"max models ({args.max_models}) reached, exiting conversion")

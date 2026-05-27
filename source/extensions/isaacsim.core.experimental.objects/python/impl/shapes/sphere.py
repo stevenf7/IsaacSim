@@ -15,7 +15,6 @@
 
 """High level class for creating and wrapping USD Sphere primitive prims centered at the origin."""
 
-
 from __future__ import annotations
 
 import isaacsim.core.experimental.utils.ops as ops_utils

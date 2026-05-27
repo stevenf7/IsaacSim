@@ -15,7 +15,6 @@
 
 """Tests for sensor icon viewport functionality."""
 
-
 from pathlib import Path
 
 import carb.settings

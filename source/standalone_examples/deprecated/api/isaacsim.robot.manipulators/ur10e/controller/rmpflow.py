@@ -15,7 +15,6 @@
 
 """Provide RMPflow motion policy controller for UR10e robot."""
 
-
 import os
 
 import isaacsim.robot_motion.motion_generation as mg

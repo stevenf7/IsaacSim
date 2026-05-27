@@ -15,7 +15,6 @@
 
 """Experimental physics sensor implementation module providing sensor helpers and extension functionality."""
 
-
 from .common import ContactSensorReading as ContactSensorReading
 from .common import IMURawData as IMURawData
 from .common import IMUSensorReading as IMUSensorReading

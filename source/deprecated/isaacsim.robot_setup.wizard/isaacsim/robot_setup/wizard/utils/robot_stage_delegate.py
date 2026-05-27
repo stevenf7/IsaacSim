@@ -15,7 +15,6 @@
 
 """Stage delegate and context menu for robot setup operations within the Isaac Sim robot setup wizard."""
 
-
 import carb
 from omni.kit.widget.stage import ContextMenu
 from omni.kit.widget.stage.stage_delegate import StageDelegate

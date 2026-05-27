@@ -15,7 +15,6 @@
 
 """Utility functions for USD prim relationships and Replicator node registration with telemetry tracking."""
 
-
 import omni
 import omni.replicator.core as rep
 

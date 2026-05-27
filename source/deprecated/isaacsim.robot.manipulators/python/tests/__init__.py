@@ -15,5 +15,4 @@
 
 """Tests for the isaacsim.robot.manipulators module."""
 
-
 scan_for_test_modules = True

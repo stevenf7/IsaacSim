@@ -15,7 +15,6 @@
 
 """Global variables for the trajectory generator example extension."""
 
-
 EXTENSION_TITLE = "cuMotion Trajectory Generator Example"
 
 EXTENSION_DESCRIPTION = "Demonstrates trajectory generation from waypoints and path specifications using cuMotion."

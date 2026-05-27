@@ -30,6 +30,7 @@ Mirrors the pattern in ``isaacsim.sensors.experimental.rtx``:
   Sensors with no authoring class (e.g. :class:`EffortSensor`) inherit
   :class:`_PhysicsSensorRuntimeBase` directly.
 """
+
 from __future__ import annotations
 
 from typing import Any

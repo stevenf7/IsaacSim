@@ -15,7 +15,6 @@
 
 """Utilities for physics-related functionality in Isaac Sim."""
 
-
 from .extension import *
 
 __all__: list[str] = []

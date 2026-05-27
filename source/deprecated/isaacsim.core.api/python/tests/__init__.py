@@ -15,5 +15,4 @@
 
 """Tests for the Isaac Sim Core API module."""
 
-
 scan_for_test_modules = True

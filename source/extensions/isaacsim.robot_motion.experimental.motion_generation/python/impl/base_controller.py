@@ -15,7 +15,6 @@
 
 """Base controller interface for robot motion generation in Isaac Sim."""
 
-
 from abc import ABC, abstractmethod
 from typing import Optional
 

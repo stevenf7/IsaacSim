@@ -15,5 +15,4 @@
 
 """Unit tests for the URDF exporter functionality."""
 
-
 scan_for_test_modules = True

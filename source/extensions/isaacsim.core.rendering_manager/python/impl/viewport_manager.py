@@ -15,7 +15,6 @@
 
 """Core class that provides APIs for managing viewports."""
 
-
 from __future__ import annotations
 
 import asyncio

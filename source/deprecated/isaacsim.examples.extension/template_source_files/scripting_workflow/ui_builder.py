@@ -15,7 +15,6 @@
 
 """UI builder for the scripting workflow template."""
 
-
 import omni.timeline
 import omni.ui as ui
 import omni.usd

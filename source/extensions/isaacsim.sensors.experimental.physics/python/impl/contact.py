@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Authoring class for contact sensors (USD prim creation/wrapping)."""
+
 from __future__ import annotations
 
 from typing import Any

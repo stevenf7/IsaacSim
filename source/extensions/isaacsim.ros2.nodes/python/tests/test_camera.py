@@ -314,7 +314,7 @@ class TestRos2Camera(ROS2TestCase):
 
         assets_root_path = get_assets_root_path()
         warehouse_scene = assets_root_path + "/Isaac/Samples/ROS2/Scenario/carter_warehouse_navigation.usd"
-        (success, error) = await stage_utils.open_stage_async(warehouse_scene)
+        success, error = await stage_utils.open_stage_async(warehouse_scene)
         self.assertTrue(success, f"Failed to open stage: {error}")
 
         await omni.kit.app.get_app().next_update_async()
@@ -408,7 +408,7 @@ class TestRos2Camera(ROS2TestCase):
 
         assets_root_path = get_assets_root_path()
         warehouse_scene = assets_root_path + "/Isaac/Samples/ROS2/Scenario/carter_warehouse_navigation.usd"
-        (success, error) = await stage_utils.open_stage_async(warehouse_scene)
+        success, error = await stage_utils.open_stage_async(warehouse_scene)
         self.assertTrue(success, f"Failed to open stage: {error}")
 
         await omni.kit.app.get_app().next_update_async()

@@ -15,7 +15,6 @@
 
 """Test suite for validating the OgnWritePhysicsArticulationView node functionality in domain randomization."""
 
-
 from typing import Any
 
 import isaacsim.replicator.domain_randomization as dr

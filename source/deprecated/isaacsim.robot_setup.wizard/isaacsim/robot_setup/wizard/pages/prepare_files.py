@@ -15,7 +15,6 @@
 
 """UI component for preparing robot configuration files in the Robot Setup Wizard."""
 
-
 import os
 
 import omni.ui as ui

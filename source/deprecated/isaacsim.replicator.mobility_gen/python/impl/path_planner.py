@@ -15,7 +15,6 @@
 
 """Path planning utilities for generating and optimizing navigation paths in occupancy grids."""
 
-
 import random
 from dataclasses import dataclass
 

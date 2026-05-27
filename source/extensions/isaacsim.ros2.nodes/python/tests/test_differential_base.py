@@ -250,7 +250,7 @@ class TestRos2DifferentialBase(ROS2TestCase):
         cmd_vel_pub = self.create_publisher(self.node, Twist, "cmd_vel", 1)
 
         graph_path = "/ActionGraph"
-        (graph_id, created_nodes) = self.add_differential_drive(graph_path, "/Carter")
+        graph_id, created_nodes = self.add_differential_drive(graph_path, "/Carter")
         og.Controller.attribute(graph_path + "/diffController.inputs:wheelRadius").set(0.1)
 
         self._timeline.play()
@@ -290,7 +290,7 @@ class TestRos2DifferentialBase(ROS2TestCase):
         # change wheel rotation and wheel base
         omni.kit.commands.execute("DeletePrims", paths=[graph_path])
 
-        (graph_id, created_nodes) = self.add_differential_drive(graph_path, "/Carter")
+        graph_id, created_nodes = self.add_differential_drive(graph_path, "/Carter")
         og.Controller.attribute(graph_path + "/diffController.inputs:wheelRadius").set(0.1)
         og.Controller.attribute(graph_path + "/diffController.inputs:wheelDistance").set(0.8)
 
@@ -520,7 +520,7 @@ class TestRos2DifferentialBase(ROS2TestCase):
         """Add differential drive to the test scene."""
         try:
             keys = og.Controller.Keys
-            (graph, nodes, _, _) = og.Controller.edit(
+            graph, nodes, _, _ = og.Controller.edit(
                 {"graph_path": graph_path, "evaluator_name": "execution"},
                 {
                     keys.CREATE_NODES: [

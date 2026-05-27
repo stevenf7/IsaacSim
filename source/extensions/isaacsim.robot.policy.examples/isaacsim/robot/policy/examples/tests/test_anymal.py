@@ -15,7 +15,6 @@
 
 """Test module for validating Anymal quadruped robot policy functionality on both CPU and GPU devices."""
 
-
 import asyncio
 
 import isaacsim.core.experimental.utils.prim as prim_utils

@@ -15,7 +15,6 @@
 
 """Snap-to-limits test: commands each joint to its lower limit, holds, then upper limit, holds, then returns home."""
 
-
 from collections.abc import Generator
 from enum import IntEnum
 

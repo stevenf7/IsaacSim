@@ -15,7 +15,6 @@
 
 """High level wrapper for manipulating ``Xform`` prims and their transformation attributes."""
 
-
 from __future__ import annotations
 
 import carb

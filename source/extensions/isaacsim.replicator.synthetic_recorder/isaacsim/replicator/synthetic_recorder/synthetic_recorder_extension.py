@@ -15,7 +15,6 @@
 
 """Extension for recording synthetic data in Isaac Sim through the Replicator framework."""
 
-
 import omni.ext
 from omni.kit.menu.utils import MenuHelperExtensionFull
 

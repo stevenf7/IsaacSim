@@ -43,7 +43,7 @@ class TestCreateViewport(ogts.OmniGraphTestCase):
 
     # ----------------------------------------------------------------------
     async def test_create_viewport(self):
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [

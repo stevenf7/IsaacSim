@@ -15,7 +15,6 @@
 
 """Properties widget for Surface Gripper prims providing specialized controls and attribute display for gripper functionality in the USD property panel."""
 
-
 import asyncio
 import typing
 

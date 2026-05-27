@@ -15,7 +15,6 @@
 
 """High level class for creating and wrapping ground plane prims with collision and rendering components."""
 
-
 from __future__ import annotations
 
 import pathlib

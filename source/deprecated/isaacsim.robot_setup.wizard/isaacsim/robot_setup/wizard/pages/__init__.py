@@ -15,7 +15,6 @@
 
 """Provides wizard page components for the robot setup workflow in Isaac Sim."""
 
-
 from .add_colliders import AddColliders as AddColliders
 from .add_robot import AddRobot as AddRobot
 from .joints_and_drives import JointsandDrives as JointsandDrives

@@ -15,7 +15,6 @@
 
 """Module for triggering domain randomization events in Isaac Sim."""
 
-
 from typing import Any
 
 from omni.replicator.core.utils import ReplicatorWrapper, create_node

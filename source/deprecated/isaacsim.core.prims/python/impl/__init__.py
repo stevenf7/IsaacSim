@@ -15,7 +15,6 @@
 
 """Implementation module for various prim classes including geometry, physics, articulation, and transformation primitives."""
 
-
 from .articulation import Articulation as Articulation
 from .cloth_prim import ClothPrim as ClothPrim
 from .deformable_prim import DeformablePrim as DeformablePrim

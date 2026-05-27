@@ -15,5 +15,4 @@
 
 """Tests for the domain randomization functionality."""
 
-
 scan_for_test_modules = True

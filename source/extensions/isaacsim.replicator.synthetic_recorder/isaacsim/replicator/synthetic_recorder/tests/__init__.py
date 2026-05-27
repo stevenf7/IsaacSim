@@ -15,5 +15,4 @@
 
 """Tests for the synthetic recorder module."""
 
-
 scan_for_test_modules = True

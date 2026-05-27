@@ -15,5 +15,4 @@
 
 """Tests for the RTX sensor UI components."""
 
-
 scan_for_test_modules = True

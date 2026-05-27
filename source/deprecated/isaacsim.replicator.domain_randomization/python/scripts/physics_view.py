@@ -15,7 +15,6 @@
 
 """Provide domain randomization functionality for physics simulation views in Isaac Sim."""
 
-
 import copy
 from typing import Any, Optional
 

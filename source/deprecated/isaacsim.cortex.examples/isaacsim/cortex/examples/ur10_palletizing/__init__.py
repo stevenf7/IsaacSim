@@ -15,7 +15,6 @@
 
 """Interactive example demonstrating UR10 robotic arm performing palletizing tasks with bin stacking operations."""
 
-
 from isaacsim.cortex.examples.ur10_palletizing.ur10_palletizing_extension import BinStackingExtension
 
 __all__ = ["BinStackingExtension"]

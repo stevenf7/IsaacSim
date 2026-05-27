@@ -15,7 +15,6 @@
 
 """A generic registry system for managing and organizing registered classes by name or index."""
 
-
 from collections import OrderedDict
 from typing import Generic, TypeVar
 

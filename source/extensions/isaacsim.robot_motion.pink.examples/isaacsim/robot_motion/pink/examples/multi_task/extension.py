@@ -15,7 +15,6 @@
 
 """Isaac Sim extension providing PINK multi-task IK examples with interactive UI."""
 
-
 import asyncio
 import gc
 from typing import Any

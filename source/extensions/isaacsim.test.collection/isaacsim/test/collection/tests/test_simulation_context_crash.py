@@ -15,7 +15,6 @@
 
 """Tests for simulation context crash scenarios to ensure timeline operations don't cause crashes."""
 
-
 import asyncio
 
 import isaacsim.core.experimental.utils.app as app_utils

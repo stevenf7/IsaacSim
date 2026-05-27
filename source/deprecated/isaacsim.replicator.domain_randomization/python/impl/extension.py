@@ -15,7 +15,6 @@
 
 """Extension implementation for the Isaac Sim domain randomization extension."""
 
-
 import omni.ext
 
 

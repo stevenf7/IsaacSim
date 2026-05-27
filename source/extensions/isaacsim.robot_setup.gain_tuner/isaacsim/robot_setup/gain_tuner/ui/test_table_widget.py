@@ -15,7 +15,6 @@
 
 """Provides UI widgets for configuring joint test parameters in the gains tuner interface."""
 
-
 from enum import IntEnum
 from functools import partial
 

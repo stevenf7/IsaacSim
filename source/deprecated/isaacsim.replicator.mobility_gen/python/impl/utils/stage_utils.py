@@ -15,7 +15,6 @@
 
 """Utilities for USD stage operations in the mobility generation module."""
 
-
 from pxr import Usd, UsdGeom
 
 

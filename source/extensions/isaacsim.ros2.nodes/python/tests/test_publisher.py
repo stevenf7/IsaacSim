@@ -52,7 +52,7 @@ class TestRos2Publisher(ROS2TestCase):
         import tf2_msgs.msg
 
         # define graph
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [

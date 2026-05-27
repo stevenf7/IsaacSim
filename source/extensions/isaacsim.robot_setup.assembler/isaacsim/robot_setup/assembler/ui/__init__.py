@@ -15,7 +15,6 @@
 
 """User interface components for the Robot Setup assembler."""
 
-
 from .style import *
 from .ui_builder import *
 from .widget import *

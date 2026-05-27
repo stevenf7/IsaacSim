@@ -15,7 +15,6 @@
 
 """Interactive example demonstrating robotic bin stacking using a UR10 robot with autonomous bin handling on a conveyor system."""
 
-
 import random
 
 import isaacsim.cortex.framework.math_util as math_util

@@ -15,7 +15,6 @@
 
 """Define follow-target task for UR10e robot."""
 
-
 from typing import Optional
 
 import isaacsim.core.api.tasks as tasks

@@ -15,7 +15,6 @@
 
 """Sensor icon model for viewport scene management."""
 
-
 __all__ = ["IconModel"]
 
 from collections.abc import Callable

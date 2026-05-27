@@ -15,7 +15,6 @@
 
 """Provides menu integration for creating PhysX and LightBeam range sensors in Isaac Sim."""
 
-
 import weakref
 from pathlib import Path
 

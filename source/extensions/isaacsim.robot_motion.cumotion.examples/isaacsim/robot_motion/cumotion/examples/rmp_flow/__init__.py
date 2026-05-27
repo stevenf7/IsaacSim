@@ -15,7 +15,6 @@
 
 """Provides RMPflow motion planning examples for robot motion with cuMotion in Isaac Sim."""
 
-
 from .extension import *
 
 __all__ = ["UIBuilder"]

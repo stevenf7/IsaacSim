@@ -15,7 +15,6 @@
 
 """Viewport scene management for TF frame visualization in ROS 2."""
 
-
 import omni.ui as ui
 from omni.ui import scene as sc
 

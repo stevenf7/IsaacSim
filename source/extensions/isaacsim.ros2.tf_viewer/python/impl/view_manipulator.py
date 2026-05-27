@@ -15,7 +15,6 @@
 
 """Module providing a viewport manipulator for visualizing ROS 2 TF (Transform) relationships in Isaac Sim."""
 
-
 import copy
 
 import numpy as np

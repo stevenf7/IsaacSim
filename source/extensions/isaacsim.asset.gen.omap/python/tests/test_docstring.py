@@ -15,7 +15,6 @@
 
 """Tests for occupancy map docstrings."""
 
-
 import isaacsim.asset.gen.omap.bindings._omap as omap_bindings
 import isaacsim.test.docstring
 from isaacsim.core.experimental.utils.stage import create_new_stage_async

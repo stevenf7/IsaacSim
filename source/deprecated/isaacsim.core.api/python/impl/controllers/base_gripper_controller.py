@@ -15,7 +15,6 @@
 
 """Base classes for implementing gripper controllers that can open and close grippers in Isaac Sim."""
 
-
 from abc import abstractmethod
 
 import numpy as np

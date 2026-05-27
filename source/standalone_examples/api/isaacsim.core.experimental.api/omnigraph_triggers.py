@@ -62,7 +62,7 @@ from isaacsim.core.simulation_manager import IsaacEvents, SimulationManager
 # Build the Push graph (`push_graph`) with a printout that says "Push Graph Running".
 try:
     keys = og.Controller.Keys
-    (push_graph, _, _, _) = og.Controller.edit(
+    push_graph, _, _, _ = og.Controller.edit(
         {
             "graph_path": "/Push_Graph",
             "evaluator_name": "push",
@@ -89,7 +89,7 @@ except Exception as e:
 # Build an Action graph (`action_graph`) with a printout that says "Action Graph Running".
 try:
     keys = og.Controller.Keys
-    (action_graph, _, _, _) = og.Controller.edit(
+    action_graph, _, _, _ = og.Controller.edit(
         {
             "graph_path": "/Action_Graph",
             "evaluator_name": "execution",

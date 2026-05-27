@@ -15,7 +15,6 @@
 
 """UI windows for creating robotic control graphs in Isaac Sim through OmniGraph integration."""
 
-
 import os
 
 import omni.graph.core as og

@@ -15,7 +15,6 @@
 
 """High level wrapper for manipulating prims with Rigid Body API applied and their rigid body properties."""
 
-
 from __future__ import annotations
 
 import weakref

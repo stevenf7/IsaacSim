@@ -15,7 +15,6 @@
 
 """Tests for occupancy map generation functionality."""
 
-
 import carb.tokens
 import numpy as np
 
@@ -114,7 +113,7 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCase):
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_simple_room(self) -> None:
         """Test occupancy map generation on a simple room environment."""
-        (result, _) = await open_stage_async(self._assets_root_path + "/Isaac/Environments/Simple_Room/simple_room.usd")
+        result, _ = await open_stage_async(self._assets_root_path + "/Isaac/Environments/Simple_Room/simple_room.usd")
         # Make sure the stage loaded
         self.assertTrue(result)
         stage = omni.usd.get_context().get_stage()

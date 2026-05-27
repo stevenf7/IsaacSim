@@ -19,6 +19,7 @@ Reads joint effort (torque/force) values from articulated physics bodies via
 the C++ ``IEffortSensor`` Carbonite interface. The sensor inherits the C++
 interface lifecycle from :class:`_PhysicsSensorRuntimeBase`.
 """
+
 from __future__ import annotations
 
 from collections import deque

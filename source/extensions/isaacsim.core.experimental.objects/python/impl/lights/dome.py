@@ -15,7 +15,6 @@
 
 """High level class for creating and managing USD Dome Light prims for Image Based Lighting from external environments."""
 
-
 from __future__ import annotations
 
 from typing import Literal

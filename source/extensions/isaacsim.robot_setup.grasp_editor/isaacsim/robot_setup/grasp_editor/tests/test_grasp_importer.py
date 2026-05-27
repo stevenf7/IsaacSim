@@ -15,7 +15,6 @@
 
 """Tests for grasp data importing functionality in the isaacsim.robot_setup.grasp_editor extension."""
 
-
 import asyncio
 
 import isaacsim.core.experimental.utils.app as app_utils

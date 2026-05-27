@@ -15,7 +15,6 @@
 
 """Robot assembler module that provides functionality for assembling and managing robot components with USD physics joints."""
 
-
 import asyncio
 import os
 from enum import IntEnum

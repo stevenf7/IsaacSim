@@ -15,7 +15,6 @@
 
 """Module for setting up USD attributes and parameters for holonomic robots with mecanum wheels."""
 
-
 from typing import Any
 
 import numpy as np

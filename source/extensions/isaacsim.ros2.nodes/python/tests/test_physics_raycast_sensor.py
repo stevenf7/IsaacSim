@@ -44,7 +44,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
         import rclpy
         from sensor_msgs.msg import PointCloud2
 
-        (result, error) = await stage_utils.open_stage_async(
+        result, error = await stage_utils.open_stage_async(
             self._assets_root_path + "/Isaac/Environments/Simple_Room/simple_room.usd"
         )
         self.assertTrue(result, f"Failed to load stage: {error}")
@@ -134,7 +134,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
         import rclpy
         from sensor_msgs.msg import PointCloud2
 
-        (result, error) = await stage_utils.open_stage_async(
+        result, error = await stage_utils.open_stage_async(
             self._assets_root_path + "/Isaac/Environments/Simple_Room/simple_room.usd"
         )
         self.assertTrue(result, f"Failed to load stage: {error}")
@@ -218,7 +218,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
         import rclpy
         from sensor_msgs.msg import PointCloud2
 
-        (result, error) = await stage_utils.open_stage_async(
+        result, error = await stage_utils.open_stage_async(
             self._assets_root_path + "/Isaac/Environments/Simple_Room/simple_room.usd"
         )
         self.assertTrue(result, f"Failed to load stage: {error}")
@@ -428,7 +428,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
         import rclpy
         from sensor_msgs.msg import LaserScan
 
-        (result, error) = await stage_utils.open_stage_async(
+        result, error = await stage_utils.open_stage_async(
             self._assets_root_path + "/Isaac/Environments/Simple_Room/simple_room.usd"
         )
         self.assertTrue(result, f"Failed to load stage: {error}")
@@ -515,7 +515,7 @@ class TestRos2PhysicsRaycastSensor(ROS2TestCase):
         import rclpy
         from sensor_msgs.msg import PointCloud2
 
-        (result, error) = await stage_utils.open_stage_async(
+        result, error = await stage_utils.open_stage_async(
             self._assets_root_path + "/Isaac/Environments/Simple_Room/simple_room.usd"
         )
         self.assertTrue(result, f"Failed to load stage: {error}")

@@ -15,5 +15,4 @@
 
 """Icon implementation for sensor GUI components."""
 
-
 from .extension import *

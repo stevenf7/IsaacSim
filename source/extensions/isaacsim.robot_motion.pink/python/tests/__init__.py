@@ -15,5 +15,4 @@
 
 """Tests for the PINK robot motion functionality."""
 
-
 scan_for_test_modules = True

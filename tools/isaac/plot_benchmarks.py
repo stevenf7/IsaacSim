@@ -30,7 +30,6 @@ How to use this script:
     The output plots will be saved in the current directory.
 """
 
-
 import json
 import os
 import sys

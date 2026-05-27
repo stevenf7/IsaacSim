@@ -482,7 +482,7 @@ async def open_stage_async(usd_path: str) -> tuple[bool, int]:
         raise ValueError("Only USD files can be loaded with this method")
     usd_context = omni.usd.get_context()
     usd_context.disable_save_to_recent_files()
-    (result, error) = await omni.usd.get_context().open_stage_async(usd_path)
+    result, error = await omni.usd.get_context().open_stage_async(usd_path)
     usd_context.enable_save_to_recent_files()
     return (result, error)
 

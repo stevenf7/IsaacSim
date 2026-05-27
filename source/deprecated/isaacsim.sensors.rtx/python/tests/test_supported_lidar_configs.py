@@ -15,7 +15,6 @@
 
 """Tests for validating all supported lidar configurations and variants in the isaacsim.sensors.rtx extension."""
 
-
 from pathlib import Path
 
 import omni.kit.test

@@ -15,7 +15,6 @@
 
 """UI components for the Isaac Sim asset transformer functionality."""
 
-
 from .extension import AssetTransformerUiExtension  # noqa: F401 (loaded for Kit extension discovery)
 
 __all__ = []

@@ -1,7 +1,7 @@
 import omni.graph.core as og
 
 keys = og.Controller.Keys
-(demand_graph_handle, _, _, _) = og.Controller.edit(
+demand_graph_handle, _, _, _ = og.Controller.edit(
     {
         "graph_path": "/ondemand_graph",
         "evaluator_name": "execution",

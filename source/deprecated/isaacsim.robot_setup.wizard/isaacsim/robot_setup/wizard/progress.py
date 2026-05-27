@@ -15,7 +15,6 @@
 
 """Progress tracking and state management for the robot setup wizard."""
 
-
 from enum import Enum
 from typing import Any
 

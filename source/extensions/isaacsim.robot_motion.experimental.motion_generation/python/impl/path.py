@@ -15,7 +15,6 @@
 
 """Provides classes for representing and converting joint-space paths to minimal-time trajectories."""
 
-
 from typing import Optional, Union
 
 import numpy as np

@@ -15,7 +15,6 @@
 
 """GUI module for content browser functionality in Isaac Sim."""
 
-
 from .impl import *
 
 __all__ = ["ExtendedFileInfo", "IsaacCollection"]

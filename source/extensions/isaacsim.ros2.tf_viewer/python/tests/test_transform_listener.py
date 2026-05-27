@@ -15,7 +15,6 @@
 
 """Test suite for validating ROS 2 transform listener functionality with Isaac Sim."""
 
-
 import os
 
 import carb
@@ -76,7 +75,7 @@ class TestTransformListener(omni.kit.test.AsyncTestCase):
         robot.GetVariantSet("Mesh").SetVariantSelection("Performance")
 
         # define graph to publish /tf
-        (test_graph, new_nodes, _, _) = og.Controller.edit(
+        test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [

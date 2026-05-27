@@ -15,6 +15,7 @@ committed baseline and fails if a new restricted-licensed package landed
 without an OSRB exception (``check``). See ``README_INTERNAL.md`` for the
 OSRB workflow.
 """
+
 from __future__ import annotations
 
 import argparse

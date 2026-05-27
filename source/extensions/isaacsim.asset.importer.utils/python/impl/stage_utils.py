@@ -15,7 +15,6 @@
 
 """Stage helpers for asset importer utilities."""
 
-
 from pxr import Usd, UsdUtils
 
 __all__ = [

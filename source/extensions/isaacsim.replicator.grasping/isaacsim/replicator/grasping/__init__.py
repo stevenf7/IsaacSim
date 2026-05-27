@@ -15,7 +15,6 @@
 
 """Extension for generating grasping-related synthetic data using Isaac Sim Replicator."""
 
-
 from .extension import *
 from .grasping_manager import GraspingManager, GraspPhase
 

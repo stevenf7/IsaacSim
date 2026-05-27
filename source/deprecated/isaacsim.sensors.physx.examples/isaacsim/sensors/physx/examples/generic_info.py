@@ -15,7 +15,6 @@
 
 """Module containing the PhysX Generic Range Sensor example extension for Isaac Sim."""
 
-
 import asyncio
 import time
 import weakref

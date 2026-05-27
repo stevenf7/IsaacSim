@@ -15,7 +15,6 @@
 
 """Provides utility functions for manipulating USD prim transformations and xform operations."""
 
-
 from collections.abc import Sequence
 
 import numpy as np

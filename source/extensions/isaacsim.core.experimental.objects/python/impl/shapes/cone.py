@@ -15,7 +15,6 @@
 
 """High level class for creating and wrapping USD Cone prims with methods to manipulate cone properties."""
 
-
 from __future__ import annotations
 
 from typing import Literal

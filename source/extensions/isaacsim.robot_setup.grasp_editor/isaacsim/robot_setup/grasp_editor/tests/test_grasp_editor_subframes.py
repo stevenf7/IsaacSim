@@ -15,7 +15,6 @@
 
 """Test suite for validating grasp subframe positioning and pose computations in robotic grasping scenarios."""
 
-
 import asyncio
 
 import isaacsim.core.experimental.utils.app as app_utils

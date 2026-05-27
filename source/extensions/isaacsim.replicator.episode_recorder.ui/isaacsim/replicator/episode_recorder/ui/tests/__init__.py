@@ -15,5 +15,4 @@
 
 """Tests for the Episode Recorder UI extension."""
 
-
 scan_for_test_modules = True

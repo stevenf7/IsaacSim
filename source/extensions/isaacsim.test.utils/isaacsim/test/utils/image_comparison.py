@@ -15,7 +15,6 @@
 
 """Image comparison utilities for testing and validation."""
 
-
 import os
 import re
 

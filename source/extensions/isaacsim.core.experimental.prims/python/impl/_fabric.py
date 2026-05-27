@@ -15,7 +15,6 @@
 
 """Internal fabric utilities for USDRT stage operations and data transformations between Warp and fabric arrays."""
 
-
 import usdrt
 import warp as wp
 

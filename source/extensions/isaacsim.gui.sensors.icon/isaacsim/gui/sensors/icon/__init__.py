@@ -15,7 +15,6 @@
 
 """Provides GUI components for displaying and managing sensor icons in Isaac Sim's viewport and interface."""
 
-
 from .impl import *
 
 __all__ = ["IconModel", "IconScene", "get_instance"]

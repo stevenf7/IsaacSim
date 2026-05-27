@@ -15,7 +15,6 @@
 
 """Unit tests for single manipulator robots with various gripper configurations in Isaac Sim."""
 
-
 import numpy as np
 import omni.kit.test
 from isaacsim.core.api import World

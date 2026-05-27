@@ -16,7 +16,6 @@
 
 """Extension for cuMotion robot motion planning integration within Isaac Sim."""
 
-
 import os
 import pathlib
 

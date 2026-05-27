@@ -21,7 +21,6 @@
     (``SimulationManager``, ``app_utils``, ``stage_utils``) instead of the legacy ``World`` API.
 """
 
-
 from __future__ import annotations
 
 import asyncio

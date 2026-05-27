@@ -15,7 +15,6 @@
 
 """UI components for cell widgets used in the gain tuner interface."""
 
-
 import omni.ui as ui
 
 

@@ -15,7 +15,6 @@
 
 """Extension module for conveyor asset generation capabilities within Isaac Sim."""
 
-
 __all__ = []
 
 import omni.ext

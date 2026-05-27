@@ -15,7 +15,6 @@
 
 """Demonstrates a UR10 robot following a target cube using cuMotion RMPflow with interactive UI and obstacle management."""
 
-
 from isaacsim.robot.experimental.manipulators.examples.interactive.follow_target_motion_generation.follow_target import (
     FollowTarget,
 )

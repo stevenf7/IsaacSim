@@ -15,7 +15,6 @@
 
 """Test suite for the OgnWritePhysicsRigidPrimView OmniGraph node used in Isaac Sim domain randomization."""
 
-
 from typing import Any
 
 import isaacsim.replicator.domain_randomization as dr

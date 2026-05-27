@@ -15,7 +15,6 @@
 
 """Provides common utilities for ROS 2 environment setup and configuration in Isaac Sim."""
 
-
 import os
 import platform
 import sys

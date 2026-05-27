@@ -15,7 +15,6 @@
 
 """Defines a base template class for creating standardized Isaac Sim example user interfaces with common world controls and extensible UI framework."""
 
-
 import asyncio
 from abc import abstractmethod
 

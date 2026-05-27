@@ -15,7 +15,6 @@
 
 """Extension that provides a Unitree H1 humanoid robot policy example."""
 
-
 import os
 
 import omni.ext

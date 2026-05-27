@@ -259,8 +259,7 @@ def exception_handler(exc_type, exc_value, exc_traceback):
     ret = _excepthook(exc_type, exc_value, exc_traceback)
     if issubclass(exc_type, (ImportError, ModuleNotFoundError)):
         if not hasattr(builtins, "ISAACSIM_APP_LAUNCHED"):
-            print(
-                """
+            print("""
 ========================================================================
 WARNING: Omniverse/Isaac Sim import statements must take place after the
 `SimulationApp` class has been instantiated. It is a requirement of the
@@ -281,8 +280,7 @@ any other Omniverse/Isaac Sim modules, as shown below:
     ------------------------------------------------------------------
 
 ========================================================================
-"""
-            )
+""")
     return ret
 
 

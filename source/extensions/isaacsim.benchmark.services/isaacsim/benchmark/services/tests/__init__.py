@@ -15,5 +15,4 @@
 
 """Test configuration module for Isaac Sim benchmark services."""
 
-
 scan_for_test_modules = True

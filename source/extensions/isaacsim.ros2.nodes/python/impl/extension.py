@@ -15,7 +15,6 @@
 
 """Provides OmniGraph nodes for ROS 2 communication including publishers, subscribers, and services."""
 
-
 import os
 
 import carb

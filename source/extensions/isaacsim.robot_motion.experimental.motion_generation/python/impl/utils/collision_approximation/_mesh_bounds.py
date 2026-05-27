@@ -15,7 +15,6 @@
 
 """Utilities for computing bounding box approximations from mesh geometries."""
 
-
 import numpy as np
 import trimesh
 from isaacsim.core.experimental.objects import Mesh

@@ -15,7 +15,6 @@
 
 """Provide implementations for physics and visual material classes in Isaac Sim."""
 
-
 from .non_visual_material import NonVisualMaterial as NonVisualMaterial
 from .physics_materials import PhysicsMaterial as PhysicsMaterial
 from .physics_materials import RigidBodyMaterial as RigidBodyMaterial

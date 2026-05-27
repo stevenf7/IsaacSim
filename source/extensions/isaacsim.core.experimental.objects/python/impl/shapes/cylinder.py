@@ -15,7 +15,6 @@
 
 """High level wrapper for creating/encapsulating USD Cylinder prims with closed ends, centered at the origin."""
 
-
 from __future__ import annotations
 
 from typing import Literal

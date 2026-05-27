@@ -15,7 +15,6 @@
 
 """Surface gripper extension implementation for robotic applications in Isaac Sim."""
 
-
 import gc
 
 import omni

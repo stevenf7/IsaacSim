@@ -15,7 +15,6 @@
 
 """Utilities for importing and managing grasp specifications from isaac_grasp YAML files."""
 
-
 from typing import List, Tuple
 
 import carb

@@ -15,5 +15,4 @@
 
 """Utility functions for the OMAP asset generation system."""
 
-
 from .utils import *

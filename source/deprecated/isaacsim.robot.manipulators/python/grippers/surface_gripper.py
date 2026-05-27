@@ -15,7 +15,6 @@
 
 """Provides a high-level interface for controlling surface grippers such as suction cups in Isaac Sim."""
 
-
 import carb
 import omni.kit.app
 from isaacsim.core.utils.types import ArticulationAction

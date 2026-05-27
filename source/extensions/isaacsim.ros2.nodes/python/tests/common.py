@@ -187,7 +187,7 @@ async def add_carter_ros(assets_root_path, prim_path="/Carter"):
 
 async def add_nova_carter_ros(assets_root_path):
     """Add a Nova Carter robot with ROS 2 graphs to the stage."""
-    (result, error) = await stage_utils.open_stage_async(
+    result, error = await stage_utils.open_stage_async(
         assets_root_path + "/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd"
     )
     await omni.kit.app.get_app().next_update_async()
@@ -195,7 +195,7 @@ async def add_nova_carter_ros(assets_root_path):
 
 async def add_franka(assets_root_path):
     """Add a Franka robot to the stage."""
-    (result, error) = await stage_utils.open_stage_async(
+    result, error = await stage_utils.open_stage_async(
         assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
     )
 

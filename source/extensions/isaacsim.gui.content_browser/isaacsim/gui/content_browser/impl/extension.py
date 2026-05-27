@@ -15,7 +15,6 @@
 
 """Extension module for Isaac Sim content browser implementation with enhanced file browsing capabilities."""
 
-
 import asyncio
 import weakref
 

@@ -15,7 +15,6 @@
 
 """Extension for replaying data from the Follow Target manipulation task with UI controls for loading and managing recorded robot trajectories and scene states."""
 
-
 import asyncio
 import os
 

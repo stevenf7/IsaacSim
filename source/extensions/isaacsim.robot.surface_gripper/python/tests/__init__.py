@@ -15,5 +15,4 @@
 
 """Tests for the surface gripper robot functionality."""
 
-
 scan_for_test_modules = True

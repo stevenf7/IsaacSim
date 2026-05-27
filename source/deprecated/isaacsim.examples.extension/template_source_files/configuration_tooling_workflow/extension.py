@@ -15,7 +15,6 @@
 
 """Extension template for configuration tooling workflow."""
 
-
 import asyncio
 import gc
 

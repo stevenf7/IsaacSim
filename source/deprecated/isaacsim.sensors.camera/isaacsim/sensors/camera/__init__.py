@@ -15,7 +15,6 @@
 
 """Provides utilities and classes for camera sensors and computer vision data collection in Isaac Sim."""
 
-
 from .camera import *
 from .camera_view import CameraView
 from .extension import *

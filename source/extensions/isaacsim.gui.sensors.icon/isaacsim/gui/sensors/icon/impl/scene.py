@@ -15,7 +15,6 @@
 
 """Scene management for sensor icon display and manipulation in the viewport."""
 
-
 __all__ = ["IconScene"]
 
 import carb.eventdispatcher

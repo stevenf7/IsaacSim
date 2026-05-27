@@ -15,7 +15,6 @@
 
 """UI components that provide specialized buttons for loading and resetting simulation scenes in Isaac Sim."""
 
-
 import asyncio
 from collections.abc import Callable
 

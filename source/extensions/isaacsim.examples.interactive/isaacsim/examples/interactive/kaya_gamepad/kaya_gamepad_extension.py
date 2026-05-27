@@ -15,7 +15,6 @@
 
 """Extension for controlling a NVIDIA Kaya robot using gamepad input in Isaac Sim interactive examples."""
 
-
 import os
 
 import omni.ext

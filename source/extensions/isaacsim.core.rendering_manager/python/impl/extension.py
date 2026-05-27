@@ -15,7 +15,6 @@
 
 """Extension module for Isaac Sim core rendering management capabilities including rendering events and viewport management."""
 
-
 import omni.ext
 
 from .rendering_manager import RenderingManager

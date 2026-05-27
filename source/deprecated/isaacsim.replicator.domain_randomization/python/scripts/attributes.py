@@ -15,7 +15,6 @@
 
 """Defines attribute constants for domain randomization in Isaac Sim Replicator."""
 
-
 SIMULATION_CONTEXT_ATTRIBUTES = ["gravity"]
 
 RIGID_PRIM_ATTRIBUTES = [

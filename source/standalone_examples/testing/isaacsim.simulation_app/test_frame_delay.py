@@ -23,7 +23,6 @@ for i in $(seq 64 512); do
 done
 """
 
-
 USE_REPLICATOR_WRITER = True
 CAMERA_PATH = "/camera"
 CAMERA_POS = [0, 0, 25]

@@ -15,7 +15,6 @@
 
 """Implementation module for various light types including cylinder, disk, distant, dome, rectangle, and sphere lights."""
 
-
 from .cylinder import CylinderLight as CylinderLight
 from .disk import DiskLight as DiskLight
 from .distant import DistantLight as DistantLight

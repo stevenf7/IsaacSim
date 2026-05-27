@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Create menu helpers for Isaac Sim assets and tools."""
+
 import asyncio
 from collections.abc import Sequence
 from functools import partial

@@ -15,7 +15,6 @@
 
 """High level wrapper for manipulating geometric prims and their collision properties."""
 
-
 from __future__ import annotations
 
 import carb

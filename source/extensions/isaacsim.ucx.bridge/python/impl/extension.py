@@ -15,7 +15,6 @@
 
 """Extension that provides UCX integration capabilities for Isaac Sim."""
 
-
 import carb
 import omni.ext
 

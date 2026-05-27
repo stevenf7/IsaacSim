@@ -15,7 +15,6 @@
 
 """Tests for various hang and crash bugs in Isaac Sim simulation."""
 
-
 import asyncio
 
 import carb
@@ -162,7 +161,7 @@ class TestHangBugs(omni.kit.test.AsyncTestCase):
         usd_path += "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
 
         for i in range(100):
-            (result, error) = await open_stage_async(usd_path)
+            result, error = await open_stage_async(usd_path)
             await app_utils.update_app_async()
             self.assertTrue(result)
 

@@ -15,7 +15,6 @@
 
 """Main UI builder class for the Gain Tuner extension interface that manages robot selection, gain parameter adjustment, testing functionality, and results visualization."""
 
-
 import asyncio
 from functools import partial
 
@@ -1007,7 +1006,7 @@ class UIBuilder:
             if self._gains_tuner._articulation.dof_types[joint_index] == DofType.Rotation:
                 scale[i] = 180.0 / np.pi
         for i, joint_index in enumerate(joint_indices):
-            (cmd_pos, cmd_vel, obs_pos, obs_vel, cmd_times) = self._gains_tuner.get_joint_states_from_gains_test(
+            cmd_pos, cmd_vel, obs_pos, obs_vel, cmd_times = self._gains_tuner.get_joint_states_from_gains_test(
                 joint_index
             )
             if cmd_pos is None:
@@ -1039,7 +1038,7 @@ class UIBuilder:
         obs_vel_list = []
         cmd_times_list = []
         for joint_index in joint_indices:
-            (cmd_pos, cmd_vel, obs_pos, obs_vel, cmd_times) = self._gains_tuner.get_joint_states_from_gains_test(
+            cmd_pos, cmd_vel, obs_pos, obs_vel, cmd_times = self._gains_tuner.get_joint_states_from_gains_test(
                 joint_index
             )
             if cmd_pos is None:

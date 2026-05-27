@@ -15,7 +15,6 @@
 
 """UI examples for Isaac Sim."""
 
-
 from .extension import *
 
 __all__ = []

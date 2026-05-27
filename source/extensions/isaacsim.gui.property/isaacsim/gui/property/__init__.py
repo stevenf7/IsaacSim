@@ -15,7 +15,6 @@
 
 """Provides specialized property widgets for Isaac Sim's USD-based robotics workflows including robot schema management, array attribute editing, and custom data handling."""
 
-
 from .widgets import *
 
 __all__ = []

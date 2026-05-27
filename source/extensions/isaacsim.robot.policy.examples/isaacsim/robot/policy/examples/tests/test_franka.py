@@ -15,7 +15,6 @@
 
 """Tests for Franka robot policy examples with both CPU and GPU simulation environments."""
 
-
 import asyncio
 
 import isaacsim.core.experimental.utils.prim as prim_utils

@@ -15,7 +15,6 @@
 
 """Provides high level functions to deal with batched data from surface gripper views in Isaac Sim."""
 
-
 from __future__ import annotations
 
 import isaacsim.core.experimental.utils.ops as ops_utils

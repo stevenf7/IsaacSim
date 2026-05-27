@@ -15,5 +15,4 @@
 
 """Test modules and configurations for the GUI menu system."""
 
-
 scan_for_test_modules = True

@@ -15,7 +15,6 @@
 
 """Tests for path planning functionality in the mobility generation module."""
 
-
 import numpy as np
 
 # NOTE:

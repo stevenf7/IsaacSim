@@ -15,7 +15,6 @@
 
 """A wizard window interface for setting up robots in Isaac Sim with step-by-step configuration pages and progress tracking."""
 
-
 import asyncio
 from typing import Any
 

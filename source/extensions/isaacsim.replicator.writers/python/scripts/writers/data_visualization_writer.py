@@ -15,7 +15,6 @@
 
 """Provides a writer for visualizing annotator data such as bounding boxes overlaid on background images."""
 
-
 import carb
 import numpy as np
 from omni.replicator.core import AnnotatorRegistry, BackendDispatch, Writer

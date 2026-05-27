@@ -21,6 +21,7 @@
 Replicates the generated schema API using generic USD attribute access,
 so that existing callsites continue to work without changes.
 """
+
 import warnings
 
 from pxr import Sdf, Tf, Usd

@@ -15,7 +15,6 @@
 
 """A UI widget module that provides a resizable horizontal split-pane layout with draggable divider functionality."""
 
-
 from collections.abc import Callable
 from typing import Any
 

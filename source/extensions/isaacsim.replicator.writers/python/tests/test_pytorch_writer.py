@@ -15,7 +15,6 @@
 
 """Test module for PytorchWriter functionality with single and multiple render products."""
 
-
 import os
 import tempfile
 import unittest

@@ -15,7 +15,6 @@
 
 """User interface builder module for the Isaac Sim grasp editor extension."""
 
-
 import asyncio
 import os
 from functools import partial

@@ -15,7 +15,6 @@
 
 """Base class for visual materials that provides common functionality for USD material shader manipulation."""
 
-
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

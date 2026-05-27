@@ -15,7 +15,6 @@
 
 """Generate synthetic datasets using infinigen (https://infinigen.org/) generated environments."""
 
-
 import argparse
 import json
 import os

@@ -15,7 +15,6 @@
 
 """Interactive example demonstrating basic robot simulation setup with physics integration using experimental Isaac Sim API."""
 
-
 import time
 
 import isaacsim.core.experimental.utils.stage as stage_utils

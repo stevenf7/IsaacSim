@@ -15,7 +15,6 @@
 
 """Physics sensors UI module for Isaac Sim."""
 
-
 from .extension import Extension as Extension
 
 __all__ = []

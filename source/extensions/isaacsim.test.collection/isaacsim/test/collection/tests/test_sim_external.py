@@ -15,7 +15,6 @@
 
 """Unit tests for external dependencies and asset conversion functionality."""
 
-
 import os
 
 import carb

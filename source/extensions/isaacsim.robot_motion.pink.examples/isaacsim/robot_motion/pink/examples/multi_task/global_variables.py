@@ -15,7 +15,6 @@
 
 """Global variables for the PINK Multi-Task example extension."""
 
-
 EXTENSION_TITLE = "PINK Multi-Task Example"
 
 EXTENSION_DESCRIPTION = (

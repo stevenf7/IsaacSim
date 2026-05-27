@@ -1795,7 +1795,7 @@ class SimulationControl:
                 await omni.kit.app.get_app().next_update_async()
 
                 carb.log_info(f"Loading world from USD file: {path_to_load}")
-                (success, error) = await stage_utils.open_stage_async(path_to_load)
+                success, error = await stage_utils.open_stage_async(path_to_load)
                 if not success:
                     response.result.result = response.RESOURCE_PARSE_ERROR
                     response.result.error_message = f"Failed to load world: {error}"

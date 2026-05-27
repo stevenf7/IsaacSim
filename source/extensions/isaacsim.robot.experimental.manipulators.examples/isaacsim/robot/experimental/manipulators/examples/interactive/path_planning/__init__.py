@@ -15,7 +15,6 @@
 
 """Interactive path planning demonstration using Franka robot with cuMotion graph-based planner."""
 
-
 from isaacsim.robot.experimental.manipulators.examples.interactive.path_planning.path_planning import PathPlanning
 from isaacsim.robot.experimental.manipulators.examples.interactive.path_planning.path_planning_extension import (
     PathPlanningExtension,

@@ -15,5 +15,4 @@
 
 """Tests for the native storage module."""
 
-
 scan_for_test_modules = True

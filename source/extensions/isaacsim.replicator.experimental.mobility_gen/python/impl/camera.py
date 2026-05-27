@@ -15,7 +15,6 @@
 
 """MobilityGenCamera class for managing camera rendering and state capture."""
 
-
 import carb
 import numpy as np
 import omni.replicator.core as rep

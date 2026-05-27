@@ -15,7 +15,6 @@
 
 """Unit tests for motion generation data types in the isaacsim.robot_motion.experimental.motion_generation extension."""
 
-
 # Import extension python module we are testing with absolute import path, as if we are an external user (i.e. a different extension)
 import numpy as np
 import omni.kit.test

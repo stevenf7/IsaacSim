@@ -15,7 +15,6 @@
 
 """Unit tests for the Ackermann controller used in wheeled robot simulations."""
 
-
 import numpy as np
 import omni.kit.test
 from isaacsim.robot.wheeled_robots.controllers.ackermann_controller import AckermannController

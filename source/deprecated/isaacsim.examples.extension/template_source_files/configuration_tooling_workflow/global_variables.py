@@ -15,7 +15,6 @@
 
 """Global variables for the configuration tooling workflow template."""
 
-
 EXTENSION_TITLE = {EXTENSION_TITLE}
 
 EXTENSION_DESCRIPTION = {EXTENSION_DESCRIPTION}

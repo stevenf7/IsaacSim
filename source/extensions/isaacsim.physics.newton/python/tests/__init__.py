@@ -15,5 +15,4 @@
 
 """Tests for the Newton physics module."""
 
-
 scan_for_test_modules = True

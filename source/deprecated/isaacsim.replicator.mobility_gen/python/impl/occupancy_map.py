@@ -15,7 +15,6 @@
 
 """Provides occupancy map data structures and operations for robotics navigation and path planning."""
 
-
 import enum
 import os
 

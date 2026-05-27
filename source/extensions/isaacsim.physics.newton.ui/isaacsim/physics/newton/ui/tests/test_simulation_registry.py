@@ -15,7 +15,6 @@
 
 """Tests for Newton simulator registration and capability management."""
 
-
 from omni.kit.test.async_unittest import AsyncTestCase
 from omni.physics.core import get_physics_interface, get_physics_simulation_interface
 from omni.physics.isaacsimready import get_capability_manager, get_variant_switcher

@@ -15,7 +15,6 @@
 
 """User interface for generating ROS2 camera and RTX lidar sensor OmniGraph action graphs."""
 
-
 from pathlib import Path
 
 import carb
@@ -102,7 +101,7 @@ class Ros2CameraGraph(MenuHelperWindow):
         # if starting from a new graph, start it with just a tick and context, render product and camera info (no sim time), the rest is the same for adding to exsiting graph
         if not self._add_to_existing_graph:
             self._og_path = stage_utils.generate_next_free_path(self._og_path, prepend_default_prim=False)
-            (graph_handle, nodes, _, _) = og.Controller.edit(
+            graph_handle, nodes, _, _ = og.Controller.edit(
                 {"graph_path": self._og_path, "evaluator_name": "execution"},
                 {
                     keys.CREATE_NODES: [
@@ -763,7 +762,7 @@ class Ros2RtxLidarGraph(MenuHelperWindow):
         # if starting from a new graph, start it with just a tick, context, and render product, (no sim time), the rest is the same for adding to exsiting graph
         if not self._add_to_existing_graph:
             self._og_path = stage_utils.generate_next_free_path(self._og_path, prepend_default_prim=False)
-            (graph_handle, nodes, _, _) = og.Controller.edit(
+            graph_handle, nodes, _, _ = og.Controller.edit(
                 {"graph_path": self._og_path, "evaluator_name": "execution"},
                 {
                     keys.CREATE_NODES: [

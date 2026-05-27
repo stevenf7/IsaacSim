@@ -15,7 +15,6 @@
 
 """Provides functionality for loading and configuring PINK robots from URDF files via Pinocchio."""
 
-
 from __future__ import annotations
 
 import pathlib

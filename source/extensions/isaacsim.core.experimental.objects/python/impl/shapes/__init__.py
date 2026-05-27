@@ -15,7 +15,6 @@
 
 """Experimental shape objects for Isaac Sim including basic geometric primitives like capsules, cones, cubes, cylinders, planes, and spheres."""
 
-
 from .capsule import Capsule as Capsule
 from .cone import Cone as Cone
 from .cube import Cube as Cube

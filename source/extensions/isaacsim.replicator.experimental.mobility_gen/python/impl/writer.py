@@ -15,7 +15,6 @@
 
 """Writer for saving MobilityGen recorded data to disk."""
 
-
 import hashlib
 import io
 import os

@@ -195,7 +195,7 @@ class TestOgnArticulationActuators(ogts.OmniGraphTestCase):
         if connect_tick:
             connections.append(("OnPlaybackTick.outputs:tick", "ArticulationActuators.inputs:execIn"))
 
-        (graph, _nodes, _prims, _specs) = og.Controller.edit(
+        graph, _nodes, _prims, _specs = og.Controller.edit(
             {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
             {
                 og.Controller.Keys.CREATE_NODES: [

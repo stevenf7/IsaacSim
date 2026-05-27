@@ -15,7 +15,6 @@
 
 """Recorder for static hardware specifications."""
 
-
 import psutil
 import warp as wp
 

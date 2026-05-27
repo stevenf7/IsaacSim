@@ -15,7 +15,6 @@
 
 """Context management for Isaac Sim domain randomization using Replicator."""
 
-
 from typing import Any
 
 import omni.graph.core as og

@@ -15,7 +15,6 @@
 
 """Interactive humanoid robot simulation example using H1 robot with GPU-accelerated physics and keyboard control."""
 
-
 import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni

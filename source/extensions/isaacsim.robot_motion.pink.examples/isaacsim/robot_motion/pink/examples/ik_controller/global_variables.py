@@ -15,7 +15,6 @@
 
 """Global variables for the PINK IK Controller example extension."""
 
-
 EXTENSION_TITLE = "PINK IK Controller Example"
 
 EXTENSION_DESCRIPTION = "Demonstrates reactive end-effector tracking using PINK differential IK."

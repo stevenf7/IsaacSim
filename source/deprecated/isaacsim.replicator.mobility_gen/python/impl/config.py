@@ -15,7 +15,6 @@
 
 """Configuration dataclass for Isaac Sim Replicator mobility generation scenarios."""
 
-
 import json
 from dataclasses import asdict, dataclass
 

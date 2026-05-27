@@ -15,7 +15,6 @@
 
 """Provides an abstract base class for gripper implementations with methods for opening, closing, and controlling gripper actions."""
 
-
 from abc import abstractmethod
 from typing import Any
 
