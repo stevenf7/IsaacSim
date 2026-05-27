@@ -45,9 +45,9 @@ Sensors which do not rely on RTX rendering, such as IMU sensors, can be configur
 
 1. Open the turtlebot simple room scene, which can be found by going to the Isaac Sim Content browser and clicking **Isaac Sim>Samples>ROS2>Scenario>turtlebot_tutorial.usd**.
 
-2. Select the prim at ``/World/tb3_burger_processed/base_link/imu_link`` and then create an IMU sensor by going to **Create > Isaac > Sensors > Imu Sensor**. Verify that the Imu sensor is created under the *imu_link* prim.
+2. In the **Stage** panel, right-click the prim ``/World/turtlebot3_burger_processed/Geometry/base_footprint/base_link/imu_link`` and choose **Create > Isaac > Sensors > Imu Sensor** from the context menu. Using the right-click menu on the link prim is what parents the sensor under *imu_link*; the top **Create > Sensors > Imu Sensor** menu-bar entry creates the sensor at the stage root instead. Verify that the Imu sensor is created under the *imu_link* prim.
 
-3. Create a new Action Graph inside */World/tb3_burger_processed/base_link/imu_link* prim and name it *ROS_IMU* (the placement of the graph is important for :ref:`isaac_sim_app_tutorial_ros2_auto_namespace`). To do this, select the prim at ``/World/tb3_burger_processed/base_link/imu_link`` and then create an Action Graph by going to **Window > Graph Editors > Action Graph**.
+3. Create a new Action Graph inside */World/turtlebot3_burger_processed/Geometry/base_footprint/base_link/imu_link* prim and name it *ROS_IMU* (the placement of the graph is important for :ref:`isaac_sim_app_tutorial_ros2_auto_namespace`). To do this, select the prim at ``/World/turtlebot3_burger_processed/Geometry/base_footprint/base_link/imu_link`` and then create an Action Graph by going to **Window > Graph Editors > Action Graph**.
 
 4. Make the graph for IMU including the simulation gate node and attach the graph as shown below.
 
@@ -64,7 +64,7 @@ Sensors which do not rely on RTX rendering, such as IMU sensors, can be configur
 
     - In the Property tab for the **Isaac Read IMU Node**:
 
-        - Add the IMU sensor prim ``/World/tb3_burger_processed/base_link/imu_link/Imu_Sensor`` to its *imuPrim* input field.
+        - Add the IMU sensor prim ``/World/turtlebot3_burger_processed/Geometry/base_footprint/base_link/imu_link/Imu_Sensor`` to its *imuPrim* input field.
 
     - In the Property tab for the **ROS2 Publish Imu** node:
 
@@ -83,16 +83,20 @@ Cameras and RTX Lidars can be configured to publish at a different rate than the
     align periodically with the sensor's tick rate. See :ref:`isaac_sim_sensors_multitick_configuring_per_sensor_tick_rates`, and
     :ref:`isaac_sim_sensors_multitick_rendering` for the full migration guide.
 
-1. Select the 2D Lidar prim ``/World/tb3_burger_processed/base_scan/Example_Rotary_2D`` (the ``OmniLidar`` referenced as ``cameraPrim`` on the ``Isaac Create Render Product`` node feeding ``/World/tb3_burger_processed/base_scan/ROS_LidarRTX/LaserScanPublish``). In the **Property** tab:
+1. Select the 2D Lidar prim ``/World/turtlebot3_burger_processed/Geometry/base_footprint/base_link/base_scan/Example_Rotary_2D`` (the ``OmniLidar`` referenced as ``cameraPrim`` on the ``Isaac Create Render Product`` node feeding ``/World/turtlebot3_burger_processed/Geometry/base_footprint/base_link/base_scan/ROS_LidarRTX/LaserScanPublish``). In the **Property** tab:
 
     - Set ``omni:sensor:tickRate`` to ``5``. The laser scan publishes once per tick, so this yields a publish rate of ``R_lidar = 5`` Hz (independent of the simulation rate, as long as the simulation rate is at least 5 Hz).
     - Set ``omni:sensor:Core:scanRateBaseHz`` to ``5`` to match. The two values must be equal so the Lidar accumulates a full scan per tick instead of falling back to per-frame partial scans (see :ref:`isaac_sim_sensors_multitick_lidar_tickrate_must_match_scanrate`). The shipped ``Example_Rotary_2D`` asset defaults to ``10``, so you must lower it.
 
-2. Because you don't need to publish a point cloud in this tutorial, select the Ros2RTXLidarHelper node for point cloud and disable it by unchecking **enabled** attribute in */World/tb3_burger_processed/base_scan/ROS_LidarRTX/PointCloudPublish*.
+2. Because you don't need to publish a point cloud in this tutorial, select the Ros2RTXLidarHelper node for point cloud and disable it by unchecking **enabled** attribute in */World/turtlebot3_burger_processed/Geometry/base_footprint/base_link/base_scan/ROS_LidarRTX/PointCloudPublish*.
 
 3. Open the camera Action Graph */World/ActionGraph_camera*. Disable the second camera render product by unchecking **enabled** attribute in */World/ActionGraph_camera/isaac_create_render_product_01*.
 
 4. Select the camera prim ``/World/Camera_1`` (the ``Camera`` referenced as ``cameraPrim`` on the ``Isaac Create Render Product`` node feeding both ``/World/ActionGraph_camera/ros2_camera_helper`` and ``/World/ActionGraph_camera/ros2_camera_info_helper``). In the **Property** tab, set ``omni:sensor:tickRate`` to ``15``. Both ``/camera_1/rgb/image_raw`` and ``/camera_1/rgb/camera_info`` now publish at ``R_cam = 15`` Hz (independent of the simulation rate, as long as the simulation rate is at least 15 Hz).
+
+    .. note::
+
+        Cameras created from the top **Create > Camera** menu bar (as in the prerequisite :ref:`isaac_sim_app_tutorial_ros2_camera`) do **not** carry the ``omni:sensor:tickRate`` attribute by default. If you do not see it in the **Property** tab, scroll to the **Raw USD Properties** section, click **Add** > **omni:sensor:tickRate** to add the attribute, then set its value to ``15``. The shipped ``turtlebot_tutorial.usd`` already has the attribute applied to ``/World/Camera_1`` and ``/World/Camera_2``.
 
 
 5. You don't need to publish depth images from Camera1 for this tutorial. Disable the camera helper for depth images by unchecking **enabled** attribute in */World/ActionGraph_camera/ros2_camera_helper_02*.
