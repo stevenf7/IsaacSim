@@ -85,17 +85,38 @@ public:
 
             if (!startPrim.IsValid())
             {
-                db.logError("%s prim is invalid", state.m_robotPath);
+                db.logError("%s prim is invalid", state.m_robotPath.c_str());
                 return false;
             }
 
-            if (!startPrim.HasAPI<pxr::UsdPhysicsArticulationRootAPI>())
+            // If the supplied prim does not itself carry UsdPhysicsArticulationRootAPI, descend
+            // looking for the first descendant that does. Handles assets where the user-supplied
+            // prim is an ancestor Xform (e.g. an IsaacRobotAPI root whose articulation root sits
+            // on a deeper base_link). Mirrors the descend-for-articulation behavior that the
+            // Python Articulation wrapper has had via fetch_articulation_root_api_prim_paths.
+            pxr::UsdPrim effectiveStart = startPrim;
+            if (!effectiveStart.HasAPI<pxr::UsdPhysicsArticulationRootAPI>())
             {
-                db.logError("Articulation not found for prim %s", state.m_robotPath);
+                for (const pxr::UsdPrim& descendant : pxr::UsdPrimRange(startPrim))
+                {
+                    if (descendant.HasAPI<pxr::UsdPhysicsArticulationRootAPI>())
+                    {
+                        effectiveStart = descendant;
+                        break;
+                    }
+                }
+            }
+
+            if (!effectiveStart.HasAPI<pxr::UsdPhysicsArticulationRootAPI>())
+            {
+                db.logError("Articulation not found for prim %s", state.m_robotPath.c_str());
                 return false;
             }
 
-            // Traverse from the starting prim
+            // Traverse from the user-supplied prim (not `effectiveStart`) so override discovery
+            // covers the full intended subtree. Joints may live as siblings of the articulation
+            // root (e.g. `/World/Robot/joint_left` next to `/World/Robot/base_link`) and would be
+            // missed if we restricted the walk to descendants of the articulation-root link.
             for (const pxr::UsdPrim& currentPrim : pxr::UsdPrimRange(startPrim))
             {
                 if (!currentPrim.HasAttribute(isaacsim::core::includes::g_kIsaacNameOveride))

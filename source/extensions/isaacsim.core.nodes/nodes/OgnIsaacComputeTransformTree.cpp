@@ -26,7 +26,9 @@
 #include <isaacsim/core/includes/PhysicsEngine.h>
 #include <isaacsim/core/includes/UsdUtilities.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
+#include <isaacsim/robot/schema/robot_schema.h>
 #include <isaacsim/robot/schema/sensor_tokens.h>
+#include <isaacsim/robot/schema/utils.h>
 #include <omni/fabric/FabricUSD.h>
 #include <pxr/base/gf/matrix4d.h>
 #include <pxr/base/gf/quatd.h>
@@ -438,6 +440,40 @@ private:
                 else
                 {
                     m_reader->removeView(tempId.c_str());
+                }
+            }
+
+            // Fallback: target prim carries IsaacRobotAPI but no UsdPhysicsArticulationRootAPI;
+            // resolve via robotLinks (handles assets where the articulation root sits on a deeper link).
+            if (!isArticulation &&
+                prim.HasAPI(isaacsim::robot::schema::className(isaacsim::robot::schema::Classes::ROBOT_API)))
+            {
+                // Reconstruct the kinematic child→parent map from `isaac:physics:robotJoints` so
+                // emitted TF pairs mirror the joint graph (body0 is parent, body1 is child).
+                // Root links — those that no joint references as body1 — keep an empty parent and
+                // re-parent to world (or the user-supplied parentPrim), matching the existing
+                // UsdPhysicsArticulationRootAPI branch's semantics where `LinkInfo::parentPath`
+                // is the empty string for the articulation root.
+                const auto jointParentMap = isaacsim::robot::schema::GetRobotLinkParentMap(m_usdStage, prim);
+
+                for (const auto& linkPrim : isaacsim::robot::schema::GetAllRobotLinks(m_usdStage, prim))
+                {
+                    if (!linkPrim)
+                    {
+                        continue;
+                    }
+                    const std::string linkPathStr = linkPrim.GetPath().GetString();
+                    m_viewPaths.push_back(linkPathStr);
+                    PrimInfo linkInfo;
+                    linkInfo.isPhysics = linkPrim.HasAPI<pxr::UsdPhysicsRigidBodyAPI>();
+                    if (!linkInfo.isPhysics)
+                    {
+                        m_hasNonPhysicsPrims = true;
+                    }
+                    m_primInfo.push_back(linkInfo);
+                    auto pit = jointParentMap.find(linkPathStr);
+                    linkParents[linkPathStr] = (pit != jointParentMap.end()) ? pit->second : std::string();
+                    isArticulation = true;
                 }
             }
 

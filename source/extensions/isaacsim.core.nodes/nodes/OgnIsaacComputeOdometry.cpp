@@ -25,6 +25,7 @@
 #include <isaacsim/core/includes/PhysicsEngine.h>
 #include <isaacsim/core/nodes/ICoreNodes.h>
 #include <isaacsim/core/simulation_manager/ISimulationManager.h>
+#include <isaacsim/robot/schema/utils.h>
 #include <omni/fabric/FabricUSD.h>
 #include <omni/usd/UsdContext.h>
 #include <omni/usd/UsdContextIncludes.h>
@@ -156,24 +157,52 @@ private:
         // user-specified chassis (e.g. after Robot Assembler attaches bodies via fixed joints).
         const bool hasRigidBody = usdPrim.HasAPI<pxr::UsdPhysicsRigidBodyAPI>();
         const bool hasArticulationRoot = usdPrim.HasAPI<pxr::UsdPhysicsArticulationRootAPI>();
+        const bool hasRobotApi =
+            usdPrim.HasAPI(isaacsim::robot::schema::className(isaacsim::robot::schema::Classes::ROBOT_API));
 
-        if (hasRigidBody)
+        // When `chassisPrim` carries `IsaacRobotAPI` but not `UsdPhysicsRigidBodyAPI` /
+        // `UsdPhysicsArticulationRootAPI` directly (a common asset layout when the articulation
+        // root lives on a deeper `base_link`), use the first entry of `isaac:physics:robotLinks`.
+        // The schema defines that entry as the robot's base link, so no search is needed.
+        // This must happen BEFORE the rigid-body and articulation branches forward `pathStr` to
+        // `physx-tensors`, otherwise the tensors plugin emits a `did not match any rigid bodies`
+        // warning before our `logError` fires.
+        pxr::UsdPrim effectivePrim = usdPrim;
+        std::string resolvedPathStorage;
+        if (!hasRigidBody && !hasArticulationRoot && hasRobotApi)
         {
-            m_rigidBodyView = m_reader->createRigidBodyView(m_viewId.c_str(), &pathStr, 1, engine);
+            const auto links = isaacsim::robot::schema::GetAllRobotLinks(stage, usdPrim);
+            if (links.empty() || !links.front())
+            {
+                db.logError(
+                    "IsaacRobotAPI prim '%s' has no resolvable `isaac:physics:robotLinks` entry to "
+                    "use for odometry",
+                    pathStr);
+                return false;
+            }
+            effectivePrim = links.front();
+            resolvedPathStorage = effectivePrim.GetPath().GetString();
+        }
+        // `resolvedPathStorage` outlives `effectivePathStr` (same scope), so this aliasing is safe.
+        const char* effectivePathStr = resolvedPathStorage.empty() ? pathStr : resolvedPathStorage.c_str();
+
+        if (effectivePrim.HasAPI<pxr::UsdPhysicsRigidBodyAPI>())
+        {
+            m_rigidBodyView = m_reader->createRigidBodyView(m_viewId.c_str(), &effectivePathStr, 1, engine);
             if (!m_rigidBodyView)
             {
-                db.logError("Failed to create rigid body view for '%s'", pathStr);
+                db.logError("Failed to create rigid body view for '%s'", effectivePathStr);
                 return false;
             }
         }
-        else if (hasArticulationRoot)
+        else if (effectivePrim.HasAPI<pxr::UsdPhysicsArticulationRootAPI>())
         {
             // Articulation root is not a rigid body (e.g. ancestor Xform); odometry follows
             // PhysX's auto-selected root link. Point chassisPrim at the rigid body to override.
-            m_articulationView = m_reader->createArticulationView(m_viewId.c_str(), &pathStr, 1, engine);
+            m_articulationView = m_reader->createArticulationView(m_viewId.c_str(), &effectivePathStr, 1, engine);
             if (!m_articulationView)
             {
-                db.logError("Failed to create articulation view for '%s'", pathStr);
+                db.logError("Failed to create articulation view for '%s'", effectivePathStr);
                 return false;
             }
         }
