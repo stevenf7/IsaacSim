@@ -1,5 +1,10 @@
 # Changelog
 
+## [6.3.5] - 2026-05-27
+### Fixed
+- `GenerateRobotLinkTree`: rewrite the two `UsdPrimRange` loops to the conventional range-for shape (`for (const UsdPrim& prim : UsdPrimRange(root))`) instead of treating the range as an iterator. The previous form did not compile and made `utils.h` unincludable from C++ consumers.
+- Add `GetRobotLinkParentMap` helper to `utils.h` for resolving `isaac:physics:robotJoints` body0/body1 relationships into a child-link to parent-link path map.
+
 ## [6.3.4] - 2026-05-21
 ### Fixed
 - `GenerateRobotLinkTree` now grafts links and physics joints from nested sub-robots (for example a gripper variant attached at a wrist link) onto the parent's kinematic tree, so forward-kinematics propagation moves the entire assembly. Previously, only the sub-robot's bridging link was reachable from the parent tree, leaving sibling links such as gripper knuckles and fingers behind when the arm was teleported by the Robot Poser. Per sub-robot, prims carrying `IsaacRobotLinkAPI` / `IsaacRobotJointAPI` are preferred; bare `UsdPhysicsRigidBodyAPI` / `UsdPhysicsJoint` prims are picked up only when the sub-robot has no tagged equivalents, so unrelated rigid bodies inside a properly authored sub-robot are not added to the tree.

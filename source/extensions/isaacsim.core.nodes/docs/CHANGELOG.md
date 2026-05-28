@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.10.3] - 2026-05-27
+### Fixed
+- `OgnIsaacComputeTransformTree`: when the supplied target prim carries `IsaacRobotAPI` but not `UsdPhysicsArticulationRootAPI`, resolve the link list via `isaac:physics:robotLinks` and emit one frame per link instead of a single frame for the root prim. Handles assets where the articulation root sits on a deeper `base_link` (e.g. exported turtlebot scenes).
+- `OgnIsaacComputeOdometry`: when `chassisPrim` carries `IsaacRobotAPI` but not `UsdPhysicsRigidBodyAPI` / `UsdPhysicsArticulationRootAPI`, walk `isaac:physics:robotLinks` to find a link with the appropriate physics API before forwarding the path to `omni.physx.tensors`. Previously the tensors plugin emitted a `Pattern '<path>' did not match any rigid bodies` warning before the node's own `logError`.
+- `OgnIsaacComputeTransformTree`: reconstruct kinematic parent-child topology from `isaac:physics:robotJoints` when expanding `IsaacRobotAPI` targets, so the emitted TF tree mirrors the joint graph instead of parenting every link to world.
+- `OgnIsaacJointNameResolver`: when the supplied `targetPrim` / `robotPath` lacks `UsdPhysicsArticulationRootAPI`, descend the prim hierarchy looking for the first descendant that has it (handles `IsaacRobotAPI`-only root prims and ancestor `Xform` targets).
+- `OgnIsaacJointNameResolver`: pass `state.m_robotPath.c_str()` to `db.logError("...%s", ...)` instead of the `std::string` itself, so error messages print the actual prim path rather than garbled memory.
+
 ## [5.10.2] - 2026-05-21
 ### Fixed
 - `OgnIsaacComputeOdometry`: bind `chassisPrim` to a rigid body view whenever the prim has `UsdPhysicsRigidBodyAPI`, even if it also has `UsdPhysicsArticulationRootAPI`. Previously the node read `IArticulationDataView::getRootTransforms()`, which returns the pose of the link PhysX auto-selects as the articulation root by minimum graph eccentricity. Attaching extra bodies (for example via Robot Assembler) extended the articulation graph and shifted the auto-selected root onto a non-chassis link, producing incorrect odometry position/velocity.

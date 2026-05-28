@@ -29,6 +29,7 @@
 #include <pxr/usd/usdGeom/xformCache.h>
 #include <pxr/usd/usdPhysics/articulationRootAPI.h>
 #include <pxr/usd/usdPhysics/joint.h>
+#include <pxr/usd/usdPhysics/rigidBodyAPI.h>
 
 #include <array>
 #include <deque>
@@ -160,6 +161,52 @@ inline std::vector<pxr::UsdPrim> GetAllRobotLinks(const pxr::UsdStagePtr& stage,
     }
 
     return links;
+}
+
+/**
+ * @brief Build a child-link to parent-link path map from an `IsaacRobotAPI` prim.
+ * @details
+ * Walks `isaac:physics:robotJoints` rel targets; for each joint, reads `body0` (parent)
+ * and `body1` (child) via `GetJointBodyRelationship` and records `body1 -> body0`.
+ * Links not referenced as any joint's `body1` (the articulation-root link) do not appear
+ * in the returned map — callers should treat absence as "parents to world / outer scope".
+ *
+ * @param[in] stage Stage that owns the prims.
+ * @param[in] robotPrim The `IsaacRobotAPI`-bearing prim (caller should verify this).
+ *
+ * @return Map of `child_link_path` -> `parent_link_path`; empty if no robotJoints rel.
+ */
+inline std::unordered_map<std::string, std::string> GetRobotLinkParentMap(const pxr::UsdStagePtr& stage,
+                                                                          const pxr::UsdPrim& robotPrim)
+{
+    std::unordered_map<std::string, std::string> parentMap;
+    if (!stage || !robotPrim)
+    {
+        return parentMap;
+    }
+    pxr::UsdRelationship robotJointsRel = robotPrim.GetRelationship(relationNames.at(Relations::ROBOT_JOINTS));
+    if (!robotJointsRel)
+    {
+        return parentMap;
+    }
+    pxr::SdfPathVector jointPaths;
+    robotJointsRel.GetTargets(&jointPaths);
+    for (const auto& jointPath : jointPaths)
+    {
+        pxr::UsdPrim jointPrim = stage->GetPrimAtPath(jointPath);
+        if (!jointPrim)
+        {
+            continue;
+        }
+        pxr::SdfPath body0Path = GetJointBodyRelationship(jointPrim, 0);
+        pxr::SdfPath body1Path = GetJointBodyRelationship(jointPrim, 1);
+        if (body0Path.IsEmpty() || body1Path.IsEmpty())
+        {
+            continue;
+        }
+        parentMap[body1Path.GetString()] = body0Path.GetString();
+    }
+    return parentMap;
 }
 
 /**
@@ -515,20 +562,20 @@ inline std::shared_ptr<RobotLinkNode> GenerateRobotLinkTree(const pxr::UsdStageP
     }
 
     std::vector<pxr::UsdPrim> allLinks;
-    for (pxr::UsdPrimRange range(robotLinkPrim); range; ++range)
+    for (const pxr::UsdPrim& prim : pxr::UsdPrimRange(robotLinkPrim))
     {
-        if (range->HasAPI(className(Classes::LINK_API)))
+        if (prim.HasAPI(className(Classes::LINK_API)))
         {
-            allLinks.emplace_back(*range);
+            allLinks.emplace_back(prim);
         }
     }
 
     std::vector<pxr::UsdPrim> allJoints;
-    for (pxr::UsdPrimRange range(robotLinkPrim); range; ++range)
+    for (const pxr::UsdPrim& prim : pxr::UsdPrimRange(robotLinkPrim))
     {
-        if (range->HasAPI(className(Classes::JOINT_API)))
+        if (prim.HasAPI(className(Classes::JOINT_API)))
         {
-            allJoints.emplace_back(*range);
+            allJoints.emplace_back(prim);
         }
     }
 
