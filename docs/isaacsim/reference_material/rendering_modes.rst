@@ -87,6 +87,24 @@ You can also change the active render mode while |isaac-sim_short| is running by
 
 For RTX - Minimal at runtime, set ``/rtx/rendermode`` to ``MinimalRendering`` and adjust ``/rtx/minimal/mode`` as needed. Other RTX - Minimal carb settings, such as ``/rtx/minimal/constantColor`` and ambient light options under ``/rtx/sceneDb/``, are described in :ref:`RTX - Minimal limitations <isaac_sim_rendering_modes_minimal>` and in `RTX - Minimal <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/rtx-renderer_minimal.html>`_.
 
+.. _isaac_sim_rendering_modes_fractional_cutout_opacity:
+
+Material translucency and cutout opacity
+========================================
+
+Some vMaterials use fractional cutout opacity to render fine translucent or cutout details, such as layered composites, fabrics, glass, liquids, plastics, and stones. If this feature is disabled, these materials can render with incorrect opacity, missing cutout detail, or other translucency artifacts.
+
+Set ``/rtx/pathtracing/fractionalCutoutOpacity`` to ``true`` when correct vMaterial appearance matters in RTX - Real-Time 2.0 or RTX - Interactive (Path Tracing):
+
+.. code-block:: python
+
+    import carb.settings
+
+    settings = carb.settings.get_settings()
+    settings.set("/rtx/pathtracing/fractionalCutoutOpacity", True)
+
+This setting can increase render cost. If the workflow does not depend on translucent or cutout material detail, disabling it can improve performance. See :ref:`isaac_sim_performance_optimization_handbook_scene_and_rendering` for related performance settings.
+
 .. _isaac_sim_rendering_modes_minimal:
 
 RTX - Minimal limitations
