@@ -107,76 +107,80 @@ create a new prim to be set as default.
         :align: center
         :alt: Jetbot asset
 
-.. Merge Meshes
-.. ------------
+Merge Meshes
+------------
 
-.. With the stage ready, you can begin merging the meshes.
+With the stage ready, you can begin merging the meshes.
 
-.. #. Open the Mesh Merge Tool by going to **Tools** > **Robotics** > **Asset Editors** > **Mesh Merge Tool**.
-.. #. Select ``Jetbot/left_wheel`` prim.
-.. #. Check the **Combine Materials** box, insert ``Jetbot_Sim/Looks`` to save the material in the Jetbot Sim xform.
+.. note:: The Mesh Merge Tool is deprecated and will be removed in a future release. Use the Scene Optimizer extension instead.
 
-..     .. image:: /images/isim_5.0_full_tut_gui_asset_optimization_7.png
-..         :width: 100%
-..         :align: center
-..         :alt: Mesh Merge Tool
+First, enable the merge mesh tool by going to **Window** > **Extensions** and search for **Isaac Sim Mesh Merge** or **isaacsim.util.merge_mesh** in the deprecated extensions and toggle it on.
 
-.. #. Click on **Merge**.
-.. #. Select the resulting mesh on ``/Merged/left_wheel`` and clear the transform on the properties panel.
+#. Open the Mesh Merge Tool by going to **Tools** > **Robotics** > **Asset Editors** > **Mesh Merge Tool**.
+#. Select ``Jetbot/left_wheel`` prim.
+#. Check the **Combine Materials** box, insert ``Jetbot_Sim/Looks`` to save the material in the Jetbot Sim xform.
 
-..     .. image:: /images/isim_5.0_full_tut_gui_asset_optimization_8.png
-..         :width: 100%
-..         :align: center
-..         :alt: Mesh Merge Tool
+    .. image:: /images/isim_5.0_full_tut_gui_asset_optimization_7.png
+        :width: 100%
+        :align: center
+        :alt: Mesh Merge Tool
 
-.. #. Right-click on the **Visuals** scope, create an xform called ``left_wheel`` and drag the resulting mesh into it. Remove the ``/Merged`` xform from the stage.
+#. Click on **Merge**.
+#. Select the resulting mesh on ``/Merged/left_wheel`` and clear the transform on the properties panel.
 
-..     .. image:: /images/isim_5.0_full_tut_gui_asset_optimization_9.png
-..         :width: 100%
-..         :align: center
-..         :alt: Mesh Merge Tool
+    .. image:: /images/isim_5.0_full_tut_gui_asset_optimization_8.png
+        :width: 100%
+        :align: center
+        :alt: Mesh Merge Tool
 
-.. #. To create an internal reference to the wheel, create a **Visuals** Xform inside ``left_wheel``, then right-click it and choose **Add** > **Reference**.
+#. Right-click on the **Visuals** scope, create an xform called ``left_wheel`` and drag the resulting mesh into it. Remove the ``/Merged`` xform from the stage.
 
-..     .. image:: /images/isim_5.0_full_tut_gui_asset_optimization_10.png
-..         :width: 100%
-..         :align: center
-..         :alt: Mesh Merge Tool
+    .. image:: /images/isim_5.0_full_tut_gui_asset_optimization_9.png
+        :width: 100%
+        :align: center
+        :alt: Mesh Merge Tool
 
-.. #. Select ``Isaac Sim/Samples/Rigging/Jetbot/Jetbot_Base/Jetbot_base.usd`` in the dialog.
+#. To create an internal reference to the wheel, create a **Visuals** Xform inside ``left_wheel``, then right-click it and choose **Add** > **Reference**.
 
-..     .. image:: /images/isim_5.0_full_tut_gui_asset_optimization_11.png
-..         :width: 100%
-..         :align: center
-..         :alt: Mesh Merge Tool
+    .. image:: /images/isim_5.0_full_tut_gui_asset_optimization_10.png
+        :width: 100%
+        :align: center
+        :alt: Mesh Merge Tool
 
-.. #. For ``prim_path``, type in ``/Visuals/left_wheel``.
+#. Select ``Isaac Sim/Samples/Rigging/Jetbot/Jetbot_Base/Jetbot_base.usd`` in the dialog.
 
-..     .. image:: /images/isim_5.0_full_tut_gui_asset_optimization_12.png
-..         :width: 100%
-..         :align: center
-..         :alt: Mesh Merge Tool
+    .. image:: /images/isim_5.0_full_tut_gui_asset_optimization_11.png
+        :width: 100%
+        :align: center
+        :alt: Mesh Merge Tool
 
-.. #. Back in the **Stage** panel, select the ``/Jetbot_Sim/Visuals/left_wheel`` prim, which you just added a reference onto. Then in the **Property** panel, scroll down to the **References** section. The prim path is in red, select the Asset Path entry and **clear** it.
-.. #. This will make the reference point to the internal ``/Jetbot_Sim/Visuals/left_wheel`` prim. The mesh for ``left_wheel`` shows as a child. Verify that a **Looks** scope was created in ``Jetbot_Sim``, with the materials for this mesh.
+#. For ``prim_path``, type in ``/Visuals/left_wheel``.
 
-..     .. image:: /images/isim_5.0_full_tut_gui_asset_optimization_12a.png
-..         :width: 100%
-..         :align: center
-..         :alt: Mesh Merge Tool
+    .. image:: /images/isim_5.0_full_tut_gui_asset_optimization_12.png
+        :width: 100%
+        :align: center
+        :alt: Mesh Merge Tool
 
-.. #. Verify that the wheel is referenced correctly in place, along with the base mesh that is at the origin. You can hide the Visuals scope so base meshes won't be visible.
+#. Back in the **Stage** panel, select the ``/Jetbot_Sim/Visuals/left_wheel`` prim, which you just added a reference onto. Then in the **Property** panel, scroll down to the **References** section. The prim path is in red, select the Asset Path entry and **clear** it.
+#. This will make the reference point to the internal ``/Jetbot_Sim/Visuals/left_wheel`` prim. The mesh for ``left_wheel`` shows as a child. Verify that a **Looks** scope was created in ``Jetbot_Sim``, with the materials for this mesh.
 
-..     .. image:: /images/isim_5.0_full_tut_gui_asset_optimization_13.png
-..         :width: 100%
-..         :align: center
-..         :alt: Mesh Merge Tool
+    .. image:: /images/isim_5.0_full_tut_gui_asset_optimization_12a.png
+        :width: 100%
+        :align: center
+        :alt: Mesh Merge Tool
 
-.. #. Save the file with CTRL+S.
-.. #. To complete the mesh optimization,  repeat the previous steps for other bodies.
+#. Verify that the wheel is referenced correctly in place, along with the base mesh that is at the origin. You can hide the Visuals scope so base meshes won't be visible.
 
-.. .. note::
-..     The finished USD with all mesh merges is available for you at ``Isaac Sim/Samples/Rigging/Jetbot/Jetbot_Optimized/Jetbot_optimized_post_merge.usd``.
+    .. image:: /images/isim_5.0_full_tut_gui_asset_optimization_13.png
+        :width: 100%
+        :align: center
+        :alt: Mesh Merge Tool
+
+#. Save the file with CTRL+S.
+#. To complete the mesh optimization,  repeat the previous steps for other bodies.
+
+.. note::
+    The finished USD with all mesh merges is available for you at ``Isaac Sim/Samples/Rigging/Jetbot/Jetbot_Optimized/Jetbot_optimized_post_merge.usd``.
 
 
 Scenegraph Instancing
