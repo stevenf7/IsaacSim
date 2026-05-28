@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.3] - 2026-05-27
+### Changed
+- Documented the input-stage mutation contract on `RuleInterface`: `args["input_stage"]` is informational only and must be treated as fully read-only, including its session layer. Rules that need to author overrides while reading from the original input must open a private `Usd.Stage` from `args["input_stage_path"]` and author into that stage's session layer. The contract exists because (a) `args["input_stage"]` may be a caller-owned Stage whose session layer carries user-driven overrides (visibility toggles, purpose settings, camera opinions), and (b) its root `Sdf.Layer` is shared via USD's process-wide layer cache with any other Stage observing the same file (notably the editor's active Stage); mutations there fire change notifications that have been observed to crash `librtx.hydra`.
+
 ## [1.2.2] - 2026-05-22
 ### Fixed
 - `AssetTransformerManager._collect_assets` now anchors dependency discovery and asset-path remapping to the source layer's directory instead of the freshly-exported output layer. Previously, a source stage containing relative asset paths (e.g. `../textures/foo.png`) written to an output `payloads/` directory at a different filesystem depth would leave the relative strings verbatim in `payloads/base.usd`, producing unresolvable references at render time. The new behavior reuses the source resolver context to discover, copy, and rewrite each asset path so the output is portable regardless of the relative depth of `package_root` vs the source.
