@@ -673,8 +673,10 @@ auto_merge_mr = false
 exts_include = [
   "omni.pip.cloud",
   "omni.pip.compute",
+  "*",
 ]
 exts_exclude = [
+  "isaacsim.exp.*",
   "isaacsim.*",
   "omni.isaac.core_archive",
   "omni.isaac.ml_archive",
@@ -702,6 +704,7 @@ exts_include = [
 exts_exclude = [
   "omni.pip.cloud",
   "omni.pip.compute",
+  "isaacsim.exp.*",
 ]
 
 [repo_deploy_exts.pipeline_repo.branch.prod]

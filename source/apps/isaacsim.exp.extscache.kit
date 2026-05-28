@@ -404,6 +404,17 @@ folders = [
 "omni.mega.schema" = { version = "2.0.5", exact = true }
 "omni.wrapp.package_explorer" = { version = "2.4.3", exact = true }
 
+
+
+[settings.exts."omni.kit.registry.nucleus".registries]
+'++' = [
+# AUTOREMOVE: BEGIN
+    { name = "kit/default", url = "https://pdx.s8k.io/v1/AUTH_team-ov-kit-exts/exts/kit/default" },
+    { name = "kit/sdk", url = "https://pdx.s8k.io/v1/AUTH_team-ov-kit-exts/exts/kit/sdk/${kit_version_short}/${kit_git_hash}" },
+# AUTOREMOVE: END
+    { name = "isaacsim/prod/6.0", url = "https://ovextensionsprod.blob.core.windows.net/exts/isaacsim/prod/6.0/shared" },
+]
+
 ########################################################################################################################
 # BEGIN GENERATED PART (Remove from 'BEGIN' to 'END' to regenerate)
 ########################################################################################################################
@@ -485,22 +496,22 @@ enabled = [
 	"omni.anim.timeline-110.0.0",
 	"omni.anim.widget.timeline-0.4.0",
 	"omni.anim.window.timeline-110.0.1",
-	"omni.asset_validator.core-1.15.1",
-	"omni.asset_validator.ui-1.15.1",
+	"omni.asset_validator.core-1.19.3",
+	"omni.asset_validator.ui-1.19.3",
 	"omni.behavior.scripting.bundle-110.1.0",
 	"omni.behavior.scripting.core-110.1.0",
 	"omni.behavior.scripting.ui-110.1.0",
 	"omni.behavior.tree.bundle-110.1.0",
-	"omni.behavior.tree.core-110.1.8",
+	"omni.behavior.tree.core-110.1.9",
 	"omni.behavior.tree.schema-110.1.0",
-	"omni.behavior.tree.ui-110.1.11",
+	"omni.behavior.tree.ui-110.1.12",
 	"omni.convexdecomposition-110.1.11",
 	"omni.cuopt.examples-1.4.1",
 	"omni.cuopt.service-1.3.2",
-	"omni.cuopt.visualization-1.4.0",
+	"omni.cuopt.visualization-1.4.1",
 	"omni.curve.creator-110.0.0",
 	"omni.curve.manipulator-110.0.0",
-	"omni.flowusd-110.0.4",
+	"omni.flowusd-110.0.3",
 	"omni.genproc.core-110.0.0",
 	"omni.graph.action-2.10.2",
 	"omni.graph.action_nodes-2.10.3",
@@ -538,7 +549,7 @@ enabled = [
 	"omni.kit.data2ui.usd-1.1.4",
 	"omni.kit.environment.core-1.4.2",
 	"omni.kit.gfn-108.0.0",
-	"omni.kit.graph.delegate.default-1.2.6",
+	"omni.kit.graph.delegate.default-1.2.5",
 	"omni.kit.graph.delegate.modern-1.10.15",
 	"omni.kit.graph.editor.core-1.5.8",
 	"omni.kit.graph.usd.commands-1.3.6",
@@ -552,10 +563,10 @@ enabled = [
 	"omni.kit.mesh.raycast-110.0.0",
 	"omni.kit.ngsearch-0.3.3",
 	"omni.kit.playlist.core-1.3.7",
-	"omni.kit.pointclouds-1.6.12",
+	"omni.kit.pointclouds-1.6.14",
 	"omni.kit.preferences.animation-1.5.0",
 	"omni.kit.prim.icon-1.1.1",
-	"omni.kit.profiler.tracy-1.2.1",
+	"omni.kit.profiler.tracy-1.2.0",
 	"omni.kit.property.collection-0.2.4",
 	"omni.kit.property.environment-1.2.3",
 	"omni.kit.property.physics-110.1.11",
@@ -564,23 +575,23 @@ enabled = [
 	"omni.kit.sequencer.core-110.0.0",
 	"omni.kit.sequencer.usd-110.0.0",
 	"omni.kit.stage_column.payload-2.0.5",
-	"omni.kit.stage_column.variant-1.0.21",
-	"omni.kit.stagerecorder.bundle-110.0.2",
-	"omni.kit.stagerecorder.core-110.0.14",
-	"omni.kit.stagerecorder.ui-110.0.2",
-	"omni.kit.thumbnails.mdl-1.0.29",
+	"omni.kit.stage_column.variant-1.0.20",
+	"omni.kit.stagerecorder.bundle-110.0.0",
+	"omni.kit.stagerecorder.core-110.0.9",
+	"omni.kit.stagerecorder.ui-110.0.0",
+	"omni.kit.thumbnails.mdl-1.0.28",
 	"omni.kit.thumbnails.usd-1.0.12",
-	"omni.kit.timeline.minibar-1.2.15",
+	"omni.kit.timeline.minibar-1.2.13",
 	"omni.kit.tool.asset_exporter-4.0.7",
 	"omni.kit.tool.asset_importer-5.2.0",
-	"omni.kit.tool.measure-200.0.10",
+	"omni.kit.tool.measure-200.0.12",
 	"omni.kit.tool.remove_unused.controller-0.2.0",
 	"omni.kit.tool.remove_unused.core-0.1.4",
-	"omni.kit.variant.editor-107.5.9",
-	"omni.kit.variant.presenter-107.1.4",
+	"omni.kit.variant.editor-107.5.8",
+	"omni.kit.variant.presenter-107.1.3",
 	"omni.kit.viewport.menubar.lighting-107.3.2",
 	"omni.kit.viewport.menubar.waypoint-104.2.16",
-	"omni.kit.waypoint.core-1.6.7",
+	"omni.kit.waypoint.core-1.6.9",
 	"omni.kit.waypoint.playlist-1.1.1",
 	"omni.kit.widget.calendar-1.0.9",
 	"omni.kit.widget.collection-0.3.3",
@@ -589,11 +600,11 @@ enabled = [
 	"omni.kit.widget.sliderbar-1.1.0",
 	"omni.kit.widget.timeline-107.0.2",
 	"omni.kit.widget.zoombar-1.0.7",
-	"omni.kit.widgets.custom-1.1.3",
+	"omni.kit.widgets.custom-1.1.2",
 	"omni.kit.window.collection-0.3.5",
 	"omni.kit.window.material-1.8.0",
-	"omni.kit.window.material_graph-2.1.2",
-	"omni.kit.window.movie_capture-2.8.2",
+	"omni.kit.window.material_graph-2.2.0",
+	"omni.kit.window.movie_capture-3.0.1",
 	"omni.kit.window.quicksearch-2.4.4",
 	"omni.kit.window.section-107.1.4",
 	"omni.kit.window.usddebug-1.1.4",
@@ -650,13 +661,13 @@ enabled = [
 	"omni.services.usd-1.1.1",
 	"omni.simready.content.browser-0.3.7",
 	"omni.simready.explorer-1.1.4",
-	"omni.usd.fileformat.e57-1.7.2",
-	"omni.usd.fileformat.pts-110.0.0",
+	"omni.usd.fileformat.e57-1.7.4",
+	"omni.usd.fileformat.pts-110.0.2",
 	"omni.usd.metrics.assembler-110.1.2",
 	"omni.usd.metrics.assembler.physics-110.1.11",
 	"omni.usd.metrics.assembler.ui-110.1.1",
 	"omni.usd.schema.flow-110.0.0",
-	"omni.usd.schema.metrics.assembler-110.1.1",
+	"omni.usd.schema.metrics.assembler-110.1.0",
 	"omni.usd.schema.physx-110.1.11",
 	"omni.usd.schema.scene.visualization-2.0.2",
 	"omni.usd.schema.sequence-3.2.0",
@@ -675,13 +686,3 @@ enabled = [
 ########################################################################################################################
 # END GENERATED PART
 ########################################################################################################################
-
-
-# AUTOREMOVE: BEGIN
-# FOR DEVELOPMENT #
-[settings.exts."omni.kit.registry.nucleus".registries]
-'++' = [
-    { name = "kit/default", url = "https://pdx.s8k.io/v1/AUTH_team-ov-kit-exts/exts/kit/default" },
-    { name = "kit/sdk", url = "https://pdx.s8k.io/v1/AUTH_team-ov-kit-exts/exts/kit/sdk/${kit_version_short}/${kit_git_hash}" },
-]
-# AUTOREMOVE: END

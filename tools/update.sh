@@ -90,12 +90,13 @@ print_help() {
     echo "  --exts               Update and clean extension cache"
     echo "  --all                Run all updates (kit + physics + exts)"
     echo "  --clean              Clean extensions from extscache that exist in build tree (exclusive mode)"
+    echo "  --repo-exts-only     Run ./build.sh -ur and keep only repo extension changes in extscache"
     echo ""
     echo "Version pinning:"
     echo "  --kit-version VER        Pin kit-kernel to MAJOR.MINOR.PATCH (default: latest patch)"
     echo "  --physics-version VER    Pin omni_physics to MAJOR.MINOR.PATCH (default: latest patch)"
     echo "  --force-physics          Allow physics downgrade (default: only upgrade)"
-    echo "  --commit-hash HASH       Specific commit hash for KAT template URL (used with --exts)"
+    echo "  --kit-sdk-repo PATH      Path to kit-sdk-public checkout (used with --exts)"
     echo ""
     echo "Examples:"
     echo "  $0 --all                                       # Full update, latest patches"
@@ -103,8 +104,10 @@ print_help() {
     echo "  $0 --kit --kit-version 110.2.0                 # Update only kit to 110.2.0"
     echo "  $0 --physics --physics-version 110.0.8         # Update physics to 110.0.8"
     echo "  $0 --physics --physics-version 110.0.6 --force-physics  # Force physics downgrade"
-    echo "  $0 --exts --commit-hash abc123                 # Update extensions with specific KAT commit"
+    echo "  $0 --exts                                      # Update extensions using local kit-sdk-public locks"
+    echo "  $0 --exts --kit-sdk-repo /path/to/kit-sdk-public  # Use a specific kit-sdk-public checkout"
     echo "  $0 --clean                                     # Clean extensions only"
+    echo "  $0 --repo-exts-only                            # Keep only repo extension cache changes after build"
     echo ""
     exit 0
 }
@@ -184,28 +187,30 @@ update_physics() {
     popd
 }
 
-# Step 3: Update extension cache (KAT sync + physics correction + build + clean)
+# Step 3: Update extension cache (Kit SDK lock sync + physics correction + build + clean)
 update_extensions() {
-    local commit_hash="$1"
+    local kit_sdk_repo="$1"
     echo "=========================================="
     echo "Updating extension cache..."
     echo "=========================================="
     pushd ../
 
-    # Build the command with optional commit hash and platform-specific paths
-    local cmd="python3 tools/isaac/clean_extscache.py --update-locks --update-physics --match-kat"
-    cmd="$cmd --build-dir _build/$PLATFORM/release/exts"
-    cmd="$cmd --deprecated-dir _build/$PLATFORM/release/extsDeprecated"
-    cmd="$cmd --apps-dir _build/$PLATFORM/release/apps"
-    cmd="$cmd --internal-dir _build/$PLATFORM/release/extsInternal"
-    if [ -n "$commit_hash" ]; then
-        cmd="$cmd --commit-hash $commit_hash"
-        echo "Using commit hash: $commit_hash"
-    fi
+    echo "Using kit-sdk-public repo: $kit_sdk_repo"
+    local cmd=(
+        python3 tools/isaac/clean_extscache.py
+        --update-locks
+        --update-physics
+        --match-kit-sdk
+        --kit-sdk-repo "$kit_sdk_repo"
+        --build-dir "_build/$PLATFORM/release/exts"
+        --deprecated-dir "_build/$PLATFORM/release/extsDeprecated"
+        --apps-dir "_build/$PLATFORM/release/apps"
+        --internal-dir "_build/$PLATFORM/release/extsInternal"
+    )
 
-    eval $cmd
+    "${cmd[@]}"
     ./repo.sh build -r
-    eval $cmd
+    "${cmd[@]}"
     popd
 }
 
@@ -218,6 +223,30 @@ clean_extensions() {
         --deprecated-dir "_build/$PLATFORM/release/extsDeprecated" \
         --apps-dir "_build/$PLATFORM/release/apps" \
         --internal-dir "_build/$PLATFORM/release/extsInternal"
+    popd
+}
+
+# Run update/release build and restore extscache changes that do not come from repo extensions
+update_repo_extensions_only() {
+    echo "Updating repo extensions in extscache only..."
+    pushd ../
+
+    local kit_file="source/apps/isaacsim.exp.extscache.kit"
+    local baseline_kit
+    baseline_kit=$(mktemp)
+    cp "$kit_file" "$baseline_kit"
+
+    ./build.sh -ur
+
+    python3 tools/isaac/clean_extscache.py \
+        --restore-non-local-from "$baseline_kit" \
+        --kit-file "$kit_file" \
+        --build-dir "_build/$PLATFORM/release/exts" \
+        --deprecated-dir "_build/$PLATFORM/release/extsDeprecated" \
+        --apps-dir "_build/$PLATFORM/release/apps" \
+        --internal-dir "_build/$PLATFORM/release/extsInternal"
+
+    rm -f "$baseline_kit"
     popd
 }
 
@@ -248,10 +277,12 @@ UPDATE_KIT=false
 UPDATE_PHYSICS=false
 UPDATE_EXTS=false
 CLEAN_EXTS=false
+REPO_EXTS_ONLY=false
 KIT_VERSION=""
 PHYSICS_VERSION=""
 FORCE_PHYSICS=false
-COMMIT_HASH=""
+KIT_SDK_REPO="${KIT_SDK_REPO:-/home/hmazhar/repos/kit-sdk-public}"
+KIT_SDK_REPO_ARG=false
 
 # Process arguments
 while [[ $# -gt 0 ]]; do
@@ -273,6 +304,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --clean)
             CLEAN_EXTS=true
+            shift
+            ;;
+        --repo-exts-only)
+            REPO_EXTS_ONLY=true
             shift
             ;;
         --all)
@@ -311,17 +346,19 @@ while [[ $# -gt 0 ]]; do
             FORCE_PHYSICS=true
             shift
             ;;
-        --commit-hash)
+        --kit-sdk-repo)
             if [[ $# -gt 1 ]]; then
-                COMMIT_HASH="$2"
+                KIT_SDK_REPO="$2"
+                KIT_SDK_REPO_ARG=true
                 shift 2
             else
-                echo "Error: --commit-hash requires a value"
+                echo "Error: --kit-sdk-repo requires a path"
                 exit 1
             fi
             ;;
-        --commit-hash=*)
-            COMMIT_HASH="${1#*=}"
+        --kit-sdk-repo=*)
+            KIT_SDK_REPO="${1#*=}"
+            KIT_SDK_REPO_ARG=true
             shift
             ;;
         *)
@@ -333,8 +370,15 @@ done
 
 # Validate flag combinations
 if [ "$CLEAN_EXTS" = true ]; then
-    if [ "$UPDATE_KIT" = true ] || [ "$UPDATE_PHYSICS" = true ] || [ "$UPDATE_EXTS" = true ]; then
-        echo "Error: --clean cannot be combined with --kit, --physics, --exts, or --all"
+    if [ "$UPDATE_KIT" = true ] || [ "$UPDATE_PHYSICS" = true ] || [ "$UPDATE_EXTS" = true ] || [ "$REPO_EXTS_ONLY" = true ]; then
+        echo "Error: --clean cannot be combined with --kit, --physics, --exts, --repo-exts-only, or --all"
+        print_help
+    fi
+fi
+
+if [ "$REPO_EXTS_ONLY" = true ]; then
+    if [ "$UPDATE_KIT" = true ] || [ "$UPDATE_PHYSICS" = true ] || [ "$UPDATE_EXTS" = true ] || [ "$CLEAN_EXTS" = true ]; then
+        echo "Error: --repo-exts-only cannot be combined with --kit, --physics, --exts, --clean, or --all"
         print_help
     fi
 fi
@@ -354,6 +398,11 @@ if [ "$FORCE_PHYSICS" = true ] && [ "$UPDATE_PHYSICS" != true ]; then
     exit 1
 fi
 
+if [ "$KIT_SDK_REPO_ARG" = true ] && [ "$UPDATE_EXTS" != true ]; then
+    echo "Error: --kit-sdk-repo requires --exts or --all"
+    exit 1
+fi
+
 # Run selected updates
 if [ "$UPDATE_KIT" = true ]; then
     update_kit
@@ -364,11 +413,15 @@ if [ "$UPDATE_PHYSICS" = true ]; then
 fi
 
 if [ "$UPDATE_EXTS" = true ]; then
-    update_extensions "$COMMIT_HASH"
+    update_extensions "$KIT_SDK_REPO"
 fi
 
 if [ "$CLEAN_EXTS" = true ]; then
     clean_extensions
+fi
+
+if [ "$REPO_EXTS_ONLY" = true ]; then
+    update_repo_extensions_only
 fi
 
 echo ""
