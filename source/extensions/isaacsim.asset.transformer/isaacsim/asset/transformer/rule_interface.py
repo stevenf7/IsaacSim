@@ -37,6 +37,31 @@ class RuleInterface(ABC):
     path) from :meth:`process_rule`. The manager will open the new stage and
     use it for subsequent rules in the pipeline.
 
+    Stage mutation contract:
+        ``args["input_stage"]`` is informational only and must be treated
+        as **read-only in every respect**, including its session layer.
+        Rules that need to author overrides while reading from the
+        original input must open a private :class:`Usd.Stage` from
+        ``args["input_stage_path"]`` and author into that stage's session
+        layer; they must not write to either layer of any caller-owned
+        Stage.
+
+        Two reasons for this:
+
+        1. ``args["input_stage"]`` may be a caller-owned Stage (e.g. the
+           editor's active Stage). Its session layer commonly carries
+           user-driven overrides such as visibility toggles, purpose
+           settings, and camera opinions; rule authoring or cleanup there
+           would corrupt user state.
+        2. The root :class:`pxr.Sdf.Layer` of an input opened by path is
+           shared via USD's process-wide layer cache with every Stage
+           observing the same file -- including the editor's active Stage
+           when the user runs the transformer on the open stage. Authoring
+           to that root layer (or calling ``Reload()`` on it) fires change
+           notifications on the editor's Stage that have been observed to
+           invalidate Hydra render product prims mid-frame and crash the
+           renderer.
+
     Args:
         source_stage: Input stage providing opinions to read from.
         package_root: Root directory for output files.

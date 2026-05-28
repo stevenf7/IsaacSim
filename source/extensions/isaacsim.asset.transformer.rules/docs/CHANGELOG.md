@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.7.8] - 2026-05-27
+### Fixed
+- `FlattenRule.process_rule` no longer mutates any caller-owned USD state. Previously the rule deleted entries from `prim_spec.variantSelections` on the input stage's root layer and called `Reload()` on it twice; this fired change notifications on every other Stage observing the same layer through USD's process-wide layer cache. When the Asset Transformer was run against the editor's active stage, those notifications invalidated Hydra render product prims mid-frame and crashed `librtx.hydra` with `Unable to find RP Prim from previous update pass!`. The rule now ignores any `args["input_stage"]` passed by the caller and opens a fresh, private `Usd.Stage` from `args["input_stage_path"]`. Variant blocks and selections are authored to that private stage's session layer via `Usd.EditContext`; `Stage.Flatten()` composes the overrides into the output identically to the prior behavior. The private stage is garbage-collected on return, so no explicit cleanup is needed and no caller state (notably the editor's session layer, which carries user-driven overrides such as visibility toggles, purpose settings, and camera opinions) is ever touched.
+- `FlattenRule._clear_all_variant_selections` now writes block opinions through `UsdVariantSet.BlockVariantSelection()` (which respects the active edit target) instead of directly deleting entries from the root layer's prim specs.
+
+### Added
+- Regression test `test_flatten_fires_no_change_notifications_on_input_root_layer` subscribes to `Sdf.Notice.LayersDidChange` for the duration of `process_rule()` and asserts the input root layer is never reported as changed; this catches mid-execution mutations even when the rule resets the layer to disk-clean state before returning (as the previous buggy implementation did).
+- Regression test `test_flatten_preserves_caller_session_layer` seeds a non-rule opinion on a caller-owned stage's session layer, passes that stage via `args["input_stage"]`, runs the rule, and asserts the seeded opinion survives. Catches any future change that authors into (or clears) the caller's session layer.
+- Regression test `test_flatten_does_not_mutate_input_root_layer_disk_content` copies the input asset to a tempfile, runs the rule, and asserts the file's bytes and mtime are unchanged.
+
 ## [1.7.7] - 2026-05-22
 ### Fixed
 - `GeometriesRoutingRule._create_deduplicated_instance` no longer crashes with `pxr.Tf.ErrorException: Cannot create spec </Instances/<name>/<name>.purpose> because it already exists` when the prototype mesh's `purpose` attribute spec was already authored. The attribute spec is now reused if one already exists (e.g. when the template mesh authored `purpose` directly, or when the rule is re-run against an `instances.usda` reopened from disk via `Sdf.Layer.FindOrOpen`). The fallback catches the narrow `pxr.Tf.ErrorException` only, so typos and bad type-name arguments still surface as errors.
