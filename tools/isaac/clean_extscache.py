@@ -16,6 +16,7 @@
 import argparse
 import os
 import re
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -629,6 +630,222 @@ def compare_with_template(kit_file, kit_sdk_xml, verbose=False, dry_run=False, c
     return True
 
 
+def _derive_kit_sdk_branch(kit_sdk_xml, verbose=False):
+    """Derive the Kit SDK source branch from the kit-kernel packman version."""
+
+    def log(msg):
+        if verbose:
+            print(f"DEBUG: {msg}")
+
+    if not kit_sdk_xml or not os.path.isfile(kit_sdk_xml):
+        log(f"Could not derive Kit SDK branch because {kit_sdk_xml} does not exist")
+        return None
+
+    try:
+        with open(kit_sdk_xml, "r") as f:
+            xml_content = f.read()
+    except Exception as e:
+        log(f"Could not read {kit_sdk_xml}: {e}")
+        return None
+
+    xml_match = re.search(r'name="kit-kernel"\s+version="(\d+)\.(\d+)\.\d+\+(\w+)\.', xml_content)
+    if not xml_match:
+        log(f"Could not find kit-kernel version in {kit_sdk_xml}")
+        return None
+
+    major_minor = f"{xml_match.group(1)}.{xml_match.group(2)}"
+    branch_type = xml_match.group(3)
+    if branch_type == "production":
+        return f"production/{major_minor}"
+    return f"feature/{major_minor}"
+
+
+def _get_git_branch(repo_path, verbose=False):
+    """Return the current branch for a git checkout."""
+
+    def log(msg):
+        if verbose:
+            print(f"DEBUG: {msg}")
+
+    try:
+        branch = subprocess.check_output(
+            ["git", "-C", repo_path, "rev-parse", "--abbrev-ref", "HEAD"],
+            stderr=subprocess.STDOUT,
+            text=True,
+        ).strip()
+    except Exception as e:
+        log(f"Could not read git branch for {repo_path}: {e}")
+        return None
+
+    return branch
+
+
+def _extract_generated_part(content):
+    begin_match = re.search(r"# BEGIN GENERATED PART.*?\n(.*?)# END GENERATED PART", content, re.DOTALL)
+    if not begin_match:
+        return None
+    return begin_match.group(1)
+
+
+def _extract_enabled_version_locks(content):
+    locks = {}
+    enabled_sections = re.findall(r"enabled\s*=\s*\[(.*?)\]", content, re.DOTALL)
+    for enabled_section in enabled_sections:
+        for line in enabled_section.split("\n"):
+            line = line.strip()
+            if not line or '"' not in line:
+                continue
+            match = re.search(r'"([^"]+)"', line)
+            if not match:
+                continue
+            ext_with_version = match.group(1)
+            if "-" not in ext_with_version:
+                continue
+            name, version = ext_with_version.rsplit("-", 1)
+            locks[name] = version
+    return locks
+
+
+def _parse_version(ver_str):
+    """Parse a dotted numeric version string into a comparable tuple."""
+    try:
+        return tuple(int(x) for x in ver_str.split("."))
+    except (ValueError, AttributeError):
+        return ()
+
+
+def compare_with_kit_sdk_version_locks(
+    kit_file,
+    kit_sdk_xml,
+    verbose=False,
+    dry_run=False,
+    kit_sdk_repo=None,
+    kit_sdk_version_locks=None,
+):
+    """
+    Compare the kit file with the local kit-sdk-public version locks and update matching locks.
+
+    Lower versions from kit-sdk-public are reported but not applied.
+
+    Args:
+        kit_file (str): Path to the kit file.
+        kit_sdk_xml (str): Path to the kit-sdk.packman.xml file.
+        verbose (bool): If True, print detailed debug information.
+        dry_run (bool): If True, don't modify the file, just report what would be done.
+        kit_sdk_repo (str): Path to the kit-sdk-public checkout.
+        kit_sdk_version_locks (str): Direct path to a version_locks.kit file.
+
+    Returns:
+        bool: True if successful, False otherwise.
+    """
+
+    def log(msg):
+        if verbose:
+            print(f"DEBUG: {msg}")
+
+    if not kit_sdk_version_locks:
+        if not kit_sdk_repo:
+            print("Error: --match-kit-sdk requires --kit-sdk-repo or --kit-sdk-version-locks.")
+            return False
+        kit_sdk_version_locks = os.path.join(kit_sdk_repo, "source", "version-locks", "version_locks.kit")
+
+    if kit_sdk_repo:
+        expected_branch = _derive_kit_sdk_branch(kit_sdk_xml, verbose)
+        current_branch = _get_git_branch(kit_sdk_repo, verbose)
+        if not current_branch:
+            print(f"Error: Could not determine current branch for Kit SDK repo: {kit_sdk_repo}")
+            return False
+        if expected_branch and current_branch != expected_branch:
+            print("Error: Kit SDK repo branch does not match the kit-kernel branch.")
+            print(f"  Repo: {kit_sdk_repo}")
+            print(f"  Current branch: {current_branch}")
+            print(f"  Expected branch: {expected_branch}")
+            return False
+        if expected_branch:
+            log(f"Kit SDK repo branch matches kit-kernel branch: {current_branch}")
+
+    if not os.path.isfile(kit_sdk_version_locks):
+        print(f"Error: Kit SDK version locks file does not exist: {kit_sdk_version_locks}")
+        return False
+
+    print(f"Using Kit SDK version locks: {kit_sdk_version_locks}")
+
+    try:
+        with open(kit_file, "r") as f:
+            content = f.read()
+    except Exception as e:
+        print(f"Error reading kit file: {e}")
+        return False
+
+    try:
+        with open(kit_sdk_version_locks, "r") as f:
+            locks_content = f.read()
+    except Exception as e:
+        print(f"Error reading Kit SDK version locks file: {e}")
+        return False
+
+    kit_generated = _extract_generated_part(content)
+    if not kit_generated:
+        print(f"Could not find '# BEGIN GENERATED PART' / '# END GENERATED PART' markers in: {kit_file}")
+        return False
+
+    kit_locks = _extract_enabled_version_locks(kit_generated)
+    sdk_locks = _extract_enabled_version_locks(locks_content)
+    if not sdk_locks:
+        print(f"Could not find any enabled version locks in: {kit_sdk_version_locks}")
+        return False
+
+    lock_updates = []
+    lower_locks = []
+    for name, kit_version in kit_locks.items():
+        sdk_version = sdk_locks.get(name)
+        if sdk_version and sdk_version != kit_version:
+            kit_ver = _parse_version(kit_version)
+            sdk_ver = _parse_version(sdk_version)
+            if kit_ver and sdk_ver and sdk_ver < kit_ver:
+                lower_locks.append((name, kit_version, sdk_version))
+            else:
+                lock_updates.append((name, kit_version, sdk_version))
+
+    if not lock_updates and not lower_locks:
+        log("All matching extension version locks already match Kit SDK version_locks.kit.")
+        return True
+
+    if lock_updates:
+        action = "Dry run: Would update" if dry_run else "Updated"
+        print(f"\n{action} {len(lock_updates)} version locks from Kit SDK version_locks.kit:")
+        for name, kit_version, sdk_version in lock_updates:
+            print(f"  - {name}: {kit_version} -> {sdk_version}")
+
+    if lower_locks:
+        print(f"\nSkipped {len(lower_locks)} lower version locks from Kit SDK version_locks.kit:")
+        for name, kit_version, sdk_version in lower_locks:
+            print(f"  - {name}: {kit_version} (keeping) vs {sdk_version} (Kit SDK)")
+
+    if dry_run:
+        return True
+
+    updated_content = content
+    for name, old_version, sdk_version in lock_updates:
+        pattern = r'("' + re.escape(name) + r"-)" + re.escape(old_version) + r'(")'
+
+        def _replace_lock(match):
+            return f"{match.group(1)}{sdk_version}{match.group(2)}"
+
+        updated_content, count = re.subn(pattern, _replace_lock, updated_content)
+        if count == 0:
+            print(f"WARNING: Failed to update enabled version lock for {name}")
+
+    try:
+        with open(kit_file, "w") as f:
+            f.write(updated_content)
+    except Exception as e:
+        print(f"Error writing updated kit file: {e}")
+        return False
+
+    return True
+
+
 def _reconcile_file(filepath, enabled_versions, verbose=False, dry_run=False):
     """Reconcile version constraints in a single .kit file against the enabled version map.
 
@@ -927,6 +1144,247 @@ def process_enabled_section(
     return new_extensions_section, removed_exts
 
 
+def _get_local_extension_bases(build_dir, deprecated_dir, apps_dir, internal_dir=None, verbose=False):
+    """Collect extension base names that are produced by this repo."""
+
+    def log(msg):
+        if verbose:
+            print(f"DEBUG: {msg}")
+
+    local_ext_bases = set()
+
+    extension_dirs = [(build_dir, "built"), (deprecated_dir, "deprecated")]
+    if internal_dir:
+        extension_dirs.append((internal_dir, "internal"))
+
+    for directory, label in extension_dirs:
+        if not os.path.isdir(directory):
+            log(f"{label} directory {directory} does not exist")
+            continue
+        try:
+            extensions = os.listdir(directory)
+        except Exception as e:
+            print(f"Error reading {label} directory {directory}: {e}")
+            return None
+        local_ext_bases.update(ext.split("-")[0] for ext in extensions)
+        log(f"Found {len(extensions)} {label} extensions: {extensions}")
+
+    if os.path.isdir(apps_dir):
+        try:
+            apps_extensions = [f for f in os.listdir(apps_dir) if f.endswith(".kit")]
+        except Exception as e:
+            print(f"Error reading apps directory {apps_dir}: {e}")
+            return None
+        for ext in apps_extensions:
+            ext_without_kit = ext[:-4]
+            local_ext_bases.add(ext_without_kit.split("-")[0])
+        log(f"Found {len(apps_extensions)} app kit files: {apps_extensions}")
+    else:
+        log(f"Apps directory {apps_dir} does not exist")
+
+    return local_ext_bases
+
+
+def _find_generated_part(content):
+    match = re.search(r"(# BEGIN GENERATED PART.*?\n)(.*?)(# END GENERATED PART)", content, re.DOTALL)
+    if not match:
+        return None
+    return match
+
+
+def _extract_comment_ext_base(line):
+    match = re.search(r"#\s+([\w.]+)-(\d+(?:\.\d+)+)", line)
+    if not match:
+        return None
+    return match.group(1)
+
+
+def _extract_enabled_ext_base(line):
+    match = re.search(r'["\']([^"\']+)["\']', line)
+    if not match:
+        return None
+    ext_with_version = match.group(1)
+    if "-" not in ext_with_version:
+        return ext_with_version
+    return ext_with_version.split("-")[0]
+
+
+def _collect_local_generated_lines(generated_part, local_ext_bases):
+    local_exact_lines = {}
+    local_enabled_lines = {}
+    in_exact_versions = False
+    in_enabled = False
+    bracket_level = 0
+
+    for line in generated_part.splitlines(True):
+        stripped = line.strip()
+
+        if stripped.startswith("# Exact Version dependencies:"):
+            in_exact_versions = True
+            continue
+        if stripped.startswith("# Version lock for all dependencies:"):
+            in_exact_versions = False
+            continue
+
+        if "enabled = [" in stripped:
+            in_enabled = True
+            bracket_level = 1
+            continue
+
+        if in_enabled:
+            bracket_level += line.count("[") - line.count("]")
+            ext_base = _extract_enabled_ext_base(line)
+            if ext_base in local_ext_bases:
+                local_enabled_lines[ext_base] = line
+            if bracket_level == 0:
+                in_enabled = False
+            continue
+
+        if in_exact_versions:
+            ext_base = _extract_comment_ext_base(line)
+            if ext_base in local_ext_bases:
+                local_exact_lines[ext_base] = line
+
+    return local_exact_lines, local_enabled_lines
+
+
+def _merge_generated_part(baseline_part, current_part, local_ext_bases):
+    current_exact_lines, current_enabled_lines = _collect_local_generated_lines(current_part, local_ext_bases)
+    merged_lines = []
+    emitted_enabled_bases = set()
+    in_exact_versions = False
+    in_enabled = False
+    bracket_level = 0
+
+    for line in baseline_part.splitlines(True):
+        stripped = line.strip()
+
+        if stripped.startswith("# Exact Version dependencies:"):
+            in_exact_versions = True
+            merged_lines.append(line)
+            continue
+        if stripped.startswith("# Version lock for all dependencies:"):
+            in_exact_versions = False
+            merged_lines.append(line)
+            continue
+
+        if "enabled = [" in stripped:
+            in_enabled = True
+            bracket_level = 1
+            merged_lines.append(line)
+            continue
+
+        if in_enabled:
+            next_bracket_level = bracket_level + line.count("[") - line.count("]")
+            if next_bracket_level == 0:
+                for ext_base, current_line in current_enabled_lines.items():
+                    if ext_base not in emitted_enabled_bases:
+                        merged_lines.append(current_line)
+                        emitted_enabled_bases.add(ext_base)
+                merged_lines.append(line)
+                in_enabled = False
+                bracket_level = 0
+                continue
+
+            ext_base = _extract_enabled_ext_base(line)
+            if ext_base in current_enabled_lines:
+                merged_lines.append(current_enabled_lines[ext_base])
+                emitted_enabled_bases.add(ext_base)
+            else:
+                merged_lines.append(line)
+            bracket_level = next_bracket_level
+            continue
+
+        if in_exact_versions:
+            ext_base = _extract_comment_ext_base(line)
+            if ext_base in current_exact_lines:
+                merged_lines.append(current_exact_lines[ext_base])
+            else:
+                merged_lines.append(line)
+            continue
+
+        merged_lines.append(line)
+
+    return "".join(merged_lines)
+
+
+def restore_non_local_generated_changes(
+    baseline_kit_file_path,
+    kit_file_path=None,
+    build_dir_path=None,
+    deprecated_dir_path=None,
+    apps_dir_path=None,
+    internal_dir_path=None,
+    verbose=False,
+    dry_run=False,
+):
+    """
+    Restore generated extscache changes that do not belong to extensions produced by this repo.
+
+    The current kit file is compared against a pre-build baseline. Generated-block entries for
+    extensions in the build, deprecated, or apps directories are kept from the current file; all
+    other generated-block content is restored from the baseline.
+    """
+
+    def log(msg):
+        if verbose:
+            print(f"DEBUG: {msg}")
+
+    kit_file = kit_file_path or "source/apps/isaacsim.exp.extscache.kit"
+    build_dir = build_dir_path or "_build/linux-x86_64/release/exts"
+    deprecated_dir = deprecated_dir_path or "_build/linux-x86_64/release/extsDeprecated"
+    apps_dir = apps_dir_path or "_build/linux-x86_64/release/apps"
+    internal_dir = internal_dir_path or "_build/linux-x86_64/release/extsInternal"
+
+    local_ext_bases = _get_local_extension_bases(build_dir, deprecated_dir, apps_dir, internal_dir, verbose)
+    if local_ext_bases is None:
+        return False
+    log(f"Local extension base names: {sorted(local_ext_bases)}")
+
+    try:
+        with open(baseline_kit_file_path, "r") as f:
+            baseline_content = f.read()
+        with open(kit_file, "r") as f:
+            current_content = f.read()
+    except Exception as e:
+        print(f"Error reading kit files: {e}")
+        return False
+
+    baseline_match = _find_generated_part(baseline_content)
+    current_match = _find_generated_part(current_content)
+    if not baseline_match or not current_match:
+        missing = []
+        if not baseline_match:
+            missing.append(baseline_kit_file_path)
+        if not current_match:
+            missing.append(kit_file)
+        print(f"Could not find generated part markers in: {', '.join(missing)}")
+        return False
+
+    merged_generated = _merge_generated_part(baseline_match.group(2), current_match.group(2), local_ext_bases)
+    merged_content = (
+        current_content[: current_match.start(2)] + merged_generated + current_content[current_match.end(2) :]
+    )
+
+    if merged_content == current_content:
+        print("No non-local generated changes need to be restored.")
+        return True
+
+    if dry_run:
+        print("Dry run: Would restore non-local generated changes from the baseline kit file.")
+        return True
+
+    try:
+        with open(kit_file, "w") as f:
+            f.write(merged_content)
+    except Exception as e:
+        print(f"Error writing kit file {kit_file}: {e}")
+        return False
+
+    print("Restored non-local generated changes while keeping repo extension updates.")
+    return True
+
+
 def clean_extscache(
     kit_file_path=None,
     build_dir_path=None,
@@ -943,7 +1401,10 @@ def clean_extscache(
     update_locks=False,
     update_physics=True,
     match_kat=False,
+    match_kit_sdk=False,
     commit_hash=None,
+    kit_sdk_repo=None,
+    kit_sdk_version_locks=None,
 ):
     """
     Removes extensions from all enabled sections in the kit file if they exist in the build directory,
@@ -971,6 +1432,9 @@ def clean_extscache(
         update_physics (bool): If True, update physics extension versions to match packman XML
         match_kat (bool): If True, compare with template file and update version locks
         commit_hash (str): Specific commit hash to use for the template URL when match_kat is True
+        match_kit_sdk (bool): If True, compare with kit-sdk-public version_locks.kit
+        kit_sdk_repo (str): Path to the kit-sdk-public checkout
+        kit_sdk_version_locks (str): Direct path to kit-sdk-public source/version-locks/version_locks.kit
 
     Returns:
         bool: True if successful, False otherwise
@@ -1200,8 +1664,26 @@ def clean_extscache(
         if not reconcile_ok and not dry_run:
             print("WARNING: Failed to reconcile dependency version constraints.")
 
-    # Update physics versions if requested (runs after match_kat to correct
-    # any physics version overrides from the template)
+    # Compare with kit-sdk-public version locks if requested. This runs before
+    # update_physics so physics versions from packman XML take precedence.
+    if match_kit_sdk:
+        kit_sdk_ok = compare_with_kit_sdk_version_locks(
+            kit_file,
+            kit_sdk_xml,
+            verbose,
+            dry_run,
+            kit_sdk_repo=kit_sdk_repo,
+            kit_sdk_version_locks=kit_sdk_version_locks,
+        )
+        if not kit_sdk_ok and not dry_run:
+            print("WARNING: Failed to compare with kit-sdk-public version locks. See errors above for details.")
+
+        reconcile_ok = reconcile_dependency_versions(kit_file, verbose, dry_run)
+        if not reconcile_ok and not dry_run:
+            print("WARNING: Failed to reconcile dependency version constraints.")
+
+    # Update physics versions if requested (runs after match_kat/match_kit_sdk
+    # to correct any physics version overrides from external lock sources)
     if update_physics:
         update_physics_ok = update_physics_versions(kit_file, packman_xml, verbose, dry_run)
         if not update_physics_ok and not dry_run:
@@ -1225,6 +1707,9 @@ repo_deploy_exts publishes them and they are downloaded from the registry at run
 
 This script can also verify that extension version locks match the Kit SDK Version hash,
 and optionally update them to match the current SDK hash.
+
+It can synchronize generated extension version locks with kit-sdk-public's
+source/version-locks/version_locks.kit for the matching kit-kernel branch.
 
 Additionally, this script can synchronize physics extension versions with the version
 specified in the omni-physics.packman.xml file to ensure consistency between the
@@ -1286,27 +1771,66 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
         "--commit-hash",
         help="Specific commit hash to use for the template URL when match_kat is True",
     )
+    parser.add_argument(
+        "--match-kit-sdk",
+        action="store_true",
+        help="Compare with kit-sdk-public source/version-locks/version_locks.kit and update matching locks",
+    )
+    parser.add_argument(
+        "--kit-sdk-repo",
+        default="/home/hmazhar/repos/kit-sdk-public",
+        help="Path to the kit-sdk-public checkout (default: /home/hmazhar/repos/kit-sdk-public)",
+    )
+    parser.add_argument(
+        "--kit-sdk-version-locks",
+        help="Direct path to kit-sdk-public source/version-locks/version_locks.kit",
+    )
+    parser.add_argument(
+        "--restore-non-local-from",
+        help=(
+            "Path to a baseline kit file. Restores generated-block changes for extensions that are "
+            "not present in the build, deprecated, or apps directories."
+        ),
+    )
 
     args = parser.parse_args()
 
-    success = clean_extscache(
-        kit_file_path=args.kit_file,
-        build_dir_path=args.build_dir,
-        deprecated_dir_path=args.deprecated_dir,
-        apps_dir_path=args.apps_dir,
-        internal_dir_path=args.internal_dir,
-        packman_xml_path=args.packman_xml,
-        kit_sdk_xml_path=args.kit_sdk_xml,
-        create_dir=args.create_dir,
-        verbose=args.verbose,
-        dry_run=args.dry_run,
-        check_deps=not args.no_deps_check,
-        check_locks=not args.no_locks_check,
-        update_locks=args.update_locks,
-        update_physics=args.update_physics,
-        match_kat=args.match_kat,
-        commit_hash=args.commit_hash,
-    )
+    if args.match_kat and args.match_kit_sdk:
+        parser.error("--match-kat and --match-kit-sdk cannot be used together")
+
+    if args.restore_non_local_from:
+        success = restore_non_local_generated_changes(
+            baseline_kit_file_path=args.restore_non_local_from,
+            kit_file_path=args.kit_file,
+            build_dir_path=args.build_dir,
+            deprecated_dir_path=args.deprecated_dir,
+            apps_dir_path=args.apps_dir,
+            internal_dir_path=args.internal_dir,
+            verbose=args.verbose,
+            dry_run=args.dry_run,
+        )
+    else:
+        success = clean_extscache(
+            kit_file_path=args.kit_file,
+            build_dir_path=args.build_dir,
+            deprecated_dir_path=args.deprecated_dir,
+            apps_dir_path=args.apps_dir,
+            internal_dir_path=args.internal_dir,
+            packman_xml_path=args.packman_xml,
+            kit_sdk_xml_path=args.kit_sdk_xml,
+            create_dir=args.create_dir,
+            verbose=args.verbose,
+            dry_run=args.dry_run,
+            check_deps=not args.no_deps_check,
+            check_locks=not args.no_locks_check,
+            update_locks=args.update_locks,
+            update_physics=args.update_physics,
+            match_kat=args.match_kat,
+            match_kit_sdk=args.match_kit_sdk,
+            commit_hash=args.commit_hash,
+            kit_sdk_repo=args.kit_sdk_repo,
+            kit_sdk_version_locks=args.kit_sdk_version_locks,
+        )
 
     if not success:
         sys.exit(1)
