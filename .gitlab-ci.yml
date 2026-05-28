@@ -957,13 +957,13 @@ test-docs-isaacsim-design:
 # Specifies 1xGpu tags for Windows
 .kit-runner-test-windows-x86_64-1x-gpu:
   tags:
-    - win-x86_64-gpu-1x-573.42
+    - win-x86_64-gpu-1x-595.97
 
 # ==============================================================================================================
 # Specifies 2xGpu tags for Windows
 .kit-runner-test-windows-x86_64-2x-gpu:
   tags:
-    - win-x86_64-gpu-2x-573.42
+    - win-x86_64-gpu-2x-595.97
 
 # ==============================================================================================================
 # Specifies 1xGpu for linux-x86_64
@@ -973,6 +973,9 @@ test-docs-isaacsim-design:
       IPP_RUNNER_GPU_DRIVER_VERSION: "570.158.01"  # GPU jobs inherit driver defined here
   image:
     name: urm.nvidia.com/ct-omniverse-docker/ci-jammy-gpu-x86_64-tester:3.0.0
+  variables:
+    IPP_RUNNER_GPU_DRIVER_VERSION: "595.58.03"
+    IPP_RUNNER_GPU_REQUEST: "1"
 
 # ==============================================================================================================
 # Specifies 2xGpu tags for linux-x86_64
@@ -982,6 +985,9 @@ test-docs-isaacsim-design:
       IPP_RUNNER_GPU_DRIVER_VERSION: "570.158.01"  # GPU jobs inherit driver defined here
   image:
     name: urm.nvidia.com/ct-omniverse-docker/ci-jammy-gpu-x86_64-tester:3.0.0
+  variables:
+    IPP_RUNNER_GPU_DRIVER_VERSION: "595.58.03"
+    IPP_RUNNER_GPU_REQUEST: "2"
 
 # ==============================================================================================================
 # Specifies 4xGpu tags for linux-x86_64
@@ -991,6 +997,9 @@ test-docs-isaacsim-design:
       IPP_RUNNER_GPU_DRIVER_VERSION: "570.158.01"  # GPU jobs inherit driver defined here
   image:
     name: urm.nvidia.com/ct-omniverse-docker/ci-jammy-gpu-x86_64-tester:3.0.0
+  variables:
+    IPP_RUNNER_GPU_DRIVER_VERSION: "595.58.03"
+    IPP_RUNNER_GPU_REQUEST: "4"
 
 # ==============================================================================================================
 
