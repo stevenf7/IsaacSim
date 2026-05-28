@@ -579,6 +579,10 @@ Setup ROS 2 Workspaces
 
    The Pixi workspace bundles ROS 2 Jazzy via `RoboStack <https://robostack.github.io/>`_ conda packages and uses `Zenoh <https://zenoh.io/>`_ as the RMW middleware, eliminating the need for WSL2 or DDS port forwarding. Pixi manages every dependency — ROS 2, the MSVC-compatible compilers, ``colcon``, and CMake — inside a project-local environment, so no system-wide ROS installation is required.
 
+   .. warning::
+
+      Keep the workspace root short on Windows, such as ``C:\\IsaacSim-ros_workspaces``. Long paths can exceed the 260-character Windows path limit and cause Pixi build or launch errors.
+
    #. Clone the |isaac-sim_short| ROS Workspace Repository:
 
       .. code-block:: winbatch
