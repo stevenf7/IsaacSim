@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.14] - 2026-05-27
+### Added
+- Perform device check before running simulation in simulation_manager to prevent double initialization when device changes
+
 ## [0.7.13] - 2026-05-21
 ### Added
 - Document Newton asset compatibility limitations and workarounds.
