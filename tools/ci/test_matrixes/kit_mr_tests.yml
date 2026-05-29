@@ -5,6 +5,22 @@
         BUCKET:
           - sensors
 
+.test-linux-matrix-blocking:
+  parallel:
+    matrix:
+      - SUITE: startuptests
+      - SUITE: warmuptests
+      - SUITE: postinstalltests
+      - SUITE: pythontests
+        BUCKET:
+          - asset
+          - deprecated
+          - utils_gui
+      - SUITE: nativepythontests
+        BUCKET:
+          - replicator
+
+
 
 .test-windows-matrix:
     parallel:
@@ -12,3 +28,15 @@
         - SUITE: pythontests
           BUCKET:
             - sensors
+
+
+.test-windows-matrix-blocking:
+    parallel:
+      matrix:
+        - SUITE: startuptests
+        - SUITE: postinstalltests
+        - SUITE: pythontests
+          BUCKET:
+            - asset
+            - deprecated
+            - utils_gui
