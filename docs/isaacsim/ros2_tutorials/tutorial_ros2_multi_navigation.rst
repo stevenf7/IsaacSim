@@ -151,6 +151,8 @@ The ``multiple_robot_carter_navigation_hospital.launch.py`` and ``multiple_robot
 Running Multiple Robot ROS2 Navigation
 ========================================
 
+.. note:: On multi-GPU systems running Windows, loading and playing this scene may currently result in a fatal application crash. This is a known issue and will be addressed in a future release.
+
 #. Load scenario:
 
 	- For the hospital environment, go to **Window > Examples > Robotics Examples**, and then click on the **Robotics Examples** tab and expand the sections on the left hand side and open the example: **ROS2 > Navigation > Multiple Robots > Hospital Scene**.

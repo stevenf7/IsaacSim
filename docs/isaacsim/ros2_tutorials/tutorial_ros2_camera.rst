@@ -56,9 +56,9 @@ The default camera displayed in the Viewport is the *Perspective* camera. You ca
 * Front
 * Right side views
 
-For this tutorial, you will add two stationary cameras, naming them *Camera_1* and *Camera_2*, viewing the room from two different perspectives. The procedures for adding cameras to the stage can be found in :ref:`isaac_sim_app_tutorial_gui_camera_sensors`.
+For this tutorial, you will add two stationary cameras at ``/World/Camera_1`` and ``/World/Camera_2``, viewing the room from two different perspectives. Create each camera directly under ``/World`` with these exact names so the prim paths match the OmniGraph nodes and scripts used later in this tutorial series (for example :ref:`isaac_sim_app_tutorial_ros2_publish_rate`). The procedures for adding cameras to the stage can be found in :ref:`isaac_sim_app_tutorial_gui_camera_sensors`.
 
-Open additional Viewports to observe multiple camera views at the same time. To open additional Viewports: 
+Open additional Viewports to observe multiple camera views at the same time. To open additional Viewports:
 
 
 #. **Window > Viewports > Viewport 2** to open the viewport 

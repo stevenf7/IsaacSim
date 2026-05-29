@@ -20,6 +20,8 @@ ROS 2 Navigation
 
 * ROS 2 Navigation with |isaac-sim_short| is fully supported on Linux and Windows with Pixi-based installation. On Windows (WSL), ROS 2 Navigation with |isaac-sim_short| is partially supported and could potentially produce errors.
 
+.. note:: On multi-GPU systems running Windows, loading and playing this scene may currently result in a fatal application crash. This is a known issue and will be addressed in a future release.
+
 
 
 Learning Objectives
