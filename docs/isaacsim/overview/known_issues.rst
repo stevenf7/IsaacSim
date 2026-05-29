@@ -441,3 +441,10 @@ Crash
 
 #. Using compound nodes in OmniGraph may lead to a crash, we do not recommend using compound nodes in OmniGraph.
 #. Shutting down the physics.tensors extension before the Python garbage collector cleans up the related objects can lead to a crash. To prevent this, manually set the related tensor API objects in Python to None before unloading the extension.
+#. On multi-GPU (MGPU) systems, using :ref:`RTX Lidar <isaacsim_sensors_rtx_lidar>` can sometimes cause a fatal application crash with CUDA error 700 messages in the log. As a workaround, launch |isaac-sim_short| with multi-GPU rendering disabled:
+
+    .. code-block:: bash
+
+        ./isaac-sim.sh --/renderer/multiGpu/enabled=false
+
+    See :ref:`multi_gpu_ref` for other multi-GPU settings.
