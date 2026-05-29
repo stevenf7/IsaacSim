@@ -81,6 +81,7 @@ class Anymal_runner(object):
         self._anymal = AnymalFlatTerrainPolicy(
             prim_path="/World/Anymal",
             position=[0, 0, 0.7],
+            usd_path=assets_root_path + "/Isaac/Robots/ANYbotics/anymal_c/anymal_c.usd",
         )
 
         self._base_command = torch.zeros(3, device=args.device, dtype=torch.float32)

@@ -51,11 +51,16 @@ class SpotFlatTerrainPolicy(PolicyController):
     ):
         assets_root_path = get_assets_root_path()
         if usd_path is None:
-            usd_path = assets_root_path + "/Isaac/Samples/Mujoco_Menagerie/boston_dynamics_spot/spot/spot.usda"
+            is_newton = SimulationManager.get_active_physics_engine() == "newton"
+            if is_newton:
+                usd_path = assets_root_path + "/Isaac/Samples/Mujoco_Menagerie/boston_dynamics_spot/spot/spot.usda"
+            else:
+                usd_path = assets_root_path + "/Isaac/Robots/BostonDynamics/spot/spot.usd"
 
         super().__init__(prim_path, root_path, usd_path, position, orientation)
 
-        self._set_physics_variant(prim_path)
+        if is_newton:
+            self._set_physics_variant(prim_path)
 
         if policy_path is None or env_config_path is None:
             policy_dir = assets_root_path + "/Isaac/Samples/Policies/Spot_Policies"

@@ -49,7 +49,11 @@ class H1FlatTerrainPolicy(PolicyController):
         assets_root_path = get_assets_root_path()
         policy_dir = assets_root_path + "/Isaac/Samples/Policies/h1"
         if usd_path is None:
-            usd_path = assets_root_path + "/Isaac/Samples/Mujoco_Menagerie/unitree_h1/h1/h1.usda"
+            is_newton = SimulationManager.get_active_physics_engine() == "newton"
+            if is_newton:
+                usd_path = assets_root_path + "/Isaac/Samples/Mujoco_Menagerie/unitree_h1/h1/h1.usda"
+            else:
+                usd_path = assets_root_path + "/Isaac/Robots/Unitree/H1/h1.usd"
 
         super().__init__(prim_path, root_path, usd_path, position, orientation)
 
