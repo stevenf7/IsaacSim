@@ -21,6 +21,7 @@ import omni
 import warp as wp
 from isaacsim.core.deprecation_manager import import_module
 from isaacsim.core.experimental.utils.transform import quaternion_to_rotation_matrix
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.robot.policy.examples.controllers import PolicyController
 from isaacsim.storage.native import get_assets_root_path
 
@@ -55,7 +56,13 @@ class AnymalFlatTerrainPolicy(PolicyController):
 
         assets_root_path = get_assets_root_path()
         if usd_path is None:
-            usd_path = assets_root_path + "/Isaac/Samples/Mujoco_Menagerie/anybotics_anymal_c/anymal_c/anymal_c.usda"
+            is_newton = SimulationManager.get_active_physics_engine() == "newton"
+            if is_newton:
+                usd_path = (
+                    assets_root_path + "/Isaac/Samples/Mujoco_Menagerie/anybotics_anymal_c/anymal_c/anymal_c.usda"
+                )
+            else:
+                usd_path = assets_root_path + "/Isaac/Robots/ANYbotics/anymal_c/anymal_c.usd"
 
         super().__init__(prim_path, root_path, usd_path, position, orientation)
 
