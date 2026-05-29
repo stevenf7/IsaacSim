@@ -34,7 +34,7 @@ Getting Started
 
 - This tutorial requires an H1 asset with joint configurations that match the locomotion policy parameters. To create this asset yourself, complete :ref:`isaac_sim_app_tutorial_rig_legged_robot`. To skip the rigging steps, use the preconfigured asset described below.
 
-.. Note:: The preconfigured H1 robot is available in the content browser at ``Isaac/Samples/Rigging/H1/h1_rigged.usd``. Use this asset if you want to skip the rigging tutorial. You still need to add the IMU sensor and ROS 2 graphs in the sections below.
+.. Note:: The preconfigured H1 robot is available in the content browser at ``Isaac Sim/Samples/Rigging/H1/h1_rigged.usd``. Use this asset if you want to skip the rigging tutorial. You still need to add the IMU sensor and ROS 2 graphs in the sections below.
 
 .. hint::
 
@@ -121,6 +121,7 @@ This node publishes the IMU data to ROS 2, which contains the body frame linear 
 3. Connect the nodes as shown in the image below.
 
    - Set the ``Isaac Read IMU Node`` input ``IMU Prim`` to ``/h1/pelvis/Imu_Sensor`` to read the IMU sensor data.
+   - Set the ``ROS2 Publish IMU`` input ``Frame ID`` to ``pelvis_imu``.
    - Uncheck the ``Read Gravity`` input of the ``Isaac Read IMU Node`` to avoid reading the gravity vector from the pelvis link. This prevents gravity from being included in the pelvis-link IMU data.
    - Check the ``Reset on Stop`` input of ``Read Simulation Time`` node to reset the simulation time when the simulation stops.
 
@@ -148,16 +149,16 @@ This node publishes joint states from Isaac Sim to ROS 2, including the joint na
 
 4. Connect the nodes as shown in the image below.
 
-   - Set the ``ROS2 Publish Joint State`` input ``Target Prim`` to ``/h1``, ``Topic Name`` to ``/joint_states``, and ``Frame ID`` to ``pelvis_imu``.
+   - Set the ``ROS2 Publish Joint State`` input ``Target Prim`` to ``/h1`` and ``Topic Name`` to ``/joint_states``.
    - Set the ``ROS2 Subscribe Joint State`` input ``Topic Name`` to ``/joint_command``.
    - Set the ``Articulation Controller`` input ``Target Prim`` to ``/h1``.
    - Check the ``Reset on Stop`` input of ``Read Simulation Time`` node to reset the simulation time when the simulation stops.
 
-.. image:: /images/isim_5.0_full_tut_gui_rl_ros_controller_3.png
+.. image:: /images/isim_6.0_full_tut_gui_rl_ros_controller_3.png
    :width: 80%
    :align: center
 
-.. Note:: The completed asset is available in the content browser at ``Isaac/Samples/ROS2/Robots/h1_ROS.usd``.
+.. Note:: The completed asset is available in the content browser at ``Isaac Sim/Samples/ROS2/Robots/h1_ROS.usd``.
 
 Publish ROS Clock and Set Up Environment
 =========================================
@@ -167,7 +168,7 @@ Now that the asset is set up, create a simulation scenario to place the robot in
 Set Up Simulation Scenario
 --------------------------
 
-#. Create a new file. In the Content Browser, go to ``Isaac/Environments/Simple_Warehouse`` and drag the ``warehouse.usd`` asset into the stage.
+#. Create a new file. In the Content Browser, go to ``Isaac Sim/Environments/Simple_Warehouse`` and drag the ``warehouse.usd`` asset into the stage.
 #. Drag and drop the ``h1_ROS.usd`` asset that you made earlier into the stage. Set the Z transform to ``1.0`` so it is above the ground.
 #. In the **Layer** tab, select the **Root Layer**, and in the Properties panel set **Time Codes Per Second** to ``200``. For more information, see :ref:`simulation_fundamentals_configuring_frame_rate`.
 #. Create a ``Physics Scene`` by right-clicking the stage and selecting **Create** > **Physics** > **Physics Scene**.
@@ -194,7 +195,7 @@ Set Up ROS 2 Clock Publisher
    :width: 80%
    :align: center
 
-.. Note:: The completed environment is available in the content browser at ``Isaac/Samples/ROS2/Scenario/h1_ros_locomotion_policy_tutorial.usd``.
+.. Note:: The completed environment is available in the content browser at ``Isaac Sim/Samples/ROS2/Scenario/h1_ros_locomotion_policy_tutorial.usd``.
 
 Run ROS 2 Policy
 =================
