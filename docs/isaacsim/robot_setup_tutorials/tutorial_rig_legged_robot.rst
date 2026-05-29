@@ -90,21 +90,20 @@ To store the initial state of the robot:
     :align: center
     :width: 80%
 
-To prevent the Joint State API values from resetting, change the simulation setting so the robot state does not reset on stop.
+To save the robot pose:
 
 1. In the upper-left corner of the stage, click **Edit** > **Preferences**.
 2. In the **Preferences** window, click the **Physics** tab in the left sidebar.
-3. Uncheck **Reset Simulation on Stop**.
+3. Uncheck **Reset Simulation on Stop** and press **Ctrl+S** to save the USD file.
 
    .. image:: /images/isim_5.0_full_tut_gui_rigging_humanoid_3.png
        :align: center
        :width: 80%
 
-Now you can play the simulation, and when you stop the simulation, the robot will remain in the last state. When you play the simulation again, the robot will start from the last state.
-
-4. Delete the fixed joint between the robot and the world.
-5. Press **Ctrl+S** to save the USD file.
-6. Check **Reset Simulation on Stop** again.
+4. Play the simulation and stop it when the robot reaches the desired initial pose.
+5. Delete the fixed joint between the robot and the world.
+6. Press **Ctrl+S** to save the USD file.
+7. Check **Reset Simulation on Stop** again.
 
 .. _isaac_sim_tutorial_rig_legged_robot_joint_configuration:
 
