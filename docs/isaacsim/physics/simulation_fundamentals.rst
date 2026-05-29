@@ -369,21 +369,3 @@ To guarantee one graph step per physics step at the moment it happens, you must 
   :width: 1000
 
 
-Simulation Residuals
-=====================
-
-The physics simulation provides a metric to check how well it converged to a solution, i.e. how well it resolved constraints. To check for this result there is another API that can be applied to a few physics elements. 
-
-To check the Residuals:
-
-1. Click on the selected physics element.
-2. **"Add"** > **Physics** > **Residual Reporting**. 
-3. Verify that you can see the Residual plot over time on the Simulation Data Visualizer: **(eye icon on viewport)** > **Show by Type** > **Physics** > **Simulation Data Visualizer**.
-
-The types of Physics Objects that report residuals are Simulation Scenes, the Articulation Roots, and Joints.
-
-.. image:: /images/isaac_sim_residual.png
-  :width: 600
-
-
-

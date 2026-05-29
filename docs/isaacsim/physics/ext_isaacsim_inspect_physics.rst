@@ -40,8 +40,6 @@ The simulation data visualizer provides the following information:
 
 For velocities, there's a fourth plot `M`, which is the magnitude of the vector.
 
-Articulations and Physics Scenes have residual error reporting. The available residual information is Position and Velocity RMS and Max in :ref:`isaac_sim_glossary_stage` `units`. 
-
 
 .. _isaac_inspect_physics_user_tutorial:
 
@@ -62,23 +60,3 @@ After simulation starts, the physics state of the selected rigid body updates in
 .. figure:: /images/isaac_inspect_physics_ui_1.png
     :align: center
     :alt: Inspect Physics UI
-
-
-**Inspect Residual Error**
-
-
-#. With the previous example open, select the physics scene in the **Stage** window.
-#. On the **Properties** panel, click on the **Add > Physics > Residual Reporting**.
-#. Scroll down on the **Properties** panel, and under the **Advanced** tab, check **Enable Residual Reporting**.
-#. Click on **Reset**.
-#. Click on **Start**.
-
-
-The types of Physics Objects that report residuals are:
-
-* Simulation Scene
-* Articulations (Place at the Root)
-* Joints 
-
-.. image:: /images/isaac_sim_residual.png
-  :width: 600
