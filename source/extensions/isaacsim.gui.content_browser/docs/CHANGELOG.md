@@ -1,4 +1,8 @@
 # Changelog
+## [0.4.2] - 2026-05-28
+### Added
+- Added the Robot Multiphysics folder
+
 ## [0.4.1] - 2026-05-05
 ### Changed
 - Use `omni.simready.content.browser` default settings instead of overriding them.

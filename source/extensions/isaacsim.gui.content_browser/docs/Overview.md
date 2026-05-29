@@ -31,12 +31,15 @@ The extension uses specific settings to define which asset folders appear in the
 ```toml
 [settings]
 exts."isaacsim.gui.content_browser".folders = [
-    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Robots",
-    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Environments",
-    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0/Isaac/Materials",
+    "/Isaac/Robots",
+    "/Isaac/Robots_Multiphysics",
+    "/Isaac/Environments",
+    "/Isaac/Materials",
     # Additional configured folders...
 ]
 ```
+
+Folder paths are resolved relative to `persistent.isaac.asset_root.default`. Full URLs (`http://`, `https://`, `omniverse://`) are used as-is.
 
 The `timeout` setting controls the resolution time for content browser settings, ensuring reliable asset discovery and display.
 
