@@ -25,9 +25,10 @@ Run a manipulation scene in Isaac Sim with MoveIt 2.
 Getting Started
 ===========================
 
+.. warning::
 
+   This tutorial is not supported when using Pixi on Windows. Use a Linux ROS 2 environment for this workflow.
 
-    
 **Prerequisite**
 
 - This tutorial requires ``isaac_moveit`` and ROS 2 packages, which are provided as part of your |isaac-sim| download. These ROS 2 packages are located inside the appropriate ``humble_ws`` or ``jazzy_ws``. They contain the required launch file and moveit configs. Complete :ref:`isaac_sim_app_install_ros` to ensure the ROS 2 workspace environment is set up correctly.
