@@ -874,6 +874,7 @@ exclude = [
     "tools/docker/.env",
     "CLAUDE.md",
     "tools/claude",
+    ".github/copy-pr-bot.yaml",
 ]
 
 [[repo_stage_for_github.trim]]
