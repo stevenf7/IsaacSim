@@ -25,6 +25,22 @@ RTX Lidar Sensor
 RTX Lidar sensors are simulated at render time on the GPU with RTX hardware.
 Their results are then copied to the ``GenericModelOutput`` AOV for use.
 
+.. warning::
+
+    **Multi-GPU setups and RTX Lidar**
+
+    On systems with multiple GPUs (MGPU), some RTX Lidar assets can sometimes cause a fatal
+    application crash accompanied by CUDA error 700 messages in the log.
+
+    If you encounter this issue, switch to single-GPU rendering by launching
+    |isaac-sim_short| with:
+
+    .. code-block:: bash
+
+        ./isaac-sim.sh --/renderer/multiGpu/enabled=false
+
+    In standalone Python, pass ``multi_gpu=False`` to the ``SimulationApp`` constructor.
+
 .. _isaacsim_sensors_rtx_lidar_how_they_work:
 
 Overview
