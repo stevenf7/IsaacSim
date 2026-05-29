@@ -1,4 +1,5 @@
-FROM nvcr.io/nvidia/omniverse/hub_workstation_cache:2.0.0 AS hub-cache
+# TODO: Switch back to nvcr.io/nvidia/omniverse/hub_workstation_cache:2.0.0 after NGC license propagation is fixed.
+FROM nvcr.io/0520191291295001/storage-caches-stg/hub_workstation_cache:2.0.0 AS hub-cache
 FROM nvcr.io/nvidia/base/ubuntu:noble-20251013
 
 ENV NVIDIA_VISIBLE_DEVICES=all NVIDIA_DRIVER_CAPABILITIES=all
