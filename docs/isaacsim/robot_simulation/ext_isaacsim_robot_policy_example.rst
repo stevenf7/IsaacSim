@@ -164,6 +164,8 @@ The policies used in the examples are trained in Isaac Lab and are available her
 
 .. Note:: The policies can also be downloaded directly from the Content Browser by right clicking the policy and selecting ``Download``.
 
+.. Warning:: The example policies uses separate robots for physx and newton, depending on the physics engine selected initially. Switching the physics engine will require the robot to be respawned.
+
 API Documentation
 ====================
 
