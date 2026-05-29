@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.10.4] - 2026-05-29
+### Fixed
+- `OgnIsaacComputeTransformTree`: refine the `IsaacRobotAPI` fallback via `isaacsim.robot.schema`'s `GetAllRobotComponents` helper — emits frames for every schema-tagged prim in the robot subtree (links, sites, reference points), skips a component path that matches `parentPrim` to avoid the `TF_SELF_TRANSFORM` self-loop, and applies the ROS optical-frame rotation to camera-sites.
+
 ## [5.10.3] - 2026-05-27
 ### Fixed
 - `OgnIsaacComputeTransformTree`: when the supplied target prim carries `IsaacRobotAPI` but not `UsdPhysicsArticulationRootAPI`, resolve the link list via `isaac:physics:robotLinks` and emit one frame per link instead of a single frame for the root prim. Handles assets where the articulation root sits on a deeper `base_link` (e.g. exported turtlebot scenes).

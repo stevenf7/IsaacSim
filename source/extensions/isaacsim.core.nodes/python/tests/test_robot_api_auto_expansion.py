@@ -74,8 +74,14 @@ class TestRobotApiAutoExpansion(ogts.OmniGraphTestCase):
         await _next_update()
         self._stage = None
 
-    async def _build_robot(self, robot_path="/World/Robot"):
-        """Construct the asset hierarchy described in the module docstring and return link paths."""
+    async def _build_robot(self, robot_path="/World/Robot", add_site=False):
+        """Construct the asset hierarchy described in the module docstring and return link paths.
+
+        When @p add_site is True, also author an `IsaacSiteAPI` Xform under `base_link`
+        (mirroring how `imu_link` sits under `base_link` in `tb3_burger_processed.usda`).
+        Sites are deliberately *not* added to `isaac:physics:robotLinks` because the schema
+        treats them as a separate concept from links.
+        """
         # Create the IsaacRobotAPI root as a plain Xform (no physics APIs).
         UsdGeom.Xform.Define(self._stage, robot_path)
 
@@ -87,6 +93,11 @@ class TestRobotApiAutoExpansion(ogts.OmniGraphTestCase):
         _add_rigid_link(self._stage, base_link_path, [0.0, 0.0, 0.0])
         _add_rigid_link(self._stage, wheel_left_path, [0.0, 0.5, 0.0])
         _add_rigid_link(self._stage, wheel_right_path, [0.0, -0.5, 0.0])
+
+        if add_site:
+            site_path = f"{base_link_path}/imu_link"
+            UsdGeom.Xform.Define(self._stage, site_path)
+            self._stage.GetPrimAtPath(site_path).AddAppliedSchema("IsaacSiteAPI")
 
         # `UsdPhysicsArticulationRootAPI` belongs on the deeper `base_link`, not the root — this
         # is the layout that the unfixed code path mishandles.
@@ -126,7 +137,13 @@ class TestRobotApiAutoExpansion(ogts.OmniGraphTestCase):
         await _next_update()
         return robot_path, link_paths
 
-    def _create_transform_tree_graph(self, target_prim_paths):
+    def _create_transform_tree_graph(self, target_prim_paths, parent_prim_path=None):
+        set_values = [
+            ("ComputeTransformTree.inputs:targetPrims", [RtSdf.Path(p) for p in target_prim_paths]),
+        ]
+        if parent_prim_path is not None:
+            set_values.append(("ComputeTransformTree.inputs:parentPrim", [RtSdf.Path(parent_prim_path)]))
+
         og.Controller.edit(
             {"graph_path": self.GRAPH_PATH, "evaluator_name": "execution"},
             {
@@ -134,9 +151,7 @@ class TestRobotApiAutoExpansion(ogts.OmniGraphTestCase):
                     ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
                     ("ComputeTransformTree", "isaacsim.core.nodes.IsaacComputeTransformTree"),
                 ],
-                og.Controller.Keys.SET_VALUES: [
-                    ("ComputeTransformTree.inputs:targetPrims", [RtSdf.Path(p) for p in target_prim_paths]),
-                ],
+                og.Controller.Keys.SET_VALUES: set_values,
                 og.Controller.Keys.CONNECT: [
                     ("OnPlaybackTick.outputs:tick", "ComputeTransformTree.inputs:execIn"),
                 ],
@@ -227,6 +242,62 @@ class TestRobotApiAutoExpansion(ogts.OmniGraphTestCase):
             "base_link",
             f"Expected wheel_right's parent to be 'base_link', got {parent_by_child}",
         )
+
+    async def test_transform_tree_skips_self_loop_when_parent_in_robot_links(self):
+        """When `parentPrim` is set to a link that also appears in `robotLinks`, the IsaacRobotAPI
+        fallback must NOT emit that link as one of its own children. Pre-fix this produced a
+        degenerate `base_link -> base_link` transform that ROS TF rejects with
+        `TF_SELF_TRANSFORM: Ignoring transform from authority "default_authority" with frame_id
+        and child_frame_id "base_link" because they are the same`."""
+        robot_path, _ = await self._build_robot()
+        base_link_path = f"{robot_path}/base_link"
+
+        self._create_transform_tree_graph([robot_path], parent_prim_path=base_link_path)
+        await self._step()
+        self._timeline.play()
+        await self._step(5)
+        await og.Controller.evaluate(self.GRAPH_PATH)
+
+        child_frames = list(og.Controller.get(f"{self.GRAPH_PATH}/ComputeTransformTree.outputs:childFrames"))
+        parent_frames = list(og.Controller.get(f"{self.GRAPH_PATH}/ComputeTransformTree.outputs:parentFrames"))
+        pairs = list(zip(parent_frames, child_frames))
+
+        self.assertNotIn(
+            ("base_link", "base_link"),
+            pairs,
+            f"IsaacRobotAPI fallback emitted a self-loop pair (base_link, base_link). Pairs: {pairs}",
+        )
+        # The two wheels should still be present, parented to base_link.
+        self.assertIn(("base_link", "wheel_left"), pairs, f"wheel_left missing or wrongly parented: {pairs}")
+        self.assertIn(("base_link", "wheel_right"), pairs, f"wheel_right missing or wrongly parented: {pairs}")
+
+    async def test_transform_tree_publishes_isaac_site_descendants(self):
+        """`IsaacSiteAPI` prims under a robotLink (e.g. an `imu_link` sensor mount under
+        `base_link`) must be published as TF frames parented to the link they descend from.
+        Sites are part of the robot schema but not authored into `isaac:physics:robotLinks`,
+        so without this branch the user-visible TF tree from the IsaacRobotAPI shortcut is
+        missing sensor frames that the manual-list workaround would publish."""
+        robot_path, _ = await self._build_robot(add_site=True)
+        base_link_path = f"{robot_path}/base_link"
+
+        self._create_transform_tree_graph([robot_path], parent_prim_path=base_link_path)
+        await self._step()
+        self._timeline.play()
+        await self._step(5)
+        await og.Controller.evaluate(self.GRAPH_PATH)
+
+        child_frames = list(og.Controller.get(f"{self.GRAPH_PATH}/ComputeTransformTree.outputs:childFrames"))
+        parent_frames = list(og.Controller.get(f"{self.GRAPH_PATH}/ComputeTransformTree.outputs:parentFrames"))
+        pairs = list(zip(parent_frames, child_frames))
+
+        self.assertIn(
+            ("base_link", "imu_link"),
+            pairs,
+            f"Expected `imu_link` (IsaacSiteAPI under base_link) to be published, got pairs={pairs}",
+        )
+        # Still emit the wheel rigid bodies — site discovery must not crowd them out.
+        self.assertIn(("base_link", "wheel_left"), pairs, f"wheel_left missing: {pairs}")
+        self.assertIn(("base_link", "wheel_right"), pairs, f"wheel_right missing: {pairs}")
 
     async def test_odometry_resolves_robot_api_root_to_articulation_link(self):
         """Pointing `chassisPrim` at an `IsaacRobotAPI` root must succeed by resolving through

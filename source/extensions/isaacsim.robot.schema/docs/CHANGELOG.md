@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.3.6] - 2026-05-29
+### Added
+- `GetAllRobotComponents` helper (C++ and Python): returns every prim in a robot's subtree that applies any Isaac robot-schema API (`IsaacRobotAPI`, `IsaacLinkAPI`, `IsaacJointAPI`, `IsaacSiteAPI`, `IsaacReferencePointAPI`). Lets consumers enumerate all schema-tagged frames in one call rather than walking `robotLinks` and re-scanning descendants per consumer.
+
 ## [6.3.5] - 2026-05-27
 ### Fixed
 - `GenerateRobotLinkTree`: rewrite the two `UsdPrimRange` loops to the conventional range-for shape (`for (const UsdPrim& prim : UsdPrimRange(root))`) instead of treating the range as an iterator. The previous form did not compile and made `utils.h` unincludable from C++ consumers.

@@ -164,6 +164,47 @@ inline std::vector<pxr::UsdPrim> GetAllRobotLinks(const pxr::UsdStagePtr& stage,
 }
 
 /**
+ * @brief Collect every prim in a robot's subtree that applies an Isaac robot-schema API.
+ * @details
+ * Descends `robotPrim` (depth-first prim-tree order) and returns prims tagged with any of:
+ * `IsaacRobotAPI` (nested sub-robots), `IsaacLinkAPI`, `IsaacJointAPI`, `IsaacSiteAPI`,
+ * `IsaacReferencePointAPI`. Callers filter by API as needed.
+ *
+ * This is a pure schema query — it does not assign frame relationships, parent links,
+ * or any consumer-specific semantics; consumers reconstruct those from the returned prims.
+ *
+ * @param[in] stage Stage that owns the prims.
+ * @param[in] robotPrim Prim whose subtree to walk (caller typically passes an
+ *                      `IsaacRobotAPI`-bearing prim).
+ *
+ * @return Prims in depth-first descent order. Empty on invalid input or no
+ *         schema-tagged descendants.
+ */
+inline std::vector<pxr::UsdPrim> GetAllRobotComponents(const pxr::UsdStagePtr& stage, const pxr::UsdPrim& robotPrim)
+{
+    std::vector<pxr::UsdPrim> components;
+    if (!stage || !robotPrim)
+    {
+        return components;
+    }
+    const std::array<pxr::TfToken, 5> isaacApis = { className(Classes::ROBOT_API), className(Classes::LINK_API),
+                                                    className(Classes::JOINT_API), className(Classes::SITE_API),
+                                                    className(Classes::REFERENCE_POINT_API) };
+    for (const pxr::UsdPrim& descendant : pxr::UsdPrimRange(robotPrim))
+    {
+        for (const auto& api : isaacApis)
+        {
+            if (descendant.HasAPI(api))
+            {
+                components.push_back(descendant);
+                break;
+            }
+        }
+    }
+    return components;
+}
+
+/**
  * @brief Build a child-link to parent-link path map from an `IsaacRobotAPI` prim.
  * @details
  * Walks `isaac:physics:robotJoints` rel targets; for each joint, reads `body0` (parent)
