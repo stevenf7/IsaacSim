@@ -444,35 +444,93 @@ private:
             }
 
             // Fallback: target prim carries IsaacRobotAPI but no UsdPhysicsArticulationRootAPI;
-            // resolve via robotLinks (handles assets where the articulation root sits on a deeper link).
+            // enumerate every Isaac-schema-tagged prim under the robot via the central
+            // `GetAllRobotComponents` helper (links + sites + reference points + nested robots).
             if (!isArticulation &&
                 prim.HasAPI(isaacsim::robot::schema::className(isaacsim::robot::schema::Classes::ROBOT_API)))
             {
                 // Reconstruct the kinematic child→parent map from `isaac:physics:robotJoints` so
-                // emitted TF pairs mirror the joint graph (body0 is parent, body1 is child).
-                // Root links — those that no joint references as body1 — keep an empty parent and
-                // re-parent to world (or the user-supplied parentPrim), matching the existing
-                // UsdPhysicsArticulationRootAPI branch's semantics where `LinkInfo::parentPath`
-                // is the empty string for the articulation root.
+                // emitted TF pairs mirror the joint graph. Root links keep an empty parent and
+                // re-parent to world (or the user-supplied parentPrim) downstream.
                 const auto jointParentMap = isaacsim::robot::schema::GetRobotLinkParentMap(m_usdStage, prim);
 
-                for (const auto& linkPrim : isaacsim::robot::schema::GetAllRobotLinks(m_usdStage, prim))
+                // Resolve the user-supplied parentPrim once so we can skip emitting a
+                // `parentPrim → parentPrim` self-pair that ROS rejects with `TF_SELF_TRANSFORM`.
+                std::string parentPrimPathStr;
+                const auto& parentPrimInput = db.inputs.parentPrim();
+                if (!parentPrimInput.empty())
                 {
-                    if (!linkPrim)
+                    parentPrimPathStr = omni::fabric::toSdfPath(parentPrimInput[0]).GetString();
+                }
+
+                const pxr::TfToken linkApiToken =
+                    isaacsim::robot::schema::className(isaacsim::robot::schema::Classes::LINK_API);
+                const pxr::TfToken jointApiToken =
+                    isaacsim::robot::schema::className(isaacsim::robot::schema::Classes::JOINT_API);
+                const pxr::TfToken robotApiToken =
+                    isaacsim::robot::schema::className(isaacsim::robot::schema::Classes::ROBOT_API);
+
+                for (const auto& component : isaacsim::robot::schema::GetAllRobotComponents(m_usdStage, prim))
+                {
+                    // Joints are constraints, not frames — skip them.
+                    if (component.HasAPI(jointApiToken))
                     {
                         continue;
                     }
-                    const std::string linkPathStr = linkPrim.GetPath().GetString();
-                    m_viewPaths.push_back(linkPathStr);
-                    PrimInfo linkInfo;
-                    linkInfo.isPhysics = linkPrim.HasAPI<pxr::UsdPhysicsRigidBodyAPI>();
-                    if (!linkInfo.isPhysics)
+                    // Nested IsaacRobotAPI roots are aggregations, not frames themselves; their
+                    // child links/sites are already in the list separately.
+                    if (component.HasAPI(robotApiToken))
+                    {
+                        continue;
+                    }
+                    const std::string componentPathStr = component.GetPath().GetString();
+                    // Skip the link that coincides with `parentPrim` to avoid a self-loop pair.
+                    if (!parentPrimPathStr.empty() && componentPathStr == parentPrimPathStr)
+                    {
+                        isArticulation = true;
+                        continue;
+                    }
+
+                    m_viewPaths.push_back(componentPathStr);
+                    PrimInfo info;
+                    info.isPhysics = component.HasAPI<pxr::UsdPhysicsRigidBodyAPI>();
+                    if (component.IsA<pxr::UsdGeomCamera>())
+                    {
+                        using namespace isaacsim::robot::schema::sensors;
+                        info.isCamera = !component.HasAPI(kIsaacRtxLidarSensorAPI);
+                    }
+                    if (!info.isPhysics)
                     {
                         m_hasNonPhysicsPrims = true;
                     }
-                    m_primInfo.push_back(linkInfo);
-                    auto pit = jointParentMap.find(linkPathStr);
-                    linkParents[linkPathStr] = (pit != jointParentMap.end()) ? pit->second : std::string();
+                    m_primInfo.push_back(info);
+
+                    // Parent resolution:
+                    //  - IsaacLinkAPI prims: use the joint topology (body0 → body1 map).
+                    //  - Other (sites, reference points): use the nearest ancestor link.
+                    std::string parentPath;
+                    if (component.HasAPI(linkApiToken))
+                    {
+                        auto pit = jointParentMap.find(componentPathStr);
+                        if (pit != jointParentMap.end())
+                        {
+                            parentPath = pit->second;
+                        }
+                    }
+                    else
+                    {
+                        pxr::UsdPrim ancestor = component.GetParent();
+                        while (ancestor)
+                        {
+                            if (ancestor.HasAPI(linkApiToken))
+                            {
+                                parentPath = ancestor.GetPath().GetString();
+                                break;
+                            }
+                            ancestor = ancestor.GetParent();
+                        }
+                    }
+                    linkParents[componentPathStr] = parentPath;
                     isArticulation = true;
                 }
             }

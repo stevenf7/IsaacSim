@@ -536,6 +536,42 @@ def GetAllRobotLinks(
     return schema_links
 
 
+def GetAllRobotComponents(stage: pxr.Usd.Stage, robot_prim: pxr.Usd.Prim) -> list[pxr.Usd.Prim]:
+    """Return every prim in a robot's subtree that applies an Isaac robot-schema API.
+
+    Descends ``robot_prim`` (depth-first prim-tree order) and returns prims tagged with any
+    of: ``IsaacRobotAPI`` (nested sub-robots), ``IsaacLinkAPI``, ``IsaacJointAPI``,
+    ``IsaacSiteAPI``, ``IsaacReferencePointAPI``. Callers filter by API as needed.
+
+    This is a pure schema query — it does not assign frame relationships, parent links, or
+    any consumer-specific semantics; consumers reconstruct those from the returned prims.
+
+    Args:
+        stage: The USD stage containing the robot.
+        robot_prim: Prim whose subtree to walk (typically an ``IsaacRobotAPI``-bearing prim).
+
+    Returns:
+        Prims in depth-first descent order. Empty on invalid input or no schema-tagged
+        descendants.
+    """
+    components: list[pxr.Usd.Prim] = []
+    if not stage or not robot_prim:
+        return components
+    isaac_apis = (
+        Classes.ROBOT_API.value,
+        Classes.LINK_API.value,
+        Classes.JOINT_API.value,
+        Classes.SITE_API.value,
+        Classes.REFERENCE_POINT_API.value,
+    )
+    for descendant in pxr.Usd.PrimRange(robot_prim):
+        for api in isaac_apis:
+            if descendant.HasAPI(api):
+                components.append(descendant)
+                break
+    return components
+
+
 def GetAllNamedPoses(stage: pxr.Usd.Stage, robot_prim: pxr.Usd.Prim) -> list[pxr.Usd.Prim]:
     """Return all named pose prims for the robot from the schema relationship.
 
