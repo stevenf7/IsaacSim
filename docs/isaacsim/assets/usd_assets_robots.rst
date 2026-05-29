@@ -8,6 +8,11 @@
 
 .. _isaac_assets_robots:
 
+.. |validated| image:: /images/usd_assets_robots/isim_6.0_base_ref_gui_usd_assets_robots_validated_icon.png
+   :alt: Validated
+   :height: 1em
+   :class: no-scaled-link
+
 ================================
 Robot Assets
 ================================
@@ -15,6 +20,17 @@ Robot Assets
 |isaac-sim| supports a wide range of robots with differential bases, form factors, and functions.
 
 These robots can be categorized as wheeled robots, holonomic robots, quadruped robots, robotic manipulator and aerial robots (drones). They can be found in the Content Browser in the ``Isaac Sim/Robots`` folder.
+
+.. _isaac_assets_robots_multiphysics:
+
+Multiphysics Robots
+-------------------
+
+A growing subset of the robot assets has also been transformed into multiphysics-ready variants that live in a parallel ``Isaac Sim/Robot_Multiphysics`` folder, mirroring the directory layout of ``Isaac Sim/Robots``. These transformed assets follow the :ref:`isaac_sim_app_reference_asset_structure` guidelines and contain only neutral physics primitives, so they can be loaded by the Newton physics backend without PhysX-specific schema contamination.
+
+For each robot in the catalog below that has been transformed, a **Multiphysics USD Path** is listed alongside the original **USD Path** (relative to the ``Isaac Sim/Robot_Multiphysics`` folder). Entries marked with |validated| have been verified to behave like the original robot; unmarked entries are still undergoing validation and may exhibit issues.
+
+Users are encouraged to start migrating their workflows to the multiphysics assets. Once conversion and validation is complete across the full catalog, the multiphysics variants will replace the original assets in a future release.
 
 .. tab-set::
 
@@ -34,6 +50,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** iRobot/Create3/create_3.usd
+
+                  **Multiphysics USD Path:** iRobot/Create3/create_3/create_3.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -74,6 +92,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Turtlebot/Turtlebot3/turtlebot3_burger.usd
 
+                  **Multiphysics USD Path:** Turtlebot/Turtlebot3/turtlebot3_burger/turtlebot3_burger.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -110,6 +130,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** NVIDIA/Robomaker/aws_robomaker_jetbot.usd
+
+                  **Multiphysics USD Path:** NVIDIA/Robomaker/aws_robomaker_jetbot/aws_robomaker_jetbot.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -200,6 +222,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** NVIDIA/Leatherback/leatherback.usd
 
+                  **Multiphysics USD Path:** NVIDIA/Leatherback/leatherback.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -242,6 +266,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** NVIDIA/Jetbot/jetbot.usd
+
+                  **Multiphysics USD Path:** NVIDIA/Jetbot/jetbot.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -295,6 +321,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** NVIDIA/Carter/carter_v1.usd
+
+                          **Multiphysics USD Path:** NVIDIA/Carter/carter_v1/carter_v1.usda
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -397,6 +425,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** IsaacSim/ForkliftC/forklift_c.usd
 
+                  **Multiphysics USD Path:** IsaacSim/ForkliftC/forklift_c/forklift_c.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -433,6 +463,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** IsaacSim/ForkliftB/forklift_b.usd
+
+                          **Multiphysics USD Path:** IsaacSim/ForkliftB/forklift_b/forklift_b.usda
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -523,6 +555,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** Idealworks/iwhub/iw_hub.usd
+
+                          **Multiphysics USD Path:** Idealworks/iwhub/iw_hub/iw_hub.usda
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -635,6 +669,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Fraunhofer/Evobot/evobot.usd
 
+                  **Multiphysics USD Path:** Fraunhofer/Evobot/evobot.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -681,6 +717,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** Clearpath/Jackal/jackal.usd
+
+                          **Multiphysics USD Path:** Clearpath/Jackal/jackal.usda
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -769,6 +807,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                           **USD Path:** Clearpath/Dingo/dingo.usd
 
+                          **Multiphysics USD Path:** Clearpath/Dingo/dingo.usda
+
                         .. dropdown:: Properties
                             :animate: fade-in
                             :color: light
@@ -851,6 +891,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** AgilexRobotics/limo/limo.usd
+
+                  **Multiphysics USD Path:** AgilexRobotics/limo/limo.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -1107,6 +1149,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Yahboom/Dofbot/dofbot.usd
 
+                  **Multiphysics USD Path:** Yahboom/Dofbot/dofbot.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -1163,6 +1207,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** WonikRobotics/AllegroHand/allegro.usd
+
+                          **Multiphysics USD Path:** WonikRobotics/AllegroHand/allegro/allegro.usda
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -1275,6 +1321,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** UniversalRobots/ur5e/ur5e.usd
 
+                  **Multiphysics USD Path:** UniversalRobots/ur5e/ur5e.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -1307,6 +1355,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** UniversalRobots/ur5/ur5.usd
+
+                  **Multiphysics USD Path:** UniversalRobots/ur5/ur5.usda |validated|
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -1341,6 +1391,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** UniversalRobots/ur3e/ur3e.usd
 
+                  **Multiphysics USD Path:** UniversalRobots/ur3e/ur3e.usda |validated|
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -1373,6 +1425,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** UniversalRobots/ur30/ur30.usd
+
+                  **Multiphysics USD Path:** UniversalRobots/ur30/ur30.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -1409,6 +1463,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** UniversalRobots/ur3/ur3.usd
 
+                  **Multiphysics USD Path:** UniversalRobots/ur3/ur3.usda |validated|
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -1441,6 +1497,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** UniversalRobots/ur20/ur20.usd
+
+                  **Multiphysics USD Path:** UniversalRobots/ur20/ur20.usda |validated|
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -1475,6 +1533,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** UniversalRobots/ur16e/ur16e.usd
 
+                  **Multiphysics USD Path:** UniversalRobots/ur16e/ur16e.usda |validated|
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -1507,6 +1567,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** UniversalRobots/ur10e/ur10e.usd
+
+                  **Multiphysics USD Path:** UniversalRobots/ur10e/ur10e.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -1546,6 +1608,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** UniversalRobots/ur10/ur10.usd
+
+                  **Multiphysics USD Path:** UniversalRobots/ur10/ur10.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -1592,6 +1656,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Unitree/Z1/z1.usd
 
+                  **Multiphysics USD Path:** Unitree/Z1/z1.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -1625,6 +1691,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Unitree/Dex5/Dex5-URDF-R.usda
 
+                  **Multiphysics USD Path:** Unitree/Dex5/Dex5-URDF-R/Dex5-URDF-R.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -1657,6 +1725,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Unitree/Dex3/dex3_1_r.usd
+
+                  **Multiphysics USD Path:** Unitree/Dex3/dex3_1_r/dex3_1_r.usda |validated|
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -1695,6 +1765,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Ufactory/xarm_gripper/xarm_gripper.usd
 
+                  **Multiphysics USD Path:** Ufactory/xarm_gripper/xarm_gripper.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -1729,6 +1801,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Ufactory/xarm7/xarm7.usd
+
+                  **Multiphysics USD Path:** Ufactory/xarm7/xarm7.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -1765,6 +1839,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Ufactory/xarm6/xarm6.usd
 
+                  **Multiphysics USD Path:** Ufactory/xarm6/xarm6.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -1800,6 +1876,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Ufactory/uf850/uf850.usd
 
+                  **Multiphysics USD Path:** Ufactory/uf850/uf850.usda |validated|
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -1832,6 +1910,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Ufactory/lite6_gripper/uf_lite_gripper.usd
+
+                  **Multiphysics USD Path:** Ufactory/lite6_gripper/uf_lite_gripper/uf_lite_gripper.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -1870,6 +1950,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Ufactory/lite6/lite6.usd
 
+                  **Multiphysics USD Path:** Ufactory/lite6/lite6.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -1906,6 +1988,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Techman/TM12/tm12.usd
+
+                  **Multiphysics USD Path:** Techman/TM12/tm12.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -1962,6 +2046,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                           **USD Path:** ShadowRobot/ShadowHand/shadow_hand.usd
 
+                          **Multiphysics USD Path:** ShadowRobot/ShadowHand/shadow_hand/shadow_hand.usda
+
                         .. dropdown:: Properties
                             :animate: fade-in
                             :color: light
@@ -1997,6 +2083,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** ShadowRobot/ShadowHand/shadow_hand_instanceable.usd
+
+                          **Multiphysics USD Path:** ShadowRobot/ShadowHandNewton/shadow_hand_instanceable/shadow_hand_instanceable.usda
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -2042,6 +2130,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** Robotiq/Hand-E/Robotiq_Hand_E_base.usd
+
+                          **Multiphysics USD Path:** Robotiq/Hand-E/Robotiq_Hand_E_base/Robotiq_Hand_E_base.usda
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -2103,6 +2193,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Robotiq/2F-85/Robotiq_2F_85_edit.usd
+
+                  **Multiphysics USD Path:** Robotiq/2F-85/Robotiq_2F_85.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -2174,6 +2266,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** Robotiq/2F-140/Robotiq_2F_140_base.usd
+
+                          **Multiphysics USD Path:** Robotiq/2F-140/Robotiq_2F_140.usda
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -2340,6 +2434,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Psyonic/ability_hand_left_large/ability_hand_left_large.usd
 
+                  **Multiphysics USD Path:** Psyonic/ability_hand_left_large/ability_hand_left_large.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -2372,6 +2468,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Psyonic/ability_hand_left_small/ability_hand_left_small.usd
+
+                  **Multiphysics USD Path:** Psyonic/ability_hand_left_small/ability_hand_left_small.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -2406,6 +2504,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Psyonic/ability_hand_right_large/ability_hand_right_large.usd
 
+                  **Multiphysics USD Path:** Psyonic/ability_hand_right_large/ability_hand_right_large.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -2438,6 +2538,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Psyonic/ability_hand_right_small/ability_hand_right_small.usd
+
+                  **Multiphysics USD Path:** Psyonic/ability_hand_right_small/ability_hand_right_small.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -2476,6 +2578,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Schunk/egk_25/schunk_egk_25.usd
 
+                  **Multiphysics USD Path:** Schunk/egk_25/schunk_egk_25/schunk_egk_25.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -2508,6 +2612,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Schunk/egu_50/schunk_egu_50.usd
+
+                  **Multiphysics USD Path:** Schunk/egu_50/schunk_egu_50/schunk_egu_50.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -2542,6 +2648,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Schunk/ezu_35/schunk_ezu_35.usd
 
+                  **Multiphysics USD Path:** Schunk/ezu_35/schunk_ezu_35/schunk_ezu_35.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -2575,6 +2683,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Schunk/svh-flat-l/svh-flat-l_v2.usd
 
+                  **Multiphysics USD Path:** Schunk/svh-flat-l/svh-flat-l_v2/svh-flat-l_v2.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -2607,6 +2717,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Schunk/svh-flat-r/svh-flat-r_v2.usd
+
+                  **Multiphysics USD Path:** Schunk/svh-flat-r/svh-flat-r_v2/svh-flat-r_v2.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -2645,6 +2757,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** RobotStudio/so101_new_calib/so101_new_calib.usd
 
+                  **Multiphysics USD Path:** RobotStudio/so101_new_calib/so101_new_calib.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -2677,6 +2791,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** RobotStudio/so100/so100.usd
+
+                  **Multiphysics USD Path:** RobotStudio/so100/so100.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -2714,6 +2830,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** RethinkRobotics/Sawyer/sawyer_instanceable.usd
+
+                  **Multiphysics USD Path:** RethinkRobotics/Sawyer/sawyer_instanceable/sawyer_instanceable.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -2755,6 +2873,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Kuka/KR210_L150/kr210_l150.usd
+
+                  **Multiphysics USD Path:** Kuka/KR210_L150/kr210_l150.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -2864,6 +2984,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Kinova/Gen3/gen3n7_instanceable.usd
 
+                  **Multiphysics USD Path:** Kinova/Gen3/gen3n7_instanceable/gen3n7_instanceable.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -2900,6 +3022,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Kawasaki/RS080N/rs080n_onrobot_rg2.usd
+
+                  **Multiphysics USD Path:** Kawasaki/RS080N/rs080n_onrobot_rg2/rs080n_onrobot_rg2.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -2938,6 +3062,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Kawasaki/RS025N/rs025n_onrobot_rg2.usd
 
+                  **Multiphysics USD Path:** Kawasaki/RS025N/rs025n_onrobot_rg2/rs025n_onrobot_rg2.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -2974,6 +3100,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Kawasaki/RS013N/rs013n_onrobot_rg2.usd
+
+                  **Multiphysics USD Path:** Kawasaki/RS013N/rs013n_onrobot_rg2/rs013n_onrobot_rg2.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -3012,6 +3140,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Kawasaki/RS007N/rs007n_onrobot_rg2.usd
 
+                  **Multiphysics USD Path:** Kawasaki/RS007N/rs007n_onrobot_rg2/rs007n_onrobot_rg2.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -3048,6 +3178,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Kawasaki/RS007L/rs007l_onrobot_rg2.usd
+
+                  **Multiphysics USD Path:** Kawasaki/RS007L/rs007l_onrobot_rg2/rs007l_onrobot_rg2.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -3089,6 +3221,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** FrankaRobotics/FrankaPanda/franka.usd
+
+                  **Multiphysics USD Path:** FrankaRobotics/FrankaPanda/franka/franka.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -3135,6 +3269,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** FrankaRobotics/FrankaFR3/fr3.usd
 
+                  **Multiphysics USD Path:** FrankaRobotics/FrankaFR3/fr3/fr3.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -3172,6 +3308,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** FrankaRobotics/FrankaEmika/panda_instanceable.usd
 
+                  **Multiphysics USD Path:** FrankaRobotics/FrankaEmika/panda_instanceable/panda_instanceable.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -3208,6 +3346,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** FrankaRobotics/FactoryFranka/factory_franka.usd
+
+                          **Multiphysics USD Path:** FrankaRobotics/FactoryFranka/factory_franka/factory_franka.usda
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -3284,6 +3424,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Flexiv/Rizon4/flexiv_rizon4.usd
 
+                  **Multiphysics USD Path:** Flexiv/Rizon4/flexiv_rizon4/flexiv_rizon4.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -3325,6 +3467,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Fanuc/crx10ial_l/crx10ial_l.usd
 
+                  **Multiphysics USD Path:** Fanuc/crx10ia_l/crx10ia_l.usda |validated|
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -3359,6 +3503,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Fanuc/cr_50f_16b/cr_50f_16b.usd
+
+                  **Multiphysics USD Path:** Fanuc/cr_50f_16b/cr_50f_16b.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -3395,6 +3541,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Fanuc/crx10ia/crx10ia.usd
 
+                  **Multiphysics USD Path:** Fanuc/crx10ia/crx10ia.usda |validated|
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -3429,6 +3577,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Fanuc/crx5ia/crx5ia.usd
+
+                  **Multiphysics USD Path:** Fanuc/crx5ia/crx5ia.usda |validated|
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -3465,6 +3615,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Fanuc/lrmate200id/lrmate200id.usd
 
+                  **Multiphysics USD Path:** Fanuc/lrmate200id/lrmate200id.usda |validated|
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -3499,6 +3651,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Fanuc/m710ic_50/m710ic_50.usd
+
+                  **Multiphysics USD Path:** Fanuc/m710ic_50/m710ic_50.usda |validated|
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -3535,6 +3689,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Fanuc/r2000ic_165f/r2000ic_165f.usd
 
+                  **Multiphysics USD Path:** Fanuc/r2000ic_165f/r2000ic_165f.usda |validated|
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -3569,6 +3725,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Fanuc/sr12ia/sr12ia.usd
+
+                  **Multiphysics USD Path:** Fanuc/sr12ia/sr12ia.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -3605,6 +3763,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Fanuc/sr3ia/sr3ia.usd
 
+                  **Multiphysics USD Path:** Fanuc/sr3ia/sr3ia.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -3640,6 +3800,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Fanuc/m900ib280/m900ib280.usd
 
+                  **Multiphysics USD Path:** Fanuc/m900ib280/m900ib280.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -3670,7 +3832,7 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                 .. note::
 
-                    Additional FANUC robot assets (84+ models) can be found in the Content Browser at ``IsaacSim/Robots/Fanuc``.
+                    Additional FANUC robot assets (84+ models) can be found in the Content Browser at ``IsaacSim/Robots/Fanuc``. Multiphysics-ready counterparts for most of these models are also available at ``IsaacSim/Robot_Multiphysics/Fanuc`` (see :ref:`isaac_assets_robots_multiphysics`).
 
         | **Denso**
 
@@ -3685,6 +3847,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Denso/CobottaPro900/cobotta_pro_900.usd
+
+                  **Multiphysics USD Path:** Denso/CobottaPro900/cobotta_pro_900/cobotta_pro_900.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -3722,6 +3886,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Denso/CobottaPro1300/cobotta_pro_1300.usd
+
+                  **Multiphysics USD Path:** Denso/CobottaPro1300/cobotta_pro_1300/cobotta_pro_1300.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -3764,6 +3930,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** comau/n-220-27/n-220-27.usd
 
+                  **Multiphysics USD Path:** comau/n-220-27/n-220-27.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -3801,6 +3969,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Addverb/Syncro5.usd
 
+                  **Multiphysics USD Path:** Addverb/Syncro5/Syncro5.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -3827,6 +3997,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Addverb/Syncro10.usd
+
+                  **Multiphysics USD Path:** Addverb/Syncro10/Syncro10.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -3859,6 +4031,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Mecademic/meca500.usd
 
+                  **Multiphysics USD Path:** Mecademic/meca500/meca500.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -3889,6 +4063,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** OpenArm/openarm_unimanual/openarm_unimanual.usd
+
+                  **Multiphysics USD Path:** OpenArm/openarm_unimanual/openarm_unimanual.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -3924,6 +4100,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** OpenArm/openarm_bimanual/openarm_bimanual.usd
+
+                  **Multiphysics USD Path:** OpenArm/openarm_bimanual/openarm_bimanual.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -3970,6 +4148,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** XiaoPeng/PX5/px5.usd
+
+                          **Multiphysics USD Path:** XiaoPeng/PX5/px5.usda
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -4040,6 +4220,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** XHumanoid/Tien Kung/tienkung.usd
 
+                  **Multiphysics USD Path:** XHumanoid/Tien Kung/tienkung/tienkung.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -4079,6 +4261,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Unitree/H1/h1.usd
 
+                  **Multiphysics USD Path:** Unitree/H1/h1.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -4115,6 +4299,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** Unitree/G1_23dof/g1.usd
+
+                          **Multiphysics USD Path:** Unitree/G1_23dof/g1/g1.usda
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -4189,6 +4375,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Unitree/G1/g1.usd
 
+                  **Multiphysics USD Path:** Unitree/G1/g1.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -4227,6 +4415,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** SanctuaryAI/Phoenix/phoenix.usd
+
+                  **Multiphysics USD Path:** SanctuaryAI/Phoenix/phoenix.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -4267,6 +4457,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** RobotEra/STAR1/star1.usd
 
+                  **Multiphysics USD Path:** RobotEra/STAR1/star1.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -4303,6 +4495,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Ihmcrobotics/Valkyrie/valkyrie.usd
+
+                  **Multiphysics USD Path:** Ihmcrobotics/Valkyrie/valkyrie.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -4422,6 +4616,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Agility/Digit/digit_v4.usd
 
+                  **Multiphysics USD Path:** Agility/Digit/digit_v4/digit_v4.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -4471,6 +4667,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Agility/Cassie/cassie.usd
 
+                  **Multiphysics USD Path:** Agility/Cassie/cassie.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -4509,6 +4707,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Agibot/A2D/A2D.usd
+
+                  **Multiphysics USD Path:** Agibot/A2D/A2D.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -4549,6 +4749,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** 1X/Neo/Neo.usd
 
+                  **Multiphysics USD Path:** 1X/Neo/Neo.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -4587,6 +4789,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** BoosterRobotics/BoosterT1/T1_locomotion.usd
+
+                  **Multiphysics USD Path:** BoosterRobotics/BoosterT1/T1_locomotion/T1_locomotion.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -4628,6 +4832,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Unitree/laikago/laikago.usd
 
+                  **Multiphysics USD Path:** Unitree/laikago/laikago.usda |validated|
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -4661,6 +4867,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Unitree/aliengo/aliengo.usd
 
+                  **Multiphysics USD Path:** Unitree/aliengo/aliengo.usda |validated|
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -4693,6 +4901,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Unitree/Go2/go2.usd
+
+                  **Multiphysics USD Path:** Unitree/Go2/go2.usda |validated|
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -4732,6 +4942,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** Unitree/Go1/go1.usd
+
+                          **Multiphysics USD Path:** Unitree/Go1/go1.usda |validated|
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -4809,6 +5021,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Unitree/B2/b2.usd
 
+                  **Multiphysics USD Path:** Unitree/B2/b2.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -4843,6 +5057,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Unitree/A1/a1.usd
+
+                  **Multiphysics USD Path:** Unitree/A1/a1.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -4884,6 +5100,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** IsaacSim/Ant/ant.usd
+
+                          **Multiphysics USD Path:** IsaacSim/Ant/ant.usda
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -4994,6 +5212,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** BostonDynamics/spot/spot.usd
 
+                  **Multiphysics USD Path:** BostonDynamics/spot/spot.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -5035,6 +5255,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** ANYbotics/anymal_d/anymal_d.usd
 
+                  **Multiphysics USD Path:** ANYbotics/anymal_d/anymal_d.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -5070,6 +5292,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** ANYbotics/anymal_c/anymal_c.usd
 
+                  **Multiphysics USD Path:** ANYbotics/anymal_c/anymal_c.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -5104,6 +5328,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** ANYbotics/anymal_b/anymal_b.usd
+
+                  **Multiphysics USD Path:** ANYbotics/anymal_b/anymal_b.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -5144,6 +5370,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** DeepRobotics/X30/X30.usd
 
+                  **Multiphysics USD Path:** DeepRobotics/X30/X30.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -5177,6 +5405,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** DeepRobotics/M20/M20.usd
 
+                  **Multiphysics USD Path:** DeepRobotics/M20/M20.usda |validated|
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -5209,6 +5439,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** DeepRobotics/Lite3/Lite3.usd
+
+                  **Multiphysics USD Path:** DeepRobotics/Lite3/Lite3.usda |validated|
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -5247,6 +5479,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Addverb/Trakr/trakr.usd
 
+                  **Multiphysics USD Path:** Addverb/Trakr/trakr.usda |validated|
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -5284,6 +5518,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** NVIDIA/Kaya/kaya.usd
+
+                          **Multiphysics USD Path:** NVIDIA/Kaya/kaya.usda
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -5365,6 +5601,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** Fraunhofer/O3dyn/o3dyn.usd
+
+                          **Multiphysics USD Path:** Fraunhofer/O3dyn/o3dyn.usda
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -5488,6 +5726,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** NASA/Ingenuity/ingenuity.usd
 
+                  **Multiphysics USD Path:** NASA/Ingenuity/ingenuity.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -5527,6 +5767,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** IsaacSim/Quadcopter/quadcopter.usd
 
+                  **Multiphysics USD Path:** IsaacSim/Quadcopter/quadcopter.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -5564,6 +5806,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Bitcraze/Crazyflie/cf2x.usd
 
+                  **Multiphysics USD Path:** Bitcraze/Crazyflie/cf2x/cf2x.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -5600,6 +5844,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** NTNU/ARL-Robot-1/arl_robot_1.usd
+
+                  **Multiphysics USD Path:** NTNU/ARL-Robot-1/arl_robot_1/arl_robot_1.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -5643,6 +5889,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** IsaacSim/Vehicle/basic_vehicle_m.usd
 
+                  **Multiphysics USD Path:** IsaacSim/Vehicle/basic_vehicle_m/basic_vehicle_m.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -5681,6 +5929,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** IsaacSim/SimpleArticulation/articulation_3_joints.usd
+
+                          **Multiphysics USD Path:** IsaacSim/SimpleArticulation/articulation_3_joints/articulation_3_joints.usda
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -5785,6 +6035,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** IsaacSim/Humanoid28/humanoid_28.usd
 
+                  **Multiphysics USD Path:** IsaacSim/Humanoid28/humanoid_28/humanoid_28.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -5821,6 +6073,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                           :width: 80%
 
                           **USD Path:** IsaacSim/Humanoid/humanoid.usd
+
+                          **Multiphysics USD Path:** IsaacSim/Humanoid/humanoid.usda
 
                         .. dropdown:: Properties
                             :animate: fade-in
@@ -5893,6 +6147,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** IsaacSim/DifferentialBase/differential_base.usd
 
+                  **Multiphysics USD Path:** IsaacSim/DifferentialBase/differential_base/differential_base.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -5928,6 +6184,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** IsaacSim/Cartpole/cartpole.usd
 
+                  **Multiphysics USD Path:** IsaacSim/Cartpole/cartpole.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -5959,6 +6217,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** IsaacSim/CartDoublePendulum/cart_double_pendulum.usd
 
+                  **Multiphysics USD Path:** IsaacSim/CartDoublePendulum/cart_double_pendulum/cart_double_pendulum.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -5989,6 +6249,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** IsaacSim/BalanceBot/balance_bot.usd
+
+                  **Multiphysics USD Path:** IsaacSim/BalanceBot/balance_bot/balance_bot.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in
@@ -6030,6 +6292,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
 
                   **USD Path:** Clearpath/RidgebackUr/ridgeback_ur5.usd
 
+                  **Multiphysics USD Path:** Clearpath/RidgebackUr/ridgeback_ur5.usda
+
                 .. dropdown:: Properties
                     :animate: fade-in
                     :color: light
@@ -6064,6 +6328,8 @@ These robots can be categorized as wheeled robots, holonomic robots, quadruped r
                   :width: 80%
 
                   **USD Path:** Clearpath/RidgebackFranka/ridgeback_franka.usd
+
+                  **Multiphysics USD Path:** Clearpath/RidgebackFranka/ridgeback_franka.usda
 
                 .. dropdown:: Properties
                     :animate: fade-in

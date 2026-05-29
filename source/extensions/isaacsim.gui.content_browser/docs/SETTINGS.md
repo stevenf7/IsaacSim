@@ -13,6 +13,7 @@
 ## exts."isaacsim.gui.content_browser".folders
    - **Default Value**: [
      "/Isaac/Robots",
+     "/Isaac/Robots_Multiphysics",
      "/Isaac/Environments",
      "/Isaac/IsaacLab",
      "/Isaac/Materials",
