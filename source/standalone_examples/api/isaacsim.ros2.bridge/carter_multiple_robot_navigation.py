@@ -37,13 +37,13 @@ if args.environment == "hospital":
 elif args.environment == "office":
     ENV_USD_PATH = OFFICE_USD_PATH
 
-import carb
 from isaacsim import SimulationApp
 
 CONFIG = {"renderer": "RealTimePathTracing", "headless": False}
 
 # Example ROS2 bridge sample demonstrating the manual loading of Multiple Robot Navigation scenario
 simulation_app = SimulationApp(CONFIG)
+import carb
 import omni
 from isaacsim.core.experimental.utils.app import enable_extension
 from isaacsim.core.experimental.utils.stage import is_stage_loading
