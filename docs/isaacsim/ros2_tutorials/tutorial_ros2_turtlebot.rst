@@ -154,6 +154,8 @@ If your robot is oscillating at the joint or moving too slow, take a look at the
 Assemble the scenes
 ^^^^^^^^^^^^^^^^^^^^^
 
+.. note:: On multi-GPU systems running Windows, loading and playing this scene may currently result in a fatal application crash. This is a known issue and will be addressed in a future release.
+
 #. For the purpose of this tutorial series, use an Isaac environment, later you can import the robot into any environment of your choosing. Open the environment by going to the Isaac Sim Content browser and clicking **Isaac Sim/Environments/Simple_Room/simple_room.usd**. If you do not want to use the provided environment, make sure there is a *GroundPlane* and a *PhysicsScene* to your environment. Both can be found in **Create > Physics**. You might also need some lighting, play with the various types of lighting in **Create > Light** to get the desired effect.
 #. On a new stage, drag the ``simple_room.usd`` onto the stage, and place it at the origin by zeroing out all the *Translate* components in the **Transform Property**. You may need to zoom in a bit to observe the table inside the room
 #. Now add the turtle bot to the stage by dragging the turtlebot robot asset file onto the stage.

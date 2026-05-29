@@ -45,7 +45,12 @@ Sensors which do not rely on RTX rendering, such as IMU sensors, can be configur
 
 1. Open the turtlebot simple room scene, which can be found by going to the Isaac Sim Content browser and clicking **Isaac Sim>Samples>ROS2>Scenario>turtlebot_tutorial.usd**.
 
-2. In the **Stage** panel, right-click the prim ``/World/turtlebot3_burger_processed/Geometry/base_footprint/base_link/imu_link`` and choose **Create > Isaac > Sensors > Imu Sensor** from the context menu. Using the right-click menu on the link prim is what parents the sensor under *imu_link*; the top **Create > Sensors > Imu Sensor** menu-bar entry creates the sensor at the stage root instead. Verify that the Imu sensor is created under the *imu_link* prim.
+2. Create an IMU sensor parented under the *imu_link* prim. There are two ways to add an IMU sensor, and they place it at different locations in the stage:
+
+    - **Right-click menu (recommended):** In the **Stage** panel, right-click the prim ``/World/turtlebot3_burger_processed/Geometry/base_footprint/base_link/imu_link`` and choose **Create > Isaac > Sensors > Imu Sensor** from the context menu. This parents the sensor directly under the selected *imu_link* prim.
+    - **Menu bar:** The top **Create > Sensors > Imu Sensor** menu-bar entry creates the sensor at the stage root instead. If you use this path, drag the resulting sensor prim under *imu_link* in the **Stage** panel so the hierarchy matches the rest of this tutorial.
+
+    Either way, verify that the Imu sensor ends up under the *imu_link* prim before continuing.
 
 3. Create a new Action Graph inside */World/turtlebot3_burger_processed/Geometry/base_footprint/base_link/imu_link* prim and name it *ROS_IMU* (the placement of the graph is important for :ref:`isaac_sim_app_tutorial_ros2_auto_namespace`). To do this, select the prim at ``/World/turtlebot3_burger_processed/Geometry/base_footprint/base_link/imu_link`` and then create an Action Graph by going to **Window > Graph Editors > Action Graph**.
 
@@ -92,12 +97,15 @@ Cameras and RTX Lidars can be configured to publish at a different rate than the
 
 3. Open the camera Action Graph */World/ActionGraph_camera*. Disable the second camera render product by unchecking **enabled** attribute in */World/ActionGraph_camera/isaac_create_render_product_01*.
 
-4. Select the camera prim ``/World/Camera_1`` (the ``Camera`` referenced as ``cameraPrim`` on the ``Isaac Create Render Product`` node feeding both ``/World/ActionGraph_camera/ros2_camera_helper`` and ``/World/ActionGraph_camera/ros2_camera_info_helper``). In the **Property** tab, set ``omni:sensor:tickRate`` to ``15``. Both ``/camera_1/rgb/image_raw`` and ``/camera_1/rgb/camera_info`` now publish at ``R_cam = 15`` Hz (independent of the simulation rate, as long as the simulation rate is at least 15 Hz).
+4. Select the camera prim ``/World/Camera_1`` (the ``Camera`` referenced as ``cameraPrim`` on the ``Isaac Create Render Product`` node feeding both ``/World/ActionGraph_camera/ros2_camera_helper`` and ``/World/ActionGraph_camera/ros2_camera_info_helper``). Apply the ``OmniSensorAPI`` schema and set ``omni:sensor:tickRate`` to ``15`` so that both ``/camera_1/rgb/image_raw`` and ``/camera_1/rgb/camera_info`` publish at ``R_cam = 15`` Hz (independent of the simulation rate, as long as the simulation rate is at least 15 Hz). Run the following from the **Script Editor** (**Window > Script Editor**) to apply the schema and set the rate on each camera:
+
+    .. literalinclude:: ../snippets/ros2_tutorials/tutorial_ros2_publish_rate/set_camera_tick_rate.py
+        :language: python
+        :start-after: # End test setup
 
     .. note::
 
-        Cameras created from the top **Create > Camera** menu bar (as in the prerequisite :ref:`isaac_sim_app_tutorial_ros2_camera`) do **not** carry the ``omni:sensor:tickRate`` attribute by default. If you do not see it in the **Property** tab, scroll to the **Raw USD Properties** section, click **Add** > **omni:sensor:tickRate** to add the attribute, then set its value to ``15``. The shipped ``turtlebot_tutorial.usd`` already has the attribute applied to ``/World/Camera_1`` and ``/World/Camera_2``.
-
+        Cameras created from the top **Create > Camera** menu bar (as in the prerequisite :ref:`isaac_sim_app_tutorial_ros2_camera`) do **not** carry the ``omni:sensor:tickRate`` attribute by default, because they lack the ``OmniSensorAPI`` schema; the shipped ``turtlebot_tutorial.usd`` already has the schema applied to ``/World/Camera_1`` and ``/World/Camera_2``. Once the schema is applied, you can also adjust ``omni:sensor:tickRate`` directly in the **Property** tab.
 
 5. You don't need to publish depth images from Camera1 for this tutorial. Disable the camera helper for depth images by unchecking **enabled** attribute in */World/ActionGraph_camera/ros2_camera_helper_02*.
 
