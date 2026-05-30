@@ -258,7 +258,7 @@ Use flags like `--fetch-only`, `--generate`, or `--build-only` to run specific s
 ## Extension Development
 
 When building extensions:
-- Extensions are in `source/extensions/` and `source/internal_extensions/`
+- Extensions are in `source/extensions/`
 - Each extension has `extension.toml` (metadata) and optional `premake5.lua` (C++ build)
 - Build system auto-discovers extensions
 - C++ extensions use `premake5.lua` for build configuration

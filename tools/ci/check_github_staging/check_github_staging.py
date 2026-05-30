@@ -1,4 +1,3 @@
-import glob
 import json
 import mimetypes
 import os
@@ -53,31 +52,38 @@ def check_path_for_banned_words(path: str):
     results_by_file = {}
     allowed_patterns = BANNED_WORDS.get("allowed_patterns", [])
 
-    for file in glob.glob(path + "**/**", recursive=True):
-        if os.path.isfile(file) and is_text_file(file):
-            file_path = file.removeprefix(path).removeprefix("/")
-            if file_path not in BANNED_WORDS["whitelisted_files"]:
-                try:
-                    f = open(file, "r", errors="replace")
-                except OSError:
-                    continue
-                with f:
-                    for line_num, line in enumerate(f, 1):
-                        for banned_word in BANNED_WORDS["banned_words"]:
-                            if banned_word in line and not any(ap in line for ap in allowed_patterns):
-                                # Add to word-based results with nested structure
-                                if file_path not in results_by_word[banned_word]:
-                                    results_by_word[banned_word][file_path] = []
-                                results_by_word[banned_word][file_path].append(
-                                    {"line_number": line_num, "line_content": line.strip()}
-                                )
+    # os.walk (not glob) so that dotfiles and dot-directories such as
+    # .cursor/, .github/, and .gitignore are scanned too. Python's glob skips
+    # hidden paths by default, which previously hid banned words living there.
+    for root, dirs, files in os.walk(path):
+        # The .git directory is metadata, not shipped content.
+        dirs[:] = [d for d in dirs if d != ".git"]
+        for name in files:
+            file = os.path.join(root, name)
+            if os.path.isfile(file) and is_text_file(file):
+                file_path = os.path.relpath(file, path).replace(os.sep, "/")
+                if file_path not in BANNED_WORDS["whitelisted_files"]:
+                    try:
+                        f = open(file, "r", errors="replace")
+                    except OSError:
+                        continue
+                    with f:
+                        for line_num, line in enumerate(f, 1):
+                            for banned_word in BANNED_WORDS["banned_words"]:
+                                if banned_word in line and not any(ap in line for ap in allowed_patterns):
+                                    # Add to word-based results with nested structure
+                                    if file_path not in results_by_word[banned_word]:
+                                        results_by_word[banned_word][file_path] = []
+                                    results_by_word[banned_word][file_path].append(
+                                        {"line_number": line_num, "line_content": line.strip()}
+                                    )
 
-                                # Add to file-based results
-                                if file_path not in results_by_file:
-                                    results_by_file[file_path] = []
-                                results_by_file[file_path].append(
-                                    {"banned_word": banned_word, "line_number": line_num, "line_content": line.strip()}
-                                )
+                                    # Add to file-based results
+                                    if file_path not in results_by_file:
+                                        results_by_file[file_path] = []
+                                    results_by_file[file_path].append(
+                                        {"banned_word": banned_word, "line_number": line_num, "line_content": line.strip()}
+                                    )
 
     # Save both result formats
     with open("results.json", "w") as f:
