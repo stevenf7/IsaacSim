@@ -2483,8 +2483,9 @@ scan-packages-internal-urls:
         artifacts: true
         optional: true
     script:
-      - python3 tools/ci/package_scanner/scan_packages.py \
-          --version $(cat VERSION | head -1) \
+      - |
+        python3 tools/ci/package_scanner/scan_packages.py \
+          --version "$(head -n1 VERSION)" \
           --skip-download \
           --filter release \
           --exclude-dir kit \
