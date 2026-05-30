@@ -885,10 +885,16 @@ files = [
     "package.toml",
     "source/apps/isaacsim.exp.extscache.kit",
     ".gitignore",
-    ".cursor/rules/extension_structure.mdc",
 ]
 begin_marker = "# AUTOREMOVE: BEGIN"
 end_marker = "# AUTOREMOVE: END"
+
+[[repo_stage_for_github.trim]]
+files = [
+    ".cursor/rules/extension_structure.mdc",
+]
+begin_marker = "  # AUTOREMOVE: BEGIN"
+end_marker = "  # AUTOREMOVE: END"
 
 [[repo_stage_for_github.trim]]
 files = [
@@ -897,12 +903,12 @@ files = [
 begin_marker = "# AUTOREMOVE: BEGIN"
 end_marker = "# AUTOREMOVE: END"
 
-# [[repo_stage_for_github.trim]]
-# files = [
-#     "source/apps/isaacsim.exp.base.kit",
-# ]
-# begin_marker = "# FOR DEVELOPMENT - START #"
-# end_marker = "# FOR DEVELOPMENT - END #"
+[[repo_stage_for_github.trim]]
+files = [
+    "source/apps/isaacsim.exp.base.kit",
+]
+begin_marker = "# FOR DEVELOPMENT - START #"
+end_marker = "# FOR DEVELOPMENT - END #"
 
 [[repo_stage_for_github.trim]]
 files = [
