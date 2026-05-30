@@ -15,6 +15,8 @@
 
 """Robot schema helpers and applied schema utilities."""
 
+from __future__ import annotations
+
 import logging
 import os
 from enum import Enum

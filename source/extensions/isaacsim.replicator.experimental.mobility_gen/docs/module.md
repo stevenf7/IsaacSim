@@ -22,14 +22,14 @@ These methods call into Omniverse APIs such as `isaacsim.core.experimental` (art
 
 `MobilityGenRobot.write_replay_data()` applies buffered values back:
 
-```
+```text
 position.get_value()          → articulation.set_world_poses(…)
 joint_positions.get_value()   → articulation.set_dof_positions(…)
 ```
 
 `MobilityGenCamera.update_state()` reads from a render product via an annotator:
 
-```
+```text
 UsdGeom.Camera prim
   → rep.create.render_product()     # RTX renders pixels each frame
       → annotator (LdrColor, distance_to_camera, …)
@@ -56,7 +56,7 @@ A single call at the top cascades automatically:
 scenario.update_state()   # robot, sensor rig, all cameras — one call
 ```
 
-```
+```text
 MobilityGenScenario
 └─ MobilityGenRobot
    ├─ position, orientation, joint_positions, …   ← Buffers
@@ -121,7 +121,7 @@ scenario.state_dict(exclude_tags=["rgb", "depth", "segmentation", "normals"])
 
 The keys in the returned dictionary identify which buffer the value came from:
 
-```
+```text
 scenario → robot → sensor_rig → front_hawk_left → rgb_image (Buffer)
                                                    key: "robot.sensor_rig.front_hawk_left.rgb_image"
 ```

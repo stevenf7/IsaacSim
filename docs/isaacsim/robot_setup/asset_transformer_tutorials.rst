@@ -48,7 +48,7 @@ Select the Input Asset
    :alt: Selecting the input asset and output directory
 
 Load the Built-in Profile
-""""""""""""""""""""""""
+"""""""""""""""""""""""""
 
 #. In the **Actions Section**, click the **Load Preset** button.
 #. From the recent presets menu, select **Isaac Sim Structure**.
@@ -180,7 +180,7 @@ Add a Materials Routing Rule
    :alt: Configuring the Materials Routing Rule
 
 Add a Geometry Deduplication Rule
-""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""
 
 #. Click **Add Action** one more time.
 #. Expand and set:
@@ -419,7 +419,7 @@ The simplest approach is to load an existing profile JSON file and execute it ag
 
 
 Build a Profile Programmatically
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To define a profile entirely in code without a JSON file:
 

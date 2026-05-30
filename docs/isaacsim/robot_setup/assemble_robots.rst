@@ -63,7 +63,7 @@ To use the Robot Assembler, start by loading the assets you want  to assemble on
 -**Direct Asset editing**: Open the robot that will serve as a base of the assembly directly, and add a reference to the components to be assembled. This will configure the attached component as a configuration option in the original asset. 
 -**Stage Editing**: Add both components to be assembled together as a reference to the stage. This will connect both components together at the current stage and will not modify the original assets.
 
-.. image:: /images/isim_5.0_full_tut_gui_connect_gripper_assembler.png
+.. image:: /images/isim_6.0_full_tut_gui_connect_gripper_assembler.png
 	:align: center
 
 With the **Robot Assembler** window open and both Robots available in the current stage, you can select a **Base Robot** and an **Attach Robot**. 
@@ -74,7 +74,7 @@ The Assembler also expects an assembly namespace, which defaults to "Gripper", b
 
 After selections are made, click on the **Begin Assembly** button to begin the assembly process. This will move the "Attach Robot" to the "Attach Point" of the "Base Robot", and let you make any final adjustments to the transform. For convenience, a set of Buttons will be shown to allow you to rotate the "Attach Robot" around the X, Y, and Z axes, by increments of 90 degrees. You can also move it through the viewport gizmos however you choose. If you de-select the "attach robot", the **Select Attach Point Prim** button will re-select it so you can manually move it to the desired position.
 
-.. image:: /images/isim_5.0_full_tut_gui_connect_gripper_assembler_2.png
+.. image:: /images/isim_6.0_full_tut_gui_connect_gripper_assembler_2.png
 	:align: center
 
 

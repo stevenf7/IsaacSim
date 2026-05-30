@@ -424,7 +424,7 @@ In the next section of the tutorial, we will be connecting the UR10e robot with 
 
 
 Expected Parameters for Finger and Knuckle Joints
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------------------
 
 +---------------------+--------------+--------------+-----------+------------+-----------+------------+
 | Joint Name          | Lower Limit  | Upper Limit  | Gearing   | Stiffness  | Damping   | Max Force  |
@@ -443,7 +443,7 @@ Expected Parameters for Finger and Knuckle Joints
 +---------------------+--------------+--------------+-----------+------------+-----------+------------+
 
 Expected Parameters for Mimic Joints
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------
 
 - Reference Joint: ``/robotiq_arg2f_140_model/joints/finger_joint``
 - Reference Joint Axis: ``rotX``
@@ -487,7 +487,7 @@ We will use the Robot Assembler to connect the UR10e robot with the 2F-140 gripp
 #. Save the asset by going to **File** > **Save** or press **Ctrl+S**.
 
 Run the Simulation
-~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------
 
 #. In the Stage panel, select the **ur** prim.
 #. In the Property Editor at the bottom right, find the **Variants** section.

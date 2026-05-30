@@ -28,7 +28,7 @@ segmentation enabled for the final dataset.
 
 ## What's in a dataset
 
-```
+```text
 my_recording/
 ├── config.json                          # scenario_type, robot_type, scene_usd_rel_path
 ├── stage.usd                            # flattened scene — sublayers inlined; references textures/MDL under assets/
@@ -222,6 +222,14 @@ runtime with a log message.
 - [Adding a robot](adding_a_robot.md) — step-by-step guide for adding a new robot type
 - [Sensor rig](sensor_rig.md) — sensor rig architecture, YAML format, and robot integration
 - [Module and Buffer](module.md) — cascade tree pattern, buffer tagging, and how camera data flows from render product to disk
+
+```{toctree}
+:hidden:
+
+adding_a_robot.md
+sensor_rig.md
+module.md
+```
 
 ## API reference
 

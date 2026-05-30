@@ -11,7 +11,7 @@ rigid bodies, and contact sensors with native CUDA acceleration and zero-copy Wa
 The backend registers as a first-class `omni.physics.tensors` plugin, allowing Newton simulations to be
 controlled through the same Python API used by the PhysX backend.
 
-```
+```text
 omni.physics.tensors (api.py)
         │
         ▼  C++ plugin

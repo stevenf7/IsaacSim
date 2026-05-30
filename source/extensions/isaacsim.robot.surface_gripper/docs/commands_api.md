@@ -1,7 +1,7 @@
 # Commands
 Public command API for module **isaacsim.robot.surface_gripper**:
 
-- [CreateSurfaceGripper](#createsurfacegripper)
+- [CreateSurfaceGripper](#createsurfacegripper-deprecated)
 
 ## CreateSurfaceGripper (deprecated)
 

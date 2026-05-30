@@ -8,7 +8,7 @@ The isaacsim.sensors.rtx extension provides APIs for creating and managing RTX-b
 
 ## Migration
 
-New code should use the `isaacsim.sensors.experimental.rtx` extension. The mappings below cover the most common call sites; see {ref}`isaac_sim_sensors_multitick_rendering` for the full migration guide, including the multi-tick rendering changes that ship with Isaac Sim 6.0.
+New code should use the `isaacsim.sensors.experimental.rtx` extension. The mappings below cover the most common call sites; see the **Multitick Rendering** section of the Isaac Sim sensors documentation for the full migration guide, including the multi-tick rendering changes that ship with Isaac Sim 6.0.
 
 | 5.x (this extension)                                  | 6.0 replacement (`isaacsim.sensors.experimental.rtx`)                                                                  |
 | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -20,7 +20,7 @@ New code should use the `isaacsim.sensors.experimental.rtx` extension. The mappi
 | `omni:sensor:WpmDmat:auxOutputType` USD attribute (Radar) | `_replicator:rendervar:GenericModelOutput:channels = ["BASIC"]` on the `OmniRadar` prim, or `aux_output_level="BASIC"` on the constructor |
 | `IsaacExtractRTXSensorPointCloudNoAccumulator` annotator | `IsaacCreateRTXLidarScanBuffer` with `omni:sensor:Core:accumulateOutputs = false` on the prim, or the `IsaacExtractRTXSensorPointCloud` annotator from `isaacsim.sensors.rtx.nodes` |
 | `RtxLidarDebugDrawPointCloudBuffer` writer            | Same writer; still registered alongside the experimental extension                                                     |
-| Implicit "render every frame" sensor scheduling       | Set `omni:sensor:tickRate` on the prim. For `OmniLidar` it must equal `omni:sensor:Core:scanRateBaseHz`, otherwise the lidar emits partial scans every frame (see {ref}`isaac_sim_sensors_multitick_lidar_tickrate_must_match_scanrate`) |
+| Implicit "render every frame" sensor scheduling       | Set `omni:sensor:tickRate` on the prim. For `OmniLidar` it must equal `omni:sensor:Core:scanRateBaseHz`, otherwise the lidar emits partial scans every frame (see the **Multitick Rendering** documentation, which notes that the `OmniLidar` tick rate must match its scan rate) |
 
 The deprecated extension still ships and continues to publish RTX sensor data to ROS 2/UCX/HSB pipelines for backward compatibility, but new features are added only to `isaacsim.sensors.experimental.rtx`.
 

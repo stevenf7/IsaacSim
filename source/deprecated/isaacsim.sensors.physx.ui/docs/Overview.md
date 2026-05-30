@@ -6,7 +6,7 @@ This extension is deprecated in favor of `isaacsim.sensors.physics.ui`.
 
 The isaacsim.sensors.physx.ui extension provides UI components for Isaac Sim PhysX-raycast-based sensor simulation, specifically menu options for range sensor operations. This extension acts as a UI layer on top of the PhysX sensor system, enabling users to interact with range sensors through menu interfaces.
 
-```{image} ../../../../source/extensions/isaacsim.sensors.physx.ui/data/preview.png
+```{image} ../data/preview.png
 ---
 align: center
 ---

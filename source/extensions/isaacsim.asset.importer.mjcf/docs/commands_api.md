@@ -1,8 +1,8 @@
 # Commands
 Public command API for module **isaacsim.asset.importer.mjcf**:
 
-- [MJCFCreateAsset](#mjcfcreateasset)
-- [MJCFCreateImportConfig](#mjcfcreateimportconfig)
+- [MJCFCreateAsset](#mjcfcreateasset-deprecated)
+- [MJCFCreateImportConfig](#mjcfcreateimportconfig-deprecated)
 
 
 ## MJCFCreateAsset (deprecated)

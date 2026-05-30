@@ -145,7 +145,7 @@ Once gains are satisfactory across all three test modes, run the **Stress Test**
 
 
 Position Drive
---------------
+^^^^^^^^^^^^^^
 
 For each joint of the robot:
 
@@ -158,13 +158,13 @@ For each joint of the robot:
 
 
 Velocity Limit and Industrial Robots
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+++++++++++++++++++++++++++++++++++++
 
 Many robots, including the majority of industrial robots, come with pre-tuned PD control for their joint drives and can be set up to have a perfect position control response, always driving at the given joint velocity limit. To reproduce this behavior, increase the joint stiffness from the previous tuning heuristic by a factor of two and define the maximum joint velocity in **Joint** > **Advanced** > **Maximum Joint Velocity** in the **Properties** panel. Run the simulation to verify the joint velocity is meeting the specification and fine-tune the stiffness until the joint max velocity limit is within tolerance. If stiffness is too high, the max velocity may still be violated, so it is not advised to add infinite stiffness to the joint --- instead operate with stiffness similar to the values calibrated without a max joint velocity.
 
 
 Velocity Drive
---------------
+^^^^^^^^^^^^^^
 
 For each joint of the robot:
 
@@ -175,7 +175,7 @@ For each joint of the robot:
 
 
 Saving Gains to the Asset
----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Following the |isaac-sim| :ref:`Asset Structure <isaac_sim_app_reference_asset_structure>`, joint gains are a physics configuration and ideally should be saved on the physics layer. To facilitate this, the **Save Gains to Physics Layer** button on the UI searches for the asset's physics layer where the joint is defined and applies the updated gains to that layer.
 

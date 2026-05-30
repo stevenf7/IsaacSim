@@ -216,15 +216,15 @@ struct IArticulationDataView : public IXformDataView
  */
 struct ContactPointData
 {
-    float positionX{ 0.0f };
-    float positionY{ 0.0f };
-    float positionZ{ 0.0f };
-    float normalX{ 0.0f };
-    float normalY{ 0.0f };
-    float normalZ{ 0.0f };
-    float impulseX{ 0.0f };
-    float impulseY{ 0.0f };
-    float impulseZ{ 0.0f };
+    float positionX{ 0.0f }; ///< X component of the contact point position, in meters.
+    float positionY{ 0.0f }; ///< Y component of the contact point position, in meters.
+    float positionZ{ 0.0f }; ///< Z component of the contact point position, in meters.
+    float normalX{ 0.0f }; ///< X component of the contact normal direction.
+    float normalY{ 0.0f }; ///< Y component of the contact normal direction.
+    float normalZ{ 0.0f }; ///< Z component of the contact normal direction.
+    float impulseX{ 0.0f }; ///< X component of the contact impulse, in newton-seconds.
+    float impulseY{ 0.0f }; ///< Y component of the contact impulse, in newton-seconds.
+    float impulseZ{ 0.0f }; ///< Z component of the contact impulse, in newton-seconds.
 };
 
 /// Contact event type constants matching PhysX ContactEventType::Enum values.
@@ -242,11 +242,11 @@ static constexpr uint32_t kContactEventPersist = 2;
  */
 struct ContactEventData
 {
-    uint64_t body0{ 0 };
-    uint64_t body1{ 0 };
+    uint64_t body0{ 0 }; ///< SdfPath token of the first body in the contact pair.
+    uint64_t body1{ 0 }; ///< SdfPath token of the second body in the contact pair.
     uint32_t eventType{ 0 }; ///< kContactEventFound / kContactEventLost / kContactEventPersist
     const ContactPointData* contacts{ nullptr }; ///< points to contiguous array, owned by reader
-    uint32_t numContacts{ 0 };
+    uint32_t numContacts{ 0 }; ///< Number of contact points referenced by contacts.
 };
 
 /**
@@ -257,10 +257,10 @@ struct ContactEventData
  */
 struct ContactReportData
 {
-    const ContactEventData* events{ nullptr };
-    uint32_t numEvents{ 0 };
-    float simTime{ 0.0f };
-    float dt{ 0.0f };
+    const ContactEventData* events{ nullptr }; ///< Pointer to contiguous array of contact events, owned by the reader.
+    uint32_t numEvents{ 0 }; ///< Number of contact events referenced by events.
+    float simTime{ 0.0f }; ///< Simulation time at which the report was generated, in seconds.
+    float dt{ 0.0f }; ///< Simulation time step covered by the report, in seconds.
 };
 
 /**
