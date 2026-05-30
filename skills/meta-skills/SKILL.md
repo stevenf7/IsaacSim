@@ -207,7 +207,7 @@ Skills run on different machines. Every absolute path is a portability bug.
 | Replace | With |
 |---|---|
 | `/home/user/IsaacSim` | `$ISAAC_SIM_DIR` |
-| `/home/jacob/Projects/.../assets/...` | `$SIMREADY_ASSETS/...` |
+| `/home/user/Projects/.../assets/...` | `$SIMREADY_ASSETS/...` |
 | `localhost:8095` | `$KB_SERVICE_URL` (default `http://localhost:8095`) |
 | `192.168.0.109:8092` | `$IMAGE_SERVER_URL` (placeholder OK; never bake the IP) |
 | `C:\_Data\exts\content-pipeline\cip.bat` | `$CIP_ROOT/exts/content-pipeline/cip.bat` (Windows skills declare platform in a preamble) |
