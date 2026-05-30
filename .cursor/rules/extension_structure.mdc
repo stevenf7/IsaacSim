@@ -2,7 +2,9 @@
 description: Required Isaac Sim extension layout and naming conventions
 globs:
   - source/extensions/**
+  # AUTOREMOVE: BEGIN
   - source/internal_extensions/**
+  # AUTOREMOVE: END
 alwaysApply: false
 ---
 # Isaac Sim Extension Structure Guidelines

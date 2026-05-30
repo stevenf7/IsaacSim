@@ -884,6 +884,8 @@ files = [
     "tools/docker/prep_docker_build.sh",
     "package.toml",
     "source/apps/isaacsim.exp.extscache.kit",
+    ".gitignore",
+    ".cursor/rules/extension_structure.mdc",
 ]
 begin_marker = "# AUTOREMOVE: BEGIN"
 end_marker = "# AUTOREMOVE: END"
