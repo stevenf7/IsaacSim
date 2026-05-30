@@ -235,6 +235,13 @@ validation
 * ``benchmark_robots_nova_carter_ros2_validation.py``
 * ``benchmark_sdg_validation.py``
 
+workflows
+~~~~~~~~~
+
+* ``benchmark_workflow_manipulation_vision_cumotion.py``
+* ``benchmark_workflow_sdg_cosmos_writer.py``
+* ``benchmark_workflow_sdg_physics_randomization.py``
+
 standalone_examples/conveyor_belt
 ---------------------------------
 

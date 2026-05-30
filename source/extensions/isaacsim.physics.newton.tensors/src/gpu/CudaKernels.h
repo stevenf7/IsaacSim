@@ -462,6 +462,8 @@ bool launchCountContactsPerPair(const int* contactCount,
 /// @param outCounts Device output count per pair, shape ``[numSensors * filterCount]``.
 /// @param startIndices Device exclusive prefix-sum of counts.
 /// @param rigidContactMax Capacity of the contact arrays.
+/// @param pointsInWorldSpace If ``true``, output points are expressed in world space; otherwise in the local frame of
+/// the corresponding body.
 /// @param stream CUDA stream.
 /// @return ``true`` if the launch succeeded.
 bool launchContactData(const int* contactCount,
@@ -547,6 +549,8 @@ bool launchCountRawContactsPerSensor(const int* contactCount,
 /// @param startIndices Device exclusive prefix-sum of per-sensor counts.
 /// @param otherActorIds Device output, other-side body indices per contact.
 /// @param rigidContactMax Capacity of the contact arrays.
+/// @param pointsInWorldSpace If ``true``, output points are expressed in world space; otherwise in the local frame of
+/// the corresponding body.
 /// @param stream CUDA stream.
 /// @return ``true`` if the launch succeeded.
 bool launchRawContactData(const int* contactCount,

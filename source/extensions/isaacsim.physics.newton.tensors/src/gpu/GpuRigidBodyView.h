@@ -33,25 +33,116 @@ namespace tensors
 class GpuRigidBodyView : public BaseRigidBodyView
 {
 public:
+    /**
+     * @brief Constructs a GpuRigidBodyView.
+     * @param[in] newtonStage Newton stage object backing the view.
+     * @param[in] bodyPaths USD prim paths of the rigid bodies.
+     * @param[in] deviceOrdinal Device ordinal.
+     */
     GpuRigidBodyView(py::object newtonStage, const std::vector<pxr::SdfPath>& bodyPaths, int deviceOrdinal);
     ~GpuRigidBodyView() override;
 
+    /**
+     * @brief Gets the transforms.
+     * @param[out] dstTensor Destination tensor that receives the requested values.
+     * @return True on success; false otherwise.
+     */
     bool getTransforms(const TensorDesc* dstTensor) const override;
+    /**
+     * @brief Gets the velocities.
+     * @param[out] dstTensor Destination tensor that receives the requested values.
+     * @return True on success; false otherwise.
+     */
     bool getVelocities(const TensorDesc* dstTensor) const override;
+    /**
+     * @brief Gets the accelerations.
+     * @param[out] dstTensor Destination tensor that receives the requested values.
+     * @return True on success; false otherwise.
+     */
     bool getAccelerations(const TensorDesc* dstTensor) const override;
+    /**
+     * @brief Gets the masses.
+     * @param[out] dstTensor Destination tensor that receives the requested values.
+     * @return True on success; false otherwise.
+     */
     bool getMasses(const TensorDesc* dstTensor) const override;
+    /**
+     * @brief Gets the inverse masses.
+     * @param[out] dstTensor Destination tensor that receives the requested values.
+     * @return True on success; false otherwise.
+     */
     bool getInvMasses(const TensorDesc* dstTensor) const override;
+    /**
+     * @brief Gets the COMs.
+     * @param[out] dstTensor Destination tensor that receives the requested values.
+     * @return True on success; false otherwise.
+     */
     bool getCOMs(const TensorDesc* dstTensor) const override;
+    /**
+     * @brief Gets the inertias.
+     * @param[out] dstTensor Destination tensor that receives the requested values.
+     * @return True on success; false otherwise.
+     */
     bool getInertias(const TensorDesc* dstTensor) const override;
+    /**
+     * @brief Gets the inverse inertias.
+     * @param[out] dstTensor Destination tensor that receives the requested values.
+     * @return True on success; false otherwise.
+     */
     bool getInvInertias(const TensorDesc* dstTensor) const override;
 
+    /**
+     * @brief Sets the transforms.
+     * @param[in] srcTensor Source tensor providing the values to write.
+     * @param[in] indexTensor Tensor of view indices selecting which elements to write.
+     * @return True on success; false otherwise.
+     */
     bool setTransforms(const TensorDesc* srcTensor, const TensorDesc* indexTensor) override;
+    /**
+     * @brief Sets the velocities.
+     * @param[in] srcTensor Source tensor providing the values to write.
+     * @param[in] indexTensor Tensor of view indices selecting which elements to write.
+     * @return True on success; false otherwise.
+     */
     bool setVelocities(const TensorDesc* srcTensor, const TensorDesc* indexTensor) override;
+    /**
+     * @brief Sets the masses.
+     * @param[in] srcTensor Source tensor providing the values to write.
+     * @param[in] indexTensor Tensor of view indices selecting which elements to write.
+     * @return True on success; false otherwise.
+     */
     bool setMasses(const TensorDesc* srcTensor, const TensorDesc* indexTensor) override;
+    /**
+     * @brief Sets the COMs.
+     * @param[in] srcTensor Source tensor providing the values to write.
+     * @param[in] indexTensor Tensor of view indices selecting which elements to write.
+     * @return True on success; false otherwise.
+     */
     bool setCOMs(const TensorDesc* srcTensor, const TensorDesc* indexTensor) override;
+    /**
+     * @brief Sets the inertias.
+     * @param[in] srcTensor Source tensor providing the values to write.
+     * @param[in] indexTensor Tensor of view indices selecting which elements to write.
+     * @return True on success; false otherwise.
+     */
     bool setInertias(const TensorDesc* srcTensor, const TensorDesc* indexTensor) override;
 
+    /**
+     * @brief Applies the forces.
+     * @param[in] srcTensor Source tensor providing the values to write.
+     * @param[in] indexTensor Tensor of view indices selecting which elements to write.
+     * @return True on success; false otherwise.
+     */
     bool applyForces(const TensorDesc* srcTensor, const TensorDesc* indexTensor) override;
+    /**
+     * @brief Applies the forces and torques at position.
+     * @param[in] srcForceTensor Source tensor of forces to apply.
+     * @param[in] srcTorqueTensor Source tensor of torques to apply.
+     * @param[in] srcPositionTensor Source tensor of positions at which the forces are applied.
+     * @param[in] indexTensor Tensor of view indices selecting which elements to write.
+     * @param[in] isGlobal If true, the inputs are expressed in the world frame; otherwise in the local frame.
+     * @return True on success; false otherwise.
+     */
     bool applyForcesAndTorquesAtPosition(const TensorDesc* srcForceTensor,
                                          const TensorDesc* srcTorqueTensor,
                                          const TensorDesc* srcPositionTensor,

@@ -34,16 +34,46 @@ using omni::physics::tensors::IRigidContactView;
 class GpuSimulationView : public BaseSimulationView
 {
 public:
+    /**
+     * @brief Constructs a GpuSimulationView.
+     * @param[in] init Initialization parameters for the simulation view.
+     */
     explicit GpuSimulationView(SimViewInit&& init);
     ~GpuSimulationView() override = default;
 
+    /**
+     * @brief Returns the device ordinal that the view operates on.
+     * @return The requested value.
+     */
     int getDeviceOrdinal() const override;
+    /**
+     * @brief Returns the device ordinal used for parameter tensors.
+     * @return The requested value.
+     */
     int getParamDeviceOrdinal() const override;
+    /**
+     * @brief Returns the CUDA context associated with the view.
+     * @return Pointer to the requested object, or nullptr if unavailable.
+     */
     void* getCudaContext() const override;
 
 protected:
     IArticulationView* _makeArticulationView(py::object newtonStage, const std::vector<pxr::SdfPath>& paths) override;
+    /**
+     * @brief Creates the rigid body view.
+     * @param[in] newtonStage Newton stage object backing the view.
+     * @param[in] paths USD prim paths backing the view.
+     * @return Pointer to the newly created view, or nullptr on failure.
+     */
     IRigidBodyView* _makeRigidBodyView(py::object newtonStage, const std::vector<pxr::SdfPath>& paths) override;
+    /**
+     * @brief Creates the rigid contact view.
+     * @param[in] newtonStage Newton stage object backing the view.
+     * @param[in] sensorPaths USD prim paths of the contact sensors.
+     * @param[in] filterPaths Filter paths.
+     * @param[in] maxContactDataCount Maximum number of contact data entries to report.
+     * @return Pointer to the newly created view, or nullptr on failure.
+     */
     IRigidContactView* _makeRigidContactView(py::object newtonStage,
                                              const std::vector<std::string>& sensorPaths,
                                              const std::vector<std::vector<std::string>>& filterPaths,

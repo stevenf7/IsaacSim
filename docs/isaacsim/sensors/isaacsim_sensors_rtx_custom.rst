@@ -71,8 +71,3 @@ After creating a custom sensor configuration, you can validate it by:
 2. Visualizing the sensor output using the :ref:`Debug Draw Extension <isaac_debug_draw>` or the techniques described in :ref:`isaacsim_sensors_rtx_lidar_visualization` and :ref:`isaacsim_sensors_rtx_radar_visualization`.
 3. Collecting data using :ref:`RTX Sensor Annotators <rtx_sensor_annotator_descriptions>` to verify the output matches your expectations.
 
-Converting Legacy JSON Configurations
--------------------------------------
-
-|isaac-sim_short| includes a utility tool to automatically convert legacy JSON Lidar configuration files to USD files containing ``OmniLidar`` prims. See :ref:`isaacsim_sensors_rtx_lidar_convert_json_to_omni_lidar` for details.
-

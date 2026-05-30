@@ -422,9 +422,6 @@ euler = r.as_euler('xyz', degrees=True)
 
 ---
 
-
----
-
 ## Worked Examples (impact, vibratory feeder, gyro, cradle, escapement)
 
 See [`examples.md`](examples.md) for details.

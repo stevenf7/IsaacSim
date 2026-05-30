@@ -37,9 +37,14 @@ class _LazyFieldUnset(Enum):
 _UNSET: _LazyFieldUnset = _LazyFieldUnset.UNSET
 
 # Row views that may be absent (``None``), not yet built (``_UNSET``), or materialised.
-_LazyOptionalWpArray: TypeAlias = wp.array | None | _LazyFieldUnset
+# These aliases are quoted (forward references) because ``wp.array`` is a Warp
+# C-extension type whose metaclass does not implement ``__or__``; an unquoted
+# ``wp.array | None`` is a runtime assignment expression (``from __future__ import
+# annotations`` only defers annotations, not assignment values) and would raise
+# ``TypeError`` at import. The string keeps the modern ``|`` syntax for type checkers.
+_LazyOptionalWpArray: TypeAlias = "wp.array | None | _LazyFieldUnset"
 # Index arrays: always ``wp.array`` once built; ``_UNSET`` until first property read.
-_LazyWpIndices: TypeAlias = wp.array | _LazyFieldUnset
+_LazyWpIndices: TypeAlias = "wp.array | _LazyFieldUnset"
 
 
 class JointState:

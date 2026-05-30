@@ -23,7 +23,7 @@ stage = omni.usd.get_context().get_stage()
 gripper_prim = create_surface_gripper(stage, "/World/ee_link")
 ```
 
-```{deprecated}
+```{deprecated} 3.6.0
 The ``CreateSurfaceGripper`` Kit command is deprecated. Use ``create_surface_gripper(stage, prim_path)`` directly instead.
 ```
 

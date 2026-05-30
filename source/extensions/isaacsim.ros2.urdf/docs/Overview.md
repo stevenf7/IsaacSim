@@ -49,7 +49,7 @@ updated_urdf, package_found = replace_package_urls_with_paths(urdf_string)
 
 **{class}`URDFImportFromROS2Node <isaacsim.ros2.urdf.URDFImportFromROS2Node>`** encapsulates the import operation as a Kit command, allowing the robot description import to be triggered programmatically or through UI interactions.
 
-```{deprecated}
+```{deprecated} 2.3.0
 The ``URDFImportFromROS2Node`` Kit command is deprecated. Use ``RobotDefinitionReader`` and ``URDFImporter`` directly instead.
 ```
 

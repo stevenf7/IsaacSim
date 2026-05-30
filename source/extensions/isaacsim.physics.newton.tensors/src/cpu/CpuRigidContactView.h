@@ -32,14 +32,44 @@ namespace tensors
 class CpuRigidContactView : public BaseRigidContactView
 {
 public:
+    /**
+     * @brief Constructs a CpuRigidContactView.
+     * @param[in] newtonStage Newton stage object backing the view.
+     * @param[in] sensorPaths USD prim paths of the contact sensors.
+     * @param[in] filterPaths Filter paths.
+     * @param[in] maxContactDataCount Maximum number of contact data entries to report.
+     */
     CpuRigidContactView(py::object newtonStage,
                         const std::vector<std::string>& sensorPaths,
                         const std::vector<std::vector<std::string>>& filterPaths,
                         uint32_t maxContactDataCount);
     ~CpuRigidContactView() override = default;
 
+    /**
+     * @brief Gets the net contact forces.
+     * @param[out] dstTensor Destination tensor that receives the requested values.
+     * @param[in] dt Time step, in seconds.
+     * @return True on success; false otherwise.
+     */
     bool getNetContactForces(const TensorDesc* dstTensor, float dt) const override;
+    /**
+     * @brief Gets the contact force matrix.
+     * @param[out] dstTensor Destination tensor that receives the requested values.
+     * @param[in] dt Time step, in seconds.
+     * @return True on success; false otherwise.
+     */
     bool getContactForceMatrix(const TensorDesc* dstTensor, float dt) const override;
+    /**
+     * @brief Gets the contact data.
+     * @param[out] contactForceTensor Destination tensor that receives the contact force values.
+     * @param[out] contactPointTensor Destination tensor that receives the contact point values.
+     * @param[out] contactNormalTensor Destination tensor that receives the contact normal values.
+     * @param[out] contactSeparationTensor Destination tensor that receives the contact separation values.
+     * @param[out] contactCountTensor Destination tensor that receives the contact count values.
+     * @param[out] contactStartIndicesTensor Destination tensor that receives the contact start indices values.
+     * @param[in] dt Time step, in seconds.
+     * @return True on success; false otherwise.
+     */
     bool getContactData(const TensorDesc* contactForceTensor,
                         const TensorDesc* contactPointTensor,
                         const TensorDesc* contactNormalTensor,
@@ -47,6 +77,18 @@ public:
                         const TensorDesc* contactCountTensor,
                         const TensorDesc* contactStartIndicesTensor,
                         float dt) const override;
+    /**
+     * @brief Gets the raw contact data.
+     * @param[out] contactForceTensor Destination tensor that receives the contact force values.
+     * @param[out] contactPointTensor Destination tensor that receives the contact point values.
+     * @param[out] contactNormalTensor Destination tensor that receives the contact normal values.
+     * @param[out] contactSeparationTensor Destination tensor that receives the contact separation values.
+     * @param[out] contactCountTensor Destination tensor that receives the contact count values.
+     * @param[out] contactStartIndicesTensor Destination tensor that receives the contact start indices values.
+     * @param[in] otherActorIdsTensor Tensor of other-actor identifiers to resolve.
+     * @param[in] dt Time step, in seconds.
+     * @return True on success; false otherwise.
+     */
     bool getRawContactData(const TensorDesc* contactForceTensor,
                            const TensorDesc* contactPointTensor,
                            const TensorDesc* contactNormalTensor,

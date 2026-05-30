@@ -83,8 +83,7 @@ class StructuredLightCamera(RtxCamera):
             cam = StructuredLightCamera(...)
             sensor = CameraSensor(cam, resolution=(720, 1280), annotators=["rgb"])
 
-    Timestamps
-    ----------
+    **Timestamps**
 
     ``projector_timestamps`` is a list of ``(numerator, denominator)`` rational
     tuples, one per pattern. Each tuple represents the simulation time (in seconds)
@@ -101,8 +100,7 @@ class StructuredLightCamera(RtxCamera):
     :meth:`set_projector_timestamps` preserves an explicitly-supplied period and
     re-infers an implicit one.
 
-    Warnings
-    --------
+    **Warnings**
 
     - If the observed simulation ``dt`` exceeds the minimum projector timestamp
       interval (patterns would be impossible to resolve), a warning is logged

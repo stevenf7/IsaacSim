@@ -6,12 +6,12 @@
    distribution of this software and related documentation without an express
    license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-.. _isaac_assets_robots:
-
 .. |validated| image:: /images/usd_assets_robots/isim_6.0_base_ref_gui_usd_assets_robots_validated_icon.png
    :alt: Validated
    :height: 1em
    :class: no-scaled-link
+
+.. _isaac_assets_robots:
 
 ================================
 Robot Assets

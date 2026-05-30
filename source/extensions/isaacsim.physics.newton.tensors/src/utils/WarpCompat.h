@@ -43,18 +43,28 @@ const int ARRAY_MAX_DIMS = 4;
 /// ``wp.array`` struct can be ``reinterpret_cast``'d directly.
 struct shape_t
 {
-    int dims[ARRAY_MAX_DIMS];
+    int dims[ARRAY_MAX_DIMS]; ///< Per-dimension element counts; trailing unused slots are zero.
 
     WP_CUDA_CALLABLE shape_t() : dims()
     {
     }
 
+    /**
+     * @brief Returns the element count for the given dimension.
+     * @param[in] i Zero-based dimension index, must be less than ARRAY_MAX_DIMS.
+     * @return The element count of dimension i.
+     */
     WP_CUDA_CALLABLE int operator[](int i) const
     {
         assert(i < ARRAY_MAX_DIMS);
         return dims[i];
     }
 
+    /**
+     * @brief Returns a mutable reference to the element count for the given dimension.
+     * @param[in] i Zero-based dimension index, must be less than ARRAY_MAX_DIMS.
+     * @return Reference to the element count of dimension i.
+     */
     WP_CUDA_CALLABLE int& operator[](int i)
     {
         assert(i < ARRAY_MAX_DIMS);
@@ -74,6 +84,12 @@ struct array_t
     {
     }
 
+    /**
+     * @brief Constructs a one-dimensional array view over an existing buffer.
+     * @param[in] data Pointer to the first element of the buffer.
+     * @param[in] size Number of elements in the buffer.
+     * @param[in] grad Optional pointer to the gradient buffer, or nullptr if none.
+     */
     WP_CUDA_CALLABLE array_t(T* data, int size, T* grad = nullptr) : data(data), grad(grad), ndim(1)
     {
         shape.dims[0] = size;
@@ -86,17 +102,25 @@ struct array_t
         strides[3] = 0;
     }
 
+    /**
+     * @brief Returns whether the array has no backing data.
+     * @return True if the data pointer is null; false otherwise.
+     */
     WP_CUDA_CALLABLE bool empty() const
     {
         return !data;
     }
 
-    T* data;
-    T* grad;
-    shape_t shape;
-    int strides[ARRAY_MAX_DIMS];
-    int ndim;
+    T* data; ///< Pointer to the first element of the array data.
+    T* grad; ///< Pointer to the gradient buffer, or null when the array has no gradient.
+    shape_t shape; ///< Per-dimension element counts of the array.
+    int strides[ARRAY_MAX_DIMS]; ///< Per-dimension byte strides between consecutive elements.
+    int ndim; ///< Number of valid dimensions in the array.
 
+    /**
+     * @brief Implicitly converts the array view to a pointer to its underlying data.
+     * @return Pointer to the first element of the array data.
+     */
     WP_CUDA_CALLABLE operator T*() const
     {
         return data;
@@ -106,16 +130,26 @@ struct array_t
 /// 3-element float vector, binary-compatible with ``wp::vec_t<3, float>``.
 struct vec3
 {
-    float c[3];
+    float c[3]; ///< The three vector components.
 
     WP_CUDA_CALLABLE vec3() : c()
     {
     }
 
+    /**
+     * @brief Returns the vector component at the given index.
+     * @param[in] i Zero-based component index in the range [0, 2].
+     * @return The component value at index i.
+     */
     WP_CUDA_CALLABLE float operator[](int i) const
     {
         return c[i];
     }
+    /**
+     * @brief Returns a mutable reference to the vector component at the given index.
+     * @param[in] i Zero-based component index in the range [0, 2].
+     * @return Reference to the component at index i.
+     */
     WP_CUDA_CALLABLE float& operator[](int i)
     {
         return c[i];
@@ -125,16 +159,26 @@ struct vec3
 /// Quaternion laid out as ``{x, y, z, w}``, binary-compatible with ``wp::quat_t<float>``.
 struct quat
 {
-    float c[4];
+    float c[4]; ///< The quaternion components ordered as {x, y, z, w}.
 
     WP_CUDA_CALLABLE quat() : c()
     {
     }
 
+    /**
+     * @brief Returns the quaternion component at the given index.
+     * @param[in] i Zero-based component index in the range [0, 3] (x, y, z, w).
+     * @return The component value at index i.
+     */
     WP_CUDA_CALLABLE float operator[](int i) const
     {
         return c[i];
     }
+    /**
+     * @brief Returns a mutable reference to the quaternion component at the given index.
+     * @param[in] i Zero-based component index in the range [0, 3] (x, y, z, w).
+     * @return Reference to the component at index i.
+     */
     WP_CUDA_CALLABLE float& operator[](int i)
     {
         return c[i];
@@ -144,7 +188,7 @@ struct quat
 /// 3x3 row-major float matrix, binary-compatible with ``wp::mat_t<3, 3, float>``.
 struct mat33
 {
-    float data[3][3];
+    float data[3][3]; ///< Row-major 3x3 matrix elements.
 
     WP_CUDA_CALLABLE mat33() : data()
     {
@@ -155,8 +199,8 @@ struct mat33
 /// binary-compatible with ``wp::transform_t<float>``.
 struct transform
 {
-    vec3 p;
-    quat q;
+    vec3 p; ///< Translation component of the transform.
+    quat q; ///< Rotation component of the transform, as a quaternion {x, y, z, w}.
 
     WP_CUDA_CALLABLE transform()
     {
@@ -167,8 +211,8 @@ struct transform
 /// binary-compatible with ``wp::vec_t<6, float>`` (``wp::spatial_vector_t<float>``).
 struct spatial_vector
 {
-    float w[3];
-    float v[3];
+    float w[3]; ///< Angular (rotational) part of the spatial vector.
+    float v[3]; ///< Linear (translational) part of the spatial vector.
 
     WP_CUDA_CALLABLE spatial_vector() : w(), v()
     {

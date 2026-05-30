@@ -223,6 +223,7 @@ Extensions
    isaacsim.sensors.physx.examples <source/deprecated/isaacsim.sensors.physx.examples/docs/index>
    isaacsim.sensors.physx.ui <source/deprecated/isaacsim.sensors.physx.ui/docs/index>
    isaacsim.sensors.rtx <source/deprecated/isaacsim.sensors.rtx/docs/index>
+   isaacsim.sensors.rtx.nodes <source/extensions/isaacsim.sensors.rtx.nodes/docs/index>
    isaacsim.sensors.rtx.ui <source/extensions/isaacsim.sensors.rtx.ui/docs/index>
 
 .. toctree::
@@ -274,6 +275,7 @@ Extensions
 
    isaacsim.kit.xr.teleop.bridge <source/internal_extensions/isaacsim.kit.xr.teleop.bridge/docs/index>
    isaacsim.physics.newton <source/extensions/isaacsim.physics.newton/docs/index>
+   isaacsim.physics.newton.tensors <source/extensions/isaacsim.physics.newton.tensors/docs/index>
    isaacsim.physics.newton.ui <source/extensions/isaacsim.physics.newton.ui/docs/index>
    isaacsim.pip.newton <source/extensions/isaacsim.pip.newton/docs/index>
    omni.cuopt.examples <source/internal_extensions/omni.cuopt.examples/docs/index>

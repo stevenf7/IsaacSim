@@ -42,6 +42,8 @@ public:
     /// Initializes Newton via pybind11, detects the simulation device, and returns
     /// a CpuSimulationView (device ordinal -1) or GpuSimulationView (ordinal >= 0).
     ISimulationView* createSimulationView(long stageId = -1) override;
+
+    /// Releases any cached simulation view state so a fresh backend can be created.
     void reset() override;
 };
 

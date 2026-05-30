@@ -569,9 +569,9 @@ For IPC with external applications (topics, services, or other runtimes), use de
    you can study when you outgrow the TCP tutorial. Two stacks are available:
 
       - **ROS 2**: ``isaacsim.ros2.nodes``, ``isaacsim.ros2.bridge``, and related
-      packages.
+        packages.
       - **UCX**: ``isaacsim.ucx.nodes``, ``isaacsim.ucx.core``,
-      ``isaacsim.ucx.bridge``.
+        ``isaacsim.ucx.bridge``.
 
    Each stack shows how a complete bridge is laid out: ``extension.toml``
    dependencies, native plugins, C++ and Python OmniGraph nodes, and transport
