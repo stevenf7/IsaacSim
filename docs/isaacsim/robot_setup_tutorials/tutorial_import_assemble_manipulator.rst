@@ -459,7 +459,7 @@ Much like a real robot can have its tools changed for different tasks, simulated
 
 We will use the Robot Assembler to connect the UR10e robot with the 2F-140 gripper.
 
-#. Open the UR10e USD file created from the last activity (``ur.usd``).
+#. Open the UR10e USD file created from the last activity (``ur.usda``).
 #. Drag and drop the ``robotiq_2f_140.usd`` file we created earlier into the stage.
 #. Open the robot assembler by going to **Tools** > **Robotics** > **Asset Editor** > **Robot Assembler**.
 

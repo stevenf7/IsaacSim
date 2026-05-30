@@ -131,7 +131,7 @@ Let's inspect the robot articulation to verify the joint effort limits are appli
 This asset references the physics layers that you modified, so all the changes you made to the physics layer will be reflected in this asset.
 
 .. Note::
-   You can find the prebuilt asset in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/configure_manipulator/ur10e/ur_set_physx/ur.usd``.
+   You can find the prebuilt asset in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/configure_manipulator/ur10e/ur_set_physx/ur.usda``.
 
 #. Open the **Physics Inspector** through **Tools** > **Physics** > **Physics Inspector**.
 #. Select the UR articulation in the stage, click on the circular arrow icon to refresh the articulation.
