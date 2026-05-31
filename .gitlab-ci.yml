@@ -239,8 +239,19 @@ osec:sonarqube:
       SONAR_EXCLUSIONS:  "**/_build/**,**/_repo/**,**/_compiler/**,\
         \
         **/*.js,**/*.ts,**/*.css,**/*.html,\
+        **/*.png,**/*.jpg,**/*.jpeg,**/*.gif,**/*.webp,**/*.ico,**/*.svg,\
+        **/*.pdf,**/*.ttf,**/*.otf,**/*.woff,**/*.woff2,\
+        **/*.stl,**/*.usd,**/*.usda,**/*.usdc,**/*.obj,**/*.fbx,**/*.dae,**/*.glb,**/*.gltf,\
+        **/*.npy,**/*.exr,**/*.hdr,\
         \
         source/extensions/omni.kit.loop-isaac/plugins/omni.kit.loop/RunLoopRunner.cpp,\
+        templates/**,\
+        docs/isaacsim/images/**,\
+        docs/isaacsim/assets/robot_asset_licenses/**,\
+        docs/isaacsim/common/license_files/**,\
+        source/**/data/**,\
+        source/**/tests/data/**,\
+        source/standalone_examples/benchmarks/validation/golden_data/**,\
         \
         **/tests/**/*.cpp,\
         \
