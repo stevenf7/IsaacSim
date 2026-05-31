@@ -88,11 +88,13 @@ Container Setup
     $ sudo systemctl restart docker
 
     # Verify NVIDIA Container Toolkit
-    $ docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
+    $ docker run --rm --runtime=nvidia --gpus all nvcr.io/nvidia/cuda:12.8.0-base-ubuntu24.04 nvidia-smi
 
 .. note::
 
     * Install the latest version of `NVIDIA Container Toolkit`_ to get security fixes.
+    * The validation step uses the NGC-hosted CUDA base image (``nvcr.io/nvidia/cuda``), which is public and avoids Docker Hub's anonymous pull rate limits (HTTP ``429 Too Many Requests``). The image is multi-arch, so the same tag runs on Linux x86_64 and aarch64.
+    * If a step that pulls from Docker Hub (for example ``docker run hello-world``) fails with ``429 Too Many Requests``, run ``docker login`` first or retry later, since Docker Hub enforces rate limits on anonymous pulls.
 
 
 .. _isaac_sim_setup_remote_headless_container:
@@ -116,7 +118,7 @@ This section describes how to run the |isaac-sim| container in headless mode wit
 
 .. code-block:: console
 
-    $ docker pull nvcr.io/nvidia/isaac-sim:6.0.0-dev2
+    $ docker pull nvcr.io/nvidia/isaac-sim:6.0.0
 
 4. Create the cached volume mounts on host:
 
@@ -147,7 +149,7 @@ This section describes how to run the |isaac-sim| container in headless mode wit
         -v ~/docker/isaac-sim/pkg:/isaac-sim/.local/share/ov/pkg:rw \
         -v ~/.cache/ov/hub:/var/cache/hub:rw \
         -u 1234:1234 \
-        nvcr.io/nvidia/isaac-sim:6.0.0-dev2
+        nvcr.io/nvidia/isaac-sim:6.0.0
 
 .. important::
 
@@ -218,7 +220,7 @@ The following environment variables can be passed to ``docker run`` with ``-e`` 
     .. code-block:: console
 
         $ docker run --entrypoint bash -it --gpus all --rm --network=host \
-            nvcr.io/nvidia/isaac-sim:6.0.0-dev2 ./isaac-sim.compatibility_check.sh --/app/quitAfter=10 --no-window
+            nvcr.io/nvidia/isaac-sim:6.0.0 ./isaac-sim.compatibility_check.sh --/app/quitAfter=10 --no-window
 
     * You should see the text "System checking result: PASSED" if your system is compaitble.
 
@@ -427,7 +429,7 @@ To use a prebuilt NGC image instead of building locally:
 
 .. code-block:: console
 
-    $ ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0-dev2 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
+    $ ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
 
 To stop:
 
@@ -464,7 +466,7 @@ This section describes how to run the |isaac-sim| container with GUI.
 
 .. code-block:: console
 
-    $ docker pull nvcr.io/nvidia/isaac-sim:6.0.0-dev2
+    $ docker pull nvcr.io/nvidia/isaac-sim:6.0.0
 
 4. Create the cached volume mounts on host:
 
@@ -498,7 +500,7 @@ This section describes how to run the |isaac-sim| container with GUI.
         -v ~/docker/isaac-sim/pkg:/isaac-sim/.local/share/ov/pkg:rw \
         -v ~/.cache/ov/hub:/var/cache/hub:rw \
         -u 1234:1234 \
-        nvcr.io/nvidia/isaac-sim:6.0.0-dev2
+        nvcr.io/nvidia/isaac-sim:6.0.0
 
 6. Check if your system is compatible with |isaac-sim_short|:
 

@@ -89,8 +89,8 @@ sudo systemctl restart docker
 sudo nvidia-ctk runtime configure --runtime=docker
 sudo systemctl restart docker
 
-# Verify (optional)
-docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
+# Verify (optional) — uses the public NGC CUDA base image to avoid Docker Hub anonymous pull rate limits (HTTP 429)
+docker run --rm --runtime=nvidia --gpus all nvcr.io/nvidia/cuda:12.8.0-base-ubuntu24.04 nvidia-smi
 ```
 
 On other systems, install these packages using your system's package manager. For full details and alternatives, see [Container Setup](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_container.html#container-setup).
@@ -314,7 +314,7 @@ On first run, Docker Compose will build the `web-viewer` image automatically. Th
 By default the compose file uses the locally built `isaac-sim-docker:latest` image. To use a prebuilt NGC image instead, set `ISAAC_SIM_IMAGE`:
 
 ```bash
-ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0-dev2 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
+ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
 ```
 
 This skips the local Isaac Sim build steps (`prep_docker_build.sh` and `build_docker.sh`).
@@ -335,7 +335,7 @@ Override any variable via the shell or a `.env` file next to `docker-compose.yml
 
 | Variable                 | Default                      | Description                                                              |
 | ------------------------ | ---------------------------- | ------------------------------------------------------------------------ |
-| **ISAAC_SIM_IMAGE**      | `isaac-sim-docker:latest`    | Docker image to run. Set to a prebuilt NGC image (e.g. `nvcr.io/nvidia/isaac-sim:6.0.0-dev2`) to skip local build steps. |
+| **ISAAC_SIM_IMAGE**      | `isaac-sim-docker:latest`    | Docker image to run. Set to a prebuilt NGC image (e.g. `nvcr.io/nvidia/isaac-sim:6.0.0`) to skip local build steps. |
 | **ISAACSIM_HOST**        | `127.0.0.1`                  | Host IP for WebRTC streaming (used by both services). See [Cloud Deployment](#cloud-deployment-aws-gcp-azure) for cloud VMs. |
 | **ISAACSIM_SIGNAL_PORT** | `49100`                      | WebRTC signaling port (TCP)                                              |
 | **ISAACSIM_STREAM_PORT** | `47998`                      | WebRTC media port (UDP)                                                  |
