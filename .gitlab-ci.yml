@@ -1963,13 +1963,6 @@ publish-container-x86_64:
     before_script:
       - docker version
       - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005
-      - |
-        if [ "${CI_COMMIT_REF_PROTECTED:-false}" = "true" ]; then
-            docker login -u \$oauthtoken -p "$NGC_TOKEN" nvcr.io
-            docker login nvcr.io
-        else
-            echo "Skipping NGC login for unprotected ref ${CI_COMMIT_REF_NAME:-unknown}"
-        fi
     script:
       - source ./tools/ci/gitlab/section_marker.sh
       - section_start "unzipping_packages" "Unzipping packages"
@@ -1985,6 +1978,12 @@ publish-container-x86_64:
       - ./tools/docker/build_docker.sh --x86_64 --tag gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim-cicd:pipeline-${CI_PIPELINE_ID}-x86_64 --push
       - section_end "build_docker"
       - section_start "tag_and_push_container" "Tagging and pushing container"
+      - |
+        if [ "${CI_COMMIT_REF_PROTECTED:-false}" = "true" ]; then
+            printf '%s' "$NGC_TOKEN" | docker login -u '$oauthtoken' --password-stdin nvcr.io
+        else
+            echo "Skipping NGC login for unprotected ref ${CI_COMMIT_REF_NAME:-unknown}"
+        fi
       - PLATFORM_TAG=x86_64 ./tools/docker/tag_and_push_container.sh
       - section_end "tag_and_push_container"
     needs:
@@ -2004,19 +2003,18 @@ publish-container-aarch64:
     before_script:
       - docker version
       - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005
-      - |
-        if [ "${CI_COMMIT_REF_PROTECTED:-false}" = "true" ]; then
-            docker login -u \$oauthtoken -p "$NGC_TOKEN" nvcr.io
-            docker login nvcr.io
-        else
-            echo "Skipping NGC login for unprotected ref ${CI_COMMIT_REF_NAME:-unknown}"
-        fi
     script:
       - 7z x -y -o_build/linux-aarch64/release _build/packages/isaac-sim-standalone*.7z
       - rm -r .vscode
       - mv _build/linux-aarch64/release/.vscode .
       - ./tools/docker/prep_docker_build.sh --aarch64
       - ./tools/docker/build_docker.sh --aarch64 --tag gitlab-master.nvidia.com:5005/omniverse/isaac/omni_isaac_sim/isaac-sim-cicd:pipeline-${CI_PIPELINE_ID}-aarch64 --push
+      - |
+        if [ "${CI_COMMIT_REF_PROTECTED:-false}" = "true" ]; then
+            printf '%s' "$NGC_TOKEN" | docker login -u '$oauthtoken' --password-stdin nvcr.io
+        else
+            echo "Skipping NGC login for unprotected ref ${CI_COMMIT_REF_NAME:-unknown}"
+        fi
       - PLATFORM_TAG=aarch64 ./tools/docker/tag_and_push_container.sh
     needs:
       - job: build-linux-aarch64-release
@@ -2034,8 +2032,7 @@ publish-container-multi-arch:
       - docker login -u sabdulajees -p ${gitlab_registry_push} gitlab-master.nvidia.com:5005
       - |
         if [ "${CI_COMMIT_REF_PROTECTED:-false}" = "true" ]; then
-            docker login -u \$oauthtoken -p "$NGC_TOKEN" nvcr.io
-            docker login nvcr.io
+            printf '%s' "$NGC_TOKEN" | docker login -u '$oauthtoken' --password-stdin nvcr.io
         else
             echo "Skipping NGC login for unprotected ref ${CI_COMMIT_REF_NAME:-unknown}"
         fi

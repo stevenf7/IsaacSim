@@ -89,6 +89,7 @@ jobs:
         ./build.sh -r
 
         echo "Starting package at $(date)"
+        mkdir -p _build/docs/isaac-sim/latest/py
         ./repo.sh package -c release -m isaac-sim-standalone --temp-dir /mnt/data/cache/package_temp/${{ github.run_id }}
 
 
@@ -98,8 +99,19 @@ jobs:
 
     - name: List packaged artifacts
       run: |
+        set -euo pipefail
         echo "=== Packages created ==="
-        ls -lah _build/packages/ || echo "No packages directory found"
+        ls -lah _build/packages/
+
+    - name: Generate package checksums
+      run: |
+        set -euo pipefail
+        cd _build/packages
+        package_count="$(find . -maxdepth 1 -type f -name '*.7z' | wc -l)"
+        test "${package_count}" -gt 0
+        find . -maxdepth 1 -type f \( -name '*.7z' -o -name '*latest.txt' \) -print0 | sort -z | xargs -0 -r sha256sum > SHA256SUMS
+        test -s SHA256SUMS
+        cat SHA256SUMS
 
     - name: Upload packaged artifacts
       uses: actions/upload-artifact@v4
@@ -107,6 +119,8 @@ jobs:
         name: isaac-sim-packages
         path: |
           _build/packages/
+        if-no-files-found: error
+        compression-level: 0
         retention-days: 7
       if: success()
 
@@ -157,6 +171,14 @@ jobs:
         name: isaac-sim-packages
         path: _build/packages/
 
+    - name: Verify downloaded artifacts
+      run: |
+        set -euo pipefail
+        echo "=== Downloaded packages ==="
+        ls -lah _build/packages/
+        cd _build/packages
+        test -f SHA256SUMS
+        sha256sum -c SHA256SUMS
 
     - name: Run startup tests
       run: |
@@ -180,4 +202,3 @@ jobs:
           _build/packages/*/kit/logs/**
         retention-days: 7
       if: always()
-
