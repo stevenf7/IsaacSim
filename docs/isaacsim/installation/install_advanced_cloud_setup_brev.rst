@@ -85,7 +85,7 @@ GPU assignment, networking, and health checks automatically. Retrieve the public
     $ PUBLIC_IP=$(curl -s ifconfig.me)
     $ mkdir -p ~/docker/isaac-sim/{cache/main,cache/computecache,config,data,logs,pkg}
     $ sudo chown -R 1234:1234 ~/docker
-    $ ISAACSIM_HOST=$PUBLIC_IP ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0-dev2 \
+    $ ISAACSIM_HOST=$PUBLIC_IP ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0 \
         docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
 
 Then open ``http://<PUBLIC_IP>:8210`` in a Chromium-based browser.

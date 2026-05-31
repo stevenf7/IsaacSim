@@ -255,13 +255,13 @@ Running Isaac Sim Container
             $ sudo systemctl restart docker
 
             # Verify NVIDIA Container Toolkit
-            $ docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
+            $ docker run --rm --runtime=nvidia --gpus all nvcr.io/nvidia/cuda:12.8.0-base-ubuntu24.04 nvidia-smi
 
         3. Pull the `Isaac Sim Container`_:
 
         .. code-block:: console
 
-            $ docker pull nvcr.io/nvidia/isaac-sim:6.0.0-dev2
+            $ docker pull nvcr.io/nvidia/isaac-sim:6.0.0
 
         4. Create the cached volume mounts on host:
 
@@ -290,7 +290,7 @@ Running Isaac Sim Container
                 -v ~/docker/isaac-sim/data:/isaac-sim/.local/share/ov/data:rw \
                 -v ~/docker/isaac-sim/pkg:/isaac-sim/.local/share/ov/pkg:rw \
                 -u 1234:1234 \
-                nvcr.io/nvidia/isaac-sim:6.0.0-dev2
+                nvcr.io/nvidia/isaac-sim:6.0.0
 
         .. note::
 
@@ -311,7 +311,7 @@ Running Isaac Sim Container
 
         .. code-block:: console
 
-            $ ISAACSIM_HOST=$PUBLIC_IP ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0-dev2 \
+            $ ISAACSIM_HOST=$PUBLIC_IP ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0 \
                 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
 
         Then open ``http://<PUBLIC_IP>:8210`` in a Chromium-based browser. See :ref:`isaac_sim_docker_compose_deployment` or the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_ for full details.
