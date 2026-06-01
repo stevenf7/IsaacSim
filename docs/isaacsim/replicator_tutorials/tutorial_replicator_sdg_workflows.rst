@@ -12,19 +12,29 @@
 SDG Workflows
 =============
 
-This tutorial walks through two complete synthetic data generation (SDG) scripts. Each one authors a USD scene, randomizes it, runs the simulation, and writes annotated images to disk through a ``BasicWriter``. The audience is a developer who is comfortable with rigid-body simulation and USD scene graphs and wants to see the Replicator API used end to end.
+This tutorial walks through two complete synthetic data generation (SDG) scripts. Each script authors a USD scene, randomizes it, runs the simulation, and writes annotated images to disk through a ``BasicWriter``. The two scripts share the same setup code but solve different problems: the first reuses one persistent scene and settles physics between captures, the second rebuilds the scene on a cadence and places assets with collision checks.
 
-If you have not used Replicator before, read :ref:`Getting Started Scripts <isaac_sim_app_tutorial_replicator_getting_started>` first - it introduces the orchestrator step, the capture-on-play flag, ``rt_subframes``, ``wait_for_render``, ``wait_until_complete``, and DLSS quality mode in isolation.
+This tutorial is for developers who are comfortable with rigid-body simulation and USD scene graphs and want to see the Replicator API used end to end. By the end you will recognize the settings every SDG script configures at startup, the capture loop pattern both workflows follow, and the gotchas that produce corrupt or low-quality datasets.
+
+Prerequisites
+-------------
+
+Before starting, make sure you have:
+
+- Read :ref:`Getting Started Scripts <isaac_sim_app_tutorial_replicator_getting_started>`. It introduces the orchestrator step, the capture-on-play flag, ``rt_subframes``, ``wait_for_render``, ``wait_until_complete``, and DLSS quality mode one concept at a time. This tutorial assumes you know what each one does.
+- Familiarity with USD (Universal Scene Description) concepts: prims, scopes, references, and transforms.
+- A working |isaac-sim_short| install you can run as a :ref:`Standalone Application <standalone-application>` or through the :ref:`Script Editor <script-editor>`.
+- Enough disk space for the captured dataset (scales with resolution and frame count).
 
 Setup and Configuration
 -----------------------
 
-This section introduces the Replicator settings and helpers that both example scripts use end to end. Each subsection briefly explains the API and shows how the workflows apply it.
+Both scripts run the same startup sequence before the capture loop. Each setting below shows the API call, why the workflows use it, and the effect of omitting it. The excerpts come from the example scripts shown later.
 
 Writers and Backends
 --------------------
 
-A writer formats annotator output (RGB, depth, segmentation, bounding boxes, and so on) and hands it to a backend that performs the I/O. Both workflows attach the built-in ``BasicWriter`` to a ``DiskBackend`` for RGB and colorized semantic segmentation:
+A *writer* formats annotator output (RGB, depth, segmentation, bounding boxes, and so on) and hands it to a *backend* that performs the I/O. Both workflows attach the built-in ``BasicWriter`` to a ``DiskBackend`` and request RGB and colorized semantic segmentation:
 
 .. code-block:: python
 
@@ -39,18 +49,34 @@ A writer formats annotator output (RGB, depth, segmentation, bounding boxes, and
     )
     writer.attach(rp)
 
-Replicator ships several other built-in writers, for example ``PoseWriter`` (6-DoF object pose data) and ``CosmosWriter`` (multi-modal training data for `NVIDIA Cosmos <https://www.nvidia.com/en-us/ai/cosmos/>`_). To emit any other format, register a :doc:`custom writer <extensions:ext_replicator/custom_writer>`. See :doc:`writer examples <extensions:ext_replicator/writer_examples>` for the full list and :doc:`annotators <extensions:ext_replicator/annotators_details>` for the data sources writers can consume.
+``attach`` connects the writer to one or more render products. After this call, every orchestrator step routes that render product's annotator data through the writer. Each annotator you enable (``rgb``, ``semantic_segmentation``, and so on) adds GPU and I/O cost, so enable only what your dataset needs.
+
+Replicator ships other built-in writers, for example ``PoseWriter`` (6-DoF object pose data) and ``CosmosWriter`` (multi-modal training data for `NVIDIA Cosmos <https://www.nvidia.com/en-us/ai/cosmos/>`_). To emit any other format, register a :doc:`custom writer <extensions:ext_replicator/custom_writer>`. See :doc:`writer examples <extensions:ext_replicator/writer_examples>` for the full list and :doc:`annotators <extensions:ext_replicator/annotators_details>` for the data sources writers can consume.
 
 Capture on Play Flag
 --------------------
 
-By default Replicator captures a frame every time the timeline ticks. Both workflows want the opposite - the script decides exactly when to capture. Disable the default once at startup:
+By default Replicator captures a frame every time the timeline ticks. Both workflows capture data at specific timepoints rather than continuously, so they disable this flag once at startup and trigger each capture explicitly:
 
 .. code-block:: python
 
     rep.orchestrator.set_capture_on_play(False)
 
-After this call the writer only sees frames produced by an explicit ``step()`` (or ``step_async``). This is what lets Workflow 1 advance several physics frames between captures without recording any of them.
+After this call the writer receives only frames produced by an explicit ``step()`` (or ``step_async``). This lets Workflow 1 advance several physics frames between captures without recording any of them.
+
+Orchestrator Step
+-----------------
+
+``rep.orchestrator.step()`` (``step_async()`` in the Script Editor) captures and processes one frame for the attached writers and annotators. Each workflow calls it once per capture. Its parameters are:
+
+.. code-block:: python
+
+    rep.orchestrator.step(rt_subframes=-1, pause_timeline=True, delta_time=None, wait_for_render=True)
+
+- ``rt_subframes`` - number of subframes rendered before the frame is captured, covered in :ref:`RT Subframes <isaac_sim_app_tutorial_replicator_sdg_workflows_rt_subframes>` below.
+- ``pause_timeline`` - pause the timeline after the step. Defaults to ``True``
+- ``delta_time`` - how far the timeline advances during the step. ``None`` (default) advances by the timeline's rate, ``0.0`` does not advance the timeline, and a positive value advances by that amount.
+- ``wait_for_render`` - block until the frame finishes rendering. Defaults to ``True``. Set it to ``False`` to let the next randomization start while the previous frame is still rendering, when exact frame-to-state correspondence is not required.
 
 .. _isaac_sim_app_tutorial_replicator_sdg_workflows_rt_subframes:
 
@@ -80,11 +106,6 @@ DLSS Quality Mode
 
 Available values: ``0`` Performance, ``1`` Balanced, ``2`` Quality, ``3`` Auto.
 
-Wait for Render
----------------
-
-Both workflows pass ``wait_for_render=False`` because they never read stage data (object poses, bounding boxes, etc.) after a step. The call returns as soon as the orchestrator has scheduled the frame, which lets the next randomization start while the previous frame is still being rendered. Set it to ``True`` whenever the annotation or writer data must match the current simulation state at the time the call returns.
-
 Render Product Updates
 ----------------------
 
@@ -100,7 +121,7 @@ The pattern both scripts use is to disable updates immediately after the render 
     # ... scene updates, physics, randomization (no rendering cost) ...
 
     rp.hydra_texture.set_updates_enabled(True)
-    rep.orchestrator.step(rt_subframes=8, wait_for_render=False)
+    rep.orchestrator.step(delta_time=0.0, rt_subframes=RT_SUBFRAMES)
     rp.hydra_texture.set_updates_enabled(False)
 
 The cost difference is most visible in Workflow 1, which advances PhysX many ticks between captures, and in any pipeline with multiple high-resolution cameras.
@@ -139,26 +160,35 @@ Each workflow ships with two entry-point scripts that share scene-authoring code
 Examples
 --------
 
+The following sections present two complete example scripts that apply the settings from the previous section. Each section describes its scene, its capture loop, and its output on its own. Every script is shown in both the Script Editor and Standalone Application forms described above.
+
 .. _isaac_sim_app_tutorial_replicator_sdg_workflows_workflow_01:
 
-Workflow 1: Persistent Scene with Physics-Based Settling
-########################################################
+Workflow 1: Physics-Based Object Settling
+#########################################
 
-This example builds one persistent scene (dome light, pallet, distractors, cardboxes, camera) and uses PhysX between captures so a re-dropped box settles before each frame is written. The render product and writer are created once and reused for every capture.
+This workflow builds one scene (dome light, pallet, distractors, cardboxes, and camera) and keeps it for the whole run. Before each capture it re-drops one box and lets PhysX settle it, so every frame shows a slightly different physical arrangement of the same objects. The render product and writer are created once and reused, which avoids per-capture setup cost when the scene structure does not change.
 
-Per-prim helper functions called on existing prims:
+.. image:: /images/isim_6.0_replicator_tut_external_workflow_1.webp
+    :align: center
+    :alt: Persistent SDG scene where a re-dropped cardbox settles on a pallet between captures
+    :width: 80%
+
+The script defines helper functions that each randomize one part of the existing scene:
 
 - ``randomize_dome_light`` - chooses an HDR texture and intensity for the dome light.
 - ``randomize_distractors`` - samples positions, rotations, scales, and display colors for the distractor prims.
 - ``randomize_pallet`` - picks one of the pre-created materials and binds it to the pallet.
 - ``randomize_camera`` - samples an orbit position around the pallet and points the camera back at it.
-- ``randomize_boxes`` - writes per-box poses just before the timeline plays so PhysX settles the boxes for ``NUM_SIMULATION_FRAMES`` ticks.
+- ``randomize_boxes`` - writes per-box poses just before the timeline plays so PhysX settles the boxes over ``NUM_SIMULATION_FRAMES`` ticks.
 
-Capture loop, repeated ``NUM_CAPTURES`` times:
+The capture loop runs ``NUM_CAPTURES`` times:
 
-#. Run ``randomize_dome_light``, ``randomize_distractors``, and ``randomize_pallet``.
-#. Pick one box at random, give it a fresh pose, advance the timeline ``NUM_SIMULATION_FRAMES`` ticks so PhysX settles the new pose.
-#. Move the camera, enable the render product, call the orchestrator step, disable the render product.
+#. Randomize the lighting, distractors, and pallet material with the helpers above.
+#. Pick one box at random, give it a fresh pose, and advance the timeline ``NUM_SIMULATION_FRAMES`` ticks so PhysX settles the new pose.
+#. Move the camera, enable the render product, call the orchestrator step, then disable the render product again.
+
+Physics runs *between* captures (step 2), and only the orchestrator step (step 3) produces a frame.
 
 The standalone example can also be run directly (on Windows use ``python.bat`` instead of ``python.sh``):
 
@@ -185,21 +215,26 @@ Output directory ``_out_workflow_01``: per captured frame, an ``rgb_*.png``, a c
 
 .. _isaac_sim_app_tutorial_replicator_sdg_workflows_workflow_02:
 
-Workflow 2: Scene Rebuild with Sample Collision Checks
-######################################################
+Workflow 2: Collision-Checked Asset Placement
+#############################################
 
-This example rebuilds the SDG content on a configurable cadence (``CAPTURES_PER_SCENE``): it picks an environment, scatters pallets on the floor with collision checks, builds vertical box stacks on each pallet using sample-time collision checks (no rigid-body simulation), and orbits one camera around each pallet.
+This workflow rebuilds its SDG content on a configurable cadence (``CAPTURES_PER_SCENE``). Each rebuild picks an environment, scatters pallets on the floor, builds vertical box stacks on each pallet, and orbits one camera around each pallet. It places assets with sample-time collision checks rather than rigid-body simulation, so there is no physics settling step.
 
-Persistent setup (created once): a dome light, one camera, one render product, and one ``BasicWriter``. Per-randomization content is built under a unique scope ``/World/SDG/Scene_<n>`` and the previous scope is removed before authoring the new one so Replicator's scatter-mesh cache does not see stale planes.
+.. image:: /images/isim_6.0_replicator_tut_external_workflow_2.webp
+    :align: center
+    :alt: SDG scenes rebuilt across environments with pallets and collision-checked box stacks captured from an orbiting camera
+    :width: 80%
 
-Per scene rebuild:
+The persistent objects (a dome light, one camera, one render product, and one ``BasicWriter``) are created once. The per-rebuild content lives under a unique scope ``/World/SDG/Scene_<n>``. The script removes the previous scope before authoring the next one. If the old scope remains on the stage, Replicator's scatter-mesh cache reuses stale planes and asset placement fails.
+
+Each scene rebuild does the following:
 
 #. Pick an environment URL from ``DEFAULT_ENV_URLS``. If the entry is ``None``, build a large ground plane with a collider instead.
 #. ``create_pallets_on_floor`` - sample a count from ``PALLET_COUNT_RANGE``, scatter that many pallets on a hidden floor plane with ``rep.functional.randomizer.scatter_2d`` and ``check_for_collisions=True``, then snap each pallet so its measured bottom rests at ``z=0``.
-#. ``create_stacks_on_pallet`` for each pallet - sample a stack count, scatter base boxes on a hidden plane fitted to the pallet top with collision checks (retry with one fewer base on collision timeout), then build each stack vertically by referencing the same asset multiple times.
+#. ``create_stacks_on_pallet`` for each pallet - sample a stack count, scatter base boxes on a hidden plane fitted to the pallet top with collision checks (retry with one fewer base if scattering cannot find a collision-free layout), then build each stack vertically by referencing the same box asset at increasing heights.
 #. For each capture in this scene, ``randomize_camera`` orbits the camera around the next pallet and the orchestrator step writes one frame.
 
-The outer loop continues until ``TOTAL_CAPTURES`` frames have been written.
+The outer loop continues until ``TOTAL_CAPTURES`` frames have been written. The hidden scatter planes and the bounding-box queries (``compute_aabb``) place assets on surfaces without running physics.
 
 The standalone example can also be run directly (on Windows use ``python.bat`` instead of ``python.sh``):
 
@@ -231,6 +266,8 @@ See :ref:`Replicator Troubleshooting <isaac_sim_replicator_troubleshooting>` for
 
 - **Ghosting or artifacts in early captures.** Increase ``rt_subframes`` (see :ref:`above <isaac_sim_app_tutorial_replicator_sdg_workflows_rt_subframes>`).
 - **Frames missing from the writer.** ``wait_until_complete`` was not called before exit.
+- **Scattered assets overlap or land in the wrong place after a rebuild (Workflow 2).** The previous scene scope was not removed before authoring the new one, so Replicator's scatter-mesh cache reused stale planes.
+- **Slow runs even though few frames are written.** The render product was left enabled during physics, scene construction, or randomization. Disable it and re-enable only around the orchestrator step.
 
 See Also
 --------
