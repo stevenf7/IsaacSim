@@ -2,7 +2,7 @@
 
 ## [5.2.11] - 2026-05-28
 ### Fixed
-- Conditional use of asset until menagerie assets are tested with Isaac lab 
+- Conditional use of asset until menagerie assets are tested with Isaac lab
 
 ## [5.2.10] - 2026-05-21
 ### Fixed
@@ -13,7 +13,6 @@
 
 ### Changed
 - Extract the snapshot/restore physics-state logic shared by the interactive Quadruped, Go2, and Humanoid examples into `isaacsim.robot.policy.examples.interactive.utils`
-
 
 ## [5.2.9] - 2026-05-21
 ### Fixed
@@ -27,7 +26,7 @@
 
 ## [5.2.7] - 2026-05-20
 ### Fixed
-- Missing _timeline error on policy reset 
+- Missing _timeline error on policy reset
 
 ## [5.2.6] - 2026-05-05
 ### Added

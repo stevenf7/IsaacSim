@@ -2,6 +2,7 @@
 ## [2.3.3] - 2026-05-20
 ### Changed
 - Cleanup code, add docstrings and new tests for edge cases
+
 ### Fixed
 - Async rendering is now disabled after the timeline play callback returns, preventing hangs when play-on-load examples start simulation while async rendering is enabled.
 

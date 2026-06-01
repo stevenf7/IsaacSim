@@ -6,10 +6,10 @@
 
 ### Changed
 - `TeleopManager` subscribes to per-frame updates via Kit Events 2.0 (`omni.kit.app.GLOBAL_EVENT_UPDATE`) instead of deprecated `get_update_event_stream()`.
-  
+
 ## [0.3.4] - 2026-05-15
 ### Added
-- golden teleop episode HDF5 (`tests/data/_episode_recorder/episode_floating_xarm_dex3.hdf5`) as a default example for the teleop replay examples
+- Golden teleop episode HDF5 (`tests/data/_episode_recorder/episode_floating_xarm_dex3.hdf5`) as a default example for the teleop replay examples
 
 ## [0.3.3] - 2026-05-07
 ### Fixed
