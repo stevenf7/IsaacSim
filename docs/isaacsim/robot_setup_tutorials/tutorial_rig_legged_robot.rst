@@ -94,13 +94,13 @@ To save the robot pose:
 
 1. In the upper-left corner of the stage, click **Edit** > **Preferences**.
 2. In the **Preferences** window, click the **Physics** tab in the left sidebar.
-3. Uncheck **Reset Simulation on Stop** and press **Ctrl+S** to save the USD file.
+3. Uncheck **Reset Simulation on Stop**.
 
    .. image:: /images/isim_5.0_full_tut_gui_rigging_humanoid_3.png
        :align: center
        :width: 80%
 
-4. Play the simulation and stop it when the robot reaches the desired initial pose.
+4. Play the simulation and stop it when the robot reaches the desired initial pose. Repeat this step once more to ensure the pose is saved even after reset.
 5. Delete the fixed joint between the robot and the world.
 6. Press **Ctrl+S** to save the USD file.
 7. Check **Reset Simulation on Stop** again.
