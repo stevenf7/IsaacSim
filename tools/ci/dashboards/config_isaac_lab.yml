@@ -64,9 +64,9 @@ slack:
   token_env_var: "DS_CI_SLACK_TOKEN"
 
   channels:
-    "#isaac-lab-ci":                 "C0ASRNWG9QE"
-    "#isaac-lab-ci-mr":              "C0ASTQV5ZGS"
-    "#isaac-lab-ci-kit-integration": "C0ASVCFTSSE"
+    "#isaac-lab-ci-mr-post-merge": "C0ASRNWG9QE"
+    "#isaac-lab-ci-mr-pre-merge":  "C0ASTQV5ZGS"
+    "#isaac-lab-ci":               "C0ASVCFTSSE"
 
   # Channel routing: first matching rule wins; all conditions in a rule are ANDed.
   # Supported condition keys:
@@ -83,28 +83,28 @@ slack:
     # below don't snag kit-integration pipelines.
     - condition:
         ref_pattern: "^kit-integration/"
-      channel: "#isaac-lab-ci-kit-integration"
+      channel: "#isaac-lab-ci"
     - condition:
         ref_pattern: "^develop-kit-tot$"
         variable: "UPSTREAM_PIPELINE_SOURCE=nightly"
-      channel: "#isaac-lab-ci"
+      channel: "#isaac-lab-ci-mr-post-merge"
     - condition:
         variable: "UPSTREAM_PIPELINE_SOURCE=post_merge"
-      channel: "#isaac-lab-ci"
+      channel: "#isaac-lab-ci-mr-post-merge"
     - condition:
         mr_description_checkbox: "Post pipeline reports to slack"
-      channel: "#isaac-lab-ci-mr"
+      channel: "#isaac-lab-ci-mr-pre-merge"
     # Catch-all for omni_isaac_sim's own MR pipelines (not triggered from an
     # upstream Kit pipeline).  Without this rule a regular MR on a non-kit
     # branch with no opt-in checkbox would fall through to the default and
-    # post to #isaac-lab-ci instead of the MR channel.
+    # post to #isaac-lab-ci-mr-post-merge instead of the MR channel.
     - condition:
         pipeline_source: merge_request_event
-      channel: "#isaac-lab-ci-mr"
+      channel: "#isaac-lab-ci-mr-pre-merge"
     - condition:
         pipeline_source: schedule
-      channel: "#isaac-lab-ci"
-    - default: "#isaac-lab-ci"
+      channel: "#isaac-lab-ci-mr-post-merge"
+    - default: "#isaac-lab-ci-mr-post-merge"
 
   heatmap:
     enabled: true
