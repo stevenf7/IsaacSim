@@ -169,6 +169,8 @@ def main(args: argparse.Namespace) -> None:
     os.environ["PIP_EXTRA_INDEX_URL"] = "https://pypi.nvidia.com"
 
     _run_step(["./isaaclab.sh", "-i"], step="IsaacLab installer")
+    
+    _run_step(["./isaaclab.sh", "-p", "-m", "pip", "install", "-e", "source/isaaclab[test]"], step="Install test")
 
     _run_step(["./isaaclab.sh", "-i", "ov[ovrtx]"], step="Install ov[ovrtx]")
 
