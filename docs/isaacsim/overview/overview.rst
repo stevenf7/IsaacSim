@@ -161,8 +161,8 @@ Tutorials
       Set up a ROS 2 bridge and drive a TurtleBot in simulation.
 
    .. grid-item-card:: Synthetic Data with Replicator
-      :img-top: /images/isim_4.5_replicator_tut_external_getting_started_03.jpg
-      :link: isaac_sim_app_tutorial_replicator_getting_started
+      :img-top: /images/isim_6.0_replicator_tut_external_workflow.jpg
+      :link: isaac_sim_app_tutorial_replicator_sdg_workflows
       :link-type: ref
 
       Generate labeled training data from Isaac Sim scenes with Replicator.

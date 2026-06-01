@@ -275,7 +275,7 @@ async def run_workflow_async():
 
         # Enable rendering only for the capture step to avoid extra GPU work.
         rp.hydra_texture.set_updates_enabled(True)
-        await rep.orchestrator.step_async(delta_time=0.0, rt_subframes=RT_SUBFRAMES, pause_timeline=False)
+        await rep.orchestrator.step_async(delta_time=0.0, rt_subframes=RT_SUBFRAMES)
         rp.hydra_texture.set_updates_enabled(False)
 
     # Cleanup.
