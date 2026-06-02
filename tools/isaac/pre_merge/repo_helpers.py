@@ -405,15 +405,48 @@ def _list_remotes() -> list[str]:
     return [r.strip() for r in proc.stdout.strip().splitlines() if r.strip()]
 
 
+def _tracking_branch() -> str | None:
+    """Return the current branch's configured upstream ref, if any.
+
+    Resolves the symbolic ``@{u}`` ref (e.g. ``upstream/develop``) so the
+    branch's own tracking configuration takes priority over remote-name
+    heuristics. This keeps auto-detection accurate even when a stale remote
+    (such as a fork's ``origin``) is far behind the integration branch.
+
+    Returns:
+        The upstream ref name if configured and resolvable, otherwise None.
+    """
+    proc = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    if proc.returncode != 0:
+        return None
+    ref = proc.stdout.strip()
+    if not ref or not _ref_exists(ref):
+        return None
+    return ref
+
+
 def detect_base_branch() -> str | None:
     """Auto-detect the mainline integration branch this feature branch diverged from.
 
-    Search order per remote: develop, main, master.
-    Remote priority: ``main``, ``origin``, then any others alphabetically.
+    Detection order:
+      1. The current branch's configured upstream (``@{u}``), when set. This
+         respects each developer's actual tracking branch (e.g.
+         ``upstream/develop``) rather than guessing from remote names.
+      2. Fallback heuristic per remote: develop, main, master.
+         Remote priority: ``main``, ``origin``, then any others alphabetically.
 
     Returns:
         Base branch ref if found, otherwise None.
     """
+    tracking = _tracking_branch()
+    if tracking:
+        return tracking
+
     remotes = _list_remotes()
     if not remotes:
         for name in ["develop", "main", "master"]:

@@ -4,7 +4,6 @@
 ### Added
 - Add `scroll_to_widget` helper (and `MenuUITestCase.scroll_to_widget`) that locates the enclosing `ui.ScrollingFrame` for a widget and scrolls it into view, used to click widgets pushed off-screen by dynamic sibling content.
 
-
 ## [0.14.5] - 2026-05-18
 ### Changed
 - `compare_images_in_directories` prints the golden and test directory paths in its header and the full file paths on each failure to make per-image failures unambiguous.

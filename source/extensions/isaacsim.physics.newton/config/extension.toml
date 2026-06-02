@@ -39,10 +39,10 @@ name = "startup"
 timeout = 3600
 enabled = false
 dependencies = [
-    "isaacsim.physics.newton.tensors",
-    "isaacsim.test.utils", # Used to suppress NumPy coverage errors
+    "isaacsim.asset.importer.mjcf",
     "isaacsim.asset.importer.urdf",
-    "isaacsim.asset.importer.mjcf"
+    "isaacsim.physics.newton.tensors",
+    "isaacsim.test.utils" # Used to suppress NumPy coverage errors
 ]
 
 stdoutFailPatterns.exclude = [
