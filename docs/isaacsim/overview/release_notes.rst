@@ -82,6 +82,12 @@ Sensors
   - Expanded the RTX Lidar and RTX Radar asset catalog, including new sensors from Texas Instruments and SICK.
   - Deprecated the ``isaacsim.sensors.rtx`` extension.
 
+- **Physics Sensors**
+
+  - Added clean APIs for sensor authoring and runtime data collection in ``isaacsim.sensors.experimental.physics``.
+  - Added a new Raycast sensor type with configurable ray origins, directions, and time offsets.
+  - Deprecated the ``isaacsim.sensors.physics`` and ``isaacsim.sensors.physx`` extensions.
+
 ROS
 ^^^
 
@@ -2185,35 +2191,6 @@ release; rather than repeat them per extension, they are called out once here:
     - Changed
 
       - Updated ``newton-usd-schemas`` to 0.2.0.
-
-
-Isaac Sim ROS Workspaces Changelog Summary
--------------------------------------------
-
-The `Isaac Sim ROS Workspaces <https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_ companion repository for Isaac Sim ROS Bridge has the following changes for Isaac Sim 6.0.0:
-
-Added
-^^^^^
-- ``isaac_compressed_image_decoder`` package for decoding ROS 2 compressed images [Humble, Jazzy]
-- ``ros2_object_id_subscriber`` tutorial example in ``isaac_tutorials`` [Humble, Jazzy]
-- ``topic_based_ros2_control`` ROS 2 package added as a submodule [Jazzy]
-- Multi-humanoid namespace support in ``h1_fullbody_controller`` launch [Humble, Jazzy]
-- Ubuntu 24.04 / ROS 2 Jazzy Python 3.12 Docker build support and dockerfile [Jazzy]
-- ``rmw_zenoh`` support for Jazzy 22.04 Docker build [Jazzy]
-- ``--no-cache`` (``-n``) flag for ``build_ros.sh`` to allow cache-free Docker rebuilds [Humble, Jazzy]
-
-Changed
-^^^^^^^
-- Bumped all package versions to Isaac Sim 6.0.0
-- Improved Humble MoveIt integration with custom ``panda_isaac.urdf.xacro`` and ``gripper_to_isaac.py`` bridge [Humble]
-- Updated MoveIt configs to mitigate timeout issues [Jazzy]
-- Cleaned up occupancy map parameters in Navigation packages [Humble, Jazzy]
-- Updated internal libraries path to ``isaacsim.ros2.core`` in ``isaacsim`` ROS package [Humble, Jazzy]
-- Switched ``h1_fullbody_controller`` topics to relative names for namespaced multi-humanoid setups [Humble, Jazzy]
-
-Removed
-^^^^^^^
-- Legacy references to older Ubuntu / Python / ROS mentions from launch files, parameters, and build scripts
 
 
 .. toctree::

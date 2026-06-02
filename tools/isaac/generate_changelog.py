@@ -51,11 +51,26 @@ def parse_version(line: str):
     return None
 
 
+# Canonical changelog categories and the order they should appear in the output.
+CATEGORY_ORDER = ["Added", "Changed", "Deprecated", "Removed", "Fixed", "General"]
+_CATEGORY_ALIASES = {c.lower(): c for c in CATEGORY_ORDER}
+
+
+def normalize_category(name: str) -> str:
+    """Normalize a changelog category heading to its canonical capitalization."""
+    cleaned = name.lstrip("# ").strip()
+    return _CATEGORY_ALIASES.get(cleaned.lower(), cleaned or "General")
+
+
+def _empty_content() -> Dict[str, List[str]]:
+    return {c: [] for c in CATEGORY_ORDER}
+
+
 def parse_changelog(change: str) -> Tuple[str, datetime.date, List]:
     """Parse an extension changelog content and yield tuples of version, date and list of strings"""
     version = None
     date = None
-    content = {"Added": [], "Removed": [], "deprecated": [], "Changed": [], "Fixed": [], "General": []}
+    content = _empty_content()
     category = "General"
 
     for line in change.splitlines():
@@ -63,15 +78,24 @@ def parse_changelog(change: str) -> Tuple[str, datetime.date, List]:
         if res:
             yield version, date, content
             version, date = res
-            content = {"Added": [], "Removed": [], "deprecated": [], "Changed": [], "Fixed": [], "General": []}
+            content = _empty_content()
+            category = "General"
         else:
             if len(line) > 0:
-                if line.startswith("### "):
-                    category = line.strip("### ")
+                if line.startswith("###"):
+                    category = normalize_category(line)
+                    if category not in content:
+                        content[category] = []
                 else:
                     if category not in content:
                         content[category] = []
-                    content[category].append(line.strip("### ").strip("- "))
+                    # Strip a leading markdown bullet ("- ") without corrupting trailing characters.
+                    entry = line.strip()
+                    if entry.startswith("- "):
+                        entry = entry[2:]
+                    elif entry.startswith("-"):
+                        entry = entry[1:]
+                    content[category].append(entry.strip())
 
     if version:
         yield version, date, content
@@ -139,37 +163,43 @@ def read_extension_data_from_app_kitfiles(repo_root: str) -> Dict[str, str]:
 
 def get_extension_diff_data(
     changelog_path: str, old_date: datetime.date, new_date: datetime.date
-) -> List[Tuple[str, List[str]]]:
+) -> Tuple[List[Tuple[str, Dict[str, List[str]]]], bool, str]:
     """
-    returns for this extension a list of tuples of (version, changelog strings) for each version between old and new
+    Returns a tuple of:
+      - a list of ``(version, content)`` tuples for each version released within the range
+      - ``is_new``: True when the extension has entries in range but none dated before ``old_date``
+        (i.e. it first appeared during this range).
+      - ``prior_version``: the most recent version dated before ``old_date`` (i.e. the version that
+        was current at the start of the range), or ``None`` if the extension had no prior release.
     """
 
-    found_new = False
-    found_old = False
-    curr_log = []
-    result = []
+    in_range = []
+    prior_version = None
+    prior_date = None
 
     if os.path.exists(changelog_path):
         with open(changelog_path) as changelog_file:
             changelog_str = changelog_file.read()
             # parses each entry
             for v, d, content in parse_changelog(changelog_str):
-                if d is not None:
-                    if d <= new_date and d >= old_date:
-                        curr_log.append((v, d, content))
-                        found_new = True
-                    else:
-                        found_new = False
+                if d is None:
+                    continue
+                if old_date <= d <= new_date:
+                    in_range.append((v, content))
+                elif d < old_date:
+                    # Track the latest release that predates the range start.
+                    if prior_date is None or d > prior_date:
+                        prior_date = d
+                        prior_version = v
 
-    for entry in curr_log:
-        result.append((entry[0], entry[2]))
+    is_new = len(in_range) > 0 and prior_version is None
 
-    return result, found_new
+    return in_range, is_new, prior_version
 
 
 def generate_extension_diff_report(
     name: str, changelog_path: str, old_date: datetime.date, new_date: datetime.date, format_: str
-) -> List[Tuple[str, List[str]]]:
+) -> None:
     """
     Generate a changelog report for a specific extension by reading a range of versions
     from its CHANGELOG.md file.
@@ -181,47 +211,51 @@ def generate_extension_diff_report(
         new_date (datetime.date): End date for the changelog range.
         format_ (str): Output format, either "md" (Markdown) or "rst" (reStructuredText).
 
-    Returns:
-        List[Tuple[str, List[str]]]: Not used (function prints the report directly).
+    The report is printed directly to stdout.
     """
-    report = ""
+    # Get the changelog entries, whether this is a new extension, and the version current at range start.
+    results, is_new, prior_version = get_extension_diff_data(changelog_path, old_date, new_date)
 
-    # Get the changelog entries and whether this is a new extension
-    results, is_new = get_extension_diff_data(changelog_path, old_date, new_date)
-
-    # If there are any changelog entries, start the report with the extension name
-    if len(results) > 0:
-        report += f"\n- **{name}**"
-
-    # Dictionary to collect all changelog entries grouped by type (e.g., Added, Changed, Fixed)
-    all_entries = {}
-
-    # If this is a new extension, add a "New extension" entry and return
-    if is_new:
-        report += f"\n  - New extension" if format_ == "md" else "\n\n    - New extension"
+    # Nothing changed in range, nothing to report.
+    if len(results) == 0:
         return
 
-    # Aggregate all changelog entries by their type
-    for entry in results:
-        # entry[1] is a dict: {type: [list of changes]}
-        for change_type, values in entry[1].items():
-            if change_type not in all_entries:
-                all_entries[change_type] = []
-            for v in values:
-                all_entries[change_type].append(v)
+    # Build the extension header showing the version at the start of the range -> the current version.
+    # results are newest-first (CHANGELOG.md order), so the first entry is the current version.
+    current_version = results[0][0]
+    if prior_version is None or prior_version == current_version:
+        version_range = f"{current_version}"
+    else:
+        version_range = f"{prior_version} -> {current_version}"
 
-    # Format the report for each changelog type and its changes
-    for change_type, values in all_entries.items():
-        if len(values) > 0:
-            # Add the changelog type (e.g., Added, Changed, Fixed)
-            report += f"\n  - {change_type}" if format_ == "md" else f"\n\n    - {change_type}\n"
-            # Add each change under the type
-            for change in values:
-                report += f"\n    - {change}" if format_ == "md" else f"\n      - {change}"
+    report = f"\n- **{name}** ({version_range})"
 
-    # Print the report if there is any content
-    if report:
+    # If this is a new extension, emit a single "New extension" note.
+    if is_new:
+        report += f"\n  - New extension" if format_ == "md" else "\n\n    - New extension"
         print(report)
+        return
+
+    # Aggregate all changelog entries by their category, preserving order of appearance.
+    all_entries: Dict[str, List[str]] = {}
+    for _version, content in results:
+        for change_type, values in content.items():
+            for value in values:
+                all_entries.setdefault(change_type, []).append(value)
+
+    # Emit categories in the canonical order, then any unexpected categories alphabetically.
+    ordered_categories = [c for c in CATEGORY_ORDER if all_entries.get(c)]
+    ordered_categories += sorted(c for c in all_entries if c not in CATEGORY_ORDER and all_entries.get(c))
+
+    for change_type in ordered_categories:
+        values = sorted(all_entries[change_type])
+        if not values:
+            continue
+        report += f"\n  - {change_type}" if format_ == "md" else f"\n\n    - {change_type}\n"
+        for change in values:
+            report += f"\n    - {change}" if format_ == "md" else f"\n      - {change}"
+
+    print(report)
 
 
 def generate_extscache_diff_report(
@@ -290,14 +324,18 @@ def generate_extscache_diff_report(
 
         # merge results to "dependencies"
         if merge_extscache_sections:
-            # Merge all three dictionaries by combining version info (not overwriting)
+            # Merge all three dictionaries by combining version info (not overwriting).
             merged = {}
 
-            # Process all three sections
+            # Order matters: the merge keeps the first value seen for each +/- status, so the
+            # sections carrying fully-resolved exact versions (version lock and exact-version
+            # dependencies, e.g. "209.4.0") are processed before the plain dependency
+            # declarations, whose versions may be semver ranges (e.g. "~209.4"). This ensures the
+            # report shows the concrete resolved version rather than the range specifier.
             for section_data in [
-                data["dependencies"],
-                data["exact_version_dependencies"],
                 data["version_lock_dependencies"],
+                data["exact_version_dependencies"],
+                data["dependencies"],
             ]:
                 for ext_name, versions in section_data.items():
                     if ext_name not in merged:
@@ -307,7 +345,7 @@ def generate_extscache_diff_report(
                         if status not in merged[ext_name]:
                             merged[ext_name][status] = version
                         # If status already exists with different version, keep the first one
-                        # (this shouldn't happen in practice, but handles edge cases)
+                        # (the more precise resolved version, given the section ordering above).
 
             data["dependencies"] = OrderedDict(sorted(merged.items()))
             data["exact_version_dependencies"] = {}
@@ -510,6 +548,34 @@ def get_range(range: str):
     )
 
 
+def collect_extensions(home_paths: List[str], exts_exclude: Set[str]) -> List[Tuple[str, str]]:
+    """
+    Walk every configured extension root and collect ``(name, changelog_path)`` pairs.
+
+    Directories without a ``config/extension.toml`` are skipped (e.g. dependency-only
+    folders such as ``source/internal_extensions/deps``). Names are de-duplicated across
+    roots (first occurrence wins) and the result is sorted alphabetically so the output
+    remains a single flat list.
+    """
+    collected: Dict[str, str] = {}
+    for home_path in home_paths:
+        if not os.path.isdir(home_path):
+            omni.repo.man.print_log(f"Skipping missing extension root: {home_path}", logging.WARNING)
+            continue
+        for entry in sorted(os.listdir(home_path)):
+            if entry in exts_exclude or entry in collected:
+                continue
+            ext_dir = os.path.join(home_path, entry)
+            if not os.path.isdir(ext_dir):
+                continue
+            # Only treat directories with an extension manifest as extensions.
+            if not os.path.exists(os.path.join(ext_dir, "config", "extension.toml")):
+                continue
+            collected[entry] = os.path.join(ext_dir, "docs", "CHANGELOG.md")
+
+    return sorted(collected.items())
+
+
 def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     parser.description = "Generate changelog documentation"
     parser.add_argument(
@@ -552,8 +618,16 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         # tool_config = config.get("repo_build", {})
         # print(config)
         tool_config = config["repo_generate_changelog"]
-        home_path = tool_config["home_path"]
-        extensions = sorted(os.listdir(home_path))
+
+        # Accept either the new "home_paths" list or the legacy "home_path" string.
+        home_paths = tool_config.get("home_paths")
+        if not home_paths:
+            legacy = tool_config.get("home_path")
+            home_paths = [legacy] if legacy else []
+        if isinstance(home_paths, str):
+            home_paths = [home_paths]
+
+        exts_exclude = set(tool_config.get("exts_exclude", []))
 
         # get range
         if options.range is None:
@@ -576,17 +650,13 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         # generate extensions report
         if generate_changelog:
             print("# Extensions" if options.format == "md" else "Extensions\n==========")
-            for e in extensions:
-                if e not in tool_config["exts_exclude"]:
-                    name = e.split("\\")[-1]
-                    changelog_path = os.path.join(home_path, e, "docs", "CHANGELOG.md")
-                    config_path = os.path.join(home_path, e, "config", "extension.toml")
-                    generate_extension_diff_report(
-                        name,
-                        changelog_path,
-                        datetime.date.fromisoformat(range[0]["date"]),
-                        datetime.date.fromisoformat(range[1]["date"]),
-                        options.format,
-                    )
+            for name, changelog_path in collect_extensions(home_paths, exts_exclude):
+                generate_extension_diff_report(
+                    name,
+                    changelog_path,
+                    datetime.date.fromisoformat(range[0]["date"]),
+                    datetime.date.fromisoformat(range[1]["date"]),
+                    options.format,
+                )
 
     return run_repo_tool
