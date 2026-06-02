@@ -51,12 +51,9 @@ if ! [[ -z "${CONDA_PREFIX}" ]]; then
   echo "Warning: running in conda env, please deactivate before executing this script"
 fi
 
-# Check if we are running in a docker container
-if [ -f /.dockerenv ]; then
-  # Check for vulkan in docker container
-  if [[ -f "${SCRIPT_DIR}/vulkan_check.sh" ]]; then
-    ${SCRIPT_DIR}/vulkan_check.sh
-  fi
+# Check for vulkan when running in a docker container
+if [ -f /.dockerenv ] && [[ -f "${SCRIPT_DIR}/vulkan_check.sh" ]]; then
+  ${SCRIPT_DIR}/vulkan_check.sh
 fi
 
 # Show icon if not running headless

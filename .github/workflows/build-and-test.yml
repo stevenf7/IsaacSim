@@ -27,16 +27,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-  pull-requests: write
-
 # ==============================================================================================================
 # Build Job - Compiles Isaac Sim, packages it, and uploads artifacts
 # ==============================================================================================================
 jobs:
   build:
     runs-on: [self-hosted, cpu]
+    permissions:
+      contents: read
     timeout-minutes: 300
     env:
       OMNI_KIT_ALLOW_ROOT: 1
@@ -140,6 +138,8 @@ jobs:
 # ==============================================================================================================
   test:
     runs-on: [self-hosted, gpu]
+    permissions:
+      contents: read
     timeout-minutes: 120
     needs: build
     env:
