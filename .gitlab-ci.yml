@@ -1318,6 +1318,37 @@ test-linux-x86_64-external-ar:
       - ./repo.sh ci test -- --generate-report
 
 # ==============================================================================================================
+# Trigger ATF CI runner from omni_isaac_sim pipelines.
+# Run after Linux and Windows release builds on Kit integration and develop push pipelines.
+trigger-atf-ci-runner:
+    stage: test
+    rules:
+      - if: '$RUN_BUMP_VERSION == "true" || $RUN_DOCS_PUBLISH == "true" || $ALLOW_PUBLISH_DOCS == "true" || $RUN_TESTS != "true"'
+        when: never
+      - if: '$CI_PIPELINE_SOURCE == "pipeline" && $UPSTREAM_PIPELINE_SOURCE =~ /^(nightly|post_merge)$/ && $CI_COMMIT_REF_NAME =~ /^kit-integration\//'
+        when: always
+      - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "develop"'
+        when: always
+    needs:
+      - job: build-linux-x86_64-release
+        artifacts: false
+      - job: build-windows-x86_64-release
+        artifacts: false
+    variables:
+        UPSTREAM_PIPELINE_ID:     $CI_PIPELINE_ID
+        UPSTREAM_PROJECT_PATH:    $CI_PROJECT_PATH
+        UPSTREAM_BRANCH:          $CI_COMMIT_BRANCH
+        UPSTREAM_JOB_NAME_LINUX:   build-linux-x86_64-release
+        UPSTREAM_JOB_NAME_WINDOWS: build-windows-x86_64-release
+        UPSTREAM_PIPELINE_SOURCE: $CI_PIPELINE_SOURCE
+    trigger:
+        project: omniverse/qa/atf-ci-runner
+        branch: main
+        strategy: depend
+    allow_failure: true
+    interruptible: true
+
+# ==============================================================================================================
 .deploy-artifacts:
     artifacts:
         when: always
