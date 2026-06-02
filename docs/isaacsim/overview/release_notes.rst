@@ -13,8 +13,8 @@
 Release Notes
 =============
 
-6.0.0 Early Developer Release
-=============================
+6.0.0
+=====
 
 Release Highlights
 ------------------
@@ -22,71 +22,96 @@ Release Highlights
 General
 ^^^^^^^
 
-- Updated to `Kit 110.0 <https://docs.omniverse.nvidia.com/dev-guide/latest/release-notes/110_0_highlights.html>`__
-
-  - Support for 3D Gaussian Splatting with Fabric Scene Delegate integration, multi-GPU rendering, light interaction with mesh scenes, and MaterialX support.
-  - CAD and DGN Converter enhancements with ACIS solid modeling support, BSplineSurface translation, and enhanced tessellation controls.
-  - Nested rigid body physics with GPU acceleration, and significant RTX rendering improvements enhance both visual fidelity and simulation accuracy.
-  - Expanded XR support, improved Scene Optimizer tools, and Fabric Scene Delegate performance enhancements.
-
-- Extend the integration/usage of the Core Experimental API into the source code.
-- New extensions based on the Core Experimental API with updated interfaces.
+- Updated to `Kit 110.1.1 <https://docs.omniverse.nvidia.com/dev-guide/latest/release-notes/110_1_1_highlights.html>`__.
+- Improved rendering performance and fidelity with multitick rendering. Cameras and RTX Lidars can be scheduled and rendered at rates and offsets driven by physics simulation time.
 
 PhysX and Newton
 ^^^^^^^^^^^^^^^^
 
-- Experimental support for the Newton physics engine
+- Added experimental support for the Newton physics engine.
 
-  - Newton/MuJoCo-Warp solver can be used as a physics simulation backend.
-  - ``isaacsim.core.experimental.prims`` APIs can be used with both PhysX and Newton.
+  - C++ and Python tensor APIs for Newton are similar to PhysX. The ``isaacsim.core.experimental`` APIs provide an engine-agnostic interface to physics data.
+  - ROS 2 Bridge handles the Newton backend similarly to PhysX. All OmniGraph nodes are compatible with Newton and PhysX.
+
+- URDF and MJCF importers apply Newton schemas to imported assets.
 
 Synthetic Data Generation
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - **Perception Data Generation (Replicator)**
 
-  - Getting started example using various optimized randomizations using write to fabric (``enableWriteToFabric``) and skip syncing with stage (``wait_for_render``).
-  - Useful snippet example using deformable assets with the Core Experimental API to generate synthetic data.
+  - Added end-to-end synthetic data generation (SDG) workflow examples using the Replicator Functional API to author, randomize, simulate, and collect annotated data.
 
 - **Action and Event Data Generation**
 
-  - *AgentSim (isaacsim.replicator.agent)*: IRA introduces a character USD schema stored within USD files for cross-scene portability, and a config-driven method to spawn characters and issue character behaviors. IRA features a new UI for configuring agent simulations. IRA and scene captioning (IRC) now work together in a single pipeline, producing both annotated sensor data and VLM captions from one simulation run.
-  - *Object Simulation and Physics (isaacsim.replicator.object)*: IRO now supports randomization of physics attributes (mass, friction, restitution) across scene objects for domain-randomized synthetic data generation. New placement strategies (pyramid stacking, world/local-space force application) to enable a variety of physical scenes.
-  - *Incident Simulation (isaacsim.replicator.incident)*: Extended toppling events now apply to a broader set of objects. A new FlowUSD fire and smoke writer captures volumetric fire and smoke data from NVIDIA Flow alongside standard SDG outputs (RGB, depth, semantic segmentation).
-  - *Sensors (isaacsim.sensor.rtx.placement, isaacsim.sensor.rtx.calibration)*: Maximum coverage based camera placement now supports placement randomization. A new Omniverse-native API for sensor calibration provides direct access to camera intrinsics, extrinsics, and field-of-view coverage visualization.
+  - *Actor Simulation and Synthetic Data Generation* (``isaacsim.replicator.agent.core``, ``isaacsim.replicator.agent.schema``, and ``isaacsim.replicator.agent.ui``): Added a behavior-tree based actor controller, collision triggers for collider-based reactions, Stop and Halt behaviors, custom writer support, and verbose or minimal config serialization in the UI.
+  - *Object Simulation and Synthetic Data Generation* (``isaacsim.replicator.object.core`` and ``isaacsim.replicator.object.ui``): Added empty space detection.
+  - *Physical Space Event Generation* (``isaacsim.replicator.incident.core`` and ``isaacsim.replicator.incident.ui``): Standardized incident-report metadata.
+  - *AI-based behavior tree generation* (``omni.ai.behavior_tree_gen.core`` and ``omni.ai.behavior_tree_gen.bridge``): Added extensions that convert natural-language scenario descriptions into behavior tree JSON files.
+  - *Metropolis pipeline* (``omni.metropolis.pipeline``): Added a shared configuration and centralized orchestration pipeline for Action and Event Data Generation extensions.
+  - Integrated telemetry in the Action and Event Data Generation toolsets to monitor system efficiency and behavioral trends.
+
+- **Teleoperation Synthetic Data Generation**
+
+  - Added support for teleoperation workflows (``isaacsim.replicator.teleop``) using the open NVIDIA Isaac Teleop framework. You can remotely control robots in simulation and build custom teleoperation applications.
+  - Added support for episode recording and replay (``isaacsim.replicator.episode_recorder``). The recorder captures simulation state and teleoperation input to multi-episode HDF5 files for offline replay and SDG pipelines.
 
 Robots
 ^^^^^^
 
-- **Isaac Sim URDF Importer 3.0**: Exports to Asset Structure 3.0, multi-engine backend support with MuJoCo to PhysX conversion, Newton schema support, new UI and API, standalone Python interface, and joint tuning moved to gains tuner. New UI for ROS robot state based imports (``isaacsim.ros2.urdf``).
-- **Isaac Sim MJCF Importer 3.0**: Asset Structure 3.0, multi-engine backend support with URDF to MuJoCo and PhysX conversion, Newton schema support, new UI and API, standalone Python interface, and joint tuning moved to gains tuner.
-- **Asset Structure 3.0**: USDC (binary) for geometry; Material, Instances, Base, Physics defined in USDA (ascii) for easier version control and readability. Separated physics, MuJoCo, and PhysX definitions for different tuning values.
-- **Asset Transformer**: Rule-based USD tool for performing USD operations on assets. Comes with profile to convert robot assets to Asset Structure 3.0. Available rules include: generate robot schema, make schemas non-explicit, prim/schema/attribute routing, variant composition, geometry deduplication, shared materials between geometries.
-- **Gains Tuner**: Migrated to use ``core.experimental.prims``, enabling Newton backend.
-- **Robot Poser**: Create robot named poses to change robot pose configuration, and manipulate robot based on a given link position on task space.
-- **Robot Self Collision Detector**: Visually detecting overlapping colliders in a robot.
-- **Robot Inspector**: Robot inspector window to enable viewing robot links and prims as flattened or nested. Interactively fix or disable robot joints for debugging.
+- Robot policy examples can run Newton policies with the Newton simulator.
+- URDF and MJCF importers can import multi-physics based assets and include new selection options for robot type and base type.
+- Added robots under ``Samples/Mujoco_Menageries`` for robots imported from MuJoCo Menagerie with the MJCF importer.
 
 Sensors
 ^^^^^^^
 
-- **Cameras and Depth Sensors**: ``isaacsim.sensors.camera`` deprecated in favor of ``isaacsim.sensors.experimental.rtx``. Camera sensor now uses ``_fast`` annotator variants for improved performance. Fixed tiled sensor data slicing.
-- **RTX Non-Visual Sensors**: Added explicit RTX Radar support via new Annotator. RTX Sensor models now use Hydra time (``omni.timeline``) for accurate simulation time tracking. Scan accumulation and post-processing moved to host by default, reducing GPU resource contention. Fixed point cloud "flickering" and broken scans when using RTX Lidar. New and updated standalone examples. Several RTX Lidar standalone examples were renamed without backward-compatible aliases; downstream references must be updated:
+- **Cameras and Depth Sensors**
 
-  - ``standalone_examples/api/isaacsim.sensors.rtx/rotating_lidar_rtx.py`` → ``lidar_robot_integration.py``
-  - ``standalone_examples/api/isaacsim.sensors.rtx/inspect_lidar_metadata.py`` → ``inspect_lidar_gmo.py``
-  - ``standalone_examples/api/isaacsim.sensors.rtx/inspect_radar_metadata.py`` → ``inspect_radar_gmo.py``
-- **Physics Sensors**: ``isaacsim.sensors.physics`` deprecated in favor of ``isaacsim.sensors.experimental.physics``. Added dedicated GPU codepath for IMU sensor using a separate CUDA stream and pinned memory buffer for improved performance.
+  - Added clean APIs for sensor authoring and runtime data collection in ``isaacsim.sensors.experimental.rtx``.
+  - Added a structured light camera API with pattern projection and timing capability.
+  - Expanded the camera asset catalog, including new sensors from Luxonis and SICK.
+  - Improved pre- and post-ISP camera pipeline modeling fidelity with USD schemas instead of OmniGraph.
+  - Deprecated the ``isaacsim.sensors.camera`` extension.
+
+- **RTX Non-Visual Sensors**
+
+  - Added clean APIs for sensor authoring and runtime data collection in ``isaacsim.sensors.experimental.rtx``.
+  - Added RTX Acoustic ultrasonic sensor support.
+  - Added support for instantaneous RTX Lidar full-scan point-cloud capture.
+  - Expanded the RTX Lidar and RTX Radar asset catalog, including new sensors from Texas Instruments and SICK.
+  - Deprecated the ``isaacsim.sensors.rtx`` extension.
 
 ROS
 ^^^
 
-- **Architecture and Modularization**: The monolithic ``isaacsim.ros2.bridge`` extension was split into focused extensions: ``isaacsim.ros2.core`` (core libraries and message backends), ``isaacsim.ros2.nodes`` (OmniGraph nodes), ``isaacsim.ros2.ui`` (UI components), and ``isaacsim.ros2.examples`` (sample code and demos).
-- **ROS 2 Jazzy**: System level installations can now be sourced directly with Isaac Sim, enabled by full Python 3.12 support.
-- ROS 2 H.264 compressed RGB image support with hardware-accelerated encoding.
-- RTX Lidar metadata (e.g., intensity) can now be included in ROS 2 PointCloud2 messages.
-- Experimental support for any ROS 2 distribution built with Python 3.12.
-- Added ``rclpy`` MultiThreadedExecutor-based async spinning to the ROS 2 test case base class.
+- **Architecture and Modularization**
+
+  - Isaac Sim ROS 2 workflows are now fully supported on Windows through Pixi with the Isaac Sim ROS Workspaces repository.
+  - ROS 2 Publish TF and Odometry now consume pre-computed transforms from ``IsaacComputeTransformTree``. Direct ``targetPrims`` input for these ROS 2 OmniGraph nodes is deprecated.
+  - ROS 2 Bridge migrated to the experimental core and sensor APIs: ``isaacsim.core.experimental.*`` and ``isaacsim.sensors.experimental.{rtx,physics}``.
+  - The ``URDFImportFromROS2Node`` Kit command is deprecated. Use ``RobotDefinitionReader`` and ``URDFImporter`` instead.
+
+- **New features**
+
+  - Added ``OgnROS2RtxRadarHelper`` to publish RTX Radar as ``PointCloud2``.
+  - Tensor-backed ROS 2 nodes run against any registered physics engine, including Newton.
+  - Added Simulation Control services for ``GetEntityBounds``, ``SpawnEntities``, and ``GetSpawnables``.
+  - Added ``wait_for_publishers_on_topic`` and ``wait_for_subscribers_on_topic`` helpers to ``ROS2TestCase``.
+
+- **Performance improvements**
+
+  - ``OgnROS2PublishJointState`` skips tensor view creation on the sensor-input path.
+  - ``OgnROS2PublishTransformTree`` resolves ``toSdfPath`` once per entry and short-circuits invalid prims.
+  - Point-cloud metadata fields are gated on matching ``output*`` flags, which prevents accidental message bloat.
+
+- **Isaac Sim ROS Workspaces repository**
+
+  - Now accepts external contributions. See ``CONTRIBUTING.md`` for the updated contribution workflow.
+  - Added a Pixi-managed Jazzy workspace with Windows dependency management through Pixi and RoboStack, plus PyPI-based Isaac Sim install support.
+  - Added Windows launch-file support for Isaac Sim.
+  - Added the ``isaacsim_clearpath_nav2`` package for Nav2 integration with Clearpath robots.
+  - Renamed the ``isaacsim`` package to ``isaacsim_bringup`` and migrated key packages from ``ament_cmake`` to ``ament_python``.
 
 Docker
 ^^^^^^
@@ -94,29 +119,99 @@ Docker
 - Added Docker Compose deployment for Isaac Sim + WebRTC web-viewer as a single stack.
 - Support for running multiple Isaac Sim instances in parallel on a single machine.
 - Full Docker container support for DGX Spark.
+- Added support for the Hub Workstation Cache container.
 
 Live-streaming
 ^^^^^^^^^^^^^^
 
 - Added web-based livestreaming via WebRTC client accessible through Docker Compose.
 - Configurable signal port and stream port via environment variables.
+- The ``isaacsim.streaming.rtsp`` extension provides Real-Time Streaming Protocol (RTSP) live-streaming for camera render products in Isaac Sim. It captures rendered frames through a Replicator writer and publishes them over RTSP with ``omni.kit.livestream.rtsp``.
 - Full DGX Spark livestreaming support.
 
 Motion Generation
 ^^^^^^^^^^^^^^^^^
 
-- **New Experimental Motion Generation API**: Includes new tools to easily populate and synchronize a planning scene to the USD stage with independent collision geometry representation. Includes a new controller composition framework that allows simple controllers to be combined to build more complex controllers.
-- **New cuMotion Integration**: Added full integration with NVIDIA's cuMotion library, built on the new experimental motion generation API. Includes a centralized collision world state which can be passed to any collision-aware algorithm. Includes bindings to several trajectory and real-time planning algorithms, including minimal-time collision-aware trajectory planning with very flexible end-effector constraints.
+- Added support for task-based differential inverse kinematics with the Python Inverse Kinematics (PINK) implementation in ``isaacsim.robot_motion.pink``.
 
 SimReady Content
 ^^^^^^^^^^^^^^^^
 
-- Experimental search functions that extend the content browser with "Assets Search" mode: search SimReady Profiles, Features, natural language search, and tags.
-- A new curated collection of SimReady assets is available in the Content Browser, including robot models from FANUC. These assets have passed both USD validation and runtime tests for improved out-of-the-box reliability.
+- The Isaac Sim content browser now depends on ``omni.simready.content.browser`` and includes the ``/Isaac/SimReady`` folder.
+- The SimReady Asset Search workflow supports File Index, AI, and WSCache search modes, including filters for names, natural-language phrases, SimReady profiles, features, and tags.
+- Added FANUC and Comau robot assets to the asset catalog. Additional FANUC robot assets (84+ models) are available in the Content Browser, and most have multiphysics-ready counterparts.
 
-  - 85 Fanuc Robots
-  - 1 Comau
-  - 1000 SimReady Props
+Breaking changes and deprecations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. list-table::
+   :header-rows: 1
+
+   * - Change
+     - Action required
+     - Removed in
+   * - Removed ``omni.isaac.*`` compatibility shims.
+     - Migrate to ``isaacsim.*`` extensions.
+     - 6.0.0
+   * - Deprecated ``isaacsim.core.api``, ``isaacsim.core.prims``, and ``isaacsim.core.utils``.
+     - Migrate to ``isaacsim.core.experimental.*`` and ``isaacsim.core.simulation_manager``.
+     - Not specified.
+   * - Deprecated ``isaacsim.examples.extension``.
+     - Use the repo template system with ``./repo.sh template new``.
+     - Not specified.
+   * - Deprecated ``isaacsim.replicator.mobility_gen``.
+     - Migrate to ``isaacsim.replicator.experimental.mobility_gen``. No action is required for ``isaacsim.replicator.mobility_gen.ui``.
+     - Not specified.
+   * - Deprecated ``isaacsim.replicator.domain_randomization``.
+     - Migrate to ``isaacsim.replicator.experimental.domain_randomization``.
+     - Not specified.
+   * - Deprecated prim path inputs to ROS 2 OmniGraph nodes.
+     - Refer to the migration guide.
+     - Not specified.
+   * - Deprecated ``isaacsim.cortex.behaviors``, ``isaacsim.cortex.framework``, and ``isaacsim.cortex.examples``.
+     - Migration guidance is planned for 6.1.
+     - Not specified.
+   * - Deprecated ``isaacsim.robot.manipulators``, ``isaacsim.robot.manipulators.examples``, and ``isaacsim.robot.manipulators.ui``.
+     - Refer to ``isaacsim.robot.experimental.manipulators.examples`` for recommended alternatives.
+     - Not specified.
+   * - Deprecated ``isaacsim.robot.wheeled_robots``.
+     - Migrate to ``isaacsim.robot.experimental.wheeled_robots`` and ``isaacsim.robot.wheeled_robots.nodes``.
+     - Not specified.
+   * - Deprecated ``isaacsim.robot_motion.lula``, ``isaacsim.robot_motion.lula_test_widget``, ``isaacsim.robot_motion.motion_generation``, and ``isaacsim.robot_motion.motion_generation.examples``.
+     - Migrate to ``isaacsim.robot_motion.experimental.motion_generation``, ``isaacsim.robot_motion.cumotion``, ``isaacsim.robot_motion.pink``, ``isaacsim.robot_motion.cumotion.examples``, and ``isaacsim.robot_motion.pink.examples``.
+     - Not specified.
+   * - Deprecated ``isaacsim.sensors.camera``.
+     - Migrate to ``isaacsim.sensors.experimental.rtx``.
+     - Not specified.
+   * - Deprecated ``isaacsim.sensors.rtx``.
+     - Migrate sensor authoring and runtime APIs to ``isaacsim.sensors.experimental.rtx``. Use ``isaacsim.sensors.rtx.nodes`` for RTX sensor OmniGraph, annotator, and point-cloud debug-draw workflows.
+     - Not specified.
+   * - Deprecated ``isaacsim.sensors.physics``, ``isaacsim.sensors.physx``, ``isaacsim.sensors.physx.examples``, and ``isaacsim.sensors.physx.ui``.
+     - Migrate physics sensor APIs to ``isaacsim.sensors.experimental.physics``. Use ``isaacsim.sensors.physics.examples``, ``isaacsim.sensors.physics.nodes``, and ``isaacsim.sensors.physics.ui`` for examples, OmniGraph nodes, and UI workflows.
+     - Not specified.
+   * - Deprecated ``isaacsim.util.merge_mesh``.
+     - Migrate to ``omni.scene.optimizer.core``.
+     - Not specified.
+   * - Deprecated ``isaacsim.replicator.agent`` 0.x.x.
+     - Migrate to ``isaacsim.replicator.agent`` 1.x.x. Refer to the migration guide.
+     - Not specified.
+   * - Deprecated ``omni.isaac.ml_archive``.
+     - No replacement is available. Install PyTorch directly or manually enable the extension if needed.
+     - Not specified.
+   * - Removed support for Camera prims as RTX sensors using JSON configs.
+     - Migrate to ``isaacsim.sensors.experimental.rtx`` and OmniSensor prims.
+     - 6.0.0
+   * - Removed ``isaacsim.app.selector``, ``isaacsim.benchmark.examples``, and ``isaacsim.replicator.scene_blox``.
+     - No replacement is available.
+     - 6.0.0
+   * - Removed ``isaacsim.asset.browser``.
+     - Migrate to ``omni.simready.content.browser``.
+     - 6.0.0
+
+Known issues
+^^^^^^^^^^^^
+
+For known issues, see `Known Issues <https://docs.isaacsim.omniverse.nvidia.com/latest/overview/known_issues.html>`__.
 
 Kit SDK Version
 ---------------
