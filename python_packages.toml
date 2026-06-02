@@ -53,11 +53,11 @@ pyproject.keywords = ["nvidia", "omniverse", "isaacsim", "kernel"]
 pyproject.dependencies.all = [
     # archives (omni.kit.pip_archive)
     # 1.
-    "aiohttp==3.12.14",
+    "aiohttp==3.13.4",
     # 2.
     "pycares==5.0.1",
     "aiodns==3.1.1",
-    "Pillow==12.1.1",
+    "Pillow==12.2.0",
     "toml==0.10.2",
     "numpy==2.3.1",
     "click==8.1.7",
@@ -75,7 +75,7 @@ pyproject.dependencies.all = [
     "uvicorn==0.29.0",
     "httptools==0.6.1",
     "asteval==1.0.6",
-    "python-multipart==0.0.22",
+    "python-multipart==0.0.26",
     "wrapt==1.16.0",
     "aioitertools==0.11.0",
     "coverage==7.4.4",
