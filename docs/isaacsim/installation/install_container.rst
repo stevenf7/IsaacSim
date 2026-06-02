@@ -48,19 +48,19 @@ Container Setup
 
 2. Install Docker:
 
-.. code-block:: console
+.. code-block:: bash
 
     # Docker installation using the convenience script
-    $ curl -fsSL https://get.docker.com -o get-docker.sh
-    $ sudo sh get-docker.sh
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sudo sh get-docker.sh
 
     # Post-install steps for Docker
-    $ sudo groupadd docker
-    $ sudo usermod -aG docker $USER
-    $ newgrp docker
+    sudo groupadd docker
+    sudo usermod -aG docker $USER
+    newgrp docker
 
     # Verify Docker
-    $ docker run hello-world
+    docker run hello-world
 
 .. seealso::
 
@@ -69,10 +69,10 @@ Container Setup
 
 3. Install the |nv| Container Toolkit:
 
-.. code-block:: console
+.. code-block:: bash
 
     # Configure the repository
-    $ curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+    curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
         && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
         sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
         sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
@@ -80,15 +80,15 @@ Container Setup
         sudo apt-get update
 
     # Install the NVIDIA Container Toolkit packages
-    $ sudo apt-get install -y nvidia-container-toolkit
-    $ sudo systemctl restart docker
+    sudo apt-get install -y nvidia-container-toolkit
+    sudo systemctl restart docker
 
     # Configure the container runtime
-    $ sudo nvidia-ctk runtime configure --runtime=docker
-    $ sudo systemctl restart docker
+    sudo nvidia-ctk runtime configure --runtime=docker
+    sudo systemctl restart docker
 
     # Verify NVIDIA Container Toolkit
-    $ docker run --rm --runtime=nvidia --gpus all nvcr.io/nvidia/cuda:12.8.0-base-ubuntu24.04 nvidia-smi
+    docker run --rm --runtime=nvidia --gpus all nvcr.io/nvidia/cuda:12.8.0-base-ubuntu24.04 nvidia-smi
 
 .. note::
 
@@ -110,36 +110,34 @@ This section describes how to run the |isaac-sim| container in headless mode wit
 
 2. Run the following command to confirm your GPU driver version:
 
-.. code-block:: console
+.. code-block:: bash
 
-    $ nvidia-smi
+    nvidia-smi
 
 3. Pull the `Isaac Sim Container`_:
 
-.. code-block:: console
+.. code-block:: bash
 
-    $ docker pull nvcr.io/nvidia/isaac-sim:6.0.0
+    docker pull nvcr.io/nvidia/isaac-sim:6.0.0
 
-4. Create the cached volume mounts on host:
+4. Create the cached volume mounts on host. Each directory maps to a container volume mount in the ``docker run`` command below:
 
-.. code-block:: console
+.. code-block:: bash
 
-    $ mkdir -p ~/docker/isaac-sim/cache/main/ov
-    $ mkdir -p ~/docker/isaac-sim/cache/main/warp
-    $ mkdir -p ~/docker/isaac-sim/cache/computecache
-    $ mkdir -p ~/docker/isaac-sim/config
-    $ mkdir -p ~/docker/isaac-sim/data/documents
-    $ mkdir -p ~/docker/isaac-sim/data/Kit
-    $ mkdir -p ~/docker/isaac-sim/logs
-    $ mkdir -p ~/docker/isaac-sim/pkg
-    $ mkdir -p ~/.cache/ov/hub
-    $ sudo chown -R 1234:1234 ~/docker/isaac-sim ~/.cache/ov/hub
+    mkdir -p ~/docker/isaac-sim/cache/main
+    mkdir -p ~/docker/isaac-sim/cache/computecache
+    mkdir -p ~/docker/isaac-sim/config
+    mkdir -p ~/docker/isaac-sim/data
+    mkdir -p ~/docker/isaac-sim/logs
+    mkdir -p ~/docker/isaac-sim/pkg
+    mkdir -p ~/.cache/ov/hub
+    sudo chown -R 1234:1234 ~/docker/isaac-sim ~/.cache/ov/hub
 
 5. Run the |isaac-sim_short| container with an interactive Bash session:
 
-.. code-block:: console
+.. code-block:: bash
 
-    $ docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
+    docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
         -e "PRIVACY_CONSENT=Y" \
         -v ~/docker/isaac-sim/cache/main:/isaac-sim/.cache:rw \
         -v ~/docker/isaac-sim/cache/computecache:/isaac-sim/.nv/ComputeCache:rw \
@@ -194,6 +192,9 @@ The following environment variables can be passed to ``docker run`` with ``-e`` 
     * - ``PRIVACY_CONSENT``
       - No
       - Opt-in to data collection (set to ``Y``). See :doc:`../common/data-collection`.
+    * - ``PRIVACY_USERID``
+      - No
+      - Tag telemetry data with a user ID (for example an email address). See :doc:`../common/data-collection`.
     * - ``OMNI_SERVER``
       - No
       - Override the default asset root (passed as ``--/persistent/isaac/asset_root/default``).
@@ -209,17 +210,17 @@ The following environment variables can be passed to ``docker run`` with ``-e`` 
 
 6. Check if your system is compatible with |isaac-sim_short|:
 
-.. code-block:: console
+.. code-block:: bash
 
-    $ ./isaac-sim.compatibility_check.sh --/app/quitAfter=10 --no-window
+    ./isaac-sim.compatibility_check.sh --/app/quitAfter=10 --no-window
 
 .. note::
 
     * To run the Compatibility Checker separately:
 
-    .. code-block:: console
+    .. code-block:: bash
 
-        $ docker run --entrypoint bash -it --gpus all --rm --network=host \
+        docker run --entrypoint bash -it --gpus all --rm --network=host \
             nvcr.io/nvidia/isaac-sim:6.0.0 ./isaac-sim.compatibility_check.sh --/app/quitAfter=10 --no-window
 
     * You should see the text "System checking result: PASSED" if your system is compaitble.
@@ -229,9 +230,9 @@ The following environment variables can be passed to ``docker run`` with ``-e`` 
 
 7. Start |isaac-sim_short| with native livestream mode:
 
-.. code-block:: console
+.. code-block:: bash
 
-    $ ./runheadless.sh -v
+    ./runheadless.sh -v
 
 **Streaming Ports**
 
@@ -265,7 +266,7 @@ If you override ports via ``ISAACSIM_SIGNAL_PORT``, ``ISAACSIM_STREAM_PORT``, or
 
     * To confirm this, look out for this line in the console or the logs:
 
-    .. code-block:: console
+    .. code-block:: text
 
         Isaac Sim Full Streaming App is loaded.
 
@@ -293,19 +294,17 @@ If you override ports via ``ISAACSIM_SIGNAL_PORT``, ``ISAACSIM_STREAM_PORT``, or
     * **Stale volume mounts**: Old cached data in Docker volume mount directories can cause crashes, config errors,
       or livestream failures. Remove the existing mounts and recreate them:
 
-      .. code-block:: console
+      .. code-block:: bash
 
-          $ sudo rm -rf ~/docker/isaac-sim
-          $ mkdir -p ~/docker/isaac-sim/cache/main/ov
-          $ mkdir -p ~/docker/isaac-sim/cache/main/warp
-          $ mkdir -p ~/docker/isaac-sim/cache/computecache
-          $ mkdir -p ~/docker/isaac-sim/config
-          $ mkdir -p ~/docker/isaac-sim/data/documents
-          $ mkdir -p ~/docker/isaac-sim/data/Kit
-          $ mkdir -p ~/docker/isaac-sim/logs
-          $ mkdir -p ~/docker/isaac-sim/pkg
-          $ mkdir -p ~/.cache/ov/hub
-          $ sudo chown -R 1234:1234 ~/docker/isaac-sim ~/.cache/ov/hub
+          sudo rm -rf ~/docker/isaac-sim
+          mkdir -p ~/docker/isaac-sim/cache/main
+          mkdir -p ~/docker/isaac-sim/cache/computecache
+          mkdir -p ~/docker/isaac-sim/config
+          mkdir -p ~/docker/isaac-sim/data
+          mkdir -p ~/docker/isaac-sim/logs
+          mkdir -p ~/docker/isaac-sim/pkg
+          mkdir -p ~/.cache/ov/hub
+          sudo chown -R 1234:1234 ~/docker/isaac-sim ~/.cache/ov/hub
 
     * **Second browser cannot connect**: Only one browser tab or window can be connected to |isaac-sim_short|
       at a time. Close the existing browser session before opening a new one.
@@ -337,11 +336,11 @@ Hub should also run as a container on the same host so that all Kit-based client
 
 Start the Hub container **before** launching |isaac-sim_short|:
 
-.. code-block:: console
+.. code-block:: bash
 
-    $ mkdir -p ~/.cache/ov/hub
-    $ sudo chown -R 1234:1234 ~/.cache/ov/hub
-    $ docker run --name hub-cache --rm -d --network=host \
+    mkdir -p ~/.cache/ov/hub
+    sudo chown -R 1234:1234 ~/.cache/ov/hub
+    docker run --name hub-cache --rm -d --network=host \
         -v ~/.cache/ov/hub:/var/cache/hub:rw \
         -u 1234:1234 \
         nvcr.io/nvidia/omniverse/hub_workstation_cache:2.0.0
@@ -399,22 +398,22 @@ The ``docker-compose.yml`` in ``tools/docker/`` handles volume mounts, GPU assig
 
 **Quick Start:**
 
-.. code-block:: console
+.. code-block:: bash
 
     # Create cache/log mounts (use uid 1234 to match container user)
-    $ mkdir -p ~/docker/isaac-sim/{cache/main,cache/computecache,config,data,logs,pkg}
-    $ mkdir -p ~/.cache/ov/hub
-    $ sudo chown -R 1234:1234 ~/docker ~/.cache/ov/hub
+    mkdir -p ~/docker/isaac-sim/{cache/main,cache/computecache,config,data,logs,pkg}
+    mkdir -p ~/.cache/ov/hub
+    sudo chown -R 1234:1234 ~/docker/isaac-sim ~/.cache/ov/hub
 
     # Build the Isaac Sim image (one-time)
-    $ ./tools/docker/prep_docker_build.sh --build --x86_64
-    $ ./tools/docker/build_docker.sh --x86_64
+    ./tools/docker/prep_docker_build.sh --build --x86_64
+    ./tools/docker/build_docker.sh --x86_64
 
     # Launch both services
-    $ docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
+    docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
 
     # Check the web viewer URL
-    $ docker compose -p isim logs web-viewer
+    docker compose -p isim logs web-viewer
 
 .. note::
 
@@ -427,15 +426,15 @@ If Docker Compose reports a Hub startup or connectivity issue after a previous t
 
 To use a prebuilt NGC image instead of building locally:
 
-.. code-block:: console
+.. code-block:: bash
 
-    $ ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
+    ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
 
 To stop:
 
-.. code-block:: console
+.. code-block:: bash
 
-    $ docker compose -p isim -f tools/docker/docker-compose.yml down
+    docker compose -p isim -f tools/docker/docker-compose.yml down
 
 .. note::
 
@@ -458,37 +457,35 @@ This section describes how to run the |isaac-sim| container with GUI.
 
 2. Run the following command to confirm your GPU driver version:
 
-.. code-block:: console
+.. code-block:: bash
 
-    $ nvidia-smi
+    nvidia-smi
 
 3. Pull the `Isaac Sim Container`_:
 
-.. code-block:: console
+.. code-block:: bash
 
-    $ docker pull nvcr.io/nvidia/isaac-sim:6.0.0
+    docker pull nvcr.io/nvidia/isaac-sim:6.0.0
 
-4. Create the cached volume mounts on host:
+4. Create the cached volume mounts on host. Each directory maps to a container volume mount in the ``docker run`` command below:
 
-.. code-block:: console
+.. code-block:: bash
 
-    $ mkdir -p ~/docker/isaac-sim/cache/main/ov
-    $ mkdir -p ~/docker/isaac-sim/cache/main/warp
-    $ mkdir -p ~/docker/isaac-sim/cache/computecache
-    $ mkdir -p ~/docker/isaac-sim/config
-    $ mkdir -p ~/docker/isaac-sim/data/documents
-    $ mkdir -p ~/docker/isaac-sim/data/Kit
-    $ mkdir -p ~/docker/isaac-sim/logs
-    $ mkdir -p ~/docker/isaac-sim/pkg
-    $ mkdir -p ~/.cache/ov/hub
-    $ sudo chown -R 1234:1234 ~/docker/isaac-sim ~/.cache/ov/hub
+    mkdir -p ~/docker/isaac-sim/cache/main
+    mkdir -p ~/docker/isaac-sim/cache/computecache
+    mkdir -p ~/docker/isaac-sim/config
+    mkdir -p ~/docker/isaac-sim/data
+    mkdir -p ~/docker/isaac-sim/logs
+    mkdir -p ~/docker/isaac-sim/pkg
+    mkdir -p ~/.cache/ov/hub
+    sudo chown -R 1234:1234 ~/docker/isaac-sim ~/.cache/ov/hub
 
 5. Run the |isaac-sim_short| container with an interactive Bash session:
 
-.. code-block:: console
+.. code-block:: bash
 
-    $ xhost +local:
-    $ docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
+    xhost +local:
+    docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
         -e "PRIVACY_CONSENT=Y" \
         -v $HOME/.Xauthority:/isaac-sim/.Xauthority \
         -e DISPLAY \
@@ -504,15 +501,15 @@ This section describes how to run the |isaac-sim| container with GUI.
 
 6. Check if your system is compatible with |isaac-sim_short|:
 
-.. code-block:: console
+.. code-block:: bash
 
-    $ ./isaac-sim.compatibility_check.sh
+    ./isaac-sim.compatibility_check.sh
 
 7. Start |isaac-sim_short| with GUI:
 
-.. code-block:: console
+.. code-block:: bash
 
-    $ ./runapp.sh
+    ./runapp.sh
 
 8. Proceed to :ref:`isaac_sim_intro_quickstart_series` to begin your first tutorial.
 
