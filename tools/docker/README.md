@@ -413,6 +413,19 @@ docker compose -p isim2 -f tools/docker/docker-compose.yml down
 
 > **Note:** Hub Workstation Cache is designed for **local workstation use only** — for example, bare-metal runs or containers on a local workstation. It is not intended for multi-user servers or cloud deployments. For distributed or cloud caching, see [Derived Data Cache Service (DDCS)](https://docs.nvidia.com/cloud-functions/current/latest/ddcs.html).
 
+The Hub Workstation Cache image is public and can be pulled without logging in to `nvcr.io`. If your Docker client is already logged in to `nvcr.io`, NGC checks whether the governing terms have been accepted for your NGC organization before allowing the pull.
+
+Before pulling the Hub image with Docker credentials, open the [Hub Workstation Cache container page](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/omniverse/containers/hub_workstation_cache?version=2.0.0) in a browser, sign in to NGC, select version `2.0.0`, and accept the governing terms. NGC requires terms acceptance once per NGC organization. For the official NGC procedure, see [Accepting Terms Before Downloading](https://docs.nvidia.com/ngc/latest/ngc-catalog-user-guide.html#accepting-terms-before-downloading).
+
+If Docker reports `DENIED` with `Please accept license on the browser to be able to download`, either accept the terms in the browser for the same NGC organization used by `docker login nvcr.io`, or log out of `nvcr.io` before pulling this public image anonymously:
+
+```bash
+docker logout nvcr.io
+docker pull nvcr.io/nvidia/omniverse/hub_workstation_cache:2.0.0
+```
+
+![Hub Workstation Cache NGC Governing Terms panel with an Accept Terms button](../../docs/isaacsim/images/isim_6.0_full_ref_gui_hub_workstation_cache_accept_terms.png)
+
 Start the Hub container **before** launching Isaac Sim:
 
 ```bash
