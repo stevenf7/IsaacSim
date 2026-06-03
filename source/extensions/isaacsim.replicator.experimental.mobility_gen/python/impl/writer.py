@@ -40,7 +40,7 @@ def _is_url_asset_path(asset_path: str) -> bool:
 
 
 def _norm_path_key(p: str) -> str:
-    """Canonicalize an absolute filesystem path for dict-key use across OSes.
+    r"""Canonicalize an absolute filesystem path for dict-key use across OSes.
 
     `UsdUtils.ComputeAllDependencies` and `Sdf.Layer.ComputeAbsolutePath` can
     return paths that differ in separator (`/` vs `\\`) or case on Windows.
@@ -253,6 +253,7 @@ class MobilityGenWriter:
             self._async_write = False
 
     def __del__(self) -> None:
+        """Close the writer when the object is collected."""
         try:
             self.close()
         except Exception:
@@ -383,9 +384,11 @@ class MobilityGenWriter:
         occupancy_map.save_ros(os.path.join(self.path, "occupancy_map"))
 
     def copy_init(self, other_path: str) -> None:
-        """Copy stage, config, occupancy map, and the sibling assets/ tree from
-        another recording. `.usdz` recordings are archive-self-contained and
-        don't need an assets/ tree.
+        """Copy initialization files from another recording.
+
+        Copies the stage, config, occupancy map, and sibling assets/ tree from
+        another recording. `.usdz` recordings are archive-self-contained and do
+        not need an assets/ tree.
         """
         if not os.path.exists(self.path):
             os.makedirs(self.path)

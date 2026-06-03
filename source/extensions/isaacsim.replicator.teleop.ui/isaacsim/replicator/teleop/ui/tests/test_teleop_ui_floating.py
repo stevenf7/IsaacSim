@@ -52,6 +52,7 @@ class TestTeleopUIFloatingController(MenuUITestCase):
     """Drive the floating controller from debug markers in the live Teleop window."""
 
     async def tearDown(self) -> None:
+        """Stop the timeline and release floating controller fixtures."""
         omni.timeline.get_timeline_interface().stop()
         await super().tearDown()
 

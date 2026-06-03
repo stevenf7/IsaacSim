@@ -32,7 +32,7 @@ from .vive_tracker import IsaacSimViveTracker
 _handtracker_available: Final[bool] = True
 
 
-def get_manus_vive_integration(handtracker_lib_override: str | None = None):
+def get_manus_vive_integration(handtracker_lib_override: str | None = None) -> "ManusViveIntegration":
     """Return a shared `ManusViveIntegration` instance.
 
     If the extension is loaded, returns its singleton instance; otherwise creates
@@ -76,14 +76,14 @@ def get_manus_vive_integration(handtracker_lib_override: str | None = None):
 class ManusTracker:
     """Thin wrapper around the C++ bindings for the hand-tracker plugin."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     def update(self) -> None:
         """No-op placeholder for symmetry with Vive tracker update cadence."""
         return
 
-    def get_data(self):
+    def get_data(self) -> dict[str, dict[str, list[float]]]:
         """Return latest hand joint poses keyed by hand and joint index.
 
         Returns a dict mapping keys like `left_0`..`left_N` and `right_0`..`right_N`
@@ -118,7 +118,7 @@ class ManusTracker:
 class ManusViveIntegration:
     """Initialize hand-tracker plugin, Vive tracker, and device status."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Hand tracker plugin state
         self._handtracker_loaded = False
         self._handtracker_initialized = False
@@ -175,7 +175,7 @@ class ManusViveIntegration:
         except Exception as e:
             carb.log_error(f"Failed to register Manus and Vive devices: {e}")
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Clean up hand-tracker plugin and Vive tracker resources."""
         # Shutdown Hand Tracker plugin
         if _handtracker_available:

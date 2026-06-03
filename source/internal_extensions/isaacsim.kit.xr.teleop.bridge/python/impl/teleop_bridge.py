@@ -92,7 +92,7 @@ def get_instance_proc_addr() -> int:
     return _interface.get_instance_proc_addr()
 
 
-def subscribe_required_extensions(callback: Callable[[], list[str]]):
+def subscribe_required_extensions(callback: Callable[[], list[str]]) -> object:
     """Subscribe a callback that can contribute OpenXR required extensions.
 
     The callback should return an iterable of extension strings. The C++ layer

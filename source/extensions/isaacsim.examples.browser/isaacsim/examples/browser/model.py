@@ -137,7 +137,7 @@ class ExampleFolderDetailItem(DetailItem):
         thumbnail: Optional path to a folder icon used as the tile thumbnail.
     """
 
-    def __init__(self, category_path: str, name: str, thumbnail: Optional[str] = None):
+    def __init__(self, category_path: str, name: str, thumbnail: Optional[str] = None) -> None:
         super().__init__(name, "", thumbnail)
         self.category_path = category_path
         # Property delegates iterate selected items and call `item.ui_hook()` to render extra UI; folder
@@ -168,7 +168,7 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
             **kwargs,
         )
 
-    def set_widget(self, widget) -> None:
+    def set_widget(self, widget: object) -> None:
         """Register the BrowserWidget so folder tiles can drive tree navigation on double-click."""
         self._widget = widget
 

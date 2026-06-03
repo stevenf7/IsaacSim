@@ -105,7 +105,7 @@ class ClashDetector:
         self._clashing_view_prims: list[Any] = []
         self._prim_view_queries: dict[str, dict[str, Any]] = {}
 
-    def set_scope(self, searchset_path: str):
+    def set_scope(self, searchset_path: str) -> None:
         """Set the searchset defining the scope of the clash detection.
 
         Args:
@@ -114,7 +114,7 @@ class ClashDetector:
         """
         self._object_b_path = searchset_path
 
-    def get_scope(self):
+    def get_scope(self) -> str:
         """Get the current searchset used for clash detection.
 
         Returns:
@@ -123,7 +123,7 @@ class ClashDetector:
         """
         return self._object_b_path
 
-    def get_current_query_id(self):
+    def get_current_query_id(self) -> int:
         """Get the query ID of the most recent clash detection run.
 
         Returns:
@@ -148,14 +148,13 @@ class ClashDetector:
         if not query_name:
             carb.log_warn("No query name provided. Returning invalid query id.")
             return 0
-        try:
-            return self._prim_queries[str(query_name)]
-        except:
-            try:
-                return self._prim_view_queries[str(query_name)]["prim_view_id"]
-            except:
-                carb.log_warn(f"Query name {query_name} not found. Returning invalid query id.")
-                return 0
+        query_name_str = str(query_name)
+        if query_name_str in self._prim_queries:
+            return self._prim_queries[query_name_str]
+        if query_name_str in self._prim_view_queries:
+            return self._prim_view_queries[query_name_str]["prim_view_id"]
+        carb.log_warn(f"Query name {query_name} not found. Returning invalid query id.")
+        return 0
 
     def export_to_json(self, json_path_name: str, query_id: int = 0, prim_view: bool = False) -> bool:
         """Export detailed clash detection data to JSON format.
@@ -405,10 +404,10 @@ class ClashDetector:
 
         view_name = self._prim_view_query_name
         curr_query_name = self._query.query_name
-        try:
+        if view_name in self._prim_view_queries:
             self._prim_view_queries[view_name]["query_ids"].append(new_query_id)
             self._prim_view_queries[view_name]["query_names"].append(curr_query_name)
-        except:
+        else:
             self._prim_view_queries[view_name] = {
                 "prim_view_id": prim_view_id,
                 "query_ids": [new_query_id],
@@ -454,7 +453,7 @@ class ClashDetector:
             data.append(temp_data)
 
         if num_overlaps > 0:
-            output = dict()
+            output = {}
             if self._is_prim_view:
                 output[f"View Query/Prim Query: {self._prim_view_query_name}/{clash_query.query_name}"] = data
             else:

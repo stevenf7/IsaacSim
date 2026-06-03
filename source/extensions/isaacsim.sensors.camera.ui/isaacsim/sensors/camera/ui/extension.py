@@ -128,7 +128,7 @@ class Extension(omni.ext.IExt):
     Used to dynamically generate menu items and actions for creating sensor prims in the scene.
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
         """Initializes the extension by setting up sensor creation actions and menu items.
 
         Args:
@@ -198,7 +198,7 @@ class Extension(omni.ext.IExt):
 
         self._viewport_create_menu = omni.kit.context_menu.add_menu(context_menu_dict, "CREATE")
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleans up the extension by removing menu items and deregistering actions."""
         remove_menu_items(self._menu_items, "Create")
         self._viewport_create_menu = None
@@ -211,7 +211,7 @@ class Extension(omni.ext.IExt):
         self._depth_sensors.clear()
         gc.collect()
 
-    def _get_stage_and_path(self):
+    def _get_stage_and_path(self) -> str | None:
         """Gets the currently selected prim path from the USD stage.
 
         Returns:
