@@ -743,6 +743,7 @@ html[data-theme="dark"] .isaacsim-flow-row__detail-link {
 }
 
 .isaacsim-diff__badge {
+  margin-left: 0.5rem;
   padding: 3px 10px;
   border-radius: var(--bs-border-radius-lg, 0.5rem);
   color: #000;
