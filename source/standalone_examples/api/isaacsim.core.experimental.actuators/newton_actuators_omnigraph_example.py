@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-================================================================================
+"""================================================================================
 Companion script for the Newton Actuators "Drive an Actuated Robot from
 OmniGraph" tutorial.  Loads a Franka, authors Newton actuators onto it,
 builds the example Action Graph programmatically, and keeps the kit window

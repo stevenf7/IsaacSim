@@ -32,7 +32,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from isaacsim.core.utils.extensions import enable_extension
 
@@ -49,7 +49,7 @@ def is_public_method(name: str) -> bool:
     return not name.startswith("_")
 
 
-def is_extension_excluded(ext_name: str, exclusion_patterns: List[str]) -> bool:
+def is_extension_excluded(ext_name: str, exclusion_patterns: list[str]) -> bool:
     """Check if an extension matches any exclusion pattern.
 
     Args:
@@ -65,7 +65,7 @@ def is_extension_excluded(ext_name: str, exclusion_patterns: List[str]) -> bool:
     return False
 
 
-def get_function_info(obj: Any, name: str) -> Dict[str, Any]:
+def get_function_info(obj: Any, name: str) -> dict[str, Any]:
     """Get detailed information about a function/method.
 
     Args:
@@ -111,7 +111,7 @@ def get_function_info(obj: Any, name: str) -> Dict[str, Any]:
     return info
 
 
-def check_docstring(obj: Any, name: str) -> Tuple[bool, str]:
+def check_docstring(obj: Any, name: str) -> tuple[bool, str]:
     """Check if an object has a valid docstring.
 
     Args:
@@ -129,7 +129,7 @@ def check_docstring(obj: Any, name: str) -> Tuple[bool, str]:
     return True, docstring
 
 
-def inspect_module(module_name: str, file_path: str) -> Dict[str, Any]:
+def inspect_module(module_name: str, file_path: str) -> dict[str, Any]:
     """Inspect a module and check for docstrings on public methods.
 
     Args:
@@ -214,7 +214,7 @@ def inspect_module(module_name: str, file_path: str) -> Dict[str, Any]:
     return result
 
 
-def get_extensions_to_check(base_dir: str) -> Dict[str, str]:
+def get_extensions_to_check(base_dir: str) -> dict[str, str]:
     """Get list of extensions to check.
 
     Args:
@@ -243,7 +243,7 @@ def get_extensions_to_check(base_dir: str) -> Dict[str, str]:
     return extensions
 
 
-def get_python_modules_from_extension_config(config_path: str) -> List[str]:
+def get_python_modules_from_extension_config(config_path: str) -> list[str]:
     """Parse extension.toml to find Python module names.
 
     Args:
@@ -254,7 +254,7 @@ def get_python_modules_from_extension_config(config_path: str) -> List[str]:
     """
     modules = []
     try:
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             content = f.read()
 
         # Simple parsing for [[python.module]] sections

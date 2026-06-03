@@ -51,7 +51,6 @@ def compute_axis_impulse(
     Returns:
         Impulse (scalar) along the constraint axis to get relative velocity to zero.
     """
-
     delta_cross_constraint_axis = wp.cross(center_of_mass_to_point, constraint_axis)
 
     # angular response: (r x t)^T * I^-1 * (r x t)
@@ -104,7 +103,6 @@ def compute_point_impulse(
     Returns:
         Friction impulse vector (world space, tangential to the contact normal).
     """
-
     rel_vel = target_vel - current_vel
 
     basis_vectors = cb_utils.compute_basis_vectors(normal)
@@ -186,7 +184,6 @@ def compute_point_force(
         Spatial vector whose first three components are the linear force and last three are the
         torque, both expressed in world space and intended to be applied at the center of mass.
     """
-
     contact_impulse = contact_force * dt
 
     center_of_mass_to_point = contact_position - body_to_world_transform.p
@@ -414,7 +411,6 @@ class VelocityFieldActuator:
         Returns:
             Integer index of the newly registered velocity field instance.
         """
-
         index = len(self.constant_velocity_field_target_velocity_list)
 
         self.constant_velocity_field_target_velocity_list.append(target_velocity)
@@ -436,7 +432,6 @@ class VelocityFieldActuator:
         Returns:
             Integer index of the newly registered velocity field instance.
         """
-
         index = len(self.pivot_velocity_field_pivot_point_list)
 
         self.pivot_velocity_field_pivot_point_list.append(pivot_point)
@@ -453,7 +448,6 @@ class VelocityFieldActuator:
         Args:
             device: Warp device string. Uses the default device when ``None``.
         """
-
         #
         # constant velocity fields
         #
@@ -528,7 +522,6 @@ class VelocityFieldActuator:
             batch_size: Number of contact points processed per thread per iteration.
             device: Warp device string. Uses the default device when ``None``.
         """
-
         parallel_contact_processing_count = min(max_thread_count, int(math.ceil(float(max_contact_count) / batch_size)))
 
         wp.launch(

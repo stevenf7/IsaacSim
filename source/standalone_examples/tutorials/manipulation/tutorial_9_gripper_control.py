@@ -39,7 +39,6 @@ if args.headless:
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.app
-import warp as wp
 from isaacsim.core.experimental.objects import DomeLight, GroundPlane
 from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.simulation_manager import SimulationManager

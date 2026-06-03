@@ -39,7 +39,7 @@ def _register_plugin_path(path: str):
     try:
         import json
 
-        with open(pluginfo_path, "r") as file_handle:
+        with open(pluginfo_path) as file_handle:
             lines = file_handle.readlines()
             json_lines = [line for line in lines if not line.strip().startswith("#")]
             json_content = "".join(json_lines)

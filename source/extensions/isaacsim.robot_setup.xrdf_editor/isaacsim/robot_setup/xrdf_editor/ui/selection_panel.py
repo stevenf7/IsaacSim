@@ -17,7 +17,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import omni.ui as ui
 from isaacsim.gui.components.ui_utils import add_line_rect_flourish, get_style

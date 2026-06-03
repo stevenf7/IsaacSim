@@ -14,7 +14,8 @@
 # limitations under the License.
 
 """High-level factory assembling an :class:`EpisodeRecorder` with teleop plus the
-standard articulation / xform / rigid-body recordables the UI exposes today."""
+standard articulation / xform / rigid-body recordables the UI exposes today.
+"""
 
 from __future__ import annotations
 

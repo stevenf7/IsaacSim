@@ -118,7 +118,7 @@ replicator_write_to_fabric = not args.no_replicator_write_to_fabric
 randomize_drop_height = args.randomize_drop_height
 
 if "all" in args.annotators:
-    annotators_kwargs = {annotator: True for annotator in VALID_ANNOTATORS}
+    annotators_kwargs = dict.fromkeys(VALID_ANNOTATORS, True)
 else:
     annotators_kwargs = {annotator: True for annotator in args.annotators if annotator in VALID_ANNOTATORS}
 

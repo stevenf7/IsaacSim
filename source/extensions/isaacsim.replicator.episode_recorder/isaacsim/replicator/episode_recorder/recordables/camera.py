@@ -28,7 +28,7 @@ from typing import Any
 import carb
 import numpy as np
 
-from ..base import ChannelDescriptor, Recordable, ReplayPolicy
+from ..base import ChannelDescriptor, ReplayPolicy
 from ..registry import register_recordable
 from ._pose_base import _PoseBase
 from ._utils import to_numpy

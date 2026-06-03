@@ -92,7 +92,7 @@ class FollowContext(DfRobotApiContext):
 
     def monitor_diagnostics(self):
         """Print the current target-reached status."""
-        print("is_target_reached: {}".format(self.is_target_reached))
+        print(f"is_target_reached: {self.is_target_reached}")
 
 
 def main():

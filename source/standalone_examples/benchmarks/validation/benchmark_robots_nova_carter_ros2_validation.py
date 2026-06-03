@@ -147,7 +147,8 @@ from omni.replicator.core.scripts.writers_default.basicwriter import BasicWriter
 
 class TimestampedBasicWriter(BasicWriter):
     """BasicWriter subclass that uses the timeline simulation time as the
-    filename instead of an incrementing frame counter."""
+    filename instead of an incrementing frame counter.
+    """
 
     def write(self, data):
         self._ref_time_sec = omni.timeline.get_timeline_interface().get_current_time()

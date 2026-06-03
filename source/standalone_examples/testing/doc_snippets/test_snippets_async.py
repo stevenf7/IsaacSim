@@ -143,7 +143,7 @@ def parse_experience_csv(csv_path, base_dir, snippets_root=None):
         print(f"Warning: Experience CSV file not found: {csv_file}")
         return experience_map
 
-    with open(csv_file, "r", encoding="utf-8") as f:
+    with open(csv_file, encoding="utf-8") as f:
         reader = csv.reader(f)
         for row in reader:
             if not row or row[0].strip().startswith("#"):
@@ -231,7 +231,7 @@ def parse_platform_constraints_csv(
         print(f"Warning: Platform constraints CSV file not found: {csv_file}")
         return constraints
 
-    with open(csv_file, "r", encoding="utf-8") as f:
+    with open(csv_file, encoding="utf-8") as f:
         reader = csv.reader(f)
         for row in reader:
             if not row or row[0].strip().startswith("#"):
@@ -285,7 +285,7 @@ def parse_expected_failures_csv(csv_path, base_dir, snippets_root=None):
         print(f"Warning: Expected failures CSV file not found: {csv_file}")
         return entries
 
-    with open(csv_file, "r", encoding="utf-8") as f:
+    with open(csv_file, encoding="utf-8") as f:
         reader = csv.reader(f)
         for row in reader:
             if not row or row[0].strip().startswith("#"):
@@ -325,7 +325,7 @@ def parse_excluded_snippets_csv(csv_path, base_dir, snippets_root=None):
         print(f"Warning: Excluded snippets CSV file not found: {csv_file}")
         return excluded
 
-    with open(csv_file, "r", encoding="utf-8") as f:
+    with open(csv_file, encoding="utf-8") as f:
         reader = csv.reader(f)
         for row in reader:
             if not row or row[0].strip().startswith("#"):
@@ -361,7 +361,7 @@ def find_python_files(root_dir):
 def file_contains_simulation_app(file_path):
     """Check if a file contains 'SimulationApp' in uncommented lines."""
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             for line in f:
                 # Skip comment-only lines
                 stripped = line.strip()

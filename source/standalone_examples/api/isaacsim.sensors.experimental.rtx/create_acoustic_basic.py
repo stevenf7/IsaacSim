@@ -33,7 +33,6 @@ pair on each channel. The GenericModelOutput fields have different meanings:
 
 import argparse
 import os
-import sys
 
 from isaacsim import SimulationApp
 

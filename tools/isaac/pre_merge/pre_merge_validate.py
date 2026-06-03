@@ -93,12 +93,14 @@ from repo_helpers import (  # noqa: E402
     _IS_WINDOWS,
     EXTENSION_ROOTS,
     REPO_ROOT,
+    STANDALONE_EXAMPLES_DIR,
     TOOLS_DIR,
     affected_extensions,
     all_extensions,
     get_all_modified_files,
     has_apps_changes,
     resolve_extensions_by_name,
+    standalone_examples_files,
 )
 from term_helpers import (  # noqa: E402
     Colors,
@@ -216,6 +218,43 @@ def check_python_lint(extensions: list[Path], fix: bool = False) -> int:
         return 1
 
     log_pass("Python linting clean.")
+    return 0
+
+
+def check_python_lint_paths(paths: list[Path], label: str, fix: bool = False) -> int:
+    """Run ruff via ``run_python_linting.py --path`` on arbitrary directories/files.
+
+    Used for source trees (such as ``source/standalone_examples``) that are not
+    registered extensions but still contain Python that should be linted.
+
+    Args:
+        paths: Directories and/or files to lint.
+        label: Human-readable name for this section (used in status messages).
+        fix: Whether to auto-fix issues.
+
+    Returns:
+        Exit code (0 if clean, 1 if issues).
+    """
+    existing = [p for p in paths if p.exists()]
+    if not existing:
+        log_info(f"No {label} files to lint.")
+        return 0
+
+    script = TOOLS_DIR / "run_python_linting.py"
+    if not script.exists():
+        log_warn("run_python_linting.py not found; skipping lint check.")
+        return 0
+
+    cmd = [sys.executable, str(script), "--ruff", "--path"] + [str(p) for p in existing]
+    if fix:
+        cmd.append("--fix")
+
+    proc = _run_teed(cmd, cwd=REPO_ROOT)
+    if proc.returncode != 0:
+        log_fail(f"Python linting reported issues in {label}.")
+        return 1
+
+    log_pass(f"Python linting clean ({label}).")
     return 0
 
 
@@ -1083,6 +1122,20 @@ def _run(args: argparse.Namespace) -> int:
         if run_all_validation or args.lint:
             header("Python Linting (ruff)")
             total_errors += check_python_lint(extensions, fix=args.fix)
+
+            # standalone_examples is not a registered extension, so it is linted
+            # separately as its own section. With --all the whole tree is checked;
+            # otherwise only modified standalone_examples files are checked.
+            if args.all_extensions:
+                se_targets: list[Path] = [STANDALONE_EXAMPLES_DIR]
+            elif not args.extensions:
+                se_targets = standalone_examples_files(modified)
+            else:
+                se_targets = []
+
+            if se_targets:
+                header("Python Linting (standalone_examples)")
+                total_errors += check_python_lint_paths(se_targets, "standalone_examples", fix=args.fix)
 
         if run_all_validation or args.changelog:
             header("Changelog & Version Bump")

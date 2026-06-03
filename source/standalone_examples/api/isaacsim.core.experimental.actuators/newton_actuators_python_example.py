@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-================================================================================
+"""================================================================================
 This file contains code snippets that are displayed in the Newton Actuators
 "Adding Actuators from Python" tutorial.  Keep the
 ``<start-...-snippet>`` / ``<end-...-snippet>`` markers in sync with
@@ -54,10 +53,8 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 import isaacsim.core.experimental.utils.stage as stage_utils
-import numpy as np
 import omni.kit.app
 import omni.timeline
-import warp as wp
 from isaacsim.core.experimental.utils.stage import add_reference_to_stage
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.storage.native import get_assets_root_path_async

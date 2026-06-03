@@ -19,7 +19,6 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-import carb
 import omni.replicator.core as rep
 import warp as wp
 

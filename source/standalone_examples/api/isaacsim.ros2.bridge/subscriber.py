@@ -27,7 +27,6 @@ simulation_app = SimulationApp({"renderer": "RealTimePathTracing", "headless": F
 
 import isaacsim.core.experimental.utils.app as app_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
-import omni
 from isaacsim.core.experimental.objects import Cube, DistantLight, GroundPlane
 from isaacsim.core.simulation_manager import SimulationManager
 

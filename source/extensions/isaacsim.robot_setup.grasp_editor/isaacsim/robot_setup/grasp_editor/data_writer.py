@@ -129,7 +129,7 @@ class DataWriter:
         Returns:
             Parsed YAML data as a dictionary, or empty dictionary if loading fails.
         """
-        with open(path, "r") as stream:
+        with open(path) as stream:
             try:
                 parsed_file = yaml.safe_load(stream)
             except yaml.YAMLError as exc:

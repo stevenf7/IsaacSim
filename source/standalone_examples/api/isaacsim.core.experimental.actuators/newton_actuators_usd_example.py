@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-================================================================================
+"""================================================================================
 This file contains code snippets that are displayed in the Newton Actuators
 "Authoring and Parsing Actuators from USD" tutorial.  Keep the
 ``<start-...-snippet>`` / ``<end-...-snippet>`` markers in sync with

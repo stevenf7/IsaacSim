@@ -102,7 +102,7 @@ class TestIw_hub(omni.kit.test.AsyncTestCase):
         self.ar.set_dof_velocity_targets(velocities=np.array([[1.0, 1.0]]), dof_indices=dof_indices)
 
         # simulate for 1 second
-        for frame in range(int(60)):
+        for frame in range(60):
             await omni.kit.app.get_app().next_update_async()
 
         current_pos, _ = self.ar.get_world_poses()

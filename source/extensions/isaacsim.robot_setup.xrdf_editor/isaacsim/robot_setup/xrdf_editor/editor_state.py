@@ -23,7 +23,7 @@ through it. Tests construct one directly.
 from __future__ import annotations
 
 from collections import OrderedDict
-from typing import Callable
+from collections.abc import Callable
 
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np

@@ -193,7 +193,7 @@ def _resolve_usd_paths(source_files, base_usd_path, input_dir=None):
     value for every file is simply *base_usd_path*.
     """
     if base_usd_path is None or input_dir is None or len(source_files) <= 1:
-        return {f: base_usd_path for f in source_files}
+        return dict.fromkeys(source_files, base_usd_path)
 
     mapping = {}
     for src in source_files:

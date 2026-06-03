@@ -31,7 +31,6 @@ def compute_basis_vectors(dir: wp.vec3) -> Vec3Pair:
 
     ``dir`` must be a normalized vector.
     """
-
     basis_vectors = Vec3Pair()
 
     if wp.abs(dir.y) <= 0.9999:

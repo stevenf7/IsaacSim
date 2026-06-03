@@ -126,7 +126,6 @@ class ConveyorBeltExample:
             device: Warp device string (e.g. ``"cuda:0"`` or ``"cpu"``). Uses the default
                 device when ``None``.
         """
-
         # Single element array to store the total elapsed simulation time.
         self._total_elapsed_time = wp.zeros(shape=1, dtype=wp.float32, device=device)
 
@@ -148,7 +147,6 @@ class ConveyorBeltExample:
             device: Warp device string (e.g. ``"cuda:0"`` or ``"cpu"``). Uses the default
                 device when ``None``.
         """
-
         self._velocity_field_actuator.create_buffers(device)
 
         self._conveyor_belt_manager.create_buffers(device)
@@ -198,7 +196,6 @@ class ConveyorBeltExample:
         self,
     ) -> None:
         """Build the simulation environment: lighting, camera, scene, data buffers, contact views, and callbacks."""
-
         # Add a dome light
         domeLight = UsdLux.DomeLight.Define(self._stage, "/World/DomeLight")
         domeLight.CreateIntensityAttr(800)
@@ -317,7 +314,6 @@ class ConveyorBeltExample:
             pair_contacts_count: (N, M) number of contacts per body-conveyor-belt pair.
             pair_contacts_start_indices: (N, M) start index into the contact forces/points/normals buffers per body-conveyor-belt pair.
         """
-
         max_thread_count = 4096
 
         #
@@ -489,7 +485,6 @@ class ConveyorBeltExample:
             dt: Elapsed simulation time for the current step in seconds.
             _context: Simulation event context (PhysicsStepContext) provided by the SimulationManager callback system.
         """
-
         #
         # Fetch the active simulation state and physical properties of the rigid bodies that
         # are to interact with the conveyor belts. Fetch the contact information between those
@@ -596,7 +591,6 @@ class ConveyorBeltExample:
         self,
     ) -> None:
         """Set up the environment and run the simulation loop until the application is closed."""
-
         self.make_env()
 
         reset_needed = False

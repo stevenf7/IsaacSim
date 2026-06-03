@@ -41,6 +41,10 @@ EXTENSION_ROOTS = [
 APPS_DIR = REPO_ROOT / "source" / "apps"
 APP_SETUP_EXT = "isaacsim.app.setup"
 
+# standalone_examples is not a registered extension (it has no config/extension.toml),
+# but it contains Python that should still be linted. It is treated as its own section.
+STANDALONE_EXAMPLES_DIR = REPO_ROOT / "source" / "standalone_examples"
+
 _IS_WINDOWS = platform.system() == "Windows"
 BUILD_PLATFORM = "windows-x86_64" if _IS_WINDOWS else "linux-x86_64"
 BUILD_DIR = REPO_ROOT / "_build" / BUILD_PLATFORM / "release"
@@ -177,6 +181,28 @@ def has_apps_changes(files: list[Path]) -> bool:
         except ValueError:
             continue
     return False
+
+
+def standalone_examples_files(files: list[Path]) -> list[Path]:
+    """Return existing ``.py`` files from the given list that live under ``source/standalone_examples``.
+
+    Args:
+        files: List of file paths to filter.
+
+    Returns:
+        Sorted list of Python file paths under the standalone_examples directory.
+    """
+    se_root = STANDALONE_EXAMPLES_DIR.resolve()
+    matches: set[Path] = set()
+    for f in files:
+        if f.suffix != ".py" or not f.exists():
+            continue
+        try:
+            f.resolve().relative_to(se_root)
+        except ValueError:
+            continue
+        matches.add(f)
+    return sorted(matches)
 
 
 # ---------------------------------------------------------------------------

@@ -217,7 +217,7 @@ def run_asset_transformer(
     print(f"  Output root: {output_package_root}")
 
     # Load the rule profile
-    with open(profile_json_path, "r", encoding="utf-8") as f:
+    with open(profile_json_path, encoding="utf-8") as f:
         profile = RuleProfile.from_json(f.read())
 
     print(f"\nProfile: {profile.profile_name} (v{profile.version or 'N/A'})")

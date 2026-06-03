@@ -16,7 +16,6 @@
 """Vive tracker device interface."""
 
 import sys
-from typing import Dict
 
 import carb
 
@@ -96,7 +95,7 @@ class IsaacSimViveTracker:
         except Exception as e:
             carb.log_error(f"Failed to update Vive tracker data: {e}")
 
-    def get_data(self) -> Dict:
+    def get_data(self) -> dict:
         """Return the latest Vive tracker device data.
 
         Returns:

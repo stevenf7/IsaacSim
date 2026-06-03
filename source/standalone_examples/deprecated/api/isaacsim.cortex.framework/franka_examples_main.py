@@ -63,7 +63,7 @@ def main():
     for i, (x, spec) in enumerate(zip(np.linspace(0.3, 0.7, len(obs_specs)), obs_specs)):
         obj = world.scene.add(
             DynamicCuboid(
-                prim_path="/World/Obs/{}".format(spec.name),
+                prim_path=f"/World/Obs/{spec.name}",
                 name=spec.name,
                 size=width,
                 color=spec.color,
@@ -74,7 +74,7 @@ def main():
     world.scene.add_default_ground_plane()
 
     print()
-    print("loading behavior: {}".format(args.behavior))
+    print(f"loading behavior: {args.behavior}")
     print()
     if args.behavior in behaviors:
         decider_network = behaviors[args.behavior].make_decider_network(robot)

@@ -146,7 +146,7 @@ def singular_value_decomposition_method(
 ) -> jax.Array:
     """Compute delta DOF positions using adaptive SVD-based pseudoinverse."""
     U, S, Vh = jnp.linalg.svd(jacobian)
-    inv_s = jnp.where(S > min_singular_value, 1.0 / S, jnp.zeros_like(S))
+    inv_s = jnp.where(min_singular_value < S, 1.0 / S, jnp.zeros_like(S))
     pseudoinverse = jnp.swapaxes(Vh, 1, 2)[:, :, :6] @ jnp.diagflat(inv_s) @ jnp.swapaxes(U, 1, 2)
     return (scale * pseudoinverse @ error).squeeze(-1)
 
