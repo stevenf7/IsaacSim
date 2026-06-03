@@ -39,7 +39,7 @@ Asset Source
 Assets in this stage represent their raw form as imported from their original file format. They are typically organized into:
 
 #. **Base Asset (** ``base.usda`` **):** Contains the full structural hierarchy of the asset, such as robot assemblies. 
-#. **Geometries (** ``geometries.usdc`` **):** Includes individual meshes.
+#. **Geometries (** ``geometries.usd`` **):** Includes individual meshes.
 #. **Instances (** ``instances.usda`` **)**: Composes geometries, materials, and colliders into visual and collision meshes.
 #. **Materials (** ``materials.usda`` **)**: A collection of materials used by the asset.
 #. **Physics (** ``physics.usd`` **)**: Includes the USD / Newton physics setup for the asset.
@@ -173,7 +173,7 @@ modular across physics runtimes.
     :width: 100%
     :alt: isim_6.0_full_ref_external_asset-file-structure_inspire.png
 
-#. ``geometries.usdc`` - Mesh data only
+#. ``geometries.usd`` - Mesh data only
 
    - Stores mesh topology and vertex data in binary USD for performance.
    - Should not contain physics tuning, robot metadata, or runtime-specific attributes.
@@ -225,7 +225,7 @@ modular across physics runtimes.
 
 #. ``instances.usda`` - Mesh, material, and collider assembly
 
-   - References mesh prims from ``geometries.usdc`` and applies materials.
+   - References mesh prims from ``geometries.usd`` and applies materials.
    - Common place to define visual vs. collision mesh composition and collision approximation.
    - Edit this file for collider representation choices (for example convex hull vs. mesh).
 
@@ -239,7 +239,7 @@ modular across physics runtimes.
    .. code-block:: usd
 
       def Xform "right_thumb_1" (
-          prepend references = @geometries.usdc@</Geometries/right_thumb_1>
+          prepend references = @geometries.usd@</Geometries/right_thumb_1>
       )
       {
           over "right_thumb_1" (
@@ -388,7 +388,7 @@ modular across physics runtimes.
 
 **Practical rule of thumb:**
 
-- **Need to change shape or colliders?** Start in ``geometries.usdc`` or ``instances.usda``.
+- **Need to change shape or colliders?** Start in ``geometries.usd`` or ``instances.usda``.
 - **Need to change robot description/schema links?** Use ``robot.usda``.
 - **Need to change dynamics for all engines?** Use ``physics.usd``.
 - **Need engine-specific tuning?** Use ``mujoco.usda`` or ``physx.usda``.

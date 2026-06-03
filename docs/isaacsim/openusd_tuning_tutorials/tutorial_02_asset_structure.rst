@@ -94,18 +94,19 @@ Module 1.3: Asset Structure Walkthrough
 
 Here we walk through each file in the Inspire Hand and how it contributes to the final asset. Knowing each file's **role** and **format** (e.g. binary for geometry, ASCII for readability) will help you know where to author changes in later modules.
 
-geometry.usdc — Mesh file
--------------------------
+geometries.usd — Mesh file
+geometries.usd — Mesh file
+--------------------------
 
 - **Role:** Stores all the **meshes** used by the robot.
-- **Format:** Binary (``.usdc``) for efficiency.
+- **Format:** Binary (``.usd`` or ``.usdc``) for efficiency.
 - Contains only geometry (mesh data); no materials or physics.
 
 .. figure:: ../images/isim_6.0_full_tut_gui_inspire_hand_geometry_usdc.png
    :align: center
-   :alt: Inspire hand geometry.usdc.
+   :alt: Inspire hand geometries.usd
 
-material.usda — Material file
+materials.usda — Material file
 ------------------------------
 
 - **Role:** Stores all **materials** used by the robot (e.g., Plastic_ABS).
@@ -180,7 +181,7 @@ This file does not define geometry or physics; it identifies the asset as a robo
 instances.usda — Mesh + materials + colliders
 ----------------------------------------------
 
-- **Role:** Builds **visual and collision** meshes by combining ``material.usda`` and ``geometry.usdc``.
+- **Role:** Builds **visual and collision** meshes by combining ``materials.usda`` and ``geometries.usd``.
 - References geometry from the mesh file and applies materials; adds collision by applying ``PhysicsCollisionAPI`` and ``PhysicsMeshCollisionAPI`` (or other collider APIs) on the same or child prims.
 - Example pattern for a link (e.g., ``r_base_link_1``): an ``Xform`` references the geometry prim, and a child over adds ``physics:approximation`` (e.g., ``"convexHull"``) and ``purpose = "guide"`` for collision.
 
@@ -345,7 +346,7 @@ This tutorial covered:
 
 - **USD Asset Structure 3.0**: geometry, materials, metadata, instances, base scene, and physics live in dedicated files so you can find and edit the right layer without clashing with others.
 - How **layers, payloads, and variants** compose the Inspire Hand and let you switch between no physics, generic physics, or PhysX from a single asset.
-- The role of each file—from **geometry.usdc** and **material.usda** through **physics.usda** and **physx.usda**—so you know where to author collision filters and joint parameters in later tutorials.
+- The role of each file—from **geometries.usd** and **materials.usda** through **physics.usda** and **physx.usda**—so you know where to author collision filters and joint parameters in later tutorials.
 
 Next Steps
 ==========
