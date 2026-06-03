@@ -107,6 +107,7 @@ ROS
 
 - **Performance improvements**
 
+  - Reduced overhead of automatic namespace generation and ``isaac:nameOverride`` resolution on the publish path. Automatic namespace generation creates uniquely identifiable topics in multi-robot simulations, while name overrides let users customize published link names.
   - ``OgnROS2PublishJointState`` skips tensor view creation on the sensor-input path.
   - ``OgnROS2PublishTransformTree`` resolves ``toSdfPath`` once per entry and short-circuits invalid prims.
   - Point-cloud metadata fields are gated on matching ``output*`` flags, which prevents accidental message bloat.
@@ -2192,6 +2193,56 @@ release; rather than repeat them per extension, they are called out once here:
 
       - Updated ``newton-usd-schemas`` to 0.2.0.
 
+Isaac Sim ROS Workspaces Changelog Summary
+-------------------------------------------
+
+The `Isaac Sim ROS Workspaces <https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_ companion repository for Isaac Sim ROS Bridge has the following changes for Isaac Sim 6.0.0:
+
+.. note::
+
+   🎉 **We're now open to external contributions!** The community can help
+   shape Isaac Sim ROS Workspaces. See the refreshed
+   `CONTRIBUTING.md <https://github.com/isaac-sim/IsaacSim-ros_workspaces/blob/main/CONTRIBUTING.md>`_ for how to get involved — file issues,
+   propose features, and open pull requests.
+
+Added
+^^^^^
+- **Pixi-managed Jazzy workspace**: ``jazzy_ws/pixi.toml``, ``pixi.lock``, ``README_PIXI.md`` Windows dependency management via Pixi + RoboStack, including PyPI-based ``isaacsim`` install support and ``torch`` as a Pixi dependency.
+- ``isaacsim_clearpath_nav2`` **package** (Humble + Jazzy): Nav2 integration for Clearpath robots, with ``dd100`` nav2/robot params, namespaced RViz config, launch file, and a ``clearpath_common`` dependency.
+- **Simulation interfaces package** added to the workspace.
+- **RTX radar RViz config** (``rtx_radar.rviz``) added to ``isaac_tutorials`` for radial-velocity visualization.
+- **Windows long-paths warning** for Pixi on Windows.
+
+Changed
+^^^^^^^
+- **Renamed** ``isaacsim`` **→** ``isaacsim_bringup`` in both Humble and Jazzy workspaces, with updated descriptions, changelog, and Humble parity.
+- **Build type migration**: ``isaacsim``, ``cmdvel_to_ackermann``, ``h1_fullbody_controller``, and ``isaac_moveit`` converted from ``ament_cmake`` to ``ament_python``. Scripts moved into Python module layouts (``scripts/*.py`` → ``<pkg>/<pkg>/*.py``), with ``setup.py``/``setup.cfg``/``resource/`` markers replacing ``CMakeLists.txt``.
+- ``use_internal_libs`` **default** changed from ``True`` to ``False`` on Jazzy (Python 3.12 sources ROS 2 from the system; Humble keeps ``True``). Jazzy users relying on internal libs must pass ``use_internal_libs:=True``.
+- ``run_isaacsim.py`` ``dds_type`` is now opt-in and defaults to empty, preserving the surrounding ``RMW_IMPLEMENTATION`` (e.g. ``rmw_zenoh_cpp`` from Pixi activation); explicit values map to ``fastdds``/``cyclonedds``/``zenoh``.
+- ``run_isaacsim.py`` **install path** falls back to the ``isaac_sim_package_path`` env var (set by Pixi activation) when ``install_path:=`` is not provided.
+- ``moveit_resources`` bumped to widen ``allowed_start_tolerance``.
+- ``topic_based_ros2_control`` submodule bumped (includes a Windows crash fix).
+- ``open_isaacsim_stage.py`` path resolution uses ``get_package_share_directory`` instead of ``__file__``.
+- Optimized the MoveIt sample for Jazzy: added a local ``panda_isaac.urdf.xacro`` (omits ``PandaHandFakeSystem``) and extended ``gripper_to_isaac.py`` to forward finger positions.
+- Pixi environment setup, ``clearpath_common``, and pip dependency for ``h1_fullbody_controller``.
+
+Removed
+^^^^^^^
+- ``CMakeLists.txt`` files for the four migrated packages (``isaacsim``, ``cmdvel_to_ackermann``, ``h1_fullbody_controller``, ``isaac_moveit``) in both workspaces, replaced by the ``ament_python`` layout.
+- The old ``topic_based_ros2_control`` dependency on Jazzy (now integrated into ``ros2_control`` for Jazzy onward).
+
+Fixed
+^^^^^
+- **Windows launch support** for Isaac Sim:
+
+  - ``run_isaacsim`` launcher fix for Pixi/Windows.
+  - ``--exec`` quoting on Windows (cmd.exe does not strip single quotes) so the ``gui:=`` USD path opens correctly.
+  - Replaced POSIX-only ``start_new_session=True`` with ``creationflags=CREATE_NEW_PROCESS_GROUP`` for the Isaac Sim subprocess.
+  - ``use_internal_libs``/``ros_installation_path`` now exit non-zero with a clear error on Windows instead of silently exiting.
+  - Windows robot state publisher command fix.
+
+- ``isaac_moveit`` (Jazzy): malformed JointState warnings on ``/isaac_joint_commands`` and the mimic-loop fault that destabilized ``panda_arm_controller``.
+- Launch-file fixes for Windows; scan-topic launch fix for local/global costmaps in navigation samples.
 
 .. toctree::
 	:maxdepth: 2
