@@ -21,7 +21,7 @@ Learning Objectives
 In this tutorial, you will:
 
 - Understand the hardware and software requirements for the OpenUSD and Tuning Best Practices series.
-- Copy the course USD files from **Content** to a local directory ``/path/to/Inspire/``.
+- Download the course USD files from **Content** to a local directory ``/path/to/Inspire/``.
 - Open the starting Inspire Hand scene in Isaac Sim.
 
 Prerequisites
@@ -38,7 +38,14 @@ In the file paths used in this tutorial series, replace ``/path/to`` with the di
 
 #. In the **Content** browser, go to ``IsaacSim/Samples/Rigging/Inspire/``.
 
-#. Copy the ``Inspire`` folder from **Content** to your machine so the course root is ``/path/to/Inspire/``.
+#. In the **Content** browser, right-click on the ``Inspire`` folder and select "Download" to save it to your local machine. Place the downloaded folder so that its path is ``/path/to/Inspire/``, replacing ``/path/to`` with your chosen directory.
+
+.. figure:: /images/isim_6.0_full_tut_gui_inspire_content_browser_download.png
+   :alt: Downloading the Inspire folder from the Content browser in Isaac Sim
+   :width: 60%
+   :align: center
+
+   In the Content browser, right-click the ``Inspire`` folder and select "Download" to save the course files locally.
 
 Within ``/path/to/Inspire/``, the course files are organized into multiple checkpoint folders:
 

@@ -220,18 +220,17 @@ Toggling **Filtered Pair** authors ``UsdPhysics.FilteredPairsAPI`` on the active
 
 Verify and save
 ---------------
+#. Click on the blue files icon next to **physics.usda (Authoring Layer)** to save the changes to **physics.usda**.
+
+.. figure:: ../images/isim_6.0_full_tut_gui_layer_panel_save_physics_usda.png
+   :align: center
+   :alt: Layer panel for saving to physics.usda.
 
 #. Press **Play**. The pinky (little finger) should move more stably; the other fingers will still be unstable until their collision pairs are filtered the same way.
 
 .. figure:: ../images/isim_6.0_full_tut_gui_pinky_stable_after_filtered_pairs.gif
    :align: center
    :alt: GIF showing pinky moving stably after filtering its collision pairs.
-
-#. Click on the blue files icon next to **physics.usda (Authoring Layer)** to save the changes to **physics.usda**.
-
-.. figure:: ../images/isim_6.0_full_tut_gui_layer_panel_save_physics_usda.png
-   :align: center
-   :alt: Layer panel for saving to physics.usda.
 
 .. note:: Before starting Tutorial 5, open ``/path/to/Inspire/module_3_end-checkpoint_1/inspire_hand.usda``. It includes all collision filters for stability, plus additional filtered pairs (e.g. finger tips and pads) for computational performance.
 
@@ -279,7 +278,7 @@ Lower pinky link and upper rubber pad
    :align: center
    :alt: Property panel on right_little_1 prim, Filtered Pairs section with Add Target button.
 
-Then press **Play**, confirm the pinky moves more stably, and save the layers as in **Verify and save** above.
+Save the layers as in **Verify and save** above and then press **Play** again to confirm the pinky moves more stably.
 
 Summary
 =======

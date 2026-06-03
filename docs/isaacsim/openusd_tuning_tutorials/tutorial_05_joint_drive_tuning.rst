@@ -174,7 +174,7 @@ You should now see the **physx.usda** layer highlighted green, indicating it is 
    :align: center
    :alt: Layer panel for saving to physx.usda.
 
-.. note:: A checkpoint with all mimic joints and all joint drive maximums configured is ``/path/to/Inspire/module_4_end-checkpoint_2/inspire_hand.usda``. Open this file before starting Tutorial 6.
+.. note:: A checkpoint file with drive limits for all 6 joints derived using the same process is provided at ``/path/to/Inspire/module_4_end-checkpoint_2/inspire_hand.usda``. Open this file before starting Tutorial 6.
 
 Summary
 =======
