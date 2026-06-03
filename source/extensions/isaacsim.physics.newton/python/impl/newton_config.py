@@ -110,8 +110,7 @@ class NewtonConfig:
     """Default joint damping coefficient."""
 
     pd_scale: float = 1.0
-    """Scaling factor for PD controller gains when parsing USD joint drives.
-    TODO: We should not need this anymore."""
+    """Scaling factor for PD controller gains when parsing USD joint drives."""
 
     # ========== Solver Configuration ==========
 
