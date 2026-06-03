@@ -59,12 +59,12 @@ def print_diagnostics(diagnostic):
     print("=========== logical state ==========")
     if diagnostic.bin_name:
         print("active bin info:")
-        print("- bin_obj.name: {}".format(diagnostic.bin_name))
-        print("- bin_base: {}".format(diagnostic.bin_base))
-        print("- grasp_T:\n{}".format(diagnostic.grasp))
-        print("- is_grasp_reached: {}".format(diagnostic.grasp_reached))
-        print("- is_attached:  {}".format(diagnostic.attached))
-        print("- needs_flip:  {}".format(diagnostic.needs_flip))
+        print(f"- bin_obj.name: {diagnostic.bin_name}")
+        print(f"- bin_base: {diagnostic.bin_base}")
+        print(f"- grasp_T:\n{diagnostic.grasp}")
+        print(f"- is_grasp_reached: {diagnostic.grasp_reached}")
+        print(f"- is_attached:  {diagnostic.attached}")
+        print(f"- needs_flip:  {diagnostic.needs_flip}")
     else:
         print("<no active bin>")
 
@@ -126,13 +126,13 @@ class BinStackingTask(BaseTask):
             spawn_new = True
         else:
             (x, y, z), _ = self.on_conveyor.get_world_pose()
-            is_on_conveyor = y > 0.0 and -0.4 < x and x < 0.4
+            is_on_conveyor = y > 0.0 and x > -0.4 and x < 0.4
             if not is_on_conveyor:
                 spawn_new = True
 
         if spawn_new:
-            name = "bin_{}".format(len(self.bins))
-            prim_path = self.env_path + "/bins/{}".format(name)
+            name = f"bin_{len(self.bins)}"
+            prim_path = self.env_path + f"/bins/{name}"
             add_reference_to_stage(usd_path=self.assets.small_klt_usd, prim_path=prim_path)
             self.on_conveyor = self.scene.add(CortexRigidPrim(name=name, prim_path=prim_path))
 
@@ -153,7 +153,7 @@ def main():
         positions=np.array([[10.00, 2.00, -1.18180]]),
         orientations=np.array([[0.7071, 0, 0, 0.7071]]),
     )
-    robot = world.add_robot(CortexUr10(name="robot", prim_path="{}/ur10".format(env_path)))
+    robot = world.add_robot(CortexUr10(name="robot", prim_path=f"{env_path}/ur10"))
 
     obs = world.scene.add(
         VisualSphere(

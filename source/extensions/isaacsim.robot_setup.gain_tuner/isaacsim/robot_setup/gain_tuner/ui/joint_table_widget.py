@@ -21,7 +21,6 @@ from enum import IntEnum
 from functools import partial
 from types import SimpleNamespace
 
-import numpy as np
 import omni.ui as ui
 import pxr
 

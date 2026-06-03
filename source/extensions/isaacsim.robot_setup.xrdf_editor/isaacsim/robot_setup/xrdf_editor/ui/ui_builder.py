@@ -144,7 +144,6 @@ class UIBuilder:
         Args:
             event: Stage closed event payload (unused).
         """
-        pass
 
     def on_simulation_start_play(self, event: object) -> None:
         """Begin tracking the selected articulation when simulation starts.

@@ -136,7 +136,7 @@ class TestGraspSubframes(omni.kit.test.AsyncTestCase):
         # overriding method because it doesn't support iterables
         a = np.array(a)
         b = np.array(b)
-        self.assertFalse(np.any(abs((a[a != np.array(None)] - b[b != np.array(None)])) > tol), msg)
+        self.assertFalse(np.any(abs(a[a != np.array(None)] - b[b != np.array(None)]) > tol), msg)
 
     async def _create_light(self):
         """Create a sphere light in the scene for proper illumination.

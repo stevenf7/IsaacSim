@@ -102,7 +102,8 @@ class PreSessionAnchorRefcountTests(omni.kit.test.AsyncTestCase):
 
     async def test_late_xr_after_failed_activation_does_not_strip_anchor(self) -> None:
         """If activation no-op'd because XR was offline, a late-arriving XR module
-        must not get its baseline overwritten by a stray restore."""
+        must not get its baseline overwritten by a stray restore.
+        """
         with patch.object(xam, "_xr_settings", lambda: None):
             xam.activate_pre_session_anchor()
             xam.activate_pre_session_anchor()
@@ -118,7 +119,8 @@ class PreSessionAnchorRefcountTests(omni.kit.test.AsyncTestCase):
 
     async def test_nested_activation_only_restores_on_final_release(self) -> None:
         """Two activations + one restore must keep the override in place; the
-        baseline returns only when the matching second restore lands."""
+        baseline returns only when the matching second restore lands.
+        """
         xs = _FakeXrSettings({xam._XR_TOKEN_ANCHOR_MODE: "active camera"})
         with patch.object(xam, "_xr_settings", lambda: xs):
             self.assertTrue(xam.activate_pre_session_anchor())

@@ -85,7 +85,7 @@ def is_valid_xrdf_file(path: str) -> bool:
     if not os.path.isfile(path):
         carb.log_warn(warning_msg)
         return False
-    with open(path, "r") as stream:
+    with open(path) as stream:
         try:
             parsed_file = yaml.safe_load(stream)
         except yaml.YAMLError as exc:

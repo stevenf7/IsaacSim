@@ -31,7 +31,7 @@ import omni.ext
 import omni.kit
 import omni.ui as ui
 from isaacsim.core.experimental.objects import GroundPlane
-from isaacsim.core.experimental.utils.stage import get_current_stage, open_stage_async, save_stage
+from isaacsim.core.experimental.utils.stage import get_current_stage, open_stage_async
 from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.core.simulation_manager import SimulationEvent, SimulationManager
 from isaacsim.replicator.experimental.mobility_gen import (

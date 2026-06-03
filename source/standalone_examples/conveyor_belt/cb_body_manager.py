@@ -62,7 +62,6 @@ class BodyManager:
             path: USD prim path of the rigid body.
             material_index: Index into the material pair friction table for this body.
         """
-
         self.body_path_list.append(path)
 
         self.material_index_list.append(material_index)
@@ -76,7 +75,6 @@ class BodyManager:
         Args:
             device: Warp device string. Uses the default device when ``None``.
         """
-
         body_count = len(self.body_path_list)
 
         self.material_index_buffer = wp.array(

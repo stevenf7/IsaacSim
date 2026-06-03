@@ -15,8 +15,6 @@
 
 """Testing framework for evaluating robotic grasp stability and effectiveness through automated simulation."""
 
-from typing import List
-
 import isaacsim.core.experimental.utils.transform as transform_utils
 import isaacsim.core.experimental.utils.xform as xform_utils
 import numpy as np
@@ -53,11 +51,11 @@ class GraspTestSettings:
         self,
         articulation_path: str,
         articulation_pose_frame: str,
-        active_joints: List[str],
-        active_joint_open_positions: List[float],
-        active_joint_closed_positions: List[float],
-        active_joint_close_speeds: List[float],
-        inactive_joint_fixed_positions: List[float],
+        active_joints: list[str],
+        active_joint_open_positions: list[float],
+        active_joint_closed_positions: list[float],
+        active_joint_close_speeds: list[float],
+        inactive_joint_fixed_positions: list[float],
         rigid_body_path: str,
         rigid_body_pose_frame: str,
         external_force_magnitude: float,

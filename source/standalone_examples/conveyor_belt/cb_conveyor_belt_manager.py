@@ -68,7 +68,6 @@ class ConveyorBeltManager:
             material_index: Index into the material pair friction table for this belt
                 (see MaterialPairManager).
         """
-
         self.conveyor_belt_path_list.append(path)
 
         self.conveyor_belt_to_indices_list.append(velocity_field_type)
@@ -87,7 +86,6 @@ class ConveyorBeltManager:
         Args:
             device: Warp device string. Uses the default device when ``None``.
         """
-
         # (N, 3) array that holds for each conveyor belt the following indices:
         # - type of the velocity field the conveyor belt should use
         #   (see add_conveyor_belt())

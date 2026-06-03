@@ -18,7 +18,6 @@
 import asyncio
 import concurrent.futures
 import os
-from typing import List
 
 import carb
 from pxr import Sdf, UsdUtils
@@ -136,10 +135,10 @@ def find_files_recursive(abs_path: list, filter_fn: object = lambda a: True):
 
 
 def find_filtered_files(
-    abs_paths: List[str],
+    abs_paths: list[str],
     max_depth: int = None,
-    filepath_excludes: List[str] = [],
-    filter_patterns: List[str] = [],
+    filepath_excludes: list[str] = [],
+    filter_patterns: list[str] = [],
     match_all: bool = False,
 ) -> set:
     """Find and filter USD files recursively with optional depth and pattern constraints.
@@ -500,8 +499,8 @@ async def count_asset_references(base_path: str):
         >>> ref_counts
         {'/project/assets/unused.usd': 0, '/project/assets/shared.usd': 5}
     """
-    items = {item: 0 for item in await find_files_recursive(base_path)}
-    for item in items.keys():
+    items = dict.fromkeys(await find_files_recursive(base_path), 0)
+    for item in items:
         print(item)
         for i in get_stage_references(item):
             base = os.path.dirname(item)
@@ -531,8 +530,8 @@ def find_missing_references(base_path: str):
         >>> find_missing_references("/project/assets")
         /project/assets/scene.usd ['missing_file.usd']
     """
-    items = {item: 0 for item in find_files_recursive(base_path, lambda item: is_valid_usd_file(item, []))}
-    for item in items.keys():
+    items = dict.fromkeys(find_files_recursive(base_path, lambda item: is_valid_usd_file(item, [])), 0)
+    for item in items:
         all_layers, all_assets, unresolved_paths = UsdUtils.ComputeAllDependencies(item)
         if unresolved_paths:
             print(item, unresolved_paths)
@@ -875,9 +874,9 @@ def resolve_asset_path(original_path: str) -> str | None:
 
 async def find_filtered_files_async(
     root_path: str,
-    filter_patterns: List[str] = [],
+    filter_patterns: list[str] = [],
     match_all: bool = False,
-    filepath_excludes: List[str] = [],
+    filepath_excludes: list[str] = [],
     max_depth: int = None,
 ) -> set:
     """Asynchronously find and filter USD files recursively with optional depth and pattern constraints.

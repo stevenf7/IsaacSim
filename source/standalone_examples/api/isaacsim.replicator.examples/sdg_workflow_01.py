@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Basic SDG workflow with scene creation, asset placement, randomization, and data capture.
+"""Basic SDG workflow with scene creation, asset placement, randomization, and data capture.
 Boxes are randomized and simulated with physics before each capture.
 """
 

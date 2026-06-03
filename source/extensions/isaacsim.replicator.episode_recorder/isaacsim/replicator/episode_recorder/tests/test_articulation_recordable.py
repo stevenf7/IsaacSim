@@ -99,7 +99,8 @@ class ArticulationRecordableTests(omni.kit.test.AsyncTestCase):
 
     async def test_joint_as_root_falls_back_to_xformable_ancestor(self) -> None:
         """PhysX fixed-base convention: ArticulationRootAPI on a UsdPhysicsJoint whose
-        parent is the link-Xform subtree. Discovery must walk up one level."""
+        parent is the link-Xform subtree. Discovery must walk up one level.
+        """
         stage = omni.usd.get_context().get_stage()
         stage_utils.define_prim("/World", "Xform")
         body = stage_utils.define_prim("/World/Robot", "Xform")

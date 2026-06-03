@@ -17,7 +17,7 @@
 
 import asyncio
 import os
-from typing import List, Optional
+from typing import Optional
 
 import carb.settings
 import omni.kit.app
@@ -75,7 +75,7 @@ class ExampleCategoryItem(CategoryItem):
     def __init__(self, name: str) -> None:
         super().__init__(name)
         # Examples registered directly at this category (excluding descendants).
-        self.examples: List["ExampleDetailItem"] = []
+        self.examples: list["ExampleDetailItem"] = []
 
     def add_child(self, child_name: str) -> "ExampleCategoryItem":
         """Adds a child category item to the current category.
@@ -99,7 +99,7 @@ class ExampleCategoryItem(CategoryItem):
 
         return child_category
 
-    def collect_examples(self) -> List["ExampleDetailItem"]:
+    def collect_examples(self) -> list["ExampleDetailItem"]:
         """Returns examples registered at this category and recursively at all descendants."""
         items = list(self.examples)
         for child in self.children:
@@ -200,7 +200,7 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
         Returns:
             List of category items organized hierarchically.
         """
-        category_items: List[ExampleCategoryItem] = []
+        category_items: list[ExampleCategoryItem] = []
         for category, examples in self._examples.items():
             parts = category.split("/")
 
@@ -220,7 +220,7 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
         self.sort_items(category_items)
         return category_items
 
-    def get_detail_items(self, item: ExampleCategoryItem) -> List[DetailItem]:
+    def get_detail_items(self, item: ExampleCategoryItem) -> list[DetailItem]:
         """Override to get list of detail items.
 
         Returns the directly-registered examples at ``item``, plus a folder tile per sub-category. This
@@ -236,7 +236,7 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
         """
         if item.name == self.SUMMARY_FOLDER_NAME:
             # Summary still shows everything flattened, matching the pre-existing convention.
-            detail_items: List[DetailItem] = [example for examples in self._examples.values() for example in examples]
+            detail_items: list[DetailItem] = [example for examples in self._examples.values() for example in examples]
         elif isinstance(item, ExampleCategoryItem):
             detail_items = list(item.examples)
             parent_path = self._category_path(item)
@@ -282,7 +282,7 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
 
     def _category_path(self, item: "ExampleCategoryItem") -> str:
         """Reconstruct the slash-separated path for a category by walking its parent chain."""
-        parts: List[str] = []
+        parts: list[str] = []
         current: Optional[ExampleCategoryItem] = item
         while current is not None:
             parts.append(current.name)

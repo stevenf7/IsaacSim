@@ -16,7 +16,7 @@
 """Provides interactive editing capabilities for collision spheres in robot descriptions."""
 
 from collections import OrderedDict
-from typing import Generator
+from collections.abc import Generator
 
 import carb
 import isaacsim.core.experimental.utils.prim as prim_utils
@@ -539,7 +539,7 @@ class CollisionSphereEditor:
                     sphere_path = self.add_sphere(link_path, center, radius, store_op=False)
                     added_sphere_paths.append(sphere_path)
             else:
-                carb.log_warn("Could not place sphere from xrdf at path: {}".format(link_path))
+                carb.log_warn(f"Could not place sphere from xrdf at path: {link_path}")
 
         self._operations.append(added_sphere_paths)
 
@@ -566,7 +566,7 @@ class CollisionSphereEditor:
         self._redo = []
         self._operations = []
 
-        with open(robot_description_file_path, "r") as stream:
+        with open(robot_description_file_path) as stream:
             try:
                 parsed_file = yaml.safe_load(stream)
             except yaml.YAMLError as exc:
@@ -600,7 +600,7 @@ class CollisionSphereEditor:
                         sphere_path = self.add_sphere(link_path, center, radius, store_op=False)
                         added_sphere_paths.append(sphere_path)
                 else:
-                    carb.log_warn("Could not place sphere from robot description at path: {}".format(link_path))
+                    carb.log_warn(f"Could not place sphere from robot description at path: {link_path}")
 
         self._operations.append(added_sphere_paths)
 
@@ -613,10 +613,10 @@ class CollisionSphereEditor:
             num_spheres: Number of interpolated spheres to create.
         """
         if not self._is_prim_path_valid(path1):
-            carb.log_warn("{} is not a valid Prim path to a sphere".format(path1))
+            carb.log_warn(f"{path1} is not a valid Prim path to a sphere")
             return
         elif not self._is_prim_path_valid(path2):
-            carb.log_warn("{} is not a valid Prim path to a sphere".format(path2))
+            carb.log_warn(f"{path2} is not a valid Prim path to a sphere")
             return
 
         link_path = self._get_link_path(path1)
@@ -625,9 +625,7 @@ class CollisionSphereEditor:
             # function silently interpolated `path2` into `path1`'s link and
             # produced spheres at the wrong location. Bail out instead.
             carb.log_warn(
-                "Prim paths {} and {} are not nested under the same link.  They cannot be interpolated.".format(
-                    path1, path2
-                )
+                f"Prim paths {path1} and {path2} are not nested under the same link.  They cannot be interpolated."
             )
             return
 
@@ -714,9 +712,7 @@ class CollisionSphereEditor:
             if self._is_prim_path_valid(prim_path):
                 if prim_path[: len(robot_prim_path)] != robot_prim_path:
                     carb.log_warn(
-                        "Not writing sphere at path {} to file because it is not nested under the robot Articulation".format(
-                            prim_path
-                        )
+                        f"Not writing sphere at path {prim_path} to file because it is not nested under the robot Articulation"
                     )
                     continue
                 link_name = prim_path[len(robot_prim_path) + 1 : prim_path.rfind("/")]
@@ -741,9 +737,7 @@ class CollisionSphereEditor:
             if self._is_prim_path_valid(prim_path):
                 if prim_path[: len(robot_prim_path)] != robot_prim_path:
                     carb.log_warn(
-                        "Not writing sphere at path {} to file because it is not nested under the robot Articulation".format(
-                            prim_path
-                        )
+                        f"Not writing sphere at path {prim_path} to file because it is not nested under the robot Articulation"
                     )
                     continue
                 link_name = prim_path[len(robot_prim_path) + 1 : prim_path.rfind("/")]
@@ -759,7 +753,7 @@ class CollisionSphereEditor:
 
         f.write("collision_spheres:\n")
         for link_name, sphere_list in link_to_spheres.items():
-            f.write("  - {}:\n".format(link_name))
+            f.write(f"  - {link_name}:\n")
             for sphere in sphere_list:
                 f.write('    - "center": {}\n'.format(sphere["center"]))
                 f.write('      "radius": {}\n'.format(sphere["radius"]))

@@ -105,7 +105,7 @@ with_functional_randomization = not args.with_og_randomization
 wait_for_render = args.wait_for_render
 replicator_write_to_fabric = not args.no_replicator_write_to_fabric
 if "all" in args.annotators:
-    annotators_kwargs = {annotator: True for annotator in VALID_ANNOTATORS}
+    annotators_kwargs = dict.fromkeys(VALID_ANNOTATORS, True)
 else:
     annotators_kwargs = {annotator: True for annotator in args.annotators if annotator in VALID_ANNOTATORS}
 
@@ -195,11 +195,9 @@ class ReplicatorFPSRecorder(MeasurementDataRecorder):
 
     def start_collecting(self):
         """Start collecting FPS measurements."""
-        pass
 
     def stop_collecting(self):
         """Stop collecting FPS measurements."""
-        pass
 
     def get_data(self) -> MeasurementData:
         """Get Replicator FPS measurements from the attached FPSWriter."""

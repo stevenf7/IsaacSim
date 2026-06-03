@@ -385,7 +385,8 @@ class MobilityGenWriter:
     def copy_init(self, other_path: str) -> None:
         """Copy stage, config, occupancy map, and the sibling assets/ tree from
         another recording. `.usdz` recordings are archive-self-contained and
-        don't need an assets/ tree."""
+        don't need an assets/ tree.
+        """
         if not os.path.exists(self.path):
             os.makedirs(self.path)
         if os.path.exists(os.path.join(other_path, "stage.usdz")):

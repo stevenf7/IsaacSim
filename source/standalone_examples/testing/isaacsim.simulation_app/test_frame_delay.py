@@ -119,7 +119,6 @@ class CustomWriter(Writer):
     def write(self, data):
         """Cache annotator data without writing to disk."""
         # The base Writer class caches 'data' automatically, accessible via self.get_data()
-        pass
 
 
 def get_data(sensor: Camera | Writer) -> tuple[np.ndarray, np.ndarray, np.ndarray]:

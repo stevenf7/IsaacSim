@@ -397,7 +397,7 @@ class SphereEditorPanel:
         self._generate_spheres_for_link(preview=False)
         self.refresh_collision_sphere_comboboxes(keep_sphere_selection=True)
         if self._num_spheres_field is not None:
-            self._num_spheres_field.set_value(int(0))
+            self._num_spheres_field.set_value(0)
 
     def _on_add_sphere(self) -> None:
         if (

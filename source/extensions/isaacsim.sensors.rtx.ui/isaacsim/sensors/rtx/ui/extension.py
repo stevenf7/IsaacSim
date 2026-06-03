@@ -16,8 +16,8 @@
 """Extension module for RTX sensor UI integration in Isaac Sim."""
 
 import gc
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 import omni.ext
 import omni.kit.actions.core

@@ -19,7 +19,8 @@ from __future__ import annotations
 
 import difflib
 import pathlib
-from typing import Any, Iterable, Literal
+from collections.abc import Iterable
+from typing import Any, Literal
 
 import carb
 import isaacsim.core.experimental.utils.prim as prim_utils

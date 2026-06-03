@@ -54,7 +54,6 @@ os.makedirs(output_dir, exist_ok=True)
 import carb
 import numpy as np
 import omni
-import omni.replicator.core as rep
 from isaacsim.core.experimental.utils.app import enable_extension
 from isaacsim.core.experimental.utils.stage import is_stage_loading, open_stage
 from isaacsim.sensors.experimental.rtx import SUPPORTED_LIDAR_CONFIGS, Lidar, LidarSensor

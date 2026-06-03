@@ -36,7 +36,6 @@ When auxiliary data is enabled, the AcousticAuxiliaryData provides:
 
 import argparse
 import os
-import sys
 
 from isaacsim import SimulationApp
 

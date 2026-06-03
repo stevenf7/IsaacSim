@@ -15,8 +15,6 @@
 
 """Utility functions for manipulating rigid bodies, physics colliders, and UI elements in the grasp editor."""
 
-from typing import List
-
 import carb
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.transform as transform_utils
@@ -108,7 +106,7 @@ def mask_collisions(prim_path_a: str, prim_path_b: str) -> Usd.Relationship:
     return rel
 
 
-def convert_prim_to_collidable_rigid_body(prim_path: str, articulation_paths: List[str]) -> str | None:
+def convert_prim_to_collidable_rigid_body(prim_path: str, articulation_paths: list[str]) -> str | None:
     """Convert a prim to a rigid body by applying the UsdPhysics.RigidBodyAPI.
 
     Also sets physics:kinematicEnabled property to true to prevent falling from gravity without needing a fixed joint.

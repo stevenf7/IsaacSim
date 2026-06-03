@@ -143,7 +143,7 @@ parser.add_argument(
 args, unknown = parser.parse_known_args()
 args_config = {}
 if args.config and os.path.isfile(args.config):
-    with open(args.config, "r") as f:
+    with open(args.config) as f:
         if args.config.endswith(".json"):
             args_config = json.load(f)
         elif args.config.endswith(".yaml"):

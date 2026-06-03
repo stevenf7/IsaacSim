@@ -34,7 +34,6 @@ Note: RTX Radar requires Motion BVH to be enabled.
 
 import argparse
 import os
-import sys
 
 from isaacsim import SimulationApp
 

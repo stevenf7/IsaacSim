@@ -85,7 +85,6 @@ def prepare_buffers(
         global_conveyor_belt_speed_scale: Output - single-element array holding a global conveyor belt speed
             scale.
     """
-
     body_index, initial_conveyor_belt_index = wp.tid()
 
     contact_count_sum = wp.uint32(0)
@@ -186,7 +185,6 @@ def clear_buffers(
     total_contact_count: wp.array(dtype=wp.uint32),
 ) -> None:
     """Warp kernel: reset the total contact count to zero at the start of each step."""
-
     total_contact_count[0] = wp.uint32(0)
 
     # note: it is not necessary to zero the per-body force buffers or per-contact force buffers since
@@ -275,7 +273,6 @@ def correlate_and_filter_contact_points(
         body_to_patch_buffer: Output - index of the first patch head for each body.
         mass_splitting_scale_buffer: Output - set to 0 for filtered-out contacts.
     """
-
     body_index = wp.tid()
 
     while body_index < body_count:
@@ -449,7 +446,6 @@ def redistribute_contact_force(
         adjusted_contact_normal_force_buffer: Output - redistributed normal force for each contact.
         mass_splitting_scale_buffer: Output - mass splitting scale for each contact point.
     """
-
     body_index, patch_start_offset = wp.tid()
 
     while body_index < body_count:
@@ -717,7 +713,6 @@ def sum_up_force(
         body_force_buffer: Output - (N, 3) accumulated linear force per body.
         body_torque_buffer: Output - (N, 3) accumulated torque per body.
     """
-
     body_index = wp.tid()
 
     while body_index < body_count:

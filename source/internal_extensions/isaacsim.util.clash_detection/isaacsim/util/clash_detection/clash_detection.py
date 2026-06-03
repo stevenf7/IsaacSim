@@ -88,8 +88,8 @@ class ClashDetector:
                 SettingId.SETTING_LOGGING.name: self._logging is True,
                 SettingId.SETTING_TOLERANCE.name: float(self._tolerance),
                 SettingId.SETTING_DYNAMIC.name: False,
-                SettingId.SETTING_DYNAMIC_START_TIME.name: float(0.0),
-                SettingId.SETTING_DYNAMIC_END_TIME.name: float(0.0),
+                SettingId.SETTING_DYNAMIC_START_TIME.name: 0.0,
+                SettingId.SETTING_DYNAMIC_END_TIME.name: 0.0,
             },
             comment="",
         )
@@ -271,8 +271,8 @@ class ClashDetector:
                 SettingId.SETTING_LOGGING.name: self._logging is True,
                 SettingId.SETTING_TOLERANCE.name: float(self._tolerance),
                 SettingId.SETTING_DYNAMIC.name: False,
-                SettingId.SETTING_DYNAMIC_START_TIME.name: float(0.0),
-                SettingId.SETTING_DYNAMIC_END_TIME.name: float(0.0),
+                SettingId.SETTING_DYNAMIC_START_TIME.name: 0.0,
+                SettingId.SETTING_DYNAMIC_END_TIME.name: 0.0,
             },
             comment="",
         )
@@ -328,8 +328,8 @@ class ClashDetector:
                         SettingId.SETTING_LOGGING.name: self._logging is True,
                         SettingId.SETTING_TOLERANCE.name: float(self._tolerance),
                         SettingId.SETTING_DYNAMIC.name: False,
-                        SettingId.SETTING_DYNAMIC_START_TIME.name: float(0.0),
-                        SettingId.SETTING_DYNAMIC_END_TIME.name: float(0.0),
+                        SettingId.SETTING_DYNAMIC_START_TIME.name: 0.0,
+                        SettingId.SETTING_DYNAMIC_END_TIME.name: 0.0,
                     },
                     comment="",
                 )

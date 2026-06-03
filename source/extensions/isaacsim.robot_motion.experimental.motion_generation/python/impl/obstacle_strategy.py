@@ -16,7 +16,6 @@
 """Provides obstacle representation strategies and configurations for robot motion planning."""
 
 from enum import StrEnum, auto
-from typing import Type
 
 from isaacsim.core.experimental.objects import (
     Capsule,
@@ -77,7 +76,7 @@ class ObstacleRepresentation(StrEnum):
 # This is the set of legal conversions:
 # TODO: SHOULD ALLOW FOR ADDITIONAL CONVERSIONS. FOR EXAMPLE,
 # OBJECTS COULD BE GENERALLY CONVERTABLE TO A MESH REPRESENTATION.
-_LEGAL_REPRESENTATIONS: dict[Type[Shape], list[ObstacleRepresentation]] = {
+_LEGAL_REPRESENTATIONS: dict[type[Shape], list[ObstacleRepresentation]] = {
     Sphere: [
         ObstacleRepresentation.SPHERE,
         ObstacleRepresentation.OBB,
@@ -187,7 +186,7 @@ class ObstacleStrategy:
         self.__prim_configuration_overrides = {}
 
     def set_default_configuration(
-        self, prim_type: Type[Shape], configuration: ObstacleConfiguration, allow_negative_tolerance: bool = False
+        self, prim_type: type[Shape], configuration: ObstacleConfiguration, allow_negative_tolerance: bool = False
     ):
         """Set the default configuration for a given prim type.
 

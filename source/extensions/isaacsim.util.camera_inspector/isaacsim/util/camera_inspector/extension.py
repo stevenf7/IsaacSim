@@ -541,11 +541,11 @@ class Extension(omni.ext.IExt):
             self._task_ui_elements["CameraTextField"].set_text(status)
         else:
             for i in range(3):
-                self._task_ui_elements["World Camera Position"][i].set_value(float(0.0))
-                self._task_ui_elements["Local Camera Position"][i].set_value(float(0.0))
+                self._task_ui_elements["World Camera Position"][i].set_value(0.0)
+                self._task_ui_elements["Local Camera Position"][i].set_value(0.0)
             for i in range(4):
-                self._task_ui_elements["World Camera Orientation"][i].set_value(float(0.0))
-                self._task_ui_elements["Local Camera Orientation"][i].set_value(float(0.0))
+                self._task_ui_elements["World Camera Orientation"][i].set_value(0.0)
+                self._task_ui_elements["Local Camera Orientation"][i].set_value(0.0)
 
             self._task_ui_elements["CameraTextField"].set_text(
                 "# No camera selected. Please use dropdown to select a camera."

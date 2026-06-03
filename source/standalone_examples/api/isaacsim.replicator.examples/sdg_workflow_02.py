@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Generate palletized box stacks across randomized scenes.
+"""Generate palletized box stacks across randomized scenes.
 Each scene chooses an environment, scatters pallets, builds box stacks, and captures camera views.
 """
 
