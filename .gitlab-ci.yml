@@ -225,6 +225,14 @@ variables:
 # overrides for compliance/osec job
 osec:sonarqube:
     stage: security
+    # Force the Ubuntu 22.04 scanner image. The default CentOS 7 base ships glibc
+    # 2.17, too old to run the Kit premake5 host-dep (built for manylinux_2_35)
+    # invoked by this job's `build --generate`. The override is set here (and via
+    # SONAR_IMAGE below) because the OSEC_SONARQUBE_LINUX_BASE switch is read in
+    # include:rules, which don't see .gitlab-ci.yml variables.
+    image:
+      name: urm.nvidia.com/ct-omniverse-docker/omni-sonarqube-u22:latest
+      pull_policy: [always, if-not-present]
     needs:
       - job: gather-coverage
         artifacts: true
@@ -233,6 +241,9 @@ osec:sonarqube:
         - 2
         - 3
     variables:
+      # Keep SONAR_IMAGE in sync with the image override above so the template's
+      # centos7-only nodejs-path workaround does not fire on the u22 base.
+      SONAR_IMAGE: "urm.nvidia.com/ct-omniverse-docker/omni-sonarqube-u22:latest"
       SONAR_CFAMILY_COMPILE_COMMANDS: "_build/linux-x86_64/release/compile_commands.json"
       LINBUILD_EMBEDDED: "1"
       SONAR_EXTRA_ARGS: "-Dsonar.qualitygate.timeout=1000 -Dsonar.branch.name=$CI_COMMIT_REF_NAME -Dsonar.python.coverage.reportPaths=coverage.xml -Dsonar.cfamily.cobertura.reportPaths=cpp_coverage.xml"
@@ -254,6 +265,12 @@ osec:sonarqube:
         source/standalone_examples/benchmarks/validation/golden_data/**,\
         \
         **/tests/**/*.cpp,\
+        \
+        **/*.png,**/*.jpg,**/*.jpeg,**/*.gif,**/*.webp,**/*.bmp,**/*.tga,**/*.ico,**/*.svg,**/*.dds,**/*.exr,**/*.hdr,\
+        \
+        **/*.obj,**/*.stl,**/*.fbx,**/*.dae,**/*.usd,**/*.usda,**/*.usdc,**/*.usdz,**/*.npy,**/*.npz,\
+        \
+        **/*.pdf,**/*.ttf,**/*.otf,**/*.zip,**/*.7z,\
         \
         "
     before_script:
@@ -1263,6 +1280,7 @@ gather-coverage:
       - lcov --remove _build/coverage.info '/usr/include/*' --output-file _build/coverage.filtered.info
       - ./tools/packman/python.sh -m pip install lcov_cobertura==2.1.1
       - ./tools/packman/python.sh -m lcov_cobertura _build/coverage.filtered.info  -o cpp_coverage.xml
+      - ./tools/packman/python.sh ./tools/ci/coverage/sanitize_cobertura_hits.py cpp_coverage.xml
       - ./tools/packman/python.sh -m pip install -r _repo/deps/repo_test/requirements.txt
       - ./tools/packman/python.sh tools/ci/coverage/read_pycov_paths.py "_build/packages/**/*.pycov" --exclude-prefix extscache
       # Find all .pycov files and combine them in one command
