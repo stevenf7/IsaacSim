@@ -85,6 +85,14 @@ def parse_args():
         "it is aborted and reported as a failure. Default: 120.",
     )
     parser.add_argument(
+        "--cleanup-timeout",
+        type=int,
+        default=60,
+        help="Budget in seconds for tearing down the previous snippet's state before "
+        "the next snippet runs. Exceeding this raises a clearly-labeled cleanup "
+        "timeout (the snippet under test never executed). Default: 60.",
+    )
+    parser.add_argument(
         "--excluded-snippets-csv",
         type=str,
         default=None,
@@ -593,7 +601,17 @@ def _sanitize_xml(text):
 
 
 class SnippetTimeoutError(Exception):
-    """Raised when a snippet exceeds its per-snippet time limit."""
+    """Raised when a snippet's own code exceeds its per-snippet execution time limit."""
+
+
+class SnippetCleanupTimeoutError(SnippetTimeoutError):
+    """Raised when pre-execution teardown blows its budget before the snippet runs.
+
+    This is distinct from :class:`SnippetTimeoutError`: the snippet under test never
+    executed a single line. The time was spent tearing down state left behind by the
+    *previous* snippet (timeline, Replicator, stage). It indicates an environment /
+    teardown problem, not a defect in the named snippet.
+    """
 
 
 # How long to wait after the initial SIGALRM before force-exiting.  This gives
@@ -625,11 +643,26 @@ def _wait_for_snippet_tasks(simulation_app, tasks, settle_frames=10, deadline=No
         simulation_app.update()
 
 
-def load_snippet_module(file_path, snippets_root, index, simulation_app, snippet_timeout=120):
+def load_snippet_module(
+    file_path,
+    snippets_root,
+    index,
+    simulation_app,
+    snippet_timeout=120,
+    cleanup_timeout=60,
+    previous_file_path=None,
+):
     """Load a snippet module and return any exception that occurred.
 
+    The teardown of the *previous* snippet's state (timeline, Replicator, stage)
+    runs first, under its own ``cleanup_timeout`` budget. Only after the app is
+    clean does the snippet's own ``snippet_timeout`` execution budget start. This
+    keeps a slow teardown from being misattributed to the snippet about to run --
+    which never executed in that case.
+
     Returns:
-        Tuple of (file_path_str, exception_or_None, elapsed_seconds).
+        Tuple of (file_path_str, exception_or_None, timings_dict) where timings_dict
+        has ``cleanup``, ``exec`` and ``total`` elapsed seconds.
     """
     import gc
 
@@ -643,16 +676,21 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app, snippet
     captured_loop_exceptions = []
     # Snapshot of modules before loading
     modules_before = set(sys.modules.keys())
-    start_time = time.monotonic()
-    deadline = start_time + snippet_timeout
+    # Cleanup (teardown of the previous snippet) gets its own budget. The snippet's
+    # own execution deadline is armed only after cleanup succeeds (see below).
+    cleanup_start = time.monotonic()
+    cleanup_deadline = cleanup_start + cleanup_timeout
+    cleanup_elapsed = 0.0
+    start_time = None
+    deadline = None
 
     def loop_exception_handler(loop, context):
         """Capture unhandled loop exceptions as test failures."""
         captured_loop_exceptions.append(context)
 
     def _check_deadline(phase):
-        """Raise SnippetTimeoutError if the per-snippet deadline has been exceeded."""
-        if time.monotonic() > deadline:
+        """Raise SnippetTimeoutError if the per-snippet execution deadline has been exceeded."""
+        if deadline is not None and time.monotonic() > deadline:
             raise SnippetTimeoutError(f"Snippet timed out after {snippet_timeout}s during {phase}: {file_path}")
 
     # Use SIGALRM as a hard backstop to interrupt blocking C/C++ calls that
@@ -667,12 +705,16 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app, snippet
         # doesn't hang until the outer timeout.
         signal.signal(signal.SIGALRM, _force_exit_alarm_handler)
         signal.alarm(_ALARM_ESCALATION_SECONDS)
-        raise SnippetTimeoutError(f"Snippet timed out after {snippet_timeout}s (SIGALRM): {file_path}")
+        raise SnippetTimeoutError(
+            f"Snippet timed out (SIGALRM hard backstop after "
+            f"{cleanup_timeout + snippet_timeout}s total): {file_path}"
+        )
 
     if hasattr(signal, "SIGALRM"):
         prev_alarm_handler = signal.signal(signal.SIGALRM, _alarm_handler)
-        # Add a few extra seconds so the soft deadline check fires first when possible.
-        prev_alarm_remaining = signal.alarm(snippet_timeout + 5)
+        # Hard backstop covers both cleanup and execution budgets. Add a few extra
+        # seconds so the soft deadline checks fire first when possible.
+        prev_alarm_remaining = signal.alarm(cleanup_timeout + snippet_timeout + 5)
 
     try:
         loop = asyncio.get_event_loop()
@@ -680,9 +722,22 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app, snippet
         previous_exception_handler = loop.get_exception_handler()
         loop.set_exception_handler(loop_exception_handler)
 
-        # Clean up the current stage before creating a new one
-        cleanup_before_new_stage(simulation_app, file_path, deadline=deadline)
-        _check_deadline("cleanup")
+        # Tear down the PREVIOUS snippet's state. This is not this snippet's work,
+        # so it runs under its own (separate) cleanup budget.
+        cleanup_before_new_stage(simulation_app, file_path, deadline=cleanup_deadline)
+        cleanup_elapsed = time.monotonic() - cleanup_start
+        if time.monotonic() > cleanup_deadline:
+            culprit = f" Likely culprit (previous snippet): {previous_file_path}" if previous_file_path else ""
+            raise SnippetCleanupTimeoutError(
+                f"Pre-execution cleanup exceeded {cleanup_timeout}s before snippet '{file_path}' "
+                f"started; the snippet's code was NOT executed. This usually means the previous "
+                f"snippet left the app in a bad state (timeline still playing, Replicator running, "
+                f"or stage that would not close).{culprit}"
+            )
+
+        # The app is now clean: arm the snippet's own execution budget.
+        start_time = time.monotonic()
+        deadline = start_time + snippet_timeout
 
         # Open a new stage and wait for it to finish loading
         stage_utils.create_new_stage()
@@ -724,7 +779,7 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app, snippet
                 task for task in (current_tasks - baseline_tasks) if _task_belongs_to_snippets(task, snippets_root)
             ]
 
-            timed_out = time.monotonic() > deadline
+            timed_out = deadline is not None and time.monotonic() > deadline
 
             if not timed_out:
                 # Let snippet-created tasks finish naturally first.
@@ -797,15 +852,16 @@ def load_snippet_module(file_path, snippets_root, index, simulation_app, snippet
         # Force garbage collection to clean up unreferenced objects
         gc.collect()
 
-    elapsed = time.monotonic() - start_time
+    exec_elapsed = (time.monotonic() - start_time) if start_time is not None else 0.0
+    timings = {"cleanup": cleanup_elapsed, "exec": exec_elapsed, "total": cleanup_elapsed + exec_elapsed}
     if not exceptions:
-        return (str(file_path), None, elapsed)
+        return (str(file_path), None, timings)
     if len(exceptions) == 1:
-        return (str(file_path), exceptions[0], elapsed)
+        return (str(file_path), exceptions[0], timings)
     return (
         str(file_path),
         ExceptionGroup(f"Multiple exceptions while testing snippet {file_path}", exceptions),
-        elapsed,
+        timings,
     )
 
 
@@ -892,6 +948,11 @@ if args.platform_constraints_csv:
 
 _total_snippets = len(files_to_test)
 
+# Path of the snippet that ran immediately before the current one. Tests run
+# sequentially through a single SimulationApp, so a cleanup timeout almost always
+# points back at whatever ran last. Tracking it lets the failure name the culprit.
+_previous_snippet_path = None
+
 
 def is_in_expected_failures(file_path, expected_failures):
     """Return True if this snippet path appears in the expected-failure list (regardless of pattern)."""
@@ -911,20 +972,34 @@ def _make_snippet_test(
     total_count,
     expected_failures_list,
     snippet_timeout,
+    cleanup_timeout,
     platform_constraints_map,
     current_platform_name,
 ):
     """Create a test method for a single doc snippet."""
 
     def test_snippet(self):
+        global _previous_snippet_path
+
         platform_skip_reason = get_platform_skip_reason(file_path, current_platform_name, platform_constraints_map)
         if platform_skip_reason:
             self.skipTest(platform_skip_reason)
 
-        result_path, exception, elapsed = load_snippet_module(
-            file_path, snippets_root, snippet_index, self.__class__._simulation_app, snippet_timeout=snippet_timeout
+        result_path, exception, timings = load_snippet_module(
+            file_path,
+            snippets_root,
+            snippet_index,
+            self.__class__._simulation_app,
+            snippet_timeout=snippet_timeout,
+            cleanup_timeout=cleanup_timeout,
+            previous_file_path=_previous_snippet_path,
         )
-        print(f" [{elapsed:.1f}s]", end="", flush=True)
+        # Record this snippet as the predecessor for the next one's cleanup phase.
+        _previous_snippet_path = file_path
+
+        # Surface cleanup vs execution time separately so a slow teardown is obvious
+        # even on a passing run (and so a cleanup failure clearly didn't run the snippet).
+        print(f" [cleanup {timings['cleanup']:.1f}s | exec {timings['exec']:.1f}s]", end="", flush=True)
         if exception is None:
             if is_in_expected_failures(result_path, expected_failures_list):
                 self.fail(
@@ -934,6 +1009,14 @@ def _make_snippet_test(
             return
         if is_expected_failure(result_path, exception, expected_failures_list):
             return
+        # A cleanup timeout is NOT a defect in this snippet -- it never executed.
+        # Lead with that so the report is not misread as a snippet failure.
+        if isinstance(exception, SnippetCleanupTimeoutError):
+            self.fail(
+                f"CLEANUP TIMEOUT (not a snippet defect): '{result_path}' never ran. The harness "
+                f"exceeded its {cleanup_timeout}s teardown budget while cleaning up the previous "
+                f"snippet's state before loading this file.\n{exception}"
+            )
         if hasattr(exception, "__traceback__") and exception.__traceback__:
             msg = "".join(traceback.format_exception(type(exception), exception, exception.__traceback__))
         else:
@@ -1018,6 +1101,7 @@ for _exp_idx, _experience in enumerate(experience_names):
             _total_snippets,
             expected_failures,
             args.snippet_timeout,
+            args.cleanup_timeout,
             platform_constraints,
             current_platform,
         )
