@@ -18,6 +18,7 @@
 import gc
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import omni.ext
 import omni.kit.actions.core
@@ -44,7 +45,12 @@ class Extension(omni.ext.IExt):
     creates the prim without referencing a USD asset (Lidar's NVIDIA entries come from its configs).
     """
 
-    def on_startup(self, ext_id: str):
+    def on_startup(self, ext_id: str) -> None:
+        """Register RTX sensor creation actions and menus.
+
+        Args:
+            ext_id: Extension identifier provided by the extension manager.
+        """
         self._ext_id = ext_id
         self._ext_name = omni.ext.get_extension_name(ext_id)
         self._registered_actions: list[str] = []
@@ -106,7 +112,8 @@ class Extension(omni.ext.IExt):
         context_menu_dict = {"name": {"Isaac": [sensors_menu_dict]}, "glyph": sensor_icon_path}
         self._viewport_create_menu = omni.kit.context_menu.add_menu(context_menu_dict, "CREATE")
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
+        """Remove RTX sensor menus and deregister creation actions."""
         remove_menu_items(self._menu_items, "Create")
         self._viewport_create_menu = None
 
@@ -134,8 +141,10 @@ class Extension(omni.ext.IExt):
         create_callback: Callable[[str, str, object], None],
         seed_vendor_entries: dict[str, list] | None = None,
     ) -> list:
-        """Register one action per config (paths assumed ``/Isaac/Sensors/<Vendor>/<Sensor>/<Sensor>.usd``)
-        and return a vendor-grouped, alphabetically sorted menu list.
+        """Register one action per sensor config.
+
+        Paths are assumed to use the ``/Isaac/Sensors/<Vendor>/<Sensor>/<Sensor>.usd`` layout.
+        Returns a vendor-grouped, alphabetically sorted menu list.
 
         The first variant (if any) is picked as the default so multi-variant-set USDs (e.g. SICK
         family USDs) materialize a valid prim from a single menu click.
@@ -176,7 +185,7 @@ class Extension(omni.ext.IExt):
         return generate_next_free_path(f"/{base_name}")
 
     def _create_sensor_from_config(
-        self, sensor_cls, sensor_name: str, sensor_config: str, variant: str | dict[str, str] | None
+        self, sensor_cls: Any, sensor_name: str, sensor_config: str, variant: str | dict[str, str] | None
     ) -> None:
         """Create an RTX sensor of ``sensor_cls`` from a supported config at the selected location."""
         sensor_cls.create(
@@ -185,6 +194,6 @@ class Extension(omni.ext.IExt):
             variant=variant,
         )
 
-    def _create_generic_sensor(self, sensor_cls, base_name: str) -> None:
+    def _create_generic_sensor(self, sensor_cls: Any, base_name: str) -> None:
         """Create a generic RTX sensor of ``sensor_cls`` (no USD asset) at the selected location."""
         sensor_cls(self._resolve_prim_path(base_name))

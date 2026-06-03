@@ -485,7 +485,7 @@ class _SensorRuntime:
             info = {}
         return data, info
 
-    def attach_writer(self, writer_name: str, **kwargs) -> None:
+    def attach_writer(self, writer_name: str, **kwargs: Any) -> None:
         """Attach a writer to the sensor's render product.
 
         ``writer_name`` can be either a short name registered in :data:`WRITER_SPEC`

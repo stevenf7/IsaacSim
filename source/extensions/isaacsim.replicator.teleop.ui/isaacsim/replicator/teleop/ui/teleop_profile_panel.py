@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import Callable
+from typing import Any
 
 import carb.settings
 import omni.kit.window.popup_dialog
@@ -383,7 +384,7 @@ class TeleopProfilePanel:
         """Show a modal yes/cancel confirm dialog and route the answer to ``on_ok`` / ``on_cancel``."""
         self._dismiss_confirm_dialog()
 
-        def _handle_ok(dialog) -> None:
+        def _handle_ok(dialog: Any) -> None:
             try:
                 dialog.hide()
             finally:
@@ -393,7 +394,7 @@ class TeleopProfilePanel:
             except Exception as exc:  # noqa: BLE001
                 set_status(self._status_label, f"Action failed: {exc}", CLR_RED, emit_terminal=True)
 
-        def _handle_cancel(dialog) -> None:
+        def _handle_cancel(dialog: Any) -> None:
             try:
                 dialog.hide()
             finally:

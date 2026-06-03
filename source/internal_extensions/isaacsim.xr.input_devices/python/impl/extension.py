@@ -46,19 +46,19 @@ class Extension(omni.ext.IExt):
         self.manus_vive_integration = ManusViveIntegration()
         self._register_devices()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Cleanup device resources when the extension unloads."""
         carb.log_info("IsaacSim XR Input Devices extension shutdown")
         if hasattr(self, "manus_vive_integration"):
             self.manus_vive_integration.cleanup()
         Extension._instance = None
 
-    def _register_devices(self):
+    def _register_devices(self) -> None:
         """Register the hand-tracker plugin and Vive tracking devices."""
         self.manus_vive_integration.register_devices()
 
     @classmethod
-    def get_instance(cls):
+    def get_instance(cls) -> object | None:
         """Return the active extension instance or `None` if not started.
 
         Returns:

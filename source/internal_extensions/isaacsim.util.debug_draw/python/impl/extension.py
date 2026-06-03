@@ -23,10 +23,10 @@ from .. import _debug_draw
 class Extension(omni.ext.IExt):
     """Extension that manages the debug draw interface lifecycle."""
 
-    def on_startup(self):
+    def on_startup(self) -> None:
         """Initialize the extension and acquire the debug draw interface."""
         self._draw = _debug_draw.acquire_debug_draw_interface()
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> None:
         """Release the debug draw interface during shutdown."""
         _debug_draw.release_debug_draw_interface(self._draw)
