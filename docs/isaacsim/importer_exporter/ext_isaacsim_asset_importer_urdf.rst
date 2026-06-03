@@ -80,7 +80,10 @@ Import Options
         - **Bounding Sphere**: Uses a simple bounding sphere approximation.
         - **Bounding Cube**: Uses a simple bounding box approximation.
 
-**General Options**:
+    - **Allow Self-Collision**: When enabled, allows the robot model to collide with itself. This can be useful for certain simulation
+      scenarios but may cause instability if collision meshes between links are self-intersecting.
+
+**Options**:
     - **Robot Type**: Sets the ``isaac:robotType`` attribute on the imported robot's schema. Choose from: Default, End Effector,
       Manipulator, Humanoid, Wheeled, Holonomic, Quadruped, Mobile Manipulators, or Aerial.
 
@@ -92,9 +95,6 @@ Import Options
 
       Maps directly onto the ``fix_base: bool | None`` field on :py:class:`URDFImporterConfig` (``None`` / ``True`` / ``False``).
 
-    - **Allow Self-Collision**: When enabled, allows the robot model to collide with itself. This can be useful for certain simulation
-      scenarios but may cause instability if collision meshes between links are self-intersecting.
-
     - **Merge Mesh**: When enabled, merges meshes where possible to optimize the model. This can reduce the number of prims in the
       resulting USD file and improve performance.
 
@@ -104,7 +104,8 @@ Import Options
 Importing URDF from a ROS 2 Node
 =====================================
 
-Enable the extension :code:`isaacsim.ros2.urdf` to enable this feature. This will open a standalone URDF importer UI that allows to define a ROS 2 Node containing a robot description.
+Source your ROS 2 environment before launching Isaac Sim. 
+Install and enable the extension :code:`isaacsim.ros2.urdf` to enable this feature. This will open a standalone URDF importer UI that allows to define a ROS 2 Node containing a robot description.
 
 To select the appropriate node, type in the name of the node in the :code:`Node` text box. If changes were made to the import settings, or to the published node hit Refresh. If the node name is in
 

@@ -79,7 +79,10 @@ Import Options
         - **Bounding Sphere**: Uses a simple bounding sphere approximation.
         - **Bounding Cube**: Uses a simple bounding box approximation.
 
-**General Options**:
+    - **Allow Self-Collision**: When enabled, allows the robot model to collide with itself. This can be useful for certain simulation
+      scenarios but may cause instability if collision meshes between links are self-intersecting.
+
+**Options**:
     - **Robot Type**: Sets the ``isaac:robotType`` attribute on the imported robot's schema. Choose from: Default, End Effector,
       Manipulator, Humanoid, Wheeled, Holonomic, Quadruped, Mobile Manipulators, or Aerial.
 
@@ -92,8 +95,6 @@ Import Options
       Maps directly onto the ``fix_base: bool | None`` field on :py:class:`MJCFImporterConfig` (``None`` / ``True`` / ``False``).
 
     - **Import Scene**: When enabled, imports the MJCF simulation settings along with the model.
-    - **Allow Self-Collision**: When enabled, allows the robot model to collide with itself. This can be useful for certain simulation
-      scenarios but may cause instability if collision meshes between links are self-intersecting.
 
     - **Merge Mesh**: When enabled, merges meshes where possible to optimize the model. This can reduce the number of prims in the
       resulting USD file and improve performance.
