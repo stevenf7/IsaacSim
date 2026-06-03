@@ -40,6 +40,10 @@ Rules are organized into four packages based on their function:
      - RobotSchemaRule, MakeListsNonExplicitRule, PhysicsJointPoseFixRule, MergeMeshRule, MjcToPhysxConversionRule, UrdfToMjcPhysxConversionRule
      - Apply Isaac Sim-specific transformations
 
+.. note::
+
+   In the Asset Transformer UI, the **Rule Type** dropdown lists each rule by its short class name (for example, ``SchemaRoutingRule``) and bundles rules by scope in the **Package** column. The scope token shown there maps to the categories on this page as follows: **Core Routing** to ``core``, **Performance** to ``perf``, **Structure** to ``structure``, and **Isaac Sim** to ``isaac_sim``. The **Fully Qualified Type** listed for each rule below is the value stored in profile JSON and passed to the API; the UI composes it from the selected scope and class name.
+
 Available Rules
 ---------------
 

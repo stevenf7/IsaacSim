@@ -97,9 +97,15 @@ Configure the transformation pipeline:
 
 When an action is expanded, the following configuration options appear:
 
-- **Rule Type**: Searchable dropdown to select the rule implementation. Rules are organized by package.
+- **Rule Type**: Searchable dropdown to select the rule implementation. The dropdown lists each rule by its short class name in the **Rule Name** column and bundles rules by scope in the **Package** column.
 - **Destination**: Output path for the rule (relative to package root).
 - **Parameters**: Dynamic parameter editors generated from the rule's configuration parameters.
+
+.. note::
+
+   The **Rule Type** dropdown shows the short class name (for example, ``SchemaRoutingRule``), while the documentation and saved profiles identify a rule by its *fully qualified type*. The fully qualified type combines the scope shown in the **Package** column with the class name: ``isaacsim.asset.transformer.rules.<package>.<module>.<ClassName>``. For example, the **Rule Name** ``SchemaRoutingRule`` in the **Package** ``core`` corresponds to ``isaacsim.asset.transformer.rules.core.schemas.SchemaRoutingRule``.
+
+   Use the filter icon next to the search field to show only rules from selected packages (``core``, ``perf``, ``structure``, ``isaac_sim``). Refer to the :ref:`Asset Transformer Rules Reference <isaac_sim_app_asset_transformer_rules>` for the fully qualified type of each rule.
 
 
 Execute Section
