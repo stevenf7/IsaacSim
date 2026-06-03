@@ -29,7 +29,7 @@ This tutorial demonstrates how to transform a robot USD asset into the recommend
 Prerequisites
 ^^^^^^^^^^^^^
 
-- A robot USD asset loaded in the stage, or available on disk. This tutorial uses a sample robot from ``Isaac/Robots/`` in the Nucleus assets. For this tutorial, we will use the ``Isaac/Robots/Fraunhofer/Evobot/evobot.usd`` asset.
+- A robot USD asset loaded in the stage, or available on disk. This tutorial uses a sample robot from ``Isaac/Robots/`` in the Isaac Sim assets. For this tutorial, we will use the ``Isaac/Robots/Fraunhofer/Evobot/evobot.usd`` asset.
 
 
 Instructions
