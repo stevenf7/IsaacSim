@@ -13,7 +13,20 @@
 Teleoperation Synthetic Data Generation
 ==========================================
 
-This tutorial covers the ``isaacsim.replicator.teleop`` and ``isaacsim.replicator.teleop.ui`` extensions. The runtime drives robot arms, grippers, floating end effectors, and mobile bases from VR controllers. The UI exposes that runtime as a Teleop window with six collapsible panels. Recording, replay, and offline synthetic data generation are handled by the companion ``isaacsim.replicator.episode_recorder`` extension.
+Teleoperation in |isaac-sim_short| lets you control robots with a VR headset and controllers, capture the resulting motion as demonstration data, and replay it to generate synthetic datasets for robot learning.
+
+.. list-table::
+   :widths: 50 50
+   :class: borderless
+
+   * - .. image:: /images/isim_6.0_replicator_tut_viewport_teleop_floating.webp
+          :align: center
+          :alt: Floating-controller teleoperation in Isaac Sim, with VR controllers driving floating grippers.
+     - .. image:: /images/isim_6.0_replicator_tut_viewport_teleop_ik.webp
+          :align: center
+          :alt: IK-controller teleoperation in Isaac Sim, with VR controllers driving articulated robot arms.
+
+This tutorial covers the ``isaacsim.replicator.teleop`` and ``isaacsim.replicator.teleop.ui`` extensions. The runtime drives robot arms, grippers, floating end effectors, and mobile bases from VR controllers. The UI exposes that runtime as a Teleop window with six collapsible panels. The ``isaacsim.replicator.episode_recorder`` extension handles recording, replay, and offline synthetic data generation.
 
 Learning objectives
 -------------------
@@ -47,6 +60,17 @@ Prerequisites
 
     Debug mode replaces VR input with draggable USD markers and on-screen sliders. It does not require a headset, CloudXR, or the Isaac Teleop package. Skip the CloudXR steps below if you only plan to use debug mode. See :ref:`Operate without VR (debug mode) <isaac_sim_app_tutorial_replicator_teleop_sdg_debug>`.
 
+Start CloudXR and connect the headset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Start the Isaac Teleop CloudXR runtime in a separate terminal and keep it running for the whole teleop session:
+
+.. code-block:: bash
+
+    python -m isaacteleop.cloudxr
+
+Open the `Isaac Teleop Web Client <https://nvidia.github.io/IsaacTeleop/client/>`_ from the headset browser and follow the displayed connection steps to pair the headset. With CloudXR running and the headset connected, you complete the rest of the workflow in |isaac-sim_short| --- launching the app, opening the Teleop window, and clicking **Connect** --- without returning to the web client.
+
 Running modes
 ^^^^^^^^^^^^^
 
@@ -74,23 +98,36 @@ The extensions are loaded automatically. Open the Teleop window from **Tools** >
     :align: center
     :width: 40%
 
-Start CloudXR and connect the headset
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+With the CloudXR runtime running and the headset connected, click **Connect** in the **Session** panel to start the teleop session.
 
-Start the Isaac Teleop CloudXR runtime in a separate terminal before clicking **Connect** in the Teleop window:
+.. _isaac_sim_app_tutorial_replicator_teleop_quickstart:
 
-.. code-block:: bash
+Quick start
+-----------
 
-    python -m isaacteleop.cloudxr
+Pair one of the built-in scenario stages with its matching profile, connect, and press **Play**. The profile resolves every controller against the stage, so no manual setup is needed.
 
-Keep the process running for the duration of the teleop session. Then open the `Isaac Teleop Web Client <https://nvidia.github.io/IsaacTeleop/client/>`_ from the headset browser and follow the displayed connection steps. Click **Connect** in the Teleop window's **Session** panel only after the CloudXR runtime is running and the headset client is connected.
+#. Open one of the :ref:`built-in scenario stages <isaac_sim_app_tutorial_replicator_teleop_test_stages>`, for example ``teleop_scenario_floating_xarm_dex3.usd``.
+#. In the Teleop window's **Profiles** panel, select the matching profile (``floating_xarm_dex3.yaml``) and click **Load**. Every controller resolves against the stage and its **Enable** button activates.
+#. Expand **Session** and click **Connect**. Without a headset, expand **Session > Debug** and check **Debug Tracking** instead.
+#. Press **Play** on the timeline.
+#. Move the VR controllers (or drag the on-screen markers in debug mode) to operate the robot.
+
+A profile enables only the controllers its scenario needs:
+
+*   :ref:`Floating Controller <isaac_sim_app_tutorial_replicator_teleop_ui_floating>` --- tracks a free rigid-body gripper or end effector to the VR controller pose.
+*   :ref:`IK Controller <isaac_sim_app_tutorial_replicator_teleop_ui_ik>` --- drives an articulated arm through inverse kinematics so its end effector tracks the VR controller.
+*   :ref:`Grasp Controller <isaac_sim_app_tutorial_replicator_teleop_ui_grasp>` --- maps the VR trigger to gripper open and close.
+*   :ref:`Locomotion <isaac_sim_app_tutorial_replicator_teleop_ui_locomotion>` --- moves the robot base or the VR origin from the thumbsticks.
+
+For example, ``floating_xarm_dex3.yaml`` enables the Floating, Grasp, and Locomotion controllers; the IK profiles enable IK instead of Floating. See the :ref:`workflow walkthrough <isaac_sim_app_tutorial_replicator_teleop_walkthrough>` for the detailed, step-by-step version, including recording and replay.
 
 Overview
 --------
 
 The extension is split into two layers:
 
-*   ``isaacsim.replicator.teleop`` --- runtime that handles VR input, frame markers, and four controllers (Floating, IK, Grasp, Locomotion). On construction, :class:`TeleopManager <isaacsim.replicator.teleop.TeleopManager>` installs a session injector with ``isaacsim.replicator.episode_recorder`` so that teleop controller, aim-pose, and head-pose channels are appended to any open recorder session, and binds the Meta Quest left-Y button to start / stop recording through :class:`VRRecordingButton <isaacsim.replicator.teleop.VRRecordingButton>`.
+*   ``isaacsim.replicator.teleop`` --- runtime that handles VR input, frame markers, and the four controllers (Floating, IK, Grasp, Locomotion), all managed by :class:`TeleopManager <isaacsim.replicator.teleop.TeleopManager>`.
 *   ``isaacsim.replicator.teleop.ui`` --- the Teleop window with six collapsible panels: **Profiles**, **Session**, **Floating Controller**, **IK Controller**, **Grasp Controller**, and **Locomotion**.
 
 Every controller follows the same three-step lifecycle:
@@ -101,7 +138,7 @@ Every controller follows the same three-step lifecycle:
 
 Controllers are only active while the timeline is playing and deactivate automatically on **Stop**. Gains, rotation offsets, and speed sliders are live-editable during **Play** and persist across sessions. The complete state of every panel can be saved to a YAML profile from the **Profiles** panel.
 
-Recording and replay live in the standalone Episode Recorder window (``isaacsim.replicator.episode_recorder.ui``, opened from **Tools** > **Replicator** > **Episode Recorder**). While a :class:`TeleopManager <isaacsim.replicator.teleop.TeleopManager>` is alive, sessions opened from that window automatically capture teleop controller, aim-pose, and head-pose channels in addition to the articulation, rigid-body, and Xform channels selected in the UI. The recorded HDF5 files feed the offline :ref:`synthetic-data pipeline <isaac_sim_app_tutorial_replicator_teleop_sdg_replay>`. For scripted workflows, :func:`build_teleop_recorder <isaacsim.replicator.teleop.build_teleop_recorder>` returns an equivalent recorder preconfigured with both teleop and scene recordables.
+The Episode Recorder window handles recording and replay. While a :class:`TeleopManager <isaacsim.replicator.teleop.TeleopManager>` is alive, sessions opened from that window automatically capture teleop controller, aim-pose, and head-pose channels in addition to the articulation, rigid-body, and Xform channels selected in the UI. The recorded HDF5 files feed the offline :ref:`synthetic-data pipeline <isaac_sim_app_tutorial_replicator_teleop_sdg_replay>`. For scripted workflows, :func:`build_teleop_recorder <isaacsim.replicator.teleop.build_teleop_recorder>` returns an equivalent recorder preconfigured with both teleop and scene recordables.
 
 
 .. _isaac_sim_app_tutorial_replicator_teleop_ui:
@@ -109,7 +146,7 @@ Recording and replay live in the standalone Episode Recorder window (``isaacsim.
 UI window overview
 ------------------
 
-The Teleop window contains six collapsible panels, described below from top to bottom. Recording and replay live in the separate Episode Recorder window (**Tools** > **Replicator** > **Episode Recorder**, provided by ``isaacsim.replicator.episode_recorder.ui``); see :ref:`Record and replay <isaac_sim_app_tutorial_replicator_teleop_episode_recorder>`.
+The Teleop window contains six collapsible panels, described below from top to bottom. The separate Episode Recorder window handles recording and replay; see :ref:`Record and replay <isaac_sim_app_tutorial_replicator_teleop_episode_recorder>`.
 
 
 .. _isaac_sim_app_tutorial_replicator_teleop_ui_profiles:
@@ -199,10 +236,16 @@ Debug
 
 Debug mode replaces VR controller input with draggable USD markers and on-screen sliders, so every controller can be exercised without VR hardware. See :ref:`debug mode <isaac_sim_app_tutorial_replicator_teleop_sdg_debug>` for the step-by-step walkthrough.
 
-.. image:: /images/isim_6.0_replicator_tut_gui_teleop_session_debug.png
-    :alt: Teleop Session Debug sub-section showing the Write Backend dropdown, Debug Tracking checkbox, L Grasp and R Grasp sliders, Slide X and Slide Y sliders, Turn slider, Up and Down hold-buttons, and the Carry Origin toggle.
-    :align: center
-    :width: 50%
+.. list-table::
+   :widths: 35 65
+   :class: borderless
+
+   * - .. image:: /images/isim_6.0_replicator_tut_gui_teleop_session_debug.png
+          :alt: Teleop Session Debug sub-section showing the Write Backend dropdown, Debug Tracking checkbox, L Grasp and R Grasp sliders, Slide X and Slide Y sliders, Turn slider, Up and Down hold-buttons, and the Carry Origin toggle.
+          :height: 320px
+     - .. image:: /images/isim_6.0_replicator_tut_gui_debug_mode.webp
+          :alt: Debug mode in Isaac Sim: dragging the on-screen frame markers and moving the sliders to drive the teleop controllers without VR hardware.
+          :height: 320px
 
 *   **Write Backend** --- overrides the global ``XformPrim`` backend used for all teleop writes. Options: **USD** (plain attribute writes), **USD-RT** (Fabric hierarchy), **Fabric** (fastest path, requires Fabric Scene Delegate).
 *   **Debug Tracking** checkbox --- enables synthetic pose input. Mutually exclusive with a live VR connection: disconnect first, or disable debug tracking before connecting.
@@ -217,6 +260,11 @@ Debug mode replaces VR controller input with draggable USD markers and on-screen
 
 Floating Controller
 ^^^^^^^^^^^^^^^^^^^
+
+.. image:: /images/isim_6.0_replicator_tut_viewport_teleop_floating_mode.webp
+    :alt: Floating Controller in Isaac Sim, with a free rigid-body gripper tracking the VR controller pose.
+    :align: center
+    :width: 80%
 
 The **Floating Controller** drives a free rigid body so that it tracks the VR controller pose using velocity-based PD control. Use it for end effectors or grippers that are not part of an articulation chain. Each side (**Left** / **Right**) has its own collapsible sub-panel.
 
@@ -239,6 +287,11 @@ The target prim must be a rigid body. To control an articulated gripper with the
 
 IK Controller
 ^^^^^^^^^^^^^
+
+.. image:: /images/isim_6.0_replicator_tut_viewport_teleop_ik_mode.webp
+    :alt: IK Controller in Isaac Sim, with an articulated robot arm's end effector tracking the VR controller pose.
+    :align: center
+    :width: 80%
 
 The **IK Controller** drives an articulated robot arm through inverse kinematics so that its end effector tracks the VR controller pose. Each side (**Left** / **Right**) has its own collapsible sub-panel.
 
@@ -312,6 +365,11 @@ Enable and status
 Grasp Controller
 ^^^^^^^^^^^^^^^^
 
+.. image:: /images/isim_6.0_replicator_tut_viewport_teleop_grasping_mode.webp
+    :alt: Grasp Controller in Isaac Sim, with the VR trigger mapping to gripper joint targets.
+    :align: center
+    :width: 80%
+
 The **Grasp Controller** maps the VR trigger's analog value (0 = open, 1 = fully closed) to gripper joint drive targets. Grippers vary widely --- a parallel-jaw gripper has a single drive joint, while a multi-finger hand can have a dozen joints across several fingers --- so the controller relies on a YAML config file that defines the mapping from the linear 0--1 trigger value to each joint's target position. Each side (**Left** / **Right**) has its own collapsible sub-panel with independent configuration.
 
 .. image:: /images/isim_6.0_replicator_tut_gui_teleop_grasp_controller.png
@@ -374,6 +432,11 @@ Each config file lists the joints to drive, the input range, and the correspondi
 Locomotion
 ^^^^^^^^^^
 
+.. image:: /images/isim_6.0_replicator_tut_viewport_teleop_locomotion_mode.webp
+    :alt: Locomotion Controller in Isaac Sim, with the VR thumbstick and face-button input moving the prim.
+    :align: center
+    :width: 80%
+
 The **Locomotion** controller moves a prim kinematically using VR thumbstick and face-button input. Horizontal movement is projected onto the world ground plane using the prim's heading, so axes remain correct regardless of the target prim's local-frame orientation.
 
 .. image:: /images/isim_6.0_replicator_tut_gui_teleop_locomotion.png
@@ -414,7 +477,7 @@ The Episode Recorder window (``isaacsim.replicator.episode_recorder.ui``, opened
     :align: center
     :width: 50%
 
-A recording *session* is one HDF5 file that contains many *episodes*. Episodes auto-start on timeline **Play** and auto-end on timeline **Stop**; the window buttons and the VR recording button add a manual start, end, or toggle edge on top of that. The window, the VR button, and any scripted caller all drive the same underlying session.
+A recording *session* is one HDF5 file that contains many *episodes*. Episodes auto-start on timeline **Play** and auto-end on timeline **Stop**. The window buttons, the VR recording button, and any scripted caller add a manual start, end, or toggle edge on top of that, all driving the same underlying session.
 
 Targets and output
 ^^^^^^^^^^^^^^^^^^
@@ -758,10 +821,12 @@ All four scenario stages live under the same path on the assets server:
      - ``teleop_scenario_dual_ur3_xarm_dex3.usd``
 
 
-Quick start
------------
+.. _isaac_sim_app_tutorial_replicator_teleop_walkthrough:
 
-Load a built-in profile and stage, connect (or enable debug mode), press **Play**, and operate the robot. To capture data, open an Episode Recorder session before pressing **Play**.
+Workflow walkthrough
+--------------------
+
+This section expands the :ref:`quick start <isaac_sim_app_tutorial_replicator_teleop_quickstart>` into the full workflow: configuring from a profile, connecting in VR or debug mode, operating each controller, and recording and replaying an episode. To capture data, open an Episode Recorder session before pressing **Play**.
 
 Configure with a built-in profile
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
