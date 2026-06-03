@@ -170,7 +170,7 @@ Use the :ref:`URDF Importer Extension <isaac_sim_urdf_importer>` to import the r
 
 #. Launch Isaac Sim from a terminal where an `IsaacSim-ros_workspaces <https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_ build is sourced.
 
-#. Enable the ``isaacsim.ros2.urdf`` extension in the **Extension Manager** window by navigating to **Window** > **Extensions**.
+#. Install and enable the ``isaacsim.ros2.urdf`` extension in the **Extension Manager** window by navigating to **Window** > **Extensions**.
 
 #. Navigate to **File** > **Import from ROS2 URDF Node**.
 

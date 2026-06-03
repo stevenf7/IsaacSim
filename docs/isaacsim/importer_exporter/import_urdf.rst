@@ -141,9 +141,9 @@ Getting Started
 
         **Prerequisites**
 
-        - :ref:`ROS 2<isaac_sim_app_install_ros>`
+        - :ref:`ROS 2<isaac_sim_app_install_ros>`, installing ros may require root or sudo access.
         - A ROS 2 workspace with a robot description (for example `Universal Robots ROS 2 Description <https://github.com/UniversalRobots/Universal_Robots_ROS2_Description>`_ ).
-        - Follow the tutorials on how to `set up a ROS 2 workspace (Humble) <https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.html>`_  and include a robot description like the one in this example, along with all its dependencies.
+        - Follow the tutorials on how to `set up a ROS 2 workspace <https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.html>`_  and include a robot description like the one in this example, along with all its dependencies.
 
         **Steps**
 
@@ -156,7 +156,7 @@ Getting Started
         - Terminal 3
             - Source ROS 2
             - Start |isaac-sim_short|
-            - Enable the extension :code:`isaacsim.ros2.urdf`
+            - Install and enable the extension :code:`isaacsim.ros2.urdf`
             - Open the URDF Importer using the **File > Import from ROS 2 URDF Node** menu
             - Put the node name in the text box
             - Click Find Node to find the node
