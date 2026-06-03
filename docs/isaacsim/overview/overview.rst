@@ -147,18 +147,18 @@ Tutorials
 
 .. isaacsim-difficulty:: intermediate
 
-   Connect ROS 2 and build data generation workflows
+   Connect ROS 2, control simulations, and build data generation workflows
 
 .. grid:: 1 2 3 3
    :gutter: 3
    :class-container: isaacsim-tut-row
 
-   .. grid-item-card:: TurtleBot with ROS 2
+   .. grid-item-card:: ROS 2 TurtleBot Series
       :img-top: /images/isim_6.0_ros_tut_gui_tb_urdf_import.png
       :link: isaac_sim_app_tutorial_ros2_turtlebot
       :link-type: ref
 
-      Set up a ROS 2 bridge and drive a TurtleBot in simulation.
+      Follow the TurtleBot flow from import and driving to sensors, timing, and transforms.
 
    .. grid-item-card:: Synthetic Data with Replicator
       :img-top: /images/isim_6.0_replicator_tut_external_workflow.jpg
@@ -167,12 +167,12 @@ Tutorials
 
       Generate labeled training data from Isaac Sim scenes with Replicator.
 
-   .. grid-item-card:: Publish an RTX Camera to ROS 2
-      :img-top: /images/isaac_tutorial_ros_camera_publishing_simview.png
-      :link: isaac_sim_app_tutorial_ros2_camera_publishing
+   .. grid-item-card:: ROS 2 Simulation Control
+      :img-top: /images/isim_6.0_ros_tut_external_simulation_control_spawn_entities.jpg
+      :link: isaac_sim_app_tutorial_ros2_simulation_control
       :link-type: ref
 
-      Stream ray-traced camera frames from Isaac Sim to a ROS 2 topic.
+      Use ROS 2 services and actions to load worlds, spawn entities, and step simulations.
 
 .. isaacsim-difficulty:: advanced
 
@@ -196,12 +196,12 @@ Tutorials
 
       Drive an AMR through randomized warehouse scenes and capture stereo camera data when it nears objects of interest.
 
-   .. grid-item-card:: Policy Evaluation
-      :img-top: /images/tutorial_lab_h1_walk_thumb.gif
-      :link: isaac_sim_app_tutorial_policy_deployment
+   .. grid-item-card:: ROS 2 Policy Evaluation
+      :img-top: /images/isim_5.0_full_tut_gui_rl_ros_controller_5.webp
+      :link: isaac_sim_app_tutorial_ros2_rl_controller
       :link-type: ref
 
-      Exercise a trained policy or VLA in richer Isaac Sim scenes before deployment.
+      Run a reinforcement learning policy through ROS 2 while Isaac Sim publishes observations and receives actions.
 
 ----
 
