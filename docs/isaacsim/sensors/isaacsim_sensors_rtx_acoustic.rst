@@ -99,6 +99,8 @@ Create an RTX Acoustic Sensor Using the ``Acoustic`` Class
 
 The ``Acoustic`` class creates or wraps an ``OmniAcoustic`` prim with the appropriate schemas applied.
 
+Run this snippet in the **Script Editor** (**Window > Script Editor**).
+
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_acoustic/create_an_rtx_acoustic.py
     :language: python
 
@@ -130,6 +132,8 @@ Tick Rate
 The ``tick_rate`` parameter (Hz) controls how frequently the sensor renders. A value of ``0``
 (the default) enables autotrigger mode, where the sensor renders every simulation frame. This maps to the ``omni:sensor:tickRate`` prim attribute.
 
+Run this snippet in the **Script Editor** (**Window > Script Editor**).
+
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_acoustic/set_acoustic_tick_rate.py
     :language: python
 
@@ -138,6 +142,8 @@ Auxiliary Output Level
 
 RTX Acoustic exposes auxiliary data through the ``aux_output_level`` constructor parameter.
 Valid values are ``"NONE"`` (default) and ``"BASIC"``.
+
+Run this snippet in the **Script Editor** (**Window > Script Editor**).
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_acoustic/set_acoustic_aux_output_level.py
     :language: python
@@ -152,6 +158,8 @@ How to Collect Data from an RTX Acoustic Sensor
 -------------------------------------------------
 
 Use the ``AcousticSensor`` runtime class to attach annotators and retrieve data:
+
+Run this snippet in the **Script Editor** (**Window > Script Editor**).
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_acoustic/collect_data_with_acoustic_sensor.py
     :language: python

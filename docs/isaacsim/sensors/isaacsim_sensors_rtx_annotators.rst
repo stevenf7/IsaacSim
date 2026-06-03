@@ -69,12 +69,16 @@ When ``isaacsim.sensors.rtx.nodes`` is enabled, a writer named ``"draw-point-clo
 becomes available on ``LidarSensor``, ``RadarSensor``, and ``AcousticSensor``.
 Pass ``writers=["draw-point-cloud"]`` to attach the debug draw writer:
 
+Run this snippet in the **Script Editor** (**Window > Script Editor**).
+
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_annotators/attach_debug_draw_writer.py
     :language: python
 
 **Using with RTX Radar**
 
 The annotator works identically with ``OmniRadar`` prims. Remember that Motion BVH must be enabled for RTX Radar:
+
+Run this snippet in the **Script Editor** (**Window > Script Editor**).
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_annotators/attach_debug_draw_writer_radar.py
     :language: python
@@ -84,6 +88,8 @@ The annotator works identically with ``OmniRadar`` prims. Remember that Motion B
 When using the ``LidarSensor`` or ``RadarSensor`` classes, auxiliary data (intensity, emitter IDs, material IDs, etc.)
 is available directly through the ``GenericModelOutput`` buffer via ``parse_generic_model_output_data``.
 The ``_replicator:rendervar:GenericModelOutput:channels`` attribute on the sensor prim controls which auxiliary fields are populated:
+
+Run this snippet in the **Script Editor** (**Window > Script Editor**).
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_annotators/create_lidar_sensor_with_aux_output.py
     :language: python
@@ -193,6 +199,8 @@ By default the node outputs a 3D Cartesian point cloud, and
 can optionally output the following data if the user sets the corresponding input flag to ``True`` when initializing the Annotator.
 
 If creating the Annotator directly using the Replicator API, this can be done as follows:
+
+Run this snippet in the **Script Editor** (**Window > Script Editor**).
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_annotators/isaaccreatertxlidarscanbuffer.py
     :language: python
