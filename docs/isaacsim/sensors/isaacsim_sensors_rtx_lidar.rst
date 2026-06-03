@@ -66,6 +66,8 @@ The ``Lidar`` class provides a high-level Python interface for creating and wrap
 Use ``Lidar.create()`` to create a new sensor from a known configuration name or USD file, or ``Lidar(path)``
 to wrap an existing ``OmniLidar`` prim on the stage.
 
+Run this snippet in the **Script Editor** (**Window > Script Editor**).
+
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_lidar/create_an_rtx_lidar_through_the_lidar_class.py
     :language: python
 
@@ -101,6 +103,8 @@ The ``tick_rate`` parameter (Hz) controls how frequently the sensor renders. A v
 nonzero value causes the sensor to render at the specified frequency independently of the simulation
 step rate. This maps to the ``omni:sensor:tickRate`` prim attribute.
 
+Run this snippet in the **Script Editor** (**Window > Script Editor**).
+
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_lidar/set_lidar_tick_rate.py
     :language: python
 
@@ -125,6 +129,8 @@ Auxiliary Output Level
 RTX Lidar exposes auxiliary data through the ``aux_output_level`` constructor parameter.
 Valid values are ``"NONE"`` (default), ``"BASIC"``, ``"EXTRA"``, ``"FULL"``.
 
+Run this snippet in the **Script Editor** (**Window > Script Editor**).
+
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_lidar/set_lidar_aux_output_level.py
     :language: python
 
@@ -141,6 +147,8 @@ The ``accumulate_outputs`` parameter (default ``True``) controls the
 over multiple frames until a full scan is complete. For rotary lidars, a full scan corresponds to a
 360-degree rotation; for solid-state lidars, a full scan covers the full azimuth sweep.
 
+Run this snippet in the **Script Editor** (**Window > Script Editor**).
+
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_lidar/disable_lidar_scan_accumulation.py
     :language: python
 
@@ -156,6 +164,8 @@ How to Collect Data from an RTX Lidar
 
 The recommended method for collecting data from an RTX Lidar is to use the ``LidarSensor`` runtime class,
 which wraps a ``Lidar`` authoring object and manages Replicator Annotators.
+
+Run this snippet in the **Script Editor** (**Window > Script Editor**).
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_lidar/collect_data_with_lidar_sensor_basic.py
     :language: python
@@ -250,6 +260,8 @@ The optional ``variant`` parameter selects a specific variant of the provided Li
 The full set of supported configs and their variant shapes is exposed via ``isaacsim.sensors.experimental.rtx.SUPPORTED_LIDAR_CONFIGS``; iterate over it to enumerate the available ``(config, variant)`` combinations programmatically.
 
 The snippet below loads a SICK picoScan100 Lidar with the ``picoScan150Pro`` product and the ``Profile11_15Hz_1p0deg`` profile selected.
+
+Run this snippet in the **Script Editor** (**Window > Script Editor**).
 
 .. literalinclude:: ../snippets/sensors/isaacsim_sensors_rtx_lidar/create_lidar_from_config.py
     :language: python

@@ -51,7 +51,8 @@ Getting Started
 - ``FASTRTPS_DEFAULT_PROFILES_FILE`` environment variable is set prior to launching |isaac-sim_short| and ROS2 bridge is enabled.
 - OPTIONAL: Explore the inner workings of RTX Lidar sensors by reviewing :ref:`isaacsim_sensors_rtx_lidar_how_they_work` and how to get :ref:`rtx_sensor_annotator_descriptions`.
 - Completed the :ref:`isaac_sim_app_tutorial_ros2_turtlebot` tutorial so that Turtlebot is loaded and moving around.
-- The optional portion of this tutorial requires the ``isaac_tutorials`` ROS 2 package, which is provided in `IsaacSim-ros_workspaces <https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_ repo. Complete :ref:`isaac_sim_app_install_ros` to make sure the ROS 2 workspace environment is set up correctly.
+- The optional portion of this tutorial requires the ``isaac_tutorials`` ROS 2 package, which is provided in `IsaacSim-ros_workspaces <https://github.com/isaac-sim/IsaacSim-ros_workspaces>`_ repo.
+- Complete :ref:`isaac_sim_app_install_ros` to make sure the ROS 2 workspace environment is set up correctly.
 
 
 .. note:: In Windows 10 or 11, depending on your machine's configuration, RViz2 might not open properly. Some bandwidth-heavy topics might not be available to visualize in RViz2 in WSL.
