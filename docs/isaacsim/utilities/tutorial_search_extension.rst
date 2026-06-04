@@ -35,17 +35,6 @@ To find assets, optionally select a folder in the directory tree to scope your s
 
 The following sections explain how to use these features.
 
-How to Limit the Scope of Your Searches
----------------------------------------
-
-Use the directory tree to limit the scope of your searches. The directory tree contains all folders that can contain assets. Selecting a folder limits your searches to the contents of that folder and its subfolders. Selecting a folder in the tree is optional; if you do not select one, **SimReady Asset Search** searches the entire directory tree by default.
-
-The directory tree spans both your local file system and AWS S3 buckets, which gives you flexibility in how broadly or narrowly you scope your searches. You can, for example, search across all registered AWS S3 buckets or limit a search to a specific folder in your local file system. When you select a folder, it becomes the *anchor path* that the search API bases its search on. Until you change it, all searches are scoped to the contents of the selected folder and its subfolders.
-
-As discussed shortly, the contents of the **SimReady Asset Search** control panel are sensitive to your directory tree selection. Changing your selection initializes the control panel for a new search. (You do not need to close and reopen the control panel to initiate a new search.)
-
-When you select a folder, the SimReady Content Browser displays its contents in a panel to the right of the directory tree. If you select a folder in that panel, the effect is the same as selecting the same folder in the directory tree.
-
 How to Open and Use the SimReady Asset Search Control Panel
 -----------------------------------------------------------
 
@@ -68,6 +57,17 @@ Both ways open the **SimReady Asset Search** control panel.
    .. image:: ../images/isaac_asset_search_3.png
       :alt: The open SimReady Asset Search control panel.
       :align: center
+
+How to Limit the Scope of Your Searches
+---------------------------------------
+
+Use the directory tree to limit the scope of your searches. The directory tree contains all folders that can contain assets. Selecting a folder limits your searches to the contents of that folder and its subfolders. Selecting a folder in the tree is optional; if you do not select one, **SimReady Asset Search** searches the entire directory tree by default.
+
+The directory tree spans both your local file system and AWS S3 buckets, which gives you flexibility in how broadly or narrowly you scope your searches. You can, for example, search across all registered AWS S3 buckets or limit a search to a specific folder in your local file system. When you select a folder, it becomes the *anchor path* that the search API bases its search on. Until you change it, all searches are scoped to the contents of the selected folder and its subfolders.
+
+As noted in the previous section, the contents of the **SimReady Asset Search** control panel are sensitive to your directory tree selection. Changing your selection initializes the control panel for a new search. (You do not need to close and reopen the control panel to initiate a new search.)
+
+When you select a folder, the SimReady Content Browser displays its contents in a panel to the right of the directory tree. If you select a folder in that panel, the effect is the same as selecting the same folder in the directory tree.
 
 How to Enter Search Parameters
 ##############################
