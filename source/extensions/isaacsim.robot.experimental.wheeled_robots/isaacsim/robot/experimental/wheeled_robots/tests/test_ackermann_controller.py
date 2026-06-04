@@ -23,17 +23,17 @@ from isaacsim.robot.experimental.wheeled_robots.controllers.ackermann_controller
 class TestAckermannController(omni.kit.test.AsyncTestCase):
     """Tests for AckermannController steering and velocity behavior."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test fixtures."""
 
     # ----------------------------------------------------------------------
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test fixtures."""
 
     # ----------------------------------------------------------------------
 
-    async def test_ackermann_steering_control(self):
+    async def test_ackermann_steering_control(self) -> None:
         """Test steering angle and wheel velocities for constant-radius turns."""
         # First case check that it snaps to correct angle, no steering velocity
 
@@ -43,8 +43,13 @@ class TestAckermannController(omni.kit.test.AsyncTestCase):
         wheel_radius = 0.25
 
         def controller_calcs(
-            wheel_base, track_width, wheel_radius, desired_forward_vel, radius_of_turn, desired_steering_angle
-        ):
+            wheel_base: float,
+            track_width: float,
+            wheel_radius: float,
+            desired_forward_vel: float,
+            radius_of_turn: float,
+            desired_steering_angle: float,
+        ) -> None:
             controller = AckermannController(
                 wheel_base=wheel_base, track_width=track_width, front_wheel_radius=wheel_radius
             )
@@ -106,7 +111,7 @@ class TestAckermannController(omni.kit.test.AsyncTestCase):
             wheel_base, track_width, wheel_radius, desired_forward_vel, radius_of_turn, desired_steering_angle
         )
 
-    async def test_ackermann_steering_velocity_drive_acceleration(self):
+    async def test_ackermann_steering_velocity_drive_acceleration(self) -> None:
         """Test steering velocity and drive acceleration behavior."""
         # First case check that it snaps to correct angle, no steering velocity
 
@@ -115,7 +120,13 @@ class TestAckermannController(omni.kit.test.AsyncTestCase):
         track_width = 1.25
         wheel_radius = 0.25
 
-        def controller_calcs(wheel_base, track_width, wheel_radius, desired_forward_vel, radius_of_turn):
+        def controller_calcs(
+            wheel_base: float,
+            track_width: float,
+            wheel_radius: float,
+            desired_forward_vel: float,
+            radius_of_turn: float,
+        ) -> list[float]:
 
             expected_steering_angle_left = np.arctan(wheel_base / (radius_of_turn - 0.5 * track_width))
             expected_steering_angle_right = np.arctan(wheel_base / (radius_of_turn + 0.5 * track_width))

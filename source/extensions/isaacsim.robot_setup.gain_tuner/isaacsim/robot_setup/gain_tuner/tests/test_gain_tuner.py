@@ -19,6 +19,7 @@ import asyncio
 import math
 import os
 import tempfile
+from collections.abc import Generator
 from dataclasses import dataclass
 from enum import Enum
 from types import SimpleNamespace
@@ -1257,6 +1258,7 @@ class TestGainTunerDriveMath(omni.kit.test.AsyncTestCase):
     """Pure drive math consistency (JointItem convention) and USD round-trip."""
 
     async def test_joint_drive_mode_mimic_distinct_from_none(self) -> None:
+        """Mimic drive mode is a distinct enum value from none."""
         members = list(JointDriveMode)
         self.assertEqual(len(members), 4)
         self.assertEqual([m.name for m in members], ["NONE", "POSITION", "VELOCITY", "MIMIC"])
@@ -1266,6 +1268,7 @@ class TestGainTunerDriveMath(omni.kit.test.AsyncTestCase):
         self.assertNotIn(JointDriveMode.NONE, [JointDriveMode.MIMIC])
 
     async def test_get_joint_drive_mode_mimic_matches_enum(self) -> None:
+        """Mimic joints report the mimic drive-mode enum value."""
         with mock.patch(
             "isaacsim.robot_setup.gain_tuner.ui.joint_table_widget.is_joint_mimic",
             return_value=True,
@@ -1285,6 +1288,7 @@ class TestGainTunerDriveMath(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(nf_correct / nf_stale, 7.78, delta=0.05)
 
     async def test_natural_frequency_round_trip_revolute_force(self) -> None:
+        """Revolute force drive natural frequency round-trips through stiffness."""
         m_eq = 1.25
         fn = 10.0
         zeta = 0.05
@@ -1319,6 +1323,7 @@ class TestGainTunerDriveMath(omni.kit.test.AsyncTestCase):
             stage_utils.close_stage()
 
     async def test_meq_acceleration_drive_ignores_inertia(self) -> None:
+        """Acceleration drive frequency calculations use unit effective mass."""
         self.assertEqual(meq_for_drive_frequency(use_force_drive=False, m_eq=99.0), 1.0)
         k_deg = 4000.0
         nf_accel = natural_frequency_hz_from_stiffness_revolute_position(k_deg, use_force_drive=False, m_eq=99.0)
@@ -1326,6 +1331,7 @@ class TestGainTunerDriveMath(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(nf_accel, nf_unit, places=9)
 
     async def test_damping_from_damping_ratio_matches_stiffness_round_trip(self) -> None:
+        """Damping computed from damping ratio matches the round-trip helper."""
         m_eq = 1.5
         fn, zeta = 8.0, 0.06
         k_deg, d_expected = stiffness_stored_and_damping_from_natural_frequency_revolute_position(
@@ -1335,6 +1341,7 @@ class TestGainTunerDriveMath(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(d_actual, d_expected, places=6)
 
     async def test_damping_ratio_zero_when_stiffness_zero(self) -> None:
+        """Zero stiffness reports zero damping ratio."""
         zeta = damping_ratio_from_stiffness_damping_revolute_position(1.0, 0.0, use_force_drive=True, m_eq=1.0)
         self.assertEqual(zeta, 0.0)
 
@@ -1348,11 +1355,17 @@ class _RecordTrajectoryTest(RobotTest):
         super().__init__()
         self._num_steps = num_steps
 
-    def setup(self, articulation, joint_indices, joint_modes, test_params: dict) -> None:
+    def setup(
+        self,
+        articulation: object,
+        joint_indices: list[int],
+        joint_modes: dict[int, object],
+        test_params: dict[str, object],
+    ) -> None:
         super().setup(articulation, joint_indices, joint_modes, test_params)
         self._joint_indices = joint_indices
 
-    def run(self):
+    def run(self) -> Generator[None, None, TestResult]:
         cmd_p: list[np.ndarray] = []
         cmd_v: list[np.ndarray] = []
         obs_p: list[np.ndarray] = []
@@ -1385,6 +1398,7 @@ class TestGainTunerRobotTestPath(TestGainTunerHarness):
     """Registered :class:`RobotTest` returning :class:`TestResult`."""
 
     async def test_registered_robot_test_populates_buffers(self) -> None:
+        """Registered robot tests populate command and observation buffers."""
         robot_path = self._create_articulation(
             [JointModality.REVOLUTE],
             DriveSubmodality.FORCE,
@@ -1517,6 +1531,7 @@ class TestGainTunerUsdUtilities(TestGainTunerHarness):
             self.assertTrue(is_layer_savable(found))
 
     async def test_get_original_spec_for_drive_api_root_authored(self) -> None:
+        """Root-authored drive API specs are found on the root layer."""
         try:
             await stage_utils.create_new_stage_async()
             stage = omni.usd.get_context().get_stage()
@@ -1553,9 +1568,11 @@ class TestUsdLayerUtils(omni.kit.test.AsyncTestCase):
     """Pure USD layer helpers (no simulation harness)."""
 
     async def test_is_physics_layer_legacy_usd_suffix(self) -> None:
+        """Legacy `_physics.usd` files under payloads/Physics count as physics layers."""
         self.assertTrue(is_physics_layer("/asset/payloads/Physics/_physics.usd"))
 
     async def test_resolve_prefers_physics_spec_in_property_stack(self) -> None:
+        """Gain save target resolution prefers the physics-layer property spec."""
         with tempfile.TemporaryDirectory() as tmp_dir:
             physics_path = os.path.join(tmp_dir, "physics.usda")
             root_path = os.path.join(tmp_dir, "robot.usda")
@@ -1576,6 +1593,7 @@ class TestUsdLayerUtils(omni.kit.test.AsyncTestCase):
             self.assertEqual(target_path, attr.GetPath())
 
     async def test_is_layer_savable_respects_filesystem_writable(self) -> None:
+        """Layer savability follows filesystem write permissions."""
         with tempfile.TemporaryDirectory() as tmp_dir:
             path = os.path.join(tmp_dir, "physics.usda")
             Sdf.Layer.CreateNew(path).Save()
@@ -1587,6 +1605,7 @@ class TestUsdLayerUtils(omni.kit.test.AsyncTestCase):
             self.assertTrue(is_layer_savable(writable_layer))
 
     async def test_remap_edits_to_physics_layer_merges_multiple_layer_keys(self) -> None:
+        """Edits from multiple layers remap to one physics-layer save key."""
         with tempfile.TemporaryDirectory() as tmp_dir:
             physics_path = os.path.join(tmp_dir, "physics.usda")
             root_path = os.path.join(tmp_dir, "root.usda")
@@ -1608,6 +1627,7 @@ class TestUsdLayerUtils(omni.kit.test.AsyncTestCase):
             self.assertEqual(merged[save_id][0][1], 1.0)
 
     async def test_get_property_path_for_layer_uses_prim_stack(self) -> None:
+        """Property paths for a layer are resolved from the authored prim stack."""
         with tempfile.TemporaryDirectory() as tmp_dir:
             physics_path = os.path.join(tmp_dir, "physics.usda")
             physics_layer = Sdf.Layer.CreateNew(physics_path)
@@ -1623,6 +1643,7 @@ class TestUsdLayerUtils(omni.kit.test.AsyncTestCase):
             self.assertEqual(path, attr.GetPath())
 
     async def test_find_layer_by_save_identifier_opens_absolute_path(self) -> None:
+        """Absolute save identifiers are opened as Sdf layers."""
         with tempfile.TemporaryDirectory() as tmp_dir:
             path = os.path.join(tmp_dir, "physics.usda")
             layer = Sdf.Layer.CreateNew(path)
@@ -1637,6 +1658,7 @@ class TestGainTunerUsdUtilitiesCollectEdits(omni.kit.test.AsyncTestCase):
     """collect_gain_save_edits with a minimal composed stage."""
 
     async def test_collect_gain_save_edits_targets_physics_layer(self) -> None:
+        """Gain save edits target the discovered physics layer."""
         with tempfile.TemporaryDirectory() as tmp_dir:
             physics_path = os.path.join(tmp_dir, "physics.usda")
             root_path = os.path.join(tmp_dir, "robot.usda")
@@ -1661,13 +1683,14 @@ class TestGainTunerUsdUtilitiesCollectEdits(omni.kit.test.AsyncTestCase):
             save_id = get_layer_save_identifier(physics)
             self.assertIn(save_id, edits)
             paths = {path for path, _ in edits[save_id]}
-            values = {path: value for path, value in edits[save_id]}
+            values = dict(edits[save_id])
             stiffness_path = attr.GetPath()
             self.assertIn(stiffness_path, paths)
             self.assertAlmostEqual(values[stiffness_path], 200.0, places=5)
             self.assertGreaterEqual(len(edits[save_id]), 3)
 
     async def test_collect_gain_save_edits_mimic_joint_attrs(self) -> None:
+        """Mimic joint natural-frequency and damping-ratio attrs are collected."""
         stage = Usd.Stage.CreateInMemory()
         jpath = "/mimic_joint"
         joint = UsdPhysics.RevoluteJoint.Define(stage, jpath)
@@ -1686,7 +1709,7 @@ class TestGainTunerUsdUtilitiesCollectEdits(omni.kit.test.AsyncTestCase):
             edits, physics = collect_gain_save_edits([entry], stage)
         self.assertEqual(len(edits), 1)
         collected = next(iter(edits.values()))
-        collected_values = {path: value for path, value in collected}
+        collected_values = dict(collected)
         self.assertAlmostEqual(collected_values[nf_attr.GetPath()], 12.0, places=5)
         self.assertAlmostEqual(collected_values[dr_attr.GetPath()], 0.08, places=5)
 
@@ -1695,6 +1718,7 @@ class TestJointTableHelpers(omni.kit.test.AsyncTestCase):
     """Joint table attribute getters and cell applicability (no full tree view)."""
 
     async def test_get_stiffness_damping_attrs_revolute(self) -> None:
+        """Revolute drive stiffness and damping attrs are discovered."""
         stage = Usd.Stage.CreateInMemory()
         jpath = "/joint"
         UsdPhysics.RevoluteJoint.Define(stage, jpath)
@@ -1706,11 +1730,13 @@ class TestJointTableHelpers(omni.kit.test.AsyncTestCase):
         self.assertIsNotNone(get_damping_attr(joint))
 
     async def test_get_stiffness_attr_none_without_drive_api(self) -> None:
+        """Prims without a drive API do not expose a stiffness attr."""
         stage = Usd.Stage.CreateInMemory()
         prim = stage.DefinePrim("/nondrive", "Xform")
         self.assertIsNone(get_stiffness_attr(prim))
 
     async def test_tunable_value_column_ids_stiffness_vs_nf_mode(self) -> None:
+        """Tunable value columns switch between stiffness and natural-frequency modes."""
         item = SimpleNamespace(mode=JointSettingMode.STIFFNESS)
         self.assertEqual(_tunable_value_column_ids(item), (WidgetColumns.STIFFNESS, WidgetColumns.DAMPING))
         item.mode = JointSettingMode.NATURAL_FREQUENCY
@@ -1720,6 +1746,7 @@ class TestJointTableHelpers(omni.kit.test.AsyncTestCase):
         )
 
     async def test_set_gain_cell_field_state_hides_field(self) -> None:
+        """Inapplicable gain cells hide and disable their field."""
         field = SimpleNamespace(visible=True, enabled=True)
         rect = SimpleNamespace(visible=True, name="")
         item = SimpleNamespace(value_field={0: field}, _cell_backgrounds={0: rect})
@@ -1729,6 +1756,7 @@ class TestJointTableHelpers(omni.kit.test.AsyncTestCase):
         self.assertEqual(rect.name, _CELL_BG_INAPPLICABLE)
 
     async def test_on_target_change_velocity_hides_nf_columns(self) -> None:
+        """Velocity target mode hides natural-frequency columns."""
         nf_col, dr_col = WidgetColumns.NATURAL_FREQUENCY, WidgetColumns.DAMPING_RATIO
         nf_field = SimpleNamespace(visible=True, enabled=True)
         dr_field = SimpleNamespace(visible=True, enabled=True)
@@ -1746,6 +1774,7 @@ class TestJointTableHelpers(omni.kit.test.AsyncTestCase):
         self.assertEqual(nf_rect.name, _CELL_BG_INAPPLICABLE)
 
     async def test_refresh_inertia_derived_columns_updates_nf(self) -> None:
+        """Refreshing inertia-derived columns recomputes frequency and damping ratio."""
         calls = {"nf": 0, "dr": 0}
 
         class _MockChild:
@@ -1785,14 +1814,17 @@ class TestSnapToLimitsClassification(omni.kit.test.AsyncTestCase):
         return joint_metrics[0].get("lower_blocked", False)
 
     async def test_hold_blocked_stalled_at_limit(self) -> None:
+        """Stable hold errors at a limit are classified as blocked."""
         errs = [0.05, 0.051, 0.049, 0.05]
         self.assertTrue(self._run_hold_classification(errs))
 
     async def test_hold_fail_oscillating(self) -> None:
+        """Oscillating hold errors are not classified as blocked."""
         errs = [0.05 + 0.02 * math.sin(i) for i in range(20)]
         self.assertFalse(self._run_hold_classification(errs))
 
     async def test_hold_fail_still_approaching(self) -> None:
+        """Converging hold errors are not classified as blocked."""
         errs = [0.2 - 0.01 * i for i in range(10)]
         self.assertFalse(self._run_hold_classification(errs))
 
@@ -1801,6 +1833,7 @@ class TestStressTestUnit(omni.kit.test.AsyncTestCase):
     """Stress test setup and empty articulation path."""
 
     async def test_setup_reads_test_params(self) -> None:
+        """Stress test setup reads its mode, duration, and seed parameters."""
         test = StressTest()
         articulation = mock.MagicMock()
         test.setup(
@@ -1821,6 +1854,7 @@ class TestStressTestUnit(omni.kit.test.AsyncTestCase):
         self.assertEqual(test._seed, 7)
 
     async def test_run_empty_articulation_returns_empty_result(self) -> None:
+        """Stress test run returns an empty result when articulation is missing."""
         test = StressTest()
         test._articulation = None
         gen = test.run()
@@ -1853,6 +1887,7 @@ class TestGainTunerBuiltInCommands(TestGainTunerHarness):
         }
 
     async def test_sinusoidal_step_returns_position_commands(self) -> None:
+        """Sinusoidal command generation returns position commands."""
         robot_path = self._create_articulation(
             [JointModality.REVOLUTE],
             DriveSubmodality.FORCE,
@@ -1871,6 +1906,7 @@ class TestGainTunerBuiltInCommands(TestGainTunerHarness):
         self.assertIsInstance(vel_idx, list)
 
     async def test_step_step_square_wave_changes_with_timestep(self) -> None:
+        """Step command generation flips square-wave position commands over time."""
         robot_path = self._create_articulation(
             [JointModality.REVOLUTE],
             DriveSubmodality.FORCE,
@@ -1892,6 +1928,7 @@ class TestGainTunerBuiltInCommands(TestGainTunerHarness):
         self.assertAlmostEqual(float(pos_b[0]), -0.5, places=5)
 
     async def test_builtin_test_registry_contains_sinusoidal_and_step(self) -> None:
+        """The built-in test registry exposes sinusoidal and step tests."""
         tuner = GainTuner()
         tuner.register_test(GainsTestMode.SINUSOIDAL, SinusoidalTest())
         tuner.register_test(GainsTestMode.STEP, StepFunctionTest())
@@ -1904,16 +1941,19 @@ class TestGainTunerInternals(TestGainTunerHarness):
     """D6 helpers, articulation root, inertia math, and callbacks."""
 
     async def test_extract_d6_axis_token_from_dof_name(self) -> None:
+        """D6 axis tokens are extracted from DOF names."""
         self.assertEqual(_extract_d6_axis_token("arm:rotZ"), "rotZ")
         self.assertEqual(_extract_d6_axis_token("slide_transX"), "transX")
 
     async def test_assign_d6_axis_token_avoids_duplicates(self) -> None:
+        """Assigned D6 axis tokens avoid duplicates for the same joint."""
         usage: dict[str, set] = {}
         first = _assign_d6_axis_token("joint", "dof_rotX", usage)
         second = _assign_d6_axis_token("joint", "dof_rotX", usage)
         self.assertNotEqual(first, second)
 
     async def test_d6_axis_has_unlocked_limit(self) -> None:
+        """D6 axes with authored finite limits are treated as unlocked."""
         stage = Usd.Stage.CreateInMemory()
         joint = UsdPhysics.Joint.Define(stage, "/d6")
         limit_api = UsdPhysics.LimitAPI.Apply(joint.GetPrim(), "rotZ")
@@ -1922,12 +1962,14 @@ class TestGainTunerInternals(TestGainTunerHarness):
         self.assertTrue(_d6_axis_has_unlocked_limit(joint.GetPrim(), "rotZ"))
 
     async def test_format_d6_display_name(self) -> None:
+        """D6 display names include the joint name and axis token."""
         stage = Usd.Stage.CreateInMemory()
         joint = UsdPhysics.Joint.Define(stage, "/arm")
         name = _format_d6_display_name(joint.GetPrim(), "rotZ", "rotZ")
         self.assertEqual(name, "arm:rotZ")
 
     async def test_find_articulation_root_on_robot_child(self) -> None:
+        """Articulation root discovery finds the child root joint."""
         robot_path = self._create_articulation(
             [JointModality.REVOLUTE],
             DriveSubmodality.FORCE,
@@ -1941,6 +1983,7 @@ class TestGainTunerInternals(TestGainTunerHarness):
         self.assertEqual(root, f"{robot_path}/root_joint")
 
     async def test_matrix_norm_and_parallel_axis_inertia(self) -> None:
+        """Matrix norm and parallel-axis inertia helpers return expected values."""
         m = Gf.Matrix3f(3.0, 0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 5.0)
         self.assertAlmostEqual(matrix_norm(m), math.sqrt(50.0), places=6)
         I_cm = Gf.Matrix3f(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
@@ -1948,6 +1991,7 @@ class TestGainTunerInternals(TestGainTunerHarness):
         self.assertAlmostEqual(translated[0][0], 3.0, places=5)
 
     async def test_get_joint_axis_world_direction_unit_length(self) -> None:
+        """World joint-axis directions are normalized."""
         stage = Usd.Stage.CreateInMemory()
         jpath = "/joint"
         UsdPhysics.RevoluteJoint.Define(stage, jpath).CreateAxisAttr("Z")
@@ -1956,6 +2000,7 @@ class TestGainTunerInternals(TestGainTunerHarness):
         self.assertAlmostEqual(axis.GetLength(), 1.0, places=5)
 
     async def test_add_inertia_updated_callback_invoked(self) -> None:
+        """Registered inertia-updated callbacks are invoked."""
         tuner = GainTuner()
         called = []
 
@@ -1971,6 +2016,7 @@ class TestSnapToLimitsSmoke(TestGainTunerHarness):
     """Short registered snap-to-limits run."""
 
     async def test_snap_to_limits_produces_metrics(self) -> None:
+        """A short snap-to-limits run produces joint metrics."""
         robot_path = self._create_articulation(
             [JointModality.REVOLUTE],
             DriveSubmodality.FORCE,
@@ -2013,6 +2059,7 @@ class TestStressTestSmoke(TestGainTunerHarness):
     """Short registered stress test run."""
 
     async def test_stress_test_produces_metrics(self) -> None:
+        """A short stress-test run records its configured seed in metrics."""
         robot_path = self._create_articulation(
             [JointModality.REVOLUTE],
             DriveSubmodality.FORCE,
@@ -2053,6 +2100,7 @@ class TestProjectInertiaOntoAxis(omni.kit.test.AsyncTestCase):
     """Scalar inertia projection about a joint axis — no simulation or articulation."""
 
     async def test_project_inertia_onto_axis_zero_vector_logs_warning(self) -> None:
+        """Zero joint axes log a warning and return zero projected inertia."""
         inertia = Gf.Matrix3f(1.0)
         axis = Gf.Vec3f(0.0, 0.0, 0.0)
         with mock.patch("carb.log_warn") as log_warn:
@@ -2062,6 +2110,7 @@ class TestProjectInertiaOntoAxis(omni.kit.test.AsyncTestCase):
         self.assertIn("degenerate joint rotation axis", log_warn.call_args.args[0])
 
     async def test_project_inertia_onto_axis_near_zero_vector_logs_warning(self) -> None:
+        """Near-zero joint axes log a warning and return zero projected inertia."""
         inertia = Gf.Matrix3f(1.0)
         axis = Gf.Vec3f(1e-10, 0.0, 0.0)
         with mock.patch("carb.log_warn") as log_warn:
@@ -2071,6 +2120,7 @@ class TestProjectInertiaOntoAxis(omni.kit.test.AsyncTestCase):
         self.assertIn("degenerate joint rotation axis", log_warn.call_args.args[0])
 
     async def test_project_inertia_onto_axis_valid_axis_no_warning(self) -> None:
+        """Valid joint axes project inertia without warning."""
         inertia = Gf.Matrix3f(1.0)
         axis = Gf.Vec3f(0.0, 0.0, 1.0)
         with mock.patch("carb.log_warn") as log_warn:
@@ -2083,6 +2133,7 @@ class TestGainTunerClosedFormTheory(omni.kit.test.AsyncTestCase):
     """Algebraic stiffness/damping ↔ natural frequency / ζ — no simulation or articulation."""
 
     async def test_prismatic_stiffness_damping_round_trip(self) -> None:
+        """Prismatic stiffness and damping round-trip through natural frequency."""
         m = 2.3
         k, d = _compute_stiffness_damping_prismatic(m, 4.5, 0.12)
         kg, dg = _GOLDEN_PRISMATIC_STIFFNESS_DAMPING_M_2p3_FN_4p5_Z_0p12
@@ -2093,6 +2144,7 @@ class TestGainTunerClosedFormTheory(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(z2, 0.12, places=6)
 
     async def test_revolute_stiffness_damping_round_trip_si(self) -> None:
+        """Revolute SI stiffness and damping round-trip through natural frequency."""
         inertia = 0.85
         k, d = _compute_stiffness_damping_revolute(inertia, 11.0, 0.08)
         kg, dg = _GOLDEN_REVOLUTE_SI_STIFFNESS_DAMPING_I_0p85_FN_11_Z_0p08
@@ -2103,6 +2155,7 @@ class TestGainTunerClosedFormTheory(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(z2, 0.08, places=6)
 
     async def test_revolute_usd_gain_scaling_round_trip(self) -> None:
+        """Revolute USD drive gain scaling round-trips to SI units."""
         k_si, d_si = 150.0, 3.0
         k_u, d_u = _revolute_drive_stiffness_damping_si_to_usd(k_si, d_si)
         self.assertAlmostEqual(k_u, _GOLDEN_REVOLUTE_DRIVE_USD_K, places=12)
@@ -2124,6 +2177,7 @@ class TestOscillationAnalysisMath(omni.kit.test.AsyncTestCase):
     """Peak / log-decrement identification on synthetic signals (no physics)."""
 
     async def test_analyze_oscillation_synthetic_underdamped_cosine(self) -> None:
+        """Synthetic underdamped cosine signals recover frequency and damping."""
         fn_hz = 7.0
         wn = 2.0 * math.pi * fn_hz
         zeta = 0.055

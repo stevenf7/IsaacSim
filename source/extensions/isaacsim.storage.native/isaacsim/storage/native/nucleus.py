@@ -56,7 +56,7 @@ class Version(namedtuple("Version", "major minor patch")):
         '1.2.3'
     """
 
-    def __new__(cls, s: str):
+    def __new__(cls, s: str) -> "Version":
         """Create a new Version instance from a version string.
 
         Args:
@@ -67,7 +67,7 @@ class Version(namedtuple("Version", "major minor patch")):
         """
         return super().__new__(cls, *map(int, s.split(".")))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return the string representation of the version.
 
         Returns:

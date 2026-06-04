@@ -143,7 +143,7 @@ class ObstacleConfiguration:
         True
     """
 
-    def __init__(self, representation: ObstacleRepresentation | str, safety_tolerance: float):
+    def __init__(self, representation: ObstacleRepresentation | str, safety_tolerance: float) -> None:
         if not isinstance(representation, (ObstacleRepresentation, str)):
             raise ValueError("representation must be either ObstacleRepresentation or str")
 
@@ -166,7 +166,7 @@ class ObstacleStrategy:
         >>> strategy = ObstacleStrategy()
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__default_configurations = {
             Sphere: ObstacleConfiguration(representation=ObstacleRepresentation.SPHERE, safety_tolerance=0.0),
             Cone: ObstacleConfiguration(representation=ObstacleRepresentation.CONE, safety_tolerance=0.0),
@@ -187,7 +187,7 @@ class ObstacleStrategy:
 
     def set_default_configuration(
         self, prim_type: type[Shape], configuration: ObstacleConfiguration, allow_negative_tolerance: bool = False
-    ):
+    ) -> None:
         """Set the default configuration for a given prim type.
 
         Args:
@@ -230,7 +230,7 @@ class ObstacleStrategy:
 
         self.__shape_configuration_overrides[prim_type] = configuration
 
-    def set_default_safety_tolerance(self, safety_tolerance: float, allow_negative_tolerance: bool = False):
+    def set_default_safety_tolerance(self, safety_tolerance: float, allow_negative_tolerance: bool = False) -> None:
         """Set the safety tolerance on the default configuration for all prim types.
 
         Args:
@@ -259,7 +259,7 @@ class ObstacleStrategy:
 
     def set_configuration_overrides(
         self, configurations: dict[str, ObstacleConfiguration], allow_negative_tolerance: bool = False
-    ):
+    ) -> None:
         """Set the configuration overrides for a given set of prim paths.
 
         Args:

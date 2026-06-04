@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import carb.eventdispatcher
 import omni.kit.app
 import omni.ui as ui
@@ -61,11 +63,12 @@ class EpisodeRecorderWindow(ui.Window):
     def _on_editor_quit_event(self, _event: object) -> None:
         self._panel.destroy()
 
-    def _on_stage_event(self, event) -> None:
+    def _on_stage_event(self, event: Any) -> None:
         if event.type == int(omni.usd.StageEventType.CLOSING):
             self._panel.on_stage_closed()
 
     def destroy(self) -> None:
+        """Destroy the panel and release event subscriptions."""
         if self._panel is not None:
             self._panel.destroy()
             self._panel = None

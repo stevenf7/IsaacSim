@@ -28,6 +28,7 @@ class EpisodeRecorderUIExtension(omni.ext.IExt, MenuHelperExtensionFull):
     MENU_GROUP = "Tools/Replicator"
 
     def on_startup(self, ext_id: str) -> None:
+        """Register the Episode Recorder window in the Replicator menu."""
         self.menu_startup(
             lambda: EpisodeRecorderWindow(title=self.WINDOW_NAME),
             self.WINDOW_NAME,
@@ -37,4 +38,5 @@ class EpisodeRecorderUIExtension(omni.ext.IExt, MenuHelperExtensionFull):
         )
 
     def on_shutdown(self) -> None:
+        """Remove the Episode Recorder menu entry."""
         self.menu_shutdown()

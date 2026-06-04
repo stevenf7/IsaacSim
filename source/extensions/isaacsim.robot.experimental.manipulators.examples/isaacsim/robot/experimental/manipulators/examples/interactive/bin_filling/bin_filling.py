@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Interactive bin filling example with UR10 robot"""
+"""Interactive bin filling example with UR10 robot."""
 
 from __future__ import annotations
 
