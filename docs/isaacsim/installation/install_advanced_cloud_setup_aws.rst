@@ -314,7 +314,7 @@ Running Isaac Sim Container
             $ ISAACSIM_HOST=$PUBLIC_IP ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0 \
                 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
 
-        Then open ``http://<PUBLIC_IP>:8210`` in a Chromium-based browser. See :ref:`isaac_sim_docker_compose_deployment` or the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_ for full details.
+        Then open ``http://<PUBLIC_IP>:8210`` in a Chromium-based browser. See :ref:`isaac_sim_docker_compose_deployment` or the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_ for full details.
 
 .. seealso::
 

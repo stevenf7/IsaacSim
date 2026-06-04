@@ -44,9 +44,9 @@ The workstation installation is recommended if you want to run Isaac Sim as a GU
 Isaac Sim Compatibility Checker
 -----------------------------------
 
-The **Isaac Sim Compatibility Checker** is a lightweight application that programmatically checks the above requirements and indicates which of them are valid, or not, for running |isaac-sim| on the machine.
+The **Isaac Sim Compatibility Checker** is a lightweight extension within |isaac-sim| that programmatically checks the above requirements and indicates which of them are valid, or not, for running |isaac-sim| on the machine.
 
-The application can be run either from a binary installation (Workstation, Container or Open-Source repository) or from Python packages (*pip* install), as follows:
+The Compatibility Checker can be run either from a binary installation (Workstation, Container or Open-Source repository) or from Python packages (*pip* install), as follows:
 
 * From binary installation (:ref:`Workstation <isaac_sim_install_workstation>` or `Open-Source repository <https://github.com/isaac-sim/IsaacSim>`_ setup):
 
@@ -59,7 +59,7 @@ The application can be run either from a binary installation (Workstation, Conta
 
        .. hint::
 
-            You can use ``pip install isaacsim[compatibility-check]`` to install a **minimal setup** for the Compatibility Checker app instead of installing the full version.
+            You can use ``pip install isaacsim[compatibility-check]`` to install a **minimal setup** for the Compatibility Checker extension instead of installing the full version.
 
     #. Run the ``isaacsim isaacsim.exp.compatibility_check`` command.
 
@@ -86,14 +86,14 @@ The application can be run either from a binary installation (Workstation, Conta
 Verifying Compatibility
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The application highlights, in color, the following states:
+The Compatibility Checker highlights, in color, the following states:
 
 - **green** excellent
 - **light-green** good
 - **orange** enough, more is recommended
 - **red** not enough/unsupported
 
-The application checks:
+The Compatibility Checker checks:
 
 * **NVIDIA GPU:** Driver version, RTX-capable GPU, GPU VRAM
 * **CPU, RAM and Storage:** CPU processor, Number of CPU cores, RAM, Available storage space
@@ -102,7 +102,7 @@ The application checks:
 .. figure:: /images/isaac_sim_compatibility_checker.png
     :align: center
     :width: 900
-    :alt: Isaac Sim Compatibility Checker app examples
+    :alt: Isaac Sim Compatibility Checker examples
 
 The **Test Kit** button, launches a minimal Kit application (in headless mode) and checks if its execution was successful or not, reporting the result on the panel next to it.
 
@@ -214,9 +214,9 @@ Building from Source
 --------------------------------
 
 For developers who want to build Isaac Sim from source instead of using a pre-built binary, see the
-`Isaac Sim GitHub README <https://github.com/isaac-sim/IsaacSim/blob/develop/README.md>`_ for prerequisites,
+`Isaac Sim GitHub README <https://github.com/isaac-sim/IsaacSim/blob/main/README.md>`_ for prerequisites,
 build instructions, and advanced build options.
 
 To build and deploy a Docker container from source, see the
-`Docker Build Tools README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_.
+`Docker Build Tools README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_.
 

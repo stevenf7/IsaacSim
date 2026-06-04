@@ -19,12 +19,11 @@
 .. |iswsc_windows| replace:: `Windows <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-2.0.0-windows-x86_64.exe>`__
 .. |iswsc_mac_x86_64| replace:: `macOS (x86_64) <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-2.0.0-macos-x86_64.dmg>`__
 .. |iswsc_mac_aarch64| replace:: `macOS (aarch64) <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-2.0.0-macos-aarch64.dmg>`__
-.. |isassets_robots_sensors_zip| replace:: `Robots & Sensors <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-robots_and_sensors-6.0.0.zip>`__
-.. |isassets_materials_props_zip| replace:: `Materials & Props <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-materials_and_props-6.0.0.zip>`__
-.. |isassets_environments_zip| replace:: `Environments <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-environments-6.0.0.zip>`__
-.. |isassets_complete_part1_zip| replace:: `Complete (Part 1 of 3) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.001.zip>`__
-.. |isassets_complete_part2_zip| replace:: `Complete (Part 2 of 3) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.002.zip>`__
-.. |isassets_complete_part3_zip| replace:: `Complete (Part 3 of 3) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.003.zip>`__
+.. |isassets_complete_part1_zip| replace:: `Complete (Part 1 of 5) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.001.zip>`__
+.. |isassets_complete_part2_zip| replace:: `Complete (Part 2 of 5) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.002.zip>`__
+.. |isassets_complete_part3_zip| replace:: `Complete (Part 3 of 5) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.003.zip>`__
+.. |isassets_complete_part4_zip| replace:: `Complete (Part 4 of 5) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.004.zip>`__
+.. |isassets_complete_part5_zip| replace:: `Complete (Part 5 of 5) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.005.zip>`__
 
 
 .. _isaac_sim_download:
@@ -57,49 +56,34 @@ Latest Release
 .. table:: Latest Release
     :name: table_latest_release
 
-    +------------------------------------------+----------+------------------+-----------------------------------+
-    | Name                                     | Version  | Release Date     | Links                             |
-    +==========================================+==========+==================+===================================+
-    | Isaac Sim                                | 6.0.0    | June 2026        | |isim_linux_x86_64|               |
-    +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |isim_linux_aarch64|              |
-    +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |isim_windows|                    |
-    +------------------------------------------+----------+------------------+-----------------------------------+
-    | Isaac Sim WebRTC Streaming Client        | 2.0.0    | June 2026        | |iswsc_linux_x86_64|              |
-    +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |iswsc_linux_aarch64|             |
-    +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |iswsc_windows|                   |
-    +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |iswsc_mac_x86_64|                |
-    +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |iswsc_mac_aarch64|               |
-    +------------------------------------------+----------+------------------+-----------------------------------+
-    | Isaac Sim Assets                         | 6.0.0    | June 2026        | |isassets_robots_sensors_zip|     |
-    +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |isassets_materials_props_zip|    |
-    +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |isassets_environments_zip|       |
-    +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |isassets_complete_part1_zip|     |
-    +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |isassets_complete_part2_zip|     |
-    +                                          +          +                  +-----------------------------------+
-    |                                          |          |                  | |isassets_complete_part3_zip|     |
-    +------------------------------------------+----------+------------------+-----------------------------------+
+    +------------------------------------------+----------+------------------+-----------------------------------+--------------------------------------+
+    | Name                                     | Version  | Release Date     | Links                             | MD5                                  |
+    +==========================================+==========+==================+===================================+======================================+
+    | Isaac Sim                                | 6.0.0    | June 2026        | |isim_linux_x86_64|               | ``40ec5248271a0c2e7bc03f1ae725ca4c`` |
+    +                                          +          +                  +-----------------------------------+--------------------------------------+
+    |                                          |          |                  | |isim_linux_aarch64|              | ``4b27cd783479d6eceb4d7cef32ef3e3d`` |
+    +                                          +          +                  +-----------------------------------+--------------------------------------+
+    |                                          |          |                  | |isim_windows|                    | ``4b49a4258792f09300ece31be1b6cfd9`` |
+    +------------------------------------------+----------+------------------+-----------------------------------+--------------------------------------+
+    | Isaac Sim WebRTC Streaming Client        | 2.0.0    | June 2026        | |iswsc_linux_x86_64|              | ``07bd252432fb92b93bdb33b337455827`` |
+    +                                          +          +                  +-----------------------------------+--------------------------------------+
+    |                                          |          |                  | |iswsc_linux_aarch64|             | ``ecf0c1c3d2ded205aa2ed79d99f513c7`` |
+    +                                          +          +                  +-----------------------------------+--------------------------------------+
+    |                                          |          |                  | |iswsc_windows|                   | ``d701f275b0b5e1f48f1852c335c72bc1`` |
+    +                                          +          +                  +-----------------------------------+--------------------------------------+
+    |                                          |          |                  | |iswsc_mac_x86_64|                | ``311683386a7cd176aee89b9f3ba0d0f2`` |
+    +                                          +          +                  +-----------------------------------+--------------------------------------+
+    |                                          |          |                  | |iswsc_mac_aarch64|               | ``1291ed7c3ecc72a4b731a901506d7cda`` |
+    +------------------------------------------+----------+------------------+-----------------------------------+--------------------------------------+
+    | Isaac Sim Assets                         | 6.0.0    | June 2026        | |isassets_complete_part1_zip|     | ``401e58c4e08c906fab5fc6fa6825c1cb`` |
+    +                                          +          +                  +-----------------------------------+--------------------------------------+
+    |                                          |          |                  | |isassets_complete_part2_zip|     | ``201941c1f0cdc91346cc40a941d8afaf`` |
+    +                                          +          +                  +-----------------------------------+--------------------------------------+
+    |                                          |          |                  | |isassets_complete_part3_zip|     | ``8cf4da965aed1a1eca5a9362f689bda8`` |
+    +                                          +          +                  +-----------------------------------+--------------------------------------+
+    |                                          |          |                  | |isassets_complete_part4_zip|     | ``14c023814d805c927e9c8cf766213ee1`` |
+    +                                          +          +                  +-----------------------------------+--------------------------------------+
+    |                                          |          |                  | |isassets_complete_part5_zip|     | ``ab770e11d0365c6b4a3591caf5daf5bb`` |
+    +------------------------------------------+----------+------------------+-----------------------------------+--------------------------------------+
 
-.. list-table:: Isaac Sim Assets Complete Pack MD5 Checksums
-    :header-rows: 1
-    :widths: 45 55
-
-    * - File
-      - MD5
-    * - ``isaac-sim-assets-complete-6.0.0.001.zip``
-      - ``0d1d98f46780d13bf83779c79360f883``
-    * - ``isaac-sim-assets-complete-6.0.0.002.zip``
-      - ``9a03f3a32a2962fce4f464fc784a9da9``
-    * - ``isaac-sim-assets-complete-6.0.0.003.zip``
-      - ``37ee649b2b35c6bc72958f12e625f862``
-
-Use the checksums with the :ref:`isaac_sim_setup_assets_content_pack` Aria2 examples to resume interrupted downloads and verify each file before extraction.
+The Complete Pack is split into five parts. Use the MD5 checksums above with the :ref:`isaac_sim_setup_assets_content_pack` Aria2 example to resume interrupted downloads and verify each part, then combine and extract them.

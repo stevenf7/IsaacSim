@@ -41,7 +41,7 @@ Getting Started
     - ROS2 bridge is enabled.
     - ``ros2_ws`` is built and sourced (see :ref:`isaac_sim_ros_workspace_setup`) so that ``carter_navigation`` and ``isaac_ros_navigation_goal`` are inside your workspace.
 
-.. note:: In Windows 10 or 11, depending on your machine's configuration, RViz2 might not open properly. 
+.. note:: In Windows 11, depending on your machine's configuration, RViz2 might not open properly. 
     
 Occupancy Map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

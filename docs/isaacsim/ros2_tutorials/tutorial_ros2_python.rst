@@ -46,7 +46,7 @@ Getting Started
 
    Windows standalone ROS 2 examples use the Pixi Python environment. Follow the Pixi setup in :ref:`isaac_sim_app_install_ros_other_platforms`, then run these commands from the Pixi workspace.
 
-.. note:: In Windows 10 or 11, depending on your machine's configuration, RViz2 might not open properly.
+.. note:: In Windows 11, depending on your machine's configuration, RViz2 might not open properly.
 
 
     .. #. Create a file named ``fastdds.xml`` under ``~/.ros/`` if you haven't already, paste the following snippet into the file:

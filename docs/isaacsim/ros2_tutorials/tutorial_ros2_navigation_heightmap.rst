@@ -34,7 +34,7 @@ In this example, you learn how to:
 	- ROS 2 and Nav2 are installed, and ROS2 bridge is enabled.
 	- Appropriate ``ros2_ws`` is sourced so that ``carter_navigation`` and ``isaac_ros_navigation_goal`` are inside your workspace.
 
-.. note:: In Windows 10 or 11, depending on your machine's configuration, RViz2 might not open properly. 
+.. note:: In Windows 11, depending on your machine's configuration, RViz2 might not open properly. 
 
 Setting Up Environment and Robot
 =================================

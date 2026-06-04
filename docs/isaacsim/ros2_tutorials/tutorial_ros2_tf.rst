@@ -251,7 +251,7 @@ The Isaac Sim's ransform viewer allows you to draw on the simulated scene itself
 Multiple Sensors in RViz2
 ==========================
 
-.. note:: In Windows 10 or 11, depending on your machine's configuration some bandwidth-heavy topics might not be available to visualize in RViz2 in WSL.
+.. note:: In Windows 11, depending on your machine's configuration some bandwidth-heavy topics might not be available to visualize in RViz2 in WSL.
 
 To display multiple sensors in RViz2, there are a few things that are important to make sure all the messages are synced up and timestamped correctly.
 

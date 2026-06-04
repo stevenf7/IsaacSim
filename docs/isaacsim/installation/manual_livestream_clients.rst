@@ -89,7 +89,7 @@ This section shows you the methods of livestreaming a headless instance of |isaa
             Docker bridge networking (``-p`` port mapping) does not work with WebRTC because
             the host IP is not reachable from inside the container's network namespace.
 
-        For a simpler setup, Docker Compose is recommended for containerized streaming. It handles volume mounts, GPU assignment, networking, and health checks automatically. See :ref:`isaac_sim_web_streaming_client` below or the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_ for details.
+        For a simpler setup, Docker Compose is recommended for containerized streaming. It handles volume mounts, GPU assignment, networking, and health checks automatically. See :ref:`isaac_sim_web_streaming_client` below or the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_ for details.
 
     .. tab-item:: PIP
 
@@ -224,7 +224,7 @@ Web-Based Streaming Client (Docker Compose)
 
 As an alternative to the native desktop client, you can stream |isaac-sim_short| to any Chromium-based browser using a web-based WebRTC client deployed alongside |isaac-sim_short| via Docker Compose.
 
-For full details on Docker Compose configuration, multi-instance deployment, and environment variables, see the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_.
+For full details on Docker Compose configuration, multi-instance deployment, and environment variables, see the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_.
 
 This method does not require downloading or installing a native application. The web viewer is built from the `NVIDIA Omniverse Web SDK <https://docs.omniverse.nvidia.com/ov-web-sdk/latest/web-sample/overview.html>`_ (``@nvidia/create-ov-web-rtc-app``) and connects to |isaac-sim_short| over WebRTC.
 
@@ -295,4 +295,4 @@ To use a prebuilt NGC image instead of building locally:
 .. note::
 
     * The browser Clipboard API requires a secure context. When accessing the web viewer over HTTP from a non-localhost address, clipboard forwarding to |isaac-sim_short| is blocked. To enable it in Chrome, open ``chrome://flags/#unsafely-treat-insecure-origin-as-secure``, add the web viewer URL (e.g. ``http://192.168.1.100:8210``), and relaunch Chrome.
-    * The web viewer supports multi-instance deployment with dedicated GPUs, custom ports, and more. See the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_ for full configuration details.
+    * The web viewer supports multi-instance deployment with dedicated GPUs, custom ports, and more. See the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_ for full configuration details.

@@ -19,18 +19,24 @@
 Isaac Sim Developer Resources
 ===============================
 
-Discord
-=========
+GitHub (recommended)
+=====================
 
-|isaac_discord|
+|isaac_github_issues|
 
-.. |isaac_discord| raw:: html
+GitHub Issues should only be used to track executable pieces of work with a definite scope and a clear deliverable. These can be fixing bugs, documentation issues, new features, or general updates.
 
-    <strong><h3><a href="http://discord.gg/nvidiaomniverse">Link to Isaac Sim Discord Channel</a></strong></h3>
+|isaac_github_discussions|
 
-Within the **NVIDIA Omniverse** Discord server, search for the **isaac-sim** forum.
+Please use GitHub Discussions for discussing ideas, asking questions, and requests for new features.
 
+.. |isaac_github_issues| raw:: html
 
+    <strong><h3><a href="https://github.com/isaac-sim/IsaacSim/issues" target="_blank">Link to Isaac Sim GitHub Issues</a></strong></h3>
+
+.. |isaac_github_discussions| raw:: html
+
+    <strong><h3><a href="https://github.com/isaac-sim/IsaacSim/discussions" target="_blank">Link to Isaac Sim GitHub Discussions</a></strong></h3>
 
 
 Forum
@@ -43,5 +49,17 @@ This link takes you to the NVIDIA Developer Forums. You must have a user name an
 .. |isaac_forums| raw:: html
 
     <strong><h3><a href="https://forums.developer.nvidia.com/c/omniverse/simulation/69" target="_blank">Link To NVIDIA Forums</a></strong></h3>
+
+
+Discord
+=========
+
+|isaac_discord|
+
+.. |isaac_discord| raw:: html
+
+    <strong><h3><a href="http://discord.gg/nvidiaomniverse">Link to Isaac Sim Discord Channel</a></strong></h3>
+
+Within the **NVIDIA Omniverse** Discord server, search for the **isaac-sim** forum.
 
 

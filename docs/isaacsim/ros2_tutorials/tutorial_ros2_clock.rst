@@ -33,7 +33,7 @@ Getting Started
 
 - If using multiple systems, set the ``FASTRTPS_DEFAULT_PROFILES_FILE`` environment variable as per instructions in :ref:`isaac_sim_app_install_ros` before launching |isaac-sim_short|, as well as any terminal where ROS messages will be sent or received, and ROS 2 Extension is enabled.
 
-.. note:: In Windows 10 or 11, depending on your machine's configuration, RViz2 might not open properly. 
+.. note:: In Windows 11, depending on your machine's configuration, RViz2 might not open properly. 
     
 Simulation Time and Clock
 ===========================

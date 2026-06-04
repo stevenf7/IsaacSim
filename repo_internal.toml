@@ -42,7 +42,7 @@ sphinx_parallel = "1"
 copyright_start = 2023
 version = "6.0.0"
 
-announcement = "<span style='color: orange; font-size: 1.2em;'>&#9888;</span><strong>Isaac Sim 6.0 Early Developer Release:</strong> This documentation is incomplete. To use this version, build Isaac Sim from source on <a href='https://github.com/isaac-sim/IsaacSim/tree/develop' target='_blank'>GitHub</a>.<br>Binaries, pip packages, pre-built containers and other artifacts will be available with the General Availability (GA) release."
+announcement = ""
 
 social_media = [
     ["twitter", "https://twitter.com/nvidiaomniverse"],
@@ -116,6 +116,16 @@ try:
     html_extra_path.append("../redirects/isaacsim")
 except NameError:
     html_extra_path = ["_extra", "../redirects/isaacsim"]
+
+# URLs intentionally skipped by linkcheck: the download CDN serves versioned
+# release artifacts that linkcheck cannot reliably resolve, and some external
+# hosts are flaky / rate-limited (transient 429s or connection resets in CI).
+linkcheck_ignore = [
+    r"https://downloads.isaacsim.nvidia.com/.*",
+    r"https://huggingface.co/.*",
+    r"https://(www.)?intelrealsense.com/.*",
+    r"https://(www.)?realsenseai.com/.*",
+]
 """
 
 sphinx_exclude_patterns = [
@@ -325,6 +335,13 @@ sphinx_exclude_patterns = [
   "source/internal_extensions/isaacsim.app.compatibility_check",
   "source/internal_extensions/isaacsim.util.clash_detection",
   "source/internal_extensions/isaacsim.xr.input_devices",
+  # Agent tooling - not user documentation. skills/_internal/** is dev-only and
+  # exposes internal GitLab/Kit/CI details; the public skills ship in the package
+  # (not as docs-site pages). Exclude the whole tree + AGENTS guides from the
+  # docs build to avoid orphan pages and internal-detail leaks.
+  "skills",
+  "AGENTS.md",
+  "AGENTS.public.md",
 ]
 
 doxygen_input = [
