@@ -186,7 +186,7 @@ Example Usage
 
 For a complete example of the articulation controller OmniGraph node in action, see the ``mock_robot_rigged`` asset in the Content Browser at **Isaac Sim > Samples > Rigging > MockRobot > mock_robot_rigged.usd**.
 
-.. figure:: /images/isim_4.5_base_ref_gui_rigging_mockrobot_controller.png
+.. figure:: /images/isim_6.0_full_tut_gui_rigging_mockrobot_controller.png
     :align: center
     :width: 100%
     :alt: Articulation Controller OmniGraph Node Example

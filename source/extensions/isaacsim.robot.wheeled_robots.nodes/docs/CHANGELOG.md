@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.3] - 2026-06-02
+### Fixed
+- Clarified DifferentialController velocityCommand output order and units.
+
 ## [0.1.2] - 2026-05-11
 ### Fixed
 - Guard navigation nodes against invalid quaternion inputs when computing yaw from OmniGraph orientations.

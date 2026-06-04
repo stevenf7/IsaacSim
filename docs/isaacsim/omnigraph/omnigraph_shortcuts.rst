@@ -75,15 +75,15 @@ The Differential Controller takes in linear and angular velocities and converts 
 - **Graph Path**: The path to the graph generated. By default, it is under an independent tree called "/Graph/{type}_controller". If a graph already exist in the path given, it finds the next available path by appending a number to the end of that path.
 - **Wheel Radius**: The radius of the wheel in meters.
 - **Distance between wheels**: The distance between the two wheels in meters.
-- **Right/Left Joint Names** (optional): Names of the joints that control the right and left wheels.
-- **Right/Left Joint Index** (optional): The index of the joints that control the right and left wheels in the articulation chain.
+- **Left/Right Joint Names** (optional): Names of the joints that control the left and right wheels.
+- **Left/Right Joint Index** (optional): The index of the joints that control the left and right wheels in the articulation chain.
 - **Use Keyboard Control** (optional): Default to none. If checked, it also populates the graph that receives WASD as keyboard inputs to move the robot forward, backward, spin left, and spin right.
 - **Add to Existing Graph** (optional): Defaults to False. If checked, it adds the nodes to an existing graph and uses an existing tick node if there is one, but will add new controller nodes regardless of existing ones. 
 
 Use the Differential Controller
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- In some robots, there are only two controllable joints, so you do not have to specify joint names or indices. For robots with multiple actuated joints in an articulation chain, you must specify either the names or the indices of the joints that control the right and left wheels.
+- In some robots, there are only two controllable joints, so you do not have to specify joint names or indices. For robots with multiple actuated joints in an articulation chain, you must specify either the names or the indices of the joints that control the left and right wheels. List the left wheel before the right wheel so the order matches the Differential Controller output.
 
 - If you did not include the WASD keyboard control in the graph, you can always test the controller by manually changing the "Desired Angular Velocity" and "Desired Linear Velocity" in the **DifferentialController** node under the newly created graph.
 

@@ -81,7 +81,10 @@ OmniGraph Node
    * - Output Commands
      - description
    * - VelocityCommand
-     - Velocity command for the left and right wheel in m/s and rad/s 
+     - Velocity command for the left and right wheel in m/s and rad/s
+
+.. note::
+   ``VelocityCommand`` is ordered as ``[left_wheel_velocity, right_wheel_velocity]``. When wiring this output to an Articulation Controller, list the wheel joint names or indices in the same left-wheel, right-wheel order.
 
 
 Python
