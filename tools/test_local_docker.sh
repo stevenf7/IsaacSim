@@ -7,6 +7,7 @@ while getopts x flag
 do
     case "${flag}" in
         x) rebuild=1;;
+        *) ;;
     esac
 done
 

@@ -12,33 +12,33 @@ NC='\033[0m' # No Color
 # Check Python version compatibility and resolve which interpreter to reference.
 # Sets DOCS_PYTHON to the validated interpreter path for downstream use.
 check_python_version() {
-    local REPO_PYTHON="$SCRIPT_DIR/../_repo/python/python3"
-    local KIT_PYTHON="$SCRIPT_DIR/../_build/linux-x86_64/release/kit/python/python3"
+    local repo_python="$SCRIPT_DIR/../_repo/python/python3"
+    local kit_python="$SCRIPT_DIR/../_build/linux-x86_64/release/kit/python/python3"
 
-    if [ ! -f "$KIT_PYTHON" ]; then
-        echo -e "${RED}ERROR: Kit Python not found at $KIT_PYTHON${NC}"
+    if [ ! -f "$kit_python" ]; then
+        echo -e "${RED}ERROR: Kit Python not found at $kit_python${NC}"
         echo -e "${RED}Please run ./build.sh first to build Isaac Sim.${NC}"
         exit 1
     fi
 
-    if [ ! -f "$REPO_PYTHON" ]; then
-        echo -e "${YELLOW}WARNING: Repo Python not found at $REPO_PYTHON${NC}"
-        echo -e "${YELLOW}Falling back to Kit Python at $KIT_PYTHON${NC}"
-        local KIT_VERSION=$("$KIT_PYTHON" -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-        echo -e "${GREEN}Using Kit Python: $KIT_VERSION${NC}"
+    if [ ! -f "$repo_python" ]; then
+        echo -e "${YELLOW}WARNING: Repo Python not found at $repo_python${NC}"
+        echo -e "${YELLOW}Falling back to Kit Python at $kit_python${NC}"
+        local kit_version=$("$kit_python" -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+        echo -e "${GREEN}Using Kit Python: $kit_version${NC}"
         return
     fi
 
     # Both interpreters exist -- verify they agree on major.minor version
-    local REPO_VERSION=$("$REPO_PYTHON" -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-    local KIT_VERSION=$("$KIT_PYTHON" -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+    local repo_version=$("$repo_python" -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+    local kit_version=$("$kit_python" -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
 
-    if [ "$REPO_VERSION" != "$KIT_VERSION" ]; then
+    if [ "$repo_version" != "$kit_version" ]; then
         echo -e "${RED}========================================${NC}"
         echo -e "${RED}ERROR: Python version mismatch!${NC}"
         echo -e "${RED}========================================${NC}"
-        echo -e "${RED}Repo tools Python: $REPO_VERSION (from _repo/python/)${NC}"
-        echo -e "${RED}Isaac Sim Python:  $KIT_VERSION (from _build/.../kit/python/)${NC}"
+        echo -e "${RED}Repo tools Python: $repo_version (from _repo/python/)${NC}"
+        echo -e "${RED}Isaac Sim Python:  $kit_version (from _build/.../kit/python/)${NC}"
         echo ""
         echo -e "${YELLOW}To fix this, update the repo Python by:${NC}"
         echo -e "${YELLOW}  1. Remove the old _repo/python directory:${NC}"
@@ -49,7 +49,7 @@ check_python_version() {
         exit 1
     fi
 
-    echo -e "${GREEN}Python version check passed: $REPO_VERSION${NC}"
+    echo -e "${GREEN}Python version check passed: $repo_version${NC}"
 }
 
 # Function to format duration
