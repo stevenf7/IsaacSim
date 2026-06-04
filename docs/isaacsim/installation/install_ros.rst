@@ -26,7 +26,6 @@ Platform       ROS 2
 ============== ================================
 Ubuntu 24.04    Jazzy (recommended)
 Ubuntu 22.04    Humble, Jazzy
-Windows 10      Humble
 Windows 11      Humble
 ============== ================================
 

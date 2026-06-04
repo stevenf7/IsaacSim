@@ -32,7 +32,7 @@ open-source repository, do so first:
 
 .. code-block:: bash
 
-   git clone -b develop https://github.com/isaac-sim/IsaacSim.git isaacsim
+   git clone -b main https://github.com/isaac-sim/IsaacSim.git isaacsim
    cd isaacsim
 
 All commands shown in this guide are run from the repository root (the directory that contains

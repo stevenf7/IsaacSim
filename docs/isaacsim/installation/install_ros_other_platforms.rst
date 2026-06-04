@@ -32,9 +32,9 @@ Ubuntu 22.04    Humble                   Use default installation (Python 3.10).
 Ubuntu 22.04    Jazzy                    Build from source (Python 3.10). 
                                          Use Python 3.12 build of ROS 2 Workspace to use custom ROS interfaces with Isaac Sim.
 
-Windows 10/11   Humble                   WSL installation (Deprecated). Custom ROS Interfaces are not supported.
+Windows 11      Humble                   WSL installation (Deprecated). Custom ROS Interfaces are not supported.
 
-Windows 10/11   Jazzy                    **Pixi**: Pixi-based native ROS installation. Isaac Sim can source the Pixi ROS installation directly.
+Windows 11      Jazzy                    **Pixi**: Pixi-based native ROS installation. Isaac Sim can source the Pixi ROS installation directly.
                                          **WSL (Deprecated)**: Custom ROS Interfaces are not supported.
 ============== ======================== =============================================
 
@@ -271,7 +271,7 @@ Install ROS 2
 
       * - Requirement
         - Notes
-      * - Windows 10/11 x64
+      * - Windows 11 x64
         -
       * - `pixi <https://pixi.sh>`_
         - ``winget install prefix-dev.pixi``

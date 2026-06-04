@@ -26,7 +26,7 @@
 
 .. _Unix Driver Archive: https://www.nvidia.com/en-us/drivers/unix/
 .. _NVIDIA GPU Driver Archive: https://www.nvidia.com/en-us/drivers/unix/linux-amd64-display-archive/
-.. _Isaac Sim Dockerfiles: https://github.com/isaac-sim/IsaacSim/tree/develop/tools/docker
+.. _Isaac Sim Dockerfiles: https://github.com/isaac-sim/IsaacSim/tree/main/tools/docker
 
 
 .. _isaac_sim_app_install_container:
@@ -317,7 +317,7 @@ If you override ports via ``ISAACSIM_SIGNAL_PORT``, ``ISAACSIM_STREAM_PORT``, or
 
 .. tip::
 
-    To build a Docker image from source instead of pulling from NGC, see the `Docker Build Tools README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_.
+    To build a Docker image from source instead of pulling from NGC, see the `Docker Build Tools README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_.
     The README also covers multi-instance deployment with dedicated GPUs, cloud VM configuration (AWS, GCP, Azure), and advanced Docker options.
 
 
@@ -407,7 +407,7 @@ Docker Compose Deployment (Isaac Sim + Web Viewer)
 
 Docker Compose can deploy |isaac-sim_short| and a web-based WebRTC streaming client together. This is a simpler alternative to the manual ``docker run`` workflow above, and does not require downloading a native streaming client.
 
-For full details on Docker Compose configuration, multi-instance deployment, and environment variables, see the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_.
+For full details on Docker Compose configuration, multi-instance deployment, and environment variables, see the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_.
 
 The ``docker-compose.yml`` in ``tools/docker/`` handles volume mounts, GPU assignment, networking, and health checks automatically. The web viewer is built from the `NVIDIA Omniverse Web SDK <https://docs.omniverse.nvidia.com/ov-web-sdk/latest/web-sample/overview.html>`_.
 
@@ -464,8 +464,8 @@ To stop:
 
     * The web viewer bakes the signaling host and ports at build time. Use ``--build`` when changing ``ISAACSIM_HOST`` or port variables.
     * If Docker startup fails after an interrupted build, failed extraction, or disk-full event, clean the generated Docker build context and rebuild from a known-good build output. See the `Docker
-      README troubleshooting section <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md#troubleshooting>`_ for recovery steps.
-    * Docker Compose supports multi-instance deployment with dedicated GPUs, custom signal/stream ports, and more. See the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_ for full configuration details.
+      README troubleshooting section <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md#troubleshooting>`_ for recovery steps.
+    * Docker Compose supports multi-instance deployment with dedicated GPUs, custom signal/stream ports, and more. See the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_ for full configuration details.
 
 
 .. _isaac_sim_setup_local_gui_container:

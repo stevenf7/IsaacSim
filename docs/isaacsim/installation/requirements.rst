@@ -12,9 +12,9 @@
 
 .. _Unix Driver Archive: https://www.nvidia.com/en-us/drivers/unix/
 
-.. |linux_driver_580_65_06| replace:: `580.65.06 <https://www.nvidia.com/en-us/drivers/details/251387/>`__
-.. |linux_driver_580_95_05_aarch64| replace:: `580.95.05 <https://www.nvidia.com/en-us/drivers/details/254667/>`__
-.. |windows_driver_580_88| replace:: `580.88 <https://www.nvidia.com/download/driverResults.aspx/251353/en-us/>`__
+.. |linux_driver_580_95_05| replace:: `580.95.05 <https://www.nvidia.com/en-us/drivers/details/254666/>`__
+.. |linux_driver_580_142_aarch64| replace:: `580.142 <https://www.nvidia.com/download/driverResults.aspx/265446/en-us/>`__
+.. |windows_driver_581_42| replace:: `581.42 <https://www.nvidia.com/en-us/drivers/details/254655/>`__
 
 
 .. _isaac_sim_requirements:
@@ -41,7 +41,7 @@ System Requirements
     Element                             Minimum Spec                           Good                                       Ideal
     =================================== ====================================== ========================================== =============================================
     OS                                  | Ubuntu 22.04/24.04                   | Ubuntu 22.04/24.04                       | Ubuntu 22.04/24.04
-                                        | Windows 10/11                        | Windows 10/11                            | Windows 10/11
+                                        | Windows 11                           | Windows 11                               | Windows 11
     CPU                                 | Intel Core i7 (7th Generation)       | Intel Core i7 (9th Generation)           | Intel Core i9, X-series or higher
                                         | AMD Ryzen 5                          | AMD Ryzen 7                              | AMD Ryzen 9, Threadripper or higher
     Cores                               | 4                                    | 8                                        | 16
@@ -49,8 +49,8 @@ System Requirements
     Storage                             | 50GB SSD                             | 500GB SSD                                | 1TB NVMe SSD
     GPU                                 | GeForce RTX 4080                     | GeForce RTX 5080                         | RTX PRO 6000 Blackwell
     VRAM [1]_                           | 16GB [2]_                            | 16GB                                     | 48GB
-    Driver [3]_                         | Linux: |linux_driver_580_65_06|      | Linux: |linux_driver_580_65_06|          | Linux: |linux_driver_580_65_06|
-                                        | Windows: |windows_driver_580_88|     | Windows: |windows_driver_580_88|         | Windows: |windows_driver_580_88|
+    Driver [3]_                         | Linux: |linux_driver_580_95_05|      | Linux: |linux_driver_580_95_05|          | Linux: |linux_driver_580_95_05|
+                                        | Windows: |windows_driver_581_42|     | Windows: |windows_driver_581_42|         | Windows: |windows_driver_581_42|
     =================================== ====================================== ========================================== =============================================
 
     .. [1] More RAM and VRAM is recommended for advanced usage of |isaac-sim_short|. Isaac Lab usage will require additional RAM and VRAM for training.
@@ -64,7 +64,7 @@ System Requirements
         - Due to VRAM constraints, some tutorials and benchmarks may not run on GPU below the minimum specifications. Workflows leveraging a large number of sensors are particularly affected.
         - See :doc:`Linux Troubleshooting<dev-guide:linux-troubleshooting>` to resolve driver installation issues on Linux.
         - We recommend installing the **Latest Production Branch Version drivers** from the `Unix Driver Archive`_ using the :code:`.run` installer on Linux if you are on a new GPU or experiencing issues with the current drivers.
-        - Windows 10 support ends on October 14, 2025. After this date, Microsoft will no longer provide free security, feature, or technical updates for Windows 10. As a result, we will be dropping support for Windows 10 in future releases of Isaac Sim to ensure the security and functionality of our software.
+        - Windows 10 is not supported. Microsoft ended Windows 10 support on October 14, 2025, and no longer provides free security, feature, or technical updates for it.
 
 .. dropdown:: Requirements for aarch64
 
@@ -74,8 +74,8 @@ System Requirements
     Element                             Specifications
     =================================== ======================================
     Device                              | |spark_long|
-    OS                                  | NVIDIA DGX OS 7.2.3
-    Driver [4]_                         | |linux_driver_580_95_05_aarch64|
+    OS                                  | NVIDIA DGX OS 7
+    Driver [4]_                         | |linux_driver_580_142_aarch64|
     =================================== ======================================
 
     .. [4] Isaac Sim was tested on these driver versions. See :doc:`Technical Requirements<dev-guide:common/technical-requirements>` for recommended driver versions.
@@ -91,6 +91,4 @@ System Requirements
 
     .. warning::
         Here are the limitations of running |isaac-sim_short| 6.0 on |spark_short|:
-            - Importing OBJ files is not supported. This impacts the ability to use the :ref:`urdf importer <isaac_sim_urdf_importer>` for assets that contain OBJ meshes.
-            - :ref:`isaac_sim_app_template` is not supported.
             - :ref:`isaac_sim_app_tutorial_cuRobo` is not supported.

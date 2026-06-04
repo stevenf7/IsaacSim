@@ -55,7 +55,7 @@ Getting Started
 - Complete :ref:`isaac_sim_app_install_ros` to make sure the ROS 2 workspace environment is set up correctly.
 
 
-.. note:: In Windows 10 or 11, depending on your machine's configuration, RViz2 might not open properly. Some bandwidth-heavy topics might not be available to visualize in RViz2 in WSL.
+.. note:: In Windows 11, depending on your machine's configuration, RViz2 might not open properly. Some bandwidth-heavy topics might not be available to visualize in RViz2 in WSL.
 
 .. _isaac_sim_app_tutorial_ros2_rtx_lidar_basic:
 

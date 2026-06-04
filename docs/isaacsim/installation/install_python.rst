@@ -186,7 +186,7 @@ Installation Using PIP
                         * - ``extscache``
                           - Install the packages that cache the Omniverse extension dependencies
                         * - ``compatibility-check``
-                          - Install the packages to run the Isaac Sim Compatibility Checker app
+                          - Install the packages to run the Isaac Sim Compatibility Checker extension
                         * - ``ros2``
                           - Install all the packages that enable ROS 2 system integration
 
@@ -226,7 +226,7 @@ Installation Using PIP
                         * - ``extscache``
                           - Install the packages that cache the Omniverse extension dependencies
                         * - ``compatibility-check``
-                          - Install the packages to run the Isaac Sim Compatibility Checker app
+                          - Install the packages to run the Isaac Sim Compatibility Checker extension
                         * - ``ros2``
                           - Install all the packages that enable ROS 2 system integration
 
@@ -323,7 +323,7 @@ The following table lists the most common *Isaac Sim - Python packages* commands
     * - Command
       - Description
     * - ``isaacsim isaacsim.exp.compatibility_check``
-      - Compatibility check app: a lightweight application that programmatically checks for Isaac Sim requirements.
+      - Compatibility check: a lightweight extension that programmatically checks for Isaac Sim requirements.
     * - ``isaacsim isaacsim.exp.full``
       - Standard |isaac-sim_short| app, as it is executed from binary. It is the default experience if no experience file is specified (for example: ``isaacsim``).
     * - ``isaacsim isaacsim.exp.full.streaming --no-window``

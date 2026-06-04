@@ -32,7 +32,7 @@ Getting Started
 
 
 
-.. note:: In Windows 10 or 11, depending on your machine's configuration, RViz2 might not open properly.
+.. note:: In Windows 11, depending on your machine's configuration, RViz2 might not open properly.
 
 
 Setup a Camera in a Scene

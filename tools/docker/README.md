@@ -98,7 +98,7 @@ On other systems, install these packages using your system's package manager. Fo
 ### Clone the Repository
 
 ```bash
-git clone -b develop https://github.com/isaac-sim/IsaacSim.git isaacsim
+git clone -b main https://github.com/isaac-sim/IsaacSim.git isaacsim
 cd isaacsim
 git lfs install
 git lfs pull

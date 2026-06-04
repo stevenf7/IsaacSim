@@ -102,4 +102,4 @@ Then open ``http://<PUBLIC_IP>:8210`` in a Chromium-based browser.
     - :ref:`isaac_sim_setup_remote_headless_container` for manual ``docker run`` instructions
     - :ref:`isaac_sim_docker_compose_deployment` for Docker Compose configuration details
     - :ref:`isaac_sim_manual_livestream_client` for streaming client options
-    - `Docker README <https://github.com/isaac-sim/IsaacSim/blob/develop/tools/docker/README.md>`_ for advanced Docker options and multi-instance deployment
+    - `Docker README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_ for advanced Docker options and multi-instance deployment
