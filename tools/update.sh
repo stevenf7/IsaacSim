@@ -23,6 +23,9 @@ set -e
 # Disable filename expansion (globbing)
 set -f
 
+# Decorative separator used in status banners.
+readonly SECTION_SEPARATOR="=========================================="
+
 ########################################################################################################################
 # Version helpers
 ########################################################################################################################
@@ -118,9 +121,9 @@ print_help() {
 
 # Step 1: Update kit-kernel and Isaac Sim deps (GMO, sensor-checker)
 update_kit() {
-    echo "=========================================="
+    echo "$SECTION_SEPARATOR"
     echo "Updating kit components..."
-    echo "=========================================="
+    echo "$SECTION_SEPARATOR"
     pushd ../
 
     if [ -n "$KIT_VERSION" ]; then
@@ -145,9 +148,9 @@ update_kit() {
 
 # Step 2: Update physics components
 update_physics() {
-    echo "=========================================="
+    echo "$SECTION_SEPARATOR"
     echo "Updating physics components..."
-    echo "=========================================="
+    echo "$SECTION_SEPARATOR"
     pushd ../
 
     local old_version
@@ -156,13 +159,11 @@ update_physics() {
 
     if [ -n "$PHYSICS_VERSION" ]; then
         # Explicit version requested — check for downgrade
-        if [ "$FORCE_PHYSICS" != true ]; then
-            if is_downgrade "$old_version" "$PHYSICS_VERSION"; then
-                echo "WARNING: Requested physics version $PHYSICS_VERSION is older than current $old_version."
-                echo "  Use --force-physics to allow downgrade. Skipping physics update."
-                popd
-                return 0
-            fi
+        if [ "$FORCE_PHYSICS" != true ] && is_downgrade "$old_version" "$PHYSICS_VERSION"; then
+            echo "WARNING: Requested physics version $PHYSICS_VERSION is older than current $old_version."
+            echo "  Use --force-physics to allow downgrade. Skipping physics update."
+            popd
+            return 0
         fi
         echo "Pinning omni_physics to: $PHYSICS_VERSION"
         set_package_version deps/omni-physics.packman.xml omni_physics "$PHYSICS_VERSION"
@@ -175,13 +176,11 @@ update_physics() {
     echo "omni_physics version after update: $new_version"
 
     # Guard against accidental downgrade from repo.sh update
-    if [ "$FORCE_PHYSICS" != true ]; then
-        if is_downgrade "$old_version" "$new_version"; then
-            echo "WARNING: repo.sh update returned a lower physics version ($new_version < $old_version)."
-            echo "  Reverting to $old_version. Use --force-physics to allow downgrade."
-            set_package_version deps/omni-physics.packman.xml omni_physics "$old_version"
-            ./repo.sh update omni_physics --include-pre-release --patch
-        fi
+    if [ "$FORCE_PHYSICS" != true ] && is_downgrade "$old_version" "$new_version"; then
+        echo "WARNING: repo.sh update returned a lower physics version ($new_version < $old_version)."
+        echo "  Reverting to $old_version. Use --force-physics to allow downgrade."
+        set_package_version deps/omni-physics.packman.xml omni_physics "$old_version"
+        ./repo.sh update omni_physics --include-pre-release --patch
     fi
 
     popd
@@ -190,9 +189,9 @@ update_physics() {
 # Step 3: Update extension cache (Kit SDK lock sync + physics correction + build + clean)
 update_extensions() {
     local kit_sdk_repo="$1"
-    echo "=========================================="
+    echo "$SECTION_SEPARATOR"
     echo "Updating extension cache..."
-    echo "=========================================="
+    echo "$SECTION_SEPARATOR"
     pushd ../
 
     echo "Using kit-sdk-public repo: $kit_sdk_repo"
@@ -369,18 +368,14 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Validate flag combinations
-if [ "$CLEAN_EXTS" = true ]; then
-    if [ "$UPDATE_KIT" = true ] || [ "$UPDATE_PHYSICS" = true ] || [ "$UPDATE_EXTS" = true ] || [ "$REPO_EXTS_ONLY" = true ]; then
-        echo "Error: --clean cannot be combined with --kit, --physics, --exts, --repo-exts-only, or --all"
-        print_help
-    fi
+if [ "$CLEAN_EXTS" = true ] && { [ "$UPDATE_KIT" = true ] || [ "$UPDATE_PHYSICS" = true ] || [ "$UPDATE_EXTS" = true ] || [ "$REPO_EXTS_ONLY" = true ]; }; then
+    echo "Error: --clean cannot be combined with --kit, --physics, --exts, --repo-exts-only, or --all"
+    print_help
 fi
 
-if [ "$REPO_EXTS_ONLY" = true ]; then
-    if [ "$UPDATE_KIT" = true ] || [ "$UPDATE_PHYSICS" = true ] || [ "$UPDATE_EXTS" = true ] || [ "$CLEAN_EXTS" = true ]; then
-        echo "Error: --repo-exts-only cannot be combined with --kit, --physics, --exts, --clean, or --all"
-        print_help
-    fi
+if [ "$REPO_EXTS_ONLY" = true ] && { [ "$UPDATE_KIT" = true ] || [ "$UPDATE_PHYSICS" = true ] || [ "$UPDATE_EXTS" = true ] || [ "$CLEAN_EXTS" = true ]; }; then
+    echo "Error: --repo-exts-only cannot be combined with --kit, --physics, --exts, --clean, or --all"
+    print_help
 fi
 
 if [ -n "$KIT_VERSION" ] && [ "$UPDATE_KIT" != true ]; then
