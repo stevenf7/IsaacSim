@@ -29,6 +29,7 @@ def pull_library_from_linbuild_usr_lib64(d: str, name: str):
 def main(args: argparse.Namespace):
 
     arbitrate_kit_upstream(build_config=args.build_config)
+    omni.repo.ci.launch(["git", "lfs", "pull"])
 
     downstream_pipeline = os.getenv("CI_PIPELINE_SOURCE", "") == "pipeline"
 

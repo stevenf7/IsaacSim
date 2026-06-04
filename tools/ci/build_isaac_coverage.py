@@ -9,15 +9,16 @@
 # its affiliates is strictly prohibited.
 import argparse
 import os
-import sys
-from typing import Callable, Dict
-from tools.ci.upstream_kit_build.arbitrate_kit_upstream import arbitrate_kit_upstream
+
 import omni.repo.ci
+
+from tools.ci.upstream_kit_build.arbitrate_kit_upstream import arbitrate_kit_upstream
 
 
 def main(args: argparse.Namespace):
 
     arbitrate_kit_upstream(build_config=args.build_config)
+    omni.repo.ci.launch(["git", "lfs", "pull"])
 
     build_config = args.build_config
 
