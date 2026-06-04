@@ -122,10 +122,13 @@ After the joints are part of an articulation, you can use tools to test the robo
 
 For this particular robot, it can also be controlled using a Differential Controller. For more information about OmniGraph Controller shortcuts, go to :ref:`isaac_sim_app_tutorial_advanced_omnigraph_shortcuts`.
 
-.. figure:: /images/isim_4.5_base_ref_gui_rigging_mockrobot_controller.png
+.. note::
+   The Differential Controller outputs wheel velocities in left-wheel, right-wheel order. In the Articulation Controller joint names or indices array, place ``wheel_joint_left`` before ``wheel_joint_right``.
+
+.. figure:: /images/isim_6.0_full_tut_gui_rigging_mockrobot_controller.png
     :align: center
     :width: 100%
-    :alt: Add Controller
+    :alt: Differential Controller OmniGraph with left wheel joint connected before right wheel joint in the Articulation Controller
 
 
 
