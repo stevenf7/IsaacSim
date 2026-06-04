@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.5] - 2026-06-04
+### Fixed
+- `OgnUCXCameraHelper.ogn`: the `tag` input default is now the FNV-1a 32-bit hash of `"isaac.Image"` (`270059627`), matching the convention used by the other UCX OGN publishers (`OgnUCXPublishClock`, `OgnUCXPublishJointState`, `OgnUCXSubscribeJointCommand`). Previously the default was the literal `10`, which made `UCXCameraHelper` the only UCX publisher whose default tag did not derive from its FlatBuffer schema name and required consumers to override the input to receive frames.
+
 ## [1.6.4] - 2026-05-21
 ### Fixed
 - Made `test_publish_clock.py` more robust by waiting for the UCX listener to accept the client connection and by arming clock receives before triggering manual publish impulses.
