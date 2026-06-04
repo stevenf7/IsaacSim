@@ -13,7 +13,7 @@ SimReady Content Browser Search Extension Tutorial
 
 The **SimReady Asset Search** feature helps you find digital assets that match your criteria by combining a directory tree with an AI-assisted search control panel. This tutorial explains how to use these features to search your local file system and AWS S3 buckets for assets.
 
-This tutorial assumes you are familiar with SimReady concepts and the SimReady Content Browser and workflow. It addresses the following topics:
+This tutorial assumes you are familiar with `SimReady concepts <https://github.com/NVIDIA/simready-foundation>`_ and the :ref:`Content Browser <isaac_sim_app_gui_content_browser>` and workflow. It addresses the following topics:
 
 .. contents::
    :local:
