@@ -69,7 +69,7 @@ class JointState:
         robot_joint_space: list[str],
         data_array: wp.array,
         valid_array: wp.array,
-    ):
+    ) -> None:
         if not isinstance(data_array, wp.array) or not (data_array.dtype is wp.float32) or (data_array.ndim != 2):
             raise ValueError(f"data_array must be a 2D wp.array with data-type wp.float32")
 
@@ -580,7 +580,7 @@ class SpatialState:
         orientation_data: wp.array,
         angular_velocity_data: wp.array,
         valid_array: wp.array,
-    ):
+    ) -> None:
 
         if not len(set(spatial_space)) == len(spatial_space):
             raise ValueError("spatial_space is not valid: cannot have duplicated reference frame names.")
@@ -1034,7 +1034,7 @@ class SpatialState:
         return self.__linear_velocity_names
 
     @property
-    def linear_velocity_indices(self):
+    def linear_velocity_indices(self) -> wp.array:
         """List of frame indices that have valid linear velocities.
 
         Returns:
@@ -1045,7 +1045,7 @@ class SpatialState:
         return self.__linear_velocity_indices
 
     @property
-    def linear_velocities(self):
+    def linear_velocities(self) -> wp.array | None:
         """Valid linear velocities as a Warp array.
 
         Returns:
@@ -1059,7 +1059,7 @@ class SpatialState:
         return self.__valid_linear_velocities
 
     @property
-    def angular_velocity_names(self):
+    def angular_velocity_names(self) -> list[str]:
         """List of frame names that have valid angular velocities.
 
         Returns:
@@ -1068,7 +1068,7 @@ class SpatialState:
         return self.__angular_velocity_names
 
     @property
-    def angular_velocity_indices(self):
+    def angular_velocity_indices(self) -> wp.array:
         """List of frame indices that have valid angular velocities.
 
         Returns:
@@ -1079,7 +1079,7 @@ class SpatialState:
         return self.__angular_velocity_indices
 
     @property
-    def angular_velocities(self):
+    def angular_velocities(self) -> wp.array | None:
         """Valid angular velocities as a Warp array.
 
         Returns:
@@ -1093,7 +1093,7 @@ class SpatialState:
         return self.__valid_angular_velocities
 
     @property
-    def position_data(self):
+    def position_data(self) -> wp.array:
         """Full position data array.
 
         Returns:
@@ -1103,7 +1103,7 @@ class SpatialState:
         return self.__position_data
 
     @property
-    def orientation_data(self):
+    def orientation_data(self) -> wp.array:
         """Full orientation data array.
 
         Returns:
@@ -1113,7 +1113,7 @@ class SpatialState:
         return self.__orientation_data
 
     @property
-    def linear_velocity_data(self):
+    def linear_velocity_data(self) -> wp.array:
         """Full linear velocity data array.
 
         Returns:
@@ -1123,7 +1123,7 @@ class SpatialState:
         return self.__linear_velocity_data
 
     @property
-    def angular_velocity_data(self):
+    def angular_velocity_data(self) -> wp.array:
         """Full angular velocity data array.
 
         Returns:
@@ -1133,7 +1133,7 @@ class SpatialState:
         return self.__angular_velocity_data
 
     @property
-    def valid_array(self):
+    def valid_array(self) -> wp.array:
         """Valid flags array.
 
         Returns:
@@ -1192,7 +1192,7 @@ class RootState:
         orientation: wp.array | None = None,
         linear_velocity: wp.array | None = None,
         angular_velocity: wp.array | None = None,
-    ):
+    ) -> None:
         if (position is None) and (orientation is None) and (linear_velocity is None) and (angular_velocity is None):
             raise ValueError("One of position, orientation, linear_velocity, or angular_velocity must be defined.")
 
@@ -1325,7 +1325,7 @@ class RobotState:
         root: RootState | None = None,
         links: SpatialState | None = None,
         sites: SpatialState | None = None,
-    ):
+    ) -> None:
         if (joints is not None) and not (isinstance(joints, JointState)):
             raise ValueError("joints must be of type JointState")
 

@@ -38,7 +38,7 @@ class IsaacSimViveTracker:
     poses are collected in `device_data` keyed by device identifiers.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.device_data = {}
         self.is_connected = False
 
@@ -103,7 +103,7 @@ class IsaacSimViveTracker:
         """
         return self.device_data
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Release Vive tracker resources and disconnect.
 
         Closes the underlying `pysurvive` context when present and sets

@@ -118,7 +118,7 @@ class CameraSensor(_SensorRuntime):
         self.authoring_object.camera.enforce_square_pixels(self._resolution, modes="horizontal")
 
     @property
-    def camera(self):
+    def camera(self) -> Any:
         """Camera object for accessing optical parameters.
 
         Returns:

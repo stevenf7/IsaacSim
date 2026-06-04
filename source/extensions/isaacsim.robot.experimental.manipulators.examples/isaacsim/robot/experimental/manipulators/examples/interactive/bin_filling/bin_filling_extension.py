@@ -79,7 +79,7 @@ class BinFillingUI(BaseSampleUITemplate):
     machine with cube spawning.
     """
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
 
     def build_extra_frames(self) -> None:

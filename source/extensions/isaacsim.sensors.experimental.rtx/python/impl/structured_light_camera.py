@@ -66,7 +66,7 @@ def _fraction_to_tuple(value: Fraction) -> tuple[int, int]:
 
 
 class StructuredLightCamera(RtxCamera):
-    """Structured light camera sensor: an :class:`RtxCamera` with cycling projectors.
+    r"""Structured light camera sensor: an :class:`RtxCamera` with cycling projectors.
 
     Extends :class:`RtxCamera` by creating a set of :class:`UsdLux.RectLight` prims
     (one per projector pattern) under a shared parent Xform and cycling through them
@@ -372,7 +372,7 @@ class StructuredLightCamera(RtxCamera):
         timestamps_frac: list[Fraction],
         cycle_period: tuple[int, int] | None,
     ) -> Fraction:
-        """Resolve the projector cycle period as a :class:`Fraction`.
+        r"""Resolve the projector cycle period as a :class:`Fraction`.
 
         If ``cycle_period`` is not provided, it is inferred as
         ``timestamps[-1] + (timestamps[1] - timestamps[0])`` for :math:`N \\geq 2`

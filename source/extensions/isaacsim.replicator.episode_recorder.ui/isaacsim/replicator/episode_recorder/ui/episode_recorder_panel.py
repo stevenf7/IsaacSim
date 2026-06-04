@@ -29,6 +29,7 @@ import asyncio
 import glob
 import os
 import time
+from typing import Any
 
 import carb
 import carb.eventdispatcher
@@ -185,6 +186,7 @@ class EpisodeRecorderPanel:
     # ------------------------------------------------------------------
 
     def build(self) -> None:
+        """Build the Episode Recorder panel UI."""
         with ui.VStack(spacing=SECTION_SPACING):
             self._build_targets_section()
             self._build_session_options_section()
@@ -1211,7 +1213,7 @@ class EpisodeRecorderPanel:
         return self._recorder is not None and self._recorder.is_recording
 
     def _refresh_recording_state(self) -> None:
-        def update_ui():
+        def update_ui() -> None:
             recording = self._is_recording()
             if recording and not self._was_recording:
                 self._episode_count += 1
@@ -1288,7 +1290,7 @@ class EpisodeRecorderPanel:
         self._binding_event_sub = None
         self._bindings.clear()
 
-    def _on_binding_event(self, event) -> None:
+    def _on_binding_event(self, event: Any) -> None:
         """Track external bindings advertised on :data:`EPISODE_BINDING_EVENT`.
 
         Bindings carrying a non-empty ``session_id`` are dropped when they target a

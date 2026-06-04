@@ -15,6 +15,8 @@
 
 """UI extension for Isaac Sim Replicator behavior management with property widgets for exposed variables."""
 
+from typing import Any
+
 import carb.eventdispatcher
 import omni.ext
 from isaacsim.replicator.behavior.global_variables import EXPOSED_ATTR_NS, EXPOSED_VARS_CHANGED_EVENT
@@ -76,7 +78,7 @@ class Extension(omni.ext.IExt):
         if self._registered:
             self._unregister_widget()
 
-    def _on_exposed_vars_changed(self, event) -> None:
+    def _on_exposed_vars_changed(self, event: Any) -> None:
         """Refresh the property window when exposed variables are created or removed."""
         rebuild_property_window()
 

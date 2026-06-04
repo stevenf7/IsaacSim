@@ -15,6 +15,7 @@
 
 """About dialog extension and helper accessors."""
 
+from collections.abc import Callable
 from typing import Any
 
 import carb
@@ -85,7 +86,7 @@ def _format_plugin_tooltip(plugin: Any) -> str:
     return "\n".join(lines)
 
 
-def _make_plugin_tooltip_fn(plugin: Any):
+def _make_plugin_tooltip_fn(plugin: Any) -> Callable[[], None]:
     """Return a ``tooltip_fn`` callback that renders the plugin tooltip body."""
     text = _format_plugin_tooltip(plugin)
 

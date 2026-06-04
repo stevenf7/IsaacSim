@@ -21,6 +21,7 @@ import glob
 import os
 import shutil
 import tempfile
+from typing import Any
 
 import carb
 import isaacsim.core.experimental.utils.app as app_utils
@@ -192,7 +193,7 @@ class MobilityGenExtension(omni.ext.IExt):
 
         self.update_recording_count()
 
-        def _on_settings_changed(_model=None):
+        def _on_settings_changed(_model: Any = None) -> None:
             self._build_button.enabled = True
 
         self.scene_usd_field_string_model.add_value_changed_fn(_on_settings_changed)
@@ -409,7 +410,7 @@ class MobilityGenExtension(omni.ext.IExt):
             self.start_new_recording()
         self.draw_visualization_image()
 
-    def on_physics(self, step_size: int, _context=None) -> None:
+    def on_physics(self, step_size: int, _context: Any = None) -> None:
         """Physics step callback that advances the scenario and handles recording.
 
         Args:

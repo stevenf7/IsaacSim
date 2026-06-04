@@ -136,10 +136,11 @@ class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
     """Drive the Episode Recorder UI through capture and replay against a temp directory."""
 
     async def tearDown(self) -> None:
+        """Stop the timeline and clean up the temporary UI test state."""
         omni.timeline.get_timeline_interface().stop()
         await super().tearDown()
 
-    async def test_open_close_session_round_trip(self):
+    async def test_open_close_session_round_trip(self) -> None:
         """Opening then closing a session via the UI button leaves no recorder attached."""
         _build_rigid_cube_scene()
         window = panel = None
@@ -166,7 +167,7 @@ class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
             finally:
                 _close_panel(window, panel)
 
-    async def test_capture_writes_hdf5_with_recorded_frames(self):
+    async def test_capture_writes_hdf5_with_recorded_frames(self) -> None:
         """Driving the panel through start/stop produces an HDF5 file with the expected frame count."""
         from isaacsim.replicator.episode_recorder import SessionReader
 
@@ -188,7 +189,7 @@ class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
             finally:
                 _close_panel(window, panel)
 
-    async def test_replay_loads_session_and_lists_episodes(self):
+    async def test_replay_loads_session_and_lists_episodes(self) -> None:
         """Loading a recorded session through the Replay panel populates the episode combo."""
         _build_rigid_cube_scene()
         window = panel = None
@@ -210,7 +211,7 @@ class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
             finally:
                 _close_panel(window, panel)
 
-    async def test_replay_latest_button_fills_replay_field(self):
+    async def test_replay_latest_button_fills_replay_field(self) -> None:
         """The 'Latest' shortcut points the replay file field at the most recent capture."""
         _build_rigid_cube_scene()
         window = panel = None
@@ -233,7 +234,7 @@ class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
             finally:
                 _close_panel(window, panel)
 
-    async def test_replay_start_stop_round_trip(self):
+    async def test_replay_start_stop_round_trip(self) -> None:
         """Start replay attaches the replayer; stopping detaches it without leaking state."""
         _build_rigid_cube_scene()
         window = panel = None
@@ -273,7 +274,7 @@ class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
             finally:
                 _close_panel(window, panel)
 
-    async def test_replay_pause_resume_roundtrip(self):
+    async def test_replay_pause_resume_roundtrip(self) -> None:
         """Pause toggle freezes the replay cursor; resume lets it advance again."""
         _build_rigid_cube_scene()
         window = panel = None
@@ -313,7 +314,7 @@ class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
             finally:
                 _close_panel(window, panel)
 
-    async def test_replay_step_clamps_at_bounds(self):
+    async def test_replay_step_clamps_at_bounds(self) -> None:
         """Step buttons are disabled at frame boundaries and `step_frame` clamps."""
         _build_rigid_cube_scene()
         window = panel = None
@@ -364,7 +365,7 @@ class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
             finally:
                 _close_panel(window, panel)
 
-    async def test_replay_step_auto_pauses(self):
+    async def test_replay_step_auto_pauses(self) -> None:
         """Stepping while playing must auto-pause so the stepped frame survives the next tick."""
         _build_rigid_cube_scene()
         window = panel = None
@@ -392,7 +393,7 @@ class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
             finally:
                 _close_panel(window, panel)
 
-    async def test_replay_locks_recording_session(self):
+    async def test_replay_locks_recording_session(self) -> None:
         """Open Session and recorder-side widgets must be disabled while a replay is attached."""
         _build_rigid_cube_scene()
         window = panel = None
@@ -425,7 +426,7 @@ class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
             finally:
                 _close_panel(window, panel)
 
-    async def test_recording_locks_replay(self):
+    async def test_recording_locks_replay(self) -> None:
         """Replay file/load/play widgets must be disabled while a recording session is open."""
         _build_rigid_cube_scene()
         window = panel = None
@@ -451,7 +452,7 @@ class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
             finally:
                 _close_panel(window, panel)
 
-    async def test_replay_load_missing_file_shows_error(self):
+    async def test_replay_load_missing_file_shows_error(self) -> None:
         """Loading a non-existent path must report red status and leave no replayer attached."""
         window = panel = None
 
@@ -469,7 +470,7 @@ class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
             finally:
                 _close_panel(window, panel)
 
-    async def test_seek_timeline_checkbox_persists(self):
+    async def test_seek_timeline_checkbox_persists(self) -> None:
         """Toggling Seek timeline writes a persistent setting that survives panel rebuild."""
         import carb.settings
 
@@ -497,7 +498,7 @@ class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
             else:
                 settings.set_bool(key, bool(original))
 
-    async def test_binding_badge_reflects_attach_detach_events(self):
+    async def test_binding_badge_reflects_attach_detach_events(self) -> None:
         """Dispatching attach/detach binding events must update the panel badge text and tooltip."""
         from isaacsim.replicator.episode_recorder import dispatch_episode_binding
 
@@ -576,7 +577,7 @@ class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
         finally:
             _close_panel(window, panel)
 
-    async def test_binding_badge_ignores_other_session_ids(self):
+    async def test_binding_badge_ignores_other_session_ids(self) -> None:
         """Binding events scoped to a different ``session_id`` must not appear in this panel's badge."""
         from isaacsim.replicator.episode_recorder import dispatch_episode_binding
 
@@ -623,7 +624,7 @@ class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
         finally:
             _close_panel(window, panel)
 
-    async def test_replay_warning_when_recorded_prims_missing_in_stage(self):
+    async def test_replay_warning_when_recorded_prims_missing_in_stage(self) -> None:
         """Loading a session whose prims are absent from the current stage must surface a warning."""
         _build_rigid_cube_scene()
         window = panel = None
@@ -654,7 +655,7 @@ class TestEpisodeRecorderUICaptureReplay(MenuUITestCase):
             finally:
                 _close_panel(window, panel)
 
-    async def test_replay_warning_clears_when_stage_matches_session(self):
+    async def test_replay_warning_clears_when_stage_matches_session(self) -> None:
         """When the recorded prims exist in the current stage, no warning must be shown."""
         _build_rigid_cube_scene()
         window = panel = None
