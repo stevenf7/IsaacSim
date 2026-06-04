@@ -123,6 +123,7 @@ ISAAC_LAB_CI_REPORT_BRANCHES: |
     kit-integration/master
     kit-integration/feature/110.0
     kit-integration/feature/110.1
+    kit-integration/feature/110.2
     kit-integration/production/110.0
     kit-integration/feature/main
 ```

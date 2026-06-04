@@ -54,6 +54,7 @@ branches:
     - kit-integration/master
     - kit-integration/production/110.1
     - kit-integration/feature/110.1
+    - kit-integration/feature/110.2
     - kit-integration/major/111
     - kit-integration/feature/main
   default_label_branch: develop

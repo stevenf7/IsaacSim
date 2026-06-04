@@ -482,7 +482,7 @@ def compare_with_template(kit_file, kit_sdk_xml, verbose=False, dry_run=False, c
                 log(f"Could not read {kit_sdk_xml}: {e}")
 
         if not kat_branch:
-            kat_branch = "feature/110.1"
+            kat_branch = "feature/110.2"
             print(f"WARNING: Could not determine kit version from {kit_sdk_xml}, falling back to '{kat_branch}'")
         template_url = f"{KAT_BASE_URL}/{kat_branch}/{KAT_TEMPLATE_PATH}"
 
