@@ -86,16 +86,16 @@ sys.exit(0 if v1 > v2 else 1)
 print_help() {
     echo "Usage: $0 [options]"
     echo ""
-    echo "Modes:"
+    echo "Common modes:"
     echo "  -h, --help           Show this help message and exit"
-    echo "  --kit                Update kit-kernel and related components"
-    echo "  --physics            Update physics components"
-    echo "  --exts               Update and clean extension cache"
     echo "  --all                Run all updates (kit + physics + exts)"
+    echo "  --physics            Update physics: pin omni-physics.packman.xml and sync the .kit to the same version"
+    echo "  --exts               Match kit-sdk-public locks (physics extensions left untouched)"
     echo "  --clean              Clean extensions from extscache that exist in build tree (exclusive mode)"
     echo "  --repo-exts-only     Run ./build.sh -ur and keep only repo extension changes in extscache"
     echo ""
-    echo "Version pinning:"
+    echo "Advanced options (rarely needed):"
+    echo "  --kit                    Update kit-kernel and related components"
     echo "  --kit-version VER        Pin kit-kernel to MAJOR.MINOR.PATCH (default: latest patch)"
     echo "  --physics-version VER    Pin omni_physics to MAJOR.MINOR.PATCH (default: latest patch)"
     echo "  --force-physics          Allow physics downgrade (default: only upgrade)"
@@ -183,10 +183,13 @@ update_physics() {
         ./repo.sh update omni_physics --include-pre-release --patch
     fi
 
+    # Sync physics extension versions in the extscache kit file to match the packman XML.
+    python3 tools/isaac/update_extscache.py --physics-only
+
     popd
 }
 
-# Step 3: Update extension cache (Kit SDK lock sync + physics correction + build + clean)
+# Step 3: Update extension cache (Kit SDK lock sync + build + clean; physics left untouched)
 update_extensions() {
     local kit_sdk_repo="$1"
     echo "$SECTION_SEPARATOR"
@@ -196,9 +199,8 @@ update_extensions() {
 
     echo "Using kit-sdk-public repo: $kit_sdk_repo"
     local cmd=(
-        python3 tools/isaac/clean_extscache.py
+        python3 tools/isaac/update_extscache.py
         --update-locks
-        --update-physics
         --match-kit-sdk
         --kit-sdk-repo "$kit_sdk_repo"
         --build-dir "_build/$PLATFORM/release/exts"
@@ -217,7 +219,7 @@ update_extensions() {
 clean_extensions() {
     echo "Cleaning extensions from extscache..."
     pushd ../
-    python3 tools/isaac/clean_extscache.py \
+    python3 tools/isaac/update_extscache.py \
         --build-dir "_build/$PLATFORM/release/exts" \
         --deprecated-dir "_build/$PLATFORM/release/extsDeprecated" \
         --apps-dir "_build/$PLATFORM/release/apps" \
@@ -237,7 +239,7 @@ update_repo_extensions_only() {
 
     ./build.sh -ur
 
-    python3 tools/isaac/clean_extscache.py \
+    python3 tools/isaac/update_extscache.py \
         --restore-non-local-from "$baseline_kit" \
         --kit-file "$kit_file" \
         --build-dir "_build/$PLATFORM/release/exts" \

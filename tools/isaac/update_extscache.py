@@ -22,6 +22,27 @@ import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 
+# Extension namespaces owned by the omni_physics package. Physics extension versions are
+# managed exclusively via deps/omni-physics.packman.xml (see update_physics_versions); other
+# version sources such as kit-sdk-public locks must leave these untouched.
+PHYSICS_PREFIXES = (
+    "omni.physx",
+    "omni.physics",
+    "omni.usdphysics",
+    "omni.usd.schema.physx",
+    "omni.usd.metrics.assembler.physics",
+    "omni.convexdecomposition",
+    "omni.kit.property.physics",
+)
+
+
+def is_physics_ext(name):
+    """Check if an extension name belongs to the physics package."""
+    for prefix in PHYSICS_PREFIXES:
+        if name == prefix or name.startswith(prefix + "."):
+            return True
+    return False
+
 
 def check_dependencies(kit_file, build_dir, deprecated_dir, internal_dir=None, verbose=False):
     """
@@ -339,22 +360,6 @@ def update_physics_versions(kit_file, packman_xml_file, verbose=False, dry_run=F
         "omni.physx.tests",
         "omni.physx.tests.visual",
     ]
-
-    PHYSICS_PREFIXES = (
-        "omni.physx",
-        "omni.physics",
-        "omni.usdphysics",
-        "omni.usd.schema.physx",
-        "omni.convexdecomposition",
-        "omni.kit.property.physics",
-    )
-
-    def is_physics_ext(name):
-        """Check if an extension name belongs to the physics package."""
-        for prefix in PHYSICS_PREFIXES:
-            if name == prefix or name.startswith(prefix + "."):
-                return True
-        return False
 
     all_updates = []
 
@@ -797,7 +802,15 @@ def compare_with_kit_sdk_version_locks(
 
     lock_updates = []
     lower_locks = []
+    skipped_physics = []
     for name, kit_version in kit_locks.items():
+        # Physics versions are owned by --physics / omni-physics.packman.xml; never let
+        # kit-sdk-public locks upgrade or downgrade them here.
+        if is_physics_ext(name):
+            sdk_version = sdk_locks.get(name)
+            if sdk_version and sdk_version != kit_version:
+                skipped_physics.append((name, kit_version, sdk_version))
+            continue
         sdk_version = sdk_locks.get(name)
         if sdk_version and sdk_version != kit_version:
             kit_ver = _parse_version(kit_version)
@@ -806,6 +819,11 @@ def compare_with_kit_sdk_version_locks(
                 lower_locks.append((name, kit_version, sdk_version))
             else:
                 lock_updates.append((name, kit_version, sdk_version))
+
+    if skipped_physics:
+        print(f"\nSkipped {len(skipped_physics)} physics extension locks (owned by --physics):")
+        for name, kit_version, sdk_version in skipped_physics:
+            print(f"  - {name}: {kit_version} (keeping) vs {sdk_version} (Kit SDK)")
 
     if not lock_updates and not lower_locks:
         log("All matching extension version locks already match Kit SDK version_locks.kit.")
@@ -1385,7 +1403,7 @@ def restore_non_local_generated_changes(
     return True
 
 
-def clean_extscache(
+def update_extscache(
     kit_file_path=None,
     build_dir_path=None,
     deprecated_dir_path=None,
@@ -1695,7 +1713,7 @@ def clean_extscache(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="""
-Clean the extension cache by removing extensions from the enabled section in the kit file if they:
+Update the extension cache. Removes extensions from the enabled section in the kit file if they:
 1. Exist in the build directory (_build/linux-x86_64/release/exts)
 2. Exist in the deprecated directory (_build/linux-x86_64/release/extsDeprecated)
 3. Exist in the apps directory (_build/linux-x86_64/release/apps)
@@ -1763,6 +1781,14 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
         help="Update physics extension versions to match packman XML",
     )
     parser.add_argument(
+        "--physics-only",
+        action="store_true",
+        help=(
+            "Only update physics extension versions in the kit file to match the packman XML, then exit. "
+            "Skips extension cleanup and dependency/lock checks."
+        ),
+    )
+    parser.add_argument(
         "--match-kat",
         action="store_true",
         help="Compare with template file and update version locks",
@@ -1798,7 +1824,11 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
     if args.match_kat and args.match_kit_sdk:
         parser.error("--match-kat and --match-kit-sdk cannot be used together")
 
-    if args.restore_non_local_from:
+    if args.physics_only:
+        kit_file = args.kit_file or "source/apps/isaacsim.exp.extscache.kit"
+        packman_xml = args.packman_xml or "deps/omni-physics.packman.xml"
+        success = update_physics_versions(kit_file, packman_xml, verbose=args.verbose, dry_run=args.dry_run)
+    elif args.restore_non_local_from:
         success = restore_non_local_generated_changes(
             baseline_kit_file_path=args.restore_non_local_from,
             kit_file_path=args.kit_file,
@@ -1810,7 +1840,7 @@ versions of the same extension, and to ensure deprecated extensions aren't loade
             dry_run=args.dry_run,
         )
     else:
-        success = clean_extscache(
+        success = update_extscache(
             kit_file_path=args.kit_file,
             build_dir_path=args.build_dir,
             deprecated_dir_path=args.deprecated_dir,
