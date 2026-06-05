@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Core recorder abstractions: :class:`ChannelDescriptor`, :class:`Recordable`,
-:class:`SamplingConfig`, :class:`ReplayPolicy`.
+"""Define core recorder abstractions.
 
-These types are backend-agnostic. ``Recordable`` plugins own a channel schema, know how
-to sample one frame of data, know how to apply one frame back to a live stage, and know
-how to serialize / deserialize their binding through the manifest.
+This module provides :class:`ChannelDescriptor`, :class:`Recordable`,
+:class:`SamplingConfig`, and :class:`ReplayPolicy`. These types are backend-agnostic.
+``Recordable`` plugins own a channel schema, sample one frame of data, apply one frame
+back to a live stage, and serialize / deserialize their binding through the manifest.
 """
 
 from __future__ import annotations
@@ -55,6 +55,7 @@ class ChannelDescriptor:
     attrs: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate normalized instance state."""
         if not isinstance(self.shape, tuple):
             object.__setattr__(self, "shape", tuple(self.shape))
         for dim in self.shape:
@@ -87,6 +88,7 @@ class SamplingConfig:
     decimation: int = 1
 
     def __post_init__(self) -> None:
+        """Validate normalized instance state."""
         if self.mode not in ("physics_post_step", "app_update"):
             raise ValueError(f"SamplingConfig.mode must be 'physics_post_step' or 'app_update', got {self.mode!r}.")
         if self.decimation < 1:
@@ -110,6 +112,7 @@ class ReplayPolicy:
     strictness: str = "best_effort"
 
     def __post_init__(self) -> None:
+        """Validate normalized instance state."""
         if self.strictness not in ("best_effort", "strict"):
             raise ValueError(f"ReplayPolicy.strictness must be 'best_effort' or 'strict', got {self.strictness!r}.")
 
@@ -131,7 +134,9 @@ class Recordable(ABC):
     TYPE_ID: str = ""
 
     def __init__(self, *, group: str) -> None:
-        """Args:
+        """Create a recordable binding.
+
+        Args:
         group: HDF5 group path relative to an episode (e.g. ``"state/robot"``).
             Leading / trailing slashes are stripped; empty segments are rejected.
         """

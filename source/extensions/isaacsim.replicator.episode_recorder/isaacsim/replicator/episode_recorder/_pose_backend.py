@@ -28,8 +28,8 @@ to ``"usd"`` instead of crashing the writer.
 from __future__ import annotations
 
 from collections.abc import Generator
-from contextlib import contextmanager, nullcontext
-from typing import ContextManager, Literal
+from contextlib import AbstractContextManager, contextmanager, nullcontext
+from typing import Literal
 
 import carb
 import carb.settings
@@ -72,7 +72,7 @@ def normalize_pose_backend(backend: str | None) -> PoseBackend:
     return backend
 
 
-def pose_backend_ctx(backend: PoseBackend) -> ContextManager[None]:
+def pose_backend_ctx(backend: PoseBackend) -> AbstractContextManager[None]:
     """Return a context manager that activates ``backend`` for ``XformPrim`` ops.
 
     ``"usd"`` is a free :class:`contextlib.nullcontext`. ``"usdrt"`` /

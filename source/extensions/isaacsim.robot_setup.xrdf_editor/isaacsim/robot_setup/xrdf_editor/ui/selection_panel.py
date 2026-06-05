@@ -173,7 +173,7 @@ class SelectionPanel:
     # ------------------------------------------------------------------
     # Callbacks
     # ------------------------------------------------------------------
-    def _on_articulation_combobox(self, model=None, val=None) -> None:
+    def _on_articulation_combobox(self, model: object = None, val: object = None) -> None:
         if self._articulation_model is None:
             return
         index = self._articulation_model.get_item_value_model().as_int
@@ -182,7 +182,7 @@ class SelectionPanel:
             self._selected_articulation_path = self.articulation_list[index]
             self._on_articulation_selected(self.articulation_list[index])
 
-    def _on_link_combobox(self, model=None, val=None) -> None:
+    def _on_link_combobox(self, model: object = None, val: object = None) -> None:
         link_name = self.get_selected_link_name()
         if link_name is None:
             return

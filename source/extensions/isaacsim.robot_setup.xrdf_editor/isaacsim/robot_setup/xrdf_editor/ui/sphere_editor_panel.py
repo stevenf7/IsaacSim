@@ -281,6 +281,7 @@ class SphereEditorPanel:
     # Public API
     # ------------------------------------------------------------------
     def show(self) -> None:
+        """Show and enable the sphere editor frame."""
         if self._frame is None:
             return
         self._frame.collapsed = False
@@ -288,6 +289,7 @@ class SphereEditorPanel:
         self._frame.enabled = True
 
     def hide(self) -> None:
+        """Hide and disable the sphere editor frame."""
         if self._frame is None:
             return
         self._frame.collapsed = True
@@ -368,7 +370,7 @@ class SphereEditorPanel:
     def _trigger_preview_generate_spheres_for_link(self) -> None:
         self._generate_spheres_for_link()
 
-    def _on_collision_sphere_select_0(self, model=None, val=None) -> None:
+    def _on_collision_sphere_select_0(self, model: object = None, val: object = None) -> None:
         if self._connect_sphere_1_combobox is None:
             return
         sphere_0_name, sphere_1_name = self.get_selected_collision_spheres()
@@ -385,7 +387,7 @@ class SphereEditorPanel:
         if sphere_1_name in pruned_names:
             self._connect_sphere_1_model.get_item_value_model().set_value(int(pruned_names.index(sphere_1_name)))
 
-    def _on_toggle_preview(self, model=None) -> None:
+    def _on_toggle_preview(self, model: object = None) -> None:
         if self._preview_active:
             self._preview_active = False
             self._state.collision_sphere_editor.clear_preview()

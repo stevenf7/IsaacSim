@@ -142,18 +142,22 @@ class SessionStorage:
 
     @property
     def path(self) -> str:
+        """Run the path operation."""
         return self._h5_path
 
     @property
     def is_open(self) -> bool:
+        """Return whether open."""
         return self._h5 is not None
 
     @property
     def current_episode_frames(self) -> int:
+        """Run the current episode frames operation."""
         return self._episode_frames
 
     @property
     def num_episodes_finalized(self) -> int:
+        """Run the num episodes finalized operation."""
         return self._num_episodes
 
     def open(self) -> None:
@@ -167,6 +171,7 @@ class SessionStorage:
         self._h5.require_group(EPISODES_GROUP)
 
     def write_manifest(self, manifest: SessionManifest) -> None:
+        """Run the write manifest operation."""
         self._require_open()
         write_manifest(self._h5, manifest)
         self._h5.flush()
@@ -415,17 +420,21 @@ class SessionReader:
 
     @property
     def path(self) -> str:
+        """Run the path operation."""
         return self._h5_path
 
     def manifest(self) -> SessionManifest:
+        """Run the manifest operation."""
         return self._manifest
 
     def list_episodes(self) -> list[str]:
+        """Run the list episodes operation."""
         if EPISODES_GROUP not in self._h5:
             return []
         return sorted(self._h5[EPISODES_GROUP].keys())
 
     def normalize_episode(self, episode: int | str) -> str:
+        """Run the normalize episode operation."""
         episodes = self.list_episodes()
         if isinstance(episode, int):
             if episode < 0 or episode >= len(episodes):
@@ -436,10 +445,12 @@ class SessionReader:
         raise KeyError(f"Unknown episode {episode!r}. Available: {episodes}.")
 
     def num_frames(self, episode: int | str) -> int:
+        """Return the number of frames."""
         name = self.normalize_episode(episode)
         return int(self._h5[EPISODES_GROUP][name].attrs.get("num_frames", 0))
 
     def episode_attrs(self, episode: int | str) -> dict[str, Any]:
+        """Run the episode attrs operation."""
         name = self.normalize_episode(episode)
         attrs = dict(self._h5[EPISODES_GROUP][name].attrs)
         user_md = attrs.pop("user_metadata", None)
@@ -461,7 +472,7 @@ class SessionReader:
         n = int(ep.attrs.get("num_frames", 0))
         if frame_index < 0 or frame_index >= n:
             raise IndexError(f"frame_index {frame_index} out of range [0, {n}).")
-        for chan in grp.keys():
+        for chan in grp:
             ds = grp[chan]
             out[chan] = np.asarray(ds[frame_index])
         return out
@@ -484,15 +495,18 @@ class SessionReader:
         if recordable_group not in ep:
             raise KeyError(f"Episode {name} missing group {recordable_group!r}.")
         grp = ep[recordable_group]
-        return {chan: np.asarray(grp[chan][:]) for chan in grp.keys()}
+        return {chan: np.asarray(grp[chan][:]) for chan in grp}
 
     def close(self) -> None:
+        """Close owned resources."""
         if self._h5 is not None:
             self._h5.close()
             self._h5 = None
 
     def __enter__(self) -> SessionReader:
+        """Enter the context manager."""
         return self
 
     def __exit__(self, *exc_info: Any) -> None:
+        """Exit the context manager."""
         self.close()

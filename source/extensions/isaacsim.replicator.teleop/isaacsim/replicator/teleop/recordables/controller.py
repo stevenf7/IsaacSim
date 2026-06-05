@@ -79,6 +79,7 @@ class TeleopControllerRecordable(Recordable):
         self._last_right: Any = None
 
     def describe_channels(self) -> dict[str, ChannelDescriptor]:
+        """Describe the recorded channels."""
         channels: dict[str, ChannelDescriptor] = {
             "trigger": ChannelDescriptor(shape=(), dtype="f4", units="normalized"),
             "squeeze": ChannelDescriptor(shape=(), dtype="f4", units="normalized"),
@@ -94,6 +95,7 @@ class TeleopControllerRecordable(Recordable):
         return channels
 
     def on_session_open(self, stage: Any) -> None:
+        """Open the recordable session."""
         if self._tm is None:
             return
         if not hasattr(self._tm, "add_controller_inputs_observer"):
@@ -102,6 +104,7 @@ class TeleopControllerRecordable(Recordable):
         self._observer_attached = True
 
     def on_session_close(self) -> None:
+        """Close the recordable session."""
         if self._observer_attached and self._tm is not None:
             remove = getattr(self._tm, "remove_controller_inputs_observer", None)
             if remove is not None:
@@ -116,6 +119,7 @@ class TeleopControllerRecordable(Recordable):
         return self._last_left if self.side == "left" else self._last_right
 
     def sample(self) -> dict[str, Any]:
+        """Sample one frame of data."""
         snapshot = self._current()
         inputs = getattr(snapshot, "inputs", None) if snapshot is not None else None
         frame: dict[str, Any] = {}
@@ -139,9 +143,11 @@ class TeleopControllerRecordable(Recordable):
         return frame
 
     def apply(self, frame: Mapping[str, Any], *, policy: ReplayPolicy) -> None:
+        """Apply one recorded frame."""
         return
 
     def to_manifest(self) -> dict[str, Any]:
+        """Serialize this object to a manifest entry."""
         return {
             "type": self.TYPE_ID,
             "group": self.group,
@@ -151,6 +157,7 @@ class TeleopControllerRecordable(Recordable):
 
     @classmethod
     def from_manifest(cls, entry: Mapping[str, Any]) -> TeleopControllerRecordable:
+        """Create an instance from a manifest entry."""
         return cls(
             group=entry["group"],
             side=entry["side"],

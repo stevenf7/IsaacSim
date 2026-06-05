@@ -81,13 +81,16 @@ class ArticulationRecordable(Recordable):
 
     @property
     def num_links(self) -> int:
+        """Run the num links operation."""
         return len(self._link_paths)
 
     @property
     def link_paths(self) -> list[str]:
+        """Run the link paths operation."""
         return list(self._link_paths)
 
     def describe_channels(self) -> dict[str, ChannelDescriptor]:
+        """Describe the recorded channels."""
         n = self.num_links
         return {
             "positions": ChannelDescriptor(shape=(n, 3), dtype="f4", units="meters", space="world"),
@@ -95,6 +98,7 @@ class ArticulationRecordable(Recordable):
         }
 
     def on_session_open(self, stage: Any) -> None:
+        """Open the recordable session."""
         prim = stage.GetPrimAtPath(self.prim_path)
         if not prim.IsValid():
             raise RuntimeError(f"ArticulationRecordable: prim {self.prim_path} not found on stage.")
@@ -112,6 +116,7 @@ class ArticulationRecordable(Recordable):
         self._build_wrapper()
 
     def on_session_close(self) -> None:
+        """Close the recordable session."""
         self._wrapper = None
         self._xform_ops_reset = False
 
@@ -187,8 +192,10 @@ class ArticulationRecordable(Recordable):
 
     @staticmethod
     def _has_xformable_descendant(prim: Any, *, exclude_path: str | None = None) -> bool:
-        """Return ``True`` if ``prim`` has any Xformable (non-joint) descendant that is
-        not ``exclude_path``. Used to decide whether walking up to ``prim`` is justified.
+        """Return whether ``prim`` has a useful Xformable descendant.
+
+        Joint descendants and ``exclude_path`` are ignored. The result decides whether
+        walking up to ``prim`` is justified.
         """
         from pxr import UsdGeom, UsdPhysics
 
@@ -230,6 +237,7 @@ class ArticulationRecordable(Recordable):
         return list(self._link_paths)
 
     def consume_pose_batch(self, positions: np.ndarray, orientations: np.ndarray) -> dict[str, np.ndarray]:
+        """Consume a batched pose sample."""
         n = self.num_links
         return {
             "positions": positions.reshape(n, 3),
@@ -237,6 +245,7 @@ class ArticulationRecordable(Recordable):
         }
 
     def sample(self) -> dict[str, np.ndarray]:
+        """Sample one frame of data."""
         if self._wrapper is None:
             return self._zeros_frame()
         try:
@@ -249,6 +258,7 @@ class ArticulationRecordable(Recordable):
         return {"positions": positions, "orientations": orientations}
 
     def apply(self, frame: Mapping[str, np.ndarray], *, policy: ReplayPolicy) -> None:
+        """Apply one recorded frame."""
         if self._wrapper is None:
             if policy.strictness == "strict":
                 raise RuntimeError(f"ArticulationRecordable {self.prim_path}: not bound.")
@@ -286,6 +296,7 @@ class ArticulationRecordable(Recordable):
                 )
 
     def to_manifest(self) -> dict[str, Any]:
+        """Serialize this object to a manifest entry."""
         return {
             "type": self.TYPE_ID,
             "group": self.group,
@@ -296,6 +307,7 @@ class ArticulationRecordable(Recordable):
 
     @classmethod
     def from_manifest(cls, entry: Mapping[str, Any]) -> ArticulationRecordable:
+        """Create an instance from a manifest entry."""
         return cls(
             group=entry["group"],
             prim_path=entry["prim_path"],

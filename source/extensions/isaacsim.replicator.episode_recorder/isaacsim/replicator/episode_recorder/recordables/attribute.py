@@ -82,6 +82,7 @@ class AttributeRecordable(Recordable):
         self._stage: Any = None
 
     def describe_channels(self) -> dict[str, ChannelDescriptor]:
+        """Describe the recorded channels."""
         shape = self._shape if self._shape is not None else ()
         dtype = self._dtype if self._dtype is not None else "f4"
         return {_CHANNEL_NAME: ChannelDescriptor(shape=shape, dtype=dtype)}
@@ -96,6 +97,7 @@ class AttributeRecordable(Recordable):
         return attr
 
     def on_session_open(self, stage: Any) -> None:
+        """Open the recordable session."""
         self._stage = stage
         attr = self._get_attr()
         if self._shape is None or self._dtype is None:
@@ -107,9 +109,11 @@ class AttributeRecordable(Recordable):
                 self._dtype = dtype
 
     def on_session_close(self) -> None:
+        """Close the recordable session."""
         self._stage = None
 
     def sample(self) -> dict[str, np.ndarray]:
+        """Sample one frame of data."""
         attr = self._get_attr()
         value = attr.Get()
         if value is None:
@@ -120,6 +124,7 @@ class AttributeRecordable(Recordable):
         return {_CHANNEL_NAME: arr.astype(self._dtype or arr.dtype.str.lstrip("<>|="), copy=False)}
 
     def apply(self, frame: Mapping[str, np.ndarray], *, policy: ReplayPolicy) -> None:
+        """Apply one recorded frame."""
         if self._stage is None:
             if policy.strictness == "strict":
                 raise RuntimeError(f"AttributeRecordable {self.prim_path}.{self.attribute_name}: not bound.")
@@ -147,6 +152,7 @@ class AttributeRecordable(Recordable):
             carb.log_warn(f"[AttributeRecordable {self.prim_path}.{self.attribute_name}] apply failed: {exc}")
 
     def to_manifest(self) -> dict[str, Any]:
+        """Serialize this object to a manifest entry."""
         return {
             "type": self.TYPE_ID,
             "group": self.group,
@@ -158,6 +164,7 @@ class AttributeRecordable(Recordable):
 
     @classmethod
     def from_manifest(cls, entry: Mapping[str, Any]) -> AttributeRecordable:
+        """Create an instance from a manifest entry."""
         shape = entry.get("shape")
         shape_t = tuple(shape) if shape is not None else None
         return cls(

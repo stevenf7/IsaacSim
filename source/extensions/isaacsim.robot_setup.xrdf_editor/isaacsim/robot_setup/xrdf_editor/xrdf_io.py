@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, TextIO
 
 import carb
 import numpy as np
@@ -299,7 +299,7 @@ def _validate_xrdf_version(format_version: float) -> float:
     return XRDF_VERSION_2
 
 
-def _write_yaml_item(f, item: Any, tabbing: str) -> None:
+def _write_yaml_item(f: TextIO, item: Any, tabbing: str) -> None:
     """Write ``item`` to ``f`` using the XRDF-style formatting.
 
     The XRDF format expects ordered keys, terse inline numeric lists, and

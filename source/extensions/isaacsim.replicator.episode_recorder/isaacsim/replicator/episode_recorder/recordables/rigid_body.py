@@ -40,8 +40,10 @@ class RigidBodyRecordable(_PoseBase):
         super().__init__(group=group, prim_path=prim_path, space="world")
 
     def to_manifest(self) -> dict[str, Any]:
+        """Serialize this object to a manifest entry."""
         return {"type": self.TYPE_ID, "group": self.group, "prim_path": self.prim_path}
 
     @classmethod
     def from_manifest(cls, entry: Mapping[str, Any]) -> RigidBodyRecordable:
+        """Create an instance from a manifest entry."""
         return cls(group=entry["group"], prim_path=entry["prim_path"])

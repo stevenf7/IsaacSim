@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Process-wide hooks for attaching extra :class:`Recordable`\\ s to a session.
+r"""Process-wide hooks for attaching extra :class:`Recordable`\\ s to a session.
 
 A session injector is any callable that receives a freshly created
 :class:`EpisodeRecorder` (before :meth:`EpisodeRecorder.open_session` is invoked)
