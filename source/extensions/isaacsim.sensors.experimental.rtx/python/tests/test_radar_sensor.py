@@ -193,7 +193,7 @@ class TestRadarSensor(omni.kit.test.AsyncTestCase):
             aux_output_level="BASIC",
         )
         sensor = RadarSensor(radar, annotators=["generic-model-output"])
-        sensor.attach_writer(
+        writer = sensor.attach_writer(
             "_GmoRadarTestWriter",
             test_instance=self,
             sensor_prim=radar.prims[0],
@@ -206,7 +206,6 @@ class TestRadarSensor(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
 
-        writer = sensor._writers["_GmoRadarTestWriter"]
         carb.log_warn(f"numElements==0 frames: {writer.num_elements_zero_count}")
         carb.log_warn(f"valid frames: {writer.valid_frame_count}")
 

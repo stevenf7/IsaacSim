@@ -165,7 +165,7 @@ class TestIsaacExtractRTXSensorPointCloud(omni.kit.test.AsyncTestCase):
             aux_output_level="BASIC",
         )
         sensor = LidarSensor(lidar, annotators=["generic-model-output"])
-        sensor.attach_writer(
+        writer = sensor.attach_writer(
             "_PointCloudTestWriter",
             test_instance=self,
             coords_type=coords_type,
@@ -178,8 +178,6 @@ class TestIsaacExtractRTXSensorPointCloud(omni.kit.test.AsyncTestCase):
         for _ in range(total_frames):
             await omni.kit.app.get_app().next_update_async()
         timeline.stop()
-
-        writer = sensor._writers["_PointCloudTestWriter"]
 
         self.assertGreater(writer.valid_frame_count, 0, f"No valid frames (coords_type={coords_type})")
 
