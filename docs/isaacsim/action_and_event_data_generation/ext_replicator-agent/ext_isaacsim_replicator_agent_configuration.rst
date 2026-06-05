@@ -669,7 +669,11 @@ Specialized Writers
     -   ``shaded_seg``: Shaded segmentation visualization.
     -   ``canny_edge``: Canny edge detection filter (with ``canny_threshold_low/high``).
 
-3.  **CustomWriter**:
+3.  **SceneGraphWriter**:
+
+    Writes per-frame scene captions alongside the standard output. This writer is provided by the ``Isaacsim.Replicator.Caption`` extension; for configuration and a complete example, refer to :ref:`Use Isaacsim.Replicator.Caption in Isaacsim.Replicator.Agent <using_ira_extension>`.
+
+4.  **CustomWriter**:
 
     A flexible wrapper that delegates to **any** writer registered in ``omni.replicator.core.WriterRegistry``. Use ``CustomWriter`` when you want to use a third-party writer, a writer from another extension, or your own ``omni.replicator.core.Writer`` subclass without modifying the IRA codebase.
 
