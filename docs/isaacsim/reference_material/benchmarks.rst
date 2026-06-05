@@ -6,9 +6,6 @@
 |isaac-sim_short| Benchmarks
 ===========================================
 
-.. attention::
-  Benchmark KPIs will be updated with the official Isaac Sim 6.0.0 GA release.
-
 This page contains key performance indicators (KPIs) for |isaac-sim_short|, captured across
 different reference hardware and measured using the ``isaacsim.benchmark.services`` extension. It also
 contains a guide on how to collect the same KPIs on your hardware, to compare to our published
@@ -34,15 +31,15 @@ These KPIs measure |isaac-sim_short| performance independent of the GPU on which
     * - Binary package size (Windows)
       - Size of Windows binary package
       - GB
-      - 7.37
+      - 9.90
     * - Binary package size (Linux)
       - Size of Linux binary package
       - GB
-      - 8.17
+      - 12.2
     * - Docker container size
       - Size of Docker container before extraction on `NGC <https://ngc.nvidia.com/catalog/containers/nvidia:isaac-sim>`_
       - GB
-      -
+      - 9.97
     * - ``pip`` package size
       - Size of ``pip`` package as downloaded
       - GB
@@ -80,55 +77,6 @@ Workstation GPUs
 
 .. tab-set::
 
-    .. tab-item:: GeForce RTX 4080 Super
-
-        .. note:: These KPIs were measured on a standardized reference machine using an Intel Core Ultra 9 285K CPU and 32GB of DDR5 RAM.
-
-        .. list-table:: Hardware-Dependent KPIs
-            :widths: 25 35 15 10 10
-            :header-rows: 1
-
-            * - Name
-              - Definition
-              - Units
-              - Windows
-              - Ubuntu
-            * - Full Warehouse Sample Scene Load Time
-              - Wall-clock time to load Full Warehouse Sample Scene
-              - Seconds
-              - 40.7
-              - 49.6
-            * - Full Warehouse Sample Scene FPS
-              - Frame rate of Full Warehouse Sample Scene
-              - Frames per second
-              - 229.36
-              - 210.53
-            * - Physics steps per second
-              - Number of physics steps executed per wall-clock second with 10 O3dyn robots
-              - Hz
-              - 52.91
-              - 59.28
-            * - Isaac ROS Sample Scene FPS
-              - Frame rate of Isaac ROS Sample Scene
-              - Frames per second
-              - 41.72
-              - 42.97
-            * - ROS2 render & publishing speed
-              - Frame rate rendered and published using :ref:`ROS2 bridge <isaac_sim_app_tutorial_ros2_navigation>` from Nova Carter ROS asset, per wall-clock second
-              - Frames per Second
-              - 14.41
-              - 12.45
-            * - SDG images per second (simple)
-              - Images rendered by SDG per second, with only RGBD annotators enabled, per wall-clock second
-              - Images per second
-              - 6.20
-              - 8.59
-            * - SDG images per second (complex)
-              - Images rendered by SDG per second, with all annotators enabled, per wall-clock second
-              - Images per second
-              - 4.14
-              - 6.70
-
     .. tab-item:: GeForce RTX 5080
 
         .. note:: These KPIs were measured on a standardized reference machine using an Intel i9-14900k CPU and 32GB of DDR5 RAM.
@@ -145,38 +93,38 @@ Workstation GPUs
             * - Full Warehouse Sample Scene Load Time
               - Wall-clock time to load Full Warehouse Sample Scene
               - Seconds
-              - 35.58
-              - 34.28
+              - 27.15
+              - 27.45
             * - Full Warehouse Sample Scene FPS
               - Frame rate of Full Warehouse Sample Scene
               - Frames per second
-              - 259.07
-              - 241.55
+              - 155.52
+              - 161.55
             * - Physics steps per second
               - Number of physics steps executed per wall-clock second with 10 O3dyn robots
               - Hz
-              - 42.11
-              - 44.76
+              - 32.95
+              - 31.43
             * - Isaac ROS Sample Scene FPS
               - Frame rate of Isaac ROS Sample Scene
               - Frames per second
-              - 32.85
-              - 49.70
+              - 28.34
+              - 46.56
             * - ROS2 render & publishing speed
               - Frame rate rendered and published using :ref:`ROS2 bridge <isaac_sim_app_tutorial_ros2_navigation>` from Nova Carter ROS asset, per wall-clock second
               - Frames per second
-              - 16.25
-              - 17.24
+              - 13.54
+              - 18.34
             * - SDG images per second (simple)
               - Images rendered by SDG per second, with only RGBD annotators enabled, per wall-clock second
               - Images per second
-              - 6.29
-              - 8.52
+              - 24.54
+              - 40.83
             * - SDG images per second (complex)
               - Images rendered by SDG per second, with all annotators enabled, per wall-clock second
               - Images per second
-              - 4.93
-              - 6.76
+              - 8.86
+              - 13.77
 
     .. tab-item:: RTX PRO 6000 Blackwell
 
@@ -194,250 +142,168 @@ Workstation GPUs
             * - Full Warehouse Sample Scene Load Time
               - Wall-clock time to load Full Warehouse Sample Scene
               - Seconds
-              - 37.82
-              - 32.84
+              - 32.86
+              - 29.14
             * - Full Warehouse Sample Scene FPS
               - Frame rate of Full Warehouse Sample Scene
               - Frames per second
-              - 259.07
-              - 333.33
+              - 159.72
+              - 153.33
             * - Physics steps per second
               - Number of physics steps executed per wall-clock second with 10 O3dyn robots
               - Hz
-              - 41.20
-              - 45.54
+              - 32.51
+              - 35.40
             * - Isaac ROS Sample Scene FPS
               - Frame rate of Isaac ROS Sample Scene
               - Frames per second
-              - 47.87
-              - 72.28
+              - 47.55
+              - 51.94
             * - ROS2 render & publishing speed
               - Frame rate rendered and published using :ref:`ROS2 bridge <isaac_sim_app_tutorial_ros2_navigation>` from Nova Carter ROS asset, per wall-clock second
               - Frames per second
-              - 17.65
-              - 21.43
+              - 26.78
+              - 28.38
             * - SDG images per second (simple)
               - Images rendered by SDG per second, with only RGBD annotators enabled, per wall-clock second
               - Images per second
-              - 6.71
-              - 8.52
+              - 29.27
+              - 41.37
             * - SDG images per second (complex)
               - Images rendered by SDG per second, with all annotators enabled, per wall-clock second
               - Images per second
-              - 4.98
-              - 8.47
+              - 9.57
+              - 14.24
 
 Server GPUs
 ------------
 
 .. tab-set::
 
-    .. tab-item:: A40
-
-        .. note:: These KPIs were measured on a standardized OVX machine using 2x Intel 8362 CPU and 1024GB of DDR4 RAM, on Ubuntu 24.04.
-          Some KPIs are measured on multi-GPU configurations, typically for 2, 4, or 8 GPUs.
-
-        .. list-table:: Hardware-Dependent KPIs by GPU Count
-            :widths: 25 35 15 5 5 5 5
-            :header-rows: 1
-
-            * - Name
-              - Definition
-              - Units
-              - x1
-              - x2
-              - x4
-              - x8
-            * - Full Warehouse Sample Scene Load Time
-              - Wall-clock time to load Full Warehouse Sample Scene
-              - Seconds
-              - 89.4
-              - 91.23
-              - 87.61
-              - 113.25
-            * - Full Warehouse Sample Scene FPS
-              - Frame rate of Full Warehouse Sample Scene
-              - Frames per second
-              - 117.40
-              - 116.82
-              - 112.36
-              - 121.82
-            * - Physics steps per second
-              - Number of physics steps executed per wall-clock second with 10 O3dyn robots
-              - Hz
-              - 31.3
-              - 32.7
-              - 31.6
-              - 31.9
-            * - Isaac ROS Sample Scene FPS
-              - Frame rate of Isaac ROS Sample Scene
-              - Frames per second
-              - 25.33
-              - 42.14
-              - 59.95
-              - 59.92
-            * - ROS2 render & publishing speed
-              - Frame rate rendered and published using :ref:`ROS2 bridge <isaac_sim_app_tutorial_ros2_navigation>` from Nova Carter ROS asset, per wall-clock second
-              - Frames per second
-              - 7.28
-              - 14.23
-              - 23.05
-              - 26.51
-            * - SDG images per second (simple)
-              - Images rendered by SDG per second, with only RGBD annotators enabled, per wall-clock second
-              - Images per second
-              - 3.91
-              - 3.85
-              - 3.82
-              - 3.74
-            * - SDG images per second (complex)
-              - Images rendered by SDG per second, with all annotators enabled, per wall-clock second
-              - Images per second
-              - 3.18
-              - 3.21
-              - 3.16
-              - 3.12
-
     .. tab-item:: L40
 
         .. note:: These KPIs were measured on a standardized OVX machine using 2x Intel 8362 CPU and 1024GB of DDR4 RAM, on Ubuntu 24.04.
-          Some KPIs are measured on multi-GPU configurations, typically for 2, 4, or 8 GPUs.
+          Some KPIs are measured on multi-GPU configurations, typically for 1, 4, or 8 GPUs.
 
         .. list-table:: Hardware-Dependent KPIs by GPU Count
-            :widths: 25 35 15 5 5 5 5
+            :widths: 25 35 15 5 5 5
             :header-rows: 1
 
             * - Name
               - Definition
               - Units
               - x1
-              - x2
               - x4
               - x8
             * - Full Warehouse Sample Scene Load Time
               - Wall-clock time to load Full Warehouse Sample Scene
               - Seconds
-              - 98.96
-              - 95.81
-              - 89.36
-              - 87.71
+              - 101.23
+              - 102.43
+              - 100.28
 
             * - Full Warehouse Sample Scene FPS
               - Frame rate of Full Warehouse Sample Scene
               - Frames per second
-              - 236.41
-              - 237.53
-              - 225.73
-              - 175.75
+              - 182.48
+              - 151.75
+              - 120.34
 
             * - Physics steps per second
               - Number of physics steps executed per wall-clock second with 10 O3dyn robots
               - Hz
-              - 47.7
-              - 46.8
-              - 47.6
-              - 46.8
+              - 30.6
+              - 31.53
+              - 33.05
 
             * - Isaac ROS Sample Scene FPS
               - Frame rate of Isaac ROS Sample Scene
               - Frames per second
-              - 50.08
-              - 78.86
-              - 79.62
-              - 70.67
+              - 44.62
+              - 40.00
+              - 36.40
 
             * - ROS2 render & publishing speed
               - Frame rate rendered and published using :ref:`ROS2 bridge <isaac_sim_app_tutorial_ros2_navigation>` from Nova Carter ROS asset, per wall-clock second
               - Frames per second
-              - 15.21
-              - 23.84
-              - 28.71
-              - 29.35
+              - 33.12
+              - 38.92
+              - 39.41
 
             * - SDG images per second (simple)
               - Images rendered by SDG per second, with only RGBD annotators enabled, per wall-clock second
               - Images per second
-              - 3.94
-              - 3.83
-              - 3.79
-              - 3.77
+              - 
+              - 
+              - 
 
             * - SDG images per second (complex)
               - Images rendered by SDG per second, with all annotators enabled, per wall-clock second
               - Images per second
-              - 3.2
-              - 3.15
-              - 3.15
-              - 3.12
+              - 
+              - 
+              - 
 
     .. tab-item:: RTX PRO 6000 Blackwell Server Edition
 
         .. list-table:: Hardware-Dependent KPIs by GPU Count
-            :widths: 25 35 15 5 5 5 5
+            :widths: 25 35 15 5 5 5
             :header-rows: 1
 
             * - Name
               - Definition
               - Units
               - x1
-              - x2
               - x4
               - x8
             * - Full Warehouse Sample Scene Load Time
               - Wall-clock time to load Full Warehouse Sample Scene
               - Seconds
-              - 94.23
-              - 92.51
-              - 95.57
-              - 91.75
+              - 102.34
+              - 101.75
+              - 101.45
 
             * - Full Warehouse Sample Scene FPS
               - Frame rate of Full Warehouse Sample Scene
               - Frames per second
-              - 177.94
-              - 139.86
-              - 161.29
-              - 146.20
+              - 193.05
+              - 173.01
+              - 168.92
 
             * - Physics steps per second
               - Number of physics steps executed per wall-clock second with 10 O3dyn robots
               - Hz
-              - 44.63
-              - 45.17
-              - 46.62
-              - 46.21
+              - 35.13
+              - 34.88
+              - 34.46
 
             * - Isaac ROS Sample Scene FPS
               - Frame rate of Isaac ROS Sample Scene
               - Frames per second
-              - 50.08
-              - 78.86
-              - 79.62
-              - 70.67
+              - 109.77
+              - 105.82
+              - 97.47
 
             * - ROS2 render & publishing speed
               - Frame rate rendered and published using :ref:`ROS2 bridge <isaac_sim_app_tutorial_ros2_navigation>` from Nova Carter ROS asset, per wall-clock second
               - Frames per second
-              - 16.77
-              - 26.49
-              - 28.94
-              - 30.08
+              - 38.61
+              - 40.97
+              - 39.15
 
             * - SDG images per second (simple)
               - Images rendered by SDG per second, with only RGBD annotators enabled, per wall-clock second
               - Images per second
-              - 6.41
-              - 6.36
-              - 6.36
-              - 6.36
+              - 
+              - 
+              - 
 
             * - SDG images per second (complex)
               - Images rendered by SDG per second, with all annotators enabled, per wall-clock second
               - Images per second
-              - 5.21
-              - 5.08
-              - 4.95
-              - 4.86
+              - 
+              - 
+              - 
 
 
 .. _isaac_sim_benchmarks_measuring_kpis:
