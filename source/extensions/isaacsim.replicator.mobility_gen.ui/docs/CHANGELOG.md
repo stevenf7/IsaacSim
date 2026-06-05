@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.5] - 2026-06-04
+### Removed
+- Stale `multiGpu` disable from `[[test]]` args; the Kit 110.1.1 multi-GPU startup crash no longer reproduces.
+
 ## [0.4.4] - 2026-05-13
 ### Changed
 - Clarified the `_cache_stage` docstring around what `export_as_stage` actually inlines.
