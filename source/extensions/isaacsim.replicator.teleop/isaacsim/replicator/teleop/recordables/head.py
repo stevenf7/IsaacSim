@@ -55,18 +55,21 @@ class TeleopHeadRecordable(Recordable):
         self._last_head: Any = None
 
     def describe_channels(self) -> dict[str, ChannelDescriptor]:
+        """Describe the recorded channels."""
         return {
             "position": ChannelDescriptor(shape=(3,), dtype="f4"),
             "orientation": ChannelDescriptor(shape=(4,), dtype="f4", quaternion_order="wxyz"),
         }
 
     def on_session_open(self, stage: Any) -> None:
+        """Open the recordable session."""
         if self._tm is None or not hasattr(self._tm, "add_head_observer"):
             return
         self._tm.add_head_observer(self._on_head)
         self._observer_attached = True
 
     def on_session_close(self) -> None:
+        """Close the recordable session."""
         if self._observer_attached and self._tm is not None:
             remove = getattr(self._tm, "remove_head_observer", None)
             if remove is not None:
@@ -77,6 +80,7 @@ class TeleopHeadRecordable(Recordable):
         self._last_head = head
 
     def sample(self) -> dict[str, np.ndarray]:
+        """Sample one frame of data."""
         head = _extract_head(self._last_head)
         if head is None:
             return {
@@ -91,11 +95,14 @@ class TeleopHeadRecordable(Recordable):
         }
 
     def apply(self, frame: Mapping[str, Any], *, policy: ReplayPolicy) -> None:
+        """Apply one recorded frame."""
         return
 
     def to_manifest(self) -> dict[str, Any]:
+        """Serialize this object to a manifest entry."""
         return {"type": self.TYPE_ID, "group": self.group}
 
     @classmethod
     def from_manifest(cls, entry: Mapping[str, Any]) -> TeleopHeadRecordable:
+        """Create an instance from a manifest entry."""
         return cls(group=entry.get("group", "teleop/head"), teleop_manager=None)

@@ -185,7 +185,7 @@ class EditorState:
 
     def articulation_frames(self) -> set[str]:
         """Return link names (without leading slash) for buffer-distance reconciliation."""
-        return {link_path[1:] for link_path in self.link_to_meshes.keys()}
+        return {link_path[1:] for link_path in self.link_to_meshes}
 
     # ------------------------------------------------------------------
     # XRDF import / export

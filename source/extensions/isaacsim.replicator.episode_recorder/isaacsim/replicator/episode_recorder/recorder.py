@@ -74,21 +74,27 @@ class SessionEvents:
         self._resumed: list[Callable[[], None]] = []
 
     def add_session_opened(self, cb: Callable[[], None]) -> Callable[[], None]:
+        """Add the session opened callback."""
         return _subscribe(self._session_opened, cb)
 
     def add_session_closed(self, cb: Callable[[], None]) -> Callable[[], None]:
+        """Add the session closed callback."""
         return _subscribe(self._session_closed, cb)
 
     def add_episode_started(self, cb: Callable[[int], None]) -> Callable[[], None]:
+        """Add the episode started callback."""
         return _subscribe(self._episode_started, cb)
 
     def add_episode_ended(self, cb: Callable[[int, bool | None, int], None]) -> Callable[[], None]:
+        """Add the episode ended callback."""
         return _subscribe(self._episode_ended, cb)
 
     def add_paused(self, cb: Callable[[], None]) -> Callable[[], None]:
+        """Add the paused callback."""
         return _subscribe(self._paused, cb)
 
     def add_resumed(self, cb: Callable[[], None]) -> Callable[[], None]:
+        """Add the resumed callback."""
         return _subscribe(self._resumed, cb)
 
     def _fire_session_opened(self) -> None:
@@ -215,38 +221,47 @@ class EpisodeRecorder:
     # ------------------------------------------------------------------ properties
     @property
     def session_id(self) -> str:
+        """Run the session id operation."""
         return self._session_id
 
     @property
     def output_dir(self) -> str:
+        """Run the output dir operation."""
         return self._output_dir
 
     @property
     def hdf5_path(self) -> str | None:
+        """Run the hdf5 path operation."""
         return self._storage.path if self._storage is not None else None
 
     @property
     def is_session_open(self) -> bool:
+        """Return whether session open."""
         return self._state in (_State.SESSION_OPEN, _State.EPISODE_ACTIVE)
 
     @property
     def is_recording(self) -> bool:
+        """Return whether recording."""
         return self._state is _State.EPISODE_ACTIVE and not self._paused
 
     @property
     def is_paused(self) -> bool:
+        """Return whether paused."""
         return self._state is _State.EPISODE_ACTIVE and self._paused
 
     @property
     def current_episode_frames(self) -> int:
+        """Run the current episode frames operation."""
         return self._episode_frames_this if self._state is _State.EPISODE_ACTIVE else 0
 
     @property
     def events(self) -> SessionEvents:
+        """Run the events operation."""
         return self._events
 
     @property
     def state(self) -> str:
+        """Run the state operation."""
         return self._state.value
 
     @property
@@ -457,6 +472,7 @@ class EpisodeRecorder:
         self._events._fire_episode_ended(idx, success, frames)
 
     def pause(self) -> None:
+        """Pause the operation."""
         with self._lock:
             if self._state is not _State.EPISODE_ACTIVE:
                 carb.log_warn("[EpisodeRecorder] pause called with no active episode.")
@@ -466,6 +482,7 @@ class EpisodeRecorder:
                 self._events._fire_paused()
 
     def resume(self) -> None:
+        """Resume the operation."""
         with self._lock:
             if self._state is not _State.EPISODE_ACTIVE:
                 carb.log_warn("[EpisodeRecorder] resume called with no active episode.")

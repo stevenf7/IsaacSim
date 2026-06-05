@@ -33,7 +33,7 @@ class GraspSpec:
         imported_data: Dictionary containing grasp specifications parsed from an isaac_grasp YAML file, including grasp names, poses, confidence values, and joint configurations.
     """
 
-    def __init__(self, imported_data: dict):
+    def __init__(self, imported_data: dict) -> None:
         self._imported_data = imported_data
 
     def get_grasp_names(self) -> list[str]:

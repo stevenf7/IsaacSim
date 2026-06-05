@@ -40,6 +40,7 @@ class XformRecordable(_PoseBase):
         super().__init__(group=group, prim_path=prim_path, space=space)
 
     def to_manifest(self) -> dict[str, Any]:
+        """Serialize this object to a manifest entry."""
         return {
             "type": self.TYPE_ID,
             "group": self.group,
@@ -49,6 +50,7 @@ class XformRecordable(_PoseBase):
 
     @classmethod
     def from_manifest(cls, entry: Mapping[str, Any]) -> XformRecordable:
+        """Create an instance from a manifest entry."""
         return cls(
             group=entry["group"],
             prim_path=entry["prim_path"],

@@ -66,7 +66,7 @@ def move_rb_subframe_to_position(
     rb_xform_view.set_world_poses(a_trans_cmd[np.newaxis, :], a_orient_cmd[np.newaxis, :])
 
 
-def show_physics_colliders(show: bool):
+def show_physics_colliders(show: bool) -> None:
     """Toggle the visibility of physics colliders in the viewport.
 
     Controls the physics visualization setting for displaying collision shapes.
@@ -148,7 +148,7 @@ def convert_prim_to_collidable_rigid_body(prim_path: str, articulation_paths: li
     UsdPhysics.RigidBodyAPI.Apply(prim_to_convert)
 
 
-def find_all_articulations():
+def find_all_articulations() -> object:
     """Find all articulation root paths in the current USD stage.
 
     Scans the stage for articulation roots and joints to identify valid articulation base paths.

@@ -305,6 +305,7 @@ class EditorToolsPanel:
     # Public API
     # ------------------------------------------------------------------
     def show(self) -> None:
+        """Show and enable the tools, export, and import frames."""
         if self._tools_frame is not None:
             self._tools_frame.collapsed = False
             self._tools_frame.enabled = True
@@ -314,6 +315,7 @@ class EditorToolsPanel:
             self._import_frame.enabled = True
 
     def hide(self) -> None:
+        """Hide and disable the tools, export, and import frames."""
         if self._tools_frame is not None:
             self._tools_frame.collapsed = True
             self._tools_frame.enabled = False
@@ -358,7 +360,7 @@ class EditorToolsPanel:
     # ------------------------------------------------------------------
     # Field validators
     # ------------------------------------------------------------------
-    def _check_robot_description_file_type(self, model=None) -> None:
+    def _check_robot_description_file_type(self, model: object = None) -> None:
         if self._robot_description_export_btn is None:
             return
         path = model.get_value_as_string()
@@ -368,7 +370,7 @@ class EditorToolsPanel:
             self._robot_description_export_btn.enabled = False
             carb.log_warn(f"Invalid path to Robot Description YAML: {path}")
 
-    def _on_select_xrdf_output_file(self, model=None) -> None:
+    def _on_select_xrdf_output_file(self, model: object = None) -> None:
         if self._xrdf_export_btn is None or self._xrdf_merge_cb is None:
             return
         path = model.get_value_as_string()
@@ -386,7 +388,7 @@ class EditorToolsPanel:
             self._xrdf_merge_cb.set_value(False)
             carb.log_warn(f"Invalid path to XRDF: {path}")
 
-    def _check_lula_input_file(self, model=None) -> None:
+    def _check_lula_input_file(self, model: object = None) -> None:
         if self._robot_description_import_btn is None:
             return
         path = model.get_value_as_string()
@@ -401,7 +403,7 @@ class EditorToolsPanel:
             self._robot_description_import_btn.enabled = False
             carb.log_warn(f"Invalid path to Robot Description YAML: {path}")
 
-    def _check_xrdf_input_file(self, model=None) -> None:
+    def _check_xrdf_input_file(self, model: object = None) -> None:
         if self._xrdf_import_btn is None:
             return
         path = model.get_value_as_string()
@@ -440,7 +442,7 @@ class EditorToolsPanel:
             self._state.articulation_base_path, self._scale_all_factor.get_value_as_float()
         )
 
-    def _on_link_color_change(self, a1, a2) -> None:
+    def _on_link_color_change(self, a1: object, a2: object) -> None:
         if self._link_color_picker is None:
             return
         link_path = self._get_selected_link_path()
@@ -449,7 +451,7 @@ class EditorToolsPanel:
         color = self._extract_color(self._link_color_picker)
         self._state.collision_sphere_editor.set_sphere_colors(link_path, color_in=color)
 
-    def _on_base_color_change(self, a1, a2) -> None:
+    def _on_base_color_change(self, a1: object, a2: object) -> None:
         if self._base_color_picker is None:
             return
         link_path = self._get_selected_link_path()
@@ -459,7 +461,7 @@ class EditorToolsPanel:
         self._state.collision_sphere_editor.set_sphere_colors(link_path, color_out=color)
 
     @staticmethod
-    def _extract_color(picker) -> np.ndarray:
+    def _extract_color(picker: object) -> np.ndarray:
         vals: list[float] = []
         for item in picker.get_item_children():
             vals.append(picker.get_item_value_model(item).get_value_as_float())
@@ -468,14 +470,14 @@ class EditorToolsPanel:
     # ------------------------------------------------------------------
     # Visibility toggles
     # ------------------------------------------------------------------
-    def _on_toggle_link_visible(self, model=None) -> None:
+    def _on_toggle_link_visible(self, model: object = None) -> None:
         link_name = self._get_selected_link_name()
         if link_name is None:
             return
         self._hide_link(link_name)
         self._hiding_link = not self._hiding_link
 
-    def _on_toggle_robot_visible(self, model=None) -> None:
+    def _on_toggle_robot_visible(self, model: object = None) -> None:
         selected_link = self._get_selected_link_name()
         links = list(self._state.link_to_meshes.keys())
         for link in links:
@@ -494,7 +496,7 @@ class EditorToolsPanel:
     # ------------------------------------------------------------------
     # Save / load callbacks
     # ------------------------------------------------------------------
-    def _on_save_robot_description(self, model=None) -> None:
+    def _on_save_robot_description(self, model: object = None) -> None:
         if self._robot_description_output_file is None:
             return
         if self._state.articulation is None:
@@ -508,7 +510,7 @@ class EditorToolsPanel:
         except ValueError as exc:
             carb.log_error(str(exc))
 
-    def _on_export_xrdf(self, model=None) -> None:
+    def _on_export_xrdf(self, model: object = None) -> None:
         if self._xrdf_output_file is None or self._xrdf_version_dropdown is None or self._xrdf_merge_cb is None:
             return
         if self._state.articulation is None:
@@ -520,7 +522,7 @@ class EditorToolsPanel:
         carb.log_info(f"Exporting XRDF with version: {format_version}")
         self._state.export_xrdf(path, format_version=format_version, merge_with_existing=merge)
 
-    def _on_import_lula(self, model=None) -> None:
+    def _on_import_lula(self, model: object = None) -> None:
         if self._lula_input_file is None:
             return
         if self._state.articulation is None:
@@ -529,7 +531,7 @@ class EditorToolsPanel:
         self._state.import_lula(path)
         self._rebuild_joint_properties()
 
-    def _on_import_xrdf(self, model=None) -> None:
+    def _on_import_xrdf(self, model: object = None) -> None:
         if self._xrdf_input_file is None:
             return
         if self._state.articulation is None:

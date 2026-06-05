@@ -67,7 +67,7 @@ def assign_unique_name(base: str, used: set[str]) -> str:
     return name
 
 
-def _iter_descendants(stage: Any, root_path: str, *, max_depth: int | None):
+def _iter_descendants(stage: Any, root_path: str, *, max_depth: int | None) -> object:
     """Yield ``Usd.Prim`` descendants of ``root_path`` (exclusive), honoring ``max_depth``.
 
     Traversal is depth-first with children pushed onto a stack; ``stack.pop()`` consumes the

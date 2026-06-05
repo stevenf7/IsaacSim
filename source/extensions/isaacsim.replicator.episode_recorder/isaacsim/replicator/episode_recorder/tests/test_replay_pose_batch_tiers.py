@@ -52,7 +52,7 @@ from isaacsim.replicator.episode_recorder.replayer import _assign_ancestry_tiers
 
 
 @contextmanager
-def _capture_log_warn():
+def _capture_log_warn() -> object:
     """Capture ``carb.log_warn`` calls, scoped to the ``with`` block.
 
     Restores the original ``carb.log_warn`` on exit even if the body raises,
@@ -70,7 +70,10 @@ def _capture_log_warn():
 
 
 class AncestryTierAssignmentTests(omni.kit.test.AsyncTestCase):
+    """Define AncestryTierAssignmentTests behavior."""
+
     async def test_empty_paths_returns_empty_tiers(self) -> None:
+        """Run the empty paths returns empty tiers test."""
         self.assertEqual(_assign_ancestry_tiers([]), [])
 
     @staticmethod
@@ -86,12 +89,14 @@ class AncestryTierAssignmentTests(omni.kit.test.AsyncTestCase):
         return tiers
 
     async def test_flat_paths_collapse_into_single_tier(self) -> None:
+        """Run the flat paths collapse into single tier test."""
         paths = ["/World/A", "/World/B", "/World/C"]
         tiers = self._assert_tiers(_assign_ancestry_tiers(paths))
         self.assertEqual(len(tiers), 1)
         self.assertEqual(sorted(tiers[0]), [0, 1, 2])
 
     async def test_parent_and_child_split_into_two_tiers(self) -> None:
+        """Run the parent and child split into two tiers test."""
         paths = ["/World/Wrapper", "/World/Wrapper/Robot/base"]
         tiers = self._assert_tiers(_assign_ancestry_tiers(paths))
         self.assertEqual(len(tiers), 2)
@@ -99,11 +104,13 @@ class AncestryTierAssignmentTests(omni.kit.test.AsyncTestCase):
         self.assertEqual(tiers[1], [1])
 
     async def test_deeply_nested_paths_assign_increasing_tiers(self) -> None:
+        """Run the deeply nested paths assign increasing tiers test."""
         paths = ["/A", "/A/B", "/A/B/C", "/A/B/C/D"]
         tiers = self._assert_tiers(_assign_ancestry_tiers(paths))
-        self.assertEqual([t for t in tiers], [[0], [1], [2], [3]])
+        self.assertEqual(list(tiers), [[0], [1], [2], [3]])
 
     async def test_mixed_ancestry_groups_siblings_correctly(self) -> None:
+        """Run the mixed ancestry groups siblings correctly test."""
         paths = [
             "/World/Wrapper",
             "/World/Wrapper/Robot/base",
@@ -116,6 +123,7 @@ class AncestryTierAssignmentTests(omni.kit.test.AsyncTestCase):
         self.assertEqual(sorted(tiers[1]), [1, 2])
 
     async def test_input_order_independent_of_tier_correctness(self) -> None:
+        """Run the input order independent of tier correctness test."""
         paths = ["/World/Wrapper/Robot/base", "/World/Wrapper"]
         tiers = self._assert_tiers(_assign_ancestry_tiers(paths))
         self.assertEqual(len(tiers), 2)
@@ -131,6 +139,7 @@ class AncestryTierAssignmentTests(omni.kit.test.AsyncTestCase):
         self.assertEqual(sorted(tiers[1]), [1, 2])
 
     async def test_invalid_path_returns_none(self) -> None:
+        """Run the invalid path returns none test."""
         self.assertIsNone(_assign_ancestry_tiers(["not-a-path"]))
 
     async def test_property_path_returns_none(self) -> None:
@@ -139,12 +148,16 @@ class AncestryTierAssignmentTests(omni.kit.test.AsyncTestCase):
 
 
 class ReplayerPoseBatchTierIntegrationTests(omni.kit.test.AsyncTestCase):
+    """Define ReplayerPoseBatchTierIntegrationTests behavior."""
+
     async def setUp(self) -> None:
+        """Set up the test fixture."""
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self) -> None:
+        """Tear down the test fixture."""
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
@@ -242,6 +255,7 @@ class ReplayerPoseBatchTierIntegrationTests(omni.kit.test.AsyncTestCase):
                 replayer.close()
 
     async def test_flat_batch_collapses_to_single_tier(self) -> None:
+        """Run the flat batch collapses to single tier test."""
         stage_utils.define_prim("/World", "Xform")
         stage_utils.define_prim("/World/A", "Xform")
         stage_utils.define_prim("/World/B", "Xform")
@@ -275,6 +289,7 @@ class ReplayerPoseBatchTierIntegrationTests(omni.kit.test.AsyncTestCase):
                 replayer.close()
 
     async def test_pose_backend_default_is_usd(self) -> None:
+        """Run the pose backend default is usd test."""
         with tempfile.TemporaryDirectory(prefix="pose_backend_test_") as tmp_dir:
             recorder = EpisodeRecorder(tmp_dir)
             self.assertEqual(recorder.pose_backend, "usd")
@@ -305,6 +320,7 @@ class ReplayerPoseBatchTierIntegrationTests(omni.kit.test.AsyncTestCase):
                 replayer.close()
 
     async def test_pose_backend_unknown_falls_back_to_usd(self) -> None:
+        """Run the pose backend unknown falls back to usd test."""
         with tempfile.TemporaryDirectory(prefix="pose_backend_test_") as tmp_dir:
             with _capture_log_warn() as warns:
                 recorder = EpisodeRecorder(tmp_dir, pose_backend="bogus")  # type: ignore[arg-type]
@@ -417,20 +433,24 @@ class PoseBackendCtxApplicationTests(omni.kit.test.AsyncTestCase):
     async def setUp(self) -> None:
         # ``_demotion_warned`` is module-level state for the one-shot warning;
         # clear it before each test so warning counts are deterministic.
+        """Set up the test fixture."""
         pb_module._demotion_warned.clear()
 
     async def tearDown(self) -> None:
+        """Tear down the test fixture."""
         pb_module._demotion_warned.clear()
 
     async def test_usd_backend_returns_nullcontext(self) -> None:
+        """Run the usd backend returns nullcontext test."""
         ctx = pb_module.pose_backend_ctx("usd")
         self.assertEqual(type(ctx).__name__, "nullcontext")
 
     async def test_non_usd_backend_invokes_use_backend_when_fsd_enabled(self) -> None:
+        """Run the non usd backend invokes use backend when fsd enabled test."""
         seen: list[str] = []
 
         @contextmanager
-        def _fake_use_backend(backend: str):
+        def _fake_use_backend(backend: str) -> object:
             seen.append(backend)
             yield
 

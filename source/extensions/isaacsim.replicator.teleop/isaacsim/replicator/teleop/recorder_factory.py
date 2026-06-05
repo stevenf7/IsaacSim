@@ -13,8 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""High-level factory assembling an :class:`EpisodeRecorder` with teleop plus the
-standard articulation / xform / rigid-body recordables the UI exposes today.
+"""Assemble teleop episode recorders.
+
+The factory combines :class:`EpisodeRecorder` with teleop plus the standard articulation,
+xform, and rigid-body recordables the UI exposes today.
 """
 
 from __future__ import annotations

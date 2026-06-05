@@ -113,7 +113,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
     # Per-controller configuration helpers (one side at a time)
     # -----------------------------------------------------------------------
 
-    def detect_active_motion(profile, scenario_sides: list[str]) -> dict[str, str]:
+    def detect_active_motion(profile: object, scenario_sides: list[str]) -> dict[str, str]:
         """Return ``{side: 'floating'|'ik'}`` for sides enabled in both profile and scenario."""
         active: dict[str, str] = {}
         for side in scenario_sides:
@@ -124,7 +124,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
         return active
 
     def configure_floating_side(
-        profile,
+        profile: object,
         teleop_manager: TeleopManager,
         controller: FloatingRigidBodyController,
         side: str,
@@ -161,7 +161,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
         print(f"[TeleopDemo][Setup]   Configured {side} floating controller: {prim_path}")
         return prim_path
 
-    def configure_ik_side(profile, controller: RobotIKController, side: str) -> bool:
+    def configure_ik_side(profile: object, controller: RobotIKController, side: str) -> bool:
         """Configure one IK side from the profile."""
         settings = getattr(profile.ik, side).settings
         robot_path = str(settings.get("robot_path", "")).strip()
@@ -226,7 +226,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
         return True
 
     def configure_grasp_side(
-        profile,
+        profile: object,
         teleop_manager: TeleopManager,
         controller: GraspController,
         side: str,
@@ -252,7 +252,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
         print(f"[TeleopDemo][Setup]   Configured {side} grasp controller: {side_profile.prim_path}")
         return side_profile.prim_path
 
-    def configure_locomotion(profile, teleop_manager: TeleopManager, controller: LocomotionController) -> bool:
+    def configure_locomotion(profile: object, teleop_manager: TeleopManager, controller: LocomotionController) -> bool:
         """Configure the (single, scenario-wide) locomotion controller.
 
         Locomotion is optional: profiles that disable it (e.g. solo floating
@@ -281,7 +281,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
         return True
 
     def configure_session(
-        profile,
+        profile: object,
         teleop_manager: TeleopManager,
         markers_manager: MarkersManager,
         sides: list[str],
@@ -314,7 +314,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
     # -----------------------------------------------------------------------
 
     def build_sides_state(
-        profile,
+        profile: object,
         teleop_manager: TeleopManager,
         floating_controller: FloatingRigidBodyController,
         ik_controller: RobotIKController,
@@ -369,7 +369,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
         teleop_manager.set_grasp_tracking(grasp_controller.has_any_side_tracking_enabled)
         return sides_state
 
-    def cache_target_origins(stage, sides_state: dict[str, dict]) -> bool:
+    def cache_target_origins(stage: object, sides_state: dict[str, dict]) -> bool:
         """Cache each side's asset world position once, used as the relative-motion origin."""
         for side, state in sides_state.items():
             prim = stage.GetPrimAtPath(state["asset_path"])
@@ -675,7 +675,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
     # -----------------------------------------------------------------------
 
     def build_recorder_targets(
-        profile,
+        profile: object,
         sides_state: dict[str, dict],
         markers_manager: MarkersManager,
     ) -> tuple[dict[str, str], dict[str, str]]:
@@ -702,10 +702,10 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
     # -----------------------------------------------------------------------
 
     def setup_sdg_render_products(
-        stage,
+        stage: object,
         camera_paths: list[str],
         resolution: tuple[int, int],
-    ):
+    ) -> object:
         """Build per-camera render products for SDG captures."""
         valid_camera_paths: list[str] = []
         for camera_path in camera_paths:
@@ -738,8 +738,8 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
 
     async def capture_live_sdg_action_image(
         action_name: str,
-        recorder,
-        writer,
+        recorder: object,
+        writer: object,
         render_products: list,
         capture_index: int,
         rt_subframes: int,
@@ -789,7 +789,7 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
 
     async def capture_replayed_sdg_action_image(
         capture_point: SdgReplayCapture,
-        writer,
+        writer: object,
         render_products: list,
         capture_index: int,
         rt_subframes: int,
@@ -820,13 +820,13 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
         scenario_name: str,
         markers_manager: MarkersManager | None,
         teleop_manager: TeleopManager | None,
-        recorder=None,
+        recorder: object = None,
         episode_active: bool = False,
-        timeline=None,
+        timeline: object = None,
         timeline_started: bool = False,
-        sdg_capture_writer=None,
+        sdg_capture_writer: object = None,
         sdg_capture_render_products: list | None = None,
-        replayer=None,
+        replayer: object = None,
     ) -> None:
         """Best-effort, never-raising teardown for the live + replay phases.
 
@@ -835,13 +835,13 @@ async def run_teleop_pick_and_place_async(scenario_config: dict) -> None:
         mid-flight: this still tears down whatever was already brought up.
         """
 
-        def _safe(label: str, fn, *args, **kwargs):
+        def _safe(label: str, fn: object, *args: object, **kwargs: object) -> object:
             try:
                 return fn(*args, **kwargs)
             except Exception as exc:
-                print(f"[TeleopDemo][Cleanup]   '{label}' skipped: {exc}")
+                print(f"[TeleopDemo][Cleanup]   '{label}' skipped -> object: {exc}")
 
-        async def _safe_async(label: str, coro):
+        async def _safe_async(label: str, coro: object) -> None:
             try:
                 await coro
             except Exception as exc:
@@ -1283,18 +1283,20 @@ class TestTeleopSDGPickAndPlace(omni.kit.test.AsyncTestCase):
     # introduce small per-pixel variation, so a moderate budget is used.
     MEAN_DIFF_TOLERANCE = 10
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Set up the test fixture."""
         await omni.kit.app.get_app().next_update_async()
         omni.usd.get_context().new_stage()
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Tear down the test fixture."""
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
             await omni.kit.app.get_app().next_update_async()
 
-    async def test_floating_xarm_dex3(self):
+    async def test_floating_xarm_dex3(self) -> None:
         """Bimanual floating teleop: xArm gripper (left) + Dex3 gripper (right)."""
         scenario_config = {
             "name": "floating_xarm_dex3",
@@ -1370,7 +1372,7 @@ class TestTeleopSDGPickAndPlace(omni.kit.test.AsyncTestCase):
                     f"Image comparison failed ({phase}/{camera_dir}). Output dir: {test_camera_dir}",
                 )
 
-    async def test_floating_xarm(self):
+    async def test_floating_xarm(self) -> None:
         """Solo floating teleop: a single xArm gripper on the right side."""
         scenario_config = {
             "name": "floating_xarm",
@@ -1429,7 +1431,7 @@ class TestTeleopSDGPickAndPlace(omni.kit.test.AsyncTestCase):
             )
             self.assertTrue(result["all_passed"], f"Image comparison failed ({phase}). Output dir: {out_dir}")
 
-    async def test_ik_dual_ur3_xarm_dex3(self):
+    async def test_ik_dual_ur3_xarm_dex3(self) -> None:
         """Bimanual IK teleop: dual UR3 arms with xArm gripper (left) + Dex3 (right)."""
         scenario_config = {
             "name": "ik_dual_ur3_xarm_dex3",
@@ -1507,7 +1509,7 @@ class TestTeleopSDGPickAndPlace(omni.kit.test.AsyncTestCase):
                     f"Image comparison failed ({phase}/{camera_dir}). Output dir: {test_camera_dir}",
                 )
 
-    async def test_ik_solo_ur3_xarm(self):
+    async def test_ik_solo_ur3_xarm(self) -> None:
         """Solo IK teleop: single UR3 arm with an xArm gripper on the right."""
         scenario_config = {
             "name": "ik_solo_ur3_xarm",

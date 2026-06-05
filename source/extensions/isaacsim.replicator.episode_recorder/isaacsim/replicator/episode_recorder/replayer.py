@@ -128,10 +128,12 @@ class EpisodeReplayer:
     # ------------------------------------------------------------------ properties
     @property
     def hdf5_path(self) -> str:
+        """Run the hdf5 path operation."""
         return self._hdf5_path
 
     @property
     def policy(self) -> ReplayPolicy:
+        """Run the policy operation."""
         return self._policy
 
     @property
@@ -156,6 +158,7 @@ class EpisodeReplayer:
 
     @property
     def prepared_recordables(self) -> list[Recordable]:
+        """Run the prepared recordables operation."""
         return list(self._prepared)
 
     @property
@@ -182,9 +185,11 @@ class EpisodeReplayer:
         return self._pose_backend
 
     def list_episodes(self) -> list[str]:
+        """Run the list episodes operation."""
         return self._reader.list_episodes()
 
     def num_frames(self, episode: int | str) -> int:
+        """Return the number of frames."""
         return self._reader.num_frames(episode)
 
     def episode_attrs(self, episode: int | str) -> dict[str, Any]:
@@ -192,9 +197,11 @@ class EpisodeReplayer:
         return self._reader.episode_attrs(episode)
 
     def manifest(self) -> SessionManifest:
+        """Run the manifest operation."""
         return self._reader.manifest()
 
     def session_metadata(self) -> dict[str, Any]:
+        """Run the session metadata operation."""
         return dict(self._reader.manifest().session)
 
     # ------------------------------------------------------------------ preparation
@@ -966,9 +973,11 @@ class EpisodeReplayer:
         self._reader.close()
 
     def __enter__(self) -> EpisodeReplayer:
+        """Enter the context manager."""
         return self
 
     def __exit__(self, *exc_info: Any) -> None:
+        """Exit the context manager."""
         self.close()
 
 

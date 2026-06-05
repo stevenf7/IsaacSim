@@ -41,6 +41,7 @@ class SimTimeRecordable(Recordable):
         super().__init__(group=group)
 
     def describe_channels(self) -> dict[str, ChannelDescriptor]:
+        """Describe the recorded channels."""
         return {
             "sim_time": ChannelDescriptor(shape=(), dtype="f8", units="seconds"),
             "physics_step": ChannelDescriptor(shape=(), dtype="i8"),
@@ -48,6 +49,7 @@ class SimTimeRecordable(Recordable):
         }
 
     def sample(self) -> dict[str, Any]:
+        """Sample one frame of data."""
         from isaacsim.core.simulation_manager import SimulationManager
 
         return {
@@ -57,11 +59,14 @@ class SimTimeRecordable(Recordable):
         }
 
     def apply(self, frame: Mapping[str, Any], *, policy: ReplayPolicy) -> None:
+        """Apply one recorded frame."""
         return
 
     def to_manifest(self) -> dict[str, Any]:
+        """Serialize this object to a manifest entry."""
         return {"type": self.TYPE_ID, "group": self.group}
 
     @classmethod
     def from_manifest(cls, entry: Mapping[str, Any]) -> SimTimeRecordable:
+        """Create an instance from a manifest entry."""
         return cls(group=entry.get("group", DEFAULT_GROUP))

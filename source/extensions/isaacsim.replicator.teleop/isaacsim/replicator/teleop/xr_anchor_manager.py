@@ -106,7 +106,7 @@ _settings_snapshot: dict[str, Any] | None = None
 _settings_snapshot_refs: int = 0
 
 
-def _xr_settings():
+def _xr_settings() -> object:
     """Return the XRSettings singleton, or None if XR core is unavailable.
 
     Silent ``None`` only on ``ModuleNotFoundError`` (XR extension not

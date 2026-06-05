@@ -33,6 +33,7 @@ from __future__ import annotations
 import asyncio
 import gc
 import weakref
+from typing import Any
 
 import carb.eventdispatcher
 import omni
@@ -177,10 +178,10 @@ class Extension(omni.ext.IExt):
             with ui.VStack(spacing=5, height=0):
                 self._build_extension_ui()
 
-        async def dock_window():
+        async def dock_window() -> None:
             await omni.kit.app.get_app().next_update_async()
 
-            def dock(space, name, location, pos=0.5):
+            def dock(space: Any, name: str, location: Any, pos: float = 0.5) -> Any:
                 window = omni.ui.Workspace.get_window(name)
                 if window and space:
                     window.dock_in(space, location, pos)

@@ -189,7 +189,7 @@ class VRRecordingButton:
         """Alias for :meth:`detach`. Safe to call during shutdown."""
         self.detach()
 
-    def _read_button(self, left_ctrl, right_ctrl) -> bool:
+    def _read_button(self, left_ctrl: object, right_ctrl: object) -> bool:
         """Return the boolean state of the bound button on the current snapshot."""
         snapshot = left_ctrl if self._spec.side == "left" else right_ctrl
         if snapshot is None:
@@ -200,7 +200,7 @@ class VRRecordingButton:
         value = getattr(inputs, self._spec.field, False)
         return bool(value)
 
-    def _on_controller_inputs(self, left_ctrl, right_ctrl) -> None:
+    def _on_controller_inputs(self, left_ctrl: object, right_ctrl: object) -> None:
         """Edge-detect the bound button and dispatch the configured command on rising edges."""
         pressed = self._read_button(left_ctrl, right_ctrl)
         if pressed and not self._prev_pressed:

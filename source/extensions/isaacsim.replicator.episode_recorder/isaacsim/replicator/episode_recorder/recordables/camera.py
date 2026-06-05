@@ -87,6 +87,7 @@ class CameraRecordable(_PoseBase):
         self._stage: Any = None
 
     def describe_channels(self) -> dict[str, ChannelDescriptor]:
+        """Describe the recorded channels."""
         return {
             "position": ChannelDescriptor(shape=(3,), dtype="f4", units="meters", space="world"),
             "orientation": ChannelDescriptor(shape=(4,), dtype="f4", quaternion_order="wxyz", space="world"),
@@ -97,10 +98,12 @@ class CameraRecordable(_PoseBase):
         }
 
     def on_session_open(self, stage: Any) -> None:
+        """Open the recordable session."""
         super().on_session_open(stage)
         self._stage = stage
 
     def on_session_close(self) -> None:
+        """Close the recordable session."""
         super().on_session_close()
         self._stage = None
 
@@ -108,9 +111,11 @@ class CameraRecordable(_PoseBase):
         return self._stage.GetPrimAtPath(self.prim_path)
 
     def pose_paths(self) -> list[str] | None:
+        """Return the pose paths consumed by this recordable."""
         return [self.prim_path]
 
     def consume_pose_batch(self, positions: np.ndarray, orientations: np.ndarray) -> dict[str, np.ndarray]:
+        """Consume a batched pose sample."""
         intrin = _camera_intrinsics(self._prim())
         return {
             "position": positions[0],
@@ -119,6 +124,7 @@ class CameraRecordable(_PoseBase):
         }
 
     def sample(self) -> dict[str, np.ndarray]:
+        """Sample one frame of data."""
         if self._wrapper is None:
             raise RuntimeError(f"CameraRecordable {self.prim_path}: not bound.")
         pos_wp, quat_wp = self._wrapper.get_world_poses()
@@ -132,6 +138,7 @@ class CameraRecordable(_PoseBase):
         }
 
     def apply(self, frame: Mapping[str, np.ndarray], *, policy: ReplayPolicy) -> None:
+        """Apply one recorded frame."""
         if self._wrapper is None:
             if policy.strictness == "strict":
                 raise RuntimeError(f"CameraRecordable {self.prim_path}: not bound.")
@@ -153,6 +160,7 @@ class CameraRecordable(_PoseBase):
             carb.log_warn(f"[CameraRecordable {self.prim_path}] apply failed: {exc}")
 
     def to_manifest(self) -> dict[str, Any]:
+        """Serialize this object to a manifest entry."""
         entry: dict[str, Any] = {
             "type": self.TYPE_ID,
             "group": self.group,
@@ -164,6 +172,7 @@ class CameraRecordable(_PoseBase):
 
     @classmethod
     def from_manifest(cls, entry: Mapping[str, Any]) -> CameraRecordable:
+        """Create an instance from a manifest entry."""
         res = entry.get("resolution")
         resolution = tuple(res) if res is not None else None
         return cls(group=entry["group"], prim_path=entry["prim_path"], resolution=resolution)

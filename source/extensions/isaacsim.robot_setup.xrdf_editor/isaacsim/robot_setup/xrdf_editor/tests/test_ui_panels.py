@@ -105,6 +105,7 @@ class TestXrdfEditorUIPanels(omni.kit.test.AsyncTestCase):
     # Shared fixture
     # ------------------------------------------------------------------
     async def setUp(self) -> None:
+        """Open UR10e and build the XRDF editor extension UI."""
         self._timeline = omni.timeline.get_timeline_interface()
         self._ext: Extension | None = None
         self._articulation_path: str | None = None
@@ -139,6 +140,7 @@ class TestXrdfEditorUIPanels(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self) -> None:
+        """Tear down the extension UI and reset the stage."""
         if self._ext is not None:
             try:
                 self._ext._window.visible = False
@@ -790,6 +792,7 @@ class TestMimicJointBehavior(omni.kit.test.AsyncTestCase):
     _MIMIC_DRIVER_NAME = "wrist_2_joint"
 
     async def setUp(self) -> None:
+        """Open UR10e, apply a mimic relationship, and build the editor UI."""
         self._timeline = omni.timeline.get_timeline_interface()
         self._ext: Extension | None = None
         self._articulation_path: str | None = None
@@ -833,6 +836,7 @@ class TestMimicJointBehavior(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self) -> None:
+        """Tear down the mimic UI fixture and reset the stage."""
         if self._ext is not None:
             try:
                 self._ext._window.visible = False
@@ -932,7 +936,7 @@ class TestMimicJointBehavior(omni.kit.test.AsyncTestCase):
 
         # Walk the frame's widget tree and detect any FloatField-style input
         # widget. A read-only mimic frame contains only labels.
-        def _has_float_field(widget) -> bool:
+        def _has_float_field(widget: object) -> bool:
             cls_name = type(widget).__name__
             if cls_name in {"FloatField", "FloatDrag", "FloatSlider"}:
                 return True
