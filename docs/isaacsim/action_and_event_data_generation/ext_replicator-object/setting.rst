@@ -67,6 +67,7 @@ version                      | string             | Version number of isaacsim.r
       segmentation: True
       depth: False
 
+To also write per-frame scene captions alongside this output, the ``Isaacsim.Replicator.Caption`` extension's ``CombinedIROSceneGraphWriter`` can replace the default writer, refer to :ref:`Use Isaacsim.Replicator.Caption in Isaacsim.Replicator.Object <using_iro_extension>`.
 
 Optional Keys
 ------------------
