@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.6] - 2026-06-04
+### Fixed
+- `MobilityGenCamera.update_state`: guard depth/segmentation/normals/instance-id against empty annotator buffers (as RGB already is), avoiding a "tile cannot extend outside image" crash on replay.
+### Removed
+- Stale `multiGpu` disable from `[[test]]` args; the Kit 110.1.1 multi-GPU startup crash no longer reproduces.
+
 ## [0.2.5] - 2026-05-15
 ### Added
 - `nurec_overrides` module exporting `is_nurec_stage` and `apply_nurec_replay_overrides`. Detects NuRec stages by traversing for `ParticleField` prims; when detected, forces replay flags to the supported subset (RGB only) and re-asserts `/rtx/rtpt/gaussian/skipTonemapping/enabled = False` so splat RGB matches the viewport. The RGB-only restriction and tonemap re-assert reflect the current state of NuRec support in Kit/Omniverse; non-RGB modalities and other render settings are gated here until they are addressed in future versions.

@@ -108,7 +108,7 @@ args, _unknown = parser.parse_known_args()
 # ─────────────────────────────────────────────────────────────────────────────
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp(launch_config={"headless": True, "multi_gpu": False})
+simulation_app = SimulationApp(launch_config={"headless": True})
 
 import carb
 import isaacsim.core.experimental.utils.app as app_utils

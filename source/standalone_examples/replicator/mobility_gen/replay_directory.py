@@ -23,13 +23,11 @@ Example usage (from the Isaac Sim build directory):
         --enable isaacsim.replicator.mobility_gen.examples \\
         --input ~/MobilityGenData/recordings \\
         --output ~/MobilityGenData/replays
-
-Note: multi_gpu is disabled to avoid crashes on Kit 110.1.x with multiple GPUs.
 """
 
 from isaacsim import SimulationApp
 
-simulation_app = SimulationApp(launch_config={"headless": True, "multi_gpu": False})
+simulation_app = SimulationApp(launch_config={"headless": True})
 
 import argparse
 import glob
@@ -175,11 +173,17 @@ if __name__ == "__main__":
         # Re-enable hydra texture updates now that all annotators are attached.
         scenario.finalize_rendering()
 
-        rep.orchestrator.step(rt_subframes=args.render_rt_subframes, delta_time=0.0, pause_timeline=False)
+        # captureOnPlay=1 (set in the mobility_gen extension.toml) gates capture on a
+        # playing timeline, which initialize_physics() does not start; without play()
+        # the annotators capture nothing. This also inits the render graph before
+        # apply_sensor_overrides() below. Do NOT replace this with a warmup
+        # orchestrator.step(): a pre-loop orchestrator step leaves every subsequent
+        # capture empty (the "tile cannot extend outside image" PNG crash).
+        omni.timeline.get_timeline_interface().play()
+        simulation_app.update()
 
-        # Apply camera calibration overrides after the render graph is fully
-        # initialised — applying them earlier causes Kit to queue a USD change
-        # notice that races with SDGPipeline construction and crashes OmniGraph.
+        # Apply overrides only after the render graph is initialised (above); doing it
+        # earlier races a USD change notice with SDGPipeline construction, crashing OmniGraph.
         apply_sensor_overrides("/World/robot", recording_path)
         log_camera_properties(get_current_stage(), "/World/robot")
 
@@ -247,6 +251,9 @@ if __name__ == "__main__":
         carb.log_warn(f"Process time per frame: {count / (t1 - t0)}")
 
         rep.orchestrator.wait_until_complete()
+        # Stop the timeline before disable_rendering()/the next load_scenario();
+        # leaving it playing across teardown crashes Kit natively.
+        omni.timeline.get_timeline_interface().stop()
         scenario.disable_rendering()
         writer.close()
 
