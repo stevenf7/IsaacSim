@@ -58,8 +58,8 @@ fi
 
 # Show icon if not running headless
 export RESOURCE_NAME="IsaacSim"
-# WAR for missing libcarb.so
-export LD_PRELOAD=$SCRIPT_DIR/kit/libcarb.so
+# WAR for missing libcarb.so, while preserving any caller-provided LD_PRELOAD
+export LD_PRELOAD=$SCRIPT_DIR/kit/libcarb.so${LD_PRELOAD:+:$LD_PRELOAD}
 
 # Run with lldb if --lldb-debug flag was specified, otherwise run normally
 if [[ "$use_lldb" == true ]]; then
