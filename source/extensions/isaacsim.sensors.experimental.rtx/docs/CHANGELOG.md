@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.4] - 2026-05-22
+### Changed
+- `attach_writer()` now returns the attached Writer instance.
+- `attach_annotators()` now returns the attached annotator instances.
+
 ## [1.4.3] - 2026-05-12
 ### Added
 - Added TestMultiSensorWarmup as smoke test for WAR low-frequency fatal crash when multiple Lidars and Radars are in the same scene.

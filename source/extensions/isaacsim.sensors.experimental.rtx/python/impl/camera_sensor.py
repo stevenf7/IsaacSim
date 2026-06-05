@@ -135,11 +135,14 @@ class CameraSensor(_SensorRuntime):
         """
         return self._resolution
 
-    def attach_annotators(self, annotators: str | list[str]) -> None:
+    def attach_annotators(self, annotators: str | list[str]) -> dict[str, Any]:
         """Attach annotators to the sensor.
 
         Args:
             annotators: Annotator/sensor types to attach.
+
+        Returns:
+            Mapping from annotator name to attached annotator instance.
 
         Raises:
             ValueError: If the specified annotator is not supported.
@@ -154,6 +157,8 @@ class CameraSensor(_SensorRuntime):
             )
         for annotator in annotators:
             self._annotators[annotator].attach(self._hydra_texture.path)
+
+        return {annotator: self._annotators[annotator] for annotator in annotators}
 
     def get_data(self, annotator: str, *, out: wp.array | None = None) -> tuple[wp.array | None, dict[str, Any]]:
         """Fetch the specified annotator/sensor data for the camera.

@@ -418,7 +418,7 @@ class _SensorRuntime:
             return UsdRender.Product(prim)
         raise RuntimeError(f"Invalid render product at path '{self._hydra_texture.path}'")
 
-    def attach_annotators(self, annotators: str | list[str]) -> None:
+    def attach_annotators(self, annotators: str | list[str]) -> dict[str, Any]:
         """Attach annotators to the sensor.
 
         Args:
@@ -439,6 +439,8 @@ class _SensorRuntime:
             )
         for annotator in annotators:
             self._annotators[annotator].attach(self._hydra_texture.path)
+
+        return {annotator: self._annotators[annotator] for annotator in annotators}
 
     def detach_annotators(self, annotators: str | list[str]) -> None:
         """Detach annotators from the sensor.
@@ -485,7 +487,7 @@ class _SensorRuntime:
             info = {}
         return data, info
 
-    def attach_writer(self, writer_name: str, **kwargs: Any) -> None:
+    def attach_writer(self, writer_name: str, **kwargs) -> rep.Writer:
         """Attach a writer to the sensor's render product.
 
         ``writer_name`` can be either a short name registered in :data:`WRITER_SPEC`
@@ -518,6 +520,8 @@ class _SensorRuntime:
         writer.initialize(**merged)
         writer.attach([self._hydra_texture.path])
         self._writers[writer_name] = writer
+
+        return writer
 
     def detach_writer(self, writer_name: str) -> None:
         """Detach a previously attached writer.

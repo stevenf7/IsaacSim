@@ -145,12 +145,12 @@ class TestMultiSensorWarmup(omni.kit.test.AsyncTestCase):
         # Lidar 1: full wrap pre-play.
         lidar_1 = Lidar("/World/lidar_1")
         lidar_sensor_1 = LidarSensor(lidar_1, annotators=["generic-model-output"])
-        lidar_sensor_1.attach_writer(WRITER_NAME)
+        lidar_1_writer = lidar_sensor_1.attach_writer(WRITER_NAME)
 
         # Lidar 2: full wrap pre-play.
         lidar_2 = Lidar("/World/lidar_2")
         lidar_sensor_2 = LidarSensor(lidar_2, annotators=["generic-model-output"])
-        lidar_sensor_2.attach_writer(WRITER_NAME)
+        lidar_2_writer = lidar_sensor_2.attach_writer(WRITER_NAME)
 
         # Radar: USD authoring object only - no render product yet.
         radar = Radar(
@@ -168,17 +168,12 @@ class TestMultiSensorWarmup(omni.kit.test.AsyncTestCase):
         # product and binds annotators, mirroring the operation that opens
         # the FIF race window when done concurrently with lidar attachment.
         radar_sensor = RadarSensor(radar, annotators=["generic-model-output"])
-        radar_sensor.attach_writer(WRITER_NAME)
+        radar_writer = radar_sensor.attach_writer(WRITER_NAME)
 
         for _ in range(COLLECTION_FRAMES):
             await omni.kit.app.get_app().next_update_async()
 
         self._timeline.stop()
-
-        # Each sensor has its own writer instance with independent counters.
-        lidar_1_writer = lidar_sensor_1._writers[WRITER_NAME]
-        lidar_2_writer = lidar_sensor_2._writers[WRITER_NAME]
-        radar_writer = radar_sensor._writers[WRITER_NAME]
 
         carb.log_warn(
             f"lidar_1: valid={lidar_1_writer.valid_frame_count} " f"zero={lidar_1_writer.zero_element_frame_count}"

@@ -161,7 +161,7 @@ class TestAcousticSensor(omni.kit.test.AsyncTestCase):
         COLLECTION_SECONDS = 3.0
 
         acoustic, sensor = self._create_acoustic_sensor(aux_output_level="BASIC")
-        sensor.attach_writer("_GmoAcousticTestWriter", test_instance=self)
+        writer = sensor.attach_writer("_GmoAcousticTestWriter", test_instance=self)
 
         total_frames = int(COLLECTION_SECONDS * 60)
         self._timeline.set_end_time(COLLECTION_SECONDS + 1.0)
@@ -170,7 +170,6 @@ class TestAcousticSensor(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
 
-        writer = sensor._writers["_GmoAcousticTestWriter"]
         carb.log_warn(f"numElements==0 frames: {writer.num_elements_zero_count}")
         carb.log_warn(f"valid frames: {writer.valid_frame_count}")
 
