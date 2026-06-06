@@ -105,7 +105,11 @@ For example:
 
 * To make ``demo_bin_pack.yaml``, ``demo_bins_of_bins_rack_2_layers.yaml``, ``demo_bins_of_bins_rack.yaml``, ``demo_bins_of_bins.yaml``, ``demo_table.yaml`` and ``demo_transform_operator.yaml`` work:
 
-	* replace ``PATH_TO_BOXES`` with a folder containing USD files of boxes (or other USDs) in ``global.yaml``. 
+	* replace ``PATH_TO_BOXES`` with a folder containing USD files of boxes (or other USDs) in ``global.yaml``.
+
+.. note::
+
+   In the bins-of-bins demos (``demo_bins_of_bins.yaml``, ``demo_bins_of_bins_rack.yaml``, ``demo_bins_of_bins_rack_2_layers.yaml``), boxes are placed by the bin-packing algorithm without rigid-body physics enabled, so some boxes may appear to float in mid-air rather than resting on rack shelves or on top of other boxes. This is intended behavior. To enable physically realistic settling, set ``physics: rigidbody`` on the box objects in the description file; however, doing so causes the boxes to fall and reorder, so the original bin-packing layout will not be preserved after simulation.
 
 * In ``demo_shader_attributes.yaml``, 
    * replace ``PATH_TO_USD`` with a path to a USD file.
