@@ -229,7 +229,6 @@ def _discover_articulation(
 
     body_to_joints: dict[str, list[tuple[Usd.Prim, int]]] = {}
     all_body_paths: set[str] = set()
-    child_body_paths: set[str] = set()
 
     for j in all_joints:
         body0 = _get_joint_body(j, 0)
@@ -242,7 +241,6 @@ def _discover_articulation(
             key = str(body1)
             body_to_joints.setdefault(key, []).append((j, 1))
             all_body_paths.add(key)
-            child_body_paths.add(key)
 
     root_link = art_root
     root_joint = None
@@ -253,9 +251,31 @@ def _discover_articulation(
         if candidate:
             root_link = stage.GetPrimAtPath(candidate)
     elif not art_root.HasAPI(UsdPhysics.RigidBodyAPI):
-        root_candidates = all_body_paths - child_body_paths
+        rigid_body_paths: set[str] = set()
+        for path in all_body_paths:
+            prim = stage.GetPrimAtPath(Sdf.Path(path))
+            if prim and prim.HasAPI(UsdPhysics.RigidBodyAPI):
+                rigid_body_paths.add(path)
+
+        rigid_child_paths: set[str] = set()
+        for j in all_joints:
+            body0 = _get_joint_body(j, 0)
+            body1 = _get_joint_body(j, 1)
+            if not body1:
+                continue
+            body1_key = str(body1)
+            if body1_key not in rigid_body_paths:
+                continue
+            if not body0:
+                continue
+            body0_prim = stage.GetPrimAtPath(body0)
+            if body0_prim and body0_prim.HasAPI(UsdPhysics.RigidBodyAPI):
+                rigid_child_paths.add(body1_key)
+
+        root_candidates = rigid_body_paths - rigid_child_paths
         if not root_candidates:
-            root_candidates = all_body_paths
+            root_candidates = rigid_body_paths or all_body_paths
+
         art_root_path = str(art_root.GetPath())
         best = None
         for c in root_candidates:
