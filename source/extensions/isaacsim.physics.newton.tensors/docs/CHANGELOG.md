@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.8] - 2026-06-05
+### Changed
+- Updated Newton pip package to 1.2.1
+
 ## [0.1.7] - 2026-05-19
 ### Fixed
 - Update Go2 test asset path to `Mujoco_Menagerie/unitree_go2/go2/go2.usda` to match the new nested asset layout
