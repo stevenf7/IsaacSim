@@ -18,10 +18,13 @@
 from __future__ import annotations
 
 import traceback
+from typing import TYPE_CHECKING
 
 import numpy as np
-from isaacsim.core.experimental.actuators import ArticulationActuators
 from isaacsim.core.experimental.actuators.ogn.OgnArticulationActuatorsDatabase import OgnArticulationActuatorsDatabase
+
+if TYPE_CHECKING:
+    from isaacsim.core.experimental.actuators import ArticulationActuators
 
 
 class OgnArticulationActuatorsInternalState:
@@ -48,6 +51,8 @@ class OgnArticulationActuatorsInternalState:
             robot_path: USD path of the articulation root prim.
             auto_step_pre_physics: Forwarded to `ArticulationActuators.__init__`.
         """
+        from isaacsim.core.experimental.actuators import ArticulationActuators
+
         self._robot_path = robot_path
         self._auto_step_pre_physics = auto_step_pre_physics
         self._actuators = ArticulationActuators(robot_path, auto_step_pre_physics=auto_step_pre_physics)
