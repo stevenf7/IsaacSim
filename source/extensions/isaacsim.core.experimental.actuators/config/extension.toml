@@ -1,5 +1,5 @@
 [package]
-version = "0.1.0"
+version = "0.1.1"
 category = "Simulation"
 title = "Isaac Sim Core (Actuators)"
 description = "USD authoring and simulation integration for robot actuators."
