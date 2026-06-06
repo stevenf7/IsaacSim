@@ -75,7 +75,7 @@ def set_sync_mode() -> None:
     carb_settings = carb.settings.get_settings()
     if carb_settings.get("/app/asyncRendering"):
         logger.warning("Async rendering is enabled, setting sync mode might not work")
-    carb_settings.set("/omni.kit.plugin/syncUsdLoads", True)
+    carb_settings.set("/omni/kit/plugin/syncUsdLoads", True)
     carb_settings.set("/rtx-defaults/materialDb/syncLoads", True)
     carb_settings.set("/rtx-defaults/hydra/materialSyncLoads", True)
 
