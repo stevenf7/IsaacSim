@@ -1,4 +1,8 @@
 # Changelog
+## [4.2.2] - 2026-06-04
+### Fixed
+- Fixed malformed `syncUsdLoads` setting path in `set_sync_mode` (was `/omni.kit.plugin/syncUsdLoads`, now `/omni/kit/plugin/syncUsdLoads`) so synchronous USD loads are correctly forced.
+
 ## [4.2.1] - 2026-05-14
 ### Fixed
 - Improved docstrings and return type clarity

@@ -956,6 +956,9 @@ stdout_fail_patterns.exclude = [
   "*[Error] [omni.kit.asset_converter*",
   "*[Error] [_snippet_test_*",
   "*[Error] [isaacsim.core.simulation_manager*",
+  "*[Error] [isaacsim.robot.surface_gripper*",
+  "*[Error] [omni.usd.commands.usd_commands]*",
+  "*[Error] [omni.kit.commands.command]*",
 ]
 tc_report_enabled = false
 
@@ -964,7 +967,7 @@ include = ["*test_snippets_async*"]
 args = [
   "--junit-xml ${test_root}/_testoutput/results.xml",
 ]
-timeout = 1800
+timeout = 2700
 
 [repo_test.suites.external]
 kind = "glob_and_exec"

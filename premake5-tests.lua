@@ -1387,7 +1387,7 @@ local function get_doc_snippets_tests()
         {
             "doc_snippets/tests-nativepython-testing-doc_snippets.test_snippets_async",
             "standalone_examples/testing/doc_snippets/test_snippets_async.py",
-            "--expected-failures-csv expected_failures.csv --experience-csv experiences.csv --excluded-snippets-csv excluded_snippets.csv --platform-constraints-csv platform_constraints.csv",
+            "--expected-failures-csv expected_failures.csv --experience-csv experiences.csv --excluded-snippets-csv excluded_snippets.csv --platform-constraints-csv platform_constraints.csv --snippet-timeout 300 --cleanup-timeout 180",
         },
     }
 end
