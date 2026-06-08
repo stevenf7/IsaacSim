@@ -256,8 +256,8 @@ def apply_sensor_overrides(robot_prim_path: str, recording_path: str, stage: "Us
                 if attr.IsValid():
                     attr.Set(value)
                     carb.log_info(f"[sensor_overrides] set {spec_path}.{attr_name} = {value}")
-        for child_name in spec.nameChildren:
-            _apply(spec_path.AppendChild(child_name))
+        for child_spec in spec.nameChildren:
+            _apply(child_spec.path)
 
     with Sdf.ChangeBlock():
         _apply(Sdf.Path(robot_prim_path))

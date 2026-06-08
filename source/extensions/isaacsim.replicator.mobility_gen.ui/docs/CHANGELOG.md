@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.6] - 2026-06-07
+### Changed
+- `_cache_stage` now copies the input scene (and the files it needs) into a temporary folder before loading, then opens the stage from that copy. This removes the flatten + strip-kit-prims path and the USDZ re-export; USDZ inputs are copied as-is so every package member (including SPG `.cu.lua` launchers) is preserved, and recording start is much faster for large NuRec scenes.
+- The recording panel now drives recordings through the shared `RecordingSession`, so the UI and headless scripts build and record scenes through the same path.
+
 ## [0.4.5] - 2026-06-04
 ### Removed
 - Stale `multiGpu` disable from `[[test]]` args; the Kit 110.1.1 multi-GPU startup crash no longer reproduces.

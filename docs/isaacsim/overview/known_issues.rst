@@ -448,3 +448,11 @@ Crash
         ./isaac-sim.sh --/renderer/multiGpu/enabled=false
 
     See :ref:`multi_gpu_ref` for other multi-GPU settings.
+
+#. On multi-GPU systems, building a :ref:`MobilityGen <isaac_sim_app_tutorial_replicator_mobility_gen>` scenario and then closing the stage (``File > New`` / ``Open`` / ``Exit``) can cause a fatal crash during teardown. As a workaround, pin CUDA work to the GPU that drives your display by setting ``CUDA_VISIBLE_DEVICES`` before launching:
+
+    .. code-block:: bash
+
+        CUDA_VISIBLE_DEVICES=<render_gpu_index> ./isaac-sim.sh
+
+    See :ref:`multi_gpu_ref` for other multi-GPU settings.

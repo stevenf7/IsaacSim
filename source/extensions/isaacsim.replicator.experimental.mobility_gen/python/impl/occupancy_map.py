@@ -16,7 +16,9 @@
 """Occupancy map representation and utilities for robot navigation."""
 
 import enum
+import io
 import os
+import posixpath
 
 import cv2
 import numpy as np
@@ -24,6 +26,31 @@ import PIL.Image
 import yaml
 
 from .types import Point2d
+
+
+def _load_ros_map_local(ros_yaml_path: str) -> tuple[dict, PIL.Image.Image]:
+    """Load the ROS yaml dict and map image from the local filesystem."""
+    with open(ros_yaml_path) as f:
+        yaml_data = yaml.safe_load(f)
+    image_path = os.path.join(os.path.dirname(ros_yaml_path), yaml_data["image"])
+    return yaml_data, PIL.Image.open(image_path).convert("L")
+
+
+def _load_ros_map_url(ros_yaml_path: str) -> tuple[dict, PIL.Image.Image]:
+    """Load the ROS yaml dict and map image from an Omniverse/HTTP URL via omni.client."""
+    import omni.client  # lazy: occupancy_map.py is also imported in non-Kit Python contexts
+
+    def _read(url: str) -> bytes:
+        result, _, content = omni.client.read_file(url)
+        if result != omni.client.Result.OK:
+            raise FileNotFoundError(f"Could not read '{url}' ({result})")
+        return bytes(memoryview(content))
+
+    yaml_data = yaml.safe_load(_read(ros_yaml_path).decode("utf-8"))
+    # posixpath (always "/") so the URL is correct on Windows too, where os.path.join would use "\\".
+    image_url = posixpath.join(posixpath.dirname(ros_yaml_path), yaml_data["image"])
+    return yaml_data, PIL.Image.open(io.BytesIO(_read(image_url))).convert("L")
+
 
 ROS_FREESPACE_THRESH_DEFAULT = 0.196
 ROS_OCCUPIED_THRESH_DEFAULT = 0.65
@@ -180,11 +207,10 @@ free_thresh: {free_thresh}
         Returns:
             OccupancyMap
         """
-        with open(ros_yaml_path) as f:
-            yaml_data = yaml.safe_load(f)
-        yaml_dir = os.path.dirname(ros_yaml_path)
-        image_path = os.path.join(yaml_dir, yaml_data["image"])
-        image = PIL.Image.open(image_path).convert("L")
+        if "://" in ros_yaml_path:
+            yaml_data, image = _load_ros_map_url(ros_yaml_path)
+        else:
+            yaml_data, image = _load_ros_map_local(ros_yaml_path)
         occupancy_map = OccupancyMap.from_ros_image(
             ros_image=image,
             resolution=yaml_data["resolution"],
