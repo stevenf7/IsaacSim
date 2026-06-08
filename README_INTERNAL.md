@@ -59,8 +59,52 @@ Current public release: **4.2.0-rc.18**
 
 * Python packages (**public**): [pypi.nvidia.com](https://pypi.nvidia.com)
   * See [Install Isaac Sim using PIP](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_python.html#installation-using-pip) for installation instructions.
-* Python packages (**internal**: beta, release candidates, etc.): [urm.nvidia.com/artifactory/sw-isaacsim-pypi-local](https://urm.nvidia.com/artifactory/sw-isaacsim-pypi-local)
-  * See the internal [README](https://urm.nvidia.com/artifactory/sw-isaacsim-pypi-local/README.html) for installation instructions.
+* Python packages (**internal**: beta, release candidates, etc.): [artifactory.pdx.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi-local/simple](https://artifactory.pdx.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi-local/simple)
+  * Use this as the internal anonymous `--extra-index-url` for installation.
+  * See [available internal Isaac Sim versions](https://artifactory.pdx.nvidia.com/artifactory/sw-isaacsim-pypi-local/isaacsim/).
+
+| Isaac Sim version | Python version |
+|---|---|
+| 4.X | `python3.10` |
+| 5.X | `python3.11` |
+| 6.X | `python3.12` |
+
+Linux:
+
+```bash
+# create and activate the virtual environment
+python3.12 -m venv env_isaacsim
+source env_isaacsim/bin/activate
+python -m pip install --upgrade pip
+
+# install packages
+# replace with a version from the available versions link above, for example 6.0.0.1
+export VERSION=<PACKAGE_VERSION>
+python -m pip install --timeout 120 --pre "isaacsim[all,extscache]==${VERSION}" --extra-index-url https://artifactory.pdx.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi-local/simple
+```
+
+Windows:
+
+> It is recommended to [enable long path support in Windows](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry#enable-long-paths-in-windows-10-version-1607-and-later) to avoid installation/execution failures.
+
+```bat
+:: create and activate the virtual environment
+python3.12 -m venv env_isaacsim
+env_isaacsim\Scripts\activate
+python -m pip install --upgrade pip
+
+:: install packages
+:: replace with a version from the available versions link above, for example 6.0.0.1
+set VERSION=<PACKAGE_VERSION>
+python -m pip install --timeout 120 --pre "isaacsim[all,extscache]==%VERSION%" --extra-index-url https://artifactory.pdx.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi-local/simple
+```
+
+The `extscache` wheels are large, so the examples set a longer pip read timeout. For non-interactive smoke tests, accept the EULA before importing or launching Isaac Sim:
+
+```bash
+export OMNI_KIT_ACCEPT_EULA=YES
+python -c "import isaacsim"
+```
 
 ## Native Python Sample Repository
 

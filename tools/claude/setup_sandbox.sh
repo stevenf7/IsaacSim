@@ -85,6 +85,7 @@ REQUIRED_NETWORK_HOSTS=(
   "bootstrap.packman.nvidia.com"
   "d4i3qtqj3r0z5.cloudfront.net"
   "urm.nvidia.com"
+  "artifactory.pdx.nvidia.com"
   "omnipackages.nvidia.com"
   "pdx.s8k.io"
 )
