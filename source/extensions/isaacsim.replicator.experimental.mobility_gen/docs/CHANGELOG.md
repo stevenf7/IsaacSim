@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.7] - 2026-06-07
+### Added
+- `collect_input()` (exported): caches a scene into a recording — `.usdz` byte-copied whole; `.usd`/`.usda`/`.usdc` collected via `omni.kit.usd.collect`.
+- `RecordingSession`: headless build-and-record control extracted from the UI, so recordings can be driven from a script.
+- Volume NuRec detection (`OmniNuRecFieldAsset` / `omni:nurec:isNuRecVolume`), in addition to particle scenes.
+- `replay_directory.py` options: `--warmup_frames`, `--max_frames`, `--skip_completed`, `--self_contained`.
+- `OccupancyMap.from_ros_yaml` loads occupancy maps from Omniverse/URL paths via `omni.client`.
+- Warn on NuRec replay when `render_rt_subframes` is below the recommended value.
+- Tests for NuRec detection, `RecordingSession`, scene collection, and replay completion-marker validation.
+
+### Changed
+- Scene caching copies the input scene and its dependencies instead of flattening the stage (much faster for large scenes).
+- Replay runs with multi-GPU rendering disabled.
+
 ## [0.2.6] - 2026-06-04
 ### Fixed
 - `MobilityGenCamera.update_state`: guard depth/segmentation/normals/instance-id against empty annotator buffers (as RGB already is), avoiding a "tile cannot extend outside image" crash on replay.

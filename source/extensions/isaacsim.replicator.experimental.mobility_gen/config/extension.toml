@@ -1,5 +1,5 @@
 [package]
-version = "0.2.6"
+version = "0.2.7"
 category = "Simulation"
 title = "MobilityGen"
 description = "A toolset for generating mobility data for robots."
@@ -22,6 +22,7 @@ writeTarget.platform = true
 "isaacsim.core.rendering_manager" = {}
 "isaacsim.core.simulation_manager" = {}
 "omni.kit.pip_archive" = {}
+"omni.kit.usd.collect" = {}
 "omni.kit.usdz_export" = {}
 "omni.replicator.core" = {}
 
@@ -41,6 +42,7 @@ args = [
 
 [[test]]
 dependencies = [
+    "isaacsim.replicator.mobility_gen.examples",
 ]
 args = [
     "--enable",

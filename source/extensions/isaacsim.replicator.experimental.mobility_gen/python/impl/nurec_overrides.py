@@ -15,12 +15,12 @@
 
 """NuRec stage detection and replay-flag overrides.
 
-NuRec (Neural Reconstruction) scenes are USD stages that embed
-3D-Gaussian-splat geometry as ``UsdVolParticleField`` prims. Only RGB is a
-meaningful modality on splats; semantic / depth / instance / normals
-annotators have no source data to read. This module:
+NuRec (Neural Reconstruction) scenes are USD stages that embed reconstructed
+geometry as Gaussian-splat particle fields or NuRec volumes. Only RGB is a
+meaningful modality on them; semantic / depth / instance / normals annotators
+have no source data to read. This module:
 
-1. Detects a NuRec stage by traversing for ``ParticleField`` prims.
+1. Detects a NuRec stage by traversing for particle-field or volume NuRec prims.
 2. When detected, forces the replay-flag namespace into the supported state
    (RGB only) and disables the gaussian-pass tonemap bypass so rendered RGB
    matches the viewport.
@@ -50,6 +50,11 @@ from pxr import Usd
 # 'ParticleField'``.
 _PARTICLE_FIELD_TYPE_PREFIX = "ParticleField"
 
+# Volume NuRec markers (a field-asset prim type, or a flagged attribute). They
+# live in a referenced layer, so they appear only on the composed stage.
+_VOLUME_FIELD_TYPE = "OmniNuRecFieldAsset"
+_VOLUME_NUREC_ATTR = "omni:nurec:isNuRecVolume"
+
 # argparse Namespace attributes forced to a fixed value for NuRec replay.
 # Only RGB is supported on splats.
 _NUREC_REPLAY_FLAG_STATE: dict[str, bool] = {
@@ -59,6 +64,11 @@ _NUREC_REPLAY_FLAG_STATE: dict[str, bool] = {
     "instance_id_segmentation_enabled": False,
     "normals_enabled": False,
 }
+
+# NuRec splats render noisy with few path-trace samples. Recommended (not forced)
+# per-frame subframe count for usable RGB; below this we warn. (Per-frame quality
+# only — not the temporal staleness fix.)
+_NUREC_RECOMMENDED_RT_SUBFRAMES = 36
 
 # Runtime-settable carb settings forced when NuRec is detected.
 #
@@ -73,17 +83,20 @@ _NUREC_CARB_SETTINGS: dict[str, bool] = {
 
 
 def is_nurec_stage(stage: Usd.Stage | None) -> bool:
-    """Return True if ``stage`` contains any ``UsdVolParticleField`` prims.
+    """Return True if ``stage`` is a NuRec scene.
 
-    NuRec assets embed Gaussian-splat geometry as ParticleField prims; any
-    other stage (synthetic warehouse, robot rig, empty stage) returns False.
-    Traversal short-circuits on the first hit.
+    Detects both NuRec geometry forms — Gaussian-splat particle fields and NuRec
+    volumes. Any other stage (synthetic warehouse, robot rig, empty stage)
+    returns False. Traversal short-circuits on the first hit.
     """
     if stage is None:
         return False
     for prim in stage.Traverse():
-        type_name = prim.GetTypeName()
-        if type_name and str(type_name).startswith(_PARTICLE_FIELD_TYPE_PREFIX):
+        type_name = str(prim.GetTypeName())
+        if type_name.startswith(_PARTICLE_FIELD_TYPE_PREFIX) or type_name == _VOLUME_FIELD_TYPE:
+            return True
+        attr = prim.GetAttribute(_VOLUME_NUREC_ATTR)
+        if attr.IsValid() and attr.Get():
             return True
     return False
 
@@ -92,9 +105,9 @@ def apply_nurec_replay_overrides(args: argparse.Namespace, stage: Usd.Stage | No
     """Force the replay-flag namespace into the NuRec-supported state.
 
     No-op when ``stage`` is not a NuRec stage. When it is, mutates ``args``
-    in place so only ``rgb_enabled`` is True, and forces the gaussian-pass
-    tonemap setting (``/rtx/rtpt/gaussian/skipTonemapping/enabled``) to
-    ``False``.
+    in place so only ``rgb_enabled`` is True, warns when ``render_rt_subframes``
+    is below the recommended value for splats, and forces the gaussian-pass
+    tonemap setting (``/rtx/rtpt/gaussian/skipTonemapping/enabled``) to ``False``.
 
     Args:
         args: ``argparse.Namespace`` carrying the replay rendering flag
@@ -108,12 +121,10 @@ def apply_nurec_replay_overrides(args: argparse.Namespace, stage: Usd.Stage | No
         applied; ``False`` otherwise.
     """
     if not is_nurec_stage(stage):
-        carb.log_info("[nurec-overrides] Stage has no ParticleField prims; leaving replay flags unchanged.")
+        carb.log_info("[nurec-overrides] Stage is not a NuRec scene; leaving replay flags unchanged.")
         return False
 
-    carb.log_warn(
-        "[nurec-overrides] NuRec stage detected (UsdVolParticleField prims present); forcing RGB-only replay flags."
-    )
+    carb.log_warn("[nurec-overrides] NuRec stage detected; forcing RGB-only replay flags.")
 
     for name, target in _NUREC_REPLAY_FLAG_STATE.items():
         if not hasattr(args, name):
@@ -125,6 +136,13 @@ def apply_nurec_replay_overrides(args: argparse.Namespace, stage: Usd.Stage | No
             continue
         setattr(args, name, target)
         carb.log_warn(f"[nurec-overrides]  * {name}: {current} -> {target}  (FLIPPED)")
+
+    rt_subframes = getattr(args, "render_rt_subframes", None)
+    if rt_subframes is not None and rt_subframes < _NUREC_RECOMMENDED_RT_SUBFRAMES:
+        carb.log_warn(
+            f"[nurec-overrides] render_rt_subframes={rt_subframes} is low for NuRec splats; "
+            f"recommend >= {_NUREC_RECOMMENDED_RT_SUBFRAMES} for usable RGB."
+        )
 
     settings = carb.settings.get_settings()
     for path, target in _NUREC_CARB_SETTINGS.items():

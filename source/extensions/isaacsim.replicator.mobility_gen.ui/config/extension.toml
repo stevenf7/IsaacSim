@@ -1,5 +1,5 @@
 [package]
-version = "0.4.5"
+version = "0.4.6"
 category = "Simulation"
 title = "MobilityGen UI"
 description = "User interface for recording data with MobilityGen"
