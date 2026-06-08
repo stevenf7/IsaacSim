@@ -1,4 +1,8 @@
 # Changelog
+## [1.6.3] - 2026-06-08
+### Fixed
+- Extension test `stdoutFailPatterns.exclude` now ignores benign "The NumPy module was reloaded" log output so successful runs are not marked as failures.
+
 ## [1.6.2] - 2026-05-11
 ### Added
 - Array Properties widget now supports editing `string[]` and `token[]` USD attributes alongside the existing scalar/vector numeric arrays.
