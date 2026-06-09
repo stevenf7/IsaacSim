@@ -2821,6 +2821,26 @@ test-linux-x86_64-isaac-lab-integration-nightly:
     - .test-linux-x86_64-isaac-lab-integration-base
 
 # ==============================================================================================================
+# `needs` entries so generate-*-dashboard waits for the current pipeline's
+# test jobs before fetch-gitlab --extra-pipeline-id runs.  optional: true so
+# a skipped matrix parent (e.g. kit MR downstream) does not block the job.
+.isaac-sim-dashboard-test-needs:
+  needs:
+    - job: test-linux-x86_64
+      optional: true
+    - job: test-linux-x86_64-blocking
+      optional: true
+    - job: test-windows-x86_64
+      optional: true
+    - job: test-windows-x86_64-blocking
+      optional: true
+
+.isaac-lab-dashboard-test-needs:
+  needs:
+    - job: test-linux-x86_64-isaac-lab-integration
+      optional: true
+
+# ==============================================================================================================
 # Dashboard generation, Slack notification, and AI failure analysis.
 generate-isaac-lab-dashboard:
     stage: report-results
@@ -2836,7 +2856,7 @@ generate-isaac-lab-dashboard:
     # instead of relying on the stage-level `dependencies:` model.
     needs:
       - job: get-isaac-lab-historical-data
-        artifacts: true
+      - !reference [.isaac-lab-dashboard-test-needs, needs]
     script:
       - export TZ="America/Los_Angeles"
       # Installing kaleido/chrome deps here so the heatmap PNG can be rendered
@@ -3079,7 +3099,7 @@ generate-isaac-sim-dashboard:
     # on generate-isaac-lab-dashboard.
     needs:
       - job: get-isaac-sim-historical-data
-        artifacts: true
+      - !reference [.isaac-sim-dashboard-test-needs, needs]
     script:
       - export TZ="America/Los_Angeles"
       # Installing kaleido/chrome deps here so the heatmap PNG can be rendered
