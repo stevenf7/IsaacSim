@@ -74,27 +74,69 @@ class SessionEvents:
         self._resumed: list[Callable[[], None]] = []
 
     def add_session_opened(self, cb: Callable[[], None]) -> Callable[[], None]:
-        """Add the session opened callback."""
+        """Add the session opened callback.
+
+        Args:
+            cb: Cb to use.
+
+        Returns:
+            add session opened result.
+        """
         return _subscribe(self._session_opened, cb)
 
     def add_session_closed(self, cb: Callable[[], None]) -> Callable[[], None]:
-        """Add the session closed callback."""
+        """Add the session closed callback.
+
+        Args:
+            cb: Cb to use.
+
+        Returns:
+            add session closed result.
+        """
         return _subscribe(self._session_closed, cb)
 
     def add_episode_started(self, cb: Callable[[int], None]) -> Callable[[], None]:
-        """Add the episode started callback."""
+        """Add the episode started callback.
+
+        Args:
+            cb: Cb to use.
+
+        Returns:
+            add episode started result.
+        """
         return _subscribe(self._episode_started, cb)
 
     def add_episode_ended(self, cb: Callable[[int, bool | None, int], None]) -> Callable[[], None]:
-        """Add the episode ended callback."""
+        """Add the episode ended callback.
+
+        Args:
+            cb: Cb to use.
+
+        Returns:
+            add episode ended result.
+        """
         return _subscribe(self._episode_ended, cb)
 
     def add_paused(self, cb: Callable[[], None]) -> Callable[[], None]:
-        """Add the paused callback."""
+        """Add the paused callback.
+
+        Args:
+            cb: Cb to use.
+
+        Returns:
+            add paused result.
+        """
         return _subscribe(self._paused, cb)
 
     def add_resumed(self, cb: Callable[[], None]) -> Callable[[], None]:
-        """Add the resumed callback."""
+        """Add the resumed callback.
+
+        Args:
+            cb: Cb to use.
+
+        Returns:
+            add resumed result.
+        """
         return _subscribe(self._resumed, cb)
 
     def _fire_session_opened(self) -> None:
@@ -271,7 +313,11 @@ class EpisodeRecorder:
 
     # ------------------------------------------------------------------ plugin mgmt
     def add(self, recordable: Recordable) -> None:
-        """Register a :class:`Recordable`. Must be called before :meth:`open_session`."""
+        """Register a :class:`Recordable`. Must be called before :meth:`open_session`.
+
+        Args:
+            recordable: Recordable to use.
+        """
         with self._lock:
             if self._state is not _State.IDLE:
                 raise RuntimeError(
@@ -285,7 +331,11 @@ class EpisodeRecorder:
             self._recordables.append(recordable)
 
     def recordables(self) -> list[Recordable]:
-        """Return a snapshot of registered recordables (defensive copy)."""
+        """Return a snapshot of registered recordables (defensive copy).
+
+        Returns:
+            recordables result.
+        """
         with self._lock:
             return list(self._recordables)
 
@@ -422,7 +472,14 @@ class EpisodeRecorder:
 
     # ------------------------------------------------------------------ episodes
     def start_episode(self, metadata: dict[str, Any] | None = None) -> int:
-        """Begin a new episode. If one is already active, it is auto-ended first."""
+        """Begin a new episode. If one is already active, it is auto-ended first.
+
+        Args:
+            metadata: Episode metadata to store.
+
+        Returns:
+            start episode result.
+        """
         with self._lock:
             if self._state is _State.IDLE or self._state is _State.CLOSED:
                 raise RuntimeError(f"start_episode() requires an open session; current state is '{self._state.value}'.")
@@ -448,7 +505,12 @@ class EpisodeRecorder:
             return episode_index
 
     def end_episode(self, *, success: bool | None = None, metadata: dict[str, Any] | None = None) -> None:
-        """End the active episode and trim datasets to their real length."""
+        """End the active episode and trim datasets to their real length.
+
+        Args:
+            success: Episode success flag to store.
+            metadata: Episode metadata to store.
+        """
         with self._lock:
             self._end_episode_locked(success=success, metadata=metadata)
 
@@ -500,7 +562,17 @@ class EpisodeRecorder:
         flatten: bool = True,
         include_sidecar: bool = True,
     ) -> str:
-        """Export the current USD stage as a scene-level snapshot next to the session."""
+        """Export the current USD stage as a scene-level snapshot next to the session.
+
+        Args:
+            output_dir: Output dir to use.
+            basename: Basename to use.
+            flatten: Flatten to use.
+            include_sidecar: Include sidecar to use.
+
+        Returns:
+            export stage snapshot result.
+        """
         target_dir = output_dir if output_dir is not None else self._output_dir
         return export_stage_snapshot(target_dir, basename=basename, flatten=flatten, include_sidecar=include_sidecar)
 

@@ -33,6 +33,9 @@ class EpisodeRecorderWindow(ui.Window):
     Owns a single :class:`EpisodeRecorderPanel` and subscribes to stage
     close / app quit events so the session is torn down cleanly when the
     user closes the stage or exits Kit.
+
+    Args:
+        title: Window title to show in the Kit UI.
     """
 
     def __init__(self, title: str) -> None:

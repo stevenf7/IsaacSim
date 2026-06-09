@@ -114,7 +114,11 @@ class Extension(omni.ext.IExt):
                 pass
 
     def _set_async_rendering(self, enabled: bool) -> None:
-        """Set both async rendering settings to the same state."""
+        """Set both async rendering settings to the same state.
+
+        Args:
+            enabled: Whether async rendering should be enabled.
+        """
         _settings = carb.settings.get_settings()
         _settings.set(ASYNC_RENDERING_SETTING, enabled)
         _settings.set(ASYNC_RENDERING_LOW_LATENCY_SETTING, enabled)
@@ -303,5 +307,9 @@ class Extension(omni.ext.IExt):
 
 
 def get_instance() -> Extension | None:
-    """Return the active throttling extension instance, if the extension is loaded."""
+    """Return the active throttling extension instance, if the extension is loaded.
+
+    Returns:
+        The active extension instance, or None if it is not loaded.
+    """
     return _extension_instance

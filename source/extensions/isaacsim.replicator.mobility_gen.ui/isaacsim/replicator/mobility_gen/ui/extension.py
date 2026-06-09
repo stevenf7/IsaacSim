@@ -85,7 +85,11 @@ class MobilityGenExtension(omni.ext.IExt):
     """
 
     def on_startup(self, _ext_id: str) -> None:
-        """Initialize the MobilityGen extension."""
+        """Initialize the MobilityGen extension.
+
+        Args:
+            _ext_id: Extension identifier provided by Kit.
+        """
         self._init_state()
         self._build_visualization_window()
         self._build_control_window()
@@ -238,7 +242,12 @@ class MobilityGenExtension(omni.ext.IExt):
         )
 
     def _on_stage_file_selected(self, filename: str, dirname: str) -> None:
-        """Set the stage field to the selected file path and close the picker."""
+        """Set the stage field to the selected file path and close the picker.
+
+        Args:
+            filename: Name of the selected stage file.
+            dirname: Directory containing the selected stage file.
+        """
         self.scene_usd_field_string_model.set_value(os.path.join(dirname, filename))
         self._stage_file_picker.hide()
 
@@ -262,7 +271,12 @@ class MobilityGenExtension(omni.ext.IExt):
         )
 
     def _on_omap_file_selected(self, filename: str, dirname: str) -> None:
-        """Set the occupancy map field to the selected file path and close the picker."""
+        """Set the occupancy map field to the selected file path and close the picker.
+
+        Args:
+            filename: Name of the selected occupancy map file.
+            dirname: Directory containing the selected occupancy map file.
+        """
         self.omap_field_string_model.set_value(os.path.join(dirname, filename))
         self._omap_file_picker.hide()
 
@@ -332,7 +346,11 @@ class MobilityGenExtension(omni.ext.IExt):
         self.recording_step_label.text = "Current recording duration: "
 
     def _set_scenario_controls_enabled(self, enabled: bool) -> None:
-        """Enable or disable the buttons that require an active scenario."""
+        """Enable or disable the buttons that require an active scenario.
+
+        Args:
+            enabled: Whether scenario controls should be enabled.
+        """
         self._reset_button.enabled = enabled
         self._start_recording_button.enabled = enabled
         self._stop_recording_button.enabled = False
@@ -383,7 +401,7 @@ class MobilityGenExtension(omni.ext.IExt):
 
         Args:
             step_size: The physics step size in simulation time units.
-            context: Optional simulation context passed by the simulation manager.
+            _context: Optional simulation context passed by the simulation manager.
         """
         if self.session.scenario is None:
             return
@@ -509,8 +527,13 @@ class MobilityGenExtension(omni.ext.IExt):
         """Copy the input scene into a temporary folder and open it from there.
 
         The scene and the files it needs are copied first (see
-        :func:`collect_input`), then the stage is opened from the copy. Returns
-        the path to the copied stage.
+        :func:`collect_input`), then the stage is opened from the copy.
+
+        Args:
+            scene_usd_str: Path to the input scene USD file.
+
+        Returns:
+            Path to the copied stage.
         """
         tmp_dir = tempfile.mkdtemp()
         try:

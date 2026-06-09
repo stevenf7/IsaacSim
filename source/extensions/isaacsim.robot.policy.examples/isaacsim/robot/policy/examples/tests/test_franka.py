@@ -157,7 +157,15 @@ class TestFrankaExampleExtension(omni.kit.test.AsyncTestCase):
         self.assertTrue(condition_met, f"Expected drawer to open past {min_drawer_opening}, got {max_drawer_opening}")
 
     async def simulate_until_condition(self, condition_func: object, max_frames: object = 180) -> bool:
-        """Simulate until condition is met or maximum frames reached."""
+        """Simulate until condition is met or maximum frames reached.
+
+        Args:
+            condition_func: Callable returning True when the target condition is met.
+            max_frames: Maximum number of app updates to simulate.
+
+        Returns:
+            True if the condition was met before the frame limit.
+        """
         frames_run = 0
         while frames_run < max_frames:
             await omni.kit.app.get_app().next_update_async()

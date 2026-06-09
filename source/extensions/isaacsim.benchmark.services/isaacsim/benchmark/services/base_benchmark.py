@@ -228,7 +228,16 @@ class _BaseIsaacBenchmarkCore:
         self._start_recorders(start_recording_frametime, start_recording_runtime, phase)
 
     def _start_recorders(self, start_recording_frametime: bool, start_recording_runtime: bool, phase: str) -> None:
-        """Activate and start the appropriate recorders for the current phase."""
+        """Activate and start the appropriate recorders for the current phase.
+
+        Args:
+            start_recording_frametime: Whether to start frametime recorders.
+            start_recording_runtime: Whether to start runtime recorders.
+            phase: Name of the phase to assign to started recorders.
+
+        Raises:
+            RuntimeError: If recorders are not initialized.
+        """
         recorders = self.recorders
         if recorders is None:
             raise RuntimeError("Recorders are not initialized")

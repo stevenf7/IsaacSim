@@ -19,7 +19,14 @@ from pxr import Gf, Usd, UsdGeom
 
 # utility for reading json data
 def read_json(json_file_path: Any) -> Any:
-    """Read visualization sample JSON such as warehouse, graph, order, or vehicle data."""
+    """Read visualization sample JSON such as warehouse, graph, order, or vehicle data.
+
+    Args:
+        json_file_path: Path to the JSON file to load.
+
+    Returns:
+        Parsed JSON content.
+    """
     with open(json_file_path) as json_file:
         json_data = json.load(json_file)
 
@@ -36,7 +43,17 @@ def translate_rotate_scale_prim(
     scale_set: Any = None,
     clear_orient: Any = False,
 ) -> None:
-    """Create or update translate, rotateXYZ, and scale xform ops on a USD prim."""
+    """Create or update translate, rotateXYZ, and scale xform ops on a USD prim.
+
+    Args:
+        stage: Stage containing the prim to transform.
+        prim: Prim to transform, if already resolved.
+        prim_path: Path to the prim to transform when ``prim`` is not supplied.
+        translate_set: Translation value to set, or ``None`` to leave unchanged.
+        rotate_set: XYZ rotation value to set, or ``None`` to leave unchanged.
+        scale_set: Scale value to set, or ``None`` to leave unchanged.
+        clear_orient: Whether to remove an existing orient xform op before setting transforms.
+    """
     if prim is not None:
         xform = UsdGeom.Xformable(prim)
         prim_path = prim.GetPrimPath()
@@ -84,7 +101,16 @@ def translate_rotate_scale_prim(
 
 # verify that prim base path exists and create it if not
 def check_build_base_path(stage: Any, semantic_path: Any, final_xform: Any = True) -> Any:
-    """Ensure each component of a target prim path exists before authoring generated content."""
+    """Ensure each component of a target prim path exists before authoring generated content.
+
+    Args:
+        stage: Stage where missing path components are defined.
+        semantic_path: Target prim path whose parent hierarchy should exist.
+        final_xform: Whether to define the final path component as an Xform.
+
+    Returns:
+        None.
+    """
     path_components = semantic_path.split("/")
     check_path = ""
 
@@ -105,7 +131,14 @@ def check_build_base_path(stage: Any, semantic_path: Any, final_xform: Any = Tru
 
 # helper utility for get translation value for a prim
 def get_prim_translation(prim: Any) -> Any:
-    """Return the world-space translation of a waypoint or semantic prim."""
+    """Return the world-space translation of a waypoint or semantic prim.
+
+    Args:
+        prim: Prim whose transform should be evaluated.
+
+    Returns:
+        Translation extracted from the prim's local-to-world transform.
+    """
     prim_tf = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
     transform = Gf.Transform()
     transform.SetMatrix(prim_tf)
@@ -115,7 +148,15 @@ def get_prim_translation(prim: Any) -> Any:
 
 # Check if given edge is within Volume. Return the overlap percentage
 def edge_in_volume(edge_prim: Any, vol_prim: Any) -> Any:
-    """Test whether a waypoint edge intersects a semantic volume and measure overlap."""
+    """Test whether a waypoint edge intersects a semantic volume and measure overlap.
+
+    Args:
+        edge_prim: Cylinder prim representing a waypoint graph edge.
+        vol_prim: Volume prim to test against the edge segment.
+
+    Returns:
+        Pair containing whether the edge overlaps the volume and the overlapped length fraction.
+    """
     bbox_cache = UsdGeom.BBoxCache(
         time=Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_], useExtentsHint=True
     )

@@ -62,7 +62,14 @@ class TestOps(omni.kit.test.AsyncTestCase):
         dtype: type | None = None,
         device: str | wp.Device | None = None,
     ) -> None:
-        """Check array."""
+        """Check array.
+
+        Args:
+            a: Warp array or arrays to check.
+            shape: Expected array shape.
+            dtype: Expected array dtype.
+            device: Expected Warp device.
+        """
         for i, x in enumerate(a if isinstance(a, (list, tuple)) else [a]):
             assert isinstance(x, wp.array), f"[{i}]: {repr(x)} ({type(x)}) is not a Warp array"
             if shape is not None:
@@ -79,7 +86,13 @@ class TestOps(omni.kit.test.AsyncTestCase):
         *,
         given: list | None = None,
     ) -> None:
-        """Check equal."""
+        """Check equal.
+
+        Args:
+            a: First array or array list.
+            b: Second array or array list.
+            given: Optional Hypothesis input values to include in assertion messages.
+        """
         msg = ""
         a = a if isinstance(a, (list, tuple)) else [a]
         b = b if isinstance(b, (list, tuple)) else [b]

@@ -133,7 +133,11 @@ class DOPEWriter(Writer):
         self.annotators.append(AnnotatorRegistry.get_annotator("dope", init_params={"semanticTypes": semantic_types}))
 
     def register_pose_annotator(config_data: dict) -> None:
-        """Exercise register pose annotator."""
+        """Register the DOPE pose annotator.
+
+        Args:
+            config_data: General writer configuration used to initialize annotator parameters.
+        """  # noqa: DOC102,DOC103,DOC106
         AnnotatorRegistry.register_annotator_from_node(
             name="DopeSync",
             input_rendervars=[
@@ -195,7 +199,10 @@ class DOPEWriter(Writer):
         Args:
             config_data: A dictionary containing the general configurations for the script.
             writer_config: A dictionary containing writer-specific configurations.
-        """
+
+        Returns:
+            Initialized DOPE writer instance.
+        """  # noqa: DOC102,DOC103
         writer = WriterRegistry.get("DOPEWriter")
         writer.initialize(
             output_dir=writer_config["output_folder"],
@@ -278,10 +285,10 @@ class DOPEWriter(Writer):
         """Check and flag frame as valid if training data is present in the frame.
 
         Args:
-            data (dict): The frame data to check.
+            data: The frame data to check.
 
         Returns:
-            bool: True if frame is valid, False otherwise.
+            True if frame is valid, False otherwise.
         """
         self._last_frame_is_valid = False
         if "dope" in data and "data" in data["dope"]:
@@ -296,6 +303,6 @@ class DOPEWriter(Writer):
         """Check if the last frame was valid (training data was present).
 
         Returns:
-            bool: True if the last frame was valid, False otherwise.
+            True if the last frame was valid, False otherwise.
         """
         return self._last_frame_is_valid

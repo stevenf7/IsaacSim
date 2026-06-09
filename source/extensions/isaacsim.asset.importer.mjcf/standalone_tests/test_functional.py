@@ -102,7 +102,11 @@ class TestMJCFImportPendulum(unittest.TestCase):
         shutil.rmtree(self._tmpdir, ignore_errors=True)
 
     def _import(self) -> Usd.Stage:
-        """Run the MJCF importer and return the resulting USD stage."""
+        """Run the MJCF importer and return the resulting USD stage.
+
+        Returns:
+            The USD stage opened from the generated import output.
+        """
         from isaacsim.asset.importer.mjcf import MJCFImporter
         from isaacsim.asset.importer.mjcf.impl.config import MJCFImporterConfig
 
@@ -198,7 +202,11 @@ class TestMJCFImportCartpole(unittest.TestCase):
         shutil.rmtree(self._tmpdir, ignore_errors=True)
 
     def _import(self) -> Usd.Stage:
-        """Run the MJCF importer and return the resulting USD stage."""
+        """Run the MJCF importer and return the resulting USD stage.
+
+        Returns:
+            The USD stage opened from the generated import output.
+        """
         from isaacsim.asset.importer.mjcf import MJCFImporter
         from isaacsim.asset.importer.mjcf.impl.config import MJCFImporterConfig
 

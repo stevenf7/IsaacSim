@@ -54,6 +54,12 @@ def normalize_pose_backend(backend: str | None) -> PoseBackend:
     warning so typos don't silently degrade a session). Non-USD backends
     with FSD off are also coerced to ``"usd"`` here; :func:`pose_backend_ctx`
     re-validates per tick so a mid-session FSD toggle is also handled.
+
+    Args:
+        backend: Pose backend selector to normalize.
+
+    Returns:
+        Normalized pose backend selector.
     """
     if backend is None:
         return _DEFAULT_BACKEND
@@ -79,6 +85,12 @@ def pose_backend_ctx(backend: PoseBackend) -> AbstractContextManager[None]:
     ``"fabric"`` delegate to ``use_backend`` and re-check FSD first;
     when FSD is off the backend silently demotes to ``"usd"`` with a
     one-shot warning so writes never crash on a missing fabric stage.
+
+    Args:
+        backend: Pose backend selector to normalize.
+
+    Returns:
+        Context manager for the selected pose backend.
     """
     if backend == "usd":
         return nullcontext()

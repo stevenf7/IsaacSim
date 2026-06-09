@@ -119,7 +119,6 @@ class OgnROS2CameraHelperInternalState(BaseWriterNode):
     """Internal state for the ROS2CameraHelper OmniGraph node."""
 
     def __init__(self) -> None:
-        """Initialize the ROS2 camera helper internal state."""
         self.rv = ""
         self.resetSimulationTimeOnStop = False
         self.publishStepSize = 1
@@ -139,7 +138,12 @@ class OgnROS2CameraHelperInternalState(BaseWriterNode):
         super().custom_reset()
 
     def post_attach(self, writer: Any, render_product: Any) -> None:
-        """Configure writer attributes after attaching to a render product."""
+        """Configure writer attributes after attaching to a render product.
+
+        Args:
+            writer: Writer attached to the render product.
+            render_product: Render product path or prim.
+        """
         try:
             if self.rv != "":
                 omni.syntheticdata.SyntheticData.Get().set_node_attributes(
@@ -157,7 +161,11 @@ class OgnROS2CameraHelper:
 
     @staticmethod
     def internal_state() -> OgnROS2CameraHelperInternalState:
-        """Return the internal state object for this node."""
+        """Return the internal state object for this node.
+
+        Returns:
+            Internal state object for this node.
+        """
         return OgnROS2CameraHelperInternalState()
 
     @staticmethod
@@ -227,7 +235,14 @@ class OgnROS2CameraHelper:
 
     @staticmethod
     def compute(db: Any) -> bool:
-        """Configure ROS 2 camera publishing for the requested render product and sensor type."""
+        """Configure ROS 2 camera publishing for the requested render product and sensor type.
+
+        Args:
+            db: OmniGraph database for the node.
+
+        Returns:
+            True if the node was configured or can retry later, otherwise False.
+        """
         state = db.per_instance_state
         if not db.inputs.enabled:
             if state.initialized:
@@ -340,7 +355,12 @@ class OgnROS2CameraHelper:
 
     @staticmethod
     def release_instance(node: Any, graph_instance_id: Any) -> None:
-        """Release resources for a graph instance."""
+        """Release resources for a graph instance.
+
+        Args:
+            node: OmniGraph node being released.
+            graph_instance_id: Graph instance identifier.
+        """
         try:
             state = OgnROS2CameraHelperInternalState.per_instance_internal_state(node)
         except Exception:

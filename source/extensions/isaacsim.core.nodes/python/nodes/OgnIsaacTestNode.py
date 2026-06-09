@@ -24,7 +24,14 @@ class OgnIsaacTestNode:
 
     @staticmethod
     def compute(db: Any) -> bool:
-        """Copy the input value to the output and report successful execution."""
+        """Copy the input value to the output and report successful execution.
+
+        Args:
+            db: OmniGraph database for this node.
+
+        Returns:
+            True after the value is copied.
+        """
         # copy input to output
         db.outputs.output = db.inputs.input
         return True

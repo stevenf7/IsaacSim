@@ -52,7 +52,11 @@ class _FakePluginImpl:
 
 
 class _FakePlugin:
-    """Fake ``carb._carb.PluginDesc`` shape for UI tests."""
+    """Fake ``carb._carb.PluginDesc`` shape for UI tests.
+
+    Args:
+        name: Name suffix used to populate fake descriptor fields.
+    """
 
     def __init__(self, name: str) -> None:
         self.libPath = "Lib Path " + name

@@ -103,7 +103,18 @@ class TestRos2Service(ROS2TestCase):
     def _create_service_graph(
         self, graph_path: Any, service_name: Any, package: Any, subfolder: Any, message: Any
     ) -> Any:
-        """Create a service client/server action graph and return (graph, server_req_node, client_node)."""
+        """Create a service client/server action graph.
+
+        Args:
+            graph_path: OmniGraph path to create.
+            service_name: ROS 2 service name.
+            package: Message package name.
+            subfolder: Message package subfolder.
+            message: Service message name.
+
+        Returns:
+            Created graph, server request node, and client node.
+        """
         test_graph, new_nodes, _, _ = og.Controller.edit(
             {"graph_path": graph_path, "evaluator_name": "execution"},
             {

@@ -35,6 +35,12 @@ class OgnSampleOnSphere:
         ``cos(theta)`` so the surface distribution is not biased toward the poles. A missing
         ``xformOp:translate`` is created before writing; empty prim inputs, non-Xformable prims, or a
         non-positive radius disable ``outputs:execOut`` and return ``False``.
+
+        Args:
+            db: OmniGraph database object containing node inputs and outputs.
+
+        Returns:
+            True when all target prims are sampled and updated, False otherwise.
         """
         prim_paths = db.inputs.prims
         if len(prim_paths) == 0:

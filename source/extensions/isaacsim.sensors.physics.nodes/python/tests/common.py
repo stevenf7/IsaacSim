@@ -38,7 +38,11 @@ SMALL_TOLERANCE = 0.01
 
 
 async def step_simulation(seconds: float) -> None:
-    """Advance Kit updates for the requested duration using the configured physics timestep."""
+    """Advance Kit updates for the requested duration using the configured physics timestep.
+
+    Args:
+        seconds: Duration to advance.
+    """
     dt = SimulationManager.get_physics_dt()
     steps = max(1, int(round(seconds / dt)))
     for _ in range(steps):
@@ -46,7 +50,12 @@ async def step_simulation(seconds: float) -> None:
 
 
 async def reset_timeline(timeline: Any = None, *, steps: int = 2) -> None:
-    """Stop and restart the timeline, then advance a few frames to refresh sensor outputs."""
+    """Stop and restart the timeline, then advance a few frames to refresh sensor outputs.
+
+    Args:
+        timeline: Timeline interface to reset.
+        steps: Number of updates to run after restarting.
+    """
     if timeline is None:
         timeline = omni.timeline.get_timeline_interface()
     timeline.stop()

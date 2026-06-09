@@ -24,7 +24,11 @@ _PROVIDER_SETTING = "/exts/isaacsim.core.experimental.prims/prim_data_reader_pro
 
 
 def _resolve_provider_name() -> str:
-    """Resolve the provider extension name using the same logic as the implementation."""
+    """Resolve the provider extension name using the same logic as the implementation.
+
+    Returns:
+        Provider name resolved from the extension manager, or None when it cannot be resolved.
+    """
     settings = carb.settings.get_settings()
     configured = settings.get(_PROVIDER_SETTING) if settings is not None else None
     if isinstance(configured, str) and configured.strip():

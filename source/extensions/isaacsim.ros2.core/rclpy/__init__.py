@@ -31,7 +31,11 @@ class Extension(omni.ext.IExt):
     """Extension to load and configure rclpy for ROS 2."""
 
     def on_startup(self, ext_id: Any) -> None:
-        """Initialize the extension."""
+        """Initialize the extension.
+
+        Args:
+            ext_id: Extension identifier provided by Kit.
+        """
         ros_distro = os.environ.get("ROS_DISTRO")
         if ros_distro is not None and os.path.join(f"{ros_distro}", "rclpy") in os.path.join(os.path.dirname(__file__)):
             omni.kit.app.get_app().print_and_log("Attempting to load system rclpy")

@@ -50,7 +50,13 @@ TargetLight = SphereLight
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
-    """Create a fresh stage and author existing sphere lights for wrap-mode tests."""
+    """Create a fresh stage and author existing sphere lights for wrap-mode tests.
+
+    Args:
+        max_num_prims: Maximum number of prims to prepare on the stage.
+        operation: Operation mode selected by parametrization.
+        **kwargs: Additional arguments supplied by parametrization.
+    """
     # create new stage
     await stage_utils.create_new_stage_async()
     # define prims
@@ -114,7 +120,14 @@ class TestLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_intensities(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test intensities."""
+        """Test intensities.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.float32):
@@ -125,7 +138,14 @@ class TestLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_exposures(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test exposures."""
+        """Test exposures.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.float32):
@@ -136,7 +156,14 @@ class TestLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_multipliers(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test multipliers."""
+        """Test multipliers.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for (v0, expected_v0), (v1, expected_v1) in zip(
@@ -150,7 +177,14 @@ class TestLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_enabled_normalizations(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test enabled normalizations."""
+        """Test enabled normalizations.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.bool):
@@ -161,7 +195,14 @@ class TestLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_enabled_color_temperatures(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test enabled color temperatures."""
+        """Test enabled color temperatures.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.bool):
@@ -172,7 +213,14 @@ class TestLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_color_temperatures(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test color temperatures."""
+        """Test color temperatures.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         prim.set_enabled_color_temperatures([True])  # enable use of color temperatures
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
@@ -184,7 +232,14 @@ class TestLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_colors(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test colors."""
+        """Test colors.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         choices = [
             (0.1, 0.2, 0.3),  # RGB tuple
             "#aBc",  # case-insensitive short hex RGB

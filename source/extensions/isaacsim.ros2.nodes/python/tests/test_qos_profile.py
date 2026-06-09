@@ -43,7 +43,15 @@ class TestROS2QoSProfile(ROS2TestCase):
         await super().tearDown()
 
     async def _create_qos_graph(self, graph_path: Any, set_values: Any = None) -> Any:
-        """Create a graph with a QoS Profile node and return (graph, qos_node)."""
+        """Create a graph with a QoS Profile node.
+
+        Args:
+            graph_path: OmniGraph path to create.
+            set_values: Optional node input values to set.
+
+        Returns:
+            Created graph and QoS node.
+        """
         edit_spec = {
             og.Controller.Keys.CREATE_NODES: [
                 ("QoSProfile", NODE_TYPE),
@@ -59,7 +67,15 @@ class TestROS2QoSProfile(ROS2TestCase):
         return graph, nodes[0]
 
     async def _evaluate_and_get_output(self, graph: Any, qos_node: Any) -> Any:
-        """Evaluate the graph and return the parsed QoS profile JSON from the node output."""
+        """Evaluate the graph and return the parsed QoS profile JSON from the node output.
+
+        Args:
+            graph: Graph to evaluate.
+            qos_node: QoS node to read.
+
+        Returns:
+            Parsed QoS profile output.
+        """
         await omni.kit.app.get_app().next_update_async()
         await og.Controller.evaluate(graph)
         await omni.kit.app.get_app().next_update_async()

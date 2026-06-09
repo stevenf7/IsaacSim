@@ -30,7 +30,14 @@ class TransportOrders:
 
     # Load Task info from json data
     def load_sample(self, orders_json: Any) -> Any:
-        """Load task sample JSON and expose graph-node fields expected by cuOpt."""
+        """Load task sample JSON and expose graph-node fields expected by cuOpt.
+
+        Args:
+            orders_json: Path to the task sample JSON file.
+
+        Returns:
+            This method updates the instance fields in place.
+        """
         with open(orders_json) as orders_file:
             orders_data = json.load(orders_file)
 

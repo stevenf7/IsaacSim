@@ -36,7 +36,11 @@ class FollowTargetExtension(omni.ext.IExt):
     """
 
     def on_startup(self, ext_id: str) -> None:
-        """Register the Follow Target example with the examples browser."""
+        """Register the Follow Target example with the examples browser.
+
+        Args:
+            ext_id: Extension identifier provided by Kit.
+        """
         self.example_name = "Follow Target (cuMotion)"
         self.category = "Manipulation"
 
@@ -71,6 +75,10 @@ class FollowTargetUI(BaseSampleUITemplate):
     """UI for the Follow Target example.
 
     Provides task control buttons (start/stop following, add/remove obstacles).
+
+    Args:
+        *args: Variable length argument list passed to the parent class.
+        **kwargs: Additional keyword arguments passed to the parent class.
     """
 
     def __init__(self, *args: object, **kwargs: object) -> None:

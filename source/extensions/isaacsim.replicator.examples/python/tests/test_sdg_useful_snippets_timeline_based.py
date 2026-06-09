@@ -76,7 +76,11 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         print(f"Output directory: {out_dir_rgb}")
 
         async def run_custom_fps_example_async(duration_seconds: Any) -> None:
-            """Enable the render product only at sensor ticks while reading depth annotator data."""
+            """Enable the render product only at sensor ticks while reading depth annotator data.
+
+            Args:
+                duration_seconds: Timeline duration to simulate.
+            """
             # Create a new stage
             await omni.usd.get_context().new_stage_async()
 

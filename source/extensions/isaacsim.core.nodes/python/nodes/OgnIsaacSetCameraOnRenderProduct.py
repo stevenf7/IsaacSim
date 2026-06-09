@@ -26,7 +26,14 @@ class OgnIsaacSetCameraOnRenderProduct:
 
     @staticmethod
     def compute(db: Any) -> bool:
-        """Set the render product camera and enable `execOut`, or fail when no camera prim is provided."""
+        """Set the render product camera and enable `execOut`, or fail when no camera prim is provided.
+
+        Args:
+            db: OmniGraph database for this node.
+
+        Returns:
+            True when the camera is assigned, False otherwise.
+        """
         if len(db.inputs.cameraPrim) == 0:
             db.log_error(f"Camera prim must be specified")
             return False

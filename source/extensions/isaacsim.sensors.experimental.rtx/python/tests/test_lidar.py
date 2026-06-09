@@ -146,7 +146,7 @@ class TestLidar(omni.kit.test.AsyncTestCase):
         self.assertFalse(lidar.prims[0].GetAttribute("omni:sensor:Core:accumulateOutputs").Get())
 
     async def test_create_existing_config_maintains_attributes(self) -> Any:
-        """Create a configured RTX lidar and verify its attributes match the referenced asset."""
+        """Create a configured RTX lidar and verify its attributes match the referenced asset."""  # noqa: DOC201
         stage_utils.add_reference_to_stage(
             usd_path=get_assets_root_path() + "/Isaac/Sensors/NVIDIA/Example_Rotary.usda", path="/World/reference"
         )

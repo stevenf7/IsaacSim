@@ -83,7 +83,11 @@ class OgnArticulationActuators:
 
     @staticmethod
     def internal_state() -> OgnArticulationActuatorsInternalState:
-        """Return a new per-instance node state."""
+        """Return a new per-instance node state.
+
+        Returns:
+            A fresh `OgnArticulationActuatorsInternalState` for one node instance.
+        """
         return OgnArticulationActuatorsInternalState()
 
     @staticmethod
@@ -108,7 +112,14 @@ class OgnArticulationActuators:
 
     @staticmethod
     def compute(db: Any) -> bool:
-        """Compute actuator commands from the current OmniGraph inputs."""
+        """Compute actuator commands from the current OmniGraph inputs.
+
+        Args:
+            db: OmniGraph database object for the current compute call.
+
+        Returns:
+            True if commands were processed successfully, otherwise False.
+        """
         state: OgnArticulationActuatorsInternalState = db.per_instance_state
         try:
             robot_path: str = db.inputs.robotPath

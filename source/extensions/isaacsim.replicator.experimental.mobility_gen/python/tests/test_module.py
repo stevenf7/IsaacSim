@@ -49,7 +49,6 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         class ModuleB(Module):
             def __init__(self) -> None:
-                """Build a nested module containing another module and a local buffer."""
                 super().__init__()
                 self.module_a = ModuleA()
                 self.buffer_b = Buffer(value=1)
@@ -69,7 +68,6 @@ class TestPathPlanner(omni.kit.test.AsyncTestCase):
 
         class ModuleB(Module):
             def __init__(self) -> None:
-                """Build a nested module containing another module and a local buffer."""
                 super().__init__()
                 self.module_a = ModuleA()
                 self.buffer_b = Buffer(value=1)

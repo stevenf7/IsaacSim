@@ -69,7 +69,14 @@ def cleanup() -> None:
 
 
 def _ensure_numpy(val: Any) -> Any:
-    """Convert a tensor (numpy, torch, or warp) to a numpy array."""
+    """Convert a tensor to a numpy array.
+
+    Args:
+        val: Value to convert.
+
+    Returns:
+        Numpy array view or copy of ``val``.
+    """
     if isinstance(val, np.ndarray):
         return val
     if hasattr(val, "detach"):
@@ -80,7 +87,16 @@ def _ensure_numpy(val: Any) -> Any:
 
 
 def _to_backend_tensor(val: Any, backend_utils: Any, device: Any) -> Any:
-    """Convert *val* to the tensor type expected by the legacy backend (torch or numpy)."""
+    """Convert a value to the tensor type expected by the legacy backend.
+
+    Args:
+        val: Value to convert.
+        backend_utils: Backend utility object used to create tensors.
+        device: Device where the tensor should be created.
+
+    Returns:
+        Backend tensor for ``val``, or None when ``val`` is None.
+    """
     if val is None:
         return None
     arr = _ensure_numpy(val)
@@ -88,7 +104,17 @@ def _to_backend_tensor(val: Any, backend_utils: Any, device: Any) -> Any:
 
 
 def _to_backend_indices(indices: Any, count: Any, backend_utils: Any, device: Any) -> Any:
-    """Return *indices* as a tensor compatible with the legacy backend's ``resolve_indices``."""
+    """Return indices as a tensor compatible with the legacy backend.
+
+    Args:
+        indices: Indices to convert.
+        count: Total element count for the legacy view.
+        backend_utils: Backend utility object used to create tensors.
+        device: Device where the tensor should be created.
+
+    Returns:
+        Backend index tensor, or None when ``indices`` is None.
+    """
     if indices is None:
         return None
     arr = np.asarray(indices).flatten().astype(np.int64)
@@ -96,7 +122,12 @@ def _to_backend_indices(indices: Any, count: Any, backend_utils: Any, device: An
 
 
 class _FrontendBridge:
-    """Adapt warp and numpy arguments to the tensor frontend used by a PhysX view."""
+    """Adapt warp and numpy arguments to the tensor frontend used by a PhysX view.
+
+    Args:
+        physics_view: PhysX view whose callable attributes should receive
+            frontend-compatible tensors.
+    """
 
     def __init__(self, physics_view: Any) -> None:
         self._pv = physics_view
@@ -144,7 +175,11 @@ class _FrontendBridge:
 
 
 class _LegacyRigidPrimAdapter:
-    """Expose a legacy rigid prim view through the experimental API expected by OGN nodes."""
+    """Expose a legacy rigid prim view through the experimental API expected by OGN nodes.
+
+    Args:
+        legacy_view: Legacy rigid prim view to adapt.
+    """
 
     def __init__(self, legacy_view: Any) -> None:
         self._legacy = legacy_view
@@ -184,7 +219,11 @@ class _LegacyRigidPrimAdapter:
 
 
 class _LegacyArticulationAdapter:
-    """Expose a legacy articulation view through the experimental API expected by OGN nodes."""
+    """Expose a legacy articulation view through the experimental API expected by OGN nodes.
+
+    Args:
+        legacy_view: Legacy articulation view to adapt.
+    """
 
     def __init__(self, legacy_view: Any) -> None:
         self._legacy = legacy_view
@@ -243,7 +282,15 @@ class _LegacyArticulationAdapter:
 
 
 def _bridge_deprecated_views(view_name: Any, view_type: Any) -> Any:
-    """Check the deprecated extension's registry and cross-register into the experimental one."""
+    """Check the deprecated extension's registry and cross-register into the experimental one.
+
+    Args:
+        view_name: Name of the legacy view to bridge.
+        view_type: Legacy view registry to inspect.
+
+    Returns:
+        Adapted legacy view, or None when no matching view is available.
+    """
     try:
         from isaacsim.replicator.domain_randomization import physics_view as dep
     except ImportError:
@@ -285,7 +332,14 @@ def _bridge_deprecated_views(view_name: Any, view_type: Any) -> Any:
 
 
 def resolve_rigid_prim_view(view_name: Any) -> Any:
-    """Look up a rigid prim view by name, falling back to the deprecated registry."""
+    """Look up a rigid prim view by name, falling back to the deprecated registry.
+
+    Args:
+        view_name: Name of the registered rigid prim view.
+
+    Returns:
+        Registered rigid prim view, bridged legacy view, or None if unavailable.
+    """
     cached = _rigid_prim_views.get(view_name)
     if isinstance(cached, _LegacyRigidPrimAdapter):
         try:
@@ -302,7 +356,14 @@ def resolve_rigid_prim_view(view_name: Any) -> Any:
 
 
 def resolve_articulation_view(view_name: Any) -> Any:
-    """Look up an articulation view by name, falling back to the deprecated registry."""
+    """Look up an articulation view by name, falling back to the deprecated registry.
+
+    Args:
+        view_name: Name of the registered articulation view.
+
+    Returns:
+        Registered articulation view, bridged legacy view, or None if unavailable.
+    """
     cached = _articulation_views.get(view_name)
     if isinstance(cached, _LegacyArticulationAdapter):
         try:
@@ -319,14 +380,23 @@ def resolve_articulation_view(view_name: Any) -> Any:
 
 
 def resolve_physics_sim_view() -> Any:
-    """Get the physics simulation view, bridging from the deprecated module if needed."""
+    """Get the physics simulation view, bridging from the deprecated module if needed.
+
+    Returns:
+        Registered physics simulation view, bridged legacy simulation view, or
+        None if unavailable.
+    """
     if _physics_sim_view is not None:
         return _physics_sim_view
     return _bridge_deprecated_simulation_context()
 
 
 def _bridge_deprecated_simulation_context() -> Any:
-    """Bridge the deprecated simulation context into the experimental module."""
+    """Bridge the deprecated simulation context into the experimental module.
+
+    Returns:
+        Bridged physics simulation view, or None if no deprecated context is available.
+    """
     global _physics_sim_view
 
     try:

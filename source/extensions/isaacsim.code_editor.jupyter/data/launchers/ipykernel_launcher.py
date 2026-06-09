@@ -91,7 +91,18 @@ class EmbeddedKernel(Kernel):
     async def do_execute(
         self, code: Any, silent: Any, store_history: Any = True, user_expressions: Any = None, allow_stdin: Any = False
     ) -> Any:
-        """Execute user code."""
+        """Execute user code.
+
+        Args:
+            code: Source code to execute in the Omniverse runtime.
+            silent: Whether to suppress stream output on the IOPub socket.
+            store_history: Whether the frontend requested execution history updates.
+            user_expressions: User expressions requested by the frontend.
+            allow_stdin: Whether stdin requests are allowed for this execution.
+
+        Returns:
+            Execute reply content for the Jupyter frontend.
+        """
         # https://jupyter-client.readthedocs.io/en/latest/messaging.html#execute
         execute_reply = {"status": "ok", "execution_count": self.execution_count, "payload": [], "user_expressions": {}}
         # no code
@@ -137,11 +148,26 @@ class EmbeddedKernel(Kernel):
         return execute_reply
 
     def do_debug_request(self, msg: Any) -> Any:
-        """Handle a debug request message."""
+        """Handle a debug request message.
+
+        Args:
+            msg: Debug request message content from the frontend.
+
+        Returns:
+            Empty debug reply content.
+        """
         return {}
 
     async def do_complete(self, code: Any, cursor_pos: Any) -> Any:
-        """Code completation."""
+        """Complete code at the requested cursor position.
+
+        Args:
+            code: Source code to complete.
+            cursor_pos: Cursor position within ``code``.
+
+        Returns:
+            Completion reply content for the Jupyter frontend.
+        """
         # https://jupyter-client.readthedocs.io/en/latest/messaging.html#msging-completion
         complete_reply = {"status": "ok", "matches": [], "cursor_start": 0, "cursor_end": cursor_pos, "metadata": {}}
 
@@ -169,7 +195,17 @@ class EmbeddedKernel(Kernel):
         return complete_reply
 
     async def do_inspect(self, code: Any, cursor_pos: Any, detail_level: Any = 0, omit_sections: Any = ()) -> Any:
-        """Object introspection."""
+        """Inspect the object at the requested cursor position.
+
+        Args:
+            code: Source code to inspect.
+            cursor_pos: Cursor position within ``code``.
+            detail_level: Requested inspection detail level.
+            omit_sections: Inspection sections to omit from the response.
+
+        Returns:
+            Inspection reply content for the Jupyter frontend.
+        """
         # https://jupyter-client.readthedocs.io/en/latest/messaging.html#msging-inspection
         inspect_reply = {"status": "ok", "found": False, "data": {}, "metadata": {}}
 

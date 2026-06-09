@@ -24,7 +24,14 @@ class OgnIsaacReadFilePath:
 
     @staticmethod
     def compute(db: Any) -> bool:
-        """Populate `fileContents` from the input path, returning False for empty or missing paths."""
+        """Populate `fileContents` from the input path, returning False for empty or missing paths.
+
+        Args:
+            db: OmniGraph database for this node.
+
+        Returns:
+            False when the input path is empty or missing.
+        """
         # Empty input:
         db.outputs.fileContents = ""
         if len(db.inputs.path) == 0:

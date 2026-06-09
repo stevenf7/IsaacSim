@@ -49,6 +49,7 @@ class TiledCameraSensor:
             Can include regular expressions for matching multiple prims.
         resolution: Resolution of each individual sensor (following OpenCV/NumPy convention: ``(height, width)``).
         annotators: Annotator/sensor types to configure.
+        render_vars: Render variables to pass to the render product.
 
     Raises:
         ValueError: If no prims are found matching the specified paths.

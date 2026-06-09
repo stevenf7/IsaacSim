@@ -24,7 +24,14 @@ class OgnIsaacReadEnvVar:
 
     @staticmethod
     def compute(db: Any) -> bool:
-        """Write the environment variable value, or an empty string when the input or variable is empty."""
+        """Write the environment variable value, or an empty string when the input or variable is empty.
+
+        Args:
+            db: OmniGraph database for this node.
+
+        Returns:
+            True after the output value is populated.
+        """
         # Empty input case:
         if len(db.inputs.envVar) == 0:
             db.outputs.value = ""

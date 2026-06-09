@@ -63,7 +63,14 @@ class TestJointNameResolver(ogts.OmniGraphTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     def _find_prim_path(self, prim_name: str) -> str:
-        """Find the full USD path for a prim by its short name under the robot root."""
+        """Find the full USD path for a prim by its short name under the robot root.
+
+        Args:
+            prim_name: Short prim name to resolve.
+
+        Returns:
+            Full prim path under the robot root.
+        """
         path = self._prim_name_to_path.get(prim_name)
         self.assertIsNotNone(
             path,
@@ -73,7 +80,12 @@ class TestJointNameResolver(ogts.OmniGraphTestCase):
         return path
 
     def _set_name_override(self, prim_name: Any, override_name: Any) -> None:
-        """Set the isaac:nameOverride attribute on a prim found by its short name."""
+        """Set the isaac:nameOverride attribute on a prim found by its short name.
+
+        Args:
+            prim_name: Short prim name to update.
+            override_name: Override name to author.
+        """
         prim_path = self._find_prim_path(prim_name)
         prim = self._stage.GetPrimAtPath(prim_path)
         self.assertTrue(prim.IsValid(), f"Prim at {prim_path} should be valid")
@@ -83,7 +95,14 @@ class TestJointNameResolver(ogts.OmniGraphTestCase):
         attr.Set(override_name)
 
     def _create_resolver_graph_with_robot_path(self, joint_names: Any) -> Any:
-        """Create an action graph with the JointNameResolver using robotPath input."""
+        """Create an action graph with the JointNameResolver using robotPath input.
+
+        Args:
+            joint_names: Joint names to feed into the resolver.
+
+        Returns:
+            Created graph and graph nodes.
+        """
         create_nodes = [
             ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
             ("JointNameArray", "omni.graph.nodes.ConstructArray"),
@@ -118,7 +137,14 @@ class TestJointNameResolver(ogts.OmniGraphTestCase):
         return test_graph, new_nodes
 
     def _create_resolver_graph_with_target_prim(self, joint_names: Any) -> Any:
-        """Create an action graph with the JointNameResolver using targetPrim input."""
+        """Create an action graph with the JointNameResolver using targetPrim input.
+
+        Args:
+            joint_names: Joint names to feed into the resolver.
+
+        Returns:
+            Created graph and graph nodes.
+        """
         create_nodes = [
             ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
             ("JointNameArray", "omni.graph.nodes.ConstructArray"),

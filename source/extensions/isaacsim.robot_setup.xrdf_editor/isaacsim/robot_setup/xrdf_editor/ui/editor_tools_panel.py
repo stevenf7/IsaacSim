@@ -42,7 +42,15 @@ if TYPE_CHECKING:
 
 
 class EditorToolsPanel:
-    """Builds the Editor Tools, Export To File, and Import From File frames."""
+    """Editor Tools, Export To File, and Import From File frames.
+
+    Args:
+        state: Shared editor state.
+        get_selected_link_name: Callback returning the selected link subpath.
+        get_selected_link_path: Callback returning the selected link path.
+        refresh_sphere_comboboxes: Callback refreshing sphere dropdowns.
+        rebuild_joint_properties: Callback rebuilding joint property widgets.
+    """
 
     def __init__(
         self,
@@ -334,7 +342,11 @@ class EditorToolsPanel:
             self._hide_link_btn.call_clicked_fn()
 
     def on_link_selected(self, link_name: str) -> None:
-        """Apply pending hide/show state to a freshly selected link."""
+        """Apply pending hide/show state to a freshly selected link.
+
+        Args:
+            link_name: Newly selected link subpath.
+        """
         if self._hiding_link != self._hiding_robot:
             self._hide_link(link_name)
             if self._prev_link is not None:

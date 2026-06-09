@@ -40,6 +40,13 @@ def compare_nested_structures_with_tolerance(
     The comparison handles nested containers, float tolerance, and quaternion
     sign ambiguity so golden pose rotations can match either equivalent
     quaternion orientation.
+
+    Args:
+        data1: First data structure to compare.
+        data2: Second data structure to compare.
+        path: Dot-separated location used in mismatch messages.
+        rtol: Relative tolerance passed to numpy comparisons.
+        atol: Absolute tolerance passed to numpy comparisons.
     """
     if isinstance(data1, (list, tuple)) and isinstance(data2, (list, tuple)):
         if len(data1) != len(data2):
@@ -119,7 +126,12 @@ class TestPoseWriter(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
     def _validate_and_compare_output(self, out_dir: Any, golden_dir: Any) -> None:
-        """Validate folder contents and compare images/JSON with golden data."""
+        """Validate folder contents and compare images/JSON with golden data.
+
+        Args:
+            out_dir: Directory containing generated PoseWriter output.
+            golden_dir: Directory containing expected PoseWriter output.
+        """
         test_dir_rp1 = os.path.join(out_dir, "rp1")
         test_dir_rp2 = os.path.join(out_dir, "rp2")
         golden_dir_rp1 = os.path.join(golden_dir, "rp1")

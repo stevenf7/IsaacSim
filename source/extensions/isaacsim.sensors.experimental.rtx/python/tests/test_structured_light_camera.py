@@ -51,6 +51,13 @@ def _make_placeholder_patterns(num: int, temp_dir: str) -> list[Path]:
 
     Some USD asset-resolver code paths probe for file existence at set time;
     writing a minimal valid PNG keeps those probes quiet during tests.
+
+    Args:
+        num: Number of placeholder patterns to create.
+        temp_dir: Directory where placeholder patterns are written.
+
+    Returns:
+        Paths to the placeholder pattern files.
     """
     import struct
     import zlib
@@ -120,7 +127,15 @@ class _StructuredLightCameraTestBase(omni.kit.test.AsyncTestCase):
         super().tearDown()
 
     def _make_camera(self, *args: Any, **kwargs: Any) -> StructuredLightCamera:
-        """Construct a StructuredLightCamera and register it for automatic cleanup."""
+        """Construct a StructuredLightCamera and register it for automatic cleanup.
+
+        Args:
+            *args: Positional arguments forwarded to StructuredLightCamera.
+            **kwargs: Keyword arguments forwarded to StructuredLightCamera.
+
+        Returns:
+            Constructed structured-light camera.
+        """
         instance = StructuredLightCamera(*args, **kwargs)
         self._cameras.append(instance)
         return instance

@@ -41,7 +41,13 @@ from isaacsim.core.experimental.prims.tests.common import (
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
-    """Create a fresh stage and author existing camera prims for wrap-mode tests."""
+    """Create a fresh stage and author existing camera prims for wrap-mode tests.
+
+    Args:
+        max_num_prims: Maximum number of prims to prepare on the stage.
+        operation: Operation mode selected by parametrization.
+        **kwargs: Additional arguments supplied by parametrization.
+    """
     # create new stage
     await stage_utils.create_new_stage_async()
     # define prims
@@ -65,12 +71,26 @@ class TestCamera(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
     async def test_len(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test len."""
+        """Test len.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         self.assertEqual(len(prim), num_prims, f"Invalid len ({num_prims} prims)")
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
     async def test_focal_lengths(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test focal lengths."""
+        """Test focal lengths.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.float32):
@@ -81,7 +101,14 @@ class TestCamera(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
     async def test_focus_distances(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test focus distances."""
+        """Test focus distances.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.float32):
@@ -92,7 +119,14 @@ class TestCamera(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
     async def test_stereo_roles(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test stereo roles."""
+        """Test stereo roles.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         choices = ["mono", "left", "right"]
         # test cases
         # - check the stereo roles before applying any role
@@ -115,7 +149,14 @@ class TestCamera(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
     async def test_fstops(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test fstops."""
+        """Test fstops.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.float32):
@@ -126,7 +167,14 @@ class TestCamera(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
     async def test_apertures(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test apertures."""
+        """Test apertures.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for (v0, expected_v0), (v1, expected_v1) in zip(
@@ -140,7 +188,14 @@ class TestCamera(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
     async def test_aperture_offsets(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test aperture offsets."""
+        """Test aperture offsets.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for (v0, expected_v0), (v1, expected_v1) in zip(
@@ -154,7 +209,14 @@ class TestCamera(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
     async def test_projections(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test projections."""
+        """Test projections.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         choices = ["perspective", "orthographic"]
         # test cases
         # - check the projections before applying any projection
@@ -177,7 +239,14 @@ class TestCamera(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
     async def test_clipping_ranges(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test clipping ranges."""
+        """Test clipping ranges.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for (v0, expected_v0), (v1, expected_v1) in zip(
@@ -191,7 +260,14 @@ class TestCamera(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
     async def test_shutter_times(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test shutter times."""
+        """Test shutter times.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for (v0, expected_v0), (v1, expected_v1) in zip(
@@ -205,7 +281,14 @@ class TestCamera(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
     async def test_enforce_square_pixels(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test enforce square pixels."""
+        """Test enforce square pixels.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             # set apertures

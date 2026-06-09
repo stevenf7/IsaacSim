@@ -43,7 +43,16 @@ _FISHEYE_COEFF_NAMES = ["k1", "k2", "k3", "k4"]
 def _apply_opencv_distortion(
     prim: Any, model: str, coefficients: list[float], coeff_names: list[str], image_size: tuple[int, int], **kwargs: Any
 ) -> None:
-    """Author OpenCV pinhole or fisheye distortion attributes on a USD camera prim."""
+    """Author OpenCV pinhole or fisheye distortion attributes on a USD camera prim.
+
+    Args:
+        prim: USD camera prim to author.
+        model: OpenCV distortion model token.
+        coefficients: Distortion coefficient values.
+        coeff_names: Attribute names corresponding to ``coefficients``.
+        image_size: Distortion image size as width and height.
+        **kwargs: Additional distortion attributes to author.
+    """
     schema = f"OmniLensDistortionOpenCv{'Pinhole' if model == 'opencvPinhole' else 'Fisheye'}API"
     prim.ApplyAPI(schema)
     prim.GetAttribute("omni:lensdistortion:model").Set(model)

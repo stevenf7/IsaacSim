@@ -99,7 +99,12 @@ def get_reset_inds() -> Any:
 
 
 def resolve_context() -> Any:
-    """Return the active context, falling back to the deprecated module's context."""
+    """Return the active context, falling back to the deprecated module's context.
+
+    Returns:
+        Active domain-randomization context, deprecated context, or None if no
+        context is available.
+    """
     if _context is not None:
         return _context
     try:

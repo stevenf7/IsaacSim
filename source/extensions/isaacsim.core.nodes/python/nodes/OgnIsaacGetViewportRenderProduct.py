@@ -35,7 +35,11 @@ class OgnIsaacGetViewportRenderProduct:
 
     @staticmethod
     def internal_state() -> OgnIsaacGetViewportRenderProductInternalState:
-        """Create the per-instance viewport cache."""
+        """Create the per-instance viewport cache.
+
+        Returns:
+            Per-instance viewport cache.
+        """
         return OgnIsaacGetViewportRenderProductInternalState()
 
     @staticmethod
@@ -44,6 +48,12 @@ class OgnIsaacGetViewportRenderProduct:
 
         The node reuses the cached viewport when available, returns False after warning when the
         viewport cannot be found, and enables `execOut` when the render product path is written.
+
+        Args:
+            db: OmniGraph database for this node.
+
+        Returns:
+            True when the render product path is written, False otherwise.
         """
         state = db.per_instance_state
         viewport_api = get_viewport_from_window_name(db.inputs.viewport)
@@ -61,7 +71,12 @@ class OgnIsaacGetViewportRenderProduct:
 
     @staticmethod
     def release_instance(node: Any, graph_instance_id: Any) -> None:
-        """Clear the cached viewport reference when the node instance is released."""
+        """Clear the cached viewport reference when the node instance is released.
+
+        Args:
+            node: OmniGraph node instance.
+            graph_instance_id: Graph instance identifier.
+        """
         try:
             state = OgnIsaacGetViewportRenderProductDatabase.per_instance_internal_state(node)
         except Exception:

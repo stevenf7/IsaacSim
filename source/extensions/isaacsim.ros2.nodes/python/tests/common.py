@@ -32,7 +32,13 @@ from pxr import Sdf, UsdPhysics
 
 
 async def simulate_async(seconds: Any, steps_per_sec: Any = 60, callback: Any = None) -> None:
-    """Run simulation for a given duration asynchronously."""
+    """Run simulation for a given duration asynchronously.
+
+    Args:
+        seconds: Duration to simulate.
+        steps_per_sec: Number of simulation steps per second.
+        callback: Optional callback to run after each update.
+    """
     for _ in range(int(seconds * steps_per_sec)):
         await omni.kit.app.get_app().next_update_async()
         if callback:
@@ -40,7 +46,12 @@ async def simulate_async(seconds: Any, steps_per_sec: Any = 60, callback: Any = 
 
 
 def set_translate(prim: Any, new_loc: Any) -> None:
-    """Set the translation of a USD prim."""
+    """Set the translation of a USD prim.
+
+    Args:
+        prim: USD prim to translate.
+        new_loc: New translation value.
+    """
     from pxr import Gf, UsdGeom
 
     properties = prim.GetPropertyNames()
@@ -63,7 +74,12 @@ def set_translate(prim: Any, new_loc: Any) -> None:
 
 
 def set_rotate(prim: Any, rot_mat: Any) -> None:
-    """Set the rotation of a USD prim."""
+    """Set the rotation of a USD prim.
+
+    Args:
+        prim: USD prim to rotate.
+        rot_mat: Rotation matrix to apply.
+    """
     from pxr import Gf, UsdGeom
 
     properties = prim.GetPropertyNames()
@@ -82,7 +98,16 @@ def set_rotate(prim: Any, rot_mat: Any) -> None:
 
 
 async def add_cube(path: Any, size: Any, offset: Any) -> Any:
-    """Add a physics-enabled cube to the stage."""
+    """Add a physics-enabled cube to the stage.
+
+    Args:
+        path: USD path for the cube.
+        size: Cube size value.
+        offset: Translation offset for the cube.
+
+    Returns:
+        Created cube geometry.
+    """
     from pxr import UsdGeom, UsdPhysics
 
     stage = omni.usd.get_context().get_stage()
@@ -112,7 +137,19 @@ def create_raycast_lidar_sensor(
 ) -> str:
     """Create a physics raycast sensor configured as a horizontal lidar.
 
-    Returns the full prim path of the created sensor.
+    Args:
+        path: Sensor prim path or child name.
+        parent: Parent prim path.
+        h_fov: Horizontal field of view.
+        h_resolution: Horizontal angular resolution.
+        v_fov: Vertical field of view.
+        v_count: Number of vertical scan lines.
+        min_range: Minimum raycast range.
+        max_range: Maximum raycast range.
+        translations: Sensor translation values.
+
+    Returns:
+        Full prim path of the created sensor.
     """
     if translations is None:
         translations = [[0.0, 0.0, 0.0]]
@@ -147,7 +184,15 @@ def create_raycast_lidar_sensor(
 
 
 async def add_carter(assets_root_path: Any, prim_path: Any = "/Carter") -> Any:
-    """Add a Carter robot to the stage."""
+    """Add a Carter robot to the stage.
+
+    Args:
+        assets_root_path: Isaac assets root path.
+        prim_path: Prim path for the Carter robot.
+
+    Returns:
+        Prim path for the Carter robot.
+    """
     from pxr import Gf, PhysicsSchemaTools
 
     stage_utils.add_reference_to_stage(
@@ -160,7 +205,15 @@ async def add_carter(assets_root_path: Any, prim_path: Any = "/Carter") -> Any:
 
 
 async def add_carter_ros(assets_root_path: Any, prim_path: Any = "/Carter") -> Any:
-    """Add a Carter robot with ROS 2 graphs to the stage."""
+    """Add a Carter robot with ROS 2 graphs to the stage.
+
+    Args:
+        assets_root_path: Isaac assets root path.
+        prim_path: Prim path for the Carter robot.
+
+    Returns:
+        Prim path for the Carter robot.
+    """
     from pxr import Gf, PhysicsSchemaTools
 
     stage_utils.add_reference_to_stage(assets_root_path + "/Isaac/Samples/ROS2/Robots/Carter_ROS.usd", prim_path)
@@ -190,7 +243,11 @@ async def add_carter_ros(assets_root_path: Any, prim_path: Any = "/Carter") -> A
 
 
 async def add_nova_carter_ros(assets_root_path: Any) -> None:
-    """Add a Nova Carter robot with ROS 2 graphs to the stage."""
+    """Add a Nova Carter robot with ROS 2 graphs to the stage.
+
+    Args:
+        assets_root_path: Isaac assets root path.
+    """
     result, error = await stage_utils.open_stage_async(
         assets_root_path + "/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd"
     )
@@ -198,14 +255,26 @@ async def add_nova_carter_ros(assets_root_path: Any) -> None:
 
 
 async def add_franka(assets_root_path: Any) -> None:
-    """Add a Franka robot to the stage."""
+    """Add a Franka robot to the stage.
+
+    Args:
+        assets_root_path: Isaac assets root path.
+    """
     result, error = await stage_utils.open_stage_async(
         assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
     )
 
 
 def get_qos_profile(depth: int = 1, history: str = "keep_last") -> Any:
-    """Create a ROS 2 QoS profile with the given parameters."""
+    """Create a ROS 2 QoS profile with the given parameters.
+
+    Args:
+        depth: QoS queue depth.
+        history: QoS history policy name.
+
+    Returns:
+        ROS 2 QoS profile.
+    """
     from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
 
     history_policy = QoSHistoryPolicy.SYSTEM_DEFAULT if history == "system_default" else QoSHistoryPolicy.KEEP_LAST
@@ -264,7 +333,19 @@ def fix_reversed_joints(joint_paths: Any) -> None:
 def set_joint_drive_parameters(
     joint_path: Any, joint_type: Any, drive_type: Any, target_value: Any, stiffness: Any = None, damping: Any = None
 ) -> Any:
-    """Set drive parameters for a joint on the stage."""
+    """Set drive parameters for a joint on the stage.
+
+    Args:
+        joint_path: USD path of the joint prim.
+        joint_type: Joint drive name.
+        drive_type: Drive target mode.
+        target_value: Target value to set.
+        stiffness: Optional drive stiffness.
+        damping: Optional drive damping.
+
+    Returns:
+        False if the drive does not exist, otherwise None.
+    """
     stage = omni.usd.get_context().get_stage()
     drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(joint_path), joint_type)
 
@@ -299,7 +380,19 @@ def set_joint_drive_parameters(
 def _create_cube_with_material(
     index: int, position: np.ndarray, scale: np.ndarray, color: np.ndarray, material_props: tuple, enable_material: bool
 ) -> dict:
-    """Create a cube with optional material."""
+    """Create a cube with optional material.
+
+    Args:
+        index: Cube index used to build the prim path.
+        position: Cube position.
+        scale: Cube scale.
+        color: Cube display color.
+        material_props: Nonvisual material properties.
+        enable_material: Whether to apply nonvisual material.
+
+    Returns:
+        Cube metadata keyed by prim path, or an empty dictionary.
+    """
     cube_path = f"/World/cube_{index}"
     cube = Cube(
         cube_path,
@@ -323,7 +416,14 @@ def _create_cube_with_material(
 
 
 def create_sarcophagus(enable_nonvisual_material: bool = True) -> Any:
-    """Create a nested cube structure for testing object detection."""
+    """Create a nested cube structure for testing object detection.
+
+    Args:
+        enable_nonvisual_material: Whether to apply nonvisual materials.
+
+    Returns:
+        Cube metadata for the generated structure.
+    """
     # Autogenerate sarcophagus
     dims = [(10, 5, 7), (15, 9, 11), (20, 13, 15), (25, 17, 19)]
     cube_configs = [

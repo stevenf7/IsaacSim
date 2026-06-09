@@ -76,15 +76,35 @@ class TestRos2DifferentialBase(ROS2TestCase):
         rclpy.spin_once(self.node, timeout_sec=0.1)
 
     def tf_callback(self, data: Any) -> None:
-        """Handle tf callback."""
+        """Handle tf callback.
+
+        Args:
+            data: Transform tree message.
+        """
         self._trans = data.transforms[-1]
 
     def odom_callback(self, data: Any) -> None:
-        """Handle odom callback."""
+        """Handle odom callback.
+
+        Args:
+            data: Odometry message.
+        """
         self._odom_data = data.pose.pose
 
     def move_cmd_msg(self, x: Any, y: Any, z: Any, ax: Any, ay: Any, az: Any) -> Any:
-        """Create a move cmd msg message."""
+        """Create a move cmd msg message.
+
+        Args:
+            x: Linear x command.
+            y: Linear y command.
+            z: Linear z command.
+            ax: Angular x command.
+            ay: Angular y command.
+            az: Angular z command.
+
+        Returns:
+            Twist command message.
+        """
         from geometry_msgs.msg import Twist
 
         msg = Twist()
@@ -518,7 +538,15 @@ class TestRos2DifferentialBase(ROS2TestCase):
                 _assert_close(odom_data.orientation.w, expected_odom[6])
 
     def add_differential_drive(self, graph_path: Any, robot_path: Any) -> Any:
-        """Add differential drive to the test scene."""
+        """Add differential drive to the test scene.
+
+        Args:
+            graph_path: OmniGraph path to create.
+            robot_path: Robot prim path to control.
+
+        Returns:
+            Created graph and nodes.
+        """
         try:
             keys = og.Controller.Keys
             graph, nodes, _, _ = og.Controller.edit(

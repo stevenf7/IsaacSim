@@ -34,7 +34,13 @@ from pxr import UsdShade
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
-    """Populate stage."""
+    """Populate stage.
+
+    Args:
+        max_num_prims: Maximum number of material prims to pre-author.
+        operation: Prim setup operation requested by the parametrized test.
+        **kwargs: Additional populate-stage keyword arguments from the parametrized test.
+    """
     # create new stage
     stage = await stage_utils.create_new_stage_async()
     # define prims
@@ -58,12 +64,26 @@ class TestSurfaceDeformableMaterial(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=SurfaceDeformableMaterial, populate_stage_func=populate_stage)
     async def test_len(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test len."""
+        """Test len.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         self.assertEqual(len(prim), num_prims, f"Invalid len ({num_prims} prims)")
 
     @parametrize(backends=["usd"], prim_class=SurfaceDeformableMaterial, populate_stage_func=populate_stage)
     async def test_properties_and_getters(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test properties and getters."""
+        """Test properties and getters.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         # test cases (properties)
         # - materials
         self.assertEqual(len(prim.materials), num_prims, f"Invalid materials len ({num_prims} prims)")
@@ -72,7 +92,14 @@ class TestSurfaceDeformableMaterial(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=SurfaceDeformableMaterial, populate_stage_func=populate_stage)
     async def test_material_type(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test material type."""
+        """Test material type.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         for p in prim.prims:
             self.assertTrue(
                 p.HasAPI("OmniPhysicsDeformableMaterialAPI"),
@@ -85,7 +112,14 @@ class TestSurfaceDeformableMaterial(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=SurfaceDeformableMaterial, populate_stage_func=populate_stage)
     async def test_friction_coefficients(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test friction coefficients."""
+        """Test friction coefficients.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for (v0, expected_v0), (v1, expected_v1) in zip(
@@ -99,7 +133,14 @@ class TestSurfaceDeformableMaterial(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=SurfaceDeformableMaterial, populate_stage_func=populate_stage)
     async def test_youngs_moduli(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test youngs moduli."""
+        """Test youngs moduli.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.float32):
@@ -110,7 +151,14 @@ class TestSurfaceDeformableMaterial(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=SurfaceDeformableMaterial, populate_stage_func=populate_stage)
     async def test_poissons_ratios(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test poissons ratios."""
+        """Test poissons ratios.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.float32):
@@ -121,7 +169,14 @@ class TestSurfaceDeformableMaterial(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=SurfaceDeformableMaterial, populate_stage_func=populate_stage)
     async def test_densities(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test densities."""
+        """Test densities.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.float32):
@@ -132,7 +187,14 @@ class TestSurfaceDeformableMaterial(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=SurfaceDeformableMaterial, populate_stage_func=populate_stage)
     async def test_surface_thicknesses(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test surface thicknesses."""
+        """Test surface thicknesses.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.float32):
@@ -143,7 +205,14 @@ class TestSurfaceDeformableMaterial(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=SurfaceDeformableMaterial, populate_stage_func=populate_stage)
     async def test_surface_stiffnesses(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test surface stiffnesses."""
+        """Test surface stiffnesses.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for (v0, expected_v0), (v1, expected_v1), (v2, expected_v2) in zip(

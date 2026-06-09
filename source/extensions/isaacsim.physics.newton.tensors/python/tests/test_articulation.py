@@ -570,7 +570,11 @@ class TestDofEffortsMovement(NewtonTensorTestBase):
     """Verify that applied joint efforts produce motion after stepping."""
 
     async def _setup_cartpole_no_drives(self) -> Any:
-        """Set up cartpoles with zero PD gains so only applied forces drive motion."""
+        """Set up cartpoles with zero PD gains so only applied forces drive motion.
+
+        Returns:
+            Tuple of simulation view, cartpole articulation view, and all cartpole indices.
+        """
         try:
             import newton
 

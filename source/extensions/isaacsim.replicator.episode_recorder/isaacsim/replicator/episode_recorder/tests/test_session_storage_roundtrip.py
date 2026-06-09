@@ -41,7 +41,12 @@ from isaacsim.replicator.episode_recorder import (
 
 
 class _DummyRec(Recordable):
-    """Minimal in-memory recordable for storage/registry tests."""
+    """Minimal in-memory recordable for storage/registry tests.
+
+    Args:
+        group: Recordable HDF5 group path.
+        dim: Channel dimension used by the test recordable.
+    """
 
     TYPE_ID = "_test_dummy_v2"
 

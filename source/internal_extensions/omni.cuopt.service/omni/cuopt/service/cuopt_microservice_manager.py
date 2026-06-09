@@ -16,14 +16,16 @@ import requests
 
 
 class cuOptRunner:
-    """Submit one optimization problem at a time to a cuOpt microservice URL."""
+    """Submit one optimization problem at a time to a cuOpt microservice URL.
+
+    Constructing a runner clears existing optimization data because the local
+    cuOpt microservice URL stores one active problem at a time.
+
+    Args:
+        cuopt_url: Base URL for the cuOpt microservice endpoint.
+    """
 
     def __init__(self, cuopt_url: str) -> None:
-        """Initialize a runner and clear any existing optimization data at the URL.
-
-        A cuOpt microservice URL stores one active problem at a time, so constructing
-        a runner deletes stale state before submitting a new request.
-        """
         self.cuopt_url = cuopt_url
         self.data_parameters = {"return_data_state": False}
 
@@ -31,7 +33,14 @@ class cuOptRunner:
         print(f"\n - OPTIMIZATION DATA AT {cuopt_url} HAS BEEN CLEARED - \n")
 
     def get_routes(self, cuopt_problem_data: Any) -> Any:
-        """Post a routing problem, poll until solved, and return the solver response."""
+        """Post a routing problem, poll until solved, and return the solver response.
+
+        Args:
+            cuopt_problem_data: Routing problem payload to submit to the cuOpt microservice.
+
+        Returns:
+            Solver response for the submitted routing problem.
+        """
         solver_response = requests.post(self.cuopt_url + "request", json=cuopt_problem_data).json()
         while "response" not in solver_response:
             reqId = solver_response["reqId"]

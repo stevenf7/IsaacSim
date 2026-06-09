@@ -90,7 +90,11 @@ class ArticulationRecordable(Recordable):
         return list(self._link_paths)
 
     def describe_channels(self) -> dict[str, ChannelDescriptor]:
-        """Describe the recorded channels."""
+        """Describe the recorded channels.
+
+        Returns:
+            Channel descriptors keyed by channel name.
+        """
         n = self.num_links
         return {
             "positions": ChannelDescriptor(shape=(n, 3), dtype="f4", units="meters", space="world"),
@@ -98,7 +102,11 @@ class ArticulationRecordable(Recordable):
         }
 
     def on_session_open(self, stage: Any) -> None:
-        """Open the recordable session."""
+        """Open the recordable session.
+
+        Args:
+            stage: USD stage to use.
+        """
         prim = stage.GetPrimAtPath(self.prim_path)
         if not prim.IsValid():
             raise RuntimeError(f"ArticulationRecordable: prim {self.prim_path} not found on stage.")
@@ -134,6 +142,12 @@ class ArticulationRecordable(Recordable):
         ancestor has at least one Xformable descendant outside the joint itself (i.e.
         the articulation's link subtree really does live there). This avoids promoting
         an unrelated scope like ``/World`` to a "link" for an orphan joint.
+
+        Args:
+            stage: USD stage to use.
+
+        Returns:
+            Discovered link prim paths.
         """
         from pxr import UsdGeom, UsdPhysics
 
@@ -196,6 +210,13 @@ class ArticulationRecordable(Recordable):
 
         Joint descendants and ``exclude_path`` are ignored. The result decides whether
         walking up to ``prim`` is justified.
+
+        Args:
+            prim: Prim to inspect.
+            exclude_path: Prim path to exclude from the descendant search.
+
+        Returns:
+            True if a matching xformable descendant exists, otherwise False.
         """
         from pxr import UsdGeom, UsdPhysics
 
@@ -231,13 +252,24 @@ class ArticulationRecordable(Recordable):
         When the no-op fallback is active (no Xformable links were found) this returns
         ``None`` so the recorder skips this recordable in the batch and uses
         :meth:`sample` (which returns zeros) instead.
+
+        Returns:
+            Prim paths for shared pose batching, or None when disabled.
         """
         if self._wrapper is None or not self._link_paths:
             return None
         return list(self._link_paths)
 
     def consume_pose_batch(self, positions: np.ndarray, orientations: np.ndarray) -> dict[str, np.ndarray]:
-        """Consume a batched pose sample."""
+        """Consume a batched pose sample.
+
+        Args:
+            positions: Batched positions for this recordable.
+            orientations: Batched orientations for this recordable.
+
+        Returns:
+            Sampled frame data keyed by channel name.
+        """
         n = self.num_links
         return {
             "positions": positions.reshape(n, 3),
@@ -245,7 +277,11 @@ class ArticulationRecordable(Recordable):
         }
 
     def sample(self) -> dict[str, np.ndarray]:
-        """Sample one frame of data."""
+        """Sample one frame of data.
+
+        Returns:
+            Sampled frame data keyed by channel name.
+        """
         if self._wrapper is None:
             return self._zeros_frame()
         try:
@@ -258,7 +294,12 @@ class ArticulationRecordable(Recordable):
         return {"positions": positions, "orientations": orientations}
 
     def apply(self, frame: Mapping[str, np.ndarray], *, policy: ReplayPolicy) -> None:
-        """Apply one recorded frame."""
+        """Apply one recorded frame.
+
+        Args:
+            frame: Frame data keyed by channel name.
+            policy: Replay policy controlling error handling.
+        """
         if self._wrapper is None:
             if policy.strictness == "strict":
                 raise RuntimeError(f"ArticulationRecordable {self.prim_path}: not bound.")
@@ -296,7 +337,11 @@ class ArticulationRecordable(Recordable):
                 )
 
     def to_manifest(self) -> dict[str, Any]:
-        """Serialize this object to a manifest entry."""
+        """Serialize this object to a manifest entry.
+
+        Returns:
+            JSON-friendly manifest entry.
+        """
         return {
             "type": self.TYPE_ID,
             "group": self.group,
@@ -307,7 +352,14 @@ class ArticulationRecordable(Recordable):
 
     @classmethod
     def from_manifest(cls, entry: Mapping[str, Any]) -> ArticulationRecordable:
-        """Create an instance from a manifest entry."""
+        """Create an instance from a manifest entry.
+
+        Args:
+            entry: Manifest entry used to reconstruct the recordable.
+
+        Returns:
+            Recordable reconstructed from the manifest entry.
+        """
         return cls(
             group=entry["group"],
             prim_path=entry["prim_path"],

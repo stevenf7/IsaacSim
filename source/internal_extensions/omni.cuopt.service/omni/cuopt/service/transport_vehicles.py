@@ -26,7 +26,14 @@ class TransportVehicles:
 
     # Load Fleet info from json data
     def load_sample(self, vehicles_json_path: Any) -> Any:
-        """Load vehicle sample JSON and expose graph-node fields expected by cuOpt."""
+        """Load vehicle sample JSON and expose graph-node fields expected by cuOpt.
+
+        Args:
+            vehicles_json_path: Path to the vehicle sample JSON file.
+
+        Returns:
+            This method updates the instance fields in place.
+        """
         vehicles_data = read_json(vehicles_json_path)
 
         self.num_vehicles = len(vehicles_data["vehicle_locations"])

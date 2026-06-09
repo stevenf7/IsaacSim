@@ -27,7 +27,11 @@ from pxr import UsdPhysics
 
 
 class _FakeXformWrapper:
-    """Stand-in for :class:`XformPrim` that records the calls made against it."""
+    """Stand-in for :class:`XformPrim` that records the calls made against it.
+
+    Args:
+        paths: Prim paths used by the fake wrapper.
+    """
 
     def __init__(self, paths: list[str]) -> None:
         self.paths = list(paths)

@@ -35,7 +35,11 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         self.original_dlss_exec_mode = carb.settings.get_settings().get("rtx/post/dlss/execMode")
 
     async def tearDown(self) -> Any:
-        """Close the stage, wait for pending loads, and restore the DLSS setting."""
+        """Close the stage, wait for pending loads, and restore the DLSS setting.
+
+        Returns:
+            None.
+        """
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
@@ -44,7 +48,11 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set("rtx/post/dlss/execMode", self.original_dlss_exec_mode)
 
     async def test_sdg_snippet_multi_camera(self) -> Any:
-        """Capture three camera views through both direct RGB annotators and a custom writer."""
+        """Capture three camera views through both direct RGB annotators and a custom writer.
+
+        Returns:
+            None.
+        """
         import os
 
         import carb.settings
@@ -468,7 +476,15 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             motion_blur_subsamples: int = 8,
             samples_per_pixel: int = 64,
         ) -> None:
-            """Capture motion blur frames with the given delta time step and render mode."""
+            """Capture motion blur frames with the given delta time step and render mode.
+
+            Args:
+                num_frames: Number of frames to capture.
+                delta_time: Optional frame delta time passed to the orchestrator.
+                use_path_tracing: Whether to use PathTracing instead of RealTimePathTracing.
+                motion_blur_subsamples: Number of path-traced motion blur subsamples.
+                samples_per_pixel: Number of path-traced samples per pixel.
+            """
             setup_stage()
             stage = omni.usd.get_context().get_stage()
             settings = carb.settings.get_settings()

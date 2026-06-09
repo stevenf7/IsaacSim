@@ -55,14 +55,22 @@ class TeleopHeadRecordable(Recordable):
         self._last_head: Any = None
 
     def describe_channels(self) -> dict[str, ChannelDescriptor]:
-        """Describe the recorded channels."""
+        """Describe the recorded channels.
+
+        Returns:
+            The requested value.
+        """
         return {
             "position": ChannelDescriptor(shape=(3,), dtype="f4"),
             "orientation": ChannelDescriptor(shape=(4,), dtype="f4", quaternion_order="wxyz"),
         }
 
     def on_session_open(self, stage: Any) -> None:
-        """Open the recordable session."""
+        """Open the recordable session.
+
+        Args:
+            stage: Value for stage.
+        """
         if self._tm is None or not hasattr(self._tm, "add_head_observer"):
             return
         self._tm.add_head_observer(self._on_head)
@@ -80,7 +88,11 @@ class TeleopHeadRecordable(Recordable):
         self._last_head = head
 
     def sample(self) -> dict[str, np.ndarray]:
-        """Sample one frame of data."""
+        """Sample one frame of data.
+
+        Returns:
+            The requested value.
+        """
         head = _extract_head(self._last_head)
         if head is None:
             return {
@@ -95,14 +107,30 @@ class TeleopHeadRecordable(Recordable):
         }
 
     def apply(self, frame: Mapping[str, Any], *, policy: ReplayPolicy) -> None:
-        """Apply one recorded frame."""
+        """Apply one recorded frame.
+
+        Args:
+            frame: Value for frame.
+            policy: Value for policy.
+        """
         return
 
     def to_manifest(self) -> dict[str, Any]:
-        """Serialize this object to a manifest entry."""
+        """Serialize this object to a manifest entry.
+
+        Returns:
+            The requested value.
+        """
         return {"type": self.TYPE_ID, "group": self.group}
 
     @classmethod
     def from_manifest(cls, entry: Mapping[str, Any]) -> TeleopHeadRecordable:
-        """Create an instance from a manifest entry."""
+        """Create an instance from a manifest entry.
+
+        Args:
+            entry: Value for entry.
+
+        Returns:
+            The requested value.
+        """
         return cls(group=entry.get("group", "teleop/head"), teleop_manager=None)

@@ -63,14 +63,22 @@ class TestRecordingSession(omni.kit.test.AsyncTestCase):
         shutil.rmtree(self._tmp_dir, ignore_errors=True)
 
     def _make_freespace_occupancy_map(self) -> OccupancyMap:
-        """Build a trivial 20 m x 20 m all-freespace occupancy map centered at the origin."""
+        """Build a trivial 20 m x 20 m all-freespace occupancy map centered at the origin.
+
+        Returns:
+            All-freespace occupancy map centered at the origin.
+        """
         height = width = 400
         freespace = np.ones((height, width), dtype=bool)
         occupied = np.zeros((height, width), dtype=bool)
         return OccupancyMap.from_masks(freespace, occupied, 0.05, (-10.0, -10.0, 0.0))
 
     def _make_cached_stage(self) -> str:
-        """Write a minimal stage file the recording's copy_stage can copy."""
+        """Write a minimal stage file the recording's copy_stage can copy.
+
+        Returns:
+            Path to the cached stage file.
+        """
         cache_dir = os.path.join(self._tmp_dir, "cache")
         os.makedirs(cache_dir, exist_ok=True)
         cached_stage_path = os.path.join(cache_dir, "stage.usd")

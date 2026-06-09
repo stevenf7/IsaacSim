@@ -500,6 +500,12 @@ class JointState:
         ``wp.from_numpy`` would otherwise issue. The returned array is read-only in
         practice — callers that mutate it would alias ``valid_idx`` — but the
         existing API treats these arrays as immutable views.
+
+        Args:
+            valid_idx: Numpy array of valid joint indices.
+
+        Returns:
+            A 1D CPU Warp array view of ``valid_idx`` with int32 elements.
         """
         # ``_init_from_data`` will run ``np.asarray(valid_idx, dtype=np.int32)``
         # internally, performing the int64->int32 conversion if needed (without
@@ -507,7 +513,16 @@ class JointState:
         return wp.array(valid_idx, dtype=wp.int32, copy=False, device="cpu")
 
     def __build_data_array(self, row: int, valid_idx: np.ndarray) -> wp.array | None:
-        """Wrap a numpy slice of the data array as a CPU wp.array without an H2D copy."""
+        """Wrap a numpy slice of the data array as a CPU wp.array without an H2D copy.
+
+        Args:
+            row: Row in ``self.__data_array`` to gather from.
+            valid_idx: Numpy array of valid joint indices to gather.
+
+        Returns:
+            A 1D CPU Warp array containing the selected data values, or None if
+            ``valid_idx`` is empty.
+        """
         if len(valid_idx) == 0:
             return None
         # ``self.__data_array`` is built CPU-resident in ``from_name`` / ``from_index``,
@@ -1150,6 +1165,12 @@ class SpatialState:
         directly via ``_init_from_ptr`` and skips the ``warp.copy`` call that
         ``wp.from_numpy`` would otherwise issue. The returned array is treated as
         immutable by the existing API.
+
+        Args:
+            valid_idx: Numpy array of valid frame indices.
+
+        Returns:
+            A 1D CPU Warp array view of ``valid_idx`` with int32 elements.
         """
         return wp.array(valid_idx, dtype=wp.int32, copy=False, device="cpu")
 
@@ -1160,6 +1181,14 @@ class SpatialState:
         ``.numpy()`` is a zero-copy view. Fancy-indexing produces a new contiguous
         numpy array; wrapping it with ``copy=False`` avoids the redundant
         ``wp.copy`` for the second hop.
+
+        Args:
+            data_array: Per-dimension data array to gather from.
+            valid_idx: Numpy array of valid frame indices to gather.
+
+        Returns:
+            A 2D CPU Warp array containing the selected rows of ``data_array``,
+            or None if ``valid_idx`` is empty.
         """
         if len(valid_idx) == 0:
             return None

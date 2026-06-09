@@ -43,7 +43,11 @@ class TestAcousticSensor(omni.kit.test.AsyncTestCase):
     # ------------------------------------------------------------------
 
     class _GmoAcousticTestWriter(Writer):
-        """Custom Writer that validates GenericModelOutput data each frame for acoustic."""
+        """Custom Writer that validates GenericModelOutput data each frame for acoustic.
+
+        Args:
+            test_instance: Test case instance used for assertions.
+        """
 
         def __init__(self, test_instance: Any = None) -> None:
             self.data_structure = "renderProduct"
@@ -136,7 +140,14 @@ class TestAcousticSensor(omni.kit.test.AsyncTestCase):
     # ------------------------------------------------------------------
 
     def _create_acoustic_sensor(self, aux_output_level: Any = "BASIC") -> Any:
-        """Create an Acoustic + AcousticSensor with a small sensor array."""
+        """Create an Acoustic + AcousticSensor with a small sensor array.
+
+        Args:
+            aux_output_level: Auxiliary output level for the acoustic sensor.
+
+        Returns:
+            Acoustic authoring object and sensor runtime.
+        """
         acoustic = Acoustic(
             "/World/acoustic",
             aux_output_level=aux_output_level,

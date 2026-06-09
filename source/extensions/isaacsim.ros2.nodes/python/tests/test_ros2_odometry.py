@@ -47,7 +47,11 @@ class TestRos2Odometry(ROS2TestCase):
         await super().tearDown()
 
     def get_cube_velocities(self) -> Any:
-        """Return a tuple (linear_velocity, angular_velocity) from the stored odometry message."""
+        """Return a tuple (linear_velocity, angular_velocity) from the stored odometry message.
+
+        Returns:
+            Linear and angular velocity values, or None values if unavailable.
+        """
         if self._cube_odometry_data is None:
             return None, None
         # Odometry.twist.twist contains the velocities.
@@ -56,7 +60,11 @@ class TestRos2Odometry(ROS2TestCase):
         return linear_velocity, angular_velocity
 
     def get_cube_pose(self) -> Any:
-        """Return a tuple (position, orientation) from the stored odometry message."""
+        """Return a tuple (position, orientation) from the stored odometry message.
+
+        Returns:
+            Position and orientation values, or None values if unavailable.
+        """
         if self._cube_odometry_data is None:
             return None, None
         # Odometry.pose.pose contains the position and orientation

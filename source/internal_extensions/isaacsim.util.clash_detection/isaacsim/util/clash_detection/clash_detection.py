@@ -62,16 +62,6 @@ class ClashDetector:
         clash_data_layer: bool = True,
         logging: bool = False,
     ) -> None:
-        """Initialize the clash detector.
-
-        Args:
-            stage: The USD stage to perform clash detection on.
-            searchset_path: Path to the searchset prim defining detection scope.
-            tolerance: Distance tolerance for overlap detection.
-            clash_data_layer: If True, write clash results to a USD data layer.
-            logging: If True, log info and performance results to console.
-
-        """
         self._stage = stage
         UsdUtils.StageCache.Get().Insert(self._stage)
         self._object_b_path = searchset_path

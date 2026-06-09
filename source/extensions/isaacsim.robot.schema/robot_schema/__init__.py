@@ -35,7 +35,11 @@ _SCHEMA_USDA_PATH = os.path.join(os.path.dirname(__file__), "RobotSchema.usda")
 
 @lru_cache(maxsize=None)
 def _get_schema_layer() -> Sdf.Layer | None:
-    """Open the RobotSchema.usda file as an Sdf layer (cached)."""
+    """Open the RobotSchema.usda file as an Sdf layer.
+
+    Returns:
+        Schema layer if it can be opened, None otherwise.
+    """
     return Sdf.Layer.FindOrOpen(_SCHEMA_USDA_PATH)
 
 

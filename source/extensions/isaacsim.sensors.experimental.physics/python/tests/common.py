@@ -40,7 +40,11 @@ SMALL_TOLERANCE = 0.01
 
 
 async def step_simulation(seconds: float) -> None:
-    """Step the simulation forward by the given number of seconds."""
+    """Step the simulation forward by the given number of seconds.
+
+    Args:
+        seconds: Duration to step the simulation, in seconds.
+    """
     dt = SimulationManager.get_physics_dt()
     steps = max(1, int(round(seconds / dt)))
     for _ in range(steps):
@@ -48,7 +52,12 @@ async def step_simulation(seconds: float) -> None:
 
 
 async def reset_timeline(timeline: Any = None, *, steps: int = 2) -> None:
-    """Stop and restart the timeline."""
+    """Stop and restart the timeline.
+
+    Args:
+        timeline: Timeline interface to reset. Uses the current timeline when ``None``.
+        steps: Number of app updates to wait after restarting.
+    """
     if timeline is None:
         timeline = omni.timeline.get_timeline_interface()
     timeline.stop()

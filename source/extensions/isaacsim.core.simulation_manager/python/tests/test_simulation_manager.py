@@ -208,7 +208,12 @@ class TestSimulationManagerPhysicsSceneSettings(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     def _physics_step_callback(self, step_dt: Any, context: Any) -> None:
-        """Callback to capture physics step dt values."""
+        """Callback to capture physics step dt values.
+
+        Args:
+            step_dt: Physics step delta time.
+            context: Physics callback context.
+        """
         self._received_dt_values.append(step_dt)
 
     async def test_physics_scene_settings_no_scene(self) -> None:
@@ -1035,7 +1040,11 @@ class TestSimulationManagerMultiTickRendering(omni.kit.test.AsyncTestCase):
         stage_id = usd_context.get_stage_id()
 
         def _read_fabric_sim_time() -> float | None:
-            """Read the omni:time attribute from /ExternalSimulationTime in Fabric."""
+            """Read the omni:time attribute from /ExternalSimulationTime in Fabric.
+
+            Returns:
+                The Fabric simulation time, or None if the attribute cannot be read.
+            """
             try:
                 import usdrt
 

@@ -225,7 +225,11 @@ class TestRaycastSensor(omni.kit.test.AsyncTestCase):
 
 
 async def _create_basic_scene() -> Any:
-    """Create a minimal scene with physics and collision geometry."""
+    """Create a minimal scene with physics and collision geometry.
+
+    Returns:
+        The current USD stage containing the authored test scene.
+    """
     stage = omni.usd.get_context().get_stage()
     UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
     UsdGeom.SetStageMetersPerUnit(stage, 1.0)

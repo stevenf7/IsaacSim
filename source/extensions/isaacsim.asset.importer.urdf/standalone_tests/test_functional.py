@@ -129,6 +129,9 @@ class TestURDFImportFunctional(unittest.TestCase):
         since the full pipeline depends on additional transformer infrastructure
         that may produce a different output layout. The intermediate stage still
         contains all USD prims, joints, and physics schemas.
+
+        Returns:
+            The USD stage opened from the generated import output.
         """
         from isaacsim.asset.importer.urdf import URDFImporter
         from isaacsim.asset.importer.urdf.impl.config import URDFImporterConfig

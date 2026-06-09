@@ -40,7 +40,11 @@ class TestRos2Subscriber(ROS2TestCase):
 
     # ----------------------------------------------------------------------
     async def test_subscriber(self) -> Any:
-        """Test subscriber."""
+        """Test subscriber.
+
+        Returns:
+            None.
+        """
         import math
 
         import builtin_interfaces.msg

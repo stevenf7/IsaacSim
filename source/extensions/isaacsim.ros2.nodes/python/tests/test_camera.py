@@ -61,6 +61,12 @@ def _camera_orientation_at_angle_deg(angle_deg: float) -> Any:
 
     Camera local -Z is the view direction. Extrinsic ZYX Euler: Rz(angle-90) * Ry(0) * Rx(90)
     maps camera -Z to (cos(angle), sin(angle), 0) and camera +Y to world +Z.
+
+    Args:
+        angle_deg: Camera view angle in the XY plane.
+
+    Returns:
+        Camera orientation quaternion.
     """
     quat = transform_utils.euler_angles_to_quaternion([90.0, 0.0, angle_deg - 90.0], degrees=True, extrinsic=True)
     return quat.numpy().tolist()
@@ -70,6 +76,12 @@ def _view_angle_deg_from_quat_wxyz(quat_wxyz: Any) -> Any:
     """Angle in XY plane (degrees [0, 360)) that the camera is looking, from quat (w,x,y,z).
 
     Inverse of _camera_orientation_at_angle_deg: extract the extrinsic yaw and undo the -90° offset.
+
+    Args:
+        quat_wxyz: Camera orientation quaternion.
+
+    Returns:
+        Camera view angle in the XY plane.
     """
     euler = transform_utils.quaternion_to_euler_angles(quat_wxyz, degrees=True, extrinsic=True)
     yaw = float(euler.numpy()[2])  # output order is [roll, pitch, yaw] = [X, Y, Z]
@@ -77,7 +89,15 @@ def _view_angle_deg_from_quat_wxyz(quat_wxyz: Any) -> Any:
 
 
 def _create_rgb_camera_graph(graph_path: Any, camera_path: Any, topic_name: Any, width: Any, height: Any) -> None:
-    """Create an OmniGraph that publishes RGB images from a camera via ROS2."""
+    """Create an OmniGraph that publishes RGB images from a camera via ROS2.
+
+    Args:
+        graph_path: OmniGraph path to create.
+        camera_path: Camera prim path to render.
+        topic_name: ROS 2 topic name.
+        width: Render product width.
+        height: Render product height.
+    """
     og.Controller.edit(
         {"graph_path": graph_path, "evaluator_name": "execution"},
         {
@@ -387,7 +407,11 @@ class TestRos2Camera(ROS2TestCase):
         self.assertTrue(results["passed"], f"Image comparison failed: {results}")
 
     async def test_rgb_h264_compressed_golden_image_comparison(self) -> Any:
-        """Subscribe to compressed RGB H.264, decode it, and compare against the golden image."""
+        """Subscribe to compressed RGB H.264, decode it, and compare against the golden image.
+
+        Returns:
+            None.
+        """
         try:
             import PyNvVideoCodec as nvc
         except ImportError:
@@ -972,6 +996,9 @@ class TestRos2Camera(ROS2TestCase):
         in front of them and teleported 0.5 m laterally each frame for 30 frames.
         Images from both cameras are collected via ROS2, matched by their
         simulation-time timestamps, and compared to verify identical output.
+
+        Returns:
+            None.
         """
         save_debug_images = False
         num_frames = 10

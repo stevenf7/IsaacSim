@@ -41,7 +41,13 @@ from isaacsim.core.experimental.prims.tests.common import (
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
-    """Create a fresh stage and author existing rect lights for wrap-mode tests."""
+    """Create a fresh stage and author existing rect lights for wrap-mode tests.
+
+    Args:
+        max_num_prims: Maximum number of prims to prepare on the stage.
+        operation: Operation mode selected by parametrization.
+        **kwargs: Additional arguments supplied by parametrization.
+    """
     # create new stage
     await stage_utils.create_new_stage_async()
     # define prims
@@ -71,12 +77,26 @@ class TestRectLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_len(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test len."""
+        """Test len.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         self.assertEqual(len(prim), num_prims, f"Invalid len ({num_prims} prims)")
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_are_of_type(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test are of type."""
+        """Test are of type.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         self.assertFalse(TargetLight.are_of_type("/World").numpy().item())
         self.assertTrue(TargetLight.are_of_type("/World/A_0").numpy().item())
         self.assertTrue(TargetLight.are_of_type(["/World/A_0"]).numpy().item())
@@ -85,7 +105,14 @@ class TestRectLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_widths(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test widths."""
+        """Test widths.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.float32):
@@ -96,7 +123,14 @@ class TestRectLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_heights(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test heights."""
+        """Test heights.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.float32):
@@ -107,7 +141,14 @@ class TestRectLight(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=TargetLight, populate_stage_func=populate_stage)
     async def test_texture_files(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test texture files."""
+        """Test texture files.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_choice(shape=(expected_count,), choices=["a", "bc", "def"]):

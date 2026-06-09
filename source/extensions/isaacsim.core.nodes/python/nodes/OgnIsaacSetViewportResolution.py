@@ -27,7 +27,14 @@ class OgnIsaacSetViewportResolution:
 
     @staticmethod
     def compute(db: Any) -> bool:
-        """Apply the requested width and height when a viewport resolves, then enable `execOut`."""
+        """Apply the requested width and height when a viewport resolves, then enable `execOut`.
+
+        Args:
+            db: OmniGraph database for this node.
+
+        Returns:
+            True after the node executes.
+        """
         viewport_name = db.inputs.viewport
         if viewport_name:
             viewport_api = get_viewport_from_window_name(viewport_name)

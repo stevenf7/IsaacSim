@@ -20,7 +20,17 @@ from .common import read_json, translate_rotate_scale_prim
 def generate_building_structure(
     stage: Any, building_prim_path: Any, building_json_path: Any, building_asset_path: Any
 ) -> Any:
-    """Reference building segments in sequence and author their configured DiskLights."""
+    """Reference building segments in sequence and author their configured DiskLights.
+
+    Args:
+        stage: Stage where building segment and light prims are authored.
+        building_prim_path: Parent path for generated building segment prims.
+        building_json_path: Path to the building configuration JSON file.
+        building_asset_path: Base asset path used with each building segment asset extension.
+
+    Returns:
+        Building semantic metadata collected while generating the structure.
+    """
     building_data = read_json(building_json_path)
 
     building_semantics = {}

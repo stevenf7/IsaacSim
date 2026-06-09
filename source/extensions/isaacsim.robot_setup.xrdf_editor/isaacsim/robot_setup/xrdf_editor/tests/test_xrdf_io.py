@@ -87,6 +87,12 @@ def _articulation_base_path(stage: object) -> str | None:
     returned path matches what :class:`EditorState` expects (the maximal
     subtree containing the robot, e.g. ``/ur10e``), not the path of the
     ArticulationRootAPI-bearing prim (which on UR10e is ``/ur10e/root_joint``).
+
+    Args:
+        stage: Stage to inspect.
+
+    Returns:
+        First articulation base path, or None if none exists.
     """
     paths = articulation_discovery.find_all_articulation_base_paths(stage)
     return paths[0] if paths else None
@@ -104,6 +110,9 @@ def _disable_instanceable(stage: object) -> None:
     A single pass isn't enough because hiding the children of an instanceable
     prim only becomes visible after the parent is flipped, so we loop until
     no more instanceable prims remain.
+
+    Args:
+        stage: Stage to update.
     """
     while True:
         changed = False
@@ -337,7 +346,15 @@ class TestXrdfIoPure(omni.kit.test.AsyncTestCase):
     # ------------------------------------------------------------------
     @staticmethod
     def _full_xrdf_payload(format_version: float, *, collision_key: str) -> dict:
-        """Build a complete XRDF dict with collision + geometry + self_collision."""
+        """Build a complete XRDF dict with collision, geometry, and self-collision.
+
+        Args:
+            format_version: XRDF format version to encode.
+            collision_key: Top-level collision key to include.
+
+        Returns:
+            Complete XRDF payload.
+        """
         return {
             "format": XRDF_FORMAT,
             "format_version": float(format_version),
@@ -366,7 +383,12 @@ class TestXrdfIoPure(omni.kit.test.AsyncTestCase):
         }
 
     def _assert_full_xrdf_round_trip(self, format_version: float, collision_key: str) -> None:
-        """Shared assertions for the v1 / v2 read-from-disk round-trip tests."""
+        """Run shared assertions for the v1 and v2 read-from-disk round-trip tests.
+
+        Args:
+            format_version: XRDF format version to test.
+            collision_key: Top-level collision key expected for the version.
+        """
         dof_names = ["j0", "j1", "j2"]
         payload = self._full_xrdf_payload(format_version, collision_key=collision_key)
 

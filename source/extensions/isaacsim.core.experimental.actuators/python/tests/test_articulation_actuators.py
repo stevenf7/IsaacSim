@@ -638,7 +638,15 @@ class TestArticulationActuators(omni.kit.test.AsyncTestCase):
     # ------------------------------------------------------------------
 
     def _make_pd_config(self, kp: float = 100.0, kd: float = 10.0) -> ActuatorConfig:
-        """Build an `ActuatorConfig` with a `ControllerPD`."""
+        """Build an `ActuatorConfig` with a `ControllerPD`.
+
+        Args:
+            kp: Proportional gain for the PD controller.
+            kd: Derivative gain for the PD controller.
+
+        Returns:
+            An `ActuatorConfig` containing a one-DOF `ControllerPD`.
+        """
         import warp as wp
         from newton.actuators import ControllerPD
 
@@ -668,7 +676,16 @@ class TestArticulationActuators(omni.kit.test.AsyncTestCase):
         return config
 
     def _make_pid_config(self, kp: float = 100.0, ki: float = 10.0, kd: float = 5.0) -> ActuatorConfig:
-        """Build an `ActuatorConfig` with a `ControllerPID`."""
+        """Build an `ActuatorConfig` with a `ControllerPID`.
+
+        Args:
+            kp: Proportional gain for the PID controller.
+            ki: Integral gain for the PID controller.
+            kd: Derivative gain for the PID controller.
+
+        Returns:
+            An `ActuatorConfig` containing a one-DOF `ControllerPID`.
+        """
         import warp as wp
         from newton.actuators import ControllerPID
 

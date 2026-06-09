@@ -57,7 +57,14 @@ class TestEffortSensor(omni.kit.test.AsyncTestCase):
         cube_path: str = "/new_cube",
         cube_position: Any = np.array([1, 0, 0.1]),
     ) -> None:
-        """Create simple articulation."""
+        """Create simple articulation.
+
+        Args:
+            physics_rate: Physics simulation rate in Hz.
+            include_cube: Whether to add a cube to the scene.
+            cube_path: USD path for the optional cube.
+            cube_position: Position for the optional cube.
+        """
         self.pivot_path = "/Articulation/CenterPivot"
         self.slider_path = "/Articulation/Slider"
         self.arm_path = "/Articulation/Arm"

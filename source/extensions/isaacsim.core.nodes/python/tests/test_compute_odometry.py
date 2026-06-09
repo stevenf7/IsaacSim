@@ -41,7 +41,22 @@ async def add_cube(
     linear_velocity: Any = None,
     angular_velocity: Any = None,
 ) -> Usd.Prim:
-    """Add a cube prim to the test stage."""
+    """Add a cube prim to the test stage.
+
+    Args:
+        stage: Stage where the cube is authored.
+        path: Prim path for the cube.
+        size: Cube size.
+        offset: Cube position offset.
+        physics: Whether to add rigid-body physics.
+        mass: Mass to apply when physics is enabled.
+        orientation_wxyz: Optional cube orientation.
+        linear_velocity: Optional initial linear velocity.
+        angular_velocity: Optional initial angular velocity.
+
+    Returns:
+        Authored cube prim.
+    """
     cube_geom = UsdGeom.Cube.Define(stage, path)
     cube_geom.CreateSizeAttr(size)
     await omni.kit.app.get_app().next_update_async()  # Need this to avoid flatcache errors
@@ -73,7 +88,17 @@ async def add_cube(
 async def add_ground_plane(
     stage: Any, path: Any = "/World/Ground", size: Any = 40.0, offset: Any = (0.0, 0.0, -0.5)
 ) -> Usd.Prim:
-    """Add a ground plane with collision using GroundPlane from isaacsim.core.experimental.objects."""
+    """Add a ground plane with collision using GroundPlane from isaacsim.core.experimental.objects.
+
+    Args:
+        stage: Stage where the ground plane is authored.
+        path: Prim path for the ground plane.
+        size: Ground plane size.
+        offset: Ground plane position offset.
+
+    Returns:
+        Authored ground plane prim.
+    """
     GroundPlane(path, sizes=size, positions=list(offset))
     await omni.kit.app.get_app().next_update_async()
     return stage.GetPrimAtPath(path)
@@ -100,7 +125,14 @@ class TestComputeOdometry(ogts.OmniGraphTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     def _create_odometry_graph(self, prim_path: str) -> tuple[str, str]:
-        """Create action graph with OnPlaybackTick -> IsaacComputeOdometry, chassisPrim set to prim_path."""
+        """Create action graph with OnPlaybackTick -> IsaacComputeOdometry, chassisPrim set to prim_path.
+
+        Args:
+            prim_path: Chassis prim path for the odometry node.
+
+        Returns:
+            Graph path and odometry node name.
+        """
         _, _, _, _ = og.Controller.edit(
             {"graph_path": self.GRAPH_PATH, "evaluator_name": "execution"},
             {
@@ -119,7 +151,15 @@ class TestComputeOdometry(ogts.OmniGraphTestCase):
         return self.GRAPH_PATH, self.NODE_NAME
 
     def _get_odometry_outputs(self, graph_path: Any, node_name: Any) -> dict[str, Any]:
-        """Read all odometry outputs from the node."""
+        """Read all odometry outputs from the node.
+
+        Args:
+            graph_path: Path to the graph containing the odometry node.
+            node_name: Name of the odometry node.
+
+        Returns:
+            Mapping of odometry output names to values.
+        """
         return {
             "position": og.Controller.get(f"{graph_path}/{node_name}.outputs:position"),
             "orientation": og.Controller.get(f"{graph_path}/{node_name}.outputs:orientation"),

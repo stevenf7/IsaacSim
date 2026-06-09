@@ -26,7 +26,14 @@ class OgnIsaacScaleToFromStageUnit:
 
     @staticmethod
     def compute(db: Any) -> bool:
-        """Apply the requested `toStage` or `toMeters` conversion and reject missing or custom modes."""
+        """Apply the requested `toStage` or `toMeters` conversion and reject missing or custom modes.
+
+        Args:
+            db: OmniGraph database for this node.
+
+        Returns:
+            True when conversion succeeds, False otherwise.
+        """
         conversion = db.inputs.conversion
         value = db.inputs.value.value
 
@@ -48,7 +55,11 @@ class OgnIsaacScaleToFromStageUnit:
 
     @staticmethod
     def on_connection_type_resolve(node: Any) -> None:
-        """Resolve the output type from the input value type, promoting integer inputs to double."""
+        """Resolve the output type from the input value type, promoting integer inputs to double.
+
+        Args:
+            node: OmniGraph node whose connection types are being resolved.
+        """
         int_types = (
             og.BaseDataType.UCHAR,
             og.BaseDataType.INT,

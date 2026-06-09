@@ -48,7 +48,15 @@ _migrate_recording = _globs["_migrate_recording"]
 
 
 def _make_legacy_recording(root: str, step_data: list[dict]) -> str:
-    """Write legacy .npy files (pickled dicts) under root/state/common/ and return root."""
+    """Write legacy .npy files (pickled dicts) under root/state/common/ and return root.
+
+    Args:
+        root: Recording root directory.
+        step_data: Per-step dictionaries to write.
+
+    Returns:
+        The recording root directory.
+    """
     common_dir = os.path.join(root, "state", "common")
     os.makedirs(common_dir, exist_ok=True)
     for i, data in enumerate(step_data):

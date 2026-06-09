@@ -103,6 +103,9 @@ class TestSurfaceGripperView(omni.kit.test.AsyncTestCase):
         """Sets up the physics environment for testing.
 
         Creates a physics scene with lighting, sets stage units and up-axis, and adds a ground plane.
+
+        Returns:
+            None.
         """
         # Set Up Physics scene
         distantLight = UsdLux.DistantLight.Define(self.stage, Sdf.Path("/DistantLight"))
@@ -119,6 +122,9 @@ class TestSurfaceGripperView(omni.kit.test.AsyncTestCase):
         Args:
             count: Number of gripper environments to create.
             num_joints: Number of attachment joints per gripper.
+
+        Returns:
+            None.
         """
         for i in range(count):
             env_path = "/env" + str(i)

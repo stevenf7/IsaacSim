@@ -100,7 +100,11 @@ class ExampleCategoryItem(CategoryItem):
         return child_category
 
     def collect_examples(self) -> list["ExampleDetailItem"]:
-        """Returns examples registered at this category and recursively at all descendants."""
+        """Returns examples registered at this category and recursively at all descendants.
+
+        Returns:
+            List of example detail items registered at this category and its descendants.
+        """
         items = list(self.examples)
         for child in self.children:
             if isinstance(child, ExampleCategoryItem):
@@ -169,7 +173,11 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
         )
 
     def set_widget(self, widget: object) -> None:
-        """Register the BrowserWidget so folder tiles can drive tree navigation on double-click."""
+        """Register the BrowserWidget so folder tiles can drive tree navigation on double-click.
+
+        Args:
+            widget: Browser widget used for tree selection updates.
+        """
         self._widget = widget
 
     def register_example(self, **kwargs: object) -> None:
@@ -281,7 +289,14 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
                 example.execute_entrypoint()
 
     def _category_path(self, item: "ExampleCategoryItem") -> str:
-        """Reconstruct the slash-separated path for a category by walking its parent chain."""
+        """Reconstruct the slash-separated path for a category by walking its parent chain.
+
+        Args:
+            item: Category item whose path should be reconstructed.
+
+        Returns:
+            Slash-separated category path from the root category to ``item``.
+        """
         parts: list[str] = []
         current: Optional[ExampleCategoryItem] = item
         while current is not None:
@@ -290,7 +305,14 @@ class ExampleBrowserModel(TreeFolderBrowserModel):
         return "/".join(reversed(parts))
 
     def _find_category_by_path(self, path: str) -> Optional["ExampleCategoryItem"]:
-        """Look up the live category instance matching ``path`` in the most recently built tree."""
+        """Look up the live category instance matching ``path`` in the most recently built tree.
+
+        Args:
+            path: Slash-separated category path to find.
+
+        Returns:
+            Matching category item if found, None otherwise.
+        """
         roots = getattr(self, "_category_root", None) or self.get_category_items(None)
         parts = path.split("/")
         current = next((c for c in roots if c.name == parts[0]), None)

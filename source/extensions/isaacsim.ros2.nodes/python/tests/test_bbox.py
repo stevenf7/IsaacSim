@@ -66,7 +66,11 @@ _DEBUG_BBOX_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "dat
 
 
 class _BBoxSet:
-    """class_id -> (x0, y0, x1, y1) pixel bounding boxes, with CSV I/O and overlay drawing."""
+    """Class ID to pixel bounding boxes, with CSV I/O and overlay drawing.
+
+    Args:
+        boxes: Bounding boxes keyed by class ID.
+    """
 
     def __init__(self, boxes: dict[str, tuple[float, float, float, float]]) -> None:
         self._boxes = dict(boxes)
@@ -161,6 +165,9 @@ class TestROS2BboxPublishing(ROS2TestCase):
         """Geometry and semantics for 2D tight/loose and 3D bbox (viewport render product).
 
         cube_1 partially occludes cube_2 so 2D tight areas are smaller than 2D loose for class "1".
+
+        Returns:
+            None.
         """
         cube_1 = Cube("/cube_1", positions=[0, -4, 0.5], scales=[1.55, 0.4, 1.0], sizes=1.0)
         cube_2 = Cube("/cube_2", positions=[1.45, -1.9, 0.52], scales=[0.55, 0.55, 0.55], sizes=1.0)

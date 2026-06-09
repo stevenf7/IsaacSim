@@ -47,10 +47,11 @@ class RecordingSession:
         4. ``reset()`` to place the robot at its start pose.
         5. ``step(dt)`` every physics step.
         6. ``enable_recording()`` / ``disable_recording()`` around the part to save.
+
+    An empty session starts with no built scenario and recording disabled.
     """
 
     def __init__(self) -> None:
-        """Set up an empty session with nothing built or recording yet."""
         # Build state
         self.scenario: MobilityGenScenario | None = None
         self.robot: MobilityGenRobot | None = None

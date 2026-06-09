@@ -40,7 +40,14 @@ class TestRos2ServicePrim(ROS2TestCase):
         await super().tearDown()
 
     def create_attributes(self, prim_path: Any) -> Any:
-        """Handle create_attributes operation."""
+        """Handle create_attributes operation.
+
+        Args:
+            prim_path: USD prim path where attributes are created.
+
+        Returns:
+            Attribute names and expected values.
+        """
 
         def rand(size: Any, dtype: Any = "float", as_list: Any = False) -> Any:
             # list
@@ -175,7 +182,12 @@ class TestRos2ServicePrim(ROS2TestCase):
         return attributes
 
     def check_values(self, a: Any, b: Any) -> None:
-        """Handle check_values operation."""
+        """Handle check_values operation.
+
+        Args:
+            a: First serialized value.
+            b: Second serialized value.
+        """
         a = json.loads(a)
         b = json.loads(b)
         try:

@@ -48,6 +48,12 @@ def _build_source_scene(scene_dir: str) -> str:
     The scene covers relative texture paths, a UDIM family, a Reference sub-USD
     and a Payload sub-USD, plus an SPG `.cu` kernel with a sibling `.cu.lua`
     launcher that is undeclared in USD.
+
+    Args:
+        scene_dir: Directory where the source scene and assets are created.
+
+    Returns:
+        Path to the created source USD scene.
     """
     _make_png(os.path.join(scene_dir, "textures", "brick.png"))
     for udim in ("1001", "1002", "1003"):
@@ -106,13 +112,28 @@ def _resolved_texture(stage: Usd.Stage, prim_path: str) -> str:
 
     Resolution is anchored at the layer that authored the input so textures
     inside a sub-USD resolve correctly.
+
+    Args:
+        stage: USD stage containing the shader prim.
+        prim_path: USD prim path of the shader.
+
+    Returns:
+        Resolved texture path, or an empty string when no asset is authored.
     """
     asset = UsdShade.Shader(stage.GetPrimAtPath(prim_path)).GetInput("file").Get()
     return asset.resolvedPath if asset else ""
 
 
 def _exists_under(root: str, basename: str) -> bool:
-    """True if a file named `basename` exists anywhere under `root`."""
+    """True if a file named `basename` exists anywhere under `root`.
+
+    Args:
+        root: Directory tree to search.
+        basename: File name to find.
+
+    Returns:
+        True if a matching file exists under ``root``.
+    """
     return any(basename in files for _, _, files in os.walk(root))
 
 

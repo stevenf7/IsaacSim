@@ -42,7 +42,13 @@ from pxr import UsdGeom
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
-    """Create a fresh stage and author existing mesh prims for wrap-mode tests."""
+    """Create a fresh stage and author existing mesh prims for wrap-mode tests.
+
+    Args:
+        max_num_prims: Maximum number of prims to prepare on the stage.
+        operation: Operation mode selected by parametrization.
+        **kwargs: Additional arguments supplied by parametrization.
+    """
     # create new stage
     await stage_utils.create_new_stage_async()
     # define prims
@@ -67,7 +73,17 @@ class TestMesh(omni.kit.test.AsyncTestCase):
     # --------------------------------------------------------------------
 
     def custom_sample(self, *, num_prims: Any, batch_range: Any, data_shape: Any, dtype: Any) -> Any:
-        """Build per-prim variable-length geometry samples in supported input types."""
+        """Build per-prim variable-length geometry samples in supported input types.
+
+        Args:
+            num_prims: Number of prims in the parametrized collection.
+            batch_range: Range used to choose per-prim sample counts.
+            data_shape: Shape appended to each generated sample.
+            dtype: Data type used for generated samples.
+
+        Returns:
+            Generated input values and expected values for each supported input form.
+        """
         data = []
         for index in [2, 5, 8]:  # full shape list, np.ndarray, wp.array
             values, expected_values = [], []
@@ -81,7 +97,15 @@ class TestMesh(omni.kit.test.AsyncTestCase):
         return data
 
     def custom_face_test_set(self, num_prims: Any, num_points: Any) -> Any:
-        """Build valid face vertex, count, and hole-index inputs for mesh tests."""
+        """Build valid face vertex, count, and hole-index inputs for mesh tests.
+
+        Args:
+            num_prims: Number of prims in the parametrized collection.
+            num_points: Number of points available for generated topology.
+
+        Returns:
+            Generated face vertex indices, vertex counts, and hole indices with expected values.
+        """
         data = []
         for _type in [list, np.ndarray, wp.array]:
             vertex_indices, vertex_counts, hole_indices = [], [], []
@@ -120,7 +144,15 @@ class TestMesh(omni.kit.test.AsyncTestCase):
         return data
 
     def custom_crease_test_set(self, num_prims: Any, num_points: Any) -> Any:
-        """Build valid crease index, length, and sharpness inputs for mesh tests."""
+        """Build valid crease index, length, and sharpness inputs for mesh tests.
+
+        Args:
+            num_prims: Number of prims in the parametrized collection.
+            num_points: Number of points available for generated topology.
+
+        Returns:
+            Generated crease indices, crease lengths, and sharpnesses with expected values.
+        """
         data = []
         for _type in [list, np.ndarray, wp.array]:
             crease_indices, crease_lengths, crease_sharpnesses = [], [], []
@@ -160,7 +192,15 @@ class TestMesh(omni.kit.test.AsyncTestCase):
         return data
 
     def custom_corner_test_set(self, num_prims: Any, num_points: Any) -> Any:
-        """Build valid corner index and sharpness inputs for mesh tests."""
+        """Build valid corner index and sharpness inputs for mesh tests.
+
+        Args:
+            num_prims: Number of prims in the parametrized collection.
+            num_points: Number of points available for generated topology.
+
+        Returns:
+            Generated corner indices and sharpnesses with expected values.
+        """
         data = []
         for _type in [list, np.ndarray, wp.array]:
             corner_indices, corner_sharpnesses = [], []
@@ -194,12 +234,26 @@ class TestMesh(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
     async def test_len(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test len."""
+        """Test len.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         self.assertEqual(len(prim), num_prims, f"Invalid len ({num_prims} prims)")
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
     async def test_properties_and_getters(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test properties and getters."""
+        """Test properties and getters.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         # test cases (properties)
         # - geoms
         self.assertEqual(len(prim.geoms), num_prims, f"Invalid geoms len ({num_prims} prims)")
@@ -215,7 +269,14 @@ class TestMesh(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
     async def test_points(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test points."""
+        """Test points.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in self.custom_sample(
@@ -229,7 +290,14 @@ class TestMesh(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
     async def test_normals(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test normals."""
+        """Test normals.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in self.custom_sample(
@@ -243,7 +311,14 @@ class TestMesh(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
     async def test_face_specs(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test face specs."""
+        """Test face specs.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         num_points = prim.get_points()[0].shape[0]
         if not num_points:  # empty mesh
             num_points = 50
@@ -269,7 +344,14 @@ class TestMesh(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
     async def test_crease_specs(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test crease specs."""
+        """Test crease specs.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         num_points = prim.get_points()[0].shape[0]
         if not num_points:  # empty mesh
             num_points = 50
@@ -292,7 +374,14 @@ class TestMesh(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
     async def test_corner_specs(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test corner specs."""
+        """Test corner specs.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         num_points = prim.get_points()[0].shape[0]
         if not num_points:  # empty mesh
             num_points = 50
@@ -310,7 +399,14 @@ class TestMesh(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
     async def test_subdivision_specs(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test subdivision specs."""
+        """Test subdivision specs.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         subdivision_scheme_choices = ["catmullClark", "loop", "bilinear", "none"]
         interpolate_boundary_choices = ["none", "edgeOnly", "edgeAndCorner"]
         triangle_subdivision_rule_choices = ["catmullClark", "smooth"]
@@ -329,7 +425,14 @@ class TestMesh(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
     async def test_display_colors(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test display colors."""
+        """Test display colors.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         choices = [
             (0.1, 0.2, 0.3),  # RGB tuple
             "#aBc",  # case-insensitive short hex RGB

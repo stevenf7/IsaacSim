@@ -34,7 +34,14 @@ class cuOptSampleExtension(omni.ext.IExt):
     # ext_id is current extension id. It can be used with extension manager to query additional information, like where
     # this extension is located on filesystem.
     def on_startup(self, ext_id: Any) -> Any:
-        """Register the example menu item and prepare an empty waypoint-graph visualizer."""
+        """Register the example menu item and prepare an empty waypoint-graph visualizer.
+
+        Args:
+            ext_id: Extension identifier passed by Kit.
+
+        Returns:
+            None.
+        """
         self._ext_id = ext_id
 
         self._window = None
@@ -74,6 +81,12 @@ class cuOptSampleExtension(omni.ext.IExt):
 
     def _on_stage_event(self, event: Any) -> Any:
         """Receive stage-close notifications while the example window is visible.
+
+        Args:
+            event: Stage event payload from the event dispatcher.
+
+        Returns:
+            None.
 
         Note: With Events 2.0, this is called only for CLOSED events.
         """
@@ -151,7 +164,11 @@ class cuOptSampleExtension(omni.ext.IExt):
                         )
 
     def create_node(self) -> Any:
-        """Add a new waypoint node sphere under the graph node root."""
+        """Add a new waypoint node sphere under the graph node root.
+
+        Returns:
+            None.
+        """
         stage = self._usd_context.get_stage()
         node_name = "Node_" + str(self._num_nodes)
         node_prim_path = self.waypoint_graph_node_path + "/" + node_name
@@ -161,7 +178,11 @@ class cuOptSampleExtension(omni.ext.IExt):
         self._num_nodes += 1
 
     def create_edge(self) -> Any:
-        """Create a directed waypoint edge cylinder between the two selected node prims."""
+        """Create a directed waypoint edge cylinder between the two selected node prims.
+
+        Returns:
+            None.
+        """
         stage = self._usd_context.get_stage()
         selection = self._usd_context.get_selection().get_selected_prim_paths()
         if len(selection) == 2:
@@ -185,7 +206,11 @@ class cuOptSampleExtension(omni.ext.IExt):
         self._num_edges += 1
 
     def on_shutdown(self) -> Any:
-        """Remove the example menu item, release the window, and collect extension objects."""
+        """Remove the example menu item, release the window, and collect extension objects.
+
+        Returns:
+            None.
+        """
         self._editor_event_subscription = None
         remove_menu_items(self._menu_items, "cuOpt")
         self._window = None

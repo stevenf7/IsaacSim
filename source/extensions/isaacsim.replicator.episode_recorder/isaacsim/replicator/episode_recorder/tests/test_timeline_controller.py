@@ -40,7 +40,11 @@ _NOOP_TYPE_ID = "_test_timeline_controller_noop"
 
 
 class _NoopRecordable(Recordable):
-    """Minimal :class:`Recordable` that doesn't touch the stage or produce frames."""
+    """Minimal :class:`Recordable` that doesn't touch the stage or produce frames.
+
+    Args:
+        group: Recordable HDF5 group path.
+    """
 
     TYPE_ID = _NOOP_TYPE_ID
 

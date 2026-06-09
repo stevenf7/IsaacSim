@@ -23,7 +23,14 @@ class OgnROS2RtxLidarPointCloudConfig:
 
     @staticmethod
     def compute(db: Any) -> bool:
-        """Populate selected RTX lidar metadata fields for downstream PointCloud2 publishing."""
+        """Populate selected RTX lidar metadata fields for downstream PointCloud2 publishing.
+
+        Args:
+            db: OmniGraph database for the node.
+
+        Returns:
+            True after the selected metadata output is populated.
+        """
         selectedMetadata = []
         if db.inputs.outputIntensity:
             selectedMetadata.append("Intensity")

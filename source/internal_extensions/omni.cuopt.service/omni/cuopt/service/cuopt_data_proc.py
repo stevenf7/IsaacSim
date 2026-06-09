@@ -15,7 +15,16 @@ from typing import Any
 
 
 def preprocess_cuopt_data(graph: Any, task: Any, fleet: Any) -> Any:
-    """Build cuOpt waypoint-graph, fleet, and task dictionaries from sample models."""
+    """Build cuOpt waypoint-graph, fleet, and task dictionaries from sample models.
+
+    Args:
+        graph: Waypoint graph model with CSR offsets, edges, and weights.
+        task: Transport task model with locations, demand, time windows, and service times.
+        fleet: Transport fleet model with locations, capacities, and time windows.
+
+    Returns:
+        Waypoint graph, fleet, and task payload dictionaries for cuOpt.
+    """
     waypoint_graph_data = {
         "waypoint_graph": {
             "0": {

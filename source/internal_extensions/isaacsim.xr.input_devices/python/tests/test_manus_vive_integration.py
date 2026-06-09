@@ -22,6 +22,12 @@ def _discover_test_handtracker_library(module_dir: str) -> Any:
     """Return the platform-specific test hand-tracker library from extension roots.
 
     This mirrors the discovery strategy used in the handtracker plugin tests.
+
+    Args:
+        module_dir: Directory of the Python module doing discovery.
+
+    Returns:
+        Path to the discovered test hand-tracker library, or None if not found.
     """
     ext_roots = []
     try:

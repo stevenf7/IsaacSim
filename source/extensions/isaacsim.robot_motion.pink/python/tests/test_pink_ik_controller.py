@@ -67,7 +67,15 @@ _TOOL_FRAME = "end_effector"
 
 
 def _make_estimated_state(joint_names: list[str], positions: np.ndarray) -> mg.RobotState:
-    """Build a RobotState with joint positions and zero velocities."""
+    """Build a RobotState with joint positions and zero velocities.
+
+    Args:
+        joint_names: Joint names matching the position vector.
+        positions: Joint position values.
+
+    Returns:
+        Robot state containing joint positions and zero velocities.
+    """
     return mg.RobotState(
         joints=mg.JointState.from_name(
             robot_joint_space=joint_names,
@@ -79,7 +87,16 @@ def _make_estimated_state(joint_names: list[str], positions: np.ndarray) -> mg.R
 
 
 def _make_site_setpoint(tool_frame: str, position: np.ndarray, quaternion: np.ndarray) -> mg.RobotState:
-    """Build a RobotState with a site target pose."""
+    """Build a RobotState with a site target pose.
+
+    Args:
+        tool_frame: Site name to target.
+        position: Desired site position.
+        quaternion: Desired site orientation in Isaac Sim quaternion order.
+
+    Returns:
+        Robot state containing the target site pose.
+    """
     return mg.RobotState(
         sites=mg.SpatialState.from_name(
             spatial_space=[tool_frame],

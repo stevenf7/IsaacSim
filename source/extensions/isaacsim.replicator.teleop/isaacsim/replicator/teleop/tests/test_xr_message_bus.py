@@ -71,7 +71,11 @@ class ExtractXrTeleopCommandTests(omni.kit.test.AsyncTestCase):
 
 
 class _FakeXrSettings:
-    """Minimal stand-in for the Kit ``XRSettings`` singleton used by the snapshot helpers."""
+    """Minimal stand-in for the Kit ``XRSettings`` singleton used by the snapshot helpers.
+
+    Args:
+        initial: Value for initial.
+    """
 
     def __init__(self, initial: dict[str, str | float] | None = None) -> None:
         self.values: dict[str, str | float] = dict(initial or {})

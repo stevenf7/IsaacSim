@@ -34,7 +34,12 @@ from pxr import UsdShade
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"]) -> None:
-    """Populate stage."""
+    """Populate stage.
+
+    Args:
+        max_num_prims: Maximum number of material prims to pre-author.
+        operation: Prim setup operation requested by the parametrized test.
+    """
     # create new stage
     stage = await stage_utils.create_new_stage_async()
     # define prims
@@ -58,12 +63,26 @@ class TestNonVisualMaterial(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=NonVisualMaterial, populate_stage_func=populate_stage)
     async def test_len(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test len."""
+        """Test len.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         self.assertEqual(len(prim), num_prims, f"Invalid len ({num_prims} prims)")
 
     @parametrize(backends=["usd"], prim_class=NonVisualMaterial, populate_stage_func=populate_stage)
     async def test_bases(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test bases."""
+        """Test bases.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         choices = list(BASE_SPEC.keys())
         # test cases
         # - check before applying any values
@@ -86,7 +105,14 @@ class TestNonVisualMaterial(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=NonVisualMaterial, populate_stage_func=populate_stage)
     async def test_coatings(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test coatings."""
+        """Test coatings.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         choices = list(COATING_SPEC.keys())
         # test cases
         # - check before applying any values
@@ -109,7 +135,14 @@ class TestNonVisualMaterial(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=NonVisualMaterial, populate_stage_func=populate_stage)
     async def test_attributes(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test attributes."""
+        """Test attributes.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         choices = list(ATTRIBUTE_SPEC.keys())
         # test cases
         # - check before applying any values
@@ -132,7 +165,14 @@ class TestNonVisualMaterial(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=NonVisualMaterial, populate_stage_func=populate_stage)
     async def test_encode_decode_material_ids(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test encode decode material ids."""
+        """Test encode decode material ids.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         self.assertTrue(len(BASE_SPEC) > 0, "BASE_SPEC is empty")
         self.assertTrue(len(COATING_SPEC) > 0, "COATING_SPEC is empty")
         self.assertTrue(len(ATTRIBUTE_SPEC) > 0, "ATTRIBUTE_SPEC is empty")

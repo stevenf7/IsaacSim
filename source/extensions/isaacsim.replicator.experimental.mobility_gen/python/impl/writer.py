@@ -37,7 +37,15 @@ def _is_url_asset_path(asset_path: str) -> bool:
 
 
 def _copy_url_asset(src_url: str, dest_abs_path: str) -> bool:
-    """Try `omni.client.copy(src_url → dest_abs_path)`. Any failure is non-fatal."""
+    """Try `omni.client.copy(src_url -> dest_abs_path)`. Any failure is non-fatal.
+
+    Args:
+        src_url: Source asset URL.
+        dest_abs_path: Destination absolute filesystem path.
+
+    Returns:
+        True if the asset exists at the destination after the copy attempt.
+    """
     # Lazy import: writer.py is also exercised under non-Kit Python contexts.
     try:
         import omni.client
@@ -63,6 +71,13 @@ def _copy_local_or_url(src: str, dest: str) -> bool:
 
     Creates the destination directory as needed and skips the copy if `dest`
     already exists. Returns True on success.
+
+    Args:
+        src: Source local path or URL.
+        dest: Destination local path.
+
+    Returns:
+        True if the destination exists or the copy succeeds.
     """
     os.makedirs(os.path.dirname(dest), exist_ok=True)
     if os.path.exists(dest):
@@ -80,6 +95,12 @@ def _url_to_local_path(url: str) -> str:
 
     A plain path is returned unchanged; a URL (such as ``file://`` or
     ``omniverse://``) is converted to its local path.
+
+    Args:
+        url: Local path or URL to convert.
+
+    Returns:
+        Local filesystem path when it can be resolved, otherwise ``url``.
     """
     if "://" not in url:
         return url
@@ -101,7 +122,12 @@ async def collect_input(input_path: str, dest_dir: str) -> str:
     copies the files it references — provide a ``.usdz`` if the scene also needs
     files it does not reference.
 
-    Returns the path to the copied scene in ``dest_dir``.
+    Args:
+        input_path: Source USD/USDZ scene path or URL.
+        dest_dir: Destination directory for the self-contained copy.
+
+    Returns:
+        The path to the copied scene in ``dest_dir``.
     """
     os.makedirs(dest_dir, exist_ok=True)
 
@@ -282,6 +308,9 @@ class MobilityGenWriter:
         `input_path` is a stage produced by `collect_input`. Everything in its
         folder is copied into the recording directory so the references still
         resolve.
+
+        Args:
+            input_path: Path to the cached stage file to copy from.
         """
         if not os.path.exists(self.path):
             os.makedirs(self.path)
@@ -314,6 +343,9 @@ class MobilityGenWriter:
 
         Copies the stage and the files it needs, the config, and the occupancy
         map. The recorded per-step ``state`` folder is not copied.
+
+        Args:
+            other_path: Recording directory to copy setup files from.
         """
         if not os.path.exists(self.path):
             os.makedirs(self.path)

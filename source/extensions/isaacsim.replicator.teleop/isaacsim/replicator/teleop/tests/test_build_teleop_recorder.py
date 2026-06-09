@@ -29,17 +29,38 @@ class _StubTeleopManager:
     """Minimal manager implementing the observer hooks recordables expect."""
 
     def add_controller_inputs_observer(self, _cb: object) -> object:
-        """Add a controller inputs observer."""
+        """Add a controller inputs observer.
+
+        Args:
+            _cb: Value for  cb.
+
+        Returns:
+            The requested value.
+        """
         return lambda: None
 
     def add_head_observer(self, _cb: object) -> object:
-        """Add a head observer."""
+        """Add a head observer.
+
+        Args:
+            _cb: Value for  cb.
+
+        Returns:
+            The requested value.
+        """
         return lambda: None
 
 
 class _StubTeleopManagerNoHead:
     def add_controller_inputs_observer(self, _cb: object) -> object:
-        """Add a controller inputs observer."""
+        """Add a controller inputs observer.
+
+        Args:
+            _cb: Value for  cb.
+
+        Returns:
+            The requested value.
+        """
         return lambda: None
 
 

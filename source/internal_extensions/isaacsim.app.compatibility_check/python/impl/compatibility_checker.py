@@ -54,7 +54,6 @@ class Checker:
     """System compatibility checker for verifying hardware and software requirements."""
 
     def __init__(self) -> None:
-        """Initialize the compatibility checker."""
         self._nvidia_smi = Result()
         self._gpu_driver_version = Result()
         self._gpu_rtx: list[Result] = []
@@ -157,13 +156,21 @@ class Checker:
             return -1
 
     def check_nvidia_smi(self, spec: dict) -> None:
-        """Check nvidia smi against specifications."""
+        """Check nvidia smi against specifications.
+
+        Args:
+            spec: Compatibility specification mapping. This check does not use it.
+        """
         nvidia_smi_error = self._nvidia_smi_error()
         self._nvidia_smi.status = not len(nvidia_smi_error)
         self._nvidia_smi.message = nvidia_smi_error
 
     def check_driver_version(self, spec: dict) -> None:
-        """Check driver version against specifications."""
+        """Check driver version against specifications.
+
+        Args:
+            spec: Driver specification entries with platform, minimum, and unsupported version ranges.
+        """
         nvidia_smi_error = self._nvidia_smi_error()
         if nvidia_smi_error:
             self._gpu_driver_version.valid = False
@@ -221,7 +228,11 @@ class Checker:
         self._set_compatibility_check_status(status)
 
     def check_rtx_gpu(self, spec: dict) -> None:
-        """Check rtx gpu against specifications."""
+        """Check rtx gpu against specifications.
+
+        Args:
+            spec: Compatibility specification mapping. This check does not use it.
+        """
         num_gpus = self._get_gpu_count()
         self._gpu_rtx.clear()
 
@@ -279,7 +290,11 @@ class Checker:
             self._gpu_status["rtx"][i] = status
 
     def check_vram(self, spec: dict) -> None:
-        """Check vram against specifications."""
+        """Check vram against specifications.
+
+        Args:
+            spec: VRAM threshold specification with minimum, good, and ideal values.
+        """
         num_gpus = self._get_gpu_count()
         self._gpu_vram.clear()
 
@@ -344,7 +359,11 @@ class Checker:
         self._set_compatibility_check_status(global_status)
 
     def check_cpu(self, spec: dict) -> None:
-        """Check cpu against specifications."""
+        """Check cpu against specifications.
+
+        Args:
+            spec: Compatibility specification mapping. This check does not use it.
+        """
         status = True
 
         # get CPU
@@ -370,7 +389,11 @@ class Checker:
         self._set_compatibility_check_status(status)
 
     def check_cpu_cores(self, spec: dict) -> None:
-        """Check cpu cores against specifications."""
+        """Check cpu cores against specifications.
+
+        Args:
+            spec: CPU core count threshold specification with minimum, good, and ideal values.
+        """
         status = True
         level = Level.UNMET
         message = ""
@@ -404,7 +427,11 @@ class Checker:
         self._set_compatibility_check_status(status)
 
     def check_cpu_power_governor(self, spec: dict) -> None:
-        """Check cpu power governor against specifications."""
+        """Check cpu power governor against specifications.
+
+        Args:
+            spec: Compatibility specification mapping. This check does not use it.
+        """
         status = True
         level = Level.UNMET
         message = ""
@@ -473,7 +500,11 @@ class Checker:
         self._cpu_power_governor.message = mode
 
     def check_ram(self, spec: dict) -> None:
-        """Check ram against specifications."""
+        """Check ram against specifications.
+
+        Args:
+            spec: RAM threshold specification with minimum, good, and ideal values.
+        """
         status = True
         level = Level.UNMET
         message = ""
@@ -508,7 +539,11 @@ class Checker:
         self._set_compatibility_check_status(status)
 
     def check_operating_system(self, operating_system: dict) -> None:
-        """Check operating system against specifications."""
+        """Check operating system against specifications.
+
+        Args:
+            operating_system: Supported operating system entries with names and versions.
+        """
         # get OS name and version
         os_name = [omni.platforminfo.IOsInfo().distro_name.lower(), platform.system().lower()]
         os_pretty_name = omni.platforminfo.IOsInfo().pretty_name
@@ -533,7 +568,11 @@ class Checker:
         self._set_compatibility_check_status(status)
 
     def check_storage(self, spec: dict) -> None:
-        """Check storage against specifications."""
+        """Check storage against specifications.
+
+        Args:
+            spec: Storage threshold specification with minimum, good, and ideal values.
+        """
         status = True
         level = Level.UNMET
         message = ""
