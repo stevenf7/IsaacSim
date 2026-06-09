@@ -39,7 +39,14 @@ _T = TypeVar("_T")
 
 
 def _to_snake_case(name: str) -> str:
-    """Convert a PascalCase or camelCase name to snake_case."""
+    """Convert a PascalCase or camelCase name to snake_case.
+
+    Args:
+        name: Name to convert.
+
+    Returns:
+        Snake-case version of the name.
+    """
     s = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", name)
     s = re.sub(r"([a-z\d])([A-Z])", r"\1_\2", s)
     return s.lower()
@@ -369,7 +376,16 @@ def _wrap_sync_and_async(
     on_success: Callable[[int], None] | None,
     on_exception: Callable[[Exception], None] | None,
 ) -> Callable[..., Any]:
-    """Build a sync or async wrapper that calls *on_success* / *on_exception*."""
+    """Build a sync or async wrapper that calls *on_success* / *on_exception*.
+
+    Args:
+        func: Function to wrap.
+        on_success: Callback invoked with elapsed nanoseconds after success.
+        on_exception: Callback invoked with the raised exception after failure.
+
+    Returns:
+        Wrapped function preserving sync or async behavior.
+    """
     if asyncio.iscoroutinefunction(func):
 
         @functools.wraps(func)

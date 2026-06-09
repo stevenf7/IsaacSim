@@ -34,7 +34,14 @@ import ucxx._lib.libucxx as ucx_api
 
 
 def _read_tensor_f32(tensor: object) -> list:
-    """Read float32 values from a FlatBuffers Tensor's ubyte data vector."""
+    """Read float32 values from a FlatBuffers Tensor's ubyte data vector.
+
+    Args:
+        tensor: FlatBuffers Tensor object with ubyte data.
+
+    Returns:
+        Tensor data interpreted as float32 values.
+    """
     n_bytes = tensor.DataLength()
     raw = bytes(tensor.Data(i) for i in range(n_bytes))
     return np.frombuffer(raw, dtype=np.float32).tolist()

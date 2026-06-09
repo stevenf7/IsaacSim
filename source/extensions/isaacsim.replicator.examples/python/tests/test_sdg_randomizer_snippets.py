@@ -32,7 +32,11 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self) -> Any:
-        """Let pending updates and asset loads settle before the next snippet test."""
+        """Let pending updates and asset loads settle before the next snippet test.
+
+        Returns:
+            None.
+        """
         for _ in range(10):
             await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
@@ -40,7 +44,11 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
     async def test_randomize_sequential_sphere_scan(self) -> Any:
-        """Move a camera along Fibonacci-sphere viewpoints while randomizing pallet/bin poses."""
+        """Move a camera along Fibonacci-sphere viewpoints while randomizing pallet/bin poses.
+
+        Returns:
+            None.
+        """
         import asyncio
         import itertools
 
@@ -73,7 +81,20 @@ class TestSDGRandomizerSnippets(omni.kit.test.AsyncTestCase):
             write_data: Any,
             delay: Any | None = None,
         ) -> Any:
-            """Render perspective and sphere-scan views while cycling dome textures and object poses."""
+            """Render perspective and sphere-scan views while cycling dome textures and object poses.
+
+            Args:
+                num_frames: Number of frames to run.
+                forklift_path: Asset-relative forklift path.
+                pallet_path: Asset-relative pallet path.
+                bin_path: Asset-relative bin path.
+                dome_textures: Asset-relative dome texture paths to cycle through.
+                write_data: Whether to write RGB data with BasicWriter.
+                delay: Optional delay between frames.
+
+            Returns:
+                None.
+            """
             assets_root_path = await get_assets_root_path_async()
 
             await omni.usd.get_context().new_stage_async()

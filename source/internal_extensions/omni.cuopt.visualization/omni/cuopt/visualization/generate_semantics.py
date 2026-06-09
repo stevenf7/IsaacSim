@@ -18,7 +18,18 @@ from .common import translate_rotate_scale_prim
 
 
 def generate_semantic_zones(stage: Any, semantic_prim_path: Any, semantics: Any, length: Any, width: Any) -> Any:
-    """Author a restricted-zone cube, material, metadata, and tracking path."""
+    """Author a restricted-zone cube, material, metadata, and tracking path.
+
+    Args:
+        stage: Stage where the semantic zone is authored.
+        semantic_prim_path: Parent path for semantic zone prims.
+        semantics: Mutable collection of semantic zone paths to update.
+        length: Zone extent along the x-axis.
+        width: Zone extent along the y-axis.
+
+    Returns:
+        Updated semantic zone path collection.
+    """
     semantic_name = "Restricted_" + str(len(semantics))
     semantic_data = {"type": "Restricted", "color": [0.83, 0, 0]}
     semantic_data["min_extent"] = [0.0, 0.0, 0.0]

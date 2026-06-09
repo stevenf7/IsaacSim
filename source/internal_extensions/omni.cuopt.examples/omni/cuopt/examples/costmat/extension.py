@@ -45,7 +45,14 @@ class cuOptSampleExtension(omni.ext.IExt):
     # ext_id is current extension id. It can be used with extension manager to query additional information, like where
     # this extension is located on filesystem.
     def on_startup(self, ext_id: Any) -> Any:
-        """Register the cuOpt menu item, initialize connection fields, and build the sample UI."""
+        """Register the cuOpt menu item, initialize connection fields, and build the sample UI.
+
+        Args:
+            ext_id: Extension identifier passed by Kit.
+
+        Returns:
+            None.
+        """
         self._ext_id = ext_id
 
         self._window = None
@@ -100,6 +107,12 @@ class cuOptSampleExtension(omni.ext.IExt):
 
     def _on_stage_event(self, event: Any) -> Any:
         """Clear cached depot and location prim data after the watched stage closes.
+
+        Args:
+            event: Stage event payload from the event dispatcher.
+
+        Returns:
+            None.
 
         Note: With Events 2.0, this is called only for CLOSED events.
         """
@@ -356,7 +369,11 @@ class cuOptSampleExtension(omni.ext.IExt):
         )
 
     def clear_locations(self) -> Any:
-        """Delete generated depot/location prims and reset the location lookup table."""
+        """Delete generated depot/location prims and reset the location lookup table.
+
+        Returns:
+            None.
+        """
         locations = []
         for pr in self.prim_data:
             locations.append(self.prim_data[pr]["Path"])
@@ -369,14 +386,28 @@ class cuOptSampleExtension(omni.ext.IExt):
         self.prim_data = {}
 
     def update_location_position(self) -> Any:
-        """Refresh cached task coordinates from the current USD world transforms."""
+        """Refresh cached task coordinates from the current USD world transforms.
+
+        Returns:
+            None.
+        """
         stage = self._usd_context.get_stage()
         for pr in self.prim_data:
             pose = omni.usd.get_world_transform_matrix(stage.GetPrimAtPath(self.prim_data[pr]["Path"]))
             self.prim_data[pr]["Location"] = pose[-1][0:-1]
 
     def problem_setup_validation(self, n_vehicles: Any, capacity_val: Any, n_locations: Any, time_limit: Any) -> Any:
-        """Clamp fleet, capacity, location, and time-limit values to this example's supported range."""
+        """Clamp fleet, capacity, location, and time-limit values to this example's supported range.
+
+        Args:
+            n_vehicles: Requested number of vehicles.
+            capacity_val: Requested vehicle capacity.
+            n_locations: Requested number of service locations.
+            time_limit: Requested solver time limit in seconds.
+
+        Returns:
+            Status message describing any automatic value changes.
+        """
         message = ""
 
         auto_value_change = False
@@ -454,7 +485,11 @@ class cuOptSampleExtension(omni.ext.IExt):
         return message
 
     def create_problem_geometry(self) -> Any:
-        """Generate a depot and random service-location prims for the cost-matrix sample."""
+        """Generate a depot and random service-location prims for the cost-matrix sample.
+
+        Returns:
+            None.
+        """
         self._cuopt_setup_status_info.text = self.problem_setup_validation(
             self.fleet_size.get_value_as_int(),
             self.fleet_capacity.get_value_as_int(),
@@ -516,11 +551,26 @@ class cuOptSampleExtension(omni.ext.IExt):
             current_index += 1
 
     def distance_matrix_from_point_list(self, point_list: Any, scale: Any) -> Any:
-        """Return a scaled Euclidean cost matrix for the generated depot and service locations."""
+        """Return a scaled Euclidean cost matrix for the generated depot and service locations.
+
+        Args:
+            point_list: Coordinate sequence used to compute pairwise distances.
+            scale: Scalar multiplier applied to the distance matrix.
+
+        Returns:
+            Scaled square distance matrix.
+        """
         return scale * squareform(pdist(point_list, metric="euclidean"))
 
     def get_routes(self, raw_routes: Any) -> Any:
-        """Split a flat stop sequence into depot-delimited vehicle routes."""
+        """Split a flat stop sequence into depot-delimited vehicle routes.
+
+        Args:
+            raw_routes: Mapping of route positions to stop indices.
+
+        Returns:
+            List of routes, each beginning and ending at the depot stop.
+        """
         routes = []
         cur_route = []
         writing = False
@@ -543,7 +593,11 @@ class cuOptSampleExtension(omni.ext.IExt):
         return routes
 
     def run_cuopt(self) -> Any:
-        """Build the cuOpt cost-matrix request, solve it, and draw the returned vehicle routes."""
+        """Build the cuOpt cost-matrix request, solve it, and draw the returned vehicle routes.
+
+        Returns:
+            None.
+        """
         if bool(self.prim_data):
             self.update_location_position()
             num_locations = self.num_locations.get_value_as_int()
@@ -602,7 +656,14 @@ class cuOptSampleExtension(omni.ext.IExt):
             self._routes_ui_message.text = show_vehicle_routes(routes)
 
     def draw_routes(self, routes: Any) -> Any:
-        """Draw debug-line segments between cached USD locations for each solved vehicle route."""
+        """Draw debug-line segments between cached USD locations for each solved vehicle route.
+
+        Args:
+            routes: Vehicle route data returned by cuOpt.
+
+        Returns:
+            None.
+        """
         draw = debug_draw._debug_draw.acquire_debug_draw_interface()
 
         draw.clear_lines()
@@ -627,7 +688,11 @@ class cuOptSampleExtension(omni.ext.IExt):
             draw.draw_lines(point_list_1, point_list_2, colors, sizes)
 
     def on_shutdown(self) -> Any:
-        """Remove the cuOpt menu entry, release the UI window, and collect extension objects."""
+        """Remove the cuOpt menu entry, release the UI window, and collect extension objects.
+
+        Returns:
+            None.
+        """
         self._editor_event_subscription = None
         remove_menu_items(self._menu_items, "cuOpt")
         self._window = None

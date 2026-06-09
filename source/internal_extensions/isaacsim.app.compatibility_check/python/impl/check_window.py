@@ -53,18 +53,16 @@ WINDOW_STYLE: dict[str, Any] = {}
 
 
 class CheckWindow:
-    """Window for displaying compatibility check results."""
+    """Window for displaying compatibility check results.
+
+    Args:
+        ext_path: Path to the extension directory.
+        title: Window title.
+        checker: Compatibility checker instance.
+        test_config: Test configuration dictionary, or None to use an empty configuration.
+    """
 
     def __init__(self, ext_path: str, title: str, checker: Checker, test_config: dict[str, Any] | None = None) -> None:
-        """Initialize the check window.
-
-        Args:
-            ext_path: Path to the extension directory.
-            title: Window title.
-            checker: Compatibility checker instance.
-            test_config: Optional test configuration dictionary.
-
-        """
         self._ext_path = ext_path
         self._title = title
         self._checker = checker

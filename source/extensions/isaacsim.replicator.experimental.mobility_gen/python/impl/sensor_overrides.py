@@ -152,6 +152,13 @@ def save_sensor_overrides(
         lives in the referenced robot USD — so we check the composed type via the
         live stage instead of src_spec.typeName.  Returns True only if something
         worth saving was written, so empty prims are never created.
+
+        Args:
+            src_spec: Source prim spec to inspect for authored calibration opinions.
+            dest_path: Destination prim path in ``diff_layer``.
+
+        Returns:
+            True if calibration data or child calibration data was copied.
         """
         if src_spec.name == "chase_camera":
             return False
@@ -264,7 +271,12 @@ def apply_sensor_overrides(robot_prim_path: str, recording_path: str, stage: "Us
 
 
 def log_camera_properties(stage: "Usd.Stage", robot_prim_path: str) -> None:
-    """Log camera calibration properties under the robot prim."""
+    """Log camera calibration properties under the robot prim.
+
+    Args:
+        stage: USD stage containing the robot.
+        robot_prim_path: USD prim path of the robot root.
+    """
     import carb
     from pxr import Usd
 

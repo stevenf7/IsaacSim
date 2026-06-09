@@ -38,7 +38,14 @@ from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
 
 @contextmanager
 def _capture_errors() -> Any:
-    """Capture carb ERROR-level log messages via the event dispatcher."""
+    """Capture carb ERROR-level log messages via the event dispatcher.
+
+    Returns:
+        Context manager that yields captured ERROR-level log messages.
+
+    Yields:
+        Mutable list populated with captured ERROR-level log messages.
+    """  # noqa: DOC403
     messages: list[str] = []
 
     def _on_event(e: Any) -> Any:
@@ -67,7 +74,11 @@ def _flush_process_output() -> Any:
 
 
 class _CaptureFds:
-    """Redirect process-level output fds to a temp file during expected errors."""
+    """Redirect process-level output fds to a temp file during expected errors.
+
+    Args:
+        fds: File descriptors to redirect while the context manager is active.
+    """
 
     def __init__(self, fds: Any = (1, 2)) -> None:
         self._fds = fds

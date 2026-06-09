@@ -34,7 +34,15 @@ SRTX_ENABLED = "/exts/omni.replicator.srtx/enabled"
 
 
 def get_existing_render_product(camera_path: str, resolution: tuple[int, int]) -> str | None:
-    """Find an existing render product matching the given camera and resolution."""
+    """Find an existing render product matching the given camera and resolution.
+
+    Args:
+        camera_path: Camera prim path to match.
+        resolution: Render product resolution to match.
+
+    Returns:
+        Matching render product path, or None if no match is found.
+    """
     render_products = rep.functional.get.renderproduct()
     for render_product in render_products:
         targets = render_product.GetRelationship("camera").GetTargets()
@@ -57,7 +65,11 @@ class OgnIsaacCreateRenderProductInternalState(BaseResetNode):
         super().__init__(initialize=False)
 
     def on_timeline_stop(self, event: carb.eventdispatcher.Event) -> None:
-        """Mark the cached render product state stale when the timeline stops."""
+        """Mark the cached render product state stale when the timeline stops.
+
+        Args:
+            event: Timeline stop event.
+        """
         self.initialized = False
 
 
@@ -66,7 +78,11 @@ class OgnIsaacCreateRenderProduct:
 
     @staticmethod
     def internal_state() -> OgnIsaacCreateRenderProductInternalState:
-        """Create the per-instance render product cache."""
+        """Create the per-instance render product cache.
+
+        Returns:
+            Per-instance render product cache.
+        """
         return OgnIsaacCreateRenderProductInternalState()
 
     @staticmethod
@@ -76,6 +92,12 @@ class OgnIsaacCreateRenderProduct:
         The node skips when disabled or when no camera prim is supplied, reuses a matching
         provided or existing render product when possible, updates camera and resolution changes,
         and enables `execOut` when a valid render product path is available.
+
+        Args:
+            db: OmniGraph database for this node.
+
+        Returns:
+            True when a render product is available, False otherwise.
         """
         state = db.per_instance_state
         if db.inputs.enabled is False:
@@ -155,7 +177,12 @@ class OgnIsaacCreateRenderProduct:
 
     @staticmethod
     def release_instance(node: Any, graph_instance_id: Any) -> None:
-        """Clear cached render product path and subscriptions without destroying the render product."""
+        """Clear cached render product path and subscriptions without destroying the render product.
+
+        Args:
+            node: OmniGraph node instance.
+            graph_instance_id: Graph instance identifier.
+        """
         try:
             state = OgnIsaacCreateRenderProductDatabase.per_instance_internal_state(node)
         except Exception:

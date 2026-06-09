@@ -23,7 +23,18 @@ class MyExtension(omni.ext.IExt):
     # ext_id is current extension id. It can be used with extension manager to query additional information, like where
     # this extension is located on filesystem.
     def on_startup(self, ext_id: Any) -> Any:
-        """Handle extension startup; service helpers initialize lazily when imported."""
+        """Handle extension startup; service helpers initialize lazily when imported.
+
+        Args:
+            ext_id: Extension identifier passed by the extension manager.
+
+        Returns:
+            This hook does not return a value.
+        """
 
     def on_shutdown(self) -> Any:
-        """Handle extension shutdown; no service state is owned by this hook."""
+        """Handle extension shutdown; no service state is owned by this hook.
+
+        Returns:
+            This hook does not return a value.
+        """

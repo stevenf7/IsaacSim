@@ -41,7 +41,14 @@ class cuOptMicroserviceExtension(omni.ext.IExt):
     # ext_id is current extension id. It can be used with extension manager to query additional information, like where
     # this extension is located on filesystem.
     def on_startup(self, ext_id: Any) -> Any:
-        """Register the menu item, locate sample JSON data, and initialize route inputs."""
+        """Register the menu item, locate sample JSON data, and initialize route inputs.
+
+        Args:
+            ext_id: Extension identifier passed by Kit.
+
+        Returns:
+            None.
+        """
         self._ext_id = ext_id
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -336,6 +343,12 @@ class cuOptMicroserviceExtension(omni.ext.IExt):
     def _on_stage_event(self, event: Any) -> Any:
         """Receive stage-close notifications while the waypoint graph window is visible.
 
+        Args:
+            event: Stage event payload from the event dispatcher.
+
+        Returns:
+            None.
+
         Note: With Events 2.0, this is called only for CLOSED events.
         """
         # to be used to clear any previous data
@@ -464,7 +477,11 @@ class cuOptMicroserviceExtension(omni.ext.IExt):
         self._routes_ui_message.text = show_vehicle_routes(routes)
 
     def on_shutdown(self) -> Any:
-        """Remove the cuOpt menu entry, release the UI window, and collect extension objects."""
+        """Remove the cuOpt menu entry, release the UI window, and collect extension objects.
+
+        Returns:
+            None.
+        """
         remove_menu_items(self._menu_items, "cuOpt")
         self._window = None
         gc.collect()

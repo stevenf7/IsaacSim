@@ -31,7 +31,11 @@ from isaacsim.storage.native import get_assets_root_path_async
 
 
 async def wait_for_stage_loading() -> Any:
-    """Wait until USD stage loading is complete."""
+    """Wait until USD stage loading is complete.
+
+    Returns:
+        None.
+    """
     while omni.usd.get_context().get_stage_loading_status()[2] > 0:
         await omni.kit.app.get_app().next_update_async()
 

@@ -72,13 +72,10 @@ def build_teleop_recorder(
         session_metadata: Extra session attrs written to the manifest.
         session_id: Opaque id for command bus filtering. Auto-generated when omitted.
         file_prefix: Filename prefix for the session HDF5.
-        pose_backend: Backend used by the recorder's shared pose-batch
-            ``XformPrim.get_world_poses`` read each tick. Defaults to ``"usd"``.
-            Reads cannot trigger the nested-articulation parent-lag bug because
-            no writes happen during sampling, so ``"fabric"`` / ``"usdrt"`` are
-            safe speedups when Fabric Scene Delegate is enabled. The replayer's
-            backend is independent and is configured at
-            :class:`EpisodeReplayer` construction time.
+        pose_backend: Backend used by the recorder's shared pose-batch ``XformPrim.get_world_poses`` read each tick. Defaults to ``"usd"``. Reads cannot trigger the nested-articulation parent-lag bug because no writes happen during sampling, so ``"fabric"`` / ``"usdrt"`` are safe speedups when Fabric Scene Delegate is enabled. The replayer's backend is independent and is configured at :class:`EpisodeReplayer` construction time.
+
+    Returns:
+        The requested value.
     """
     recorder = EpisodeRecorder(
         output_dir,

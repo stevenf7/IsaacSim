@@ -37,7 +37,11 @@ class TestSDGUR10Palletizing(omni.kit.test.AsyncTestCase):
         self.original_dlss_exec_mode = carb.settings.get_settings().get("rtx/post/dlss/execMode")
 
     async def tearDown(self) -> Any:
-        """Close the stage, wait for pending loads, and restore the DLSS setting."""
+        """Close the stage, wait for pending loads, and restore the DLSS setting.
+
+        Returns:
+            None.
+        """
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load

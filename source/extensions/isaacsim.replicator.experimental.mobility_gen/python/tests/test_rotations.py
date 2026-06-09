@@ -139,6 +139,9 @@ class TestRotationFixes(omni.kit.test.AsyncTestCase):
         Before the fix, calling update_state before physics initialized would raise an
         AssertionError from get_dof_positions().  The fix adds an early-return guard on
         is_physics_tensor_entity_valid().
+
+        Returns:
+            None.
         """
 
         class _ConcreteRobot(MobilityGenRobot):
@@ -169,7 +172,11 @@ class TestRotationFixes(omni.kit.test.AsyncTestCase):
         self.assertIsNone(robot.joint_positions.get_value())
 
     async def test_update_state_reads_state_when_physics_valid(self) -> Any:
-        """update_state must populate all state buffers when physics is valid."""
+        """update_state must populate all state buffers when physics is valid.
+
+        Returns:
+            None.
+        """
 
         class _ConcreteRobot(MobilityGenRobot):
             z_offset = 0.0
@@ -210,7 +217,11 @@ class TestRotationFixes(omni.kit.test.AsyncTestCase):
         self.assertTrue(np.allclose(robot.angular_velocity.get_value(), ang_vel[0]))
 
     async def test_get_pose_2d_reads_cached_buffers(self) -> Any:
-        """get_pose_2d reads position/orientation buffers set by update_state and recovers yaw correctly."""
+        """get_pose_2d reads position/orientation buffers set by update_state and recovers yaw correctly.
+
+        Returns:
+            None.
+        """
 
         class _ConcreteRobot(MobilityGenRobot):
             z_offset = 0.0

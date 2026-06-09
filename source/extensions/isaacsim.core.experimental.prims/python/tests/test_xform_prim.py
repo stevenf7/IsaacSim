@@ -40,7 +40,13 @@ from .common import (
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
-    """Populate stage."""
+    """Populate stage.
+
+    Args:
+        max_num_prims: Maximum number of prims to create for a test case.
+        operation: Stage population operation to use.
+        **kwargs: Additional keyword arguments.
+    """
     assert operation == "wrap", "Other operations except 'wrap' are not supported"
     # create new stage
     await stage_utils.create_new_stage_async()
@@ -74,17 +80,37 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
         max_num_prims=1,
     )
     async def test_runtime_instance_creation(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test runtime instance creation."""
+        """Test runtime instance creation.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test.
+        """
         XformPrim("/World/A_0")
 
     @parametrize(backends=["usd"], operations=["wrap"], prim_class=XformPrim, populate_stage_func=populate_stage)
     async def test_len(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test len."""
+        """Test len.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         self.assertEqual(len(prim), num_prims, f"Invalid XformPrim ({num_prims} prims) len")
 
     @parametrize(backends=["usd"], operations=["wrap"], prim_class=XformPrim, populate_stage_func=populate_stage)
     async def test_visibilities(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test visibilities."""
+        """Test visibilities.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test.
+        """
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
             for v0, expected_v0 in draw_sample(shape=(expected_count, 1), dtype=wp.bool):
@@ -101,7 +127,13 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_world_poses(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test world poses."""
+        """Test world poses.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         # check backend
         if backend in ["usdrt", "fabric"]:
             await omni.kit.app.get_app().next_update_async()
@@ -128,7 +160,13 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_local_poses(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test local poses."""
+        """Test local poses.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         # check backend
         if backend in ["usdrt", "fabric"]:
             await omni.kit.app.get_app().next_update_async()
@@ -155,7 +193,13 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_local_scales(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test local scales."""
+        """Test local scales.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         # check backend
         if backend in ["usdrt", "fabric"]:
             await omni.kit.app.get_app().next_update_async()
@@ -173,7 +217,13 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], operations=["wrap"], prim_class=XformPrim, populate_stage_func=populate_stage)
     async def test_default_state(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test default state."""
+        """Test default state.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         prim.reset_xform_op_properties()
         # test cases
         for indices, expected_count in draw_indices(count=num_prims, step=2):
@@ -192,7 +242,14 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], operations=["wrap"], prim_class=XformPrim, populate_stage_func=populate_stage)
     async def test_visual_materials(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test visual materials."""
+        """Test visual materials.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test.
+        """
         from isaacsim.core.experimental.materials import OmniGlassMaterial, OmniPbrMaterial, PreviewSurfaceMaterial
 
         choices = [
@@ -239,7 +296,13 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], operations=["wrap"], prim_class=XformPrim, populate_stage_func=populate_stage)
     async def test_events(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test events."""
+        """Test events.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         prim.reset_xform_op_properties()
         # trigger events automatically
         timeline = omni.timeline.get_timeline_interface()

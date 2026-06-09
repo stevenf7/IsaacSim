@@ -57,7 +57,10 @@ def _capture_log_warn() -> object:
 
     Restores the original ``carb.log_warn`` on exit even if the body raises,
     so test isolation is preserved across the rest of the suite.
-    """
+
+    Yields:
+        Captured warning messages.
+    """  # noqa: DOC201, DOC403
     captured: list[str] = []
     original = carb.log_warn
 
@@ -84,6 +87,12 @@ class AncestryTierAssignmentTests(omni.kit.test.AsyncTestCase):
         the former produces a proper test failure, the latter narrows the type
         for the rest of the body (basedpyright cannot see through assert helpers).
         Wrapped here so each test stays a single-statement check.
+
+        Args:
+            tiers: Expected tier assignment, or None when no tiers are expected.
+
+        Returns:
+            Validated tier assignment.
         """
         assert tiers is not None, "_assign_ancestry_tiers returned None unexpectedly"
         return tiers
@@ -342,6 +351,9 @@ class _RecordingTierBatch:
     calls raise a synthetic missing-xformOps error so the per-tier reset retry
     is exercised. ``reset_xform_op_properties`` is recorded so the test can
     assert each tier reset itself independently.
+
+    Args:
+        fail_first_n: Number of initial batch attempts to fail.
     """
 
     def __init__(self, *, fail_first_n: int) -> None:

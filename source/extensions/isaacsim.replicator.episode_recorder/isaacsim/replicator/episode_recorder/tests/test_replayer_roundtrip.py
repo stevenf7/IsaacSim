@@ -47,7 +47,12 @@ _ECHO_TYPE_ID = "_test_echo_v2"
 
 
 class _EchoRecordable(Recordable):
-    """Records an externally-supplied value per tick and records what it was asked to apply."""
+    """Records an externally-supplied value per tick and records what it was asked to apply.
+
+    Args:
+        group: Recordable HDF5 group path.
+        value: Value to process.
+    """
 
     TYPE_ID = _ECHO_TYPE_ID
 

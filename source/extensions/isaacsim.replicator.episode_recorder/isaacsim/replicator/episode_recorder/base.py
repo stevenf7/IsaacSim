@@ -128,18 +128,15 @@ class Recordable(ABC):
 
     Subclasses must set a unique :attr:`TYPE_ID`. Register with
     :func:`register_recordable` so :meth:`from_manifest` can be invoked during replay.
+
+    Args:
+        group: Recordable HDF5 group path.
     """
 
     #: Stable string id used for registry lookup. Must be unique across all recordables.
     TYPE_ID: str = ""
 
     def __init__(self, *, group: str) -> None:
-        """Create a recordable binding.
-
-        Args:
-        group: HDF5 group path relative to an episode (e.g. ``"state/robot"``).
-            Leading / trailing slashes are stripped; empty segments are rejected.
-        """
         if not isinstance(group, str):
             raise TypeError(f"Recordable.group must be a str, got {type(group).__name__}.")
         normalized = group.strip().strip("/")
@@ -151,10 +148,18 @@ class Recordable(ABC):
 
     @abstractmethod
     def describe_channels(self) -> dict[str, ChannelDescriptor]:
-        """Return per-channel descriptors keyed by channel name (no slashes)."""
+        """Return per-channel descriptors keyed by channel name (no slashes).
+
+        Returns:
+            Channel descriptors keyed by channel name.
+        """
 
     def on_session_open(self, stage: Any) -> None:
-        """Called once per :meth:`EpisodeRecorder.open_session`. Bind live handles here."""
+        """Called once per :meth:`EpisodeRecorder.open_session`. Bind live handles here.
+
+        Args:
+            stage: USD stage to use.
+        """
 
     def on_session_close(self) -> None:
         """Called once per :meth:`EpisodeRecorder.close_session`. Release handles here."""
@@ -167,7 +172,11 @@ class Recordable(ABC):
 
     @abstractmethod
     def sample(self) -> dict[str, np.ndarray | float | int]:
-        """Return one frame of data. Keys must exactly match :meth:`describe_channels`."""
+        """Return one frame of data. Keys must exactly match :meth:`describe_channels`.
+
+        Returns:
+            Sampled frame data keyed by channel name.
+        """
 
     def pose_paths(self) -> list[str] | None:
         """Prim paths this recordable wants sampled via the shared pose batch.
@@ -181,6 +190,9 @@ class Recordable(ABC):
 
         Return ``None`` (default) or an empty list to opt out; the recorder will call
         :meth:`sample` directly each tick instead.
+
+        Returns:
+            Prim paths for shared pose batching, or None when disabled.
         """
         return None
 
@@ -198,6 +210,13 @@ class Recordable(ABC):
 
         Default implementation raises :class:`NotImplementedError`; opt-in recordables
         must override.
+
+        Args:
+            positions: Batched positions for this recordable.
+            orientations: Batched orientations for this recordable.
+
+        Returns:
+            Sampled frame data keyed by channel name.
         """
         raise NotImplementedError(
             f"{type(self).__name__} opted into pose batching via pose_paths() but did "
@@ -210,6 +229,10 @@ class Recordable(ABC):
 
         Implementations should treat missing / malformed channels defensively in
         ``best_effort`` mode and raise in ``strict`` mode.
+
+        Args:
+            frame: Frame data keyed by channel name.
+            policy: Replay policy controlling error handling.
         """
 
     @abstractmethod
@@ -218,9 +241,19 @@ class Recordable(ABC):
 
         Must include ``"type"`` (= :attr:`TYPE_ID`) and ``"group"``, plus any extra
         fields :meth:`from_manifest` needs to reconstruct the instance.
+
+        Returns:
+            JSON-friendly manifest entry.
         """
 
     @classmethod
     @abstractmethod
     def from_manifest(cls, entry: Mapping[str, Any]) -> Recordable:
-        """Inverse of :meth:`to_manifest`: construct a recordable from the manifest entry."""
+        """Inverse of :meth:`to_manifest`: construct a recordable from the manifest entry.
+
+        Args:
+            entry: Manifest entry used to reconstruct the recordable.
+
+        Returns:
+            Recordable reconstructed from the manifest entry.
+        """

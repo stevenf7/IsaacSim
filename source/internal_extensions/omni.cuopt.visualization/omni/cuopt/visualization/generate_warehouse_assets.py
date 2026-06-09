@@ -15,7 +15,17 @@ from .common import read_json, translate_rotate_scale_prim
 
 
 def generate_shelves_assets(stage: Any, shelves_prim_path: Any, shelves_json_path: Any, shelves_asset_path: Any) -> Any:
-    """Create shelf Xforms from JSON, reference their assets, and apply transforms."""
+    """Create shelf Xforms from JSON, reference their assets, and apply transforms.
+
+    Args:
+        stage: Stage where shelf prims are authored.
+        shelves_prim_path: Parent path for generated shelf prims.
+        shelves_json_path: Path to the shelf configuration JSON file.
+        shelves_asset_path: Base asset path used with each shelf asset extension.
+
+    Returns:
+        None.
+    """
     shelves_data = read_json(shelves_json_path)
 
     for shelf_id, shelf_details in shelves_data.items():
@@ -38,7 +48,17 @@ def generate_shelves_assets(stage: Any, shelves_prim_path: Any, shelves_json_pat
 def generate_conveyor_assets(
     stage: Any, conveyor_prim_path: Any, conveyor_json_path: Any, conveyor_asset_path: Any
 ) -> Any:
-    """Create conveyor Xforms from JSON, reference their assets, and apply transforms."""
+    """Create conveyor Xforms from JSON, reference their assets, and apply transforms.
+
+    Args:
+        stage: Stage where conveyor prims are authored.
+        conveyor_prim_path: Parent path for generated conveyor prims.
+        conveyor_json_path: Path to the conveyor configuration JSON file.
+        conveyor_asset_path: Base asset path used with each conveyor asset extension.
+
+    Returns:
+        None.
+    """
     conveyors_data = read_json(conveyor_json_path)
 
     for conveyor_id, conveyor_details in conveyors_data.items():

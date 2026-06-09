@@ -30,7 +30,13 @@ from isaacsim.core.experimental.prims.tests.common import cprint, draw_choice, d
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
-    """Create a fresh stage and author existing sphere prims for wrap-mode tests."""
+    """Create a fresh stage and author existing sphere prims for wrap-mode tests.
+
+    Args:
+        max_num_prims: Maximum number of prims to prepare on the stage.
+        operation: Operation mode selected by parametrization.
+        **kwargs: Additional arguments supplied by parametrization.
+    """
     # create new stage
     await stage_utils.create_new_stage_async()
     # define prims
@@ -86,7 +92,14 @@ class TestShape(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=Sphere, populate_stage_func=populate_stage)
     async def test_display_colors(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test display colors."""
+        """Test display colors.
+
+        Args:
+            prim: Object wrapper collection under test.
+            num_prims: Number of prims in the parametrized collection.
+            device: Device expected for returned arrays.
+            backend: Backend name selected by parametrization.
+        """
         choices = [
             (0.1, 0.2, 0.3),  # RGB tuple
             "#aBc",  # case-insensitive short hex RGB

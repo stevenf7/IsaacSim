@@ -29,7 +29,15 @@ COMPLETE_MARKER_NAME = ".complete"
 
 
 def replay_config_from_args(source_recording: str, args: argparse.Namespace) -> dict[str, Any]:
-    """Build the replay settings manifest for a recording."""
+    """Build the replay settings manifest for a recording.
+
+    Args:
+        source_recording: Path to the source recording directory.
+        args: Parsed replay arguments.
+
+    Returns:
+        Replay settings manifest dictionary.
+    """
     return {
         "source_recording": os.path.abspath(source_recording),
         "self_contained": args.self_contained,
@@ -46,7 +54,12 @@ def replay_config_from_args(source_recording: str, args: argparse.Namespace) -> 
 
 
 def write_replay_config(output_path: str, replay_config: dict[str, Any]) -> None:
-    """Write replay settings to disk."""
+    """Write replay settings to disk.
+
+    Args:
+        output_path: Replay output directory.
+        replay_config: Replay settings manifest to write.
+    """
     os.makedirs(output_path, exist_ok=True)
     with open(os.path.join(output_path, REPLAY_CONFIG_NAME), "w") as f:
         yaml.safe_dump(replay_config, f, default_flow_style=False, sort_keys=False)
@@ -67,7 +80,12 @@ def _read_replay_config(output_path: str) -> dict[str, Any] | None:
 
 
 def mark_replay_complete(output_path: str, frames_rendered: int) -> None:
-    """Write the replay completion marker."""
+    """Write the replay completion marker.
+
+    Args:
+        output_path: Replay output directory.
+        frames_rendered: Number of frames rendered during replay.
+    """
     os.makedirs(output_path, exist_ok=True)
     with open(os.path.join(output_path, COMPLETE_MARKER_NAME), "w") as f:
         f.write(f"frames_rendered: {frames_rendered}\n")
@@ -84,6 +102,15 @@ def is_complete(
 
     If a marker exists but the stored config is missing, invalid, or different,
     the marker is removed so the next run cannot skip stale output.
+
+    Args:
+        output_path: Replay output directory to inspect.
+        expected_config: Replay configuration required for the marker to be valid.
+        replay_label: Optional label used in warning messages. Defaults to None.
+        log_warn: Optional warning callback. Defaults to None.
+
+    Returns:
+        True if the replay completion marker exists and matches ``expected_config``.
     """
     complete_marker = os.path.join(output_path, COMPLETE_MARKER_NAME)
     if not os.path.isfile(complete_marker):

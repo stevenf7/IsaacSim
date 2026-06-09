@@ -28,6 +28,12 @@ class OgnRandom3f:
 
         Each component is sampled uniformly between the corresponding component
         of ``inputs:minimum`` and ``inputs:maximum``.
+
+        Args:
+            db: Database object containing node inputs and outputs.
+
+        Returns:
+            True after ``outputs:output`` is written.
         """
         min_range = db.inputs.minimum
         max_range = db.inputs.maximum

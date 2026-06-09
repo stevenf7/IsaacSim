@@ -194,7 +194,14 @@ class TestRecorderBasic(omni.kit.test.AsyncTestCase):
     async def run_recorder_loop_basic_writer_all_annotators_async(
         self, num_iterations: int, num_frames: int, out_dir: str, rp_data: object
     ) -> None:
-        """Run the recorder loop with the basic writer and all annotators enabled."""
+        """Run the recorder loop with the basic writer and all annotators enabled.
+
+        Args:
+            num_iterations: Number of recorder loop iterations to run.
+            num_frames: Number of frames to capture.
+            out_dir: Output directory for recorder data.
+            rp_data: Render product data used by the recorder.
+        """
         # Create a new instance of the SyntheticRecorder
         recorder = SyntheticRecorder()
         recorder.num_frames = num_frames

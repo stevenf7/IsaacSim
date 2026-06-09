@@ -36,7 +36,14 @@ GeneratePathsOutput = _globs["GeneratePathsOutput"]
 
 
 def _make_output(visited: np.ndarray) -> "GeneratePathsOutput":
-    """Construct a GeneratePathsOutput with the given visited grid."""
+    """Construct a GeneratePathsOutput with the given visited grid.
+
+    Args:
+        visited: Visited-cell grid.
+
+    Returns:
+        A path planner output object using ``visited`` and empty predecessor arrays.
+    """
     shape = visited.shape
     return GeneratePathsOutput(
         visited=visited,

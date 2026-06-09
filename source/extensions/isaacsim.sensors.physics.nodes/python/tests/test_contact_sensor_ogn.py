@@ -197,7 +197,15 @@ class TestContactSensorOgnWithAnt(omni.kit.test.AsyncTestCase):
             self.assertIsNotNone(sensor)
 
     def _setup_contact_sensor_ogn_graph(self, sensor_path: str, graph_path: str = "/controller_graph") -> Any:
-        """Create the OGN graph that reads contact sensor outputs."""
+        """Create the OGN graph that reads contact sensor outputs.
+
+        Args:
+            sensor_path: Contact sensor prim path to read.
+            graph_path: OmniGraph path to create.
+
+        Returns:
+            Created contact sensor reader node.
+        """
         if self._stage.GetPrimAtPath(graph_path).IsValid():
             stage_utils.delete_prim(graph_path)
 

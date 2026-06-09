@@ -46,7 +46,11 @@ class TestJointStateSensor(omni.kit.test.AsyncTestCase):
         self.joint_state_sensor = None
 
     async def create_simple_articulation(self, physics_rate: Any = 60) -> None:
-        """Create simple articulation."""
+        """Create simple articulation.
+
+        Args:
+            physics_rate: Physics simulation rate in Hz.
+        """
         await stage_utils.open_stage_async(
             self._assets_root_path + "/Isaac/Robots/IsaacSim/SimpleArticulation/simple_articulation.usd"
         )

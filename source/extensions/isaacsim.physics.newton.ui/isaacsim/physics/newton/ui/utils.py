@@ -148,7 +148,19 @@ class DisableByCallbackBuilder(UsdPropertiesWidgetBuilder):
         widget_kwargs: dict[str, Any],
         disable_callback: Callable[[Any, Sequence[Any]], tuple[bool, str, str]],
     ) -> Any:
-        """Create a new widget with an overlay that disables based on a callback."""
+        """Create a new widget with an overlay that disables based on a callback.
+
+        Args:
+            stage: USD stage containing the edited property.
+            prop: Property descriptor for the widget.
+            prim_paths: Prim paths targeted by the widget.
+            label_kwargs: Keyword arguments for the widget label.
+            widget_kwargs: Keyword arguments for the widget body.
+            disable_callback: Callback returning disabled state and tooltip metadata.
+
+        Returns:
+            The created USD property model.
+        """
 
         def _tooltip(resolver_name: str, attr_name: str) -> str:
             if not resolver_name:
@@ -192,7 +204,19 @@ class HideByCallbackBuilder(UsdPropertiesWidgetBuilder):
         widget_kwargs: dict[str, Any],
         hide_callback: Callable[[Any, Sequence[Any]], bool],
     ) -> Any:
-        """Create a new widget that is hidden when the callback returns True."""
+        """Create a new widget that is hidden when the callback returns True.
+
+        Args:
+            stage: USD stage containing the edited property.
+            prop: Property descriptor for the widget.
+            prim_paths: Prim paths targeted by the widget.
+            label_kwargs: Keyword arguments for the widget label.
+            widget_kwargs: Keyword arguments for the widget body.
+            hide_callback: Callback returning whether the widget should be hidden.
+
+        Returns:
+            The visible widget model or a hidden placeholder attribute model.
+        """
         hidden = hide_callback(stage, prim_paths)
         if not hidden:
             model = cls.build(

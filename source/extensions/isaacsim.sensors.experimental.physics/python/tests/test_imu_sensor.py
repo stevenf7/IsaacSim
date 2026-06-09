@@ -71,13 +71,24 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         self._ant_config = None
 
     def _get_imu_sensor(self, prim_path: str) -> IMUSensor:
-        """Get or create a cached IMUSensor for the given path."""
+        """Get or create a cached IMUSensor for the given path.
+
+        Args:
+            prim_path: USD path to the IMU sensor prim.
+
+        Returns:
+            Cached IMU sensor for ``prim_path``.
+        """
         if prim_path not in self._imu_sensors:
             self._imu_sensors[prim_path] = IMUSensor(prim_path)
         return self._imu_sensors[prim_path]
 
     async def _setup_ant(self, physics_rate: Any = 60) -> None:
-        """Load the ant scene and configure ant-specific test data."""
+        """Load the ant scene and configure ant-specific test data.
+
+        Args:
+            physics_rate: Physics simulation rate in Hz.
+        """
         self._ant_config = await setup_ant_scene(physics_rate)
         self._stage = stage_utils.get_current_stage()
         await omni.kit.app.get_app().next_update_async()
@@ -105,7 +116,11 @@ class TestIMUSensor(omni.kit.test.AsyncTestCase):
         return self._ant_config.sensor_quatd
 
     async def _setup_simple_articulation(self, physics_rate: Any = 60) -> None:
-        """Load the simple articulation scene for articulation-based tests."""
+        """Load the simple articulation scene for articulation-based tests.
+
+        Args:
+            physics_rate: Physics simulation rate in Hz.
+        """
         self.pivot_path = "/Articulation/CenterPivot"
         self.slider_path = "/Articulation/Slider"
         self.arm_path = "/Articulation/Arm"

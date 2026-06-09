@@ -34,7 +34,14 @@ logging.basicConfig(level=logging.INFO, format=log_fmt, datefmt=date_fmt)
 
 
 def set_log_level(level: Any) -> Any:
-    """Set this client's module logger level."""
+    """Set this client's module logger level.
+
+    Args:
+        level: Logging level to apply to this module's logger.
+
+    Returns:
+        This function does not return a value.
+    """
     log.setLevel(level)
 
 
@@ -58,7 +65,14 @@ def _read_zip_dir(files: Any) -> Any:
 
 
 def check_compressed(datafile: Any) -> Any:
-    """Return True when a problem-data file appears to be zlib-compressed."""
+    """Return True when a problem-data file appears to be zlib-compressed.
+
+    Args:
+        datafile: Path to the problem-data file to inspect.
+
+    Returns:
+        ``True`` if the file cannot be read as plain text and appears compressed.
+    """
     # zlib compressed files will give an error
     # trying to read the first few bytes
     with open(datafile) as a:
@@ -72,53 +86,52 @@ def check_compressed(datafile: Any) -> Any:
 class CuOptServiceClient:
     """Invoke cuOpt optimized-routing functions through NVIDIA Cloud Functions.
 
-    Parameters
-    ----------
-    client_id (str): NOTE: This is deprecated, use SAK.
+    Args:
+        client_id: NOTE: This is deprecated, use SAK.
             The client ID obtained during the registration
             process. Only one of the two authorization
             methods (SAK or CLIENT ID-SECRET) should be used.
-    client_secret (str): NOTE: This is deprecated, use SAK.
+        client_secret: NOTE: This is deprecated, use SAK.
             The client secret obtained during the
             registration process. Only one of the two authorization
             methods (SAK or CLIENT ID-SECRET) should be used.
-    sak (str): The sak obtained through NGC. Only one of the two authorization
+        sak: The sak obtained through NGC. Only one of the two authorization
             methods (SAK or CLIENT ID-SECRET) should be used.
-    function_name (str, optional): The name of the function, provided
+        function_name: The name of the function, provided
             during registration or discoverable via a function_list API
             call. This value may be omitted if all available functions have
             the same name or if function_id is set instead. The client will
             select the latest available version of the function with this name.
             Ignored if function_id is set.
-    function_id (str, optional): The unique identifier of a function,
+        function_id: The unique identifier of a function,
             provided during registration or discoverable via a
             function_list API call. Takes precedence over function_name if
             both are set. The client will select the latest available version
             of the function with this id.
-    function_version_id (str, optional): Selects a particular version of
+        function_version_id: Selects a particular version of
             a function specified by name or id. This should only be used when
             there are multiple versions available that are not API compatible.
             If this value is omitted the client will select the latest version
             of the function.
-    polling_interval (int, optional): The duration in seconds between
+        polling_interval: The duration in seconds between
             consecutive polling attempts. Defaults to 1.
-    token_expiration_padding (int, optional): The buffer time in
+        token_expiration_padding: The buffer time in
             seconds before the token expiration time, during which a new
             token will be requested. Defaults to 120.
-    request_excess_timeout (int, optional): The time in seconds to poll
+        request_excess_timeout: The time in seconds to poll
             for completion of a request. If the polling time expires before
             the request is finished, the client may re-poll the request
             (ie, polling time is effectively unlimited using multiple calls).
             Defaults to 120.
-    api_path (str, optional): Deprecated. Set auth/api endpoints for
+        api_path: Deprecated. Set auth/api endpoints for
              cuOpt, useful only for NVIDIA testing.
-    disable_compression (boolean, optional): Disable zlib compression
+        disable_compression: Disable zlib compression
             of large files.
-    disable_version_string (boolean, optional): Do not send the client
+        disable_version_string: Do not send the client
             version to the server.
-    only_validate (boolean, optional): Only validates input and doesn't
+        only_validate: Only validates input and doesn't
             add to billing
-    config_path (boolean, optional): Path of a JSON config file for setting
+        config_path: Path of a JSON config file for setting
             client defaults in JSON. These values will be used if the
             corresponding arguments are not passed to __init__.
             Format is:
@@ -152,7 +165,6 @@ class CuOptServiceClient:
         only_validate: Any = False,
         config_path: Any = "",
     ) -> None:
-        """Initialize credentials, endpoint selection, function versioning, and polling options."""
         self.only_validate = only_validate
         if (client_id or client_secret) and sak:
             raise ValueError("Only one authetication is expected client id/secret or sak")
@@ -267,7 +279,16 @@ class CuOptServiceClient:
                 raise
 
     def get_func_defaults_from_config(self, name: Any, id: Any, vid: Any) -> Any:
-        """Fill unset function name, id, or version id from the loaded config defaults."""
+        """Fill unset function name, id, or version id from the loaded config defaults.
+
+        Args:
+            name: Function name passed by the caller.
+            id: Function ID passed by the caller.
+            vid: Function version ID passed by the caller.
+
+        Returns:
+            Function name, ID, and version ID after applying config defaults.
+        """
         n = name
         i = id
         v = vid
@@ -680,15 +701,15 @@ class CuOptServiceClient:
         The req_id and asset_id are returned
         in the exception.
 
-        Parameters
-        ----------
-        req_id : str
-            A uuid identifying the original request, returned in
-            a TimeoutError exception.
-        asset_id : str
-            A uuid identifying the asset used (if any) for the original
-            request, returned in a TimeoutError exception. The client
-            will delete this asset when a result is returned.
+        Args:
+            req_id: A uuid identifying the original request, returned in
+                a TimeoutError exception.
+            asset_id: A uuid identifying the asset used (if any) for the original
+                request, returned in a TimeoutError exception. The client
+                will delete this asset when a result is returned.
+
+        Returns:
+            Cleaned cuOpt response for the original request.
         """
         if (not self.token) and (not self._check_token_cache()):
             log.info("Requesting New Token")
@@ -703,14 +724,15 @@ class CuOptServiceClient:
     def get_optimized_routes(self, cuopt_problem_json_data: Any) -> Any:
         """Submit a cuOpt routing problem and return the optimized route response.
 
-        Parameters
-        ----------
-        cuopt_problem_json_data : dict or str
-            This is either the problem data as a dictionary or the
-            path of a file containing the problem data. The file may be
-            a text file containing a dictionary as JSON, or a zlib-compressed
-            file containing a dictionary as JSON. Please refer to the server
-            doc for the structure of this dictionary.
+        Args:
+            cuopt_problem_json_data: This is either the problem data as a dictionary or the
+                path of a file containing the problem data. The file may be
+                a text file containing a dictionary as JSON, or a zlib-compressed
+                file containing a dictionary as JSON. Please refer to the server
+                doc for the structure of this dictionary.
+
+        Returns:
+            Optimized route response, or validation response when validation-only mode is enabled.
         """
         action = "cuOpt_OptimizedRouting" if not self.only_validate else "cuOpt_RoutingValidator"
         cuopt_response_dict = self._send_request(cuopt_problem_json_data, action=action)
@@ -726,7 +748,11 @@ class CuOptServiceClient:
         return self._cleanup_response(cuopt_response_dict)
 
     def get_functions(self) -> Any:
-        """Lists all availble functions for the user in NVCF."""
+        """Lists all availble functions for the user in NVCF.
+
+        Returns:
+            Function-list response from NVCF.
+        """
         if (not self.token) and (not self._check_token_cache()):
             log.info("Requesting New Token")
             self._get_jwt_token()
@@ -753,17 +779,17 @@ class CuOptServiceClient:
         The current list of functions can be retrieved with
         get_functions().
 
-        Parameters
-        ----------
-        name : str
-            Name of a function to invoke. If name is the empty
-            string and all available functions have the same name,
-            that name will be used.
-        version_id: str
-            Optional version id of the function to invoke. If there
-            are multiple versions of the named function, version_id
-            can be used to select a particular version. If version_id is
-            not set, the latest version of the named function will be chosen.
+        Args:
+            name: Name of a function to invoke. If name is the empty
+                string and all available functions have the same name,
+                that name will be used.
+            version_id: Optional version id of the function to invoke. If there
+                are multiple versions of the named function, version_id
+                can be used to select a particular version. If version_id is
+                not set, the latest version of the named function will be chosen.
+
+        Returns:
+            This method updates the selected function fields in place.
         """
         versions = self._read_version_cache()
 
@@ -803,16 +829,16 @@ class CuOptServiceClient:
         The current list of functions can be retrieved with
         get_functions().
 
-        Parameters
-        ----------
-        id : str
-            The id of a function to invoke.
-        version_id: str
-            Optional version id of the function to invoke. If there
-            are multiple versions of the function specified by id, version_id
-            can be used to select a particular version. If version_id is
-            not set, the latest version of the specified function will be
-            chosen.
+        Args:
+            id: The id of a function to invoke.
+            version_id: Optional version id of the function to invoke. If there
+                are multiple versions of the function specified by id, version_id
+                can be used to select a particular version. If version_id is
+                not set, the latest version of the specified function will be
+                chosen.
+
+        Returns:
+            This method updates the selected function fields in place.
         """
         versions = self._read_version_cache()
 

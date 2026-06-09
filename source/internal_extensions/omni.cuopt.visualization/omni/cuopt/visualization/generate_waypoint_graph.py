@@ -43,7 +43,14 @@ class NetworkSimpleViz:
 
     # Assign Material to Waypoints
     def add_waypoint_material(self, stage: Any) -> Any:
-        """Create the emissive material used by default waypoint nodes and edges."""
+        """Create the emissive material used by default waypoint nodes and edges.
+
+        Args:
+            stage: Stage where the waypoint material prim is created.
+
+        Returns:
+            None.
+        """
         CreateAndBindMdlMaterialFromLibrary(
             mdl_name="OmniPBR.mdl",
             mtl_name="OmniPBR",
@@ -61,7 +68,16 @@ class NetworkSimpleViz:
 
     # Visualize nodes in the Waypoint Graph network
     def add_node_to_scene(self, stage: Any, node_prim_path: Any, translation: Any) -> Any:
-        """Author a waypoint node sphere at the requested graph coordinate."""
+        """Author a waypoint node sphere at the requested graph coordinate.
+
+        Args:
+            stage: Stage where the node prim is authored.
+            node_prim_path: Path for the generated node prim.
+            translation: Node position to apply to the generated prim.
+
+        Returns:
+            None.
+        """
         node_prim_geom = UsdGeom.Sphere.Define(stage, node_prim_path)
 
         if self.waypoint_height is not None:
@@ -94,7 +110,17 @@ class NetworkSimpleViz:
 
     # Visualize edges in the Waypoint Graph network
     def add_edge_to_scene(self, stage: Any, edge_prim_path: Any, point_from: Any, point_to: Any) -> Any:
-        """Author a cylinder between two nodes and initialize its route weight."""
+        """Author a cylinder between two nodes and initialize its route weight.
+
+        Args:
+            stage: Stage where the edge prim is authored.
+            edge_prim_path: Path for the generated edge prim.
+            point_from: Start point of the edge cylinder.
+            point_to: End point of the edge cylinder.
+
+        Returns:
+            Initial edge weight based on the distance between the points.
+        """
         edge_prim_geom = UsdGeom.Cylinder.Define(stage, edge_prim_path)
 
         edge_vector = point_to - point_from
@@ -120,7 +146,15 @@ class NetworkSimpleViz:
 
     # Assign Material to routes and edges
     def get_route_material(self, stage: Any, i: Any) -> Any:
-        """Create and return an emissive material for one solved vehicle route."""
+        """Create and return an emissive material for one solved vehicle route.
+
+        Args:
+            stage: Stage where the route material prim is created.
+            i: Route color index.
+
+        Returns:
+            Created route material.
+        """
         route_material_name = "route_material_" + str(i)
         CreateAndBindMdlMaterialFromLibrary(
             mdl_name="OmniPBR.mdl",
@@ -140,7 +174,17 @@ class NetworkSimpleViz:
 
     # Visualize optimized routes
     def display_routes(self, stage: Any, graph: Any, waypoint_graph_edge_path: Any, routes: Any) -> Any:
-        """Reset edge styling, then color each edge used by the cuOpt solution."""
+        """Reset edge styling, then color each edge used by the cuOpt solution.
+
+        Args:
+            stage: Stage containing waypoint edge prims.
+            graph: Graph model with edge path mappings.
+            waypoint_graph_edge_path: Parent path for waypoint edge prims.
+            routes: cuOpt route data keyed by vehicle.
+
+        Returns:
+            None.
+        """
         all_edges = graph.path_edge_map.keys()
         for i, edge_path in enumerate(all_edges):
             edge_prim = stage.GetPrimAtPath(edge_path)
@@ -169,7 +213,17 @@ class NetworkSimpleViz:
 
 
 def visualize_and_record_node(model: Any, stage: Any, node_prim_path: Any, translation: Any) -> Any:
-    """Create a node prim and record its model-index to USD-path mappings."""
+    """Create a node prim and record its model-index to USD-path mappings.
+
+    Args:
+        model: Graph model whose node mappings are updated.
+        stage: Stage where the node prim is authored.
+        node_prim_path: Path for the generated node prim.
+        translation: Node position to apply to the generated prim.
+
+    Returns:
+        None.
+    """
     model.visualization.add_node_to_scene(stage, node_prim_path, translation)
 
     # Data recording
@@ -180,7 +234,18 @@ def visualize_and_record_node(model: Any, stage: Any, node_prim_path: Any, trans
 
 
 def visualize_and_record_edge(model: Any, stage: Any, edge_prim_path: Any, point_from: Any, point_to: Any) -> Any:
-    """Create an edge prim and record its weight plus USD-path mappings."""
+    """Create an edge prim and record its weight plus USD-path mappings.
+
+    Args:
+        model: Graph model whose edge mappings and weights are updated.
+        stage: Stage where the edge prim is authored.
+        edge_prim_path: Path for the generated edge prim.
+        point_from: Start point of the edge cylinder.
+        point_to: End point of the edge cylinder.
+
+    Returns:
+        None.
+    """
     weight = model.visualization.add_edge_to_scene(stage, edge_prim_path, point_from, point_to)
 
     # Data recording
@@ -191,7 +256,16 @@ def visualize_and_record_edge(model: Any, stage: Any, edge_prim_path: Any, point
 
 
 def update_weights(stage: Any, model: Any, semantics: Any) -> Any:
-    """Recompute graph edge weights from visible semantic-zone overlap penalties."""
+    """Recompute graph edge weights from visible semantic-zone overlap penalties.
+
+    Args:
+        stage: Stage containing graph edges and semantic zone prims.
+        model: Graph model whose weight list is updated.
+        semantics: Semantic zone paths to evaluate against graph edges.
+
+    Returns:
+        None.
+    """
     edges = model.path_edge_map.keys()
 
     # Only calculate for visible semantic zones
@@ -255,7 +329,16 @@ def update_weights(stage: Any, model: Any, semantics: Any) -> Any:
 
 # Get Nodes closest to point (x,y,z)
 def get_closest_node(stage: Any, model: Any, point: Any) -> Any:
-    """Return the waypoint node prim path nearest to a 3D order location."""
+    """Return the waypoint node prim path nearest to a 3D order location.
+
+    Args:
+        stage: Stage containing waypoint node prims.
+        model: Graph model with node path mappings.
+        point: Location to compare against waypoint node positions.
+
+    Returns:
+        Path of the nearest waypoint node prim, or ``None`` when no nodes exist.
+    """
     min_dist = None
     closest_node_path = None
     for node_path in model.path_node_map:
@@ -274,7 +357,17 @@ def get_closest_node(stage: Any, model: Any, point: Any) -> Any:
 def visualize_waypoint_graph(
     stage: Any, model: Any, waypoint_graph_node_path: Any, waypoint_graph_edge_path: Any
 ) -> Any:
-    """Create node and edge prims for a loaded waypoint graph model."""
+    """Create node and edge prims for a loaded waypoint graph model.
+
+    Args:
+        stage: Stage where waypoint graph prims are authored.
+        model: Graph model containing node and edge data.
+        waypoint_graph_node_path: Parent path for generated node prims.
+        waypoint_graph_edge_path: Parent path for generated edge prims.
+
+    Returns:
+        None.
+    """
     model.visualization = NetworkSimpleViz()
 
     check_build_base_path(stage, waypoint_graph_node_path, final_xform=True)
@@ -303,7 +396,15 @@ def visualize_waypoint_graph(
 
 
 def load_waypoint_graph_from_scene(stage: Any, model: Any) -> Any:
-    """Populate a graph model from existing waypoint node and edge prims in the stage."""
+    """Populate a graph model from existing waypoint node and edge prims in the stage.
+
+    Args:
+        stage: Stage containing existing waypoint node and edge prims.
+        model: Graph model to populate from the stage.
+
+    Returns:
+        None.
+    """
     nodes = stage.GetPrimAtPath("/World/Network/WaypointGraph/Nodes").GetChildren()
 
     edge_names = stage.GetPrimAtPath("/World/Network/WaypointGraph/Edges").GetChildrenNames()

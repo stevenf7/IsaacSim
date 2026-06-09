@@ -51,6 +51,10 @@ class TestTimeSampleStorage(omni.kit.test.AsyncTestCase):
         """Manually verify that samples are monotonically increasing in time.
 
         This replaces the removed validateSamplesMonotonic C++ function.
+
+        Args:
+            samples: Time sample entries to validate.
+            message: Assertion message prefix to use when monotonicity checks fail.
         """
         for i in range(1, len(samples)):
             prev_entry = samples[i - 1]

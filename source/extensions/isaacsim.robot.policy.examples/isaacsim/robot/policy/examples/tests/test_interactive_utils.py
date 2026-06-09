@@ -120,7 +120,11 @@ class TestInteractiveExamplePhysicsStateRoundtrip(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     def _run_roundtrip(self, example: object) -> None:
-        """Simulate ``setup_scene`` + ``physics_cleanup`` and assert state is restored."""
+        """Simulate ``setup_scene`` + ``physics_cleanup`` and assert state is restored.
+
+        Args:
+            example: Interactive example instance to exercise.
+        """
         before_device, before_fabric = snapshot_physics_simulation_state()
 
         # Mirror the snapshot performed at the top of ``setup_scene``.

@@ -86,7 +86,11 @@ class TestRos2ImageToBuffer(ROS2TestCase):
         await super().tearDown()
 
     def _create_golden_image(self, test_name: Any) -> None:
-        """Create and save a random golden image for the given test."""
+        """Create and save a random golden image for the given test.
+
+        Args:
+            test_name: Name of the image conversion test.
+        """
         h, w, encoding, channels, dtype, extra_config = self._TEST_IMAGE_CONFIG[test_name]
 
         # Use a fixed seed based on test name for reproducibility
@@ -143,7 +147,11 @@ class TestRos2ImageToBuffer(ROS2TestCase):
         self._current_config = (h, w, encoding, channels, dtype, extra_config)
 
     def _load_golden_image(self) -> Any:
-        """Load the golden image and adjust for the expected format."""
+        """Load the golden image and adjust for the expected format.
+
+        Returns:
+            Golden image data in the expected format.
+        """
         h, w, encoding, channels, dtype, extra_config = self._current_config
 
         # For float32 single-channel, load from TIFF (lossless)
@@ -169,11 +177,23 @@ class TestRos2ImageToBuffer(ROS2TestCase):
         return img
 
     def _image_callback(self, msg: Any) -> None:
-        """Handle received ROS2 Image messages."""
+        """Handle received ROS2 Image messages.
+
+        Args:
+            msg: Received ROS 2 image message.
+        """
         self._received_image = msg
 
     async def _publish_and_receive_image(self, ros2_image_msg: Any, topic_name: Any = "/test_image") -> Any:
-        """Publish an image and wait for subscriber to receive it."""
+        """Publish an image and wait for subscriber to receive it.
+
+        Args:
+            ros2_image_msg: ROS 2 image message to publish.
+            topic_name: Topic to publish and subscribe.
+
+        Returns:
+            Received ROS 2 image message, or None if no message arrives.
+        """
         # Create node, publisher, and subscriber
         node = self.create_node("image_test_node")
         publisher = self.create_publisher(node, Image, topic_name, get_qos_profile())

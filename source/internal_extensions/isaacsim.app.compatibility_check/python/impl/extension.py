@@ -28,7 +28,11 @@ class Extension(omni.ext.IExt):
     """Extension for running application compatibility checks on startup."""
 
     def on_startup(self, ext_id: str) -> None:
-        """Initialize the extension and run compatibility checks."""
+        """Initialize the extension and run compatibility checks.
+
+        Args:
+            ext_id: Extension identifier passed by Kit.
+        """
         # extension metadata
         import omni  # FIXME: UnboundLocalError: local variable 'omni' referenced before assignment
 

@@ -93,14 +93,28 @@ def _apply_opencv_distortion(
 def _apply_opencv_pinhole(
     cam: RtxCamera, pinhole: list[float], resolution: tuple[int, int] | None = None, **kw: Any
 ) -> None:
-    """Apply OpenCV pinhole distortion to a RtxCamera prim."""
+    """Apply OpenCV pinhole distortion to a RtxCamera prim.
+
+    Args:
+        cam: Camera prim wrapper to configure.
+        pinhole: Pinhole distortion coefficients.
+        resolution: Optional calibration image size.
+        **kw: Additional distortion attributes to set.
+    """
     _apply_opencv_distortion(cam, "opencvPinhole", pinhole, _PINHOLE_COEFF_NAMES, resolution, **kw)
 
 
 def _apply_opencv_fisheye(
     cam: RtxCamera, fisheye: list[float], resolution: tuple[int, int] | None = None, **kw: Any
 ) -> None:
-    """Apply OpenCV fisheye distortion to a RtxCamera prim."""
+    """Apply OpenCV fisheye distortion to a RtxCamera prim.
+
+    Args:
+        cam: Camera prim wrapper to configure.
+        fisheye: Fisheye distortion coefficients.
+        resolution: Optional calibration image size.
+        **kw: Additional distortion attributes to set.
+    """
     _apply_opencv_distortion(cam, "opencvFisheye", fisheye, _FISHEYE_COEFF_NAMES, resolution, **kw)
 
 
@@ -333,15 +347,15 @@ class TestRos2CameraInfo(ROS2TestCase):
         """Add a stereo camera, checkerboard, and lights to the scene.
 
         Args:
-            baseline (float): Baseline distance between the two cameras
-            resolution (Tuple[int, int]): Resolution of the cameras
-            focal_length (float): Focal length of the cameras
-            focus_distance (float): Focus distance of the cameras
-            use_system_time (bool, optional): Whether to use system time for timestamps. Defaults to False.
-            reset_simulation_time_on_stop (bool, optional): Whether to reset_simulation_time_on_stop. Defaults to True.
+            baseline: Baseline distance between the two cameras.
+            resolution: Resolution of the cameras.
+            focal_length: Focal length of the cameras.
+            focus_distance: Focus distance of the cameras.
+            use_system_time: Whether to use system time for timestamps.
+            reset_simulation_time_on_stop: Whether to reset simulation time on stop.
 
         Returns:
-            Tuple[RtxCamera, RtxCamera]: The left and right cameras
+            The left and right cameras.
 
         """
         # Orientation (90, -90, 0) degrees intrinsic XYZ = camera looking down +X axis
@@ -443,9 +457,9 @@ class TestRos2CameraInfo(ROS2TestCase):
         """Get the camera info and images from the stereo camera.
 
         Args:
-            opencv_distortion_model (str): OpenCV distortion model to test.
-            ros2_distortion_model (str): ROS2 distortion model to test.
-            distortion_coefficients (List[float]): Distortion coefficients to test.
+            opencv_distortion_model: OpenCV distortion model to test.
+            ros2_distortion_model: ROS2 distortion model to test.
+            distortion_coefficients: Distortion coefficients to test.
 
         """
         import rclpy
@@ -542,7 +556,7 @@ class TestRos2CameraInfo(ROS2TestCase):
         """Test stereo rectification.
 
         Args:
-            opencv_distortion_model (str): OpenCV distortion model to test.
+            opencv_distortion_model: OpenCV distortion model to test.
 
         """
         left_image_rect = self._get_rectified_image(self._image_left, self._camera_info_left, "left")

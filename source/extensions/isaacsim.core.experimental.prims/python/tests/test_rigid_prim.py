@@ -34,7 +34,13 @@ from .common import check_allclose, check_array, cprint, draw_indices, draw_samp
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
-    """Populate stage."""
+    """Populate stage.
+
+    Args:
+        max_num_prims: Maximum number of prims to create for a test case.
+        operation: Stage population operation to use.
+        **kwargs: Additional keyword arguments.
+    """
     assert operation == "wrap", "Other operations except 'wrap' are not supported"
     # create new stage
     await stage_utils.create_new_stage_async()
@@ -69,7 +75,11 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
     # --------------------------------------------------------------------
 
     def check_backend(self, backend: Any, prim: Any) -> None:
-        """Check backend."""
+        """Check backend.
+
+        Args:
+            backend: Backend name under test.
+            prim: Prim or prim wrapper under test."""
         if backend == "tensor":
             self.assertTrue(prim.is_physics_tensor_entity_valid(), f"Tensor API should be enabled ({backend})")
         elif backend in ["usd", "usdrt", "fabric"]:
@@ -89,7 +99,13 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         max_num_prims=1,
     )
     async def test_runtime_instance_creation(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test runtime instance creation."""
+        """Test runtime instance creation.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         RigidPrim("/World/A_0")
 
     @parametrize(
@@ -100,7 +116,13 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_len(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test len."""
+        """Test len.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         self.assertEqual(len(prim), num_prims, f"Invalid RigidPrim ({num_prims} prims) len")
 
     @parametrize(
@@ -110,7 +132,13 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_world_poses(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test world poses."""
+        """Test world poses.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         # check backend and define USD usage
         self.check_backend(backend, prim)
         if backend in ["usdrt", "fabric"]:
@@ -138,7 +166,13 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_local_poses(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test local poses."""
+        """Test local poses.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         # check backend and define USD usage
         self.check_backend(backend, prim)
         if backend in ["usdrt", "fabric"]:
@@ -167,7 +201,13 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_velocities(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test velocities."""
+        """Test velocities.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -191,7 +231,13 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_masses(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test masses."""
+        """Test masses.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -216,7 +262,13 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_enabled_rigid_bodies(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test enabled rigid bodies."""
+        """Test enabled rigid bodies.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -238,7 +290,13 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_enabled_gravities(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test enabled gravities."""
+        """Test enabled gravities.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -259,7 +317,13 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_coms(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test coms."""
+        """Test coms.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -284,7 +348,16 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_inertias(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> Any:
-        """Test inertias."""
+        """Test inertias.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test.
+
+        Returns:
+            Requested value."""
 
         def _transform(x: Any) -> Any:  # transform to a diagonal inertia matrix
             x[:, [1, 2, 3, 5, 6, 7]] = 0.0
@@ -313,7 +386,13 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_densities(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test densities."""
+        """Test densities.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -334,7 +413,13 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_sleep_thresholds(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test sleep thresholds."""
+        """Test sleep thresholds.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -355,7 +440,13 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_default_state(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test default state."""
+        """Test default state.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         # check backend
         self.check_backend(backend, prim)
         if backend == "usd":
@@ -386,7 +477,13 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
     )
     async def test_apply_forces(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test apply forces."""
+        """Test apply forces.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         # check backend
         self.check_backend(backend, prim)
 
@@ -416,7 +513,12 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
 
 
 async def populate_stage_with_ground(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
-    """Populate stage with ground plane for contact testing."""
+    """Populate stage with ground plane for contact testing.
+
+    Args:
+        max_num_prims: Maximum number of prims to create for a test case.
+        operation: Stage population operation to use.
+        **kwargs: Additional keyword arguments."""
     assert operation == "wrap", "Other operations except 'wrap' are not supported"
     # create new stage
     await stage_utils.create_new_stage_async()
@@ -556,17 +658,17 @@ async def _wait_for_contact_data(
     """Wait until contact data reports non-zero counts for the given sensor.
 
     Args:
-        get_data: Callable that returns the contact data tuple.
-        backend: Backend used while reading contact data.
-        max_steps: Maximum number of app updates to wait for initial contact data.
-        settle_frames: Additional frames to wait after data first becomes ready.
-        expected_total_contacts: Required total contact count, or any non-zero count if unset.
-        expected_pair_count: Required filtered pair count, or any non-zero pair count if unset.
-        cube_index: Index of the cube whose contact forces should be non-zero.
-        counts_tuple_index: index into the returned data tuple that holds the
-            counts array.  ``-2`` (default) for filtered contact data (2D pair
-            counts), ``4`` for raw contact data (1D counts).
-    """
+        get_data: Value passed by the caller.
+        backend: Backend name under test.
+        max_steps: Value passed by the caller.
+        settle_frames: Value passed by the caller.
+        expected_total_contacts: Value passed by the caller.
+        expected_pair_count: Value passed by the caller.
+        cube_index: Index of the cube under test.
+        counts_tuple_index: Value passed by the caller.
+
+    Returns:
+        Contact data tuple returned once the requested contact count is available."""
     data = None
     frames_after = None
     for _ in range(max_steps):
@@ -603,7 +705,11 @@ class TestRigidPrimContactTracking(omni.kit.test.AsyncTestCase):
         super().tearDown()
 
     def check_backend(self, backend: Any, prim: Any) -> None:
-        """Check backend."""
+        """Check backend.
+
+        Args:
+            backend: Backend name under test.
+            prim: Prim or prim wrapper under test."""
         if backend == "tensor":
             self.assertTrue(prim.is_physics_tensor_entity_valid(), f"Tensor API should be enabled ({backend})")
         elif backend in ["usd", "usdrt", "fabric"]:
@@ -624,7 +730,13 @@ class TestRigidPrimContactTracking(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage_with_ground,
     )
     async def test_contact_tracking_many(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test contact tracking many."""
+        """Test contact tracking many.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         # check backend
         self.check_backend(backend, prim)
         # enabled contact tracking (usd backend)
@@ -718,7 +830,13 @@ class TestRigidPrimContactTracking(omni.kit.test.AsyncTestCase):
         max_num_prims=1,
     )
     async def test_contact_tracking_single(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test contact tracking single."""
+        """Test contact tracking single.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         # check backend
         self.check_backend(backend, prim)
         # enabled contact tracking (usd backend)
@@ -797,9 +915,19 @@ def _assert_single_cube_raw_contact_data(
 ) -> None:
     """Strict assertions for one cube's raw contact data at equilibrium on a ground plane.
 
-    Checks: force sum == weight, normals == +Z, contact points on bottom face,
-    separations near zero, actor IDs resolve to ground.
-    """
+    Args:
+        test_case: Test case instance used for assertions.
+        prim: Prim or prim wrapper under test.
+        cube_path: Path of the cube under test.
+        forces_np: Contact force data to validate.
+        points_np: Contact point data to validate.
+        normals_np: Contact normal data to validate.
+        separations_np: Contact separation data to validate.
+        other_actor_ids_np: Other actor ID data to validate.
+        start: Start index of the contact records to validate.
+        count: Expected number of contact records.
+        cube_index: Index of the cube under test.
+        backend: Backend name under test."""
     slc = slice(start, start + count)
     forces_slc = forces_np[slc]
     points_slc = points_np[slc]
@@ -906,7 +1034,13 @@ class TestRigidPrimRawContactTracking(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage_with_ground,
     )
     async def test_raw_contact_data_many(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test raw contact data many."""
+        """Test raw contact data many.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         self.assertTrue(prim.is_physics_tensor_entity_valid(), f"Tensor API should be enabled ({backend})")
         with use_backend("usd", raise_on_unsupported=True, raise_on_fallback=True):
             prim.set_sleep_thresholds([0.0])
@@ -962,7 +1096,13 @@ class TestRigidPrimRawContactTracking(omni.kit.test.AsyncTestCase):
         max_num_prims=1,
     )
     async def test_raw_contact_data_single(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test raw contact data single."""
+        """Test raw contact data single.
+
+        Args:
+            prim: Prim or prim wrapper under test.
+            num_prims: Number of prims under test.
+            device: Device under test.
+            backend: Backend name under test."""
         self.assertTrue(prim.is_physics_tensor_entity_valid(), f"Tensor API should be enabled ({backend})")
         with use_backend("usd", raise_on_unsupported=True, raise_on_fallback=True):
             prim.set_sleep_thresholds([0.0])

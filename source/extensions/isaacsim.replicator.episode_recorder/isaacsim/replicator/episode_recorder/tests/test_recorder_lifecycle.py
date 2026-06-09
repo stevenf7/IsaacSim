@@ -48,7 +48,11 @@ _COUNTER_TYPE_ID = "_test_counter_v2"
 
 
 class _CounterRecordable(Recordable):
-    """Records a monotonically increasing counter; ignores the live stage entirely."""
+    """Records a monotonically increasing counter; ignores the live stage entirely.
+
+    Args:
+        group: Recordable HDF5 group path.
+    """
 
     TYPE_ID = _COUNTER_TYPE_ID
 
@@ -79,7 +83,11 @@ class _CounterRecordable(Recordable):
 
 
 class _MalformedFrameRecordable(Recordable):
-    """Returns an invalid frame on the second tick to exercise partial-write handling."""
+    """Returns an invalid frame on the second tick to exercise partial-write handling.
+
+    Args:
+        group: Recordable HDF5 group path.
+    """
 
     TYPE_ID = "_test_malformed_frame_v2"
 

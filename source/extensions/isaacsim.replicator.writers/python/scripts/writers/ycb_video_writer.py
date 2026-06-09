@@ -134,7 +134,7 @@ class YCBVideoWriter(Writer):
 
         Args:
             config_data: A dictionary containing the configuration data for the current writer.
-        """
+        """  # noqa: DOC102,DOC103,DOC106
         AnnotatorRegistry.register_annotator_from_node(
             name="PoseSync",
             input_rendervars=[
@@ -204,7 +204,10 @@ class YCBVideoWriter(Writer):
         Args:
             config_data: A dictionary containing the general configurations for the script.
             writer_config: A dictionary containing writer-specific configurations.
-        """
+
+        Returns:
+            Initialized YCB video writer instance.
+        """  # noqa: DOC102,DOC103
         writer = WriterRegistry.get("YCBVideoWriter")
         writer.initialize(
             output_dir=writer_config["output_folder"],
@@ -279,12 +282,12 @@ class YCBVideoWriter(Writer):
         points.xyz file will be saved in the output_folder/data/models/model_name/ directory.
 
         Args:
-            mesh_prim (UsdGeom.Mesh): mesh prim to get the vertice points.
-            coord_prim (Usd.Prim): prim's coordinate used to define the vertices with respect to.
-            model_name (str): name of the part to get the vertices of. Note: This corresponds to the name used for
-                              the part in the YCB Video Dataset, and is unrelated to the name of the part in the scene.
-            output_folder (str): path of the base output directory.
-        """
+            mesh_prim: Mesh prim to get the vertex points from.
+            coord_prim: Prim whose coordinate frame defines the output vertices.
+            model_name: Name of the part to get the vertices of. This corresponds to the name used for the part in the
+                YCB Video Dataset, and is unrelated to the name of the part in the scene.
+            output_folder: Path of the base output directory.
+        """  # noqa: DOC102,DOC103
         file_path = os.path.join(output_folder, "data", "models", model_name, "points.xyz")
         dirname = os.path.dirname(file_path)
         os.makedirs(dirname, exist_ok=True)
@@ -296,10 +299,10 @@ class YCBVideoWriter(Writer):
         """Save a RGB image for the YCB Video Dataset.
 
         Args:
-            data (dict): A dictionary containing the annotator data for the current frame.
-            render_product_path (str): Directory name to save data to, corresponding to a specific render product.
-            annotator (str): Annotator name used as a key in the data dictionary, which can also be used to retrieve the
-                             annotator from the annotator registry.
+            data: A dictionary containing the annotator data for the current frame.
+            render_product_path: Directory name to save data to, corresponding to a specific render product.
+            annotator: Annotator name used as a key in the data dictionary, which can also be used to retrieve the
+                annotator from the annotator registry.
         """
         image_id = f"{self._frame_id:06d}"
 
@@ -313,10 +316,10 @@ class YCBVideoWriter(Writer):
            would need to be adapted to conform to the exact format used in the YCB Video Dataset.
 
         Args:
-            data (dict): A dictionary containing the annotator data for the current frame.
-            render_product_path (str): Directory name to save data to, corresponding to a specific render product.
-            annotator (str): Annotator name used as a key in the data dictionary, which can also be used to retrieve the
-                             annotator from the annotator registry.
+            data: A dictionary containing the annotator data for the current frame.
+            render_product_path: Directory name to save data to, corresponding to a specific render product.
+            annotator: Annotator name used as a key in the data dictionary, which can also be used to retrieve the
+                annotator from the annotator registry.
         """
         dis_to_img_plane_data = data[annotator]
         dis_to_img_plane_data = dis_to_img_plane_data.squeeze()
@@ -347,10 +350,10 @@ class YCBVideoWriter(Writer):
            image.
 
         Args:
-            data (dict): A dictionary containing the annotator data for the current frame.
-            render_product_path (str): Directory name to save data to, corresponding to a specific render product.
-            annotator (str): Annotator name used as a key in the data dictionary, which can also be used to retrieve the
-                             annotator from the annotator registry.
+            data: A dictionary containing the annotator data for the current frame.
+            render_product_path: Directory name to save data to, corresponding to a specific render product.
+            annotator: Annotator name used as a key in the data dictionary, which can also be used to retrieve the
+                annotator from the annotator registry.
         """
         semantic_seg_data = data[annotator]["data"]
 
@@ -393,10 +396,10 @@ class YCBVideoWriter(Writer):
            corner, with +x to the right and +y down.
 
         Args:
-            data (dict): A dictionary containing the annotator data for the current frame.
-            render_product_path (str): Directory name to save data to, corresponding to a specific render product.
-            annotator (str): Annotator name used as a key in the data dictionary, which can also be used to retrieve the
-                             annotator from the annotator registry.
+            data: A dictionary containing the annotator data for the current frame.
+            render_product_path: Directory name to save data to, corresponding to a specific render product.
+            annotator: Annotator name used as a key in the data dictionary, which can also be used to retrieve the
+                annotator from the annotator registry.
         """
         bbox_data = data[annotator]["data"]
         id_to_labels = data[annotator]["info"]["idToLabels"]
@@ -432,10 +435,10 @@ class YCBVideoWriter(Writer):
              expressed relative to the top-left corner of the image, with +x to the right and +y down.
 
         Args:
-            data (dict): A dictionary containing the annotator data for the current frame.
-            render_product_path (str): Directory name to save data to, corresponding to a specific render product.
-            annotator (str): Annotator name used as a key in the data dictionary, which can also be used to retrieve the
-                             annotator from the annotator registry.
+            data: A dictionary containing the annotator data for the current frame.
+            render_product_path: Directory name to save data to, corresponding to a specific render product.
+            annotator: Annotator name used as a key in the data dictionary, which can also be used to retrieve the
+                annotator from the annotator registry.
         """
         pose_data = data[annotator]["data"]
 

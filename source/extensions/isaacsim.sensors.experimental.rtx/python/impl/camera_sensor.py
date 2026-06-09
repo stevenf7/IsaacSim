@@ -71,6 +71,8 @@ class CameraSensor(_SensorRuntime):
             If a string path is provided, a :class:`RtxCamera` instance is created internally.
         resolution: Resolution of the sensor (following OpenCV/NumPy convention: ``(height, width)``).
         annotators: Annotator/sensor types to configure.
+        writers: Writer types to attach.
+        render_vars: Render variables to pass to the render product.
 
     Raises:
         ValueError: If no prim is found matching the specified path.
@@ -208,7 +210,12 @@ class CameraSensor(_SensorRuntime):
         return out, info
 
     def _initialize_sensor(self, annotators: str | list[str], *, render_vars: list[str] | None = None) -> None:
-        """Initialize sensor by creating a resolution-aware render product and attaching annotators."""
+        """Initialize sensor by creating a resolution-aware render product and attaching annotators.
+
+        Args:
+            annotators: Annotator/sensor types to attach.
+            render_vars: Render variables to pass to the render product.
+        """
         self._hydra_texture = rep.create.render_product(
             camera=self.authoring_object.paths[0],
             resolution=(self._resolution[1], self._resolution[0]),  # (width, height)

@@ -33,12 +33,23 @@ class OgnIsaacCreateViewport:
 
     @staticmethod
     def internal_state() -> OgnIsaacCreateViewportInternalState:
-        """Create the per-instance viewport cache."""
+        """Create the per-instance viewport cache.
+
+        Returns:
+            Per-instance viewport cache.
+        """
         return OgnIsaacCreateViewportInternalState()
 
     @staticmethod
     def compute(db: Any) -> bool:
-        """Create a named or numbered viewport, or reuse the active viewport, and enable `execOut`."""
+        """Create a named or numbered viewport, or reuse the active viewport, and enable `execOut`.
+
+        Args:
+            db: OmniGraph database for this node.
+
+        Returns:
+            True after the viewport output is populated.
+        """
         state = db.per_instance_state
         if state.window is None:
             if len(db.inputs.name) > 0:

@@ -267,7 +267,11 @@ class TestRigidBodyAccelerations(NewtonTensorTestBase):
     DT = 1.0 / 60.0
 
     async def _create_sim_with_body_qdd(self) -> "tensors.SimulationView":
-        """Create a simulation view with body_qdd allocated on the state."""
+        """Create a simulation view with body_qdd allocated on the state.
+
+        Returns:
+            Newton-backed simulation view with ``body_qdd`` state allocated.
+        """
         await omni.kit.app.get_app().next_update_async()
 
         from isaacsim.physics.newton.impl.extension import acquire_stage as acquire_newton_stage

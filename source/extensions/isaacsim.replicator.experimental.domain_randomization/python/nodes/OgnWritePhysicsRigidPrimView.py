@@ -31,7 +31,19 @@ OPERATION_TYPES = ["direct", "additive", "scaling"]
 def apply_randomization_operation(
     view_name: Any, operation: Any, attribute_name: Any, samples: Any, indices: Any, on_reset: Any
 ) -> Any:
-    """Apply randomization operation for indexed values."""
+    """Apply randomization operation for indexed values.
+
+    Args:
+        view_name: Name of the registered rigid prim view.
+        operation: Operation to apply to the stored reset values.
+        attribute_name: Name of the randomized attribute.
+        samples: Sample values to apply.
+        indices: Indices of the selected prims.
+        on_reset: Whether to return reset values without applying samples.
+
+    Returns:
+        Values to write for the selected prim indices.
+    """
     if on_reset:
         return physics._rigid_prim_views_reset_values[view_name][attribute_name][indices]
     if operation == "additive":
@@ -45,7 +57,16 @@ def apply_randomization_operation(
 def apply_randomization_operation_full_tensor(
     view_name: Any, operation: Any, attribute_name: Any, samples: Any, indices: Any, on_reset: Any
 ) -> None:
-    """Apply randomization operation for full tensor values."""
+    """Apply randomization operation for full tensor values.
+
+    Args:
+        view_name: Name of the registered rigid prim view.
+        operation: Operation to apply to the stored reset values.
+        attribute_name: Name of the randomized attribute.
+        samples: Sample values to apply.
+        indices: Indices of the selected prims.
+        on_reset: Whether to return reset values without applying samples.
+    """
     if on_reset:
         return physics._rigid_prim_views_reset_values[view_name][attribute_name]
     initial_values = np.copy(physics._rigid_prim_views_reset_values[view_name][attribute_name])
@@ -59,7 +80,18 @@ def apply_randomization_operation_full_tensor(
 
 
 def modify_initial_values(view_name: Any, operation: Any, attribute_name: Any, samples: Any, indices: Any) -> Any:
-    """Modify initial values based on operation type."""
+    """Modify initial values based on operation type.
+
+    Args:
+        view_name: Name of the registered rigid prim view.
+        operation: Operation to apply to the stored initial values.
+        attribute_name: Name of the randomized attribute.
+        samples: Sample values to store.
+        indices: Indices of the selected prims.
+
+    Returns:
+        None.
+    """
     if operation == "additive":
         physics._rigid_prim_views_reset_values[view_name][attribute_name][indices] = (
             physics._rigid_prim_views_initial_values[view_name][attribute_name][indices] + samples
@@ -81,7 +113,20 @@ def get_bucketed_values(
     dist_param_2: Any,
     num_buckets: Any,
 ) -> Any:
-    """Quantize material-property samples into distribution-derived buckets."""
+    """Quantize material-property samples into distribution-derived buckets.
+
+    Args:
+        view_name: Name of the registered rigid prim view.
+        attribute_name: Name of the randomized attribute.
+        samples: Material property samples to quantize.
+        distribution: Distribution name used to derive bucket bounds.
+        dist_param_1: First distribution parameter.
+        dist_param_2: Second distribution parameter.
+        num_buckets: Number of buckets to quantize into.
+
+    Returns:
+        Copy of ``samples`` with values snapped to distribution-derived buckets.
+    """
     new_samples = samples.copy()
 
     if distribution == "gaussian":
@@ -116,6 +161,12 @@ class OgnWritePhysicsRigidPrimView:
         On reset, the stored reset baseline is updated before values are
         restored or applied. Invalid views, attributes, or operations log an
         error, disable ``execOut``, and return ``False``.
+
+        Args:
+            db: Database object containing node inputs and outputs.
+
+        Returns:
+            True when values are written, False when inputs are empty or invalid.
         """
         view_name = db.inputs.prims
         attribute_name = db.inputs.attribute

@@ -274,6 +274,12 @@ class TestROS2SensorMsgRTX(ROS2TestCase):
         every annotator-side timestamp at which the scan was observed; we search across
         all observations so a snapshot still matches if the GMO annotator and the
         publisher latched the same scan on different simulation frames.
+
+        Args:
+            message_timestamp: Message timestamp to match.
+
+        Returns:
+            Closest matching timestamp.
         """
         best_key = None
         best_diff = float("inf")
@@ -349,7 +355,14 @@ class TestROS2SensorMsgRTX(ROS2TestCase):
             _AUX_FIELDS[gmo_utils.AuxType.BASIC] = [("radialVelocityMS", "rv_ms")]
 
         def _aux_fields_for_level(aux_type: Any) -> Any:
-            """Return the list of (snapshot_key, gmo_attr) pairs available at *aux_type*."""
+            """Return the list of (snapshot_key, gmo_attr) pairs available at *aux_type*.
+
+            Args:
+                aux_type: Auxiliary metadata level.
+
+            Returns:
+                Snapshot key and GMO attribute pairs.
+            """
             fields = []
             for level in (gmo_utils.AuxType.BASIC, gmo_utils.AuxType.EXTRA, gmo_utils.AuxType.FULL):
                 if aux_type == gmo_utils.AuxType.NONE:
@@ -464,7 +477,14 @@ class TestROS2PointCloudRTX(TestROS2SensorMsgRTX):
 
     @staticmethod
     def _snapshot_to_cartesian(snapshot: Any) -> Any:
-        """Convert a GMO snapshot dict to Cartesian xyz, handling both coordinate types."""
+        """Convert a GMO snapshot dict to Cartesian xyz, handling both coordinate types.
+
+        Args:
+            snapshot: GMO snapshot to convert.
+
+        Returns:
+            Cartesian point coordinates.
+        """
         x_data = snapshot["x"]
         y_data = snapshot["y"]
         z_data = snapshot["z"]
@@ -689,6 +709,15 @@ class TestROS2LaserScanRTX(TestROS2SensorMsgRTX):
         from the message's deg→rad-converted ``angle_min`` / ``angle_increment``. The
         round-trip can shift the integer bin by 1 for rays within one ULP of a
         boundary; the tolerance accepts that without letting data go missing.
+
+        Args:
+            expected: Expected per-bin values.
+            actual: Actual per-bin values.
+            atol: Absolute tolerance for comparisons.
+            name: Field name used in assertion messages.
+
+        Returns:
+            None.
         """
         expected = np.asarray(expected)
         actual = np.asarray(actual)
@@ -788,7 +817,15 @@ class TestROS2LaserScanRTX(TestROS2SensorMsgRTX):
         test_duration_s: float = 1.5,
         metadata: list[str] | None = None,
     ) -> None:
-        """Compare the final published LaserScan against the final captured GMO."""
+        """Compare the final published LaserScan against the final captured GMO.
+
+        Args:
+            snapshots: Captured GMO snapshots.
+            messages: Received LaserScan messages.
+            full_scan: Whether the helper is configured for full scans.
+            test_duration_s: Test duration.
+            metadata: Selected metadata fields.
+        """
         if metadata is None:
             metadata = []
         msg = messages[-1]
@@ -925,6 +962,13 @@ class TestROS2RtxHelperDoTransform(ROS2TestCase):
 
         Compares against ``DebugDrawPointCloud`` (the underlying OG node type) so we
         match both ``RtxLidarDebugDrawPointCloudBuffer`` and ``RtxSensorDebugDrawPointCloud``.
+
+        Args:
+            state: Helper internal state containing writers.
+            marker: Node type marker to find.
+
+        Returns:
+            Matching writer, or None if no writer matches.
         """
         return next(
             (w for w in getattr(state, "_writers", []) if marker in getattr(w, "node_type_id", "")),
@@ -932,7 +976,11 @@ class TestROS2RtxHelperDoTransform(ROS2TestCase):
         )
 
     async def _setup_lidar_helper(self, frame_of_reference: str | None) -> None:
-        """Create a Lidar with the given outputFrameOfReference and a helper OG node."""
+        """Create a Lidar with the given outputFrameOfReference and a helper OG node.
+
+        Args:
+            frame_of_reference: Output frame of reference to configure.
+        """
         attributes = {}
         if frame_of_reference is not None:
             attributes["omni:sensor:Core:outputFrameOfReference"] = frame_of_reference
@@ -964,7 +1012,11 @@ class TestROS2RtxHelperDoTransform(ROS2TestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def _setup_radar_helper(self, frame_of_reference: str) -> None:
-        """Create a Radar with the given outputFrameOfReference and a helper OG node."""
+        """Create a Radar with the given outputFrameOfReference and a helper OG node.
+
+        Args:
+            frame_of_reference: Output frame of reference to configure.
+        """
         from isaacsim.sensors.experimental.rtx import Radar
 
         # Radar requires Motion BVH.

@@ -62,7 +62,12 @@ class _FakeTeleopManager:
             pass
 
     def tick(self, left: object, right: object) -> None:
-        """Drive one frame of the observer chain with the provided controller snapshots."""
+        """Drive one frame of the observer chain with the provided controller snapshots.
+
+        Args:
+            left: Value for left.
+            right: Value for right.
+        """
         for obs in list(self._observers):
             obs(left, right)
 

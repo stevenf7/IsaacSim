@@ -73,6 +73,9 @@ class TestOgnCustomReplicatorRandomizer(omni.kit.test.AsyncTestCase):
         Creates 500 prims of each type (spheres, cubes, cylinders) and randomizes their positions using
         custom mathematical distribution functions: on sphere surface, within sphere volume, and between
         two concentric spheres.
+
+        Returns:
+            None.
         """
         import math
         import random
@@ -186,6 +189,9 @@ class TestOgnCustomReplicatorRandomizer(omni.kit.test.AsyncTestCase):
 
         Creates 50 prims of each type and applies randomization using custom replicator nodes for
         sphere-based distribution patterns. Tests the integration with omni.replicator.core framework.
+
+        Returns:
+            None.
         """
         import omni.replicator.core as rep
         from omni.replicator.core.scripts.utils import ReplicatorItem, ReplicatorWrapper, create_node, set_target_prims

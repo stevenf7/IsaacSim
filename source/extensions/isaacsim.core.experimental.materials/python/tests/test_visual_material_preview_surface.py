@@ -35,7 +35,13 @@ from pxr import UsdShade
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
-    """Populate stage."""
+    """Populate stage.
+
+    Args:
+        max_num_prims: Maximum number of material prims to pre-author.
+        operation: Prim setup operation requested by the parametrized test.
+        **kwargs: Additional populate-stage keyword arguments from the parametrized test.
+    """
     # create new stage
     stage = await stage_utils.create_new_stage_async()
     # define prims
@@ -61,12 +67,26 @@ class TestPreviewSurface(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=PreviewSurfaceMaterial, populate_stage_func=populate_stage)
     async def test_len(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test len."""
+        """Test len.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         self.assertEqual(len(prim), num_prims, f"Invalid len ({num_prims} prims)")
 
     @parametrize(backends=["usd"], prim_class=PreviewSurfaceMaterial, populate_stage_func=populate_stage)
     async def test_properties_and_getters(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test properties and getters."""
+        """Test properties and getters.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         # test cases (properties)
         # - materials
         self.assertEqual(len(prim.materials), num_prims, f"Invalid materials len ({num_prims} prims)")
@@ -79,7 +99,14 @@ class TestPreviewSurface(omni.kit.test.AsyncTestCase):
 
     @parametrize(backends=["usd"], prim_class=PreviewSurfaceMaterial, populate_stage_func=populate_stage)
     async def test_input_values(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
-        """Test input values."""
+        """Test input values.
+
+        Args:
+            prim: Material wrapper under test.
+            num_prims: Number of material prims in the parametrized case.
+            device: Simulation device selected by the parametrized case.
+            backend: Prim backend selected by the parametrized case.
+        """
         cases = {
             "diffuseColor": lambda count: draw_sample(
                 shape=(count, 3), dtype=wp.float32, low=-0.1, high=1.1

@@ -35,7 +35,15 @@ class WaypointGraphModel:
 
 
 def load_waypoint_graph_from_file(stage: Any, waypoint_graph_json: Any) -> Any:
-    """Load waypoint graph JSON and convert its adjacency list to cuOpt CSR arrays."""
+    """Load waypoint graph JSON and convert its adjacency list to cuOpt CSR arrays.
+
+    Args:
+        stage: USD stage associated with the waypoint graph data.
+        waypoint_graph_json: Path to the waypoint graph JSON file.
+
+    Returns:
+        Model populated with waypoint locations, CSR offsets, edges, and lookup data.
+    """
     model = WaypointGraphModel()
 
     waypoint_graph_data = read_json(waypoint_graph_json)
@@ -67,7 +75,15 @@ def load_waypoint_graph_from_file(stage: Any, waypoint_graph_json: Any) -> Any:
 
 
 def load_waypoint_graph_from_scene(stage: Any, waypoint_graph_json: Any) -> Any:
-    """Read waypoint node and edge prims from the scene into cuOpt CSR arrays."""
+    """Read waypoint node and edge prims from the scene into cuOpt CSR arrays.
+
+    Args:
+        stage: USD stage containing waypoint graph node and edge prims.
+        waypoint_graph_json: Waypoint graph JSON path kept for API compatibility.
+
+    Returns:
+        Model populated with waypoint locations, CSR offsets, edges, and lookup data.
+    """
     model = WaypointGraphModel()
 
     nodes = stage.GetPrimAtPath("/World/Network/WaypointGraph/Nodes").GetChildren()

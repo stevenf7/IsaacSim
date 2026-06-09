@@ -42,7 +42,19 @@ from .common import reset_timeline, setup_ant_scene, step_simulation
 
 
 async def add_cube(stage: Any, path: Any, size: Any, offset: Any, physics: Any = True, mass: Any = 0.0) -> Usd.Prim:
-    """Add a cube prim to the stage."""
+    """Add a cube prim to the stage.
+
+    Args:
+        stage: USD stage to author into.
+        path: USD path for the cube prim.
+        size: Cube size value.
+        offset: Translation to apply to the cube.
+        physics: Whether to apply rigid-body physics.
+        mass: Mass to author when greater than zero.
+
+    Returns:
+        The created cube prim.
+    """
     cube_geom = UsdGeom.Cube.Define(stage, path)
     cube_prim = stage.GetPrimAtPath(path)
     cube_geom.CreateSizeAttr(size)
@@ -81,7 +93,14 @@ class TestContactSensor(omni.kit.test.AsyncTestCase):
             return
 
     def _get_contact_sensor(self, prim_path: str) -> ContactSensor:
-        """Get or create a cached ContactSensor for the given path."""
+        """Get or create a cached ContactSensor for the given path.
+
+        Args:
+            prim_path: USD path to the contact sensor prim.
+
+        Returns:
+            Cached contact sensor for ``prim_path``.
+        """
         if prim_path not in self._contact_sensors:
             self._contact_sensors[prim_path] = ContactSensor(prim_path)
         return self._contact_sensors[prim_path]

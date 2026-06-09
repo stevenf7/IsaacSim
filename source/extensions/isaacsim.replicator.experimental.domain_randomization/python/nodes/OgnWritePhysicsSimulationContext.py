@@ -82,6 +82,13 @@ class OgnWritePhysicsSimulationContext:
         physics simulation view. Empty indices keep ``execOut`` enabled but
         perform no write. Invalid context state, attributes, or operations log
         an error, disable ``execOut``, and return ``False``.
+
+        Args:
+            db: Database object containing node inputs and outputs.
+
+        Returns:
+            True when the simulation-context value is written, False when inputs
+            are empty or invalid.
         """
         attribute_name = db.inputs.attribute
         operation = db.inputs.operation

@@ -275,7 +275,13 @@ def _bind_dummy_shader_material(stage: Any, geom_prim: Any, mat_path: str = "/Wo
     to consume the attribute for these tests; we only assert that the OG node authors and
     animates the value, and (under FSD) mirrors it into Fabric.
 
-    Returns the SdfPath of the shader prim so tests can read back the attribute directly.
+    Args:
+        stage: The USD stage to author the material on.
+        geom_prim: Geometry prim that receives the material binding.
+        mat_path: Path where the test material should be authored.
+
+    Returns:
+        The SdfPath of the shader prim so tests can read back the attribute directly.
     """
     UsdGeom.Scope.Define(stage, PxrSdf.Path(mat_path).GetParentPath())
     material = UsdShade.Material.Define(stage, mat_path)
@@ -318,7 +324,12 @@ class TestConveyorTextureAnimation(omni.kit.test.AsyncTestCase):
     ) -> tuple[Usd.Prim, PxrSdf.Path]:
         """Build a kinematic conveyor body, bind a shader material, configure the OG node.
 
-        Returns the (conveyor OG node prim, shader path).
+        Args:
+            animate: Whether texture animation should be enabled on the conveyor node.
+            velocity: Conveyor velocity to assign to the graph variable.
+
+        Returns:
+            The conveyor OG node prim and the shader path.
         """
         cube_prim = add_cube(self._stage, "/cube", 1.0, (0.0, 0.0, 0.0), physics=True)
         UsdPhysics.RigidBodyAPI(cube_prim).GetKinematicEnabledAttr().Set(True)
@@ -334,7 +345,14 @@ class TestConveyorTextureAnimation(omni.kit.test.AsyncTestCase):
         return og_prim, shader_path
 
     def _read_translate_usd(self, shader_path: PxrSdf.Path) -> Gf.Vec2f:
-        """Read ``inputs:texture_translate`` from the USD stage. Defaults to (0, 0)."""
+        """Read ``inputs:texture_translate`` from the USD stage. Defaults to (0, 0).
+
+        Args:
+            shader_path: Path to the shader prim to inspect.
+
+        Returns:
+            The authored texture translation, or (0, 0) when absent.
+        """
         attr = self._stage.GetPrimAtPath(shader_path).GetAttribute("inputs:texture_translate")
         if not attr:
             return Gf.Vec2f(0.0, 0.0)
@@ -344,7 +362,11 @@ class TestConveyorTextureAnimation(omni.kit.test.AsyncTestCase):
     def _read_translate_usdrt(self, shader_path: PxrSdf.Path) -> tuple[float, float] | None:
         """Read ``inputs:texture_translate`` from the USDRT (Fabric) view of the stage.
 
-        Returns a tuple of floats, or ``None`` if the attribute is absent in Fabric.
+        Args:
+            shader_path: Path to the shader prim to inspect.
+
+        Returns:
+            A tuple of floats, or ``None`` if the attribute is absent in Fabric.
         """
         rt_stage = Usd.Stage.Attach(omni.usd.get_context().get_stage_id())
         rt_prim = rt_stage.GetPrimAtPath(Sdf.Path(str(shader_path)))

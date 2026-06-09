@@ -28,7 +28,15 @@ class Provisioner(LocalProvisioner):
     """Provision a kernel using a socket connection to the Omniverse runtime."""
 
     async def launch_kernel(self, cmd: list[str], **kwargs: Any) -> KernelConnectionInfo:
-        """Launch the kernel process with the correct Python executable path."""
+        """Launch the kernel process with the correct Python executable path.
+
+        Args:
+            cmd: Kernel launch command received from Jupyter.
+            **kwargs: Additional launch options passed to Jupyter's kernel launcher.
+
+        Returns:
+            Kernel connection information for the launched process.
+        """
         # set paths
         if sys.platform == "win32":
             cmd[0] = os.path.abspath(os.path.join(os.path.dirname(os.__file__), "..", "python.exe"))

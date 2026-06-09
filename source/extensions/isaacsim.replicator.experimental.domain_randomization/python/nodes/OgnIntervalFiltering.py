@@ -33,6 +33,12 @@ class OgnIntervalFiltering:
         With ``ignoreInterval`` enabled, ``inputs:indices`` is passed through and
         ``outputs:on_reset`` is set so writers update their reset baselines.
         ``outputs:execOut`` remains enabled when no indices are selected.
+
+        Args:
+            db: Database object containing node inputs and outputs.
+
+        Returns:
+            True when selected indices are emitted, False when no indices are selected.
         """
         interval = db.inputs.interval
         frame_num = np.array(db.inputs.frameCounts)

@@ -65,6 +65,9 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
         """Loads the gantry scene with surface gripper from USD file.
 
         Loads the SurfaceGripper_gantry.usda scene file and sets it as the default prim in the stage.
+
+        Returns:
+            None.
         """
         usd_path = os.path.abspath(
             os.path.join(
@@ -83,6 +86,9 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
 
         Args:
             count: Number of surface grippers to create and configure.
+
+        Returns:
+            None.
         """
         # Create and configure the surface gripper(s)
         for i in range(count):
@@ -119,6 +125,9 @@ class TestSurfaceGripper(omni.kit.test.AsyncTestCase):
             joint_x_target: Target position for the x-axis joint.
             joint_y_target: Target position for the y-axis joint.
             joint_z_target: Target position for the z-axis joint.
+
+        Returns:
+            None.
         """
         joint_x = self._stage.GetPrimAtPath("/World/Joints/x_joint")
         joint_x.GetAttribute("drive:linear:physics:targetPosition").Set(joint_x_target)

@@ -64,7 +64,14 @@ class TestSDGGeomSubset(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
     async def _capture_classes_async(self, per_subset_segmentation: bool) -> frozenset[str]:
-        """Capture semantic classes for cubes with mesh labels, GeomSubset labels, and no subsets."""
+        """Capture semantic classes for cubes with mesh labels, GeomSubset labels, and no subsets.
+
+        Args:
+            per_subset_segmentation: Whether per-GeomSubset segmentation is enabled.
+
+        Returns:
+            Captured semantic class names.
+        """
         carb.settings.get_settings().set(self.PER_SUBSET_SETTING, per_subset_segmentation)
         await omni.usd.get_context().new_stage_async()
 

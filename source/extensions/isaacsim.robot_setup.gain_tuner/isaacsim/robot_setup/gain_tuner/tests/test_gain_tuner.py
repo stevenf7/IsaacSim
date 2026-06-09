@@ -124,7 +124,12 @@ _REVOLUTE_DRIVE_GAIN_USD_SCALE = math.pi / 180.0
 
 
 def _set_world_translation(prim: Usd.Prim, translation: Gf.Vec3f) -> None:
-    """Set world translation on a prim, reusing an existing translate op if present."""
+    """Set world translation on a prim, reusing an existing translate op if present.
+
+    Args:
+        prim: Prim to translate.
+        translation: World translation value to author.
+    """
     xformable = UsdGeom.Xformable(prim)
     for op in xformable.GetOrderedXformOps():
         if op.GetOpType() == UsdGeom.XformOp.TypeTranslate:
@@ -134,13 +139,29 @@ def _set_world_translation(prim: Usd.Prim, translation: Gf.Vec3f) -> None:
 
 
 def _revolute_drive_stiffness_damping_si_to_usd(k_si: float, d_si: float) -> tuple[float, float]:
-    """Convert SI revolute gains (N·m/rad, N·m·s/rad) to USD drive attribute units."""
+    """Convert SI revolute gains (N*m/rad, N*m*s/rad) to USD drive attribute units.
+
+    Args:
+        k_si: Stiffness in SI units.
+        d_si: Damping in SI units.
+
+    Returns:
+        ``(stiffness, damping)`` in USD drive attribute units.
+    """
     s = _REVOLUTE_DRIVE_GAIN_USD_SCALE
     return k_si * s, d_si * s
 
 
 def _revolute_drive_stiffness_damping_usd_to_si(k_usd: float, d_usd: float) -> tuple[float, float]:
-    """Convert USD revolute drive gains back to SI."""
+    """Convert USD revolute drive gains back to SI.
+
+    Args:
+        k_usd: Stiffness in USD drive attribute units.
+        d_usd: Damping in USD drive attribute units.
+
+    Returns:
+        ``(stiffness, damping)`` in SI units.
+    """
     s = _REVOLUTE_DRIVE_GAIN_USD_SCALE
     return k_usd / s, d_usd / s
 
@@ -176,7 +197,16 @@ class PdOscillationHarnessResult:
 def _natural_fn_zeta_from_usd_drive(
     joint_modality: JointModality, joint_prim: Usd.Prim, ieq: float
 ) -> tuple[float, float]:
-    """Closed-loop linear natural frequency (Hz) and ζ from authored USD drive gains and ``I_eq`` / mass."""
+    """Closed-loop linear natural frequency (Hz) and zeta from authored USD drive gains and ``I_eq`` / mass.
+
+    Args:
+        joint_modality: Joint type used to choose angular or linear drive formulas.
+        joint_prim: USD joint prim containing drive attributes.
+        ieq: Equivalent inertia or mass for the joint.
+
+    Returns:
+        ``(natural_frequency_hz, damping_ratio)`` from the authored USD drive.
+    """
     if joint_modality == JointModality.REVOLUTE:
         drive = UsdPhysics.DriveAPI(joint_prim, "angular")
         k_u = float(drive.GetStiffnessAttr().Get())
@@ -195,6 +225,13 @@ def _extract_peaks(times: np.ndarray, values: np.ndarray) -> tuple[list[float], 
     Includes boundary indices when they are local maxima (e.g. initial condition
     at release). If no interior peaks are found, falls back to peaks of the
     absolute value (envelope) so both sides of a damped oscillation are counted.
+
+    Args:
+        times: Sample times corresponding to ``values``.
+        values: Time-series values to inspect.
+
+    Returns:
+        ``(peak_times, peak_values)`` for the extracted peaks.
     """
     if len(values) < 2:
         return [], []
@@ -229,7 +266,15 @@ def _extract_peaks(times: np.ndarray, values: np.ndarray) -> tuple[list[float], 
 
 
 def _peaks_fail_msg(result: OscillationAnalysis, prefix: str = "") -> str:
-    """Build assertion message when peak count is too low, including data diagnostics."""
+    """Build assertion message when peak count is too low, including data diagnostics.
+
+    Args:
+        result: Oscillation analysis to summarize.
+        prefix: Optional message prefix.
+
+    Returns:
+        Assertion message string.
+    """
     return (
         f"{prefix}Need at least 3 peaks for analysis (got {len(result.peak_values)}). "
         f"Position data: n={result.num_samples} min={result.value_min:.6f} max={result.value_max:.6f}"
@@ -245,6 +290,13 @@ def _analyze_oscillation(times: np.ndarray, values: np.ndarray) -> OscillationAn
     - w_d = 2*pi / T_d
     - zeta = s / sqrt(4*pi^2 + s^2)
     - w_n = w_d / sqrt(1 - zeta^2)
+
+    Args:
+        times: Sample times for the response values.
+        values: Response values to analyze.
+
+    Returns:
+        Oscillation analysis metrics.
     """
     num_samples = len(values)
     value_min = float(np.min(values)) if num_samples else 0.0
@@ -1003,7 +1055,12 @@ class _OscillationDynamicsMixin:
         stage_utils.close_stage()
 
     async def _setup_gain_tuner_with_retries(self, robot_path: str, attempts: int = 80) -> None:
-        """Bind :class:`GainTuner` after articulation tensors may still be warming up."""
+        """Bind :class:`GainTuner` after articulation tensors may still be warming up.
+
+        Args:
+            robot_path: Stage path of the robot articulation root.
+            attempts: Maximum setup attempts before failing the test.
+        """
         last_exc: BaseException | None = None
         for _ in range(attempts):
             try:
@@ -1031,7 +1088,23 @@ class _OscillationDynamicsMixin:
         settle_steps: int = 40,
         record_steps: int = 900,
     ) -> PdOscillationHarnessResult:
-        """Step position target after ``settle_steps``; analyze tracking error oscillation."""
+        """Step position target after ``settle_steps``; analyze tracking error oscillation.
+
+        Args:
+            joint_modality: Joint type to create and test.
+            drive_submodality: Drive type to author on the joint.
+            natural_freq_hz: Target natural frequency in Hz.
+            damping_ratio: Target damping ratio.
+            distance: Joint offset distance used in the harness articulation.
+            mass: Link mass used in the harness articulation.
+            inertia_diag: Diagonal inertia value used for revolute tests.
+            target_step: Position target step applied after settling.
+            settle_steps: Number of warmup steps before applying the target.
+            record_steps: Number of response samples to record after the target step.
+
+        Returns:
+            Oscillation harness result with analysis and USD readback context.
+        """
         # ``GainTuner.setup`` no-ops when ``robot_path`` matches the previous path; each oscillation
         # scenario rebuilds USD under the same path, so we must reset before rebinding articulation.
         self._gain_tuner.reset()
@@ -1138,7 +1211,12 @@ class _OscillationDynamicsMixin:
         )
 
     def _assert_oscillation_ok(self, run: PdOscillationHarnessResult, msg: str = "") -> None:
-        """Assert peaks exist, USD drive matches the design (f_n, ζ), and motion matches the USD-linear model."""
+        """Assert peaks exist, USD drive matches the design (f_n, zeta), and motion matches the USD-linear model.
+
+        Args:
+            run: Oscillation harness result to validate.
+            msg: Optional assertion message prefix.
+        """
         result = run.analysis
         self.assertGreaterEqual(
             len(result.peak_values), 3, _peaks_fail_msg(result, prefix=msg) if msg else _peaks_fail_msg(result)
@@ -1347,7 +1425,11 @@ class TestGainTunerDriveMath(omni.kit.test.AsyncTestCase):
 
 
 class _RecordTrajectoryTest(RobotTest):
-    """Records articulation state for N physics steps."""
+    """Records articulation state for N physics steps.
+
+    Args:
+        num_steps: Number of physics steps to record.
+    """
 
     name = "RecordTrajectory"
 

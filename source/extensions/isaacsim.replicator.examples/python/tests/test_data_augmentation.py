@@ -44,7 +44,11 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         self.original_dlss_exec_mode = carb.settings.get_settings().get("rtx/post/dlss/execMode")
 
     async def tearDown(self) -> Any:
-        """Close the stage, wait for pending loads, and restore the previous DLSS setting."""
+        """Close the stage, wait for pending loads, and restore the previous DLSS setting.
+
+        Returns:
+            None.
+        """
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:
@@ -52,7 +56,11 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set("rtx/post/dlss/execMode", self.original_dlss_exec_mode)
 
     async def test_data_augmentation_annotator(self) -> Any:
-        """Capture augmented annotator data and compare RGB/depth images for NumPy and Warp paths."""
+        """Capture augmented annotator data and compare RGB/depth images for NumPy and Warp paths.
+
+        Returns:
+            None.
+        """
         import asyncio
         import os
         import time
@@ -78,13 +86,25 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_bool("/app/omni.graph.scriptnode/opt_in", True)
 
         def rgb_to_bgr_np(data_in: np.ndarray) -> np.ndarray:
-            """Swap RGBA red and blue channels using NumPy (CPU)."""
+            """Swap RGBA red and blue channels using NumPy (CPU).
+
+            Args:
+                data_in: Input RGBA image data to modify.
+
+            Returns:
+                Input image data with red and blue channels swapped.
+            """
             data_in[:, :, [0, 2]] = data_in[:, :, [2, 0]]
             return data_in
 
         @wp.kernel
         def rgb_to_bgr_wp(data_in: wp.array3d(dtype=wp.uint8), data_out: wp.array3d(dtype=wp.uint8)) -> None:
-            """Swap RGBA red and blue channels using Warp (GPU)."""
+            """Swap RGBA red and blue channels using Warp (GPU).
+
+            Args:
+                data_in: Input RGBA image data.
+                data_out: Output RGBA image data.
+            """
             i, j = wp.tid()
             data_out[i, j, 0] = data_in[i, j, 2]
             data_out[i, j, 1] = data_in[i, j, 1]
@@ -92,7 +112,16 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             data_out[i, j, 3] = data_in[i, j, 3]
 
         def gaussian_noise_depth_np(data_in: np.ndarray, sigma: float, seed: int) -> np.ndarray:
-            """Add Gaussian noise to depth values using NumPy (CPU)."""
+            """Add Gaussian noise to depth values using NumPy (CPU).
+
+            Args:
+                data_in: Input depth data.
+                sigma: Standard deviation of the Gaussian noise.
+                seed: Random seed used for noise generation.
+
+            Returns:
+                Depth data with clipped Gaussian noise applied.
+            """
             np.random.seed(seed)
             result = data_in.astype(np.float32) + np.random.randn(*data_in.shape) * sigma
             return np.clip(result, 0, None).astype(data_in.dtype)
@@ -105,7 +134,14 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         def gaussian_noise_depth_wp(
             data_in: wp.array2d(dtype=wp.float32), data_out: wp.array2d(dtype=wp.float32), sigma: float, seed: int
         ) -> None:
-            """Add Gaussian noise to depth values using Warp (GPU)."""
+            """Add Gaussian noise to depth values using Warp (GPU).
+
+            Args:
+                data_in: Input depth data.
+                data_out: Output depth data.
+                sigma: Standard deviation of the Gaussian noise.
+                seed: Random seed used for noise generation.
+            """
             i, j = wp.tid()
             # Unique ID for random seed per pixel
             scalar_pixel_id = i * data_in.shape[1] + j
@@ -117,7 +153,14 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         )
 
         def convert_depth_to_uint8(data: Any) -> Any:
-            """Normalize depth data and convert it to uint8 grayscale."""
+            """Normalize depth data and convert it to uint8 grayscale.
+
+            Args:
+                data: Depth data to normalize.
+
+            Returns:
+                Normalized grayscale depth data.
+            """
             if isinstance(data, wp.array):
                 data = data.numpy()
             depth = data.astype(np.float32, copy=False)
@@ -136,7 +179,17 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         async def run_example_async(
             num_frames: int, resolution: tuple[int, int], use_warp: bool, env_url: str | None = None
         ) -> float:
-            """Randomize a cube, read augmented RGB/depth annotators, and write normalized images."""
+            """Randomize a cube, read augmented RGB/depth annotators, and write normalized images.
+
+            Args:
+                num_frames: Number of frames to capture.
+                resolution: Render product resolution.
+                use_warp: Whether to use Warp augmentations.
+                env_url: Asset-relative environment URL to open, or None to create a simple scene.
+
+            Returns:
+                Capture duration in seconds.
+            """
             print(f"Running example with num_frames: {num_frames}, resolution: {resolution}, use_warp: {use_warp}")
 
             if env_url is not None and env_url != "":
@@ -224,7 +277,14 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             return time.time() - capture_start
 
         def on_task_done(task: asyncio.Task) -> Any:
-            """Report timing information when capture completes."""
+            """Report timing information when capture completes.
+
+            Args:
+                task: Completed capture task whose result is the capture duration.
+
+            Returns:
+                None.
+            """
             duration = task.result()
             average = duration / NUM_FRAMES if NUM_FRAMES else 0.0
             mode_label = "warp" if USE_WARP else "numpy"
@@ -283,7 +343,11 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             )
 
     async def test_data_augmentation_writer(self) -> Any:
-        """Capture BasicWriter output after composing RGB and depth augmentations on its annotators."""
+        """Capture BasicWriter output after composing RGB and depth augmentations on its annotators.
+
+        Returns:
+            None.
+        """
         import asyncio
         import os
         import time
@@ -308,7 +372,16 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         carb.settings.get_settings().set_bool("/app/omni.graph.scriptnode/opt_in", True)
 
         def gaussian_noise_rgb_np(data_in: np.ndarray, sigma: float, seed: int) -> np.ndarray:
-            """Add Gaussian noise to RGB data using NumPy (CPU)."""
+            """Add Gaussian noise to RGB data using NumPy (CPU).
+
+            Args:
+                data_in: Input RGB image data.
+                sigma: Standard deviation of the Gaussian noise.
+                seed: Random seed used for noise generation.
+
+            Returns:
+                RGB image data with clipped Gaussian noise applied.
+            """
             np.random.seed(seed)
             # Convert to float32 space
             data_in = data_in.astype(np.float32)
@@ -324,7 +397,14 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         def gaussian_noise_rgb_wp(
             data_in: wp.array3d(dtype=wp.uint8), data_out: wp.array3d(dtype=wp.uint8), sigma: float, seed: int
         ) -> None:
-            """Add Gaussian noise to RGB data using Warp (GPU)."""
+            """Add Gaussian noise to RGB data using Warp (GPU).
+
+            Args:
+                data_in: Input RGBA image data.
+                data_out: Output RGBA image data.
+                sigma: Standard deviation of the Gaussian noise.
+                seed: Random seed used for noise generation.
+            """
             # Get thread coordinates and image dimensions to calculate unique pixel ID for random generation
             i, j = wp.tid()
             dim_i = data_in.shape[0]
@@ -348,7 +428,16 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             data_out[i, j, 3] = data_in[i, j, 3]
 
         def gaussian_noise_depth_np(data_in: np.ndarray, sigma: float, seed: int) -> np.ndarray:
-            """Add Gaussian noise to depth values using NumPy (CPU)."""
+            """Add Gaussian noise to depth values using NumPy (CPU).
+
+            Args:
+                data_in: Input depth data.
+                sigma: Standard deviation of the Gaussian noise.
+                seed: Random seed used for noise generation.
+
+            Returns:
+                Depth data with clipped Gaussian noise applied.
+            """
             np.random.seed(seed)
             result = data_in.astype(np.float32) + np.random.randn(*data_in.shape) * sigma
             return np.clip(result, 0, None).astype(data_in.dtype)
@@ -361,7 +450,14 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         def gaussian_noise_depth_wp(
             data_in: wp.array2d(dtype=wp.float32), data_out: wp.array2d(dtype=wp.float32), sigma: float, seed: int
         ) -> None:
-            """Add Gaussian noise to depth values using Warp (GPU)."""
+            """Add Gaussian noise to depth values using Warp (GPU).
+
+            Args:
+                data_in: Input depth data.
+                data_out: Output depth data.
+                sigma: Standard deviation of the Gaussian noise.
+                seed: Random seed used for noise generation.
+            """
             i, j = wp.tid()
             # Unique ID for random seed per pixel
             scalar_pixel_id = i * data_in.shape[1] + j
@@ -375,7 +471,17 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
         async def run_example_async(
             num_frames: int, resolution: tuple[int, int], use_warp: bool, env_url: str | None = None
         ) -> float:
-            """Randomize a cube and let BasicWriter write augmented RGB and colorized depth data."""
+            """Randomize a cube and let BasicWriter write augmented RGB and colorized depth data.
+
+            Args:
+                num_frames: Number of frames to capture.
+                resolution: Render product resolution.
+                use_warp: Whether to use Warp augmentations.
+                env_url: Asset-relative environment URL to open, or None to create a simple scene.
+
+            Returns:
+                Capture duration in seconds.
+            """
             print(f"Running example with num_frames: {num_frames}, resolution: {resolution}, use_warp: {use_warp}")
 
             if env_url is not None and env_url != "":
@@ -451,7 +557,11 @@ class TestDataAugmentation(omni.kit.test.AsyncTestCase):
             return time.time() - capture_start
 
         def on_task_done(task: asyncio.Task) -> None:
-            """Report timing information when capture completes."""
+            """Report timing information when capture completes.
+
+            Args:
+                task: Completed capture task whose result is the capture duration.
+            """
             duration = task.result()
             average = duration / NUM_FRAMES if NUM_FRAMES else 0.0
             mode_label = "warp" if USE_WARP else "numpy"

@@ -65,7 +65,12 @@ class TestRadarSensor(omni.kit.test.AsyncTestCase):
     # ------------------------------------------------------------------
 
     class _GmoRadarTestWriter(Writer):
-        """Custom Writer that validates GenericModelOutput data each frame for radar."""
+        """Custom Writer that validates GenericModelOutput data each frame for radar.
+
+        Args:
+            test_instance: Test case instance used for assertions.
+            sensor_prim: Sensor prim used to derive timing expectations.
+        """
 
         def __init__(self, test_instance: Any = None, sensor_prim: Any = None) -> None:
             self.data_structure = "renderProduct"
@@ -118,7 +123,11 @@ class TestRadarSensor(omni.kit.test.AsyncTestCase):
         # -- per-field validators -------------------------------------
 
         def _test_point_cloud(self, gmo: Any) -> None:
-            """Validate sensor returns against expected range from sarcophagus geometry."""
+            """Validate sensor returns against expected range from sarcophagus geometry.
+
+            Args:
+                gmo: Parsed GenericModelOutput data.
+            """
             unit_vecs = np.stack(
                 [np.cos(np.radians(gmo.x)), np.sin(np.radians(gmo.x)), np.sin(np.radians(gmo.y))],
                 axis=1,

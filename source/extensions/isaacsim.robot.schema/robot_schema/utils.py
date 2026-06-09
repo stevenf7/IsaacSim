@@ -37,6 +37,13 @@ def _get_world_transform_matrix(
     """Return the composed world transform for *prim* at *time*.
 
     Pure-pxr replacement for ``omni.usd.get_world_transform_matrix``.
+
+    Args:
+        prim: Prim whose transform is composed.
+        time: Time code used for transform evaluation.
+
+    Returns:
+        Composed world transform matrix.
     """
     return UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(time)
 

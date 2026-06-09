@@ -64,7 +64,14 @@ class TestClashDetection(omni.kit.test.AsyncTestCase):
         self._carter_prim_view = XformPrim("/World/Carter_.*")
 
     async def add_mesh_cube(self, position: tuple[float, float, float] | list[float]) -> Usd.Prim:
-        """Add a mesh cube at the given position and return its prim."""
+        """Add a mesh cube at the given position and return its prim.
+
+        Args:
+            position: Translation to apply to the mesh cube.
+
+        Returns:
+            Created USD cube prim.
+        """
         # run a test without Isaac Core dependence
         result, cube_path = omni.kit.commands.execute("CreateMeshPrimCommand", prim_type="Cube")
         cube_prim = self._stage.GetPrimAtPath(cube_path)

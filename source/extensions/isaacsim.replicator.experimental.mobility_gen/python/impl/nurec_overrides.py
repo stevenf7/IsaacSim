@@ -88,6 +88,12 @@ def is_nurec_stage(stage: Usd.Stage | None) -> bool:
     Detects both NuRec geometry forms — Gaussian-splat particle fields and NuRec
     volumes. Any other stage (synthetic warehouse, robot rig, empty stage)
     returns False. Traversal short-circuits on the first hit.
+
+    Args:
+        stage: USD stage to inspect, or ``None``.
+
+    Returns:
+        True if the stage contains NuRec geometry or volume markers.
     """
     if stage is None:
         return False

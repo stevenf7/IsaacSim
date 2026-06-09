@@ -697,7 +697,11 @@ class TestSimpleCloner(omni.kit.test.AsyncTestCase):
             )
 
     def get_num_dynamic_rigid_bodies(self) -> int:
-        """Get num dynamic rigid bodies."""
+        """Get num dynamic rigid bodies.
+
+        Returns:
+            The number of dynamic rigid bodies reported by PhysX.
+        """
         sim_stats = get_physxunittests_interface().get_physics_stats()
         return sim_stats["numDynamicRigids"]
 

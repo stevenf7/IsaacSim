@@ -130,7 +130,14 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
         )
 
     def _resolve_command_indices(self, command: np.ndarray | list | tuple) -> tuple[bool, np.ndarray | list | None]:
-        """Validate that a command width matches the explicitly selected joints."""
+        """Validate that a command width matches the explicitly selected joints.
+
+        Args:
+            command: Joint command values to validate.
+
+        Returns:
+            A success flag and the DOF indices matched to the command.
+        """
         if self.joint_indices is None:
             return True, self.joint_indices
         command_size = np.size(command)
@@ -142,7 +149,15 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
     def _filter_finite_command(
         self, command: np.ndarray | list | tuple, dof_indices: np.ndarray | list | None
     ) -> tuple[np.ndarray | list | tuple | None, np.ndarray | list | None]:
-        """Drop NaN entries so omitted targets are left unchanged by the backend."""
+        """Drop NaN entries so omitted targets are left unchanged by the backend.
+
+        Args:
+            command: Joint command values to filter.
+            dof_indices: DOF indices associated with the command values.
+
+        Returns:
+            Filtered command values and their matching DOF indices.
+        """
         command_array = np.asarray(command)
         if not np.isnan(command_array).any():
             return command, dof_indices
@@ -175,13 +190,22 @@ class OgnIsaacArticulationController:
 
     @staticmethod
     def init_instance(node: Any, graph_instance_id: Any) -> None:
-        """Store the OmniGraph node on the per-instance state so reset can clear its input attributes."""
+        """Store the OmniGraph node on the per-instance state so reset can clear its input attributes.
+
+        Args:
+            node: OmniGraph node instance.
+            graph_instance_id: Graph instance identifier.
+        """
         state = OgnIsaacArticulationControllerDatabase.get_internal_state(node, graph_instance_id)
         state.node = node
 
     @staticmethod
     def internal_state() -> OgnIsaacArticulationControllerInternalState:
-        """Create the per-instance articulation controller state."""
+        """Create the per-instance articulation controller state.
+
+        Returns:
+            Per-instance articulation controller state.
+        """
         return OgnIsaacArticulationControllerInternalState()
 
     @staticmethod
@@ -191,6 +215,12 @@ class OgnIsaacArticulationController:
         The node accepts either `robotPath` or `targetPrim`, refreshes joint selection when name
         or index inputs change, writes finite position, velocity, and effort targets, and returns
         False with a logged error when initialization or command validation fails.
+
+        Args:
+            db: OmniGraph database for this node.
+
+        Returns:
+            True when commands are applied successfully, False otherwise.
         """
         state = db.per_instance_state
         try:
@@ -236,7 +266,12 @@ class OgnIsaacArticulationController:
 
     @staticmethod
     def release_instance(node: Any, graph_instance_id: Any) -> None:
-        """Reset per-instance controller state when the OmniGraph node instance is released."""
+        """Reset per-instance controller state when the OmniGraph node instance is released.
+
+        Args:
+            node: OmniGraph node instance.
+            graph_instance_id: Graph instance identifier.
+        """
         try:
             state = OgnIsaacArticulationControllerDatabase.get_internal_state(node, graph_instance_id)
         except Exception:

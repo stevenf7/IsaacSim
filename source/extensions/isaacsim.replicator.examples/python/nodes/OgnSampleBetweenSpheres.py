@@ -35,6 +35,12 @@ class OgnSampleBetweenSpheres:
         descending order, rejects negative inner radii or non-positive outer radii, and creates a
         missing ``xformOp:translate`` before writing the sample. Invalid prims or invalid radii log an
         error, disable ``outputs:execOut``, and return ``False``.
+
+        Args:
+            db: OmniGraph database object containing node inputs and outputs.
+
+        Returns:
+            True when all target prims are sampled and updated, False otherwise.
         """
         prim_paths = db.inputs.prims
         if len(prim_paths) == 0:

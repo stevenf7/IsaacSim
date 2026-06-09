@@ -29,7 +29,14 @@ from .types import Point2d
 
 
 def _load_ros_map_local(ros_yaml_path: str) -> tuple[dict, PIL.Image.Image]:
-    """Load the ROS yaml dict and map image from the local filesystem."""
+    """Load the ROS yaml dict and map image from the local filesystem.
+
+    Args:
+        ros_yaml_path: Path to the ROS map YAML file.
+
+    Returns:
+        The parsed YAML data and grayscale map image.
+    """
     with open(ros_yaml_path) as f:
         yaml_data = yaml.safe_load(f)
     image_path = os.path.join(os.path.dirname(ros_yaml_path), yaml_data["image"])
@@ -37,7 +44,14 @@ def _load_ros_map_local(ros_yaml_path: str) -> tuple[dict, PIL.Image.Image]:
 
 
 def _load_ros_map_url(ros_yaml_path: str) -> tuple[dict, PIL.Image.Image]:
-    """Load the ROS yaml dict and map image from an Omniverse/HTTP URL via omni.client."""
+    """Load the ROS yaml dict and map image from an Omniverse/HTTP URL via omni.client.
+
+    Args:
+        ros_yaml_path: URL to the ROS map YAML file.
+
+    Returns:
+        The parsed YAML data and grayscale map image.
+    """
     import omni.client  # lazy: occupancy_map.py is also imported in non-Kit Python contexts
 
     def _read(url: str) -> bytes:

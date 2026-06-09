@@ -67,7 +67,11 @@ class TimelineDrivenEpisodeController:
         return self._auto_start_on_play
 
     def set_auto_start_on_play(self, value: bool) -> None:
-        """Toggle the PLAY -> start_episode behavior at runtime."""
+        """Toggle the PLAY -> start_episode behavior at runtime.
+
+        Args:
+            value: Value to process.
+        """
         self._auto_start_on_play = bool(value)
 
     def enable(self) -> None:

@@ -39,7 +39,14 @@ class OgnSurfaceGripper:
 
     @staticmethod
     def compute(db: Any) -> bool:
-        """Compute the gripper action for the pin that fired this tick."""
+        """Compute the gripper action for the pin that fired this tick.
+
+        Args:
+            db: OmniGraph database for this node evaluation.
+
+        Returns:
+            True if the node computed successfully.
+        """
         if not db.inputs.enabled or len(db.inputs.SurfaceGripper) == 0:
             return True
 

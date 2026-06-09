@@ -32,7 +32,14 @@ from isaacsim.replicator.experimental.mobility_gen import (
 
 
 def _args(**overrides: Any) -> argparse.Namespace:
-    """Build parsed replay arguments with optional overrides."""
+    """Build parsed replay arguments with optional overrides.
+
+    Args:
+        **overrides: Values to override in the default argument namespace.
+
+    Returns:
+        Parsed replay argument namespace.
+    """
     values = {
         "self_contained": False,
         "render_interval": 5,

@@ -20,7 +20,15 @@ from .generate_waypoint_graph import get_closest_node
 
 # Assign Material to Waypoints representing order locations
 def add_order_waypoint_material(stage: Any, transport_orders: Any) -> Any:
-    """Create the emissive material used to mark waypoint nodes assigned to orders."""
+    """Create the emissive material used to mark waypoint nodes assigned to orders.
+
+    Args:
+        stage: Stage where the material prim is created.
+        transport_orders: Order model receiving the created waypoint material.
+
+    Returns:
+        None.
+    """
     order_waypoint_material_name = "order_material"
     CreateAndBindMdlMaterialFromLibrary(
         mdl_name="OmniPBR.mdl",
@@ -44,7 +52,16 @@ def add_order_waypoint_material(stage: Any, transport_orders: Any) -> Any:
 
 # Visualize order locations in loaded task data
 def visualize_order_locations(stage: Any, waypoint_graph_model: Any, transport_orders: Any) -> Any:
-    """Bind order styling to nearest graph nodes and store their indices for cuOpt."""
+    """Bind order styling to nearest graph nodes and store their indices for cuOpt.
+
+    Args:
+        stage: Stage containing the waypoint graph prims.
+        waypoint_graph_model: Graph model with node path mappings.
+        transport_orders: Order model containing order locations and visualization settings.
+
+    Returns:
+        None.
+    """
     # Material
     order_waypoint_material_name = "order_waypoint_material"
     order_waypoint_material_path = f"/World/Looks/{order_waypoint_material_name}"

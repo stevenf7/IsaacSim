@@ -27,7 +27,13 @@ from usdrt import Sdf as RtSdf
 
 
 def _add_rigid_link(stage: Any, path: Any, position: Any) -> None:
-    """Define a Cube + RigidPrim at @p path so PhysX recognizes it as a rigid body."""
+    """Define a Cube and RigidPrim at path so PhysX recognizes it as a rigid body.
+
+    Args:
+        stage: Stage associated with the test.
+        path: Prim path for the rigid link.
+        position: Position for the rigid link.
+    """
     Cube(path, sizes=1.0)
     RigidPrim(
         path,
@@ -67,10 +73,17 @@ class TestRobotApiAutoExpansion(ogts.OmniGraphTestCase):
     async def _build_robot(self, robot_path: str = "/World/Robot", add_site: bool = False) -> Any:
         """Construct the asset hierarchy described in the module docstring and return link paths.
 
-        When @p add_site is True, also author an `IsaacSiteAPI` Xform under `base_link`
+        When add_site is True, also author an `IsaacSiteAPI` Xform under `base_link`
         (mirroring how `imu_link` sits under `base_link` in `tb3_burger_processed.usda`).
         Sites are deliberately *not* added to `isaac:physics:robotLinks` because the schema
         treats them as a separate concept from links.
+
+        Args:
+            robot_path: Root path for the generated robot.
+            add_site: Whether to add an Isaac site under the base link.
+
+        Returns:
+            Robot root path and generated link paths.
         """
         # Create the IsaacRobotAPI root as a plain Xform (no physics APIs).
         UsdGeom.Xform.Define(self._stage, robot_path)
@@ -149,7 +162,12 @@ class TestRobotApiAutoExpansion(ogts.OmniGraphTestCase):
         )
 
     def _create_joint_name_resolver_graph(self, robot_target_path: Any, joint_names: Any) -> None:
-        """Create an action graph with `IsaacJointNameResolver` targeting `robot_target_path`."""
+        """Create an action graph with `IsaacJointNameResolver` targeting `robot_target_path`.
+
+        Args:
+            robot_target_path: Robot prim path connected to the resolver.
+            joint_names: Joint names to feed into the resolver.
+        """
         og.Controller.edit(
             {"graph_path": self.GRAPH_PATH, "evaluator_name": "execution"},
             {

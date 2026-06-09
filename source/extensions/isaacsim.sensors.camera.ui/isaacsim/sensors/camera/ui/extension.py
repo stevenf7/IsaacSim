@@ -42,6 +42,9 @@ def _build_sensors_dict() -> dict:
     Iterates the registry in declared order and groups entries by their derived
     vendor name (so dict insertion order also drives menu ordering). The result
     has the legacy shape so any consumer of ``Extension.SENSORS`` keeps working.
+
+    Returns:
+        Sensor menu entries grouped by vendor and display name.
     """
     sensors: dict = {}
     for config_path in SUPPORTED_CAMERA_CONFIGS:

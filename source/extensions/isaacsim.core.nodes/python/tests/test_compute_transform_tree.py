@@ -34,7 +34,15 @@ async def _next_update() -> None:
 
 
 def _add_rigid_prim(_stage: Any, path: Any, positions: Any, orientations: Any = None, size: Any = 1.0) -> None:
-    """Add a rigid body prim at path so IsaacComputeTransformTree's discovery does not log errors."""
+    """Add a rigid body prim at path so IsaacComputeTransformTree's discovery does not log errors.
+
+    Args:
+        _stage: Stage associated with the test.
+        path: Prim path for the rigid body.
+        positions: Position values for the rigid body.
+        orientations: Optional orientation values for the rigid body.
+        size: Cube size for the rigid body.
+    """
     Cube(path, sizes=size)
     RigidPrim(
         path,
@@ -47,13 +55,25 @@ def _add_rigid_prim(_stage: Any, path: Any, positions: Any, orientations: Any = 
 
 
 async def _set_xform_translation(stage: Any, path: Any, positions: Any) -> None:
-    """Update the existing translate op on a plain Xform prim."""
+    """Update the existing translate op on a plain Xform prim.
+
+    Args:
+        stage: Stage associated with the test.
+        path: Prim path to update.
+        positions: Translation values to set.
+    """
     XformPrim(path).set_local_poses(translations=positions)
     await _next_update()
 
 
 def _set_name_override(_stage: Any, path: Any, name: Any) -> None:
-    """Author `isaac:nameOverride` on the prim at @p path."""
+    """Author `isaac:nameOverride` on the prim at path.
+
+    Args:
+        _stage: Stage associated with the test.
+        path: Prim path to update.
+        name: Override name to author.
+    """
     attr = prim_utils.create_prim_attribute(path, name="isaac:nameOverride", type_name="string")
     attr.Set(name)
 
@@ -120,6 +140,9 @@ class TestIsaacComputeTransformTree(ogts.OmniGraphTestCase):
         """Finalize graph authoring, start the timeline, warm up, and evaluate once.
 
         Consolidates the repeated driver sequence used by transform-tree tests.
+
+        Args:
+            warmup_steps: Number of app updates before graph evaluation.
         """
         await self._step()
         self._timeline.play()

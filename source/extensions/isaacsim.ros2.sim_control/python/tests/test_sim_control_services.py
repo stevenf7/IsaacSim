@@ -69,7 +69,16 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
     async def simulate_until_condition(
         self, condition_func: Any, max_frames: Any = 180, per_frame_callback: Any = None
     ) -> Any:
-        """Tick Kit until a predicate succeeds or a frame limit is reached."""
+        """Tick Kit until a predicate succeeds or a frame limit is reached.
+
+        Args:
+            condition_func: Predicate called after each Kit update.
+            max_frames: Maximum number of frames to simulate.
+            per_frame_callback: Optional callback invoked once per frame.
+
+        Returns:
+            True if ``condition_func`` succeeds before the frame limit, otherwise False.
+        """
         frames_run = 0
         while frames_run < max_frames:
             await omni.kit.app.get_app().next_update_async()
@@ -81,7 +90,11 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         return False
 
     def create_test_stage(self) -> Any:
-        """Build a small stage with physics, lighting, dynamic cube, and static cone fixtures."""
+        """Build a small stage with physics, lighting, dynamic cube, and static cone fixtures.
+
+        Returns:
+            USD stage containing the test fixtures.
+        """
         stage = omni.usd.get_context().get_stage()
 
         # Create World xform
@@ -121,7 +134,16 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         return stage
 
     async def _call_service_async(self, service_type: Any, service_name: Any, request: Any) -> Any:
-        """Call a ROS 2 service from a temporary rclpy node without blocking the Kit loop."""
+        """Call a ROS 2 service from a temporary rclpy node without blocking the Kit loop.
+
+        Args:
+            service_type: ROS 2 service type used to create the client.
+            service_name: Name of the service endpoint to call.
+            request: Request object sent to the service.
+
+        Returns:
+            Service response object.
+        """
         import concurrent.futures
 
         import rclpy
@@ -179,7 +201,16 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
                 self.fail(f"Test execution failed: {e}")
 
     async def _call_action_async(self, action_type: Any, action_name: Any, goal: Any) -> Any:
-        """Send a ROS 2 action goal from a temporary rclpy node without blocking the Kit loop."""
+        """Send a ROS 2 action goal from a temporary rclpy node without blocking the Kit loop.
+
+        Args:
+            action_type: ROS 2 action type used to create the client.
+            action_name: Name of the action endpoint to call.
+            goal: Goal object sent to the action server.
+
+        Returns:
+            Action result object.
+        """
         import concurrent.futures
 
         import rclpy
@@ -879,6 +910,9 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         """Test basic entity spawn with default position using USD file.
 
         This test first deletes an existing object, then spawns a robot entity using a USD file at the default position.
+
+        Returns:
+            None.
         """
         # fmt: off
         from simulation_interfaces.msg import Result
@@ -989,6 +1023,9 @@ class TestSimControlServices(omni.kit.test.AsyncTestCase):
         """Test spawning entity with specific position and orientation.
 
         This test spawns a robot entity with explicitly set initial pose.
+
+        Returns:
+            None.
         """
         from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion
 

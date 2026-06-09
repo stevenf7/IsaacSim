@@ -38,7 +38,13 @@ from pxr import UsdGeom, UsdPhysics
 
 
 def _set_robot_height(stage: Any, prim_path: str, height: float) -> None:
-    """Set the robot's root prim z-translate without adding constraints."""
+    """Set the robot's root prim z-translate without adding constraints.
+
+    Args:
+        stage: USD stage containing the robot.
+        prim_path: Path to the robot root prim.
+        height: Z translation to write on the robot root.
+    """
     from pxr import Gf
 
     robot_prim = stage.GetPrimAtPath(prim_path)
@@ -54,7 +60,13 @@ def _set_robot_height(stage: Any, prim_path: str, height: float) -> None:
 
 
 def _fix_robot_base(stage: Any, prim_path: str, robot_height: float = 1.0) -> None:
-    """Fix the robot base to the world frame using a FixedJoint under the articulation."""
+    """Fix the robot base to the world frame using a FixedJoint under the articulation.
+
+    Args:
+        stage: USD stage containing the robot.
+        prim_path: Path to the robot root prim.
+        robot_height: Initial z-position of the robot root [m].
+    """
     from pxr import Usd
 
     robot_prim = stage.GetPrimAtPath(prim_path)
@@ -79,7 +91,12 @@ def _fix_robot_base(stage: Any, prim_path: str, robot_height: float = 1.0) -> No
 
 
 def _set_mujoco_variant(stage: Any, prim_path: str) -> None:
-    """Set the Physics variant to mujoco on the robot reference."""
+    """Set the Physics variant to mujoco on the robot reference.
+
+    Args:
+        stage: USD stage containing the robot.
+        prim_path: Path to the robot root prim.
+    """
     prim = stage.GetPrimAtPath(prim_path)
     if not prim.IsValid():
         return
@@ -120,7 +137,14 @@ class TestNewtonActuatorBridge(omni.kit.test.AsyncTestCase):
     STAND_KD = 5.0
 
     def _get_stand_targets(self, robot: Any) -> np.ndarray:
-        """Build standing target array matching the robot's DOF ordering."""
+        """Build standing target array matching the robot's DOF ordering.
+
+        Args:
+            robot: Articulation view with DOF names.
+
+        Returns:
+            Standing target positions ordered by robot DOF index.
+        """
         targets = np.zeros(robot.num_dofs, dtype=np.float32)
         for i, name in enumerate(robot.dof_names):
             if name in self.STAND_TARGETS_BY_NAME:
@@ -169,6 +193,9 @@ class TestNewtonActuatorBridge(omni.kit.test.AsyncTestCase):
         Args:
             fixed_base: if True, attach the robot base to the world with a FixedJoint.
             robot_height: initial z-position of the robot root [m].
+
+        Returns:
+            Articulation view for the robot prim.
         """
         if fixed_base:
             _fix_robot_base(self._stage, self._prim_path, robot_height)
@@ -218,12 +245,29 @@ class TestNewtonActuatorBridge(omni.kit.test.AsyncTestCase):
             scene.CreateGravityMagnitudeAttr().Set(0.0)
 
     def _get_base_height(self, robot: Any) -> float:
-        """Get the z-position of the robot's root link."""
+        """Get the z-position of the robot's root link.
+
+        Args:
+            robot: Articulation view.
+
+        Returns:
+            Root link z-position [m].
+        """
         positions, _ = robot.get_world_poses()
         return float(positions.numpy().flatten()[2])
 
     def _compute_pd_efforts(self, robot: Any, targets: np.ndarray, kp: np.ndarray, kd: np.ndarray) -> np.ndarray:
-        """Compute PD control efforts: F = Kp * (target - pos) - Kd * vel."""
+        """Compute PD control efforts: F = Kp * (target - pos) - Kd * vel.
+
+        Args:
+            robot: Articulation view.
+            targets: Target DOF positions.
+            kp: Per-DOF proportional gains.
+            kd: Per-DOF derivative gains.
+
+        Returns:
+            Effort command array with shape ``(1, num_dofs)``.
+        """
         pos = robot.get_dof_positions().numpy().flatten()
         vel = robot.get_dof_velocities().numpy().flatten()
         efforts = kp * (targets - pos) - kd * vel

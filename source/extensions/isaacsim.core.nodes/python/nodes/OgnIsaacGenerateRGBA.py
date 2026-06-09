@@ -25,7 +25,14 @@ class OgnIsaacGenerateRGBA:
 
     @staticmethod
     def compute(db: Any) -> bool:
-        """Simple compute function to generate constant color buffer."""
+        """Generate a constant color buffer.
+
+        Args:
+            db: OmniGraph database for this node.
+
+        Returns:
+            True after the image buffer is populated.
+        """
         db.outputs.data = np.full((db.inputs.height, db.inputs.width, 4), db.inputs.color * 255, np.uint8)
         db.outputs.width = db.inputs.width
         db.outputs.height = db.inputs.height

@@ -28,7 +28,12 @@ from isaacsim.core.experimental.materials import (
 
 
 async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"]) -> None:
-    """Populate stage."""
+    """Populate stage.
+
+    Args:
+        max_num_prims: Maximum number of material prims to pre-author.
+        operation: Prim setup operation requested by the parametrized test.
+    """
     # create new stage
     await stage_utils.create_new_stage_async()
     # define prims

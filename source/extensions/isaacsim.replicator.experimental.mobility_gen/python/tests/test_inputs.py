@@ -26,13 +26,17 @@ from isaacsim.replicator.experimental.mobility_gen.impl.inputs import KeyboardBu
 
 
 class _FakeKeyboardEvent:
-    """Keyboard event stand-in exposing the fields read by KeyboardButton."""
+    """Keyboard event stand-in exposing the fields read by KeyboardButton.
+
+    Args:
+        input_key: Keyboard input key to expose on the fake event.
+        event_type: Keyboard event type to expose on the fake event.
+    """
 
     # Lightweight stand-in for `carb.input.KeyboardEvent`. The real type cannot be
     # constructed from Python, but `KeyboardButton._event_callback` only reads
     # `.input` and `.type`, so duck typing is sufficient here.
     def __init__(self, input_key: carb.input.KeyboardInput, event_type: carb.input.KeyboardEventType) -> None:
-        """Store the input key and event type for the fake event."""
         self.input = input_key
         self.type = event_type
 

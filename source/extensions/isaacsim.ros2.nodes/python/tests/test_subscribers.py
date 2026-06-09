@@ -81,7 +81,14 @@ class TestRos2Subscribers(ROS2TestCase):
             self.prev_seq = seq
 
     def _choose_queue_size(self, queue_range: Any) -> Any:
-        """Pick a random queue size inside the given inclusive range."""
+        """Pick a random queue size inside the given inclusive range.
+
+        Args:
+            queue_range: Inclusive range to choose from.
+
+        Returns:
+            Selected queue size.
+        """
         lo, hi = queue_range
         queue_size = random.randint(lo, hi)
         print("Choosing queue size of", queue_size)
@@ -376,7 +383,11 @@ class TestRos2Subscribers(ROS2TestCase):
     # ------------------------------------------------------------------
 
     async def test_transform_tree_subscriber(self) -> Any:
-        """Test transform tree subscriber."""
+        """Test transform tree subscriber.
+
+        Returns:
+            None.
+        """
         from geometry_msgs.msg import TransformStamped
         from tf2_msgs.msg import TFMessage
 
@@ -482,7 +493,11 @@ class TestRos2Subscribers(ROS2TestCase):
         self._timeline.stop()
 
     async def test_transform_tree_subscriber_nova_carter(self) -> Any:
-        """Test transform tree subscriber nova carter."""
+        """Test transform tree subscriber nova carter.
+
+        Returns:
+            None.
+        """
         from geometry_msgs.msg import TransformStamped
         from tf2_msgs.msg import TFMessage
 

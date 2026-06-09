@@ -44,7 +44,6 @@ class OgnROS2RtxLidarHelperInternalState(BaseWriterNode):
     """Internal state for the ROS2RtxLidarHelper OmniGraph node."""
 
     def __init__(self) -> None:
-        """Initialize the ROS2 RTX lidar helper internal state."""
         self.viewport = None
         self.viewport_name = ""
         self.resetSimulationTimeOnStop = False
@@ -61,7 +60,12 @@ class OgnROS2RtxLidarHelperInternalState(BaseWriterNode):
         super().custom_reset()
 
     def post_attach(self, writer: Any, render_product: Any) -> None:
-        """Configure writer attributes after attaching to a render product."""
+        """Configure writer attributes after attaching to a render product.
+
+        Args:
+            writer: Writer attached to the render product.
+            render_product: Render product path or prim.
+        """
         try:
             omni.syntheticdata.SyntheticData.Get().set_node_attributes(
                 "PostProcessDispatch" + "IsaacSimulationGate", {"inputs:step": self.publishStepSize}, render_product
@@ -78,7 +82,11 @@ class OgnROS2RtxLidarHelper:
 
     @staticmethod
     def internal_state() -> OgnROS2RtxLidarHelperInternalState:
-        """Return the internal state object for this node."""
+        """Return the internal state object for this node.
+
+        Returns:
+            Internal state object for this node.
+        """
         return OgnROS2RtxLidarHelperInternalState()
 
     @staticmethod
@@ -213,7 +221,14 @@ class OgnROS2RtxLidarHelper:
 
     @staticmethod
     def compute(db: Any) -> bool:
-        """Configure ROS 2 PointCloud2 or LaserScan publishing for an RTX lidar render product."""
+        """Configure ROS 2 PointCloud2 or LaserScan publishing for an RTX lidar render product.
+
+        Args:
+            db: OmniGraph database for the node.
+
+        Returns:
+            True if the node was configured or can retry later, otherwise False.
+        """
         state = db.per_instance_state
         if not db.inputs.enabled:
             if state.initialized:
@@ -341,7 +356,12 @@ class OgnROS2RtxLidarHelper:
 
     @staticmethod
     def release_instance(node: Any, graph_instance_id: Any) -> None:
-        """Release resources for a graph instance."""
+        """Release resources for a graph instance.
+
+        Args:
+            node: OmniGraph node being released.
+            graph_instance_id: Graph instance identifier.
+        """
         try:
             state = OgnROS2RtxLidarHelperInternalState.per_instance_internal_state(node)
         except Exception:

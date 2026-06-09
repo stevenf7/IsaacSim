@@ -79,7 +79,11 @@ class Extension(omni.ext.IExt):
             self._unregister_widget()
 
     def _on_exposed_vars_changed(self, event: Any) -> None:
-        """Refresh the property window when exposed variables are created or removed."""
+        """Refresh the property window when exposed variables are created or removed.
+
+        Args:
+            event: Exposed-variable change event.
+        """
         rebuild_property_window()
 
     def _register_widget(self) -> None:

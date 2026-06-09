@@ -30,6 +30,12 @@ class OgnCountIndices:
         Replicator distributions cannot request zero samples, so an empty index
         list is reported as one sample while non-empty lists use their true
         length.
+
+        Args:
+            db: Database object containing node inputs and outputs.
+
+        Returns:
+            True after ``outputs:count`` is written.
         """
         indices = np.array(db.inputs.indices)
 

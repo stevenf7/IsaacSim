@@ -202,7 +202,20 @@ class TestMjcPhysxConversionUtils(omni.kit.test.AsyncTestCase):
         lower: float,
         upper: float,
     ) -> Usd.Prim:
-        """Helper to construct a UsdPhysics.RevoluteJoint with the given params."""
+        """Construct a ``UsdPhysics.RevoluteJoint`` with the given parameters.
+
+        Args:
+            stage: Stage on which to define the joint.
+            path: Prim path for the joint.
+            body0: Target path for the joint's body0 relationship.
+            body1: Target path for the joint's body1 relationship.
+            axis: Joint axis token.
+            lower: Lower limit authored on the joint.
+            upper: Upper limit authored on the joint.
+
+        Returns:
+            The authored revolute joint prim.
+        """
         joint = UsdPhysics.RevoluteJoint.Define(stage, path)
         joint.CreateBody0Rel().SetTargets([Sdf.Path(body0)])
         joint.CreateBody1Rel().SetTargets([Sdf.Path(body1)])

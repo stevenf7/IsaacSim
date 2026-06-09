@@ -81,7 +81,17 @@ async def _record_session(
     output_dir: str,
     file_prefix: str = _FILE_PREFIX,
 ) -> str:
-    """Drive discover, session open, capture start/stop, and session close through the panel."""
+    """Drive discover, session open, capture start/stop, and session close through the panel.
+
+    Args:
+        test: Test case used for UI assertions.
+        panel: Episode Recorder panel under test.
+        output_dir: Directory where the HDF5 session file is written.
+        file_prefix: Prefix used when naming the session file.
+
+    Returns:
+        Path to the HDF5 file written by the recording session.
+    """
     _configure_panel(panel, output_dir, file_prefix)
 
     panel._on_discover_clicked()

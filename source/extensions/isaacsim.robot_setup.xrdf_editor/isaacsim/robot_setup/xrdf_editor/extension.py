@@ -73,7 +73,11 @@ class Extension(omni.ext.IExt):
     # Lifecycle
     # ------------------------------------------------------------------
     def on_startup(self, ext_id: str) -> None:
-        """Initialise window, menu, event handles, and the UI builder."""
+        """Initialise window, menu, event handles, and the UI builder.
+
+        Args:
+            ext_id: Owning extension identifier.
+        """
         self.ext_id = ext_id
         self._usd_context = omni.usd.get_context()
 
@@ -124,7 +128,11 @@ class Extension(omni.ext.IExt):
     # Window
     # ------------------------------------------------------------------
     def _on_window(self, visible: bool) -> None:
-        """Subscribe / unsubscribe from stage events as the window opens/closes."""
+        """Subscribe or unsubscribe from stage events as the window opens or closes.
+
+        Args:
+            visible: Whether the window is visible.
+        """
         if self._window.visible:
             self._usd_context = omni.usd.get_context()
             ed = carb.eventdispatcher.get_eventdispatcher()
@@ -203,7 +211,11 @@ class Extension(omni.ext.IExt):
         self.ui_builder.on_menu_callback()
 
     def _on_simulation_start_play(self, event: object) -> None:
-        """Handle stage SIMULATION_START_PLAY by subscribing to physics steps."""
+        """Handle stage SIMULATION_START_PLAY by subscribing to physics steps.
+
+        Args:
+            event: Stage simulation-start-play event payload.
+        """
         if not self._physics_subscription:
             self._physics_subscription = self._physics_simulation_interface.subscribe_physics_on_step_events(
                 pre_step=False, order=0, on_update=self._on_physics_step
@@ -211,26 +223,47 @@ class Extension(omni.ext.IExt):
         self.ui_builder.on_simulation_start_play(event)
 
     def _on_simulation_stop_play(self, event: object) -> None:
-        """Handle stage SIMULATION_STOP_PLAY by dropping the physics subscription."""
+        """Handle stage SIMULATION_STOP_PLAY by dropping the physics subscription.
+
+        Args:
+            event: Stage simulation-stop-play event payload.
+        """
         self._physics_subscription = None
         self.ui_builder.on_simulation_stop_play(event)
 
     def _on_physics_step(self, step: float, context: object) -> None:
-        """Forward physics-step callbacks to the UI builder."""
+        """Forward physics-step callbacks to the UI builder.
+
+        Args:
+            step: Physics step size in seconds.
+            context: Physics callback context.
+        """
         self.ui_builder.on_physics_step(step)
 
     def _on_stage_opened(self, event: object) -> None:
-        """Handle stage OPENED: drop physics sub, delegate to builder."""
+        """Handle stage OPENED by dropping the physics sub and delegating to the builder.
+
+        Args:
+            event: Stage opened event payload.
+        """
         self._physics_subscription = None
         self.ui_builder.on_stage_opened(event)
 
     def _on_stage_closed(self, event: object) -> None:
-        """Handle stage CLOSED: drop physics sub, delegate to builder."""
+        """Handle stage CLOSED by dropping the physics sub and delegating to the builder.
+
+        Args:
+            event: Stage closed event payload.
+        """
         self._physics_subscription = None
         self.ui_builder.on_stage_closed(event)
 
     def _on_selection_changed(self, event: object) -> None:
-        """Handle stage SELECTION_CHANGED: delegate to builder."""
+        """Handle stage SELECTION_CHANGED by delegating to the builder.
+
+        Args:
+            event: Stage selection-changed event payload.
+        """
         self.ui_builder.on_selection_changed(event)
 
     def _build_extension_ui(self) -> None:

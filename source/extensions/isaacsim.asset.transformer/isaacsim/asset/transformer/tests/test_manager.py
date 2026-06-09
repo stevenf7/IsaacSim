@@ -35,6 +35,9 @@ def _write_1x1_png(path: str) -> None:
     PNG layout: 8-byte signature + IHDR + IDAT + IEND chunks with correct CRC32
     values. Used by tests that copy texture assets and verify the copied files
     remain valid images on disk.
+
+    Args:
+        path: Destination PNG path.
     """
 
     def _chunk(tag: bytes, data: bytes) -> bytes:

@@ -125,7 +125,16 @@ class Extension(omni.ext.IExt):
         gc.collect()
 
     def _register_action(self, action_id: str, fn: Callable, description: str) -> str:
-        """Register an action and track it for shutdown."""
+        """Register an action and track it for shutdown.
+
+        Args:
+            action_id: Identifier used to register the action.
+            fn: Function called when the action is invoked.
+            description: Description shown for the registered action.
+
+        Returns:
+            Registered action identifier.
+        """
         omni.kit.actions.core.get_action_registry().register_action(
             self._ext_name, action_id, fn, description=description
         )
@@ -144,10 +153,18 @@ class Extension(omni.ext.IExt):
         """Register one action per sensor config.
 
         Paths are assumed to use the ``/Isaac/Sensors/<Vendor>/<Sensor>/<Sensor>.usd`` layout.
-        Returns a vendor-grouped, alphabetically sorted menu list.
-
         The first variant (if any) is picked as the default so multi-variant-set USDs (e.g. SICK
         family USDs) materialize a valid prim from a single menu click.
+
+        Args:
+            configs: Supported config paths mapped to variant metadata.
+            action_id_prefix: Prefix used to build unique action identifiers.
+            modality_label: Sensor modality label used in action descriptions.
+            create_callback: Callback called with the sensor name, config name, and default variant.
+            seed_vendor_entries: Optional vendor menu entries to include before config-derived entries.
+
+        Returns:
+            Vendor-grouped menu item list sorted by vendor name.
         """
         vendor_dict: dict[str, list] = {k: list(v) for k, v in (seed_vendor_entries or {}).items()}
         for config in configs:
@@ -173,12 +190,23 @@ class Extension(omni.ext.IExt):
         return [{"name": {v: vendor_dict[v]}} for v in sorted(vendor_dict)]
 
     def _get_stage_and_path(self) -> str | None:
-        """Return the last selected prim path, or None if nothing is selected."""
+        """Return the last selected prim path, or None if nothing is selected.
+
+        Returns:
+            Last selected prim path, or None if no prim is selected.
+        """
         selected = omni.usd.get_context().get_selection().get_selected_prim_paths()
         return selected[-1] if selected else None
 
     def _resolve_prim_path(self, base_name: str) -> str:
-        """Return a free prim path under the selection (or under the default prim if nothing is selected)."""
+        """Return a free prim path under the selection or default prim.
+
+        Args:
+            base_name: Base prim name to use for the generated path.
+
+        Returns:
+            Available prim path for a new sensor.
+        """
         selected = self._get_stage_and_path()
         if selected:
             return generate_next_free_path(f"{selected}/{base_name}", prepend_default_prim=False)
@@ -187,7 +215,14 @@ class Extension(omni.ext.IExt):
     def _create_sensor_from_config(
         self, sensor_cls: Any, sensor_name: str, sensor_config: str, variant: str | dict[str, str] | None
     ) -> None:
-        """Create an RTX sensor of ``sensor_cls`` from a supported config at the selected location."""
+        """Create an RTX sensor from a supported config at the selected location.
+
+        Args:
+            sensor_cls: Sensor class exposing a ``create`` factory method.
+            sensor_name: Display name used to derive the prim name.
+            sensor_config: Sensor config name passed to the factory.
+            variant: Variant metadata passed to the factory.
+        """
         sensor_cls.create(
             self._resolve_prim_path(Tf.MakeValidIdentifier(sensor_name)),
             config=sensor_config,
@@ -195,5 +230,10 @@ class Extension(omni.ext.IExt):
         )
 
     def _create_generic_sensor(self, sensor_cls: Any, base_name: str) -> None:
-        """Create a generic RTX sensor of ``sensor_cls`` (no USD asset) at the selected location."""
+        """Create a generic RTX sensor at the selected location.
+
+        Args:
+            sensor_cls: Sensor class to instantiate.
+            base_name: Base prim name to use for the generated path.
+        """
         sensor_cls(self._resolve_prim_path(base_name))

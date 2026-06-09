@@ -107,6 +107,10 @@ class SessionStorage:
 
     Thread-safety: buffered append / flush / end are **not** internally synchronized.
     Callers (e.g. :class:`EpisodeRecorder`) must serialize access with their own lock.
+
+    Args:
+        h5_path: Path to the HDF5 session file.
+        buffer_frames: Number of frames to buffer before flushing writes.
     """
 
     def __init__(self, h5_path: str, *, buffer_frames: int = DEFAULT_BUFFER_FRAMES) -> None:
@@ -171,13 +175,22 @@ class SessionStorage:
         self._h5.require_group(EPISODES_GROUP)
 
     def write_manifest(self, manifest: SessionManifest) -> None:
-        """Run the write manifest operation."""
+        """Run the write manifest operation.
+
+        Args:
+            manifest: Session manifest to write.
+        """
         self._require_open()
         write_manifest(self._h5, manifest)
         self._h5.flush()
 
     def set_root_attr(self, key: str, value: Any) -> None:
-        """Write a top-level HDF5 attribute (e.g. ``tool_version``, ``session_id``)."""
+        """Write a top-level HDF5 attribute (e.g. ``tool_version``, ``session_id``).
+
+        Args:
+            key: Key to use.
+            value: Value to process.
+        """
         self._require_open()
         self._h5.attrs[key] = _coerce_attr(value)
 
@@ -291,6 +304,10 @@ class SessionStorage:
         channel declared for ``recordable_group``; missing keys raise :class:`KeyError`
         naturally at the dict access, and shape mismatches raise at the buffer slice
         assignment. Extra keys are tolerated and ignored — they do not affect stored data.
+
+        Args:
+            recordable_group: Recordable group path.
+            frame: Frame data keyed by channel name.
         """
         plan = self._group_plans.get(recordable_group)
         if plan is None:
@@ -346,7 +363,12 @@ class SessionStorage:
         self._buffer_count[rec_group] = 0
 
     def end_episode(self, *, success: bool | None = None, metadata: Mapping[str, Any] | None = None) -> None:
-        """Flush buffers, trim datasets to real row counts, and write episode attrs."""
+        """Flush buffers, trim datasets to real row counts, and write episode attrs.
+
+        Args:
+            success: Episode success flag to store.
+            metadata: Episode metadata to store.
+        """
         if self._h5 is None:
             return
         if self._episode_group is None:
@@ -424,17 +446,32 @@ class SessionReader:
         return self._h5_path
 
     def manifest(self) -> SessionManifest:
-        """Run the manifest operation."""
+        """Run the manifest operation.
+
+        Returns:
+            Session manifest.
+        """
         return self._manifest
 
     def list_episodes(self) -> list[str]:
-        """Run the list episodes operation."""
+        """Run the list episodes operation.
+
+        Returns:
+            Episode names in storage order.
+        """
         if EPISODES_GROUP not in self._h5:
             return []
         return sorted(self._h5[EPISODES_GROUP].keys())
 
     def normalize_episode(self, episode: int | str) -> str:
-        """Run the normalize episode operation."""
+        """Run the normalize episode operation.
+
+        Args:
+            episode: Episode identifier or index.
+
+        Returns:
+            Normalized episode name.
+        """
         episodes = self.list_episodes()
         if isinstance(episode, int):
             if episode < 0 or episode >= len(episodes):
@@ -445,12 +482,26 @@ class SessionReader:
         raise KeyError(f"Unknown episode {episode!r}. Available: {episodes}.")
 
     def num_frames(self, episode: int | str) -> int:
-        """Return the number of frames."""
+        """Return the number of frames.
+
+        Args:
+            episode: Episode identifier or index.
+
+        Returns:
+            Number of frames in the episode.
+        """
         name = self.normalize_episode(episode)
         return int(self._h5[EPISODES_GROUP][name].attrs.get("num_frames", 0))
 
     def episode_attrs(self, episode: int | str) -> dict[str, Any]:
-        """Run the episode attrs operation."""
+        """Run the episode attrs operation.
+
+        Args:
+            episode: Episode identifier or index.
+
+        Returns:
+            Episode attributes keyed by attribute name.
+        """
         name = self.normalize_episode(episode)
         attrs = dict(self._h5[EPISODES_GROUP][name].attrs)
         user_md = attrs.pop("user_metadata", None)
@@ -462,7 +513,16 @@ class SessionReader:
         return attrs
 
     def read_frame(self, episode: int | str, recordable_group: str, frame_index: int) -> dict[str, np.ndarray]:
-        """Read one frame of one recordable group into a channel-name-keyed dict."""
+        """Read one frame of one recordable group into a channel-name-keyed dict.
+
+        Args:
+            episode: Episode identifier or index.
+            recordable_group: Recordable group path.
+            frame_index: Frame index to read.
+
+        Returns:
+            Frame data keyed by channel name.
+        """
         name = self.normalize_episode(episode)
         ep = self._h5[EPISODES_GROUP][name]
         if recordable_group not in ep:
@@ -478,7 +538,16 @@ class SessionReader:
         return out
 
     def read_channel(self, episode: int | str, recordable_group: str, channel: str) -> np.ndarray:
-        """Read the full time-series for one channel as a contiguous array."""
+        """Read the full time-series for one channel as a contiguous array.
+
+        Args:
+            episode: Episode identifier or index.
+            recordable_group: Recordable group path.
+            channel: Channel name to read.
+
+        Returns:
+            Channel samples for all frames in the episode.
+        """
         name = self.normalize_episode(episode)
         ds = self._h5[EPISODES_GROUP][name][recordable_group][channel]
         return np.asarray(ds[:])
@@ -489,6 +558,13 @@ class SessionReader:
         Each value has shape ``(num_frames, ...)``. Lets callers prefetch an entire
         episode into RAM once and index into the arrays per-frame instead of issuing
         thousands of small HDF5 slab reads during replay.
+
+        Args:
+            episode: Episode identifier or index.
+            recordable_group: Recordable group path.
+
+        Returns:
+            All frame data for the recordable group.
         """
         name = self.normalize_episode(episode)
         ep = self._h5[EPISODES_GROUP][name]
@@ -504,9 +580,17 @@ class SessionReader:
             self._h5 = None
 
     def __enter__(self) -> SessionReader:
-        """Enter the context manager."""
+        """Enter the context manager.
+
+        Returns:
+            This context manager instance.
+        """
         return self
 
     def __exit__(self, *exc_info: Any) -> None:
-        """Exit the context manager."""
+        """Exit the context manager.
+
+        Args:
+            *exc_info: Exception information from the context manager protocol.
+        """
         self.close()

@@ -120,7 +120,14 @@ class OgnDope:
 
     @staticmethod
     def compute(db: Any) -> bool:
-        """Compute the outputs from the current input."""
+        """Compute the outputs from the current input.
+
+        Args:
+            db: Database object containing node inputs and outputs.
+
+        Returns:
+            True when the node computation completes.
+        """
         db.log_warn("Deprecation warning: OgnDope has been deprecated and will be removed in the next major release.")
 
         return_data_dtype = np.dtype(

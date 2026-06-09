@@ -152,6 +152,13 @@ class TestUsdAuthoring(omni.kit.test.AsyncTestCase):
         which is the simplest path that ``newton.actuators.utils.load_checkpoint`` accepts.
         The networks are intentionally minimal — these tests verify the actuator can
         be *built* (i.e. parsed and constructed); they do not exercise ``compute()``.
+
+        Args:
+            tmp_dir: Directory where the checkpoint file is written.
+            model_type: Neural controller type to encode in checkpoint metadata.
+
+        Returns:
+            Absolute path to the saved checkpoint file.
         """
         if model_type == "mlp":
             net = _torch.nn.Sequential(_torch.nn.Linear(2, 1))

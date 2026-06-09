@@ -27,7 +27,11 @@ from pxr import Usd, UsdGeom, UsdPhysics
 
 
 def _build_two_link_robot(stage: Usd.Stage) -> None:
-    """Build a minimal two-link robot with a revolute joint on the given stage."""
+    """Build a minimal two-link robot with a revolute joint on the given stage.
+
+    Args:
+        stage: USD stage to read.
+    """
     UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
     UsdGeom.SetStageMetersPerUnit(stage, 1.0)
 

@@ -29,7 +29,11 @@ from pxr import Gf, PhysicsSchemaTools, UsdGeom, UsdPhysics
 
 
 async def wait_for_stage_loading() -> Any:
-    """Wait until USD stage loading is complete."""
+    """Wait until USD stage loading is complete.
+
+    Returns:
+        None.
+    """
     while omni.usd.get_context().get_stage_loading_status()[2] > 0:
         await omni.kit.app.get_app().next_update_async()
 
@@ -85,7 +89,17 @@ class TestRigidContactView(omni.kit.test.AsyncTestCase):
         await omni.usd.get_context().close_stage_async()
 
     def _create_cube(self, path: Any, position: Any = (0, 0, 0), size: Any = 1.0, mass: Any = 1.0) -> Any:
-        """Helper to create a cube with physics."""
+        """Create a cube with physics.
+
+        Args:
+            path: USD path where the cube should be created.
+            position: Translation to apply to the cube.
+            size: Cube size to author.
+            mass: Mass value to author.
+
+        Returns:
+            None.
+        """
         cube_geom = UsdGeom.Cube.Define(self.stage, path)
         cube_prim = self.stage.GetPrimAtPath(path)
         cube_geom.CreateSizeAttr(size)
@@ -101,7 +115,17 @@ class TestRigidContactView(omni.kit.test.AsyncTestCase):
         mass_api.CreateDiagonalInertiaAttr(Gf.Vec3f(cube_inertia, cube_inertia, cube_inertia))
 
     def _create_sphere(self, path: Any, position: Any = (0, 0, 0), radius: Any = 0.5, mass: Any = 1.0) -> Any:
-        """Helper to create a sphere with physics."""
+        """Create a sphere with physics.
+
+        Args:
+            path: USD path where the sphere should be created.
+            position: Translation to apply to the sphere.
+            radius: Sphere radius to author.
+            mass: Mass value to author.
+
+        Returns:
+            None.
+        """
         sphere_geom = UsdGeom.Sphere.Define(self.stage, path)
         sphere_prim = self.stage.GetPrimAtPath(path)
         sphere_geom.CreateRadiusAttr(radius)
@@ -117,7 +141,14 @@ class TestRigidContactView(omni.kit.test.AsyncTestCase):
         mass_api.CreateDiagonalInertiaAttr(Gf.Vec3f(sphere_inertia, sphere_inertia, sphere_inertia))
 
     def _create_ground_plane(self, path: Any) -> Any:
-        """Helper to create a ground plane."""
+        """Create a ground plane.
+
+        Args:
+            path: USD path where the ground plane should be created.
+
+        Returns:
+            None.
+        """
         plane_geom = UsdGeom.Plane.Define(self.stage, path)
         plane_prim = self.stage.GetPrimAtPath(path)
         plane_geom.CreateAxisAttr("Z")

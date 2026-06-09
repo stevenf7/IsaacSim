@@ -107,14 +107,25 @@ class TestRTSPCameraHelperEncoding(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     def _clear_srtx_settings(self) -> Any:
-        """Clear SRTX settings that affect RTSPCameraHelper writer construction."""
+        """Clear SRTX settings that affect RTSPCameraHelper writer construction.
+
+        Returns:
+            None.
+        """
         self._settings.set_bool(self.SRTX_ENABLED_SETTING, False)
         self._settings.set(self.SENSOR_SET_NAME_SETTING, "")
         self._settings.set(self.SENSOR_SET_NAME_BY_RENDER_PRODUCT_PATH_SETTING, "")
         self._settings.set(self.SENSOR_SET_RENDER_PRODUCT_PATHS_BY_NAME_SETTING, "")
 
     def _create_rtsp_graph(self, use_raw_encoding: Any) -> Any:
-        """Build an action graph with a RenderProduct-backed RTSP helper node."""
+        """Build an action graph with a RenderProduct-backed RTSP helper node.
+
+        Args:
+            use_raw_encoding: Value to set on ``RTSPHelper.inputs:useRawEncoding``.
+
+        Returns:
+            None.
+        """
         stage = omni.usd.get_context().get_stage()
         stage.DefinePrim("/TestRenderProduct", "RenderProduct")
 
@@ -140,7 +151,11 @@ class TestRTSPCameraHelperEncoding(omni.kit.test.AsyncTestCase):
         )
 
     async def _evaluate_graph(self) -> Any:
-        """Play the timeline for one tick to trigger the action graph."""
+        """Play the timeline for one tick to trigger the action graph.
+
+        Returns:
+            None.
+        """
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -152,6 +167,9 @@ class TestRTSPCameraHelperEncoding(omni.kit.test.AsyncTestCase):
 
         Does NOT call through to the real __init__ to avoid creating live
         annotators that would receive frames during timeline playback.
+
+        Returns:
+            Tuple containing the captured init-call list and patch context manager.
         """
         init_calls = []
 
@@ -332,7 +350,11 @@ class TestRTSPCameraHelperRenderVarSetup(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     def _create_render_product(self) -> Any:
-        """Define a bare ``RenderProduct`` prim, no rendervar children."""
+        """Define a bare ``RenderProduct`` prim, no rendervar children.
+
+        Returns:
+            None.
+        """
         stage = omni.usd.get_context().get_stage()
         stage.DefinePrim(self.RENDER_PRODUCT_PATH, "RenderProduct")
 
@@ -348,6 +370,9 @@ class TestRTSPCameraHelperRenderVarSetup(omni.kit.test.AsyncTestCase):
         Args:
             preauthored_compression: Value to author on the rendervar's
                 ``srtx:compression:type`` attribute before ``compute()`` runs.
+
+        Returns:
+            None.
         """
         stage = omni.usd.get_context().get_stage()
         rp_prim = stage.DefinePrim(self.RENDER_PRODUCT_PATH, "RenderProduct")
@@ -358,7 +383,14 @@ class TestRTSPCameraHelperRenderVarSetup(omni.kit.test.AsyncTestCase):
         rp_prim.CreateRelationship("orderedVars").AddTarget(rendervar_path)
 
     def _build_graph(self, use_raw_encoding: bool) -> Any:
-        """Build a graph that feeds encoding mode and render product into the helper."""
+        """Build a graph that feeds encoding mode and render product into the helper.
+
+        Args:
+            use_raw_encoding: Value to set on ``RTSPHelper.inputs:useRawEncoding``.
+
+        Returns:
+            None.
+        """
         keys = og.Controller.Keys
         og.Controller.edit(
             {"graph_path": "/TestGraph", "evaluator_name": "execution"},
@@ -381,7 +413,11 @@ class TestRTSPCameraHelperRenderVarSetup(omni.kit.test.AsyncTestCase):
         )
 
     async def _tick_graph(self) -> Any:
-        """Play the timeline for one tick to trigger ``compute()``."""
+        """Play the timeline for one tick to trigger ``compute()``.
+
+        Returns:
+            None.
+        """
         timeline = omni.timeline.get_timeline_interface()
         timeline.play()
         await omni.kit.app.get_app().next_update_async()
@@ -395,6 +431,12 @@ class TestRTSPCameraHelperRenderVarSetup(omni.kit.test.AsyncTestCase):
         writer/server, so the writer's ``__init__`` and the
         ``BaseWriterNode.append_writer`` / ``attach_writers`` calls are
         intercepted (matching the pattern in ``TestRTSPCameraHelperEncoding``).
+
+        Args:
+            use_raw_encoding: Value to set on ``RTSPHelper.inputs:useRawEncoding``.
+
+        Returns:
+            None.
         """
         self._build_graph(use_raw_encoding=use_raw_encoding)
 
@@ -409,7 +451,14 @@ class TestRTSPCameraHelperRenderVarSetup(omni.kit.test.AsyncTestCase):
             await self._tick_graph()
 
     def _assert_rendervar_state(self, expected_compression: str) -> Any:
-        """Assert the post-``compute()`` USD layout matches the SRTX contract."""
+        """Assert the post-``compute()`` USD layout matches the SRTX contract.
+
+        Args:
+            expected_compression: Expected ``srtx:compression:type`` value.
+
+        Returns:
+            None.
+        """
         stage = omni.usd.get_context().get_stage()
         rp_prim = stage.GetPrimAtPath(self.RENDER_PRODUCT_PATH)
         self.assertTrue(rp_prim.IsValid(), "Render product prim missing")

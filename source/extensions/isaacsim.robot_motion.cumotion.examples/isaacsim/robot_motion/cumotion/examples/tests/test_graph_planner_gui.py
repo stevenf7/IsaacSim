@@ -98,7 +98,12 @@ class TestGraphPlannerGui(omni.kit.test.AsyncTestCase):
 
     @classmethod
     async def _load_until_sliders_on(cls, ui_builder: UIBuilder, *, timeout_sec: float) -> None:
-        """Trigger load and wait until joint sliders exist on ``ui_builder``."""
+        """Trigger load and wait until joint sliders exist on ``ui_builder``.
+
+        Args:
+            ui_builder: UI builder to load.
+            timeout_sec: Maximum time to wait for the sliders.
+        """
         ui_builder._load_btn.trigger_click()
         ok = await wait_until(
             lambda: len(ui_builder._joint_slider_models) > 0,
@@ -109,7 +114,12 @@ class TestGraphPlannerGui(omni.kit.test.AsyncTestCase):
 
     @classmethod
     async def _load_until_articulation_ready_on(cls, ui_builder: UIBuilder, *, timeout_sec: float) -> None:
-        """Trigger load and wait until sliders and articulation are ready."""
+        """Trigger load and wait until sliders and articulation are ready.
+
+        Args:
+            ui_builder: UI builder to load.
+            timeout_sec: Maximum time to wait for the articulation.
+        """
         await cls._load_until_sliders_on(ui_builder, timeout_sec=timeout_sec)
         ok = await wait_until(
             lambda: ui_builder._scenario._articulation is not None,

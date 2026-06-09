@@ -53,7 +53,11 @@ class TestPrimDataReaderInterface(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
     async def _setup_stage(self) -> Any:
-        """Create a fresh USD stage and (re-)initialize the reader against it."""
+        """Create a fresh USD stage and (re-)initialize the reader against it.
+
+        Returns:
+            Requested value.
+        """
         await stage_utils.create_new_stage_async()
         stage = omni.usd.get_context().get_stage()
         self._stage_id = UsdUtils.StageCache.Get().GetId(stage).ToLongInt()
@@ -532,7 +536,14 @@ class TestPrimDataReaderInterface(omni.kit.test.AsyncTestCase):
 
 
 def _read_float_buffer(ptr: Any, count: Any) -> Any:
-    """Read *count* floats from a raw C pointer into a Python list."""
+    """Read *count* floats from a raw C pointer into a Python list.
+
+    Args:
+        ptr: Value passed by the caller.
+        count: Expected number of contact records.
+
+    Returns:
+        Requested value."""
     if not ptr or count <= 0:
         return []
     return list((ctypes.c_float * count).from_address(ptr))
@@ -581,7 +592,10 @@ class TestPrimDataReaderPhysxTransforms(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
     async def _setup_physics_stage(self) -> Any:
-        """Create a stage with a PhysicsScene and return it."""
+        """Create a stage with a PhysicsScene and return it.
+
+        Returns:
+            Requested value."""
         await stage_utils.create_new_stage_async()
         stage = omni.usd.get_context().get_stage()
         stage_utils.define_prim("/World", "Xform")
