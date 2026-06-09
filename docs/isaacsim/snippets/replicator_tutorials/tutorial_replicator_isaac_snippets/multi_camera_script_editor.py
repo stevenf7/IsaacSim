@@ -60,59 +60,59 @@ class MyWriter(Writer):
 
 rep.WriterRegistry.register(MyWriter)
 
-# Create a new stage
-omni.usd.get_context().new_stage()
-
-# Set global random seed for the replicator randomizer
-rep.set_global_seed(11)
-
-# Disable capture on play to capture data manually using step
-rep.orchestrator.set_capture_on_play(False)
-
-# Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
-carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
-
-# Setup stage
-rep.functional.create.xform(name="World")
-rep.functional.create.dome_light(intensity=900, parent="/World", name="DomeLight")
-cube = rep.functional.create.cube(parent="/World", name="Cube", semantics={"class": "my_cube"})
-
-# Register the graph-based cube color randomizer to trigger on every frame
-rep.randomizer.register(cube_color_randomizer)
-with rep.trigger.on_frame():
-    rep.randomizer.cube_color_randomizer()
-
-# Create cameras
-cam_top = rep.functional.create.camera(position=(0, 0, 5), look_at=(0, 0, 0), parent="/World", name="CamTop")
-cam_side = rep.functional.create.camera(position=(2, 2, 0), look_at=(0, 0, 0), parent="/World", name="CamSide")
-cam_persp = rep.functional.create.camera(position=(5, 5, 5), look_at=(0, 0, 0), parent="/World", name="CamPersp")
-
-# Create the render products
-rp_top = rep.create.render_product(cam_top, resolution=(320, 320), name="RpTop")
-rp_side = rep.create.render_product(cam_side, resolution=(640, 640), name="RpSide")
-rp_persp = rep.create.render_product(cam_persp, resolution=(1024, 1024), name="RpPersp")
-
-# Example of accessing the data through a custom writer
-writer = rep.WriterRegistry.get("MyWriter")
-writer.initialize(rgb=True)
-writer.attach([rp_top, rp_side, rp_persp])
-
-# Example of accessing the data directly through annotators
-rgb_annotators = []
-for rp in [rp_top, rp_side, rp_persp]:
-    # Create a new rgb annotator for each render product
-    rgb = rep.annotators.get("rgb")
-    # Attach the annotator to the render product
-    rgb.attach(rp)
-    rgb_annotators.append(rgb)
-
-# Create annotator output directory
-output_dir_annot = os.path.join(os.getcwd(), "_out_mc_annot")
-print(f"Writing annotator data to {output_dir_annot}")
-os.makedirs(output_dir_annot, exist_ok=True)
-
 
 async def run_example_async():
+    # Create a new stage
+    await omni.usd.get_context().new_stage_async()
+
+    # Set global random seed for the replicator randomizer
+    rep.set_global_seed(11)
+
+    # Disable capture on play to capture data manually using step
+    rep.orchestrator.set_capture_on_play(False)
+
+    # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
+    carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)
+
+    # Setup stage
+    rep.functional.create.xform(name="World")
+    rep.functional.create.dome_light(intensity=900, parent="/World", name="DomeLight")
+    cube = rep.functional.create.cube(parent="/World", name="Cube", semantics={"class": "my_cube"})
+
+    # Register the graph-based cube color randomizer to trigger on every frame
+    rep.randomizer.register(cube_color_randomizer)
+    with rep.trigger.on_frame():
+        rep.randomizer.cube_color_randomizer()
+
+    # Create cameras
+    cam_top = rep.functional.create.camera(position=(0, 0, 5), look_at=(0, 0, 0), parent="/World", name="CamTop")
+    cam_side = rep.functional.create.camera(position=(2, 2, 0), look_at=(0, 0, 0), parent="/World", name="CamSide")
+    cam_persp = rep.functional.create.camera(position=(5, 5, 5), look_at=(0, 0, 0), parent="/World", name="CamPersp")
+
+    # Create the render products
+    rp_top = rep.create.render_product(cam_top, resolution=(320, 320), name="RpTop")
+    rp_side = rep.create.render_product(cam_side, resolution=(640, 640), name="RpSide")
+    rp_persp = rep.create.render_product(cam_persp, resolution=(1024, 1024), name="RpPersp")
+
+    # Example of accessing the data through a custom writer
+    writer = rep.WriterRegistry.get("MyWriter")
+    writer.initialize(rgb=True)
+    writer.attach([rp_top, rp_side, rp_persp])
+
+    # Example of accessing the data directly through annotators
+    rgb_annotators = []
+    for rp in [rp_top, rp_side, rp_persp]:
+        # Create a new rgb annotator for each render product
+        rgb = rep.annotators.get("rgb")
+        # Attach the annotator to the render product
+        rgb.attach(rp)
+        rgb_annotators.append(rgb)
+
+    # Create annotator output directory
+    output_dir_annot = os.path.join(os.getcwd(), "_out_mc_annot")
+    print(f"Writing annotator data to {output_dir_annot}")
+    os.makedirs(output_dir_annot, exist_ok=True)
+
     for i in range(NUM_FRAMES):
         print(f"Step {i}")
         # The step function triggers registered graph-based randomizers, collects data from annotators,
