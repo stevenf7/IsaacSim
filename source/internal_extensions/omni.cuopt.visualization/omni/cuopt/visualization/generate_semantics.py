@@ -7,14 +7,18 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+"""Generate semantic cost zones that can penalize waypoint graph edges."""
+
+from typing import Any
+
 from omni.kit.material.library import CreateAndBindMdlMaterialFromLibrary
 from pxr import Gf, Sdf, UsdGeom, UsdShade
 
 from .common import translate_rotate_scale_prim
 
 
-def generate_semantic_zones(stage, semantic_prim_path, semantics, length, width):
-
+def generate_semantic_zones(stage: Any, semantic_prim_path: Any, semantics: Any, length: Any, width: Any) -> Any:
+    """Author a restricted-zone cube, material, metadata, and tracking path."""
     semantic_name = "Restricted_" + str(len(semantics))
     semantic_data = {"type": "Restricted", "color": [0.83, 0, 0]}
     semantic_data["min_extent"] = [0.0, 0.0, 0.0]

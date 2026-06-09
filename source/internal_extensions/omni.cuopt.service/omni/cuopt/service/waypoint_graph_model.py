@@ -7,11 +7,17 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+"""Waypoint graph model and loaders for cuOpt route-optimization examples."""
+
+from typing import Any
+
 from .common import read_json
 
 
 class WaypointGraphModel:
-    def __init__(self):
+    """Store waypoint nodes, CSR edge arrays, weights, and USD path lookup maps."""
+
+    def __init__(self) -> None:
 
         self.nodes = []
         self.offsets = []
@@ -28,8 +34,8 @@ class WaypointGraphModel:
         self.path_edge_map = {}
 
 
-def load_waypoint_graph_from_file(stage, waypoint_graph_json):
-
+def load_waypoint_graph_from_file(stage: Any, waypoint_graph_json: Any) -> Any:
+    """Load waypoint graph JSON and convert its adjacency list to cuOpt CSR arrays."""
     model = WaypointGraphModel()
 
     waypoint_graph_data = read_json(waypoint_graph_json)
@@ -43,7 +49,7 @@ def load_waypoint_graph_from_file(stage, waypoint_graph_json):
     edges = []
     cur_offset = 0
     offset_node_lookup = {}
-    ordered_keys = sorted([int(x) for x in graph.keys()])
+    ordered_keys = sorted([int(x) for x in graph])
     for i, node in enumerate(ordered_keys):
         offsets.append(cur_offset)
         cur_offset += len(graph[str(node)]["edges"])
@@ -60,8 +66,8 @@ def load_waypoint_graph_from_file(stage, waypoint_graph_json):
     return model
 
 
-def load_waypoint_graph_from_scene(stage, waypoint_graph_json):
-
+def load_waypoint_graph_from_scene(stage: Any, waypoint_graph_json: Any) -> Any:
+    """Read waypoint node and edge prims from the scene into cuOpt CSR arrays."""
     model = WaypointGraphModel()
 
     nodes = stage.GetPrimAtPath("/World/Network/WaypointGraph/Nodes").GetChildren()

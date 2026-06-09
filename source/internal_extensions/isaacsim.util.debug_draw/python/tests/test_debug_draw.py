@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for the debug draw extension."""
+"""Verifies debug draw point, line, spline, empty-input, and validation-error behavior, including count tracking and clearing. Captures rendered debug geometry and compares it against a golden image."""
 
 import io
 import os
@@ -35,24 +35,22 @@ class TestDebugDraw(omni.kit.test.AsyncTestCase):
     """Async tests for debug draw API behavior and rendering."""
 
     # Before running each test
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up the test by acquiring the debug draw interface."""
         self._draw = _debug_draw.acquire_debug_draw_interface()
         self.test_dir = tempfile.mkdtemp()
-        pass
 
     # After running each test
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down the test by waiting for the next update."""
         await omni.kit.app.get_app().next_update_async()
         import shutil
 
         if os.path.exists(self.test_dir):
             shutil.rmtree(self.test_dir)
-        pass
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
-    async def test_draw_points(self):
+    async def test_draw_points(self) -> None:
         """Test drawing points with various colors and sizes."""
         N = 10000
         point_list_1 = [
@@ -72,9 +70,8 @@ class TestDebugDraw(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._draw.get_num_points(), 3 * N)
         self._draw.clear_points()
         self.assertEqual(self._draw.get_num_points(), 0)
-        pass
 
-    async def test_draw_points_error_handling(self):
+    async def test_draw_points_error_handling(self) -> None:
         """Test error handling for mismatched list sizes in draw_points."""
         # These should not crash, and ideally should not add points
         # Case 1: fewer colors than points
@@ -86,9 +83,8 @@ class TestDebugDraw(omni.kit.test.AsyncTestCase):
         # it might crash or produce undefined behavior.
         # After we fix the C++ code, this assertion should pass.
         self.assertEqual(self._draw.get_num_points(), 0)
-        pass
 
-    async def test_draw_lines(self):
+    async def test_draw_lines(self) -> None:
         """Test drawing lines with various colors and widths."""
         N = 10000
         point_list_1 = [
@@ -103,9 +99,8 @@ class TestDebugDraw(omni.kit.test.AsyncTestCase):
         self.assertEqual(self._draw.get_num_lines(), N)
         self._draw.clear_lines()
         self.assertEqual(self._draw.get_num_lines(), 0)
-        pass
 
-    async def test_draw_spline(self):
+    async def test_draw_spline(self) -> None:
         """Test drawing spline curves with control points."""
         point_list_1 = [
             (random.uniform(-300, -100), random.uniform(-100, 100), random.uniform(-100, 100)) for _ in range(10)
@@ -119,18 +114,16 @@ class TestDebugDraw(omni.kit.test.AsyncTestCase):
         self.assertGreater(self._draw.get_num_lines(), 0)
         self._draw.clear_lines()
         self.assertEqual(self._draw.get_num_lines(), 0)
-        pass
 
-    async def test_empty_input(self):
+    async def test_empty_input(self) -> None:
         """Test drawing with empty lists."""
         self._draw.draw_points([], [], [])
         self.assertEqual(self._draw.get_num_points(), 0)
 
         self._draw.draw_lines([], [], [], [])
         self.assertEqual(self._draw.get_num_lines(), 0)
-        pass
 
-    async def test_visual_regression(self):
+    async def test_visual_regression(self) -> None:
         """Test visual regression by capturing an image and comparing to golden."""
         # Setup a new stage
         await omni.usd.get_context().new_stage_async()
@@ -255,4 +248,3 @@ class TestDebugDraw(omni.kit.test.AsyncTestCase):
             is_similar,
             f"Captured image does not match golden.\nstdout: {captured_stdout}\nCaptured: {captured_image_path}",
         )
-        pass

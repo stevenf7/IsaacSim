@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for configured SRTX sensor-set resolution and setup."""
+"""Verify configured SRTX sensor set behavior.
+
+Covers sensor set lookup, declaration, fallback handling, camera and lidar helper
+integration, and removed metadata forwarding behavior.
+"""
 
 from __future__ import annotations
 
@@ -23,6 +27,7 @@ import types
 import unittest
 from contextlib import contextmanager
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 import carb
@@ -51,7 +56,6 @@ MIN_SRTX_CONFIGURED_SENSOR_SET_VERSION = "1.1.1"
 
 def _parse_extension_version(version: str) -> tuple[int, int, int]:
     """Parse the numeric major.minor.patch portion of an extension version."""
-
     numeric_version = version.split("+", 1)[0].split("-", 1)[0]
     parts = []
     for raw_part in numeric_version.split(".")[:3]:
@@ -64,7 +68,6 @@ def _parse_extension_version(version: str) -> tuple[int, int, int]:
 
 def _get_srtx_extension_version() -> str | None:
     """Return the enabled SRTX extension version, enabling it first if available."""
-
     if not ros2_common.is_srtx_supported_platform():
         return None
 
@@ -90,7 +93,6 @@ def _get_srtx_extension_version() -> str | None:
 
 def _srtx_extension_is_too_old_for_configured_sensor_sets() -> bool:
     """Return True when the available SRTX extension predates configured sensor-set support."""
-
     version = _get_srtx_extension_version()
     if version is None:
         return True
@@ -136,25 +138,31 @@ class RecordingSrtxInstance:
         self._next_handle = 1
 
     def declare_sensor_set(self, sensor_set_name: str, sensor_paths: list[str]) -> bool:
+        """Record declared sensor set names and render product paths."""
         self.declare_calls.append((sensor_set_name, list(sensor_paths)))
         return True
 
     def add_sensor(self, sensor_set_name: str, sensor_name: str, sensor_path: str) -> None:
+        """Record sensors added to an SRTX sensor set."""
         self.add_sensor_calls.append((sensor_set_name, sensor_name, sensor_path))
 
     def register_frame_callback(self, sensor_set_name: str, rendervar_path: str, capsule: object) -> int:
+        """Record frame callback registrations and return a synthetic handle."""
         handle = self._next_handle
         self._next_handle += 1
         self.register_calls.append((sensor_set_name, rendervar_path, capsule, handle))
         return handle
 
     def unregister_frame_callback(self, sensor_set_name: str, handle: int) -> None:
+        """Record frame callback unregister requests."""
         self.unregister_calls.append((sensor_set_name, handle))
 
     def stop_continuous_capture(self, sensor_set_name: str) -> None:
+        """Record continuous-capture stop requests."""
         self.stop_capture_calls.append(sensor_set_name)
 
     def start_continuous_capture(self, sensor_set_name: str, output_paths: list[str]) -> None:
+        """Record continuous-capture start requests and output render vars."""
         self.start_capture_calls.append((sensor_set_name, list(output_paths)))
 
 
@@ -165,23 +173,25 @@ class RecordingSrtxCore:
 
     @staticmethod
     def get_instance(usd_scene: str) -> RecordingSrtxInstance | None:
+        """Return the recorded SRTX instance for a USD scene if one exists."""
         return RecordingSrtxCore._instances.get(usd_scene)
 
     @staticmethod
     def create_instance(usd_scene: str) -> RecordingSrtxInstance:
+        """Create and record a synthetic SRTX instance for a USD scene."""
         instance = RecordingSrtxInstance()
         RecordingSrtxCore._instances[usd_scene] = instance
         return instance
 
     @staticmethod
     def reset_all() -> None:
+        """Clear all synthetic SRTX instances between tests."""
         RecordingSrtxCore._instances.clear()
 
 
 @contextmanager
-def mock_srtx_core_binding():
+def mock_srtx_core_binding() -> None:
     """Patch only the SrtxCore binding while keeping the real SRTX Python package active."""
-
     ext_manager = omni.kit.app.get_app().get_extension_manager()
     ext_manager.set_extension_enabled_immediate("omni.replicator.srtx", True)
 
@@ -216,9 +226,8 @@ def _load_module(module_name: str, file_path: Path) -> types.ModuleType:
 
 
 @contextmanager
-def mock_srtx_binding(srtx_instance: FakeSrtxInstance):
+def mock_srtx_binding(srtx_instance: FakeSrtxInstance) -> Any:
     """Patch only the SRTX Python binding needed by unit-level setup tests."""
-
     try:
         import omni.replicator.srtx as srtx
 
@@ -259,9 +268,8 @@ def mock_srtx_binding(srtx_instance: FakeSrtxInstance):
 
 
 @contextmanager
-def mock_laser_scan_capsule_binding(captured_kwargs: dict[str, object]):
+def mock_laser_scan_capsule_binding(captured_kwargs: dict[str, object]) -> Any:
     """Patch the ROS 2 laser scan capsule binding with the current pybind signature."""
-
     module_name = "isaacsim.ros2.nodes.bindings._ros2_nodes"
     ros2_nodes = types.ModuleType(module_name)
 
@@ -305,7 +313,10 @@ def mock_laser_scan_capsule_binding(captured_kwargs: dict[str, object]):
 
 
 class TestConfiguredSrtxSensorSets(omni.kit.test.AsyncTestCase):
+    """Verify SRTX sensor set configuration parsing and helper setup paths."""
+
     async def setUp(self) -> None:
+        """Preserve SRTX settings and clear configured sensor-set inputs."""
         if omni.usd.get_context().get_stage() is None:
             await omni.usd.get_context().new_stage_async()
         self._settings = carb.settings.get_settings()
@@ -322,6 +333,7 @@ class TestConfiguredSrtxSensorSets(omni.kit.test.AsyncTestCase):
         self._clear_srtx_settings()
 
     async def tearDown(self) -> None:
+        """Restore SRTX settings changed by configured sensor-set tests."""
         self._restore_srtx_settings()
 
     def _clear_srtx_settings(self) -> None:
@@ -526,17 +538,17 @@ class TestConfiguredSrtxSensorSets(omni.kit.test.AsyncTestCase):
         publisher_calls: list[tuple[str, str]] = []
 
         def record_camera_info_publisher(
-            state,
-            stage,
-            srtx_instance,
-            sensor_set_name,
-            frameId,
-            topicName,
-            nodeNamespace,
-            queueSize,
-            qosProfile,
-            camera_info,
-            render_product_path,
+            state: Any,
+            stage: Any,
+            srtx_instance: Any,
+            sensor_set_name: Any,
+            frameId: Any,
+            topicName: Any,
+            nodeNamespace: Any,
+            queueSize: Any,
+            qosProfile: Any,
+            camera_info: Any,
+            render_product_path: Any,
         ) -> bool:
             publisher_calls.append((sensor_set_name, render_product_path))
             return True
@@ -616,17 +628,17 @@ class TestConfiguredSrtxSensorSets(omni.kit.test.AsyncTestCase):
         np = camera_info_helper.np
 
         def record_camera_info_publisher(
-            state,
-            stage,
-            srtx_instance,
-            sensor_set_name,
-            frameId,
-            topicName,
-            nodeNamespace,
-            queueSize,
-            qosProfile,
-            camera_info,
-            render_product_path,
+            state: Any,
+            stage: Any,
+            srtx_instance: Any,
+            sensor_set_name: Any,
+            frameId: Any,
+            topicName: Any,
+            nodeNamespace: Any,
+            queueSize: Any,
+            qosProfile: Any,
+            camera_info: Any,
+            render_product_path: Any,
         ) -> bool:
             publisher_calls.append((sensor_set_name, render_product_path))
             return True
@@ -810,6 +822,7 @@ class TestConfiguredSrtxSensorSetsRealNodes(ROS2TestCase):
     """Exercise configured SRTX setup through real ROS 2 OmniGraph nodes."""
 
     async def tearDown(self) -> None:
+        """Clear SRTX override settings after real OmniGraph node tests."""
         settings = carb.settings.get_settings()
         settings.set_bool(USE_SRTX_SETTING, False)
         settings.set(SRTX_SENSOR_SET_NAME_BY_RENDER_PRODUCT_PATH_SETTING, "")
@@ -822,7 +835,6 @@ class TestConfiguredSrtxSensorSetsRealNodes(ROS2TestCase):
     )
     async def test_real_camera_and_lidar_helpers_declare_configured_sensor_set(self) -> None:
         """Real camera and RTX lidar helper nodes should reuse the configured shared sensor set."""
-
         with mock_srtx_core_binding():
             stage = omni.usd.get_context().get_stage()
             usd_scene = str(stage.GetRootLayer().identifier)

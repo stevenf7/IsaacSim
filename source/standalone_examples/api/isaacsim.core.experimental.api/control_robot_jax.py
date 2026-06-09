@@ -79,15 +79,15 @@ See https://docs.jax.dev/en/latest/installation.html.
 
 Warning: JAX 0.6.0 or higher (built with CuDNN v9.8)
 is incompatible with Isaac Sim's PyTorch 2.7.0
-(built with CuDNN v9.7) and is therefore 
+(built with CuDNN v9.7) and is therefore
 not supported for this example.
 
  * Isaac Sim - Binary installation (Linux: ./python.sh, Windows: python.bat):
 
     ./python.sh -m pip install "jax[cuda12]<0.6.0"
-  
+
  * Isaac Sim - Python Package (PIP) installation:
-  
+
     pip install "jax[cuda12]<0.6.0"
 
 -----------------------------------------------------
@@ -180,9 +180,10 @@ def differential_inverse_kinematics(
     goal_position: jax.Array,
     goal_orientation: jax.Array | None = None,
     method: str = "damped-least-squares",
-    method_cfg: dict[str, float] = {"scale": 1.0, "damping": 0.05, "min_singular_value": 1e-5},
+    method_cfg: dict[str, float] | None = None,
 ) -> jax.Array:
     """Compute delta DOF positions via differential inverse kinematics."""
+    method_cfg = {"scale": 1.0, "damping": 0.05, "min_singular_value": 1e-5} if method_cfg is None else method_cfg
     scale = method_cfg.get("scale", 1.0)
     # Compute velocity error
     goal_orientation = current_orientation if goal_orientation is None else goal_orientation

@@ -17,7 +17,7 @@
 
 import os
 import sys
-from typing import Any, List
+from typing import Any
 
 from jupyter_client.connect import KernelConnectionInfo
 from jupyter_client.launcher import launch_kernel
@@ -27,7 +27,7 @@ from jupyter_client.provisioning import LocalProvisioner
 class Provisioner(LocalProvisioner):
     """Provision a kernel using a socket connection to the Omniverse runtime."""
 
-    async def launch_kernel(self, cmd: List[str], **kwargs: Any) -> KernelConnectionInfo:
+    async def launch_kernel(self, cmd: list[str], **kwargs: Any) -> KernelConnectionInfo:
         """Launch the kernel process with the correct Python executable path."""
         # set paths
         if sys.platform == "win32":

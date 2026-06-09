@@ -13,9 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test for mesh."""
+"""Validate Mesh wrapper access to authored geometry and display attributes.
 
-from typing import Literal
+The suite wraps USD mesh prims, verifies collection and geom metadata, and
+round-trips variable-length points, normals, face topology, crease and corner
+data, subdivision settings, and display colors through indexed get/set calls.
+"""
+
+from typing import Any, Literal
 
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
@@ -36,8 +41,8 @@ from isaacsim.core.experimental.prims.tests.common import (
 from pxr import UsdGeom
 
 
-async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs) -> None:
-    """Populate stage."""
+async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
+    """Create a fresh stage and author existing mesh prims for wrap-mode tests."""
     # create new stage
     await stage_utils.create_new_stage_async()
     # define prims
@@ -49,20 +54,20 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
 
 
 class TestMesh(omni.kit.test.AsyncTestCase):
-    """Test mesh."""
+    """Exercise Mesh geometry, topology, subdivision, and color APIs."""
 
-    async def setUp(self):
-        """Method called to prepare the test fixture."""
+    async def setUp(self) -> None:
+        """Initialize the async fixture; parametrized cases create their own stages."""
         super().setUp()
 
-    async def tearDown(self):
-        """Method called immediately after the test method has been called."""
+    async def tearDown(self) -> None:
+        """Finalize the async fixture without additional mesh cleanup."""
         super().tearDown()
 
     # --------------------------------------------------------------------
 
-    def custom_sample(self, *, num_prims, batch_range, data_shape, dtype):
-        """Custom sample."""
+    def custom_sample(self, *, num_prims: Any, batch_range: Any, data_shape: Any, dtype: Any) -> Any:
+        """Build per-prim variable-length geometry samples in supported input types."""
         data = []
         for index in [2, 5, 8]:  # full shape list, np.ndarray, wp.array
             values, expected_values = [], []
@@ -75,8 +80,8 @@ class TestMesh(omni.kit.test.AsyncTestCase):
             data.append((values, expected_values))
         return data
 
-    def custom_face_test_set(self, num_prims, num_points):
-        """Custom face test set."""
+    def custom_face_test_set(self, num_prims: Any, num_points: Any) -> Any:
+        """Build valid face vertex, count, and hole-index inputs for mesh tests."""
         data = []
         for _type in [list, np.ndarray, wp.array]:
             vertex_indices, vertex_counts, hole_indices = [], [], []
@@ -114,8 +119,8 @@ class TestMesh(omni.kit.test.AsyncTestCase):
             )
         return data
 
-    def custom_crease_test_set(self, num_prims, num_points):
-        """Custom crease test set."""
+    def custom_crease_test_set(self, num_prims: Any, num_points: Any) -> Any:
+        """Build valid crease index, length, and sharpness inputs for mesh tests."""
         data = []
         for _type in [list, np.ndarray, wp.array]:
             crease_indices, crease_lengths, crease_sharpnesses = [], [], []
@@ -154,8 +159,8 @@ class TestMesh(omni.kit.test.AsyncTestCase):
             )
         return data
 
-    def custom_corner_test_set(self, num_prims, num_points):
-        """Custom corner test set."""
+    def custom_corner_test_set(self, num_prims: Any, num_points: Any) -> Any:
+        """Build valid corner index and sharpness inputs for mesh tests."""
         data = []
         for _type in [list, np.ndarray, wp.array]:
             corner_indices, corner_sharpnesses = [], []
@@ -188,12 +193,12 @@ class TestMesh(omni.kit.test.AsyncTestCase):
     # --------------------------------------------------------------------
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
-    async def test_len(self, prim, num_prims, device, backend):
+    async def test_len(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test len."""
         self.assertEqual(len(prim), num_prims, f"Invalid len ({num_prims} prims)")
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
-    async def test_properties_and_getters(self, prim, num_prims, device, backend):
+    async def test_properties_and_getters(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test properties and getters."""
         # test cases (properties)
         # - geoms
@@ -209,7 +214,7 @@ class TestMesh(omni.kit.test.AsyncTestCase):
             self.assertEqual(geom.GetFaceCount(), num_faces, f"Invalid num_faces: {geom.GetFaceCount()}")
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
-    async def test_points(self, prim, num_prims, device, backend):
+    async def test_points(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test points."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
@@ -223,7 +228,7 @@ class TestMesh(omni.kit.test.AsyncTestCase):
                     check_allclose(expected_v0[i], output[i], given=(v0[i],))
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
-    async def test_normals(self, prim, num_prims, device, backend):
+    async def test_normals(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test normals."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
@@ -237,7 +242,7 @@ class TestMesh(omni.kit.test.AsyncTestCase):
                     check_allclose(expected_v0[i], output[i], given=(v0[i],))
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
-    async def test_face_specs(self, prim, num_prims, device, backend):
+    async def test_face_specs(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test face specs."""
         num_points = prim.get_points()[0].shape[0]
         if not num_points:  # empty mesh
@@ -263,7 +268,7 @@ class TestMesh(omni.kit.test.AsyncTestCase):
                     )
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
-    async def test_crease_specs(self, prim, num_prims, device, backend):
+    async def test_crease_specs(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test crease specs."""
         num_points = prim.get_points()[0].shape[0]
         if not num_points:  # empty mesh
@@ -286,7 +291,7 @@ class TestMesh(omni.kit.test.AsyncTestCase):
                     )
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
-    async def test_corner_specs(self, prim, num_prims, device, backend):
+    async def test_corner_specs(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test corner specs."""
         num_points = prim.get_points()[0].shape[0]
         if not num_points:  # empty mesh
@@ -304,7 +309,7 @@ class TestMesh(omni.kit.test.AsyncTestCase):
                     check_allclose((expected_v0[i], expected_v1[i]), (output[0][i], output[1][i]), given=(v0[i], v1[i]))
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
-    async def test_subdivision_specs(self, prim, num_prims, device, backend):
+    async def test_subdivision_specs(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test subdivision specs."""
         subdivision_scheme_choices = ["catmullClark", "loop", "bilinear", "none"]
         interpolate_boundary_choices = ["none", "edgeOnly", "edgeAndCorner"]
@@ -323,7 +328,7 @@ class TestMesh(omni.kit.test.AsyncTestCase):
                 check_lists(expected_v2, output[2])
 
     @parametrize(backends=["usd"], prim_class=Mesh, populate_stage_func=populate_stage)
-    async def test_display_colors(self, prim, num_prims, device, backend):
+    async def test_display_colors(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test display colors."""
         choices = [
             (0.1, 0.2, 0.3),  # RGB tuple

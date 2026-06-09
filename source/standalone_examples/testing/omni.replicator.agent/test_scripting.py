@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test applying the scripting API to a USD prim."""
+"""Verifies that the behavior scripting extension can apply the Omni scripting API schema to a newly created USD prim in a headless SimulationApp session."""
 
 import asyncio
 
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     from omni.behavior.scripting.core import ApplyScriptingAPICommand
     from pxr import OmniScriptingSchema
 
-    async def work():
+    async def work() -> None:
         """Create a prim and verify the scripting API is applied."""
         # Create new prim and attach python scripting api.
         await omni.usd.get_context().new_stage_async("tmp")

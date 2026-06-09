@@ -121,9 +121,10 @@ def differential_inverse_kinematics(
     goal_position: torch.Tensor,
     goal_orientation: torch.Tensor | None = None,
     method: str = "damped-least-squares",
-    method_cfg: dict[str, float] = {"scale": 1.0, "damping": 0.05, "min_singular_value": 1e-5},
+    method_cfg: dict[str, float] | None = None,
 ) -> torch.Tensor:
     """Compute delta DOF positions via differential inverse kinematics."""
+    method_cfg = {"scale": 1.0, "damping": 0.05, "min_singular_value": 1e-5} if method_cfg is None else method_cfg
     scale = method_cfg.get("scale", 1.0)
     # Compute velocity error
     goal_orientation = current_orientation if goal_orientation is None else goal_orientation

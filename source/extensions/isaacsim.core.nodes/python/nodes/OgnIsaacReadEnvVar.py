@@ -13,15 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Read an operating-system environment variable into an OmniGraph string output."""
+
 import os
+from typing import Any
 
 
 class OgnIsaacReadEnvVar:
     """look for environment variable on OS, and return it."""
 
     @staticmethod
-    def compute(db) -> bool:
-
+    def compute(db: Any) -> bool:
+        """Write the environment variable value, or an empty string when the input or variable is empty."""
         # Empty input case:
         if len(db.inputs.envVar) == 0:
             db.outputs.value = ""

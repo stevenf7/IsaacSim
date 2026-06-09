@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Write randomized values into registered rigid-body physics views."""
+
+from typing import Any
+
 import numpy as np
 import omni.graph.core as og
 import warp as wp
@@ -24,7 +28,9 @@ from isaacsim.replicator.experimental.domain_randomization import physics_view a
 OPERATION_TYPES = ["direct", "additive", "scaling"]
 
 
-def apply_randomization_operation(view_name, operation, attribute_name, samples, indices, on_reset):
+def apply_randomization_operation(
+    view_name: Any, operation: Any, attribute_name: Any, samples: Any, indices: Any, on_reset: Any
+) -> Any:
     """Apply randomization operation for indexed values."""
     if on_reset:
         return physics._rigid_prim_views_reset_values[view_name][attribute_name][indices]
@@ -36,7 +42,9 @@ def apply_randomization_operation(view_name, operation, attribute_name, samples,
         return samples
 
 
-def apply_randomization_operation_full_tensor(view_name, operation, attribute_name, samples, indices, on_reset):
+def apply_randomization_operation_full_tensor(
+    view_name: Any, operation: Any, attribute_name: Any, samples: Any, indices: Any, on_reset: Any
+) -> None:
     """Apply randomization operation for full tensor values."""
     if on_reset:
         return physics._rigid_prim_views_reset_values[view_name][attribute_name]
@@ -50,7 +58,7 @@ def apply_randomization_operation_full_tensor(view_name, operation, attribute_na
     return initial_values
 
 
-def modify_initial_values(view_name, operation, attribute_name, samples, indices):
+def modify_initial_values(view_name: Any, operation: Any, attribute_name: Any, samples: Any, indices: Any) -> Any:
     """Modify initial values based on operation type."""
     if operation == "additive":
         physics._rigid_prim_views_reset_values[view_name][attribute_name][indices] = (
@@ -64,8 +72,16 @@ def modify_initial_values(view_name, operation, attribute_name, samples, indices
         physics._rigid_prim_views_reset_values[view_name][attribute_name][indices] = samples
 
 
-def get_bucketed_values(view_name, attribute_name, samples, distribution, dist_param_1, dist_param_2, num_buckets):
-    """Get bucketed values for material properties randomization."""
+def get_bucketed_values(
+    view_name: Any,
+    attribute_name: Any,
+    samples: Any,
+    distribution: Any,
+    dist_param_1: Any,
+    dist_param_2: Any,
+    num_buckets: Any,
+) -> Any:
+    """Quantize material-property samples into distribution-derived buckets."""
     new_samples = samples.copy()
 
     if distribution == "gaussian":
@@ -87,10 +103,20 @@ def get_bucketed_values(view_name, attribute_name, samples, distribution, dist_p
 
 
 class OgnWritePhysicsRigidPrimView:
-    """OmniGraph node that writes physics attributes to RigidPrim views."""
+    """OmniGraph writer for registered ``RigidPrim`` view attributes."""
 
     @staticmethod
-    def compute(db) -> bool:
+    def compute(db: Any) -> bool:
+        """Apply sampled values to selected rigid prims.
+
+        The node expects a registered view name, an attribute from
+        ``RIGID_PRIM_ATTRIBUTES``, one of ``direct``, ``additive``, or
+        ``scaling`` operations, sampled values, and selected environment
+        indices. Empty indices keep ``execOut`` enabled but perform no write.
+        On reset, the stored reset baseline is updated before values are
+        restored or applied. Invalid views, attributes, or operations log an
+        error, disable ``execOut``, and return ``False``.
+        """
         view_name = db.inputs.prims
         attribute_name = db.inputs.attribute
         operation = db.inputs.operation

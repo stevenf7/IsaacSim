@@ -15,6 +15,8 @@
 
 """OmniGraph node for toggling surface gripper open and close states."""
 
+from typing import Any
+
 import omni.graph.core as og
 from isaacsim.robot.surface_gripper import _surface_gripper as surface_gripper
 
@@ -36,7 +38,7 @@ class OgnSurfaceGripper:
     """
 
     @staticmethod
-    def compute(db) -> bool:
+    def compute(db: Any) -> bool:
         """Compute the gripper action for the pin that fired this tick."""
         if not db.inputs.enabled or len(db.inputs.SurfaceGripper) == 0:
             return True

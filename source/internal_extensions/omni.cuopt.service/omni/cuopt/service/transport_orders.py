@@ -7,11 +7,16 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+"""Order sample model used to build cuOpt task data for transport demos."""
+
 import json
+from typing import Any
 
 
 class TransportOrders:
-    def __init__(self):
+    """Store task locations, demand, time windows, and order waypoint styling."""
+
+    def __init__(self) -> None:
         self.order_xyz_locations = None
         self.graph_locations = None
         self.order_demand = None
@@ -24,8 +29,8 @@ class TransportOrders:
         self.order_waypoint_intensity = 5000.0
 
     # Load Task info from json data
-    def load_sample(self, orders_json):
-
+    def load_sample(self, orders_json: Any) -> Any:
+        """Load task sample JSON and expose graph-node fields expected by cuOpt."""
         with open(orders_json) as orders_file:
             orders_data = json.load(orders_file)
 

@@ -28,31 +28,37 @@ class TestIsNurecStage(omni.kit.test.AsyncTestCase):
     prims under a ``Volume`` flagged with ``omni:nurec:isNuRecVolume``.
     """
 
-    async def test_none_is_not_nurec(self):
+    async def test_none_is_not_nurec(self) -> None:
+        """None is not detected as a NuRec stage."""
         self.assertFalse(is_nurec_stage(None))
 
-    async def test_plain_mesh_is_not_nurec(self):
+    async def test_plain_mesh_is_not_nurec(self) -> None:
+        """A plain mesh stage is not detected as NuRec."""
         stage = Usd.Stage.CreateInMemory()
         UsdGeom.Mesh.Define(stage, "/World/Mesh")
         self.assertFalse(is_nurec_stage(stage))
 
-    async def test_particle_field_is_nurec(self):
+    async def test_particle_field_is_nurec(self) -> None:
+        """Particle field prim types are detected as NuRec."""
         stage = Usd.Stage.CreateInMemory()
         stage.DefinePrim("/World/Splats", "ParticleFieldEmissive")
         self.assertTrue(is_nurec_stage(stage))
 
-    async def test_volume_field_type_is_nurec(self):
+    async def test_volume_field_type_is_nurec(self) -> None:
+        """NuRec volume field prim types are detected as NuRec."""
         stage = Usd.Stage.CreateInMemory()
         stage.DefinePrim("/World/Volume/density_field", "OmniNuRecFieldAsset")
         self.assertTrue(is_nurec_stage(stage))
 
-    async def test_volume_flag_attr_is_nurec(self):
+    async def test_volume_flag_attr_is_nurec(self) -> None:
+        """Volumes with the NuRec marker attribute are detected as NuRec."""
         stage = Usd.Stage.CreateInMemory()
         prim = stage.DefinePrim("/World/Volume", "Volume")
         prim.CreateAttribute("omni:nurec:isNuRecVolume", Sdf.ValueTypeNames.Bool).Set(True)
         self.assertTrue(is_nurec_stage(stage))
 
-    async def test_volume_flag_false_is_not_nurec(self):
+    async def test_volume_flag_false_is_not_nurec(self) -> None:
+        """Volumes with a false NuRec marker are not detected as NuRec."""
         stage = Usd.Stage.CreateInMemory()
         prim = stage.DefinePrim("/World/Volume", "Volume")
         prim.CreateAttribute("omni:nurec:isNuRecVolume", Sdf.ValueTypeNames.Bool).Set(False)

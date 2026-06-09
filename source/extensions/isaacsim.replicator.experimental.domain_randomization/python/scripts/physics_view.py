@@ -20,7 +20,7 @@ SimulationManager for reinforcement learning and sim-to-real applications.
 """
 
 import copy
-from typing import Optional, Type, Union
+from typing import Any, Optional
 
 import numpy as np
 from isaacsim.core.experimental.prims import Articulation, RigidPrim
@@ -36,20 +36,20 @@ from .context import trigger_randomization
 
 _simulation_context = None
 _physics_sim_view = None
-_rigid_prim_views = dict()
-_articulation_views = dict()
+_rigid_prim_views = {}
+_articulation_views = {}
 
-_simulation_context_initial_values = dict()
-_rigid_prim_views_initial_values = dict()
-_articulation_views_initial_values = dict()
-_current_tendon_properties = dict()
+_simulation_context_initial_values = {}
+_rigid_prim_views_initial_values = {}
+_articulation_views_initial_values = {}
+_current_tendon_properties = {}
 
-_simulation_context_reset_values = dict()
-_rigid_prim_views_reset_values = dict()
-_articulation_views_reset_values = dict()
+_simulation_context_reset_values = {}
+_rigid_prim_views_reset_values = {}
+_articulation_views_reset_values = {}
 
 
-def cleanup():
+def cleanup() -> None:
     """Reset all module-level state.
 
     Called on stage close/reload to prevent stale views from accumulating across sessions.
@@ -68,7 +68,7 @@ def cleanup():
     _articulation_views_reset_values.clear()
 
 
-def _ensure_numpy(val):
+def _ensure_numpy(val: Any) -> Any:
     """Convert a tensor (numpy, torch, or warp) to a numpy array."""
     if isinstance(val, np.ndarray):
         return val
@@ -79,7 +79,7 @@ def _ensure_numpy(val):
     return np.asarray(val)
 
 
-def _to_backend_tensor(val, backend_utils, device):
+def _to_backend_tensor(val: Any, backend_utils: Any, device: Any) -> Any:
     """Convert *val* to the tensor type expected by the legacy backend (torch or numpy)."""
     if val is None:
         return None
@@ -87,7 +87,7 @@ def _to_backend_tensor(val, backend_utils, device):
     return backend_utils.create_tensor_from_list(arr.tolist(), dtype="float32", device=device)
 
 
-def _to_backend_indices(indices, count, backend_utils, device):
+def _to_backend_indices(indices: Any, count: Any, backend_utils: Any, device: Any) -> Any:
     """Return *indices* as a tensor compatible with the legacy backend's ``resolve_indices``."""
     if indices is None:
         return None
@@ -96,18 +96,16 @@ def _to_backend_indices(indices, count, backend_utils, device):
 
 
 class _FrontendBridge:
-    """Wrap a physx tensor view so that warp / numpy arguments are automatically.
+    """Adapt warp and numpy arguments to the tensor frontend used by a PhysX view."""
 
-    converted to the type expected by its frontend (torch or numpy)."""
-
-    def __init__(self, physics_view):
+    def __init__(self, physics_view: Any) -> None:
         self._pv = physics_view
         self._use_torch = (
             hasattr(physics_view, "_frontend") and type(physics_view._frontend).__name__ == "FrontendTorch"
         )
 
     @staticmethod
-    def _to_numpy(v):
+    def _to_numpy(v: Any) -> Any:
         import warp as _wp
 
         if isinstance(v, _wp.array):
@@ -117,7 +115,7 @@ class _FrontendBridge:
         return v
 
     @staticmethod
-    def _to_torch(v):
+    def _to_torch(v: Any) -> Any:
         try:
             import torch as _torch
         except ImportError:
@@ -132,36 +130,36 @@ class _FrontendBridge:
             return _torch.from_numpy(np.ascontiguousarray(v))
         return v
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: Any) -> Any:
         attr = getattr(self._pv, name)
         if not callable(attr):
             return attr
 
         cvt = self._to_torch if self._use_torch else self._to_numpy
 
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             return attr(*(cvt(a) for a in args), **{k: cvt(v) for k, v in kwargs.items()})
 
         return wrapper
 
 
 class _LegacyRigidPrimAdapter:
-    """Wrap a legacy ``isaacsim.core.prims.RigidPrim`` to expose the experimental API.
+    """Expose a legacy rigid prim view through the experimental API expected by OGN nodes."""
 
-    expected by the OGN nodes (attribute names and method signatures)."""
-
-    def __init__(self, legacy_view):
+    def __init__(self, legacy_view: Any) -> None:
         self._legacy = legacy_view
         self._physics_rigid_body_view = _FrontendBridge(legacy_view._physics_view)
         self._backend_utils = legacy_view._backend_utils
         self._device = legacy_view._device
 
-    def __len__(self):
+    def __len__(self) -> Any:
         return self._legacy.count
 
     # -- high-level methods called by OgnWritePhysicsRigidPrimView --------
 
-    def set_velocities(self, linear_velocities=None, angular_velocities=None, *, indices=None):
+    def set_velocities(
+        self, linear_velocities: Any | None = None, angular_velocities: Any | None = None, *, indices: Any | None = None
+    ) -> None:
         idx = _to_backend_indices(indices, self._legacy.count, self._backend_utils, self._device)
         current = _ensure_numpy(self._legacy.get_velocities(indices=idx))
         if linear_velocities is not None:
@@ -171,35 +169,37 @@ class _LegacyRigidPrimAdapter:
         vel = _to_backend_tensor(current, self._backend_utils, self._device)
         self._legacy.set_velocities(vel, indices=idx)
 
-    def set_world_poses(self, positions=None, orientations=None, *, indices=None):
+    def set_world_poses(
+        self, positions: Any | None = None, orientations: Any | None = None, *, indices: Any | None = None
+    ) -> None:
         idx = _to_backend_indices(indices, self._legacy.count, self._backend_utils, self._device)
         pos = _to_backend_tensor(positions, self._backend_utils, self._device) if positions is not None else None
         ori = _to_backend_tensor(orientations, self._backend_utils, self._device) if orientations is not None else None
         self._legacy.set_world_poses(positions=pos, orientations=ori, indices=idx)
 
-    def apply_forces(self, forces=None, *, indices=None):
+    def apply_forces(self, forces: Any | None = None, *, indices: Any | None = None) -> None:
         idx = _to_backend_indices(indices, self._legacy.count, self._backend_utils, self._device)
         f = _to_backend_tensor(forces, self._backend_utils, self._device) if forces is not None else None
         self._legacy.apply_forces(forces=f, indices=idx)
 
 
 class _LegacyArticulationAdapter:
-    """Wrap a legacy ``isaacsim.core.prims.Articulation`` to expose the experimental API.
+    """Expose a legacy articulation view through the experimental API expected by OGN nodes."""
 
-    expected by the OGN nodes."""
-
-    def __init__(self, legacy_view):
+    def __init__(self, legacy_view: Any) -> None:
         self._legacy = legacy_view
         self._physics_articulation_view = _FrontendBridge(legacy_view._physics_view)
         self._backend_utils = legacy_view._backend_utils
         self._device = legacy_view._device
 
-    def __len__(self):
+    def __len__(self) -> Any:
         return self._legacy.count
 
     # -- high-level methods called by OgnWritePhysicsArticulationView -----
 
-    def set_velocities(self, linear_velocities=None, angular_velocities=None, *, indices=None):
+    def set_velocities(
+        self, linear_velocities: Any | None = None, angular_velocities: Any | None = None, *, indices: Any | None = None
+    ) -> None:
         idx = _to_backend_indices(indices, self._legacy.count, self._backend_utils, self._device)
         current = _ensure_numpy(self._legacy.get_velocities(indices=idx))
         if linear_velocities is not None:
@@ -209,34 +209,40 @@ class _LegacyArticulationAdapter:
         vel = _to_backend_tensor(current, self._backend_utils, self._device)
         self._legacy.set_velocities(vel, indices=idx)
 
-    def set_world_poses(self, positions=None, orientations=None, *, indices=None):
+    def set_world_poses(
+        self, positions: Any | None = None, orientations: Any | None = None, *, indices: Any | None = None
+    ) -> None:
         idx = _to_backend_indices(indices, self._legacy.count, self._backend_utils, self._device)
         pos = _to_backend_tensor(positions, self._backend_utils, self._device) if positions is not None else None
         ori = _to_backend_tensor(orientations, self._backend_utils, self._device) if orientations is not None else None
         self._legacy.set_world_poses(positions=pos, orientations=ori, indices=idx)
 
-    def set_dof_positions(self, positions, *, indices=None, dof_indices=None):
+    def set_dof_positions(self, positions: Any, *, indices: Any | None = None, dof_indices: Any | None = None) -> None:
         idx = _to_backend_indices(indices, self._legacy.count, self._backend_utils, self._device)
         pos = _to_backend_tensor(positions, self._backend_utils, self._device)
         self._legacy.set_joint_positions(pos, indices=idx, joint_indices=dof_indices)
 
-    def set_dof_velocities(self, velocities, *, indices=None, dof_indices=None):
+    def set_dof_velocities(
+        self, velocities: Any, *, indices: Any | None = None, dof_indices: Any | None = None
+    ) -> None:
         idx = _to_backend_indices(indices, self._legacy.count, self._backend_utils, self._device)
         vel = _to_backend_tensor(velocities, self._backend_utils, self._device)
         self._legacy.set_joint_velocities(vel, indices=idx, joint_indices=dof_indices)
 
-    def set_dof_efforts(self, efforts, *, indices=None, dof_indices=None):
+    def set_dof_efforts(self, efforts: Any, *, indices: Any | None = None, dof_indices: Any | None = None) -> None:
         idx = _to_backend_indices(indices, self._legacy.count, self._backend_utils, self._device)
         eff = _to_backend_tensor(efforts, self._backend_utils, self._device)
         self._legacy.set_joint_efforts(eff, indices=idx, joint_indices=dof_indices)
 
-    def set_dof_max_efforts(self, max_efforts, *, indices=None, dof_indices=None):
+    def set_dof_max_efforts(
+        self, max_efforts: Any, *, indices: Any | None = None, dof_indices: Any | None = None
+    ) -> None:
         idx = _to_backend_indices(indices, self._legacy.count, self._backend_utils, self._device)
         me = _to_backend_tensor(max_efforts, self._backend_utils, self._device)
         self._legacy.set_max_efforts(me, indices=idx, joint_indices=dof_indices)
 
 
-def _bridge_deprecated_views(view_name, view_type):
+def _bridge_deprecated_views(view_name: Any, view_type: Any) -> Any:
     """Check the deprecated extension's registry and cross-register into the experimental one."""
     try:
         from isaacsim.replicator.domain_randomization import physics_view as dep
@@ -278,7 +284,7 @@ def _bridge_deprecated_views(view_name, view_type):
     return None
 
 
-def resolve_rigid_prim_view(view_name):
+def resolve_rigid_prim_view(view_name: Any) -> Any:
     """Look up a rigid prim view by name, falling back to the deprecated registry."""
     cached = _rigid_prim_views.get(view_name)
     if isinstance(cached, _LegacyRigidPrimAdapter):
@@ -295,7 +301,7 @@ def resolve_rigid_prim_view(view_name):
     return _bridge_deprecated_views(view_name, "rigid")
 
 
-def resolve_articulation_view(view_name):
+def resolve_articulation_view(view_name: Any) -> Any:
     """Look up an articulation view by name, falling back to the deprecated registry."""
     cached = _articulation_views.get(view_name)
     if isinstance(cached, _LegacyArticulationAdapter):
@@ -312,14 +318,14 @@ def resolve_articulation_view(view_name):
     return _bridge_deprecated_views(view_name, "articulation")
 
 
-def resolve_physics_sim_view():
+def resolve_physics_sim_view() -> Any:
     """Get the physics simulation view, bridging from the deprecated module if needed."""
     if _physics_sim_view is not None:
         return _physics_sim_view
     return _bridge_deprecated_simulation_context()
 
 
-def _bridge_deprecated_simulation_context():
+def _bridge_deprecated_simulation_context() -> Any:
     """Bridge the deprecated simulation context into the experimental module."""
     global _physics_sim_view
 
@@ -347,7 +353,7 @@ def _bridge_deprecated_simulation_context():
     return _physics_sim_view
 
 
-def register_simulation_context(simulation_context: Optional[Type[SimulationManager]] = None):
+def register_simulation_context(simulation_context: Optional[type[SimulationManager]] = None) -> None:
     """Register SimulationManager for domain randomization.
 
     Note: Only SimulationManager is supported. Custom subclasses are not supported as
@@ -391,7 +397,7 @@ def register_simulation_context(simulation_context: Optional[Type[SimulationMana
     _simulation_context_reset_values["gravity"] = copy.deepcopy(gravity_vector)
 
 
-def register_rigid_prim_view(rigid_prim_view: RigidPrim, name: str):
+def register_rigid_prim_view(rigid_prim_view: RigidPrim, name: str) -> None:
     """Register a RigidPrim view for domain randomization.
 
     Args:
@@ -402,7 +408,7 @@ def register_rigid_prim_view(rigid_prim_view: RigidPrim, name: str):
     count = len(rigid_prim_view)
 
     _rigid_prim_views[name] = rigid_prim_view
-    initial_values = dict()
+    initial_values = {}
 
     pos, quats = rigid_prim_view.get_world_poses()
     initial_values["position"] = np.asarray(pos)
@@ -429,7 +435,7 @@ def register_rigid_prim_view(rigid_prim_view: RigidPrim, name: str):
     _rigid_prim_views_reset_values[name] = copy.deepcopy(initial_values)
 
 
-def register_articulation_view(articulation_view: Articulation, name: str):
+def register_articulation_view(articulation_view: Articulation, name: str) -> None:
     """Register an Articulation view for domain randomization.
 
     Args:
@@ -440,7 +446,7 @@ def register_articulation_view(articulation_view: Articulation, name: str):
     count = len(articulation_view)
 
     _articulation_views[name] = articulation_view
-    initial_values = dict()
+    initial_values = {}
 
     initial_values["stiffness"] = np.asarray(physics_view.get_dof_stiffnesses())
     initial_values["damping"] = np.asarray(physics_view.get_dof_dampings())
@@ -501,7 +507,7 @@ def register_articulation_view(articulation_view: Articulation, name: str):
     _articulation_views_reset_values[name] = copy.deepcopy(initial_values)
 
 
-def step_randomization(reset_inds: Optional[Union[list, np.ndarray]] = None):
+def step_randomization(reset_inds: Optional[list | np.ndarray] = None) -> None:
     """Step the randomization with the given reset indices.
 
     Args:
@@ -513,7 +519,9 @@ def step_randomization(reset_inds: Optional[Union[list, np.ndarray]] = None):
 
 
 @ReplicatorWrapper
-def _write_physics_view_node(view, attribute, values, operation, node_type, num_buckets=None):
+def _write_physics_view_node(
+    view: Any, attribute: Any, values: Any, operation: Any, node_type: Any, num_buckets: Any | None = None
+) -> Any:
     """Create and configure an OmniGraph node for physics view randomization.
 
     Args:
@@ -578,7 +586,7 @@ def randomize_rigid_prim_view(
     material_properties: ReplicatorItem = None,
     contact_offset: ReplicatorItem = None,
     rest_offset: ReplicatorItem = None,
-):
+) -> None:
     """Randomize properties of a registered RigidPrim view.
 
     Args:
@@ -667,7 +675,7 @@ def randomize_articulation_view(
     tendon_upper_limits: ReplicatorItem = None,
     tendon_rest_lengths: ReplicatorItem = None,
     tendon_offsets: ReplicatorItem = None,
-):
+) -> None:
     """Randomize properties of a registered Articulation view.
 
     Args:
@@ -714,7 +722,7 @@ def randomize_articulation_view(
     if resolve_articulation_view(view_name) is None:
         raise ValueError(f"Expected a registered articulation view, but instead received {view_name}")
 
-    tendon_nodes = list()
+    tendon_nodes = []
 
     if stiffness is not None:
         _write_physics_view_node(view_name, "stiffness", stiffness, operation, node_type)
@@ -798,7 +806,7 @@ def randomize_articulation_view(
 
 
 @ReplicatorWrapper
-def randomize_simulation_context(operation: str = "direct", gravity: ReplicatorItem = None):
+def randomize_simulation_context(operation: str = "direct", gravity: ReplicatorItem = None) -> None:
     """Randomize properties of the registered SimulationContext.
 
     Args:

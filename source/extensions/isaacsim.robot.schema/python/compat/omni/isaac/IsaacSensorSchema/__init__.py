@@ -12,10 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ruff: noqa: N802, D107, ANN001, ANN201, ANN202, ANN204, ANN206
+# ruff: noqa: N802
 # Methods intentionally mirror the PascalCase generated USD schema API
-# (N802), skip an __init__ docstring in favour of the class docstring
-# (D107), and defer typing to the upstream pxr signatures (ANN00x/20x).
+# (N802)
 """Drop-in compatibility wrapper for omni.isaac.IsaacSensorSchema.
 
 Replicates the generated schema API using generic USD attribute access,
@@ -23,6 +22,7 @@ so that existing callsites continue to work without changes.
 """
 
 import warnings
+from typing import Any
 
 from pxr import Sdf, Tf, Usd
 
@@ -33,7 +33,7 @@ class IsaacBaseSensor:
     _TYPE_NAME = "IsaacBaseSensor"
     _TF_TYPE_NAME = "IsaacSensorIsaacBaseSensor"
 
-    def __init__(self, prim):
+    def __init__(self, prim: Usd.Prim) -> None:
         if isinstance(prim, Usd.Prim):
             self._prim = prim
         elif hasattr(prim, "GetPrim"):
@@ -42,13 +42,13 @@ class IsaacBaseSensor:
             self._prim = prim
 
     @classmethod
-    def Define(cls, stage: Usd.Stage, path: str):
+    def Define(cls, stage: Usd.Stage, path: str) -> "IsaacBaseSensor":
         """Create the underlying prim on `stage` at `path` and return the wrapper."""
         prim = stage.DefinePrim(path, cls._TYPE_NAME)
         return cls(prim)
 
     @classmethod
-    def _GetStaticTfType(cls):
+    def _GetStaticTfType(cls) -> Tf.Type:
         """Return the TfType used by `Usd.Prim.HasAPI` when passed this class."""
         return Tf.Type.FindByName(cls._TF_TYPE_NAME)
 
@@ -56,24 +56,24 @@ class IsaacBaseSensor:
         """Return the wrapped USD prim."""
         return self._prim
 
-    def GetPath(self):
+    def GetPath(self) -> Sdf.Path:
         """Return the wrapped prim's `Sdf.Path`."""
         return self._prim.GetPath()
 
     # --- IsaacBaseSensor attributes ---
 
-    def GetEnabledAttr(self):
+    def GetEnabledAttr(self) -> Usd.Attribute:
         """Return the `enabled` bool attribute (may be invalid if unauthored)."""
         return self._prim.GetAttribute("enabled")
 
-    def CreateEnabledAttr(self, value=None):
+    def CreateEnabledAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `enabled` bool attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("enabled", Sdf.ValueTypeNames.Bool)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetSensorPeriodAttr(self):
+    def GetSensorPeriodAttr(self) -> Usd.Attribute:
         """Return the `sensorPeriod` float attribute.
 
         .. deprecated:: 6.2.0
@@ -87,7 +87,7 @@ class IsaacBaseSensor:
         )
         return self._prim.GetAttribute("sensorPeriod")
 
-    def CreateSensorPeriodAttr(self, value=None):
+    def CreateSensorPeriodAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `sensorPeriod` float attribute and optionally set `value`.
 
         .. deprecated:: 6.2.0
@@ -113,33 +113,33 @@ class IsaacContactSensor(IsaacBaseSensor):
 
     # --- IsaacContactSensor attributes ---
 
-    def GetThresholdAttr(self):
+    def GetThresholdAttr(self) -> Usd.Attribute:
         """Return the `threshold` float2 attribute (min, max contact threshold)."""
         return self._prim.GetAttribute("threshold")
 
-    def CreateThresholdAttr(self, value=None):
+    def CreateThresholdAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `threshold` float2 attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("threshold", Sdf.ValueTypeNames.Float2)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetRadiusAttr(self):
+    def GetRadiusAttr(self) -> Usd.Attribute:
         """Return the `radius` float attribute (contact sphere radius)."""
         return self._prim.GetAttribute("radius")
 
-    def CreateRadiusAttr(self, value=None):
+    def CreateRadiusAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `radius` float attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("radius", Sdf.ValueTypeNames.Float)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetColorAttr(self):
+    def GetColorAttr(self) -> Usd.Attribute:
         """Return the `color` float4 attribute (sensor debug draw color)."""
         return self._prim.GetAttribute("color")
 
-    def CreateColorAttr(self, value=None):
+    def CreateColorAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `color` float4 attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("color", Sdf.ValueTypeNames.Float4)
         if value is not None:
@@ -155,33 +155,33 @@ class IsaacImuSensor(IsaacBaseSensor):
 
     # --- IsaacImuSensor attributes ---
 
-    def GetLinearAccelerationFilterWidthAttr(self):
+    def GetLinearAccelerationFilterWidthAttr(self) -> Usd.Attribute:
         """Return the `linearAccelerationFilterWidth` int attribute."""
         return self._prim.GetAttribute("linearAccelerationFilterWidth")
 
-    def CreateLinearAccelerationFilterWidthAttr(self, value=None):
+    def CreateLinearAccelerationFilterWidthAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `linearAccelerationFilterWidth` int attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("linearAccelerationFilterWidth", Sdf.ValueTypeNames.Int)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetAngularVelocityFilterWidthAttr(self):
+    def GetAngularVelocityFilterWidthAttr(self) -> Usd.Attribute:
         """Return the `angularVelocityFilterWidth` int attribute."""
         return self._prim.GetAttribute("angularVelocityFilterWidth")
 
-    def CreateAngularVelocityFilterWidthAttr(self, value=None):
+    def CreateAngularVelocityFilterWidthAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `angularVelocityFilterWidth` int attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("angularVelocityFilterWidth", Sdf.ValueTypeNames.Int)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetOrientationFilterWidthAttr(self):
+    def GetOrientationFilterWidthAttr(self) -> Usd.Attribute:
         """Return the `orientationFilterWidth` int attribute."""
         return self._prim.GetAttribute("orientationFilterWidth")
 
-    def CreateOrientationFilterWidthAttr(self, value=None):
+    def CreateOrientationFilterWidthAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `orientationFilterWidth` int attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("orientationFilterWidth", Sdf.ValueTypeNames.Int)
         if value is not None:
@@ -199,7 +199,7 @@ class IsaacLightBeamSensor(IsaacBaseSensor):
     _TYPE_NAME = "IsaacLightBeamSensor"
     _TF_TYPE_NAME = "IsaacSensorIsaacLightBeamSensor"
 
-    def __init__(self, prim):
+    def __init__(self, prim: Usd.Prim) -> None:
         warnings.warn(
             "IsaacLightBeamSensor is deprecated since isaacsim.robot.schema 6.2.0. "
             "Use IsaacRaycastSensor with isaacsim.sensors.experimental.physics instead.",
@@ -210,66 +210,66 @@ class IsaacLightBeamSensor(IsaacBaseSensor):
 
     # ── IsaacLightBeamSensor attributes ─────────────────────────────────
 
-    def GetNumRaysAttr(self):
+    def GetNumRaysAttr(self) -> Usd.Attribute:
         """Return the `numRays` int attribute (number of rays cast per frame)."""
         return self._prim.GetAttribute("numRays")
 
-    def CreateNumRaysAttr(self, value=None):
+    def CreateNumRaysAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `numRays` int attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("numRays", Sdf.ValueTypeNames.Int)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetCurtainLengthAttr(self):
+    def GetCurtainLengthAttr(self) -> Usd.Attribute:
         """Return the `curtainLength` float attribute (extent of the light curtain)."""
         return self._prim.GetAttribute("curtainLength")
 
-    def CreateCurtainLengthAttr(self, value=None):
+    def CreateCurtainLengthAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `curtainLength` float attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("curtainLength", Sdf.ValueTypeNames.Float)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetForwardAxisAttr(self):
+    def GetForwardAxisAttr(self) -> Usd.Attribute:
         """Return the `forwardAxis` float3 attribute (principal ray direction)."""
         return self._prim.GetAttribute("forwardAxis")
 
-    def CreateForwardAxisAttr(self, value=None):
+    def CreateForwardAxisAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `forwardAxis` float3 attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("forwardAxis", Sdf.ValueTypeNames.Float3)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetCurtainAxisAttr(self):
+    def GetCurtainAxisAttr(self) -> Usd.Attribute:
         """Return the `curtainAxis` float3 attribute (curtain spread direction)."""
         return self._prim.GetAttribute("curtainAxis")
 
-    def CreateCurtainAxisAttr(self, value=None):
+    def CreateCurtainAxisAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `curtainAxis` float3 attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("curtainAxis", Sdf.ValueTypeNames.Float3)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetMinRangeAttr(self):
+    def GetMinRangeAttr(self) -> Usd.Attribute:
         """Return the `minRange` float attribute (near clip of the sensor)."""
         return self._prim.GetAttribute("minRange")
 
-    def CreateMinRangeAttr(self, value=None):
+    def CreateMinRangeAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `minRange` float attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("minRange", Sdf.ValueTypeNames.Float)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetMaxRangeAttr(self):
+    def GetMaxRangeAttr(self) -> Usd.Attribute:
         """Return the `maxRange` float attribute (far clip of the sensor)."""
         return self._prim.GetAttribute("maxRange")
 
-    def CreateMaxRangeAttr(self, value=None):
+    def CreateMaxRangeAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `maxRange` float attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("maxRange", Sdf.ValueTypeNames.Float)
         if value is not None:
@@ -285,88 +285,88 @@ class IsaacRaycastSensor(IsaacBaseSensor):
 
     # ── IsaacRaycastSensor attributes ───────────────────────────────────
 
-    def GetNumRaysAttr(self):
+    def GetNumRaysAttr(self) -> Usd.Attribute:
         """Return the `numRays` uint attribute (number of rays cast per frame)."""
         return self._prim.GetAttribute("numRays")
 
-    def CreateNumRaysAttr(self, value=None):
+    def CreateNumRaysAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `numRays` uint attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("numRays", Sdf.ValueTypeNames.UInt)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetMinRangeAttr(self):
+    def GetMinRangeAttr(self) -> Usd.Attribute:
         """Return the `minRange` float attribute (near clip of the sensor)."""
         return self._prim.GetAttribute("minRange")
 
-    def CreateMinRangeAttr(self, value=None):
+    def CreateMinRangeAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `minRange` float attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("minRange", Sdf.ValueTypeNames.Float)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetMaxRangeAttr(self):
+    def GetMaxRangeAttr(self) -> Usd.Attribute:
         """Return the `maxRange` float attribute (far clip of the sensor)."""
         return self._prim.GetAttribute("maxRange")
 
-    def CreateMaxRangeAttr(self, value=None):
+    def CreateMaxRangeAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `maxRange` float attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("maxRange", Sdf.ValueTypeNames.Float)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetRayOriginsAttr(self):
+    def GetRayOriginsAttr(self) -> Usd.Attribute:
         """Return the `rayOrigins` float3 array attribute (per-ray origin points)."""
         return self._prim.GetAttribute("rayOrigins")
 
-    def CreateRayOriginsAttr(self, value=None):
+    def CreateRayOriginsAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `rayOrigins` float3 array attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("rayOrigins", Sdf.ValueTypeNames.Float3Array)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetRayDirectionsAttr(self):
+    def GetRayDirectionsAttr(self) -> Usd.Attribute:
         """Return the `rayDirections` float3 array attribute (per-ray direction vectors)."""
         return self._prim.GetAttribute("rayDirections")
 
-    def CreateRayDirectionsAttr(self, value=None):
+    def CreateRayDirectionsAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `rayDirections` float3 array attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("rayDirections", Sdf.ValueTypeNames.Float3Array)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetRayTimeOffsetsAttr(self):
+    def GetRayTimeOffsetsAttr(self) -> Usd.Attribute:
         """Return the `rayTimeOffsets` float array attribute (per-ray sub-frame time offsets)."""
         return self._prim.GetAttribute("rayTimeOffsets")
 
-    def CreateRayTimeOffsetsAttr(self, value=None):
+    def CreateRayTimeOffsetsAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `rayTimeOffsets` float array attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("rayTimeOffsets", Sdf.ValueTypeNames.FloatArray)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetOutputFrameOfReferenceAttr(self):
+    def GetOutputFrameOfReferenceAttr(self) -> Usd.Attribute:
         """Return the `outputFrameOfReference` token attribute (output coordinate frame)."""
         return self._prim.GetAttribute("outputFrameOfReference")
 
-    def CreateOutputFrameOfReferenceAttr(self, value=None):
+    def CreateOutputFrameOfReferenceAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `outputFrameOfReference` token attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("outputFrameOfReference", Sdf.ValueTypeNames.Token)
         if value is not None:
             attr.Set(value)
         return attr
 
-    def GetReportHitPrimPathsAttr(self):
+    def GetReportHitPrimPathsAttr(self) -> Usd.Attribute:
         """Return the `reportHitPrimPaths` bool attribute (emit hit prim paths in output)."""
         return self._prim.GetAttribute("reportHitPrimPaths")
 
-    def CreateReportHitPrimPathsAttr(self, value=None):
+    def CreateReportHitPrimPathsAttr(self, value: Any = None) -> Usd.Attribute:
         """Create the `reportHitPrimPaths` bool attribute and optionally set `value`."""
         attr = self._prim.CreateAttribute("reportHitPrimPaths", Sdf.ValueTypeNames.Bool)
         if value is not None:
@@ -384,7 +384,7 @@ class _APISchemaWrapper:
 
     _SCHEMA_NAME = ""
 
-    def __init__(self, prim):
+    def __init__(self, prim: Usd.Prim) -> None:
         if isinstance(prim, Usd.Prim):
             self._prim = prim
         elif hasattr(prim, "GetPrim"):
@@ -393,7 +393,7 @@ class _APISchemaWrapper:
             self._prim = prim
 
     @classmethod
-    def Apply(cls, prim: Usd.Prim):
+    def Apply(cls, prim: Usd.Prim) -> "_APISchemaWrapper":
         """Apply `_SCHEMA_NAME` to `prim` and return a wrapper bound to it."""
         prim.AddAppliedSchema(cls._SCHEMA_NAME)
         return cls(prim)
@@ -402,12 +402,12 @@ class _APISchemaWrapper:
         """Return the wrapped USD prim."""
         return self._prim
 
-    def GetPath(self):
+    def GetPath(self) -> Sdf.Path:
         """Return the wrapped prim's `Sdf.Path`."""
         return self._prim.GetPath()
 
     @classmethod
-    def _GetStaticTfType(cls):
+    def _GetStaticTfType(cls) -> Tf.Type:
         """Return the TfType used by `Usd.Prim.HasAPI` when passed this class."""
         return Tf.Type.FindByName(cls._TF_TYPE_NAME)
 

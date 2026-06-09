@@ -57,6 +57,7 @@ import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # USDA parser (unchanged)
@@ -352,7 +353,7 @@ def _font_family(fonts_dir: Path) -> str:
     return "\n".join(faces)
 
 
-def _ortho_path_vhv(x1, y1, x2, y2, r=_BEND_RADIUS) -> str:
+def _ortho_path_vhv(x1: Any, y1: Any, x2: Any, y2: Any, r: Any = _BEND_RADIUS) -> str:
     """Build an SVG path string: vertical, horizontal, vertical with arcs.
 
     The path exits ``(x1, y1)`` vertically, turns with a quarter-circle
@@ -400,7 +401,7 @@ def _ortho_path_vhv(x1, y1, x2, y2, r=_BEND_RADIUS) -> str:
     )
 
 
-def _ortho_path_hvh(x1, y1, x2, y2, r=_BEND_RADIUS) -> str:
+def _ortho_path_hvh(x1: Any, y1: Any, x2: Any, y2: Any, r: Any = _BEND_RADIUS) -> str:
     """SVG path: horizontal → vertical → horizontal with two quarter-arc bends.
 
     Exits horizontally from (x1,y1), transitions vertically at the

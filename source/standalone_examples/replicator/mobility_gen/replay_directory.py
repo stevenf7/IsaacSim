@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""CLI wrapper for replaying MobilityGen recordings and rendering sensor data.
+r"""CLI wrapper for replaying MobilityGen recordings and rendering sensor data.
 
 Example usage (from the Isaac Sim build directory):
 

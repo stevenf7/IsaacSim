@@ -7,8 +7,11 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+"""Create-network example UI for authoring a waypoint graph directly in the stage."""
+
 import gc
 import weakref
+from typing import Any
 
 import carb.eventdispatcher
 import omni.ext
@@ -26,9 +29,12 @@ EXTENSION_NAME = "Create Network"
 # instantiated when extension gets enabled and `on_startup(ext_id)` will be called. Later when extension gets disabled
 # on_shutdown() is called.
 class cuOptSampleExtension(omni.ext.IExt):
+    """Expose menu actions that add waypoint node and edge prims to the USD stage."""
+
     # ext_id is current extension id. It can be used with extension manager to query additional information, like where
     # this extension is located on filesystem.
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: Any) -> Any:
+        """Register the example menu item and prepare an empty waypoint-graph visualizer."""
         self._ext_id = ext_id
 
         self._window = None
@@ -53,10 +59,10 @@ class cuOptSampleExtension(omni.ext.IExt):
 
         self._build_ui()
 
-    def _menu_callback(self):
+    def _menu_callback(self) -> Any:
         self._window.visible = not self._window.visible
 
-    def _on_window(self, visible):
+    def _on_window(self, visible: Any) -> Any:
         if self._window.visible:
             self._sub_stage_event = carb.eventdispatcher.get_eventdispatcher().observe_event(
                 event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.CLOSED),
@@ -66,14 +72,13 @@ class cuOptSampleExtension(omni.ext.IExt):
         else:
             self._sub_stage_event = None
 
-    def _on_stage_event(self, event):
-        """Stage closed event callback.
+    def _on_stage_event(self, event: Any) -> Any:
+        """Receive stage-close notifications while the example window is visible.
 
         Note: With Events 2.0, this is called only for CLOSED events.
         """
-        pass
 
-    def _build_ui(self):
+    def _build_ui(self) -> Any:
         if not self._window:
             self._window = ui.Window(
                 title=EXTENSION_NAME,
@@ -145,7 +150,8 @@ class cuOptSampleExtension(omni.ext.IExt):
                             style=ui_data_style,
                         )
 
-    def create_node(self):
+    def create_node(self) -> Any:
+        """Add a new waypoint node sphere under the graph node root."""
         stage = self._usd_context.get_stage()
         node_name = "Node_" + str(self._num_nodes)
         node_prim_path = self.waypoint_graph_node_path + "/" + node_name
@@ -154,7 +160,8 @@ class cuOptSampleExtension(omni.ext.IExt):
         self._node_ui_data.text = "Created node: " + node_name
         self._num_nodes += 1
 
-    def create_edge(self):
+    def create_edge(self) -> Any:
+        """Create a directed waypoint edge cylinder between the two selected node prims."""
         stage = self._usd_context.get_stage()
         selection = self._usd_context.get_selection().get_selected_prim_paths()
         if len(selection) == 2:
@@ -177,7 +184,8 @@ class cuOptSampleExtension(omni.ext.IExt):
         self._edge_ui_data.text = "Created edge: " + edge_name
         self._num_edges += 1
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> Any:
+        """Remove the example menu item, release the window, and collect extension objects."""
         self._editor_event_subscription = None
         remove_menu_items(self._menu_items, "cuOpt")
         self._window = None

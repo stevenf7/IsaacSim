@@ -17,7 +17,7 @@
 
 import io
 import json
-from typing import Dict, List
+from typing import Any
 
 import carb
 import numpy as np
@@ -30,7 +30,7 @@ NodeTemplate, NodeConnectionTemplate = SyntheticData.NodeTemplate, SyntheticData
 class _NumpyEncoder(json.JSONEncoder):
     """JSON encoder that handles numpy arrays by converting them to lists."""
 
-    def default(self, obj):
+    def default(self, obj: Any) -> Any:
         """Serialize numpy arrays to JSON-compatible lists.
 
         Args:
@@ -81,14 +81,14 @@ class DOPEWriter(Writer):
     def __init__(
         self,
         output_dir: str,
-        class_name_to_index_map: Dict,
-        semantic_types: List[str] = None,
+        class_name_to_index_map: dict,
+        semantic_types: list[str] = None,
         image_output_format: str = "png",
         use_s3: bool = False,
         bucket_name: str = "",
         endpoint_url: str = "",
         s3_region: str = "us-east-1",
-    ):
+    ) -> None:
         carb.log_warn(
             "Deprecation warning: DOPEWriter has been deprecated and will be removed in the next major release."
         )
@@ -132,7 +132,8 @@ class DOPEWriter(Writer):
         # Pose Data
         self.annotators.append(AnnotatorRegistry.get_annotator("dope", init_params={"semanticTypes": semantic_types}))
 
-    def register_pose_annotator(config_data: dict):
+    def register_pose_annotator(config_data: dict) -> None:
+        """Exercise register pose annotator."""
         AnnotatorRegistry.register_annotator_from_node(
             name="DopeSync",
             input_rendervars=[
@@ -188,7 +189,7 @@ class DOPEWriter(Writer):
             else None
         )
 
-    def setup_writer(config_data: dict, writer_config: dict):
+    def setup_writer(config_data: dict, writer_config: dict) -> Any:
         """Initialize writer and attach render product.
 
         Args:
@@ -206,7 +207,7 @@ class DOPEWriter(Writer):
 
         return writer
 
-    def write(self, data: dict):
+    def write(self, data: dict) -> None:
         """Write function called from the OgnWriter node on every frame to process annotator output.
 
         Args:
@@ -216,7 +217,7 @@ class DOPEWriter(Writer):
             print(f"No training data in frame {self._frame_id} (object(s) fully occluded), skipping writing..")
             return
 
-        for annotator in data.keys():
+        for annotator in data:
             annotator_split = annotator.split("-")
             render_product_path = ""
             multi_render_prod = 0
@@ -236,14 +237,14 @@ class DOPEWriter(Writer):
 
         self._frame_id += 1
 
-    def _write_rgb(self, data: dict, render_product_path: str, annotator: str):
-        image_id = "{:06d}".format(self._frame_id)
+    def _write_rgb(self, data: dict, render_product_path: str, annotator: str) -> None:
+        image_id = f"{self._frame_id:06d}"
 
         file_path = f"{render_product_path}{image_id}.{self._image_output_format}"
         self._backend.write_image(file_path, data[annotator])
 
-    def _write_dope(self, data: dict, render_product_path: str, annotator: str):
-        image_id = "{:06d}".format(self._frame_id)
+    def _write_dope(self, data: dict, render_product_path: str, annotator: str) -> None:
+        image_id = f"{self._frame_id:06d}"
 
         dope_data = data[annotator]["data"]
         id_to_labels = data[annotator]["info"]["idToLabels"]

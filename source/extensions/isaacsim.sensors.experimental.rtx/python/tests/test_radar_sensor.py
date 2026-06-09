@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test rtx radar sensor functionality via Writer-based GMO validation."""
+"""Verify RadarSensor GMO writer integration, static-scene returns, and auxiliary output channels."""
+
+from typing import Any
 
 import carb
 import isaacsim.core.experimental.utils.prim as prim_utils
@@ -26,7 +28,6 @@ from isaacsim.sensors.experimental.rtx import (
     Radar,
     RadarSensor,
     parse_generic_model_output_data,
-    parse_stable_id_map_data,
 )
 from omni.replicator.core import Writer
 from pxr import Sdf
@@ -66,7 +67,7 @@ class TestRadarSensor(omni.kit.test.AsyncTestCase):
     class _GmoRadarTestWriter(Writer):
         """Custom Writer that validates GenericModelOutput data each frame for radar."""
 
-        def __init__(self, test_instance=None, sensor_prim=None):
+        def __init__(self, test_instance: Any = None, sensor_prim: Any = None) -> None:
             self.data_structure = "renderProduct"
             self.annotators = [
                 rep.annotators.get("GenericModelOutput"),
@@ -86,7 +87,7 @@ class TestRadarSensor(omni.kit.test.AsyncTestCase):
 
         # -- frame callback ------------------------------------------
 
-        def write(self, data):
+        def write(self, data: Any) -> None:
             if "renderProducts" not in data:
                 return
             for _rp_name, rp_data in data["renderProducts"].items():
@@ -116,7 +117,7 @@ class TestRadarSensor(omni.kit.test.AsyncTestCase):
 
         # -- per-field validators -------------------------------------
 
-        def _test_point_cloud(self, gmo):
+        def _test_point_cloud(self, gmo: Any) -> None:
             """Validate sensor returns against expected range from sarcophagus geometry."""
             unit_vecs = np.stack(
                 [np.cos(np.radians(gmo.x)), np.sin(np.radians(gmo.x)), np.sin(np.radians(gmo.y))],
@@ -146,10 +147,10 @@ class TestRadarSensor(omni.kit.test.AsyncTestCase):
                 f"{num_exceeding} of {num_returns} returns exceeded 2% range threshold.",
             )
 
-        def _test_intensity(self, gmo):
+        def _test_intensity(self, gmo: Any) -> None:
             self._test.assertTrue(np.all(gmo.scalar != 0), "Radar intensities must be non-zero.")
 
-        def _test_radial_velocity(self, gmo):
+        def _test_radial_velocity(self, gmo: Any) -> None:
             self._test.assertLessEqual(
                 np.max(np.abs(gmo.rv_ms)), 1e-2, "Radial velocity should be ~0 for static scene."
             )
@@ -160,7 +161,8 @@ class TestRadarSensor(omni.kit.test.AsyncTestCase):
 
     _writer_registered = False
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Enable Motion BVH, create sarcophagus geometry, and register the radar GMO writer."""
         super().setUp()
         await stage_utils.create_new_stage_async()
         await ViewportManager.wait_for_viewport_async()
@@ -172,7 +174,8 @@ class TestRadarSensor(omni.kit.test.AsyncTestCase):
             rep.WriterRegistry.register(TestRadarSensor._GmoRadarTestWriter)
             TestRadarSensor._writer_registered = True
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Stop radar playback and flush one app update after each runtime test."""
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         super().tearDown()
@@ -181,7 +184,7 @@ class TestRadarSensor(omni.kit.test.AsyncTestCase):
     # Tests
     # ------------------------------------------------------------------
 
-    async def test_gmo_writer(self):
+    async def test_gmo_writer(self) -> None:
         """Validate GenericModelOutput via a Writer attached to a RadarSensor."""
         COLLECTION_SECONDS = 3.0
 
@@ -211,7 +214,7 @@ class TestRadarSensor(omni.kit.test.AsyncTestCase):
 
         self.assertGreater(writer.valid_frame_count, 0, "Expected at least one valid GMO frame.")
 
-    async def test_aux_output_level_sets_channels_attribute(self):
+    async def test_aux_output_level_sets_channels_attribute(self) -> None:
         """Verify aux_output_level sets the channels attribute on the sensor prim."""
         for level in ("NONE", "BASIC"):
             await stage_utils.create_new_stage_async()
@@ -232,12 +235,12 @@ class TestRadarSensor(omni.kit.test.AsyncTestCase):
             del sensor
             await omni.kit.app.get_app().next_update_async()
 
-    async def test_aux_output_level_default_is_none(self):
+    async def test_aux_output_level_default_is_none(self) -> None:
         """Verify the default aux_output_level is NONE."""
         radar = Radar("/World/radar")
         self.assertEqual(radar.aux_output_level, "NONE")
 
-    async def test_aux_output_level_invalid_raises(self):
+    async def test_aux_output_level_invalid_raises(self) -> None:
         """Verify invalid aux_output_level raises ValueError for radar."""
         with self.assertRaises(ValueError):
             Radar("/World/radar", aux_output_level="FULL")

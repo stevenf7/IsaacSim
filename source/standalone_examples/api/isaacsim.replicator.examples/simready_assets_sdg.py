@@ -23,6 +23,7 @@ import argparse
 import asyncio
 import os
 import time
+from typing import Any
 
 import carb.settings
 import numpy as np
@@ -88,7 +89,7 @@ async def search_assets_async() -> tuple[list, list, list]:
 def run_simready_randomization(
     stage: Usd.Stage,
     camera_prim: Usd.Prim,
-    render_product,
+    render_product: Any,
     tables: list,
     dishes: list,
     items: list,

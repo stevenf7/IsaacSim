@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Define Warp kernels and actuator classes for conveyor belt contact forces."""
+
 import math
 
 import cb_utils as cb_utils
@@ -159,8 +161,7 @@ def compute_point_force(
     target_vel: wp.vec3,
     friction_coefficient: wp.float32,
 ) -> wp.spatial_vector:
-    """Compute the force and torque to apply to a rigid body such that the velocity at
-    a given contact point is brought towards ``target_vel``.
+    """Compute force and torque for a rigid body contact point.
 
     The force is clamped by friction using a simple Coulomb friction model:
     ``contact_force * friction_coefficient``.
@@ -371,9 +372,7 @@ def velocity_field_compute_force(
 
 
 class VelocityFieldActuator:
-    """Actuator that uses velocity fields to define target velocities at contact points along
-    a contact surface and computes the force/torque to apply to the corresponding rigid bodies
-    to achieve those target velocities.
+    """Velocity-field actuator for conveyor contact forces.
 
     The computed forces are clamped based on a simple Coulomb friction model (friction coefficient
     times normal force).
@@ -492,12 +491,11 @@ class VelocityFieldActuator:
         # output
         per_point_force_torque_buffer: wp.array(dtype=wp.spatial_vector),
         # input
-        max_thread_count=1000,
-        batch_size=5,
+        max_thread_count: int = 1000,
+        batch_size: int = 5,
         device: str | None = None,
     ) -> None:
-        """Compute per-contact forces for one step to have the velocities at contact points
-        converge towards the target velocities defined by the registered velocity fields.
+        """Compute per-contact forces for one simulation step.
 
         Args:
             dt: Simulation time-step in seconds.

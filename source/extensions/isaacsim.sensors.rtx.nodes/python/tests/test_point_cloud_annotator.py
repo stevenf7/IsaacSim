@@ -13,16 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for the OgnIsaacExtractRTXSensorPointCloud node.
+"""Verifies the RTX sensor point cloud annotator converts spherical sensor output to Cartesian coordinates and passes Cartesian data through unchanged."""
 
-Validates that the node correctly converts GenericModelOutput data from
-spherical to Cartesian coordinates and wires auxiliary outputs based on
-what is available in the GMO buffer.  Uses a custom Replicator Writer
-that asserts on each frame of output, with LidarSensor managing the
-render product.
-"""
+from typing import Any
 
-import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
 import omni.kit.test
@@ -46,7 +40,7 @@ class TestIsaacExtractRTXSensorPointCloud(omni.kit.test.AsyncTestCase):
     class _PointCloudTestWriter(Writer):
         """Writer that validates extracted point cloud against raw GMO each frame."""
 
-        def __init__(self, test_instance=None, coords_type=None):
+        def __init__(self, test_instance: Any = None, coords_type: Any = None) -> None:
             self.data_structure = "renderProduct"
             self.annotators = [
                 rep.annotators.get("GenericModelOutput"),
@@ -57,7 +51,7 @@ class TestIsaacExtractRTXSensorPointCloud(omni.kit.test.AsyncTestCase):
             self.num_empty_frames = 0
             self.valid_frame_count = 0
 
-        def write(self, data):
+        def write(self, data: Any) -> None:
             if "renderProducts" not in data:
                 return
             for _rp_name, rp_data in data["renderProducts"].items():
@@ -103,7 +97,7 @@ class TestIsaacExtractRTXSensorPointCloud(omni.kit.test.AsyncTestCase):
                 elif self._coords_type == "CARTESIAN":
                     self._validate_cartesian_passthrough(pc_points, n)
 
-        def _validate_spherical_to_cartesian(self, gmo, pc_points, n):
+        def _validate_spherical_to_cartesian(self, gmo: Any, pc_points: Any, n: Any) -> None:
             """Validate the node's spherical-to-Cartesian conversion against reference."""
             az = np.ctypeslib.as_array(gmo.x, shape=(n,)).copy()
             el = np.ctypeslib.as_array(gmo.y, shape=(n,)).copy()
@@ -125,7 +119,7 @@ class TestIsaacExtractRTXSensorPointCloud(omni.kit.test.AsyncTestCase):
             np.testing.assert_allclose(pc_points[:, 1], expected_y, atol=ABS_TOL, err_msg="Y mismatch")
             np.testing.assert_allclose(pc_points[:, 2], expected_z, atol=ABS_TOL, err_msg="Z mismatch")
 
-        def _validate_cartesian_passthrough(self, pc_points, n):
+        def _validate_cartesian_passthrough(self, pc_points: Any, n: Any) -> None:
             """Validate Cartesian data is passed through with non-zero content."""
             self._test.assertEqual(pc_points.shape[0], n)
             self._test.assertGreater(np.count_nonzero(pc_points), 0, "Point cloud is all zeros")
@@ -136,13 +130,15 @@ class TestIsaacExtractRTXSensorPointCloud(omni.kit.test.AsyncTestCase):
 
     _writer_registered = False
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Register the custom writer that compares GMO and point-cloud annotator output."""
         super().setUp()
         if not TestIsaacExtractRTXSensorPointCloud._writer_registered:
             WriterRegistry.register(TestIsaacExtractRTXSensorPointCloud._PointCloudTestWriter)
             TestIsaacExtractRTXSensorPointCloud._writer_registered = True
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Run the base async-test cleanup after point-cloud writer assertions."""
         super().tearDown()
 
     # ------------------------------------------------------------------
@@ -188,10 +184,10 @@ class TestIsaacExtractRTXSensorPointCloud(omni.kit.test.AsyncTestCase):
     # Tests
     # ------------------------------------------------------------------
 
-    async def test_spherical_to_cartesian(self):
+    async def test_spherical_to_cartesian(self) -> None:
         """Node correctly converts spherical GMO data to Cartesian each frame."""
         await self._run_sensor_test("SPHERICAL")
 
-    async def test_cartesian_passthrough(self):
+    async def test_cartesian_passthrough(self) -> None:
         """Node handles Cartesian GMO data each frame."""
         await self._run_sensor_test("CARTESIAN")

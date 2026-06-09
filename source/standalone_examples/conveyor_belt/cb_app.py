@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Run the interactive conveyor belt Warp simulation example."""
+
 from isaacsim import SimulationApp
 
 simulation_app = SimulationApp({"headless": False})
@@ -71,6 +73,7 @@ ENABLE_VELOCITY_FIELD_VISUALIZER = True
 
 
 class ConveyorBeltExample:
+    """Interactive conveyor belt example application."""
 
     def __init__(
         self,
@@ -117,8 +120,7 @@ class ConveyorBeltExample:
         self,
         device: str | None = None,
     ) -> None:
-        """Allocate (or re-allocate) a set of warp buffers needed for contact processing and
-        force computation.
+        """Allocate restart buffers for contact processing and force computation.
 
         The buffers created here are recreated when the sample is stopped and restarted.
 
@@ -476,7 +478,7 @@ class ConveyorBeltExample:
             device=self._world.device,
         )
 
-    def post_physics_step(self, dt: float, _context) -> None:
+    def post_physics_step(self, dt: float, _context: object) -> None:
         """Physics post-step callback: fetches contact data, computes conveyor forces, and applies them.
 
         Also updates the velocity-field visualizer markers if one is present.

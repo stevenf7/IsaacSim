@@ -16,6 +16,7 @@
 """Demonstrate UR10 bin stacking on a conveyor belt."""
 
 import argparse
+from typing import Any
 
 from isaacsim import SimulationApp
 
@@ -43,7 +44,7 @@ from isaacsim.cortex.framework.robot import CortexUr10
 class Ur10Assets:
     """Store USD asset paths for the UR10 bin stacking scene."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.assets_root_path = get_assets_root_path_or_die()
 
         self.ur10_table_usd = (
@@ -54,7 +55,7 @@ class Ur10Assets:
         self.rubiks_cube_usd = self.assets_root_path + "/Isaac/Props/Rubiks_Cube/rubiks_cube.usd"
 
 
-def print_diagnostics(diagnostic):
+def print_diagnostics(diagnostic: Any) -> None:
     """Print the current logical state of the bin stacking behavior."""
     print("=========== logical state ==========")
     if diagnostic.bin_name:
@@ -71,7 +72,7 @@ def print_diagnostics(diagnostic):
     print("------------------------------------")
 
 
-def random_bin_spawn_transform():
+def random_bin_spawn_transform() -> tuple[np.ndarray, Any]:
     """Generate a random position and orientation for spawning a bin."""
     x = random.uniform(-0.15, 0.15)
     y = 1.5
@@ -95,7 +96,7 @@ def random_bin_spawn_transform():
 class BinStackingTask(BaseTask):
     """Manage bin spawning and tracking for the stacking task."""
 
-    def __init__(self, env_path, assets):
+    def __init__(self, env_path: str, assets: Ur10Assets) -> None:
         super().__init__("bin_stacking")
         self.assets = assets
 
@@ -104,7 +105,7 @@ class BinStackingTask(BaseTask):
         self.stashed_bins = []
         self.on_conveyor = None
 
-    def _spawn_bin(self, rigid_bin):
+    def _spawn_bin(self, rigid_bin: Any) -> None:
         x, q = random_bin_spawn_transform()
         rigid_bin.set_world_pose(position=x, orientation=q)
         rigid_bin.set_linear_velocity(np.array([0, -0.30, 0]))
@@ -119,7 +120,7 @@ class BinStackingTask(BaseTask):
 
         self.on_conveyor = None
 
-    def pre_step(self, time_step_index, simulation_time) -> None:
+    def pre_step(self, time_step_index: int, simulation_time: float) -> None:
         """Spawn a new randomly oriented bin if the previous bin has been placed."""
         spawn_new = False
         if self.on_conveyor is None:
@@ -140,7 +141,7 @@ class BinStackingTask(BaseTask):
             self.bins.append(self.on_conveyor)
 
 
-def main():
+def main() -> None:
     """Set up and run the UR10 conveyor bin stacking demo."""
     world = CortexWorld()
 
@@ -212,7 +213,7 @@ def main():
     if args.test:
         _test_frames = {"count": 0}
 
-        def _test_done_cb():
+        def _test_done_cb() -> bool:
             _test_frames["count"] += 1
             return _test_frames["count"] >= 10
 

@@ -13,10 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Verifies conveyor generation, velocity control, and physics-driven motion. Covers linear and angular conveyor behavior, multi-conveyor scenes, texture animation state, stop/reset semantics, and Fabric synchronization."""
+
 from __future__ import annotations
 
 import asyncio
 import time
+from typing import Any
 
 import carb.settings
 import omni.kit.test
@@ -118,7 +121,6 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
         create_physics_scene(self._stage)
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     # After running each test
     async def tearDown(self) -> None:
@@ -134,7 +136,6 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
             print("tearDown, assets still loading, waiting to finish...")
             await asyncio.sleep(1.0)
         await omni.kit.app.get_app().next_update_async()
-        pass
 
     async def test_add_conveyor(self, physics: bool = True) -> None:
         """Test creating a conveyor belt with a cube primitive.
@@ -151,7 +152,6 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         self.conveyor_node = og_prim
         self.velocity_attr = self._stage.GetPrimAtPath("/ConveyorBeltGraph").GetAttribute("graph:variable:Velocity")
         self.assertTrue(self.conveyor_node.IsValid())
-        pass
 
     async def test_add_conveyor_without_physics(self) -> None:
         """Test creating a conveyor belt without physics enabled on the cube."""
@@ -181,7 +181,6 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         usd_velocity = surface_velocity.GetSurfaceVelocityAttr().Get()
         self.assertAlmostEqual(usd_velocity.GetLength(), 0.10, delta=1e-4)
         self._timeline.stop()
-        pass
 
     async def test_set_angular_velocity(self, direction: list[float] | None = None) -> None:
         """Test setting the angular velocity of a curved conveyor belt.
@@ -210,7 +209,6 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         usd_velocity = surface_velocity.GetSurfaceAngularVelocityAttr().Get()
         self.assertAlmostEqual(usd_velocity.GetLength(), 0.10, delta=1e-4)
         self._timeline.stop()
-        pass
 
     async def test_conveyor(self, d: list[float] | None = None) -> None:
         """Test conveyor belt functionality with a moving object.
@@ -237,7 +235,6 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(d[0] * 0.1, usd_velocity[0], delta=1e-2)
         self.assertAlmostEqual(d[1] * 0.1, usd_velocity[1], delta=1e-2)
         self.assertAlmostEqual(d[2] * 0.1, usd_velocity[2], delta=1e-2)
-        pass
 
     async def test_conveyor_y(self) -> None:
         """Test conveyor belt functionality with movement in the Y direction."""
@@ -270,7 +267,7 @@ class TestConveyor(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
 
 
-def _bind_dummy_shader_material(stage, geom_prim, mat_path: str = "/World/Looks/ConveyorMat") -> PxrSdf.Path:
+def _bind_dummy_shader_material(stage: Any, geom_prim: Any, mat_path: str = "/World/Looks/ConveyorMat") -> PxrSdf.Path:
     """Author a minimal UsdShade Material + Shader pair and bind it to ``geom_prim``.
 
     The conveyor node walks the bound material's prim subtree and creates
@@ -300,6 +297,7 @@ class TestConveyorTextureAnimation(omni.kit.test.AsyncTestCase):
     """
 
     async def setUp(self) -> None:
+        """Prepare the Conveyor Texture Animation test fixture."""
         await omni.usd.get_context().new_stage_async()
         self._stage = omni.usd.get_context().get_stage()
         self._timeline = omni.timeline.get_timeline_interface()
@@ -307,6 +305,7 @@ class TestConveyorTextureAnimation(omni.kit.test.AsyncTestCase):
         await omni.kit.app.get_app().next_update_async()
 
     async def tearDown(self) -> None:
+        """Clean up the Conveyor Texture Animation test fixture."""
         await omni.kit.app.get_app().next_update_async()
         self._timeline.stop()
         while omni.usd.get_context().get_stage_loading_status()[2] > 0:

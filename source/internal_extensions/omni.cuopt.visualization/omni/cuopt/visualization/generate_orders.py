@@ -7,6 +7,10 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+"""Visualize transport order locations on the nearest waypoint graph nodes."""
+
+from typing import Any
+
 from omni.kit.material.library import CreateAndBindMdlMaterialFromLibrary
 from pxr import Gf, Sdf, UsdShade
 
@@ -15,7 +19,8 @@ from .generate_waypoint_graph import get_closest_node
 
 
 # Assign Material to Waypoints representing order locations
-def add_order_waypoint_material(stage, transport_orders):
+def add_order_waypoint_material(stage: Any, transport_orders: Any) -> Any:
+    """Create the emissive material used to mark waypoint nodes assigned to orders."""
     order_waypoint_material_name = "order_material"
     CreateAndBindMdlMaterialFromLibrary(
         mdl_name="OmniPBR.mdl",
@@ -38,8 +43,8 @@ def add_order_waypoint_material(stage, transport_orders):
 
 
 # Visualize order locations in loaded task data
-def visualize_order_locations(stage, waypoint_graph_model, transport_orders):
-
+def visualize_order_locations(stage: Any, waypoint_graph_model: Any, transport_orders: Any) -> Any:
+    """Bind order styling to nearest graph nodes and store their indices for cuOpt."""
     # Material
     order_waypoint_material_name = "order_waypoint_material"
     order_waypoint_material_path = f"/World/Looks/{order_waypoint_material_name}"

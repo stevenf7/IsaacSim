@@ -7,9 +7,12 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+"""Cost-matrix routing example UI for solving cuOpt vehicle routes in Isaac Sim."""
+
 import gc
 import random
 import weakref
+from typing import Any
 
 import carb.eventdispatcher
 import isaacsim.util.debug_draw as debug_draw
@@ -37,9 +40,12 @@ EXTENSION_NAME = "Simple Cost Matrix"
 # instantiated when extension gets enabled and `on_startup(ext_id)` will be called. Later when extension gets disabled
 # on_shutdown() is called.
 class cuOptSampleExtension(omni.ext.IExt):
+    """Create the Simple Cost Matrix window and manage its generated routing problem."""
+
     # ext_id is current extension id. It can be used with extension manager to query additional information, like where
     # this extension is located on filesystem.
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: Any) -> Any:
+        """Register the cuOpt menu item, initialize connection fields, and build the sample UI."""
         self._ext_id = ext_id
 
         self._window = None
@@ -79,10 +85,10 @@ class cuOptSampleExtension(omni.ext.IExt):
 
         self._build_ui()
 
-    def _menu_callback(self):
+    def _menu_callback(self) -> Any:
         self._window.visible = not self._window.visible
 
-    def _on_window(self, visible):
+    def _on_window(self, visible: Any) -> Any:
         if self._window.visible:
             self._sub_stage_event = carb.eventdispatcher.get_eventdispatcher().observe_event(
                 event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.CLOSED),
@@ -92,14 +98,14 @@ class cuOptSampleExtension(omni.ext.IExt):
         else:
             self._sub_stage_event = None
 
-    def _on_stage_event(self, event):
-        """Stage closed event callback.
+    def _on_stage_event(self, event: Any) -> Any:
+        """Clear cached depot and location prim data after the watched stage closes.
 
         Note: With Events 2.0, this is called only for CLOSED events.
         """
         self.prim_data = {}
 
-    def _build_ui(self):
+    def _build_ui(self) -> Any:
         if not self._window:
             self._window = ui.Window(
                 title=EXTENSION_NAME,
@@ -317,14 +323,14 @@ class cuOptSampleExtension(omni.ext.IExt):
                             style=ui_data_style,
                         )
 
-    def _form_cuopt_url(self):
+    def _form_cuopt_url(self) -> Any:
         cuopt_ip = self._cuopt_ip.get_value_as_string()
         cuopt_port = self._cuopt_port.get_value_as_string()
         cuopt_url = f"http://{cuopt_ip}:{cuopt_port}/cuopt/"
         return cuopt_url
 
     # Test if cuopt microservice is up and running
-    def _test_cuopt_connection_microservice(self):
+    def _test_cuopt_connection_microservice(self) -> Any:
 
         cuopt_ip = self._cuopt_ip.get_value_as_string()
         cuopt_port = self._cuopt_port.get_value_as_string()
@@ -336,7 +342,7 @@ class cuOptSampleExtension(omni.ext.IExt):
         self._cuopt_status_info.text = test_connection_microservice(cuopt_ip, cuopt_port)
 
     # Test if cuopt managed service is up and running
-    def _test_cuopt_connection_managed_service(self):
+    def _test_cuopt_connection_managed_service(self) -> Any:
         cuopt_sak = self._cuopt_sak.get_value_as_string()
         function_name = self._function_name.get_value_as_string()
         function_id = self._function_id.get_value_as_string()
@@ -349,7 +355,8 @@ class cuOptSampleExtension(omni.ext.IExt):
             cuopt_sak, function_name, function_id
         )
 
-    def clear_locations(self):
+    def clear_locations(self) -> Any:
+        """Delete generated depot/location prims and reset the location lookup table."""
         locations = []
         for pr in self.prim_data:
             locations.append(self.prim_data[pr]["Path"])
@@ -361,13 +368,15 @@ class cuOptSampleExtension(omni.ext.IExt):
 
         self.prim_data = {}
 
-    def update_location_position(self):
+    def update_location_position(self) -> Any:
+        """Refresh cached task coordinates from the current USD world transforms."""
         stage = self._usd_context.get_stage()
         for pr in self.prim_data:
             pose = omni.usd.get_world_transform_matrix(stage.GetPrimAtPath(self.prim_data[pr]["Path"]))
             self.prim_data[pr]["Location"] = pose[-1][0:-1]
 
-    def problem_setup_validation(self, n_vehicles, capacity_val, n_locations, time_limit):
+    def problem_setup_validation(self, n_vehicles: Any, capacity_val: Any, n_locations: Any, time_limit: Any) -> Any:
+        """Clamp fleet, capacity, location, and time-limit values to this example's supported range."""
         message = ""
 
         auto_value_change = False
@@ -444,8 +453,8 @@ class cuOptSampleExtension(omni.ext.IExt):
 
         return message
 
-    def create_problem_geometry(self):
-
+    def create_problem_geometry(self) -> Any:
+        """Generate a depot and random service-location prims for the cost-matrix sample."""
         self._cuopt_setup_status_info.text = self.problem_setup_validation(
             self.fleet_size.get_value_as_int(),
             self.fleet_capacity.get_value_as_int(),
@@ -506,11 +515,12 @@ class cuOptSampleExtension(omni.ext.IExt):
 
             current_index += 1
 
-    def distance_matrix_from_point_list(self, point_list, scale):
-        """Create a distance matrix from a point list."""
+    def distance_matrix_from_point_list(self, point_list: Any, scale: Any) -> Any:
+        """Return a scaled Euclidean cost matrix for the generated depot and service locations."""
         return scale * squareform(pdist(point_list, metric="euclidean"))
 
-    def get_routes(self, raw_routes):
+    def get_routes(self, raw_routes: Any) -> Any:
+        """Split a flat stop sequence into depot-delimited vehicle routes."""
         routes = []
         cur_route = []
         writing = False
@@ -532,8 +542,8 @@ class cuOptSampleExtension(omni.ext.IExt):
 
         return routes
 
-    def run_cuopt(self):
-
+    def run_cuopt(self) -> Any:
+        """Build the cuOpt cost-matrix request, solve it, and draw the returned vehicle routes."""
         if bool(self.prim_data):
             self.update_location_position()
             num_locations = self.num_locations.get_value_as_int()
@@ -564,7 +574,7 @@ class cuOptSampleExtension(omni.ext.IExt):
             }
 
             task_data = {
-                "task_locations": [i for i in range(1, num_locations + 1)],
+                "task_locations": list(range(1, num_locations + 1)),
                 "demand": [[1] * (num_locations)],
             }
 
@@ -591,8 +601,8 @@ class cuOptSampleExtension(omni.ext.IExt):
             # Display the routes on UI
             self._routes_ui_message.text = show_vehicle_routes(routes)
 
-    def draw_routes(self, routes):
-
+    def draw_routes(self, routes: Any) -> Any:
+        """Draw debug-line segments between cached USD locations for each solved vehicle route."""
         draw = debug_draw._debug_draw.acquire_debug_draw_interface()
 
         draw.clear_lines()
@@ -616,7 +626,8 @@ class cuOptSampleExtension(omni.ext.IExt):
 
             draw.draw_lines(point_list_1, point_list_2, colors, sizes)
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> Any:
+        """Remove the cuOpt menu entry, release the UI window, and collect extension objects."""
         self._editor_event_subscription = None
         remove_menu_items(self._menu_items, "cuOpt")
         self._window = None

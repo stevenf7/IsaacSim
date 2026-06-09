@@ -62,7 +62,7 @@ else:
 # make sure the file exists before we try to open it
 try:
     result = is_file(usd_path)
-except:
+except BaseException:
     result = False
 
 if result:

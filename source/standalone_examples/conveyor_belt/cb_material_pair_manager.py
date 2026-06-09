@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Manage conveyor belt material-pair friction tables."""
+
 import warp as wp
 
 # not needed for the purpose of this sample
@@ -40,8 +42,9 @@ class MaterialPairManager:
     def add_transported_body_material_index(
         self,
     ) -> int:
-        """Allocate and return a new unique material index that will be used for rigid
-        bodies that are transported by conveyor belts.
+        """Allocate a transported-body material index.
+
+        The index is used for rigid bodies that are transported by conveyor belts.
         """
         index = self.next_transported_body_material_index
 
@@ -52,8 +55,9 @@ class MaterialPairManager:
     def add_conveyor_belt_material_index(
         self,
     ) -> int:
-        """Allocate and return a new unique material index that will be used for conveyor
-        belt objects.
+        """Allocate a conveyor-belt material index.
+
+        The index is used for conveyor belt objects.
         """
         index = self.next_conveyor_belt_material_index
 

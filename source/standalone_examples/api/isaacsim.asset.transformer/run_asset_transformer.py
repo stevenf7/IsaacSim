@@ -21,7 +21,7 @@ It can be used to organize and restructure USD assets according to predefined ru
 Usage:
     ./python.sh source/standalone_examples/api/isaacsim.asset.transformer/run_asset_transformer.py \
 
-        
+
         --input /path/to/input.usd \
         --profile /path/to/profile.json \
         --output /path/to/output_package
@@ -272,7 +272,7 @@ def run_asset_transformer(
     return all_success
 
 
-def main():
+def main() -> int:
     """Main entry point for the standalone asset transformer."""
     global input_path, profile_path, output_path
 

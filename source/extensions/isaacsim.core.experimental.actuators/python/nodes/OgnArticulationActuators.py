@@ -18,7 +18,7 @@
 from __future__ import annotations
 
 import traceback
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from isaacsim.core.experimental.actuators.ogn.OgnArticulationActuatorsDatabase import OgnArticulationActuatorsDatabase
@@ -83,6 +83,7 @@ class OgnArticulationActuators:
 
     @staticmethod
     def internal_state() -> OgnArticulationActuatorsInternalState:
+        """Return a new per-instance node state."""
         return OgnArticulationActuatorsInternalState()
 
     @staticmethod
@@ -106,7 +107,8 @@ class OgnArticulationActuators:
             state.release()
 
     @staticmethod
-    def compute(db) -> bool:
+    def compute(db: Any) -> bool:
+        """Compute actuator commands from the current OmniGraph inputs."""
         state: OgnArticulationActuatorsInternalState = db.per_instance_state
         try:
             robot_path: str = db.inputs.robotPath

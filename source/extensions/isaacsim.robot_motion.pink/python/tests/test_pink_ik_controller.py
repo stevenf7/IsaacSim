@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test suite for PinkIKController class."""
+"""Verifies PinkIKController initialization, reset, forward solve behavior, task and limit configuration, solver handling, tool-frame validation, and RobotState outputs."""
 
 import os
 import tempfile
@@ -93,6 +93,7 @@ class TestPinkIKController(omni.kit.test.AsyncTestCase):
     """Test suite for PinkIKController with a simple 3-joint test robot."""
 
     async def setUp(self) -> None:
+        """Prepare the Pink IKController test fixture."""
         self._tmpdir = tempfile.mkdtemp()
         self._urdf_path = os.path.join(self._tmpdir, "robot.urdf")
         with open(self._urdf_path, "w") as f:
@@ -100,6 +101,7 @@ class TestPinkIKController(omni.kit.test.AsyncTestCase):
         self.pink_robot = load_pink_robot(self._urdf_path)
 
     async def tearDown(self) -> None:
+        """Clean up the Pink IKController test fixture."""
         if os.path.exists(self._urdf_path):
             os.remove(self._urdf_path)
         if os.path.exists(self._tmpdir):

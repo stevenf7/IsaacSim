@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import traceback
+from typing import Any
 
 import carb
 import omni
@@ -137,7 +138,7 @@ class OgnROS2CameraHelperInternalState(BaseWriterNode):
         cleanup_srtx_state(self)
         super().custom_reset()
 
-    def post_attach(self, writer, render_product) -> None:
+    def post_attach(self, writer: Any, render_product: Any) -> None:
         """Configure writer attributes after attaching to a render product."""
         try:
             if self.rv != "":
@@ -160,7 +161,9 @@ class OgnROS2CameraHelper:
         return OgnROS2CameraHelperInternalState()
 
     @staticmethod
-    def _setup_srtx(config, init_params, render_product_path, sensor_type, state, compression_type) -> bool:
+    def _setup_srtx(
+        config: Any, init_params: Any, render_product_path: Any, sensor_type: Any, state: Any, compression_type: Any
+    ) -> bool:
         if not config["srtx"]:
             carb.log_error(
                 f"Sensor type '{sensor_type}' is not supported with SRTX. "
@@ -223,8 +226,8 @@ class OgnROS2CameraHelper:
         return True
 
     @staticmethod
-    def compute(db) -> bool:
-        """Compute the node outputs."""
+    def compute(db: Any) -> bool:
+        """Configure ROS 2 camera publishing for the requested render product and sensor type."""
         state = db.per_instance_state
         if not db.inputs.enabled:
             if state.initialized:
@@ -263,14 +266,14 @@ class OgnROS2CameraHelper:
 
         state.rv = ""
 
-        init_params = dict(
-            frameId=db.inputs.frameId,
-            nodeNamespace=collect_namespace(db.inputs.nodeNamespace, render_product_path),
-            queueSize=db.inputs.queueSize,
-            topicName=db.inputs.topicName,
-            context=db.inputs.context,
-            qosProfile=db.inputs.qosProfile,
-        )
+        init_params = {
+            "frameId": db.inputs.frameId,
+            "nodeNamespace": collect_namespace(db.inputs.nodeNamespace, render_product_path),
+            "queueSize": db.inputs.queueSize,
+            "topicName": db.inputs.topicName,
+            "context": db.inputs.context,
+            "qosProfile": db.inputs.qosProfile,
+        }
 
         if sensor_type == "rgb_h264":
             rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
@@ -336,7 +339,7 @@ class OgnROS2CameraHelper:
         return True
 
     @staticmethod
-    def release_instance(node, graph_instance_id) -> None:
+    def release_instance(node: Any, graph_instance_id: Any) -> None:
         """Release resources for a graph instance."""
         try:
             state = OgnROS2CameraHelperInternalState.per_instance_internal_state(node)

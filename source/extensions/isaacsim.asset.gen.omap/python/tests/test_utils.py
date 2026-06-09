@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Verifies occupancy map utility functions for coordinate conversion, bounds updates, and image generation. Covers unknown, occupied, and free-space pixels, custom colors, empty buffers, performance, and symmetry assumptions."""
+
 from __future__ import annotations
 
 import omni.kit.test
@@ -103,7 +105,6 @@ class MockOccupancyMap:
 
     def update(self) -> None:
         """Update the map (no-op for mock)."""
-        pass
 
     def set_cell_size(self, cell_size: float) -> None:
         """Set cell size for the occupancy map.

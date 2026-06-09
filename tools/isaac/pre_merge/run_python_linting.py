@@ -133,6 +133,7 @@ PYDOCLINT_CONFIG: dict[str, Any] = {
     "skip_checking_short_docstrings": False,
     "skip_checking_raises": True,  # Raises documentation is optional per our conventions
     "check_class_attributes": False,  # Skip DOC602/DOC603 - Attributes sections are optional
+    "show_filenames_in_every_violation_message": True,  # Prefix file path to each violation so reports show file:line
     "exclude": ["_vendor"],
 }
 
@@ -260,7 +261,7 @@ class ToolResult:
         duration_seconds: float = 0.0,
         skipped: bool = False,
         skip_reason: str = "",
-    ):
+    ) -> None:
         self.tool_name = tool_name
         self.errors = errors
         self.warnings = warnings
@@ -293,7 +294,7 @@ class ExtensionResult:
         duration_seconds: float = 0.0,
         skipped: bool = False,
         skip_reason: str = "",
-    ):
+    ) -> None:
         self.name = name
         self.path = path
         self.files_checked = files_checked
@@ -336,7 +337,7 @@ class ToolInfo:
         available: bool = False,
         version: str = "",
         error_message: str = "",
-    ):
+    ) -> None:
         self.name = name
         self.binary_path = binary_path
         self.available = available
@@ -478,6 +479,51 @@ def find_python_dir(extension_path: Path) -> Path | None:
     return None
 
 
+def _matches_exclude(path: Path, root: Path, exclude_patterns: list[str] | None = None) -> bool:
+    """Return whether a path should be excluded from linting.
+
+    Args:
+        path: File path to check.
+        root: Root directory used to calculate relative paths.
+        exclude_patterns: Glob-style path, filename, or directory-name patterns.
+
+    Returns:
+        True if the path matches an exclude pattern.
+    """
+    exclude_patterns = exclude_patterns or []
+    try:
+        relative = path.relative_to(root)
+    except ValueError:
+        relative = path
+    relative_path = str(relative)
+
+    for pattern in exclude_patterns:
+        if fnmatch.fnmatch(relative_path, pattern) or fnmatch.fnmatch(path.name, pattern):
+            return True
+        if not any(char in pattern for char in "*?[]/\\") and pattern in relative.parts:
+            return True
+    return False
+
+
+def find_python_files(extension_path: Path, exclude_patterns: list[str] | None = None) -> list[Path]:
+    """Find all Python files that belong to an extension.
+
+    Args:
+        extension_path: Path to the extension directory.
+        exclude_patterns: Glob-style path, filename, or directory-name patterns to exclude.
+
+    Returns:
+        Sorted Python files under the extension directory.
+    """
+    if not extension_path.exists():
+        return []
+    return sorted(
+        py_file
+        for py_file in extension_path.rglob("*.py")
+        if not _matches_exclude(py_file, extension_path, exclude_patterns)
+    )
+
+
 def count_python_files(directory: Path, exclude_patterns: list[str] | None = None) -> int:
     """Count Python files in a directory, excluding certain patterns.
 
@@ -489,17 +535,7 @@ def count_python_files(directory: Path, exclude_patterns: list[str] | None = Non
         Number of Python files not matching any exclude pattern.
     """
     exclude_patterns = exclude_patterns or []
-    count = 0
-    for py_file in directory.rglob("*.py"):
-        relative_path = str(py_file.relative_to(directory))
-        excluded = False
-        for pattern in exclude_patterns:
-            if fnmatch.fnmatch(relative_path, pattern) or fnmatch.fnmatch(py_file.name, pattern):
-                excluded = True
-                break
-        if not excluded:
-            count += 1
-    return count
+    return sum(1 for py_file in directory.rglob("*.py") if not _matches_exclude(py_file, directory, exclude_patterns))
 
 
 def filter_extensions_by_diff(extensions: list[Path], diff_files: set[Path]) -> list[Path]:
@@ -514,13 +550,12 @@ def filter_extensions_by_diff(extensions: list[Path], diff_files: set[Path]) -> 
     """
     filtered: list[Path] = []
     for extension in extensions:
-        python_dir = find_python_dir(extension)
-        if python_dir is None:
-            continue
-        python_dir_resolved = python_dir.resolve()
+        extension_resolved = extension.resolve()
         for file_path in diff_files:
             try:
-                if file_path.resolve().is_relative_to(python_dir_resolved):
+                if file_path.resolve().is_relative_to(extension_resolved) and not _matches_exclude(
+                    file_path, extension, RUFF_CONFIG["exclude"]
+                ):
                     filtered.append(extension)
                     break
             except ValueError:
@@ -735,6 +770,9 @@ def run_pydoclint(
         "--skip-checking-short-docstrings={}".format(str(PYDOCLINT_CONFIG["skip_checking_short_docstrings"]).lower()),
         "--skip-checking-raises={}".format(str(PYDOCLINT_CONFIG["skip_checking_raises"]).lower()),
         "--check-class-attributes={}".format(str(PYDOCLINT_CONFIG["check_class_attributes"]).lower()),
+        "--show-filenames-in-every-violation-message={}".format(
+            str(PYDOCLINT_CONFIG["show_filenames_in_every_violation_message"]).lower()
+        ),
     ]
 
     for exclude in PYDOCLINT_CONFIG["exclude"]:
@@ -931,20 +969,16 @@ def run_tools_on_extension(
     """
     result = ExtensionResult(name=extension_path.name, path=str(extension_path))
 
-    # Find Python source directory
-    python_dir = find_python_dir(extension_path)
-    if python_dir is None:
-        result.skipped = True
-        result.skip_reason = "No Python source directory found"
-        return result
-
-    python_dir_resolved = python_dir.resolve()
+    python_dir = extension_path
+    extension_path_resolved = extension_path.resolve()
     python_files: list[Path] | None = None
     if diff_files is not None:
         python_files = []
         for file_path in diff_files:
             try:
-                if file_path.resolve().is_relative_to(python_dir_resolved):
+                if file_path.resolve().is_relative_to(extension_path_resolved) and not _matches_exclude(
+                    file_path, extension_path, RUFF_CONFIG["exclude"]
+                ):
                     python_files.append(file_path)
             except ValueError:
                 continue
@@ -954,7 +988,8 @@ def run_tools_on_extension(
             return result
         result.files_checked = len(python_files)
     else:
-        result.files_checked = count_python_files(python_dir)
+        python_files = find_python_files(extension_path, RUFF_CONFIG["exclude"])
+        result.files_checked = len(python_files)
         if result.files_checked == 0:
             result.skipped = True
             result.skip_reason = "No Python files to check"

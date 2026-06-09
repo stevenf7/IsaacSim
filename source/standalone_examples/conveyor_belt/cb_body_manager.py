@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Manage rigid body buffers for the conveyor belt example."""
+
 import warp as wp
 
 # not needed for the purpose of this sample
@@ -20,8 +22,7 @@ wp.config.enable_backward = False
 
 
 class BodyManager:
-    """Class to register rigid bodies that are to be transported by conveyor belts and
-    create and manage corresponding data buffers.
+    """Rigid body registry and buffer manager.
 
     Holds various rigid body related data buffers that are used for the computation of the
     forces that conveyor belts apply to the rigid bodies.

@@ -13,10 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Shared fixtures for Newton implementations of omni.physics.tensors tests.
+
+The helpers build small USD scenes, initialize Newton simulation views on CPU
+or CUDA, and convert NumPy test data to Warp arrays on the configured view
+device. They keep the articulation, rigid body, and contact tests aligned on
+the same stage layout and backend/device combinations.
+"""
+
 from __future__ import annotations
 
 import math
 import os
+from typing import Any
 
 import numpy as np
 import omni.kit.app
@@ -26,7 +35,7 @@ import omni.usd
 import warp as wp
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
 
-from . import warp_utils
+from . import warp_utils as warp_utils
 
 
 def get_asset_root() -> str:
@@ -129,12 +138,13 @@ class DeviceParams:
         view_device: Device for tensor API views and user-facing arrays.
     """
 
-    def __init__(self, sim_device: str, view_device: str):
+    def __init__(self, sim_device: str, view_device: str) -> None:
         self.sim_device = sim_device
         self.view_device = view_device
 
     @property
     def suffix(self) -> str:
+        """Return the generated test-class suffix for the sim/view device pair."""
         s = "G" if self.sim_device.startswith("cuda") else "C"
         v = "G" if self.view_device.startswith("cuda") else "C"
         return s + v
@@ -163,6 +173,7 @@ class NewtonTensorTestBase(omni.kit.test.AsyncTestCase):
     DEVICE = "cpu"
 
     async def setUp(self) -> None:
+        """Create a fresh z-up stage with a default gravity physics scene."""
         await omni.usd.get_context().new_stage_async()
         self.stage = omni.usd.get_context().get_stage()
         self._stage_id = omni.usd.get_context().get_stage_id()
@@ -177,6 +188,7 @@ class NewtonTensorTestBase(omni.kit.test.AsyncTestCase):
         self._sim = None
 
     async def tearDown(self) -> None:
+        """Reset tensor state and close the test stage."""
         if self._sim is not None:
             try:
                 tensors.reset()
@@ -203,6 +215,7 @@ class NewtonTensorTestBase(omni.kit.test.AsyncTestCase):
         return self._sim
 
     def to_warp(self, numpy_arr: np.ndarray, dtype: type = wp.float32) -> wp.array:
+        """Convert NumPy data to a Warp array on the configured tensor view device."""
         return wp.from_numpy(numpy_arr, dtype=dtype, device=self.DEVICE)
 
     def check_articulation_view(
@@ -212,12 +225,14 @@ class NewtonTensorTestBase(omni.kit.test.AsyncTestCase):
         expected_max_links: int,
         expected_max_dofs: int,
     ) -> None:
+        """Assert core articulation view dimensions match the expected tensor metadata."""
         self.assertIsNotNone(view)
         self.assertEqual(view.count, expected_count)
         self.assertEqual(view.max_links, expected_max_links)
         self.assertEqual(view.max_dofs, expected_max_dofs)
 
     def check_rigid_body_view(self, view: tensors.RigidBodyView, expected_count: int) -> None:
+        """Assert a rigid body view exists and contains the expected body count."""
         self.assertIsNotNone(view)
         self.assertEqual(view.count, expected_count)
 
@@ -335,6 +350,7 @@ class NewtonTensorTestBase(omni.kit.test.AsyncTestCase):
     def check_rigid_contact_view(
         self, view: tensors.RigidContactView, expected_sensors: int, expected_filters: int
     ) -> None:
+        """Assert rigid contact view sensor and filter counts match the patterns."""
         self.assertIsNotNone(view)
         self.assertEqual(view.sensor_count, expected_sensors)
         self.assertEqual(view.filter_count, expected_filters)
@@ -442,7 +458,7 @@ def create_rigid_box(
     return prim
 
 
-def run_on_device_configs(configs: tuple[DeviceParams, ...] = ALL_DEVICE_CONFIGS):
+def run_on_device_configs(configs: tuple[DeviceParams, ...] = ALL_DEVICE_CONFIGS) -> Any:
     """Class decorator that generates a test class variant per :class:`DeviceParams`.
 
     For each config a new class is created with ``SIM_DEVICE`` and ``DEVICE``
@@ -458,7 +474,7 @@ def run_on_device_configs(configs: tuple[DeviceParams, ...] = ALL_DEVICE_CONFIGS
     """
     import sys
 
-    def decorator(cls):
+    def decorator(cls: Any) -> Any:
         module = sys.modules[cls.__module__]
         first = None
         for cfg in configs:

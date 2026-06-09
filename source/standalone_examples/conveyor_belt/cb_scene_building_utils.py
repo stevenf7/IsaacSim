@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Create USD mesh and rigid body helpers for the conveyor belt scene."""
+
 import math
 
 import warp as wp
@@ -131,13 +133,15 @@ def _create_quarter_hollow_cylinder_mesh(
     half_height: float,
     segment_count: int,
 ) -> UsdGeom.Mesh:
-    """Convenience: create a UsdGeom.Mesh prim with the quarter hollow cylinder geometry.
+    """Create a UsdGeom.Mesh prim with the quarter hollow cylinder geometry.
 
     Args:
         stage: Usd.Stage to create the mesh on.
         path: path for the new mesh prim.
-        inner_radius, outer_radius, half_height, segment_count: Same as
-            create_quarter_hollow_cylinder_mesh_data.
+        inner_radius: Radius of the inner circular edge.
+        outer_radius: Radius of the outer circular edge.
+        half_height: Half-extent along the Z axis.
+        segment_count: Number of segments along the curved arc.
 
     Returns:
         UsdGeom.Mesh prim.

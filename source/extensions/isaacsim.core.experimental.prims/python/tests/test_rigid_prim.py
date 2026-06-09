@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test for rigid prim."""
+"""Verifies RigidPrim runtime creation, rigid body state access, force application, and material properties. Covers poses, velocities, masses, gravity, centers of mass, inertias, densities, sleep thresholds, default state, and contact data tracking."""
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
@@ -33,7 +33,7 @@ from pxr import Gf, PhysxSchema, UsdGeom, UsdPhysics
 from .common import check_allclose, check_array, cprint, draw_indices, draw_sample, parametrize
 
 
-async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs) -> None:
+async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
     """Populate stage."""
     assert operation == "wrap", "Other operations except 'wrap' are not supported"
     # create new stage
@@ -58,17 +58,17 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
 class TestRigidPrim(omni.kit.test.AsyncTestCase):
     """Test rigid prim."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Method called to prepare the test fixture."""
         super().setUp()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Method called immediately after the test method has been called."""
         super().tearDown()
 
     # --------------------------------------------------------------------
 
-    def check_backend(self, backend, prim):
+    def check_backend(self, backend: Any, prim: Any) -> None:
         """Check backend."""
         if backend == "tensor":
             self.assertTrue(prim.is_physics_tensor_entity_valid(), f"Tensor API should be enabled ({backend})")
@@ -88,7 +88,7 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
         max_num_prims=1,
     )
-    async def test_runtime_instance_creation(self, prim, num_prims, device, backend):
+    async def test_runtime_instance_creation(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test runtime instance creation."""
         RigidPrim("/World/A_0")
 
@@ -99,7 +99,7 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         prim_class_kwargs={"masses": [1.0]},
         populate_stage_func=populate_stage,
     )
-    async def test_len(self, prim, num_prims, device, backend):
+    async def test_len(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test len."""
         self.assertEqual(len(prim), num_prims, f"Invalid RigidPrim ({num_prims} prims) len")
 
@@ -109,7 +109,7 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         prim_class_kwargs={"masses": [1.0]},
         populate_stage_func=populate_stage,
     )
-    async def test_world_poses(self, prim, num_prims, device, backend):
+    async def test_world_poses(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test world poses."""
         # check backend and define USD usage
         self.check_backend(backend, prim)
@@ -137,7 +137,7 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         prim_class_kwargs={"masses": [1.0]},
         populate_stage_func=populate_stage,
     )
-    async def test_local_poses(self, prim, num_prims, device, backend):
+    async def test_local_poses(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test local poses."""
         # check backend and define USD usage
         self.check_backend(backend, prim)
@@ -166,7 +166,7 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         prim_class_kwargs={"masses": [1.0]},
         populate_stage_func=populate_stage,
     )
-    async def test_velocities(self, prim, num_prims, device, backend):
+    async def test_velocities(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test velocities."""
         # check backend
         self.check_backend(backend, prim)
@@ -190,7 +190,7 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         prim_class_kwargs={"masses": [1.0]},
         populate_stage_func=populate_stage,
     )
-    async def test_masses(self, prim, num_prims, device, backend):
+    async def test_masses(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test masses."""
         # check backend
         self.check_backend(backend, prim)
@@ -215,7 +215,7 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         prim_class_kwargs={"masses": [1.0]},
         populate_stage_func=populate_stage,
     )
-    async def test_enabled_rigid_bodies(self, prim, num_prims, device, backend):
+    async def test_enabled_rigid_bodies(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test enabled rigid bodies."""
         # check backend
         self.check_backend(backend, prim)
@@ -237,7 +237,7 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         prim_class_kwargs={"masses": [1.0]},
         populate_stage_func=populate_stage,
     )
-    async def test_enabled_gravities(self, prim, num_prims, device, backend):
+    async def test_enabled_gravities(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test enabled gravities."""
         # check backend
         self.check_backend(backend, prim)
@@ -258,7 +258,7 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         prim_class_kwargs={"masses": [1.0]},
         populate_stage_func=populate_stage,
     )
-    async def test_coms(self, prim, num_prims, device, backend):
+    async def test_coms(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test coms."""
         # check backend
         self.check_backend(backend, prim)
@@ -283,10 +283,10 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         prim_class_kwargs={"masses": [1.0]},
         populate_stage_func=populate_stage,
     )
-    async def test_inertias(self, prim, num_prims, device, backend):
+    async def test_inertias(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> Any:
         """Test inertias."""
 
-        def _transform(x):  # transform to a diagonal inertia matrix
+        def _transform(x: Any) -> Any:  # transform to a diagonal inertia matrix
             x[:, [1, 2, 3, 5, 6, 7]] = 0.0
             return x
 
@@ -312,7 +312,7 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         prim_class_kwargs={"masses": [1.0]},
         populate_stage_func=populate_stage,
     )
-    async def test_densities(self, prim, num_prims, device, backend):
+    async def test_densities(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test densities."""
         # check backend
         self.check_backend(backend, prim)
@@ -333,7 +333,7 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         prim_class_kwargs={"masses": [1.0]},
         populate_stage_func=populate_stage,
     )
-    async def test_sleep_thresholds(self, prim, num_prims, device, backend):
+    async def test_sleep_thresholds(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test sleep thresholds."""
         # check backend
         self.check_backend(backend, prim)
@@ -354,7 +354,7 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         prim_class_kwargs={"masses": [1.0]},
         populate_stage_func=populate_stage,
     )
-    async def test_default_state(self, prim, num_prims, device, backend):
+    async def test_default_state(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test default state."""
         # check backend
         self.check_backend(backend, prim)
@@ -385,7 +385,7 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
         prim_class_kwargs={"masses": [1.0]},
         populate_stage_func=populate_stage,
     )
-    async def test_apply_forces(self, prim, num_prims, device, backend):
+    async def test_apply_forces(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test apply forces."""
         # check backend
         self.check_backend(backend, prim)
@@ -415,7 +415,7 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
                         )
 
 
-async def populate_stage_with_ground(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs) -> None:
+async def populate_stage_with_ground(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
     """Populate stage with ground plane for contact testing."""
     assert operation == "wrap", "Other operations except 'wrap' are not supported"
     # create new stage
@@ -543,7 +543,7 @@ def _assert_single_cube_contact_data(
 
 
 async def _wait_for_contact_data(
-    get_data,
+    get_data: Any,
     *,
     backend: str,
     max_steps: int = 120,
@@ -556,6 +556,13 @@ async def _wait_for_contact_data(
     """Wait until contact data reports non-zero counts for the given sensor.
 
     Args:
+        get_data: Callable that returns the contact data tuple.
+        backend: Backend used while reading contact data.
+        max_steps: Maximum number of app updates to wait for initial contact data.
+        settle_frames: Additional frames to wait after data first becomes ready.
+        expected_total_contacts: Required total contact count, or any non-zero count if unset.
+        expected_pair_count: Required filtered pair count, or any non-zero pair count if unset.
+        cube_index: Index of the cube whose contact forces should be non-zero.
         counts_tuple_index: index into the returned data tuple that holds the
             counts array.  ``-2`` (default) for filtered contact data (2D pair
             counts), ``4`` for raw contact data (1D counts).
@@ -587,15 +594,15 @@ async def _wait_for_contact_data(
 class TestRigidPrimContactTracking(omni.kit.test.AsyncTestCase):
     """Test rigid prim contact tracking."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Method called to prepare the test fixture."""
         super().setUp()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Method called immediately after the test method has been called."""
         super().tearDown()
 
-    def check_backend(self, backend, prim):
+    def check_backend(self, backend: Any, prim: Any) -> None:
         """Check backend."""
         if backend == "tensor":
             self.assertTrue(prim.is_physics_tensor_entity_valid(), f"Tensor API should be enabled ({backend})")
@@ -616,7 +623,7 @@ class TestRigidPrimContactTracking(omni.kit.test.AsyncTestCase):
         },
         populate_stage_func=populate_stage_with_ground,
     )
-    async def test_contact_tracking_many(self, prim, num_prims, device, backend):
+    async def test_contact_tracking_many(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test contact tracking many."""
         # check backend
         self.check_backend(backend, prim)
@@ -710,7 +717,7 @@ class TestRigidPrimContactTracking(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage_with_ground,
         max_num_prims=1,
     )
-    async def test_contact_tracking_single(self, prim, num_prims, device, backend):
+    async def test_contact_tracking_single(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test contact tracking single."""
         # check backend
         self.check_backend(backend, prim)
@@ -879,11 +886,11 @@ def _assert_single_cube_raw_contact_data(
 class TestRigidPrimRawContactTracking(omni.kit.test.AsyncTestCase):
     """Test rigid prim raw contact tracking."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Set up test environment."""
         super().setUp()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Tear down test environment."""
         super().tearDown()
 
@@ -898,7 +905,7 @@ class TestRigidPrimRawContactTracking(omni.kit.test.AsyncTestCase):
         },
         populate_stage_func=populate_stage_with_ground,
     )
-    async def test_raw_contact_data_many(self, prim, num_prims, device, backend):
+    async def test_raw_contact_data_many(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test raw contact data many."""
         self.assertTrue(prim.is_physics_tensor_entity_valid(), f"Tensor API should be enabled ({backend})")
         with use_backend("usd", raise_on_unsupported=True, raise_on_fallback=True):
@@ -954,7 +961,7 @@ class TestRigidPrimRawContactTracking(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage_with_ground,
         max_num_prims=1,
     )
-    async def test_raw_contact_data_single(self, prim, num_prims, device, backend):
+    async def test_raw_contact_data_single(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test raw contact data single."""
         self.assertTrue(prim.is_physics_tensor_entity_valid(), f"Tensor API should be enabled ({backend})")
         with use_backend("usd", raise_on_unsupported=True, raise_on_fallback=True):

@@ -42,12 +42,12 @@ from isaacsim.cortex.framework.robot import add_franka_to_stage
 class CubeSpec:
     """Store the name and color specification for a cube obstacle."""
 
-    def __init__(self, name, color):
+    def __init__(self, name: str, color: list[float]) -> None:
         self.name = name
         self.color = np.array(color)
 
 
-def main():
+def main() -> None:
     """Set up the scene and run the selected Franka behavior."""
     world = CortexWorld()
     context_monitor = ContextStateMonitor(print_dt=0.25)
@@ -86,7 +86,7 @@ def main():
     if args.test:
         _test_frames = {"count": 0}
 
-        def _test_done_cb():
+        def _test_done_cb() -> bool:
             _test_frames["count"] += 1
             return _test_frames["count"] >= 10
 

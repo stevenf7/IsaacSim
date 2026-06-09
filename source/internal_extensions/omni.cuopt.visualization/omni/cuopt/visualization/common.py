@@ -7,16 +7,19 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+"""Shared JSON, transform, and edge-overlap helpers for cuOpt USD visualizations."""
+
 import json
 import math
+from typing import Any
 
 import omni.kit.commands
 from pxr import Gf, Usd, UsdGeom
 
 
 # utility for reading json data
-def read_json(json_file_path):
-
+def read_json(json_file_path: Any) -> Any:
+    """Read visualization sample JSON such as warehouse, graph, order, or vehicle data."""
     with open(json_file_path) as json_file:
         json_data = json.load(json_file)
 
@@ -25,14 +28,15 @@ def read_json(json_file_path):
 
 # utility for setting prim transform
 def translate_rotate_scale_prim(
-    stage,
-    prim=None,
-    prim_path=None,
-    translate_set=None,
-    rotate_set=None,
-    scale_set=None,
-    clear_orient=False,
-):
+    stage: Any,
+    prim: Any = None,
+    prim_path: Any = None,
+    translate_set: Any = None,
+    rotate_set: Any = None,
+    scale_set: Any = None,
+    clear_orient: Any = False,
+) -> None:
+    """Create or update translate, rotateXYZ, and scale xform ops on a USD prim."""
     if prim is not None:
         xform = UsdGeom.Xformable(prim)
         prim_path = prim.GetPrimPath()
@@ -79,7 +83,8 @@ def translate_rotate_scale_prim(
 
 
 # verify that prim base path exists and create it if not
-def check_build_base_path(stage, semantic_path, final_xform=True):
+def check_build_base_path(stage: Any, semantic_path: Any, final_xform: Any = True) -> Any:
+    """Ensure each component of a target prim path exists before authoring generated content."""
     path_components = semantic_path.split("/")
     check_path = ""
 
@@ -99,7 +104,8 @@ def check_build_base_path(stage, semantic_path, final_xform=True):
 
 
 # helper utility for get translation value for a prim
-def get_prim_translation(prim):
+def get_prim_translation(prim: Any) -> Any:
+    """Return the world-space translation of a waypoint or semantic prim."""
     prim_tf = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
     transform = Gf.Transform()
     transform.SetMatrix(prim_tf)
@@ -108,7 +114,8 @@ def get_prim_translation(prim):
 
 
 # Check if given edge is within Volume. Return the overlap percentage
-def edge_in_volume(edge_prim, vol_prim):
+def edge_in_volume(edge_prim: Any, vol_prim: Any) -> Any:
+    """Test whether a waypoint edge intersects a semantic volume and measure overlap."""
     bbox_cache = UsdGeom.BBoxCache(
         time=Usd.TimeCode.Default(), includedPurposes=[UsdGeom.Tokens.default_], useExtentsHint=True
     )

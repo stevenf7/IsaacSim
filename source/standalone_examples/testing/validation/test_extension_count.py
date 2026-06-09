@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test script to count and list enabled extensions in Isaac Sim."""
+"""Counts enabled Isaac Sim extensions after SimulationApp startup and optionally prints their names for validation and reporting."""
 
 import argparse
 import sys
@@ -62,7 +62,7 @@ def get_enabled_extensions() -> dict[str, bool]:
     return enabled_exts
 
 
-def main():
+def main() -> None:
     """Main execution function."""
     try:
         enabled_exts = get_enabled_extensions()

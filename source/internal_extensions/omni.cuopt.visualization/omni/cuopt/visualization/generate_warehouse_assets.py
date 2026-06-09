@@ -7,10 +7,15 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+"""Reference configured shelf and conveyor assets into the warehouse demo stage."""
+
+from typing import Any
+
 from .common import read_json, translate_rotate_scale_prim
 
 
-def generate_shelves_assets(stage, shelves_prim_path, shelves_json_path, shelves_asset_path):
+def generate_shelves_assets(stage: Any, shelves_prim_path: Any, shelves_json_path: Any, shelves_asset_path: Any) -> Any:
+    """Create shelf Xforms from JSON, reference their assets, and apply transforms."""
     shelves_data = read_json(shelves_json_path)
 
     for shelf_id, shelf_details in shelves_data.items():
@@ -30,7 +35,10 @@ def generate_shelves_assets(stage, shelves_prim_path, shelves_json_path, shelves
         )
 
 
-def generate_conveyor_assets(stage, conveyor_prim_path, conveyor_json_path, conveyor_asset_path):
+def generate_conveyor_assets(
+    stage: Any, conveyor_prim_path: Any, conveyor_json_path: Any, conveyor_asset_path: Any
+) -> Any:
+    """Create conveyor Xforms from JSON, reference their assets, and apply transforms."""
     conveyors_data = read_json(conveyor_json_path)
 
     for conveyor_id, conveyor_details in conveyors_data.items():

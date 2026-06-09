@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import contextlib
+from typing import Any
 
 import carb
 import cv2 as cv
@@ -61,7 +62,7 @@ class OgnROS2CameraInfoHelperInternalState(BaseWriterNode):
         cleanup_srtx_camera_info_state(self)
         super().custom_reset()
 
-    def post_attach(self, writer, render_product) -> None:
+    def post_attach(self, writer: Any, render_product: Any) -> None:
         """Configure writer attributes after attaching to a render product."""
         try:
             if self.rv != "":
@@ -108,7 +109,7 @@ def cleanup_srtx_camera_info_state(state: OgnROS2CameraInfoHelperInternalState) 
     state._srtx_sensor_set = None
 
 
-def get_srtx_camera_info_callback_output(stage, render_product_path: str) -> str | None:
+def get_srtx_camera_info_callback_output(stage: Any, render_product_path: str) -> str | None:
     """Return an existing RenderVar path to use as the CameraInfo timing source."""
     rp_prim = stage.GetPrimAtPath(render_product_path)
     if not rp_prim or not rp_prim.IsValid():
@@ -163,7 +164,7 @@ class OgnROS2CameraInfoHelper:
 
     @staticmethod
     def add_camera_info_writer(
-        db, frameId, topicName, camera_info, render_product_path: str, time_type: str = ""
+        db: Any, frameId: Any, topicName: Any, camera_info: Any, render_product_path: str, time_type: str = ""
     ) -> None:
         """Add a camera info writer for the given render product."""
         writer = rep.writers.get(f"ROS2{time_type}PublishCameraInfo")
@@ -187,16 +188,16 @@ class OgnROS2CameraInfoHelper:
 
     @staticmethod
     def add_srtx_camera_info_publisher(
-        state,
-        stage,
-        srtx_instance,
-        sensor_set_name,
-        frameId,
-        topicName,
-        nodeNamespace,
-        queueSize,
-        qosProfile,
-        camera_info,
+        state: Any,
+        stage: Any,
+        srtx_instance: Any,
+        sensor_set_name: Any,
+        frameId: Any,
+        topicName: Any,
+        nodeNamespace: Any,
+        queueSize: Any,
+        qosProfile: Any,
+        camera_info: Any,
         render_product_path: str,
     ) -> bool:
         """Add an SRTX callback-backed camera info publisher for the given render product."""
@@ -234,8 +235,8 @@ class OgnROS2CameraInfoHelper:
         return True
 
     @staticmethod
-    def compute(db) -> bool:
-        """Compute the node outputs."""
+    def compute(db: Any) -> bool:
+        """Configure ROS 2 CameraInfo publishing for mono or stereo render products."""
         state = db.per_instance_state
         if not db.inputs.enabled:
             if state.initialized:
@@ -458,7 +459,7 @@ class OgnROS2CameraInfoHelper:
         return True
 
     @staticmethod
-    def release_instance(node, graph_instance_id) -> None:
+    def release_instance(node: Any, graph_instance_id: Any) -> None:
         """Release resources for a graph instance."""
         try:
             state = OgnROS2CameraInfoHelperInternalState.per_instance_internal_state(node)

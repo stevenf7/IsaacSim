@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for RTX GPU information retrieval."""
+"""Verifies that the compatibility-check interface can query RTX GPU information without creating GPU Foundation and reports NVIDIA GPU vendor IDs."""
 
 import omni.kit.test
 from isaacsim.app.compatibility_check import _compatibility_check
@@ -22,14 +22,14 @@ from isaacsim.app.compatibility_check import _compatibility_check
 class TestRtxGpuInfo(omni.kit.test.AsyncTestCase):
     """Test suite for RTX GPU information retrieval."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Prepare the test fixture."""
         super().setUp()
         # ---------------
         # Do custom setUp
         # ---------------
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Clean up after the test method has been called."""
         # ------------------
         # Do custom tearDown
@@ -38,7 +38,7 @@ class TestRtxGpuInfo(omni.kit.test.AsyncTestCase):
 
     # --------------------------------------------------------------------
 
-    def test_rtx_gpu_info(self):
+    def test_rtx_gpu_info(self) -> None:
         """Verify RTX GPU info retrieval returns valid results."""
         _interface = _compatibility_check.acquire_compatibility_check_interface()
         ret, infos = _interface.get_rtx_gpu_info(False)  # don't create GPU Foundation

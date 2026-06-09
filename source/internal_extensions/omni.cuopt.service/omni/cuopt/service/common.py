@@ -7,22 +7,26 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+"""Shared JSON, connection, and route-formatting helpers for cuOpt examples."""
+
 import json
+from typing import Any
 
 import requests
 
 from .cuopt_thin_client import CuOptServiceClient
 
 
-def read_json(json_file_path):
-
+def read_json(json_file_path: Any) -> Any:
+    """Read a sample-data JSON file used by the cuOpt service examples."""
     with open(json_file_path) as json_file:
         json_data = json.load(json_file)
 
     return json_data
 
 
-def show_vehicle_routes(routes):
+def show_vehicle_routes(routes: Any) -> Any:
+    """Format a cuOpt solver response into the route summary shown in example UIs."""
     message = f"Solution found using {routes['num_vehicles']} vehicles \nSolution cost: {routes['solution_cost']} \n\n"
     for v_id, data in routes["vehicle_data"].items():
         message = message + "For vehicle -" + str(v_id) + " route is: \n"
@@ -36,8 +40,8 @@ def show_vehicle_routes(routes):
     return message
 
 
-def test_connection_microservice(ip, port):
-
+def test_connection_microservice(ip: Any, port: Any) -> None:
+    """Probe the local cuOpt microservice health endpoint and return a UI status message."""
     cuopt_url = f"http://{ip}:{port}/cuopt/"
 
     cuopt_status_info = f"working"
@@ -49,17 +53,18 @@ def test_connection_microservice(ip, port):
         else:
             cuopt_status_info = "FAILURE: cuOpt Microservice found but not running correctly"
 
-    except:
+    except BaseException:
         cuopt_status_info = f"FAILURE: cuOpt Microservice was not found running at {cuopt_url}"
     return cuopt_status_info
 
 
-def test_connection_managed_service(auth, function_name, function_id):
+def test_connection_managed_service(auth: Any, function_name: Any, function_id: Any) -> None:
+    """Create a managed-service client from the supplied SAK/function selector."""
     print(auth, function_name, function_id)
     try:
         client = CuOptServiceClient(sak=auth, function_name=function_name, function_id=function_id)
         cuopt_status_info = "SUCCESS: cuOpt Managed Service is Accessible"
-    except:
+    except BaseException:
         client = None
-        cuopt_status_info = f"FAILURE: cuOpt Managed Service is not Accessible"
+        cuopt_status_info = "FAILURE: cuOpt Managed Service is not Accessible"
     return cuopt_status_info, client

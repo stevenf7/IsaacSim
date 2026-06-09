@@ -12,6 +12,8 @@
 # todo(delliott): method to sync this file with origin
 
 
+"""Managed cuOpt service client for NVIDIA Cloud Functions route solving."""
+
 import base64
 import io
 import json
@@ -21,6 +23,7 @@ import time
 import zipfile
 import zlib
 from datetime import datetime, timezone
+from typing import Any
 
 import requests
 
@@ -30,11 +33,12 @@ log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format=log_fmt, datefmt=date_fmt)
 
 
-def set_log_level(level):
+def set_log_level(level: Any) -> Any:
+    """Set this client's module logger level."""
     log.setLevel(level)
 
 
-def _read_zip_dir(files):
+def _read_zip_dir(files: Any) -> Any:
     # cuopt returns {} when it writes to "large_result" and NVCF retains
     # that return value, so we actually end up with two files
     # Look for "large_result" but if we receive a single file, read that
@@ -53,10 +57,11 @@ def _read_zip_dir(files):
     return res
 
 
-def check_compressed(datafile):
+def check_compressed(datafile: Any) -> Any:
+    """Return True when a problem-data file appears to be zlib-compressed."""
     # zlib compressed files will give an error
     # trying to read the first few bytes
-    with open(datafile, "r") as a:
+    with open(datafile) as a:
         try:
             a.read(2)
             return False
@@ -65,10 +70,7 @@ def check_compressed(datafile):
 
 
 class CuOptServiceClient:
-    """
-    The CuOptServiceClient handles requests to the.
-
-    cuOpt service through NVIDIA Cloud Functions (NVCF).
+    """Invoke cuOpt optimized-routing functions through NVIDIA Cloud Functions.
 
     Parameters
     ----------
@@ -145,17 +147,12 @@ class CuOptServiceClient:
         token_expiration_padding: int = 120,
         request_excess_timeout: int = 120,
         api_path: str = "",
-        disable_compression=False,
-        disable_version_string=False,
-        only_validate=False,
-        config_path="",
-    ):
-        """
-        Initializes the instance with the provided credentials, function.
-
-        information, and configuration options.
-        """
-
+        disable_compression: Any = False,
+        disable_version_string: Any = False,
+        only_validate: Any = False,
+        config_path: Any = "",
+    ) -> None:
+        """Initialize credentials, endpoint selection, function versioning, and polling options."""
         self.only_validate = only_validate
         if (client_id or client_secret) and sak:
             raise ValueError("Only one authetication is expected client id/secret or sak")
@@ -235,14 +232,14 @@ class CuOptServiceClient:
         self.disable_compression = disable_compression
         self.disable_version_string = disable_version_string
 
-    def _set_auth_api_from_api_path(self):
+    def _set_auth_api_from_api_path(self) -> Any:
         if self.api_path:
             log.info("Using api_path is deprecated. Use config_path instead.")
             if "auth" in self.config or "api" in self.config:
                 log.warn(f"Ignoring auth/api settings in {self.api_path}, " f"already set in {self.config_path}")
             else:
                 try:
-                    with open(self.api_path, "r") as api:
+                    with open(self.api_path) as api:
                         urls = json.load(api)
                         self.auth_url = urls["auth"]
                         self.request_url = urls["api"]
@@ -250,7 +247,7 @@ class CuOptServiceClient:
                     print(f"Unable to read API endpoints from {self.api_path}")
                     raise
 
-    def _set_auth_api_from_config(self):
+    def _set_auth_api_from_config(self) -> Any:
         # If they are not present in config, just use defaults
         auth = self.config.get("auth", self.auth_url)
         if auth:
@@ -259,17 +256,18 @@ class CuOptServiceClient:
         if api:
             self.request_url = api
 
-    def _read_config(self):
+    def _read_config(self) -> Any:
         self.config = {}
         if self.config_path:
             try:
-                with open(self.config_path, "r") as c:
+                with open(self.config_path) as c:
                     self.config = json.load(c)
             except Exception:
                 print(f"Unable to read config from {self.config_path}")
                 raise
 
-    def get_func_defaults_from_config(self, name, id, vid):
+    def get_func_defaults_from_config(self, name: Any, id: Any, vid: Any) -> Any:
+        """Fill unset function name, id, or version id from the loaded config defaults."""
         n = name
         i = id
         v = vid
@@ -292,7 +290,7 @@ class CuOptServiceClient:
         return n, i, v
 
     # Request a new JWT token
-    def _get_jwt_token(self):
+    def _get_jwt_token(self) -> Any:
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Authorization": f"Basic {self.credentials_64}",
@@ -317,7 +315,7 @@ class CuOptServiceClient:
         self._cache_token(data)
 
     # Check if the token is expired
-    def _check_token_expiration(self, expiration_time):
+    def _check_token_expiration(self, expiration_time: Any) -> Any:
         if expiration_time is None:
             return False
 
@@ -326,7 +324,7 @@ class CuOptServiceClient:
         return token_refresh > time.time()
 
     # Cache the token to a file
-    def _cache_token(self, token_data):
+    def _cache_token(self, token_data: Any) -> Any:
         self.token = token_data["access_token"]
         self.token_expiration = time.time() + token_data["expires_in"]
 
@@ -341,14 +339,14 @@ class CuOptServiceClient:
             log.debug("ignoring token cache")
 
     # Check if there is a valid token in the cache
-    def _check_token_cache(self):
+    def _check_token_cache(self) -> Any:
         if self.sak:
             return True
         try:
             if not os.path.exists(self.tkn_cache_location):
                 return False
 
-            with open(self.tkn_cache_location, "r") as f:
+            with open(self.tkn_cache_location) as f:
                 token_cache_data = json.load(f)
         except Exception:
             log.debug("ignorig token cache")
@@ -363,7 +361,7 @@ class CuOptServiceClient:
             log.info("Cached Token Expired")
             return False
 
-    def _version_cache(self, funcs):
+    def _version_cache(self, funcs: Any) -> Any:
         log.info("Updating version cache")
         ids = {}
         functions = {}
@@ -408,7 +406,7 @@ class CuOptServiceClient:
         self.version_cache_time = time.time()
         return res
 
-    def _read_version_cache(self):
+    def _read_version_cache(self) -> Any:
         self.get_functions()
         """if (
             not self.version_cache
@@ -432,7 +430,7 @@ class CuOptServiceClient:
 
     # Upload the large cuOpt problem instances
     # as an asset if needed (exceeds 250KB)
-    def _upload_asset(self, cuopt_problem_json_data, filep=False, compressed=False):
+    def _upload_asset(self, cuopt_problem_json_data: Any, filep: Any = False, compressed: Any = False) -> Any:
 
         now = datetime.now()
         headers = {
@@ -482,7 +480,7 @@ class CuOptServiceClient:
         return response.status_code
 
     # Delete the asset if uploaded
-    def _delete_asset(self):
+    def _delete_asset(self) -> Any:
         headers = {
             "Authorization": f"Bearer {self.token}",
         }
@@ -495,7 +493,7 @@ class CuOptServiceClient:
         self.asset_id = None
         self.asset_url = None
 
-    def _handle_response(self, response):
+    def _handle_response(self, response: Any) -> Any:
         if "responseReference" in response:
             # This will be a zip of a directory containing the
             # file "large_result"
@@ -516,7 +514,7 @@ class CuOptServiceClient:
                 lr.raise_for_status()
         return response
 
-    def _handle_request_exception(self, response, e):
+    def _handle_request_exception(self, response: Any, e: Any) -> Any:
         try:
             msg = response.json().get("detail", "")
         except Exception:
@@ -524,7 +522,7 @@ class CuOptServiceClient:
         raise ValueError(f"{response.reason} - {response.status_code}: {msg}")
 
     # Send the request to the cuOpt service through NVCF
-    def _send_request(self, cuopt_problem_json_data, action="cuOpt_OptimizedRouting"):
+    def _send_request(self, cuopt_problem_json_data: Any, action: Any = "cuOpt_OptimizedRouting") -> Any:
         if (not self.token) and (not self._check_token_cache()):
             log.info("Requesting New Token")
             self._get_jwt_token()
@@ -568,7 +566,8 @@ class CuOptServiceClient:
             asset_data = [self.asset_id]
             cuopt_problem_json_data = None
         elif filep:
-            cuopt_problem_json_data = json.load(open(cuopt_problem_json_data, "r"))
+            with open(cuopt_problem_json_data) as problem_file:
+                cuopt_problem_json_data = json.load(problem_file)
 
         log.debug(f"Calling function {self.function_name} " f"{self.function_id} {self.function_version_id}")
 
@@ -603,7 +602,7 @@ class CuOptServiceClient:
         return self._handle_response(response.json())
 
     # Poll for the cuOpt response until it is fulfilled
-    def _poll_for_response(self, response_id):
+    def _poll_for_response(self, response_id: Any) -> Any:
         headers = {"Authorization": f"Bearer {self.token}"}
 
         response_url = f"{self.request_url}/exec/status/{response_id}"
@@ -635,7 +634,7 @@ class CuOptServiceClient:
             else:
                 return self._handle_response(response.json())
 
-    def _cleanup_response(self, cuopt_response_dict):
+    def _cleanup_response(self, cuopt_response_dict: Any) -> Any:
         if cuopt_response_dict["status"] == "fulfilled":
             if self.asset_id:
                 log.debug("deleting asset")
@@ -675,11 +674,10 @@ class CuOptServiceClient:
             else:
                 raise ValueError("Unexpected error occurred")
 
-    def repoll(self, req_id, asset_id=None):
-        """
-        Poll for a result when get_optimized_routes results in.
+    def repoll(self, req_id: Any, asset_id: Any = None) -> Any:
+        """Resume polling after get_optimized_routes raises a TimeoutError.
 
-        a TimeoutError exception. The req_id and asset_id are returned
+        The req_id and asset_id are returned
         in the exception.
 
         Parameters
@@ -702,9 +700,8 @@ class CuOptServiceClient:
         return self._cleanup_response(self._poll_for_response(req_id))
 
     # Get optimized routes for the given cuOpt problem instance
-    def get_optimized_routes(self, cuopt_problem_json_data):
-        """
-        Get optimized routing solution for a given problem.
+    def get_optimized_routes(self, cuopt_problem_json_data: Any) -> Any:
+        """Submit a cuOpt routing problem and return the optimized route response.
 
         Parameters
         ----------
@@ -728,7 +725,7 @@ class CuOptServiceClient:
 
         return self._cleanup_response(cuopt_response_dict)
 
-    def get_functions(self):
+    def get_functions(self) -> Any:
         """Lists all availble functions for the user in NVCF."""
         if (not self.token) and (not self._check_token_cache()):
             log.info("Requesting New Token")
@@ -746,15 +743,14 @@ class CuOptServiceClient:
         res = response.json()
 
         if "functions" in res:
-            res["functions"] = [f for f in res["functions"]]
+            res["functions"] = list(res["functions"])
         self._version_cache(res.get("functions", []))
         return res
 
-    def set_function_by_name(self, name, version_id=None):
-        """
-        Set the function to invoke by name and optionally specify a.
+    def set_function_by_name(self, name: Any, version_id: Any = None) -> Any:
+        """Select the managed cuOpt function by name and optional version id.
 
-        version. The current list of functions can be retrieved with
+        The current list of functions can be retrieved with
         get_functions().
 
         Parameters
@@ -783,7 +779,7 @@ class CuOptServiceClient:
 
         if version_id:
             vers = {v["version_id"]: v["id"] for x in versions["by_name"][name]["versions"].values() for v in x}
-            if version_id not in vers.keys():
+            if version_id not in vers:
                 raise ValueError(f"Version {version_id} of {name} does not exist")
             maxMajor = str(versions["by_name"][name]["maxMajor"])
             maxMajorVersion = versions["by_name"][name]["versions"][maxMajor][0]["version_id"]
@@ -801,11 +797,10 @@ class CuOptServiceClient:
 
         self.function_name = name
 
-    def set_function_by_id(self, id, version_id=None):
-        """
-        Set the function to invoke by id and optionally specify a.
+    def set_function_by_id(self, id: Any, version_id: Any = None) -> Any:
+        """Select the managed cuOpt function by id and optional version id.
 
-        version. The current list of functions can be retrieved with
+        The current list of functions can be retrieved with
         get_functions().
 
         Parameters
@@ -830,7 +825,7 @@ class CuOptServiceClient:
 
         if latest_version != version_id:
             vers = {v["version_id"]: v["id"] for x in versions["by_name"][name]["versions"].values() for v in x}
-            if version_id not in vers.keys() or vers[version_id] != id:
+            if version_id not in vers or vers[version_id] != id:
                 raise ValueError(f"Version {version_id} of {id} does not exist")
             else:
                 log.warning(

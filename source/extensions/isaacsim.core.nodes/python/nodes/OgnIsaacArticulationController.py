@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Command selected articulation joints from OmniGraph position, velocity, and effort inputs."""
+
+from typing import Any
+
 import numpy as np
 from isaacsim.core.experimental.prims import Articulation
 from isaacsim.core.nodes import BaseResetNode
@@ -22,7 +26,7 @@ from isaacsim.core.nodes.ogn.OgnIsaacArticulationControllerDatabase import OgnIs
 class OgnIsaacArticulationControllerInternalState(BaseResetNode):
     """nodes for moving an articulated robot with joint commands."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.prim_path = None
         self.articulation = None
         self.joint_names = None
@@ -32,11 +36,13 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
         self.node = None
         super().__init__(initialize=False)
 
-    def initialize_controller(self):
+    def initialize_controller(self) -> None:
+        """Create the articulation handle for the selected robot prim and mark the state initialized."""
         self.articulation = Articulation(self.prim_path)
         self.initialized = True
 
-    def joint_indicator(self):
+    def joint_indicator(self) -> None:
+        """Resolve the current joint name or index selection to DOF indices, or target all DOFs."""
         if self.joint_names:
             self.joint_indices = self.articulation.get_dof_indices(self.joint_names).numpy().flatten()
         elif np.size(self.joint_indices) > 0:
@@ -155,7 +161,8 @@ class OgnIsaacArticulationControllerInternalState(BaseResetNode):
 
         return command_values[finite_mask], selected_dof_indices[finite_mask]
 
-    def custom_reset(self):
+    def custom_reset(self) -> None:
+        """Clear the articulation handle and reset command inputs after the node is reset."""
         self.articulation = None
         if self.initialized:
             self.node.get_attribute("inputs:positionCommand").set(np.empty(shape=(0, 0), dtype=np.double))
@@ -167,16 +174,24 @@ class OgnIsaacArticulationController:
     """nodes for moving an articulated robot with joint commands."""
 
     @staticmethod
-    def init_instance(node, graph_instance_id):
+    def init_instance(node: Any, graph_instance_id: Any) -> None:
+        """Store the OmniGraph node on the per-instance state so reset can clear its input attributes."""
         state = OgnIsaacArticulationControllerDatabase.get_internal_state(node, graph_instance_id)
         state.node = node
 
     @staticmethod
-    def internal_state():
+    def internal_state() -> OgnIsaacArticulationControllerInternalState:
+        """Create the per-instance articulation controller state."""
         return OgnIsaacArticulationControllerInternalState()
 
     @staticmethod
-    def compute(db) -> bool:
+    def compute(db: Any) -> bool:
+        """Resolve the robot and selected joints, then apply valid joint commands.
+
+        The node accepts either `robotPath` or `targetPrim`, refreshes joint selection when name
+        or index inputs change, writes finite position, velocity, and effort targets, and returns
+        False with a logged error when initialization or command validation fails.
+        """
         state = db.per_instance_state
         try:
             if not state.initialized:
@@ -220,12 +235,12 @@ class OgnIsaacArticulationController:
         return True
 
     @staticmethod
-    def release_instance(node, graph_instance_id):
+    def release_instance(node: Any, graph_instance_id: Any) -> None:
+        """Reset per-instance controller state when the OmniGraph node instance is released."""
         try:
             state = OgnIsaacArticulationControllerDatabase.get_internal_state(node, graph_instance_id)
         except Exception:
             state = None
-            pass
 
         if state is not None:
             state.reset()
