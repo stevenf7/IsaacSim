@@ -17,6 +17,7 @@
 ## [0.2.6] - 2026-06-04
 ### Fixed
 - `MobilityGenCamera.update_state`: guard depth/segmentation/normals/instance-id against empty annotator buffers (as RGB already is), avoiding a "tile cannot extend outside image" crash on replay.
+
 ### Removed
 - Stale `multiGpu` disable from `[[test]]` args; the Kit 110.1.1 multi-GPU startup crash no longer reproduces.
 
