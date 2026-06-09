@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for `ArticulationActuators`."""
+"""Verifies ArticulationActuators discovery, lifecycle management, stepping modes, drive gain ownership, and motion output. Covers manual and automatic stepping, Python actuator construction, feedforward effort, saturation, error handling, resource cleanup, and multi-robot effort formulas."""
 
 from __future__ import annotations
 
@@ -43,6 +43,7 @@ class TestArticulationActuators(omni.kit.test.AsyncTestCase):
     """Tests for `ArticulationActuators`."""
 
     async def setUp(self) -> None:
+        """Prepare the articulation actuator test stage."""
         super().setUp()
         await stage_utils.create_new_stage_async()
         stage_utils.define_prim("/World", "Xform")
@@ -52,6 +53,7 @@ class TestArticulationActuators(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
 
     async def tearDown(self) -> None:
+        """Clean up the articulation actuator test stage."""
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         super().tearDown()
@@ -233,8 +235,7 @@ class TestArticulationActuators(omni.kit.test.AsyncTestCase):
             actuated.close()
 
     async def test_enable_auto_step_pre_physics_before_play(self) -> None:
-        """Verify that calling `enable_auto_step_pre_physics()` before physics starts sets the flag and
-        registers the callback immediately, and that it remains valid after `PHYSICS_READY` fires."""
+        """Verify pre-physics auto-step can be enabled before physics starts."""
         self._author_pd_actuator(f"{_ART_ROOT}/Actuators/joint_actuator", Sdf.Path(_REVOLUTE_JOINT_PATH))
 
         actuated = ArticulationActuators(_ART_ROOT, auto_step_pre_physics=False)
@@ -287,8 +288,7 @@ class TestArticulationActuators(omni.kit.test.AsyncTestCase):
             actuated.close()
 
     async def test_disable_auto_step_pre_physics_prevents_re_registration(self) -> None:
-        """Verify that `disable_auto_step_pre_physics()` clears the enabled flag so the callback is not
-        re-registered on the next `PHYSICS_READY` event."""
+        """Verify disabled pre-physics auto-step is not re-registered."""
         self._author_pd_actuator(f"{_ART_ROOT}/Actuators/joint_actuator", Sdf.Path(_REVOLUTE_JOINT_PATH))
 
         actuated = ArticulationActuators(_ART_ROOT, auto_step_pre_physics=True)
@@ -920,6 +920,7 @@ class TestArticulationActuatorsMultiFranka(omni.kit.test.AsyncTestCase):
     """Tests that exercise `ArticulationActuators` over multiple Franka Panda instances."""
 
     async def setUp(self) -> None:
+        """Prepare the multi-Franka actuator test stage."""
         super().setUp()
         await stage_utils.create_new_stage_async()
         stage_utils.define_prim("/World", "Xform")
@@ -933,6 +934,7 @@ class TestArticulationActuatorsMultiFranka(omni.kit.test.AsyncTestCase):
         self._timeline = omni.timeline.get_timeline_interface()
 
     async def tearDown(self) -> None:
+        """Clean up the multi-Franka actuator test stage."""
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         super().tearDown()

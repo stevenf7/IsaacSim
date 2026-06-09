@@ -13,14 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Count selected environment indices for downstream randomization sampling."""
+
+from typing import Any
+
 import numpy as np
 
 
 class OgnCountIndices:
-    """OmniGraph node that counts the number of indices."""
+    """OmniGraph node that reports how many input indices are selected."""
 
     @staticmethod
-    def compute(db) -> bool:
+    def compute(db: Any) -> bool:
+        """Set ``outputs:count`` from ``inputs:indices``.
+
+        Replicator distributions cannot request zero samples, so an empty index
+        list is reported as one sample while non-empty lists use their true
+        length.
+        """
         indices = np.array(db.inputs.indices)
 
         # WAR because omni.replicator.core.distributions don't accept num_samples=0

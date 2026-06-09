@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Asset validation test script that checks USD assets for common issues."""
+"""Validates Isaac Sim USD assets for missing, absolute, external, deleted, and out-of-scope references, deprecated graph nodes, and non-anonymous render deltas. Optionally runs the Omniverse ValidationEngine and writes text and CSV reports."""
 
 import argparse
 import csv
@@ -62,7 +62,7 @@ from pxr import PhysxSchema, Sdf, Usd, UsdGeom
 class AssetValidator:
     """Class to handle USD asset validation logic."""
 
-    def __init__(self, root_path: str, use_validation_engine: bool = False):
+    def __init__(self, root_path: str, use_validation_engine: bool = False) -> None:
         """Initialize the AssetValidator.
 
         Args:
@@ -340,12 +340,12 @@ class AssetValidator:
             if prim is not None and prim.IsValid():
                 stack = prim.GetPrimStack()
 
-                if not all([s.layer.anonymous for s in stack]):
+                if not all(s.layer.anonymous for s in stack):
                     results.append(f"stage has delta for {path} on non-anonymous layer")
         return results
 
 
-def main():
+def main() -> None:
     """Main entry point for the asset validation script."""
     # Wait for simulator to initialize
     for _ in range(10):

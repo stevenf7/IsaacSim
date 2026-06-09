@@ -46,7 +46,7 @@ from std_msgs.msg import Empty
 class Subscriber(Node):
     """ROS 2 subscriber node that moves a cube on message receipt."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("tutorial_subscriber")
 
         # setting up the world with a cube
@@ -68,13 +68,13 @@ class Subscriber(Node):
 
         SimulationManager.setup_simulation(dt=1.0 / 60.0, device="cpu")
 
-    def move_cube_callback(self, data):
+    def move_cube_callback(self, data: Empty) -> None:
         """Set a new random cube position on message receipt."""
         # callback function to set the cube position to a new one upon receiving a (empty) ROS2 message
         if app_utils.is_playing():
             self._cube_position = np.array([[np.random.rand() * 0.40, np.random.rand() * 0.40, 0.10]])
 
-    def run_simulation(self):
+    def run_simulation(self) -> None:
         """Run the simulation loop with ROS 2 message handling."""
         app_utils.play()
         simulation_app.update()

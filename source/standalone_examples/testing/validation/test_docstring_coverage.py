@@ -13,10 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Check docstring coverage of Python modules in Isaac Sim extensions.
-
-This script inspects public methods and functions to ensure they have valid docstrings.
-"""
+"""Inspects Isaac Sim extension modules for public functions and methods with missing or too-short docstrings after enabling their extensions. Produces human, JSON, or AI-oriented coverage reports with file and method details."""
 
 from isaacsim import SimulationApp
 
@@ -59,10 +56,7 @@ def is_extension_excluded(ext_name: str, exclusion_patterns: list[str]) -> bool:
     Returns:
         True if the extension matches any exclusion pattern.
     """
-    for pattern in exclusion_patterns:
-        if fnmatch.fnmatch(ext_name, pattern):
-            return True
-    return False
+    return any(fnmatch.fnmatch(ext_name, pattern) for pattern in exclusion_patterns)
 
 
 def get_function_info(obj: Any, name: str) -> dict[str, Any]:
@@ -272,7 +266,7 @@ def get_python_modules_from_extension_config(config_path: str) -> list[str]:
     return modules
 
 
-def main():
+def main() -> None:
     """Main function to check docstrings across all extension modules."""
     # Check for output format argument
     output_format = "human"  # default

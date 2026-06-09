@@ -8,7 +8,7 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
-"""omni.kit.test-based tests for the Isaac Sim Hand Tracker C-API plugin bridge."""
+"""Validate the XR input-device hand-tracker C API bindings with the test plugin."""
 
 import os
 import sys
@@ -17,14 +17,13 @@ import omni.kit.test
 
 
 class TestHandTrackerPlugin(omni.kit.test.AsyncTestCase):
-    """Test hand tracker plugin."""
+    """Exercise test-plugin loading, initialization, joint data reads, and unload."""
 
-    async def setUp(self):
-        """Set up test fixtures."""
-        pass
+    async def setUp(self) -> None:
+        """Use per-test plugin discovery instead of shared fixture setup."""
 
-    async def tearDown(self):
-        """Tear down test fixtures."""
+    async def tearDown(self) -> None:
+        """Best-effort shutdown/unload of hand-tracker state and drain one Kit frame."""
         try:
             import isaacsim.xr.input_devices as xr
 
@@ -35,8 +34,8 @@ class TestHandTrackerPlugin(omni.kit.test.AsyncTestCase):
         # Allow one frame for any async teardown on the app side
         await omni.kit.app.get_app().next_update_async()
 
-    async def test_handtracker_plugin_bindings(self):
-        """Test handtracker plugin bindings."""
+    async def test_handtracker_plugin_bindings(self) -> None:
+        """Load the test hand-tracker library and verify returned hand joint records."""
         import isaacsim.xr.input_devices as xr
 
         # Explicitly load the test hand-tracker shared library from this extension's bin folder.
@@ -96,7 +95,7 @@ class TestHandTrackerPlugin(omni.kit.test.AsyncTestCase):
         # Validate a few entries have required keys and shapes
         sample = hands[0][0]
         self.assertTrue(
-            set(["hand", "joint", "position", "orientation", "radius", "location_flags"]).issubset(sample.keys())
+            {"hand", "joint", "position", "orientation", "radius", "location_flags"}.issubset(sample.keys())
         )
         pos = sample["position"]
         ori = sample["orientation"]

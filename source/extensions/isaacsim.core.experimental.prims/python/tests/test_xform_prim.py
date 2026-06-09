@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test for xform prim."""
+"""Verifies XformPrim runtime creation and transform-oriented property access. Covers visibility, world and local poses, local scales, default state, visual materials, and event handling."""
 
-from typing import Literal
+from typing import Any, Literal
 
 import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -39,7 +39,7 @@ from .common import (
 )
 
 
-async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs) -> None:
+async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
     """Populate stage."""
     assert operation == "wrap", "Other operations except 'wrap' are not supported"
     # create new stage
@@ -55,11 +55,11 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
 class TestXformPrim(omni.kit.test.AsyncTestCase):
     """Test xform prim."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Method called to prepare the test fixture."""
         super().setUp()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Method called immediately after the test method has been called."""
         super().tearDown()
 
@@ -73,17 +73,17 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
         populate_stage_func=populate_stage,
         max_num_prims=1,
     )
-    async def test_runtime_instance_creation(self, prim, num_prims, device, backend):
+    async def test_runtime_instance_creation(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test runtime instance creation."""
         XformPrim("/World/A_0")
 
     @parametrize(backends=["usd"], operations=["wrap"], prim_class=XformPrim, populate_stage_func=populate_stage)
-    async def test_len(self, prim, num_prims, device, backend):
+    async def test_len(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test len."""
         self.assertEqual(len(prim), num_prims, f"Invalid XformPrim ({num_prims} prims) len")
 
     @parametrize(backends=["usd"], operations=["wrap"], prim_class=XformPrim, populate_stage_func=populate_stage)
-    async def test_visibilities(self, prim, num_prims, device, backend):
+    async def test_visibilities(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test visibilities."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
@@ -100,7 +100,7 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
         prim_class=XformPrim,
         populate_stage_func=populate_stage,
     )
-    async def test_world_poses(self, prim, num_prims, device, backend):
+    async def test_world_poses(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test world poses."""
         # check backend
         if backend in ["usdrt", "fabric"]:
@@ -127,7 +127,7 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
         prim_class=XformPrim,
         populate_stage_func=populate_stage,
     )
-    async def test_local_poses(self, prim, num_prims, device, backend):
+    async def test_local_poses(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test local poses."""
         # check backend
         if backend in ["usdrt", "fabric"]:
@@ -154,7 +154,7 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
         prim_class=XformPrim,
         populate_stage_func=populate_stage,
     )
-    async def test_local_scales(self, prim, num_prims, device, backend):
+    async def test_local_scales(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test local scales."""
         # check backend
         if backend in ["usdrt", "fabric"]:
@@ -172,7 +172,7 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
                 check_allclose(expected_v0, output, given=(v0,))
 
     @parametrize(backends=["usd"], operations=["wrap"], prim_class=XformPrim, populate_stage_func=populate_stage)
-    async def test_default_state(self, prim, num_prims, device, backend):
+    async def test_default_state(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test default state."""
         prim.reset_xform_op_properties()
         # test cases
@@ -191,7 +191,7 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
                 check_allclose((expected_v0, expected_v1), output, given=(v0, v1))
 
     @parametrize(backends=["usd"], operations=["wrap"], prim_class=XformPrim, populate_stage_func=populate_stage)
-    async def test_visual_materials(self, prim, num_prims, device, backend):
+    async def test_visual_materials(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test visual materials."""
         from isaacsim.core.experimental.materials import OmniGlassMaterial, OmniPbrMaterial, PreviewSurfaceMaterial
 
@@ -238,7 +238,7 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
         ), f"{count} materials should have been applied. Applied: {number_of_materials}"
 
     @parametrize(backends=["usd"], operations=["wrap"], prim_class=XformPrim, populate_stage_func=populate_stage)
-    async def test_events(self, prim, num_prims, device, backend):
+    async def test_events(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test events."""
         prim.reset_xform_op_properties()
         # trigger events automatically

@@ -40,4 +40,4 @@ Example:
 
 from .bindings import _bridge  # noqa: F401
 from .impl.teleop_bridge import *  # noqa: F401,F403
-from .impl.teleop_bridge import __all__
+from .impl.teleop_bridge import __all__ as __all__

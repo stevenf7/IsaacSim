@@ -72,6 +72,12 @@ Usage:
 
     # Compare changelog/version against a specific base branch
     python tools/isaac/pre_merge/pre_merge_validate.py --base-branch main
+
+    # Lint the full standalone_examples tree
+    python tools/isaac/pre_merge/pre_merge_validate.py --standalone
+
+    # All extensions plus the full standalone_examples tree
+    python tools/isaac/pre_merge/pre_merge_validate.py --all
 """
 
 from __future__ import annotations
@@ -964,7 +970,15 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         dest="all_extensions",
         help="Run checks on every extension in the repo, not just those with "
-        "modified files. Ignores the branch diff for extension discovery.",
+        "modified files. Ignores the branch diff for extension discovery. "
+        "Also lints the full source/standalone_examples tree.",
+    )
+    parser.add_argument(
+        "--standalone",
+        action="store_true",
+        help="Lint the full source/standalone_examples tree. Without this flag, "
+        "only standalone_examples files present in the branch diff are linted "
+        "unless --all is used.",
     )
     parser.add_argument(
         "--modified",
@@ -1083,6 +1097,7 @@ def _run(args: argparse.Namespace) -> int:
         resolved_base = args.base_branch
         extensions = all_extensions()
         log_info(f"Running on all {len(extensions)} extensions.")
+        log_info("Including full source/standalone_examples tree (--all).")
     else:
         modified, resolved_base = get_all_modified_files(args.base_branch)
 
@@ -1091,11 +1106,13 @@ def _run(args: argparse.Namespace) -> int:
         else:
             log_warn("Could not detect base branch; only uncommitted changes will be checked.")
 
-        if not modified:
+        if not modified and not args.standalone:
             print(colorize("No modified files detected. Nothing to validate.", Colors.GREEN), flush=True)
             return 0
 
         extensions = affected_extensions(modified)
+        if args.standalone:
+            log_info("Including full source/standalone_examples tree (--standalone).")
 
     py_files = [f for f in modified if f.suffix == ".py" and f.exists()]
 
@@ -1124,11 +1141,13 @@ def _run(args: argparse.Namespace) -> int:
             total_errors += check_python_lint(extensions, fix=args.fix)
 
             # standalone_examples is not a registered extension, so it is linted
-            # separately as its own section. With --all the whole tree is checked;
-            # otherwise only modified standalone_examples files are checked.
-            if args.all_extensions:
+            # separately as its own section. With --all or --standalone the whole
+            # tree is checked. Otherwise, when running in auto-detect mode (no
+            # --all, no --extensions), only standalone_examples files present in
+            # the branch diff are linted.
+            if args.all_extensions or args.standalone:
                 se_targets: list[Path] = [STANDALONE_EXAMPLES_DIR]
-            elif not args.extensions:
+            elif not args.extensions and not args.all_extensions:
                 se_targets = standalone_examples_files(modified)
             else:
                 se_targets = []

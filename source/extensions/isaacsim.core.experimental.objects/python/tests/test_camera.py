@@ -13,9 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test for camera."""
+"""Validate Camera wrapper behavior for authored USD camera attributes.
 
-from typing import Literal
+The suite creates and wraps camera prim collections through the USD backend,
+then verifies indexed get/set round trips for focal settings, apertures,
+clipping ranges, shutter timing, stereo roles, projection modes, and
+square-pixel normalization.
+"""
+
+from typing import Any, Literal
 
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
@@ -34,8 +40,8 @@ from isaacsim.core.experimental.prims.tests.common import (
 )
 
 
-async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs) -> None:
-    """Populate stage."""
+async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
+    """Create a fresh stage and author existing camera prims for wrap-mode tests."""
     # create new stage
     await stage_utils.create_new_stage_async()
     # define prims
@@ -45,25 +51,25 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
 
 
 class TestCamera(omni.kit.test.AsyncTestCase):
-    """Test camera."""
+    """Exercise Camera collection length and optical attribute APIs."""
 
-    async def setUp(self):
-        """Method called to prepare the test fixture."""
+    async def setUp(self) -> None:
+        """Initialize the async fixture; parametrized cases create their own stages."""
         super().setUp()
 
-    async def tearDown(self):
-        """Method called immediately after the test method has been called."""
+    async def tearDown(self) -> None:
+        """Finalize the async fixture without additional camera-specific cleanup."""
         super().tearDown()
 
     # --------------------------------------------------------------------
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
-    async def test_len(self, prim, num_prims, device, backend):
+    async def test_len(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test len."""
         self.assertEqual(len(prim), num_prims, f"Invalid len ({num_prims} prims)")
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
-    async def test_focal_lengths(self, prim, num_prims, device, backend):
+    async def test_focal_lengths(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test focal lengths."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
@@ -74,7 +80,7 @@ class TestCamera(omni.kit.test.AsyncTestCase):
                 check_allclose(expected_v0, output, given=(v0,))
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
-    async def test_focus_distances(self, prim, num_prims, device, backend):
+    async def test_focus_distances(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test focus distances."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
@@ -85,7 +91,7 @@ class TestCamera(omni.kit.test.AsyncTestCase):
                 check_allclose(expected_v0, output, given=(v0,))
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
-    async def test_stereo_roles(self, prim, num_prims, device, backend):
+    async def test_stereo_roles(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test stereo roles."""
         choices = ["mono", "left", "right"]
         # test cases
@@ -108,7 +114,7 @@ class TestCamera(omni.kit.test.AsyncTestCase):
             check_lists(expected_v0, output)
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
-    async def test_fstops(self, prim, num_prims, device, backend):
+    async def test_fstops(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test fstops."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
@@ -119,7 +125,7 @@ class TestCamera(omni.kit.test.AsyncTestCase):
                 check_allclose(expected_v0, output, given=(v0,))
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
-    async def test_apertures(self, prim, num_prims, device, backend):
+    async def test_apertures(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test apertures."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
@@ -133,7 +139,7 @@ class TestCamera(omni.kit.test.AsyncTestCase):
                 check_allclose((expected_v0, expected_v1), output, given=(v0, v1))
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
-    async def test_aperture_offsets(self, prim, num_prims, device, backend):
+    async def test_aperture_offsets(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test aperture offsets."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
@@ -147,7 +153,7 @@ class TestCamera(omni.kit.test.AsyncTestCase):
                 check_allclose((expected_v0, expected_v1), output, given=(v0, v1))
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
-    async def test_projections(self, prim, num_prims, device, backend):
+    async def test_projections(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test projections."""
         choices = ["perspective", "orthographic"]
         # test cases
@@ -170,7 +176,7 @@ class TestCamera(omni.kit.test.AsyncTestCase):
             check_lists(expected_v0, output)
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
-    async def test_clipping_ranges(self, prim, num_prims, device, backend):
+    async def test_clipping_ranges(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test clipping ranges."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
@@ -184,7 +190,7 @@ class TestCamera(omni.kit.test.AsyncTestCase):
                 check_allclose((expected_v0, expected_v1), output, given=(v0, v1))
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
-    async def test_shutter_times(self, prim, num_prims, device, backend):
+    async def test_shutter_times(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test shutter times."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
@@ -198,7 +204,7 @@ class TestCamera(omni.kit.test.AsyncTestCase):
                 check_allclose((expected_v0, expected_v1), output, given=(v0, v1))
 
     @parametrize(backends=["usd"], prim_class=Camera, populate_stage_func=populate_stage)
-    async def test_enforce_square_pixels(self, prim, num_prims, device, backend):
+    async def test_enforce_square_pixels(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test enforce square pixels."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")

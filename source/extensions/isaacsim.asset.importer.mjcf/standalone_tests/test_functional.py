@@ -13,11 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Standalone functional tests for isaacsim-asset-importer-mjcf.
-
-Imports MJCF files into USD and validates the resulting stage structure,
-bodies, joints, and geometry. No Kit runtime required.
-"""
+"""Verifies standalone MJCF imports for pendulum and cartpole models. Covers USD creation, imported body and joint structure, revolute and prismatic joint typing, and geometry presence."""
 
 from __future__ import annotations
 
@@ -25,7 +21,7 @@ import os
 import tempfile
 import unittest
 
-from pxr import Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import Usd, UsdGeom, UsdPhysics
 
 # Minimal two-body MJCF with a hinge joint and geometry.
 _PENDULUM_MJCF = """\

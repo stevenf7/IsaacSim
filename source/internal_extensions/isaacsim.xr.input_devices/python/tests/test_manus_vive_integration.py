@@ -8,22 +8,18 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
-"""
-omni.kit.test-based tests for Manus+Vive integration that exercises the hand tracker.
-
-plugin through the integration layer. The test forces the use of the test
-hand-tracker shared library by setting ISAACSIM_HANDTRACKER_LIB.
-"""
+"""Validate Manus/Vive integration through the test hand-tracker plugin override."""
 
 import os
 import sys
+from typing import Any
 
 import omni.kit.app
 import omni.kit.test
 
 
-def _discover_test_handtracker_library(module_dir: str):
-    """Return the absolute path to the test hand-tracker library if found.
+def _discover_test_handtracker_library(module_dir: str) -> Any:
+    """Return the platform-specific test hand-tracker library from extension roots.
 
     This mirrors the discovery strategy used in the handtracker plugin tests.
     """
@@ -58,14 +54,13 @@ def _discover_test_handtracker_library(module_dir: str):
 
 
 class TestManusViveIntegration(omni.kit.test.AsyncTestCase):
-    """Test manus vive integration."""
+    """Exercise Manus/Vive facade startup and joint data reads using the test plugin."""
 
-    async def setUp(self):
-        """Set up test fixtures."""
-        pass
+    async def setUp(self) -> None:
+        """Use per-test plugin override discovery instead of shared fixture setup."""
 
-    async def tearDown(self):
-        """Tear down test fixtures."""
+    async def tearDown(self) -> None:
+        """Best-effort shutdown/unload of hand-tracker state and drain one Kit frame."""
         try:
             import isaacsim.xr.input_devices as xr
 
@@ -75,8 +70,8 @@ class TestManusViveIntegration(omni.kit.test.AsyncTestCase):
             pass
         await omni.kit.app.get_app().next_update_async()
 
-    async def test_integration_uses_test_handtracker_plugin(self):
-        """Test integration uses test handtracker plugin."""
+    async def test_integration_uses_test_handtracker_plugin(self) -> None:
+        """Verify the integration loads the override plugin and exposes per-hand poses."""
         # Import module to locate its directory and for constants
         import isaacsim.xr.input_devices as xr
 

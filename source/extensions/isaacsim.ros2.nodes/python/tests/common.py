@@ -13,10 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Shared ROS 2 node test utilities.
 
-"""Common test utilities for ROS 2 node tests."""
+Provides simulation stepping, USD transform edits, asset setup, QoS helpers, and
+object-detection geometry used by camera, sensor, transform, and publisher tests.
+"""
 
 import math
+from typing import Any
 
 import numpy as np
 import omni
@@ -24,10 +28,10 @@ from isaacsim.core.experimental.materials import NonVisualMaterial
 from isaacsim.core.experimental.objects import Cube
 from isaacsim.core.experimental.utils import stage as stage_utils
 from isaacsim.sensors.experimental.physics import Raycast
-from pxr import Gf, Sdf, UsdPhysics
+from pxr import Sdf, UsdPhysics
 
 
-async def simulate_async(seconds, steps_per_sec=60, callback=None):
+async def simulate_async(seconds: Any, steps_per_sec: Any = 60, callback: Any = None) -> None:
     """Run simulation for a given duration asynchronously."""
     for _ in range(int(seconds * steps_per_sec)):
         await omni.kit.app.get_app().next_update_async()
@@ -35,7 +39,7 @@ async def simulate_async(seconds, steps_per_sec=60, callback=None):
             callback()
 
 
-def set_translate(prim, new_loc):
+def set_translate(prim: Any, new_loc: Any) -> None:
     """Set the translation of a USD prim."""
     from pxr import Gf, UsdGeom
 
@@ -58,7 +62,7 @@ def set_translate(prim, new_loc):
         xform_op.Set(Gf.Matrix4d().SetTranslate(new_loc))
 
 
-def set_rotate(prim, rot_mat):
+def set_rotate(prim: Any, rot_mat: Any) -> None:
     """Set the rotation of a USD prim."""
     from pxr import Gf, UsdGeom
 
@@ -77,7 +81,7 @@ def set_rotate(prim, rot_mat):
         xform_op.Set(Gf.Matrix4d().SetRotate(rot_mat))
 
 
-async def add_cube(path, size, offset):
+async def add_cube(path: Any, size: Any, offset: Any) -> Any:
     """Add a physics-enabled cube to the stage."""
     from pxr import UsdGeom, UsdPhysics
 
@@ -142,7 +146,7 @@ def create_raycast_lidar_sensor(
     return raycast.paths[0]
 
 
-async def add_carter(assets_root_path, prim_path="/Carter"):
+async def add_carter(assets_root_path: Any, prim_path: Any = "/Carter") -> Any:
     """Add a Carter robot to the stage."""
     from pxr import Gf, PhysicsSchemaTools
 
@@ -155,7 +159,7 @@ async def add_carter(assets_root_path, prim_path="/Carter"):
     return prim_path
 
 
-async def add_carter_ros(assets_root_path, prim_path="/Carter"):
+async def add_carter_ros(assets_root_path: Any, prim_path: Any = "/Carter") -> Any:
     """Add a Carter robot with ROS 2 graphs to the stage."""
     from pxr import Gf, PhysicsSchemaTools
 
@@ -185,7 +189,7 @@ async def add_carter_ros(assets_root_path, prim_path="/Carter"):
     return prim_path
 
 
-async def add_nova_carter_ros(assets_root_path):
+async def add_nova_carter_ros(assets_root_path: Any) -> None:
     """Add a Nova Carter robot with ROS 2 graphs to the stage."""
     result, error = await stage_utils.open_stage_async(
         assets_root_path + "/Isaac/Samples/ROS2/Robots/Nova_Carter_ROS.usd"
@@ -193,14 +197,14 @@ async def add_nova_carter_ros(assets_root_path):
     await omni.kit.app.get_app().next_update_async()
 
 
-async def add_franka(assets_root_path):
+async def add_franka(assets_root_path: Any) -> None:
     """Add a Franka robot to the stage."""
     result, error = await stage_utils.open_stage_async(
         assets_root_path + "/Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd"
     )
 
 
-def get_qos_profile(depth: int = 1, history: str = "keep_last"):
+def get_qos_profile(depth: int = 1, history: str = "keep_last") -> Any:
     """Create a ROS 2 QoS profile with the given parameters."""
     from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
 
@@ -208,7 +212,7 @@ def get_qos_profile(depth: int = 1, history: str = "keep_last"):
     return QoSProfile(reliability=QoSReliabilityPolicy.BEST_EFFORT, history=history_policy, depth=depth)
 
 
-def swap_joint_bodies(joint_path):
+def swap_joint_bodies(joint_path: Any) -> None:
     """Swap body0 and body1 relationships and local transforms on a USD joint.
 
     Args:
@@ -247,7 +251,7 @@ SIMPLE_ARTICULATION_3J_REVERSED_JOINTS = [
 ]
 
 
-def fix_reversed_joints(joint_paths):
+def fix_reversed_joints(joint_paths: Any) -> None:
     """Swap body0/body1 on a list of joints that have reversed parent/child ordering.
 
     Args:
@@ -257,7 +261,9 @@ def fix_reversed_joints(joint_paths):
         swap_joint_bodies(path)
 
 
-def set_joint_drive_parameters(joint_path, joint_type, drive_type, target_value, stiffness=None, damping=None):
+def set_joint_drive_parameters(
+    joint_path: Any, joint_type: Any, drive_type: Any, target_value: Any, stiffness: Any = None, damping: Any = None
+) -> Any:
     """Set drive parameters for a joint on the stage."""
     stage = omni.usd.get_context().get_stage()
     drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(joint_path), joint_type)
@@ -316,7 +322,7 @@ def _create_cube_with_material(
     return {cube_path: cube_info} if cube_info else {}
 
 
-def create_sarcophagus(enable_nonvisual_material: bool = True):
+def create_sarcophagus(enable_nonvisual_material: bool = True) -> Any:
     """Create a nested cube structure for testing object detection."""
     # Autogenerate sarcophagus
     dims = [(10, 5, 7), (15, 9, 11), (20, 13, 15), (25, 17, 19)]

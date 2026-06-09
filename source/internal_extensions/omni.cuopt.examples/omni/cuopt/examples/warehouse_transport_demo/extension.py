@@ -7,8 +7,11 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+"""Intra-warehouse transport demo UI for building a scene and solving cuOpt routes."""
+
 import gc
 import weakref
+from typing import Any
 
 import carb.eventdispatcher
 import omni.ext
@@ -40,9 +43,12 @@ EXTENSION_NAME = "Intra-warehouse Transport Demo"
 
 
 class cuOptMicroserviceExtension(omni.ext.IExt):
+    """Build warehouse assets, load routing inputs, and visualize solved transport routes."""
+
     # ext_id is current extension id. It can be used with extension manager to query additional information, like where
     # this extension is located on filesystem.
-    def on_startup(self, ext_id):
+    def on_startup(self, ext_id: Any) -> Any:
+        """Register the demo menu item, resolve assets/sample data, and initialize route state."""
         self._ext_id = ext_id
 
         ext_manager = omni.kit.app.get_app().get_extension_manager()
@@ -101,10 +107,10 @@ class cuOptMicroserviceExtension(omni.ext.IExt):
 
         self._build_ui()
 
-    def _menu_callback(self):
+    def _menu_callback(self) -> Any:
         self._window.visible = not self._window.visible
 
-    def _on_window(self, visible):
+    def _on_window(self, visible: Any) -> Any:
         if self._window.visible:
             self._sub_stage_event = carb.eventdispatcher.get_eventdispatcher().observe_event(
                 event_name=self._usd_context.stage_event_name(omni.usd.StageEventType.CLOSED),
@@ -114,7 +120,7 @@ class cuOptMicroserviceExtension(omni.ext.IExt):
         else:
             self._sub_stage_event = None
 
-    def _build_ui(self):
+    def _build_ui(self) -> Any:
 
         if not self._window:
             self._window = ui.Window(
@@ -402,21 +408,21 @@ class cuOptMicroserviceExtension(omni.ext.IExt):
                             style=ui_data_style,
                         )
 
-    def _on_stage_event(self, event):
-        """Stage closed event callback.
+    def _on_stage_event(self, event: Any) -> Any:
+        """Clear generated semantic-zone tracking after the watched stage closes.
 
         Note: With Events 2.0, this is called only for CLOSED events.
         """
         self._semantics = []
 
-    def _form_cuopt_url(self):
+    def _form_cuopt_url(self) -> Any:
         cuopt_ip = self._cuopt_ip.get_value_as_string()
         cuopt_port = self._cuopt_port.get_value_as_string()
         cuopt_url = f"http://{cuopt_ip}:{cuopt_port}/cuopt/"
         return cuopt_url
 
     # Test if cuopt microservice is up and running
-    def _test_cuopt_connection_microservice(self):
+    def _test_cuopt_connection_microservice(self) -> Any:
 
         cuopt_ip = self._cuopt_ip.get_value_as_string()
         cuopt_port = self._cuopt_port.get_value_as_string()
@@ -428,7 +434,7 @@ class cuOptMicroserviceExtension(omni.ext.IExt):
         self._cuopt_status_info.text = test_connection_microservice(cuopt_ip, cuopt_port)
 
     # Test if cuopt managed service is up and running
-    def _test_cuopt_connection_managed_service(self):
+    def _test_cuopt_connection_managed_service(self) -> Any:
 
         cuopt_sak = self._cuopt_sak.get_value_as_string()
         function_name = self._function_name.get_value_as_string()
@@ -442,7 +448,7 @@ class cuOptMicroserviceExtension(omni.ext.IExt):
             cuopt_sak, function_name, function_id
         )
 
-    def _build_warehouse_environment(self):
+    def _build_warehouse_environment(self) -> Any:
         print("building environment")
 
         building_json_path = f"{self._extension_data_path}{self.warehouse_building_config}"
@@ -504,7 +510,7 @@ class cuOptMicroserviceExtension(omni.ext.IExt):
 
         ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=[2.0, 7.0, 8.0], target=[26.0, 60.0, 0.0])
 
-    def _load_waypoint_graph(self):
+    def _load_waypoint_graph(self) -> Any:
         print("loading waypoint graph")
         self._stage = self._usd_context.get_stage()
         waypoint_graph_data_path = f"{self._extension_data_path}{self.waypoint_graph_config}"
@@ -517,7 +523,7 @@ class cuOptMicroserviceExtension(omni.ext.IExt):
         )
         self._network_ui_data.text = f"Waypoint Graph Network Loaded: {len(self._waypoint_graph_model.nodes)} nodes, {len(self._waypoint_graph_model.edges)} edges"
 
-    def _load_orders(self):
+    def _load_orders(self) -> Any:
         print("Loading Orders")
         orders_path = f"{self._extension_data_path}{self.orders_config}"
         self._orders_obj.load_sample(orders_path)
@@ -526,7 +532,7 @@ class cuOptMicroserviceExtension(omni.ext.IExt):
             f"Orders Loaded: {len(self._orders_obj.graph_locations)} tasks at nodes {self._orders_obj.graph_locations}"
         )
 
-    def _load_vehicles(self):
+    def _load_vehicles(self) -> Any:
         print("Loading Vehicles")
         vehicle_data_path = f"{self._extension_data_path}{self.vehicles_config}"
         self._vehicles_obj.load_sample(vehicle_data_path)
@@ -535,7 +541,7 @@ class cuOptMicroserviceExtension(omni.ext.IExt):
             f"Vehicles Loaded: {len(self._vehicles_obj.graph_locations)} vehicles at nodes {start_locs}"
         )
 
-    def _load_semantic_zone(self):
+    def _load_semantic_zone(self) -> Any:
         length = self._semantic["length"].get_value_as_float()
         width = self._semantic["width"].get_value_as_float()
         semantic_prim_path = "/World/Warehouse/Semantics"
@@ -545,12 +551,12 @@ class cuOptMicroserviceExtension(omni.ext.IExt):
         self._semantic_ui_data.text = f"Semantic Zones loaded"
 
     # Update the network edge weights based on semantics
-    def _update_weights(self):
+    def _update_weights(self) -> Any:
         print("updating weights")
         self._stage = self._usd_context.get_stage()
         update_weights(self._stage, self._waypoint_graph_model, self._semantics)
 
-    def _run_cuopt(self):
+    def _run_cuopt(self) -> Any:
         print("Running cuOpt")
 
         self._stage = self._usd_context.get_stage()
@@ -595,7 +601,8 @@ class cuOptMicroserviceExtension(omni.ext.IExt):
         # Display the routes on UI
         self._routes_ui_message.text = show_vehicle_routes(routes)
 
-    def on_shutdown(self):
+    def on_shutdown(self) -> Any:
+        """Remove the cuOpt menu entry, release the UI window, and collect extension objects."""
         remove_menu_items(self._menu_items, "cuOpt")
         self._window = None
         gc.collect()

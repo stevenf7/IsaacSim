@@ -12,7 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+# ruff: noqa: N802
+# Methods intentionally mirror the PascalCase generated USD schema API
+# (N802)
 """Utilities for Isaac robot schema traversal and updates."""
 
 from __future__ import annotations
@@ -113,7 +115,7 @@ def _collect_deprecated_dof_values(joint_prim: pxr.Usd.Prim) -> dict[str, int]:
     return deprecated_values
 
 
-def _remove_deprecated_dof_attrs(joint_prim: pxr.Usd.Prim, deprecated_tokens: set[str]):
+def _remove_deprecated_dof_attrs(joint_prim: pxr.Usd.Prim, deprecated_tokens: set[str]) -> None:
     """Remove deprecated DOF attributes from the edit layer.
 
     Args:
@@ -731,7 +733,7 @@ class RobotLinkNode:
 
     """
 
-    def __init__(self, prim: pxr.Usd.Prim, parentLink: RobotLinkNode = None, joint: pxr.Usd.Prim = None):
+    def __init__(self, prim: pxr.Usd.Prim, parentLink: RobotLinkNode = None, joint: pxr.Usd.Prim = None) -> None:
         self.prim = prim
         if prim:
             self.path = prim.GetPath()
@@ -744,7 +746,7 @@ class RobotLinkNode:
         self._joints = []
         self._joint_to_parent = joint
 
-    def add_child(self, child: RobotLinkNode):
+    def add_child(self, child: RobotLinkNode) -> None:
         """Add a child link node to this node.
 
         Args:
@@ -760,7 +762,7 @@ class RobotLinkNode:
         self.children.append(child)
 
     @property
-    def children(self):
+    def children(self) -> list[RobotLinkNode]:
         """List of child nodes.
 
         Returns:
@@ -776,7 +778,7 @@ class RobotLinkNode:
         return self._children
 
     @property
-    def parent(self):
+    def parent(self) -> RobotLinkNode | None:
         """Parent node.
 
         Returns:
@@ -792,7 +794,7 @@ class RobotLinkNode:
         return self._parent
 
 
-def GetJointBodyRelationship(joint_prim: pxr.Usd.Prim, bodyIndex: int):
+def GetJointBodyRelationship(joint_prim: pxr.Usd.Prim, bodyIndex: int) -> pxr.Sdf.Path | None:
     """Get the relationship target for a joint's body connection.
 
     Args:
@@ -827,7 +829,7 @@ def GetJointBodyRelationship(joint_prim: pxr.Usd.Prim, bodyIndex: int):
     return None
 
 
-def PrintRobotTree(root: RobotLinkNode, indent=0):
+def PrintRobotTree(root: RobotLinkNode, indent: int = 0) -> None:
     """Print a visual representation of the robot link tree structure.
 
     Args:
@@ -1968,7 +1970,7 @@ def SaveRobotSchemaToRobotLayer(
     return robot_layer
 
 
-def UpdateDeprecatedSchemas(robot_prim: pxr.Usd.Prim):
+def UpdateDeprecatedSchemas(robot_prim: pxr.Usd.Prim) -> None:
     """Update deprecated schemas under a robot prim to their replacements.
 
     Traverses all prims under ``robot_prim``, replaces ``IsaacReferencePointAPI``
@@ -2092,7 +2094,7 @@ def AddSitesToRobotLinks(
     sites_by_parent: dict[str, list[pxr.Usd.Prim]] | None = None,
     *,
     sites_last: bool = False,
-):
+) -> None:
     """Add sites to the robot's robotLinks relationship.
 
     Args:
@@ -2186,7 +2188,7 @@ def RebuildRelationshipAsPrepend(
     prim: pxr.Usd.Prim,
     rel_name: str,
     targets: list[pxr.Sdf.Path],
-):
+) -> None:
     """Rebuild a relationship using prepend list operations.
 
     Args:
@@ -2205,7 +2207,7 @@ def RebuildRelationshipAsPrepend(
     _set_targets_as_prepend(rel, targets)
 
 
-def EnsurePrependListForRobotRelationships(robot_prim: pxr.Usd.Prim):
+def EnsurePrependListForRobotRelationships(robot_prim: pxr.Usd.Prim) -> None:
     """Ensure that robot links and joints relationships use prepend list.
 
     Args:

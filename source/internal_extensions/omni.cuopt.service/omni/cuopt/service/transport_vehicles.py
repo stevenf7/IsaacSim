@@ -7,11 +7,17 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+"""Vehicle sample model used to build cuOpt fleet data for transport demos."""
+
+from typing import Any
+
 from .common import read_json
 
 
 class TransportVehicles:
-    def __init__(self):
+    """Store vehicle start locations, capacities, and optional time windows."""
+
+    def __init__(self) -> None:
         self.num_vehicles = None
         self.vehicle_xyz_locations = None
         self.graph_locations = None
@@ -19,7 +25,8 @@ class TransportVehicles:
         self.vehicle_time_windows = None
 
     # Load Fleet info from json data
-    def load_sample(self, vehicles_json_path):
+    def load_sample(self, vehicles_json_path: Any) -> Any:
+        """Load vehicle sample JSON and expose graph-node fields expected by cuOpt."""
         vehicles_data = read_json(vehicles_json_path)
 
         self.num_vehicles = len(vehicles_data["vehicle_locations"])

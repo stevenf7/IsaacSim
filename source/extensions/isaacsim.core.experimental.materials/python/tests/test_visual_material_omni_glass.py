@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test for visual material omni glass."""
+"""Verifies OmniGlassMaterial properties and shader input wiring across supported prim backends. Covers length, material getters, expected input definitions, and authored input values."""
 
-from typing import Literal
+from typing import Any, Literal
 
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
@@ -38,18 +38,20 @@ from pxr import Sdf, UsdShade
 
 def parametrize(
     *,
-    devices: list[Literal["cpu", "cuda"]] = ["cpu", "cuda"],
-    backends: list[Literal["usd", "fabric", "tensor"]] = ["usd", "fabric", "tensor"],
-    instances: list[Literal["one", "many"]] = ["one", "many"],
-    operations: list[Literal["wrap", "create"]] = ["wrap", "create"],
+    devices: tuple[Literal["cpu", "cuda"], ...] = ("cpu", "cuda"),
+    backends: tuple[Literal["usd", "fabric", "tensor"], ...] = ("usd", "fabric", "tensor"),
+    instances: tuple[Literal["one", "many"], ...] = ("one", "many"),
+    operations: tuple[Literal["wrap", "create"], ...] = ("wrap", "create"),
     prim_class: type = OmniGlassMaterial,
-    prim_class_kwargs: dict = {},
+    prim_class_kwargs: dict | None = None,
     max_num_prims: int = 5,
-):
+) -> Any:
     """Parametrize."""
+    if prim_class_kwargs is None:
+        prim_class_kwargs = {}
 
-    def decorator(func):
-        async def wrapper(self):
+    def decorator(func: Any) -> Any:
+        async def wrapper(self: Any) -> None:
             for device in devices:
                 for backend in backends:
                     for instance in instances:
@@ -100,23 +102,23 @@ def parametrize(
 class TestOmniGlass(omni.kit.test.AsyncTestCase):
     """Test omni glass."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Method called to prepare the test fixture."""
         super().setUp()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Method called immediately after the test method has been called."""
         super().tearDown()
 
     # --------------------------------------------------------------------
 
     @parametrize(backends=["usd"])
-    async def test_len(self, prim, num_prims, device, backend):
+    async def test_len(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test len."""
         self.assertEqual(len(prim), num_prims, f"Invalid len ({num_prims} prims)")
 
     @parametrize(backends=["usd"])
-    async def test_properties_and_getters(self, prim, num_prims, device, backend):
+    async def test_properties_and_getters(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test properties and getters."""
         # test cases (properties)
         # - materials
@@ -129,7 +131,7 @@ class TestOmniGlass(omni.kit.test.AsyncTestCase):
             self.assertTrue(isinstance(shader, UsdShade.Shader), f"Invalid shader")
 
     @parametrize(devices=["cpu"], backends=["usd"], instances=["one"], operations=["wrap", "create"])
-    async def test_input_definitions(self, prim, num_prims, device, backend):
+    async def test_input_definitions(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test input definitions."""
         mdl_path = prim.shaders[0].GetSourceAsset("mdl").resolvedPath
         self.assertTrue(mdl_path.endswith("OmniGlass.mdl"), f"Invalid MDL path: {mdl_path}")
@@ -139,7 +141,7 @@ class TestOmniGlass(omni.kit.test.AsyncTestCase):
             assert name in mdl_content, f"Wrong input: {name}"
 
     @parametrize(backends=["usd"])
-    async def test_input_values(self, prim, num_prims, device, backend):
+    async def test_input_values(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test input values."""
         cases = {
             # Color

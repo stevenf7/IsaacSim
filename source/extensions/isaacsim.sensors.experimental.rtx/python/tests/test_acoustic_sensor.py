@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test rtx acoustic sensor functionality via Writer-based GMO validation."""
+"""Verify AcousticSensor GMO writer integration and acoustic auxiliary output channel attributes."""
+
+from typing import Any
 
 import carb
 import isaacsim.core.experimental.utils.prim as prim_utils
@@ -43,7 +45,7 @@ class TestAcousticSensor(omni.kit.test.AsyncTestCase):
     class _GmoAcousticTestWriter(Writer):
         """Custom Writer that validates GenericModelOutput data each frame for acoustic."""
 
-        def __init__(self, test_instance=None):
+        def __init__(self, test_instance: Any = None) -> None:
             self.data_structure = "renderProduct"
             self.annotators = [
                 rep.annotators.get("GenericModelOutput"),
@@ -52,7 +54,7 @@ class TestAcousticSensor(omni.kit.test.AsyncTestCase):
             self.num_elements_zero_count = 0
             self.valid_frame_count = 0
 
-        def write(self, data):
+        def write(self, data: Any) -> None:
             if "renderProducts" not in data:
                 return
             for _rp_name, rp_data in data["renderProducts"].items():
@@ -72,7 +74,7 @@ class TestAcousticSensor(omni.kit.test.AsyncTestCase):
 
                 self._check_acoustic_gmo(gmo)
 
-        def _check_acoustic_gmo(self, gmo):
+        def _check_acoustic_gmo(self, gmo: Any) -> None:
             t = self._test
 
             # Modality
@@ -110,7 +112,8 @@ class TestAcousticSensor(omni.kit.test.AsyncTestCase):
 
     _writer_registered = False
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Create acoustic reflector targets and register the GMO validation writer."""
         super().setUp()
         await stage_utils.create_new_stage_async()
         await ViewportManager.wait_for_viewport_async()
@@ -122,7 +125,8 @@ class TestAcousticSensor(omni.kit.test.AsyncTestCase):
             rep.WriterRegistry.register(TestAcousticSensor._GmoAcousticTestWriter)
             TestAcousticSensor._writer_registered = True
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Stop acoustic playback and flush one app update after each runtime test."""
         self._timeline.stop()
         await omni.kit.app.get_app().next_update_async()
         super().tearDown()
@@ -131,7 +135,7 @@ class TestAcousticSensor(omni.kit.test.AsyncTestCase):
     # Helpers
     # ------------------------------------------------------------------
 
-    def _create_acoustic_sensor(self, aux_output_level="BASIC"):
+    def _create_acoustic_sensor(self, aux_output_level: Any = "BASIC") -> Any:
         """Create an Acoustic + AcousticSensor with a small sensor array."""
         acoustic = Acoustic(
             "/World/acoustic",
@@ -156,7 +160,7 @@ class TestAcousticSensor(omni.kit.test.AsyncTestCase):
     # Tests
     # ------------------------------------------------------------------
 
-    async def test_gmo_writer(self):
+    async def test_gmo_writer(self) -> None:
         """Validate acoustic GenericModelOutput via a Writer attached to an AcousticSensor."""
         COLLECTION_SECONDS = 3.0
 
@@ -175,7 +179,7 @@ class TestAcousticSensor(omni.kit.test.AsyncTestCase):
 
         self.assertGreater(writer.valid_frame_count, 0, "Expected at least one valid GMO frame.")
 
-    async def test_aux_output_level_sets_channels_attribute(self):
+    async def test_aux_output_level_sets_channels_attribute(self) -> None:
         """Verify aux_output_level sets the channels attribute on the sensor prim."""
         for level in ("NONE", "BASIC"):
             await stage_utils.create_new_stage_async()
@@ -194,12 +198,12 @@ class TestAcousticSensor(omni.kit.test.AsyncTestCase):
             del sensor
             await omni.kit.app.get_app().next_update_async()
 
-    async def test_aux_output_level_default_is_none(self):
+    async def test_aux_output_level_default_is_none(self) -> None:
         """Verify the default aux_output_level is NONE."""
         acoustic = Acoustic("/World/acoustic2", tick_rate=30.0)
         self.assertEqual(acoustic.aux_output_level, "NONE")
 
-    async def test_aux_output_level_invalid_raises(self):
+    async def test_aux_output_level_invalid_raises(self) -> None:
         """Verify invalid aux_output_level raises ValueError."""
         with self.assertRaises(ValueError):
             Acoustic("/World/acoustic3", tick_rate=30.0, aux_output_level="FULL")

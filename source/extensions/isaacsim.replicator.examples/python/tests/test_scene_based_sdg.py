@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Verify the scene-based forklift SDG workflow writes the expected multi-camera dataset files."""
+
 import tempfile
+from typing import Any
 
 import carb.settings
 import omni.kit
@@ -22,14 +25,17 @@ from isaacsim.test.utils.file_validation import validate_folder_contents
 
 
 class TestSceneBasedSDG(omni.kit.test.AsyncTestCase):
+    """Runs the warehouse scene SDG example with physics settling and graph randomizers."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Open a clean stage and preserve the DLSS setting used by the SDG capture."""
         await omni.kit.app.get_app().next_update_async()
         await omni.usd.get_context().new_stage_async()
         await omni.kit.app.get_app().next_update_async()
         self.original_dlss_exec_mode = carb.settings.get_settings().get("rtx/post/dlss/execMode")
 
-    async def tearDown(self):
+    async def tearDown(self) -> Any:
+        """Close the stage, wait for asset loading to finish, and restore the DLSS setting."""
         omni.usd.get_context().close_stage()
         await omni.kit.app.get_app().next_update_async()
         # In some cases the test will end before the asset is loaded, in this case wait for assets to load
@@ -37,7 +43,8 @@ class TestSceneBasedSDG(omni.kit.test.AsyncTestCase):
             await omni.kit.app.get_app().next_update_async()
         carb.settings.get_settings().set("rtx/post/dlss/execMode", self.original_dlss_exec_mode)
 
-    async def test_scene_based_sdg(self):
+    async def test_scene_based_sdg(self) -> Any:
+        """Generate forklift, pallet, box, cone, lighting, and camera randomizations and validate outputs."""
         import math
         import os
 
@@ -60,7 +67,13 @@ class TestSceneBasedSDG(omni.kit.test.AsyncTestCase):
         from isaacsim.storage.native import get_assets_root_path_async
         from pxr import Gf, Usd, UsdGeom
 
-        def _create_prim(prim_path, position=None, orientation=None, usd_path=None, semantic_label=None):
+        def _create_prim(
+            prim_path: Any,
+            position: Any | None = None,
+            orientation: Any | None = None,
+            usd_path: Any | None = None,
+            semantic_label: Any | None = None,
+        ) -> Any:
             if usd_path is not None:
                 prim = add_reference_to_stage(usd_path, prim_path)
             else:
@@ -74,7 +87,7 @@ class TestSceneBasedSDG(omni.kit.test.AsyncTestCase):
         def setup_writer(config: dict) -> rep.Writer | None:
             """Setup and initialize writer with optional backend support."""
 
-            def normalize_output_dir(params):
+            def normalize_output_dir(params: dict[str, Any]) -> None:
                 if "output_dir" in params and not os.path.isabs(params["output_dir"]):
                     params["output_dir"] = os.path.join(os.getcwd(), params["output_dir"])
 
@@ -238,7 +251,7 @@ class TestSceneBasedSDG(omni.kit.test.AsyncTestCase):
             return scatter_plane
 
         def setup_cone_placement_corners(
-            forklift_prim: Usd.Prim, bb_cache=None, scale_factor: float = 1.3
+            forklift_prim: Usd.Prim, bb_cache: Any | None = None, scale_factor: float = 1.3
         ) -> tuple[list[list[float]], tuple[float, float, float]]:
             """Calculate forklift OBB corners for cone placement."""
             if bb_cache is None:
@@ -298,7 +311,7 @@ class TestSceneBasedSDG(omni.kit.test.AsyncTestCase):
                 with cardbox_mesh_group_node:
                     rep.randomizer.materials(cardbox_material_urls)
 
-        async def run_example_async(config):
+        async def run_example_async(config: Any) -> None:
             assets_root_path = await get_assets_root_path_async()
             if assets_root_path is None:
                 print("[SDG] Could not get nucleus server path")

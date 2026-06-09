@@ -7,14 +7,20 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+"""Generate the warehouse shell and configured lighting for the cuOpt demo."""
+
+from typing import Any
+
 import omni.kit.commands
 from pxr import Gf, UsdGeom, UsdLux
 
 from .common import read_json, translate_rotate_scale_prim
 
 
-def generate_building_structure(stage, building_prim_path, building_json_path, building_asset_path):
-
+def generate_building_structure(
+    stage: Any, building_prim_path: Any, building_json_path: Any, building_asset_path: Any
+) -> Any:
+    """Reference building segments in sequence and author their configured DiskLights."""
     building_data = read_json(building_json_path)
 
     building_semantics = {}
@@ -22,7 +28,7 @@ def generate_building_structure(stage, building_prim_path, building_json_path, b
     build_direction = building_data.pop("build_direction")
 
     shift = [0.0, 0.0, 0.0]
-    for building_segment in building_data.keys():
+    for building_segment in building_data:
         segment_stage_path = f"{building_prim_path}/{building_segment}"
 
         segment_asset_path = building_asset_path + building_data[building_segment]["asset_path_extension"]

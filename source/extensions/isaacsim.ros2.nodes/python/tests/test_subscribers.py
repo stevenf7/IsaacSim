@@ -13,10 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for ROS 2 subscriber OmniGraph nodes."""
+"""Verify ROS 2 subscriber queue behavior.
+
+Covers joint state, clock, twist, Ackermann, and transform tree topics,
+including Nova Carter transform-tree integration.
+"""
 
 import random
 import time
+from typing import Any
 
 import numpy as np
 import omni.graph.core as og
@@ -32,7 +37,7 @@ from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 
 class TestRos2Subscribers(ROS2TestCase):
-    """Test suite for ros2 subscribers."""
+    """Verify typed ROS 2 subscriber nodes and queued message delivery."""
 
     MAX_COUNT = 100
     # Queue-size ranges sampled randomly per test.  Kept well below MAX_COUNT
@@ -41,8 +46,8 @@ class TestRos2Subscribers(ROS2TestCase):
     SMALL_QUEUE_RANGE = (1, 10)
     LARGE_QUEUE_RANGE = (15, 25)
 
-    async def setUp(self):
-        """Set up test fixtures."""
+    async def setUp(self) -> None:
+        """Create a fresh stage and ROS 2 node for typed subscriber tests."""
         await super().setUp()
 
         await omni.usd.get_context().new_stage_async()
@@ -54,11 +59,11 @@ class TestRos2Subscribers(ROS2TestCase):
 
         await omni.kit.app.get_app().next_update_async()
 
-    async def tearDown(self):
-        """Tear down test fixtures."""
+    async def tearDown(self) -> None:
+        """Clear typed subscriber queue state after each test."""
         await super().tearDown()
 
-    def spin(self):
+    def spin(self) -> None:
         """Sample the OG subscribe node's sequence attribute into ``sub_data``.
 
         Used as the per-frame callback of :meth:`simulate_until_condition` so
@@ -75,7 +80,7 @@ class TestRos2Subscribers(ROS2TestCase):
             self.sub_data.append(int(seq))
             self.prev_seq = seq
 
-    def _choose_queue_size(self, queue_range):
+    def _choose_queue_size(self, queue_range: Any) -> Any:
         """Pick a random queue size inside the given inclusive range."""
         lo, hi = queue_range
         queue_size = random.randint(lo, hi)
@@ -87,13 +92,13 @@ class TestRos2Subscribers(ROS2TestCase):
         *,
         node_name: str,
         ros_topic: str,
-        msg_type,
+        msg_type: Any,
         subscribe_node_name: str,
         subscribe_node_type: str,
         time_output_attr: str,
-        publish_fn,
+        publish_fn: Any,
         queue_size: int,
-    ):
+    ) -> None:
         """Shared body for every ``*_subscriber_queue`` test.
 
         Exercises exactly one timeline cycle: build the graph with the
@@ -198,7 +203,7 @@ class TestRos2Subscribers(ROS2TestCase):
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _publish_joint_state(publisher, count: int) -> None:
+    def _publish_joint_state(publisher: Any, count: int) -> None:
         from builtin_interfaces.msg import Time
         from sensor_msgs.msg import JointState
 
@@ -208,7 +213,7 @@ class TestRos2Subscribers(ROS2TestCase):
         msg.position = [0.0, 0.0]
         publisher.publish(msg)
 
-    async def test_joint_state_subscriber_queue_small(self):
+    async def test_joint_state_subscriber_queue_small(self) -> None:
         """JointState subscriber buffers the last N messages (small N)."""
         from sensor_msgs.msg import JointState
 
@@ -223,7 +228,7 @@ class TestRos2Subscribers(ROS2TestCase):
             queue_size=self._choose_queue_size(self.SMALL_QUEUE_RANGE),
         )
 
-    async def test_joint_state_subscriber_queue_large(self):
+    async def test_joint_state_subscriber_queue_large(self) -> None:
         """JointState subscriber buffers the last N messages (large N)."""
         from sensor_msgs.msg import JointState
 
@@ -243,7 +248,7 @@ class TestRos2Subscribers(ROS2TestCase):
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _publish_clock(publisher, count: int) -> None:
+    def _publish_clock(publisher: Any, count: int) -> None:
         from builtin_interfaces.msg import Time
         from rosgraph_msgs.msg import Clock
 
@@ -251,7 +256,7 @@ class TestRos2Subscribers(ROS2TestCase):
         msg.clock = Time(sec=count)
         publisher.publish(msg)
 
-    async def test_clock_subscriber_queue_small(self):
+    async def test_clock_subscriber_queue_small(self) -> None:
         """Clock subscriber buffers the last N messages (small N)."""
         from rosgraph_msgs.msg import Clock
 
@@ -266,7 +271,7 @@ class TestRos2Subscribers(ROS2TestCase):
             queue_size=self._choose_queue_size(self.SMALL_QUEUE_RANGE),
         )
 
-    async def test_clock_subscriber_queue_large(self):
+    async def test_clock_subscriber_queue_large(self) -> None:
         """Clock subscriber buffers the last N messages (large N)."""
         from rosgraph_msgs.msg import Clock
 
@@ -286,14 +291,14 @@ class TestRos2Subscribers(ROS2TestCase):
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _publish_twist(publisher, count: int) -> None:
+    def _publish_twist(publisher: Any, count: int) -> None:
         from geometry_msgs.msg import Twist
 
         msg = Twist()
         msg.linear.x = float(count)
         publisher.publish(msg)
 
-    async def test_twist_subscriber_queue_small(self):
+    async def test_twist_subscriber_queue_small(self) -> None:
         """Twist subscriber buffers the last N messages (small N)."""
         from geometry_msgs.msg import Twist
 
@@ -308,7 +313,7 @@ class TestRos2Subscribers(ROS2TestCase):
             queue_size=self._choose_queue_size(self.SMALL_QUEUE_RANGE),
         )
 
-    async def test_twist_subscriber_queue_large(self):
+    async def test_twist_subscriber_queue_large(self) -> None:
         """Twist subscriber buffers the last N messages (large N)."""
         from geometry_msgs.msg import Twist
 
@@ -328,7 +333,7 @@ class TestRos2Subscribers(ROS2TestCase):
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _publish_ackermann(publisher, count: int) -> None:
+    def _publish_ackermann(publisher: Any, count: int) -> None:
         from ackermann_msgs.msg import AckermannDriveStamped
         from builtin_interfaces.msg import Time
 
@@ -336,7 +341,7 @@ class TestRos2Subscribers(ROS2TestCase):
         msg.header.stamp = Time(sec=count)
         publisher.publish(msg)
 
-    async def test_ackermann_subscriber_queue_small(self):
+    async def test_ackermann_subscriber_queue_small(self) -> None:
         """Ackermann subscriber buffers the last N messages (small N)."""
         from ackermann_msgs.msg import AckermannDriveStamped
 
@@ -351,7 +356,7 @@ class TestRos2Subscribers(ROS2TestCase):
             queue_size=self._choose_queue_size(self.SMALL_QUEUE_RANGE),
         )
 
-    async def test_ackermann_subscriber_queue_large(self):
+    async def test_ackermann_subscriber_queue_large(self) -> None:
         """Ackermann subscriber buffers the last N messages (large N)."""
         from ackermann_msgs.msg import AckermannDriveStamped
 
@@ -370,7 +375,7 @@ class TestRos2Subscribers(ROS2TestCase):
     # Transform tree
     # ------------------------------------------------------------------
 
-    async def test_transform_tree_subscriber(self):
+    async def test_transform_tree_subscriber(self) -> Any:
         """Test transform tree subscriber."""
         from geometry_msgs.msg import TransformStamped
         from tf2_msgs.msg import TFMessage
@@ -449,7 +454,7 @@ class TestRos2Subscribers(ROS2TestCase):
             time.sleep(0.005)
 
             # Wait until pose condition is met or timeout
-            def pose_condition():
+            def pose_condition() -> Any:
                 _prim = self._stage.GetPrimAtPath("/World/cube")
                 _pos_wp, _rot_wp = xform_utils.get_world_pose(_prim)
                 x = _pos_wp.numpy().flatten()
@@ -476,7 +481,7 @@ class TestRos2Subscribers(ROS2TestCase):
 
         self._timeline.stop()
 
-    async def test_transform_tree_subscriber_nova_carter(self):
+    async def test_transform_tree_subscriber_nova_carter(self) -> Any:
         """Test transform tree subscriber nova carter."""
         from geometry_msgs.msg import TransformStamped
         from tf2_msgs.msg import TFMessage
@@ -553,7 +558,7 @@ class TestRos2Subscribers(ROS2TestCase):
             time.sleep(0.005)
 
             # Wait until pose condition is met or timeout
-            def pose_condition():
+            def pose_condition() -> Any:
                 _prim = self._stage.GetPrimAtPath("/nova_carter/chassis_link")
                 _pos_wp, _rot_wp = xform_utils.get_world_pose(_prim)
                 x = _pos_wp.numpy().flatten()

@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import traceback
+from typing import Any
 
 import carb
 import omni
@@ -59,7 +60,7 @@ class OgnROS2RtxLidarHelperInternalState(BaseWriterNode):
         cleanup_srtx_state(self)
         super().custom_reset()
 
-    def post_attach(self, writer, render_product) -> None:
+    def post_attach(self, writer: Any, render_product: Any) -> None:
         """Configure writer attributes after attaching to a render product."""
         try:
             omni.syntheticdata.SyntheticData.Get().set_node_attributes(
@@ -81,7 +82,7 @@ class OgnROS2RtxLidarHelper:
         return OgnROS2RtxLidarHelperInternalState()
 
     @staticmethod
-    def _read_laser_scan_metadata(prim) -> dict | None:
+    def _read_laser_scan_metadata(prim: Any) -> dict | None:
         """Read scan configuration from the lidar prim for LaserScan publishing.
 
         Args:
@@ -128,18 +129,20 @@ class OgnROS2RtxLidarHelper:
             az_end = 180.0
             h_fov = 360.0
 
-        return dict(
-            azimuth_range_start=az_start,
-            azimuth_range_end=az_end,
-            depth_range_min=near_range,
-            depth_range_max=far_range,
-            rotation_rate=rotation_rate,
-            horizontal_resolution=h_res,
-            horizontal_fov=h_fov,
-        )
+        return {
+            "azimuth_range_start": az_start,
+            "azimuth_range_end": az_end,
+            "depth_range_min": near_range,
+            "depth_range_max": far_range,
+            "rotation_rate": rotation_rate,
+            "horizontal_resolution": h_res,
+            "horizontal_fov": h_fov,
+        }
 
     @staticmethod
-    def _setup_srtx(init_params, render_product_path, state, sensor_type, compression_type) -> bool:
+    def _setup_srtx(
+        init_params: Any, render_product_path: Any, state: Any, sensor_type: Any, compression_type: Any
+    ) -> bool:
         from omni.replicator.srtx import SrtxCore
 
         stage = omni.usd.get_context().get_stage()
@@ -156,13 +159,13 @@ class OgnROS2RtxLidarHelper:
         sensor_name = render_product_path.rsplit("/", 1)[-1]
         srtx_instance.add_sensor(sensor_set_name, sensor_name, render_product_path)
 
-        common_params = dict(
-            topic_name=init_params["topicName"],
-            frame_id=init_params["frameId"],
-            node_namespace=init_params["nodeNamespace"],
-            queue_size=init_params["queueSize"],
-            qos_profile=init_params["qosProfile"],
-        )
+        common_params = {
+            "topic_name": init_params["topicName"],
+            "frame_id": init_params["frameId"],
+            "node_namespace": init_params["nodeNamespace"],
+            "queue_size": init_params["queueSize"],
+            "qos_profile": init_params["qosProfile"],
+        }
 
         if sensor_type == "laser_scan":
             from isaacsim.ros2.nodes.bindings._ros2_nodes import create_laser_scan_publisher_capsule
@@ -209,8 +212,8 @@ class OgnROS2RtxLidarHelper:
         return True
 
     @staticmethod
-    def compute(db) -> bool:
-        """Compute the node outputs."""
+    def compute(db: Any) -> bool:
+        """Configure ROS 2 PointCloud2 or LaserScan publishing for an RTX lidar render product."""
         state = db.per_instance_state
         if not db.inputs.enabled:
             if state.initialized:
@@ -255,14 +258,14 @@ class OgnROS2RtxLidarHelper:
             if db.inputs.resetSimulationTimeOnStop:
                 carb.log_warn("System timestamp is being used. Ignoring resetSimulationTimeOnStop input")
 
-        init_params = dict(
-            frameId=db.inputs.frameId,
-            nodeNamespace=collect_namespace(db.inputs.nodeNamespace, render_product_path),
-            queueSize=db.inputs.queueSize,
-            topicName=db.inputs.topicName,
-            context=db.inputs.context,
-            qosProfile=db.inputs.qosProfile,
-        )
+        init_params = {
+            "frameId": db.inputs.frameId,
+            "nodeNamespace": collect_namespace(db.inputs.nodeNamespace, render_product_path),
+            "queueSize": db.inputs.queueSize,
+            "topicName": db.inputs.topicName,
+            "context": db.inputs.context,
+            "qosProfile": db.inputs.qosProfile,
+        }
 
         use_srtx = carb.settings.get_settings().get_as_bool(USE_SRTX_SETTING)
         if use_srtx:
@@ -337,7 +340,7 @@ class OgnROS2RtxLidarHelper:
         return True
 
     @staticmethod
-    def release_instance(node, graph_instance_id) -> None:
+    def release_instance(node: Any, graph_instance_id: Any) -> None:
         """Release resources for a graph instance."""
         try:
             state = OgnROS2RtxLidarHelperInternalState.per_instance_internal_state(node)

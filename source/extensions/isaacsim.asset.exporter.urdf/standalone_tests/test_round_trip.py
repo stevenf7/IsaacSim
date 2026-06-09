@@ -13,11 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Standalone round-trip tests for isaacsim-asset-exporter-urdf.
-
-Builds a minimal USD stage programmatically, exports to URDF, and validates
-the output XML structure. No asset files or simulation runtime required.
-"""
+"""Verifies standalone URDF export from simple USD articulations. Covers minimal robot export and preservation of revolute joint limits in the generated URDF."""
 
 from __future__ import annotations
 
@@ -27,7 +23,7 @@ import unittest
 import xml.etree.ElementTree as ET
 
 from isaacsim.asset.importer.utils.impl.physx_types import PhysxAttr
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import Usd, UsdGeom, UsdPhysics
 
 
 def _build_two_link_robot(stage: Usd.Stage) -> None:

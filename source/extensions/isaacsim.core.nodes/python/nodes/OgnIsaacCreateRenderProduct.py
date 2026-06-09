@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Create or reuse a render product for an OmniGraph camera input."""
+
 from __future__ import annotations
 
 import contextlib
+from typing import Any
 
 import carb
 import carb.eventdispatcher
@@ -54,6 +57,7 @@ class OgnIsaacCreateRenderProductInternalState(BaseResetNode):
         super().__init__(initialize=False)
 
     def on_timeline_stop(self, event: carb.eventdispatcher.Event) -> None:
+        """Mark the cached render product state stale when the timeline stops."""
         self.initialized = False
 
 
@@ -62,10 +66,17 @@ class OgnIsaacCreateRenderProduct:
 
     @staticmethod
     def internal_state() -> OgnIsaacCreateRenderProductInternalState:
+        """Create the per-instance render product cache."""
         return OgnIsaacCreateRenderProductInternalState()
 
     @staticmethod
-    def compute(db) -> bool:
+    def compute(db: Any) -> bool:
+        """Create, reuse, or update the render product requested by the graph inputs.
+
+        The node skips when disabled or when no camera prim is supplied, reuses a matching
+        provided or existing render product when possible, updates camera and resolution changes,
+        and enables `execOut` when a valid render product path is available.
+        """
         state = db.per_instance_state
         if db.inputs.enabled is False:
             return False
@@ -143,7 +154,8 @@ class OgnIsaacCreateRenderProduct:
         return True
 
     @staticmethod
-    def release_instance(node, graph_instance_id) -> None:
+    def release_instance(node: Any, graph_instance_id: Any) -> None:
+        """Clear cached render product path and subscriptions without destroying the render product."""
         try:
             state = OgnIsaacCreateRenderProductDatabase.per_instance_internal_state(node)
         except Exception:

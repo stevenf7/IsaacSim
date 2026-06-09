@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import traceback
+from typing import Any
 
 import carb
 import omni
@@ -54,8 +55,8 @@ class OgnROS2RtxRadarHelper:
         return OgnROS2RtxRadarHelperInternalState()
 
     @staticmethod
-    def compute(db) -> bool:
-        """Compute the node."""
+    def compute(db: Any) -> bool:
+        """Configure ROS 2 PointCloud2 publishing for an RTX radar render product."""
         state = db.per_instance_state
 
         if state.initialized:
@@ -90,14 +91,14 @@ class OgnROS2RtxRadarHelper:
             if db.inputs.resetSimulationTimeOnStop:
                 carb.log_warn("System timestamp is being used. Ignoring resetSimulationTimeOnStop input")
 
-        init_params = dict(
-            frameId=db.inputs.frameId,
-            nodeNamespace=collect_namespace(db.inputs.nodeNamespace, render_product_path),
-            queueSize=db.inputs.queueSize,
-            topicName=db.inputs.topicName,
-            context=db.inputs.context,
-            qosProfile=db.inputs.qosProfile,
-        )
+        init_params = {
+            "frameId": db.inputs.frameId,
+            "nodeNamespace": collect_namespace(db.inputs.nodeNamespace, render_product_path),
+            "queueSize": db.inputs.queueSize,
+            "topicName": db.inputs.topicName,
+            "context": db.inputs.context,
+            "qosProfile": db.inputs.qosProfile,
+        }
 
         # Collect enabled metadata field names.
         metadata = []
@@ -133,7 +134,7 @@ class OgnROS2RtxRadarHelper:
         return True
 
     @staticmethod
-    def release_instance(node, graph_instance_id) -> None:
+    def release_instance(node: Any, graph_instance_id: Any) -> None:
         """Release resources for a graph instance."""
         try:
             state = OgnROS2RtxRadarHelperInternalState.per_instance_internal_state(node)

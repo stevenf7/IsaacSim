@@ -13,15 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test script that loads doc snippets and checks for errors.
-
-This script:
-1. Iterates over Python files in docs/isaacsim/snippets
-2. For files that do NOT contain SimulationApp in uncommented lines, loads SimulationApp
-3. Loads each file as a module and catches/stores any exceptions
-4. Prints any exceptions with the snippet file name and trace
-5. Returns appropriate status code (nonzero if exceptions, zero otherwise)
-"""
+"""Discovers Isaac Sim documentation snippets and executes each snippet in a managed SimulationApp session with timeout, platform, exclusion, and expected-failure handling. Reports per-snippet results through unittest output and optional JUnit XML."""
 
 from __future__ import annotations
 
@@ -44,12 +36,13 @@ from collections import defaultdict
 from datetime import datetime
 from functools import partial
 from pathlib import Path
+from typing import Any, NoReturn
 
 # Note: SimulationApp is imported inside the experience loop to allow fresh imports
 # after closing each SimulationApp instance.
 
 
-def parse_args():
+def parse_args() -> tuple[argparse.Namespace, list[str]]:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Test script that loads doc snippets and checks for errors.")
     parser.add_argument(
@@ -127,7 +120,9 @@ def parse_args():
     return parser.parse_known_args()
 
 
-def parse_experience_csv(csv_path, base_dir, snippets_root=None):
+def parse_experience_csv(
+    csv_path: str | Path, base_dir: str | Path, snippets_root: str | Path | None = None
+) -> dict[str, str]:
     """Parse the experience CSV file and return a mapping of absolute file paths to experiences.
 
     Args:
@@ -141,12 +136,13 @@ def parse_experience_csv(csv_path, base_dir, snippets_root=None):
     """
     if snippets_root is None:
         snippets_root = base_dir
+    base_path = Path(base_dir)
     experience_map = {}
     # Resolve CSV path relative to base_dir if not absolute
     csv_file = Path(csv_path)
     root_path = Path(snippets_root)
     if not csv_file.is_absolute():
-        csv_file = base_dir / csv_file
+        csv_file = base_path / csv_file
     if not csv_file.exists():
         print(f"Warning: Experience CSV file not found: {csv_file}")
         return experience_map
@@ -167,7 +163,7 @@ def parse_experience_csv(csv_path, base_dir, snippets_root=None):
     return experience_map
 
 
-def group_files_by_experience(files, experience_map):
+def group_files_by_experience(files: list[Path], experience_map: dict[str, str]) -> dict[str, list[Path]]:
     """Group files by their associated experience.
 
     Args:
@@ -184,7 +180,7 @@ def group_files_by_experience(files, experience_map):
     return groups
 
 
-def resolve_experience_path(experience):
+def resolve_experience_path(experience: str) -> str:
     """Resolve an experience name from the CSV to a Kit app path."""
     if not experience:
         return ""
@@ -271,7 +267,9 @@ def get_platform_skip_reason(
     return f"Snippet is constrained to platform(s): {', '.join(allowed_platforms)}"
 
 
-def parse_expected_failures_csv(csv_path, base_dir, snippets_root=None):
+def parse_expected_failures_csv(
+    csv_path: str | Path, base_dir: str | Path, snippets_root: str | Path | None = None
+) -> list[tuple[str, re.Pattern[str] | None]]:
     """Parse expected failures CSV and return a list of (abs_path, compiled_pattern|None) tuples.
 
     Args:
@@ -285,10 +283,12 @@ def parse_expected_failures_csv(csv_path, base_dir, snippets_root=None):
     """
     if snippets_root is None:
         snippets_root = base_dir
+    base_path = Path(base_dir)
+    root_path = Path(snippets_root)
     entries = []
     csv_file = Path(csv_path)
     if not csv_file.is_absolute():
-        csv_file = base_dir / csv_file
+        csv_file = base_path / csv_file
     if not csv_file.exists():
         print(f"Warning: Expected failures CSV file not found: {csv_file}")
         return entries
@@ -300,14 +300,16 @@ def parse_expected_failures_csv(csv_path, base_dir, snippets_root=None):
                 continue
             snippet_path = row[0].strip()
             pattern_str = row[1].strip() if len(row) >= 2 and row[1].strip() else None
-            abs_path = str((snippets_root / snippet_path).resolve())
+            abs_path = str((root_path / snippet_path).resolve())
             compiled = re.compile(pattern_str) if pattern_str else None
             entries.append((abs_path, compiled))
 
     return entries
 
 
-def parse_excluded_snippets_csv(csv_path, base_dir, snippets_root=None):
+def parse_excluded_snippets_csv(
+    csv_path: str | Path, base_dir: str | Path, snippets_root: str | Path | None = None
+) -> set[str]:
     """Parse excluded snippets CSV and return a set of absolute paths to skip.
 
     These are snippets that should be completely excluded from test discovery
@@ -325,10 +327,12 @@ def parse_excluded_snippets_csv(csv_path, base_dir, snippets_root=None):
     """
     if snippets_root is None:
         snippets_root = base_dir
+    base_path = Path(base_dir)
+    root_path = Path(snippets_root)
     excluded = set()
     csv_file = Path(csv_path)
     if not csv_file.is_absolute():
-        csv_file = base_dir / csv_file
+        csv_file = base_path / csv_file
     if not csv_file.exists():
         print(f"Warning: Excluded snippets CSV file not found: {csv_file}")
         return excluded
@@ -341,13 +345,17 @@ def parse_excluded_snippets_csv(csv_path, base_dir, snippets_root=None):
             snippet_path = row[0].strip()
             if not snippet_path:
                 continue
-            abs_path = str((snippets_root / snippet_path).resolve())
+            abs_path = str((root_path / snippet_path).resolve())
             excluded.add(abs_path)
 
     return excluded
 
 
-def is_expected_failure(file_path, exception, expected_failures):
+def is_expected_failure(
+    file_path: str | Path,
+    exception: BaseException,
+    expected_failures: list[tuple[str, re.Pattern[str] | None]],
+) -> bool:
     """Return True if this snippet + exception combo matches an expected-failure entry."""
     if not expected_failures:
         return False
@@ -360,13 +368,13 @@ def is_expected_failure(file_path, exception, expected_failures):
     return False
 
 
-def find_python_files(root_dir):
+def find_python_files(root_dir: str | Path) -> list[Path]:
     """Find all Python files recursively in the given directory."""
     root_path = Path(root_dir)
     return list(root_path.rglob("*.py"))
 
 
-def file_contains_simulation_app(file_path):
+def file_contains_simulation_app(file_path: str | Path) -> bool | None:
     """Check if a file contains 'SimulationApp' in uncommented lines."""
     try:
         with open(file_path, encoding="utf-8") as f:
@@ -385,7 +393,7 @@ def file_contains_simulation_app(file_path):
         raise
 
 
-def cleanup_before_new_stage(simulation_app, file_path, deadline=None):
+def cleanup_before_new_stage(simulation_app: Any, file_path: str | Path, deadline: float | None = None) -> None:
     """Clean up the current stage before creating a new one."""
     import omni.timeline
     import omni.usd
@@ -429,7 +437,7 @@ def cleanup_before_new_stage(simulation_app, file_path, deadline=None):
             simulation_app.update()
 
 
-def _is_path_within(path, root):
+def _is_path_within(path: str | Path, root: str | Path) -> bool:
     """Return True if path is inside root."""
     try:
         return Path(path).resolve().is_relative_to(Path(root).resolve())
@@ -437,7 +445,7 @@ def _is_path_within(path, root):
         return False
 
 
-def _task_belongs_to_snippets(task, snippets_root):
+def _task_belongs_to_snippets(task: asyncio.Task[Any], snippets_root: str | Path) -> bool:
     """Return True if task coroutine source file is from snippets tree."""
     try:
         coro = task.get_coro()
@@ -450,7 +458,7 @@ def _task_belongs_to_snippets(task, snippets_root):
         return False
 
 
-def _exception_belongs_to_snippets(exception, snippets_root):
+def _exception_belongs_to_snippets(exception: BaseException, snippets_root: str | Path) -> bool:
     """Return True if any traceback frame for *exception* is from snippets tree."""
     try:
         tb = exception.__traceback__
@@ -464,7 +472,7 @@ def _exception_belongs_to_snippets(exception, snippets_root):
     return False
 
 
-def _loop_context_belongs_to_snippets(context, snippets_root):
+def _loop_context_belongs_to_snippets(context: dict[str, Any], snippets_root: str | Path) -> bool:
     """Return True if an asyncio loop exception context belongs to the snippet under test."""
     exception = context.get("exception")
     if exception is not None and _exception_belongs_to_snippets(exception, snippets_root):
@@ -477,7 +485,7 @@ def _loop_context_belongs_to_snippets(context, snippets_root):
     return False
 
 
-def _patch_simulation_context_render_for_fabric_bootstrap():
+def _patch_simulation_context_render_for_fabric_bootstrap() -> None:
     """Avoid cached-core Fabric updates before SimulationContext has a PhysicsContext."""
     import omni.kit.app
     from isaacsim.core.api.simulation_context import SimulationContext
@@ -489,7 +497,7 @@ def _patch_simulation_context_render_for_fabric_bootstrap():
     original_render = SimulationContext.render
     original_render_async = SimulationContext.render_async
 
-    def render(self):
+    def render(self: Any) -> Any:
         if getattr(self, "_physics_context", None) is not None:
             return original_render(self)
         set_carb_setting(self._settings, "/app/player/playSimulations", False)
@@ -497,7 +505,7 @@ def _patch_simulation_context_render_for_fabric_bootstrap():
         set_carb_setting(self._settings, "/app/player/playSimulations", True)
         return None
 
-    async def render_async(self):
+    async def render_async(self: Any) -> Any:
         if getattr(self, "_physics_context", None) is not None:
             return await original_render_async(self)
         set_carb_setting(self._settings, "/app/player/playSimulations", False)
@@ -517,13 +525,19 @@ class JUnitTestResult(unittest.TextTestResult):
     so that a partial report survives even if the process is killed mid-run.
     """
 
-    def __init__(self, stream, descriptions, verbosity, junit_xml_path=None):
+    def __init__(
+        self,
+        stream: Any,
+        descriptions: bool,
+        verbosity: int,
+        junit_xml_path: str | Path | None = None,
+    ) -> None:
         super().__init__(stream, descriptions, verbosity)
         self.test_timings = []
         self._test_start = 0.0
         self._junit_xml_path = junit_xml_path
 
-    def _flush_report(self):
+    def _flush_report(self) -> None:
         """Write the current (possibly partial) JUnit XML to disk."""
         if self._junit_xml_path:
             try:
@@ -531,28 +545,33 @@ class JUnitTestResult(unittest.TextTestResult):
             except Exception:
                 pass
 
-    def startTest(self, test):
+    def _start_test(self, test: unittest.TestCase) -> None:
         super().startTest(test)
         self._test_start = time.monotonic()
 
-    def addSuccess(self, test):
+    def _add_success(self, test: unittest.TestCase) -> None:
         super().addSuccess(test)
         self.test_timings.append((test, "pass", time.monotonic() - self._test_start, None))
         self._flush_report()
 
-    def addFailure(self, test, err):
+    def _add_failure(self, test: unittest.TestCase, err: Any) -> None:
         super().addFailure(test, err)
         msg = self._exc_info_to_string(err, test)
         self.test_timings.append((test, "fail", time.monotonic() - self._test_start, msg))
         self._flush_report()
 
-    def addError(self, test, err):
+    def _add_error(self, test: unittest.TestCase, err: Any) -> None:
         super().addError(test, err)
         msg = self._exc_info_to_string(err, test)
         self.test_timings.append((test, "error", time.monotonic() - self._test_start, msg))
         self._flush_report()
 
-    def write_junit_xml(self, output_path):
+    startTest = _start_test
+    addSuccess = _add_success
+    addFailure = _add_failure
+    addError = _add_error
+
+    def write_junit_xml(self, output_path: str | Path) -> None:
         """Write a JUnit XML report with one <testcase> per snippet."""
         failures = sum(1 for _, s, _, _ in self.test_timings if s == "fail")
         errors_count = sum(1 for _, s, _, _ in self.test_timings if s == "error")
@@ -593,7 +612,7 @@ class JUnitTestResult(unittest.TextTestResult):
         print(f"JUnit XML report written to {output_path}")
 
 
-def _sanitize_xml(text):
+def _sanitize_xml(text: str | None) -> str | None:
     """Remove control characters that are invalid in XML 1.0."""
     if not text:
         return text
@@ -621,7 +640,7 @@ class SnippetCleanupTimeoutError(SnippetTimeoutError):
 _ALARM_ESCALATION_SECONDS = 30
 
 
-def _force_exit_alarm_handler(signum, frame):
+def _force_exit_alarm_handler(signum: int, frame: Any) -> None:
     """Last-resort SIGALRM handler: force-exit when a snippet is stuck in native code."""
     print(
         f"\n[FATAL] Snippet still stuck {_ALARM_ESCALATION_SECONDS}s after timeout. "
@@ -631,7 +650,12 @@ def _force_exit_alarm_handler(signum, frame):
     os._exit(1)
 
 
-def _wait_for_snippet_tasks(simulation_app, tasks, settle_frames=10, deadline=None):
+def _wait_for_snippet_tasks(
+    simulation_app: Any,
+    tasks: list[asyncio.Task[Any]],
+    settle_frames: int = 10,
+    deadline: float | None = None,
+) -> None:
     """Give snippet-created async tasks a chance to complete."""
     if not tasks:
         return
@@ -644,14 +668,14 @@ def _wait_for_snippet_tasks(simulation_app, tasks, settle_frames=10, deadline=No
 
 
 def load_snippet_module(
-    file_path,
-    snippets_root,
-    index,
-    simulation_app,
-    snippet_timeout=120,
-    cleanup_timeout=60,
-    previous_file_path=None,
-):
+    file_path: str | Path,
+    snippets_root: str | Path,
+    index: int,
+    simulation_app: Any,
+    snippet_timeout: int = 120,
+    cleanup_timeout: int = 60,
+    previous_file_path: str | Path | None = None,
+) -> tuple[str, BaseException | None, dict[str, float]]:
     """Load a snippet module and return any exception that occurred.
 
     The teardown of the *previous* snippet's state (timeline, Replicator, stage)
@@ -684,11 +708,11 @@ def load_snippet_module(
     start_time = None
     deadline = None
 
-    def loop_exception_handler(loop, context):
+    def loop_exception_handler(loop: asyncio.AbstractEventLoop, context: dict[str, Any]) -> None:
         """Capture unhandled loop exceptions as test failures."""
         captured_loop_exceptions.append(context)
 
-    def _check_deadline(phase):
+    def _check_deadline(phase: str) -> None:
         """Raise SnippetTimeoutError if the per-snippet execution deadline has been exceeded."""
         if deadline is not None and time.monotonic() > deadline:
             raise SnippetTimeoutError(f"Snippet timed out after {snippet_timeout}s during {phase}: {file_path}")
@@ -698,7 +722,7 @@ def load_snippet_module(
     prev_alarm_handler = None
     prev_alarm_remaining = 0
 
-    def _alarm_handler(signum, frame):
+    def _alarm_handler(signum: int, frame: Any) -> NoReturn:
         # Install a second-chance handler: if this raise gets swallowed by
         # native code (e.g. a C callback catches the Python exception at the
         # boundary), the escalation alarm will force-exit the process so CI
@@ -954,7 +978,7 @@ _total_snippets = len(files_to_test)
 _previous_snippet_path = None
 
 
-def is_in_expected_failures(file_path, expected_failures):
+def is_in_expected_failures(file_path: str | Path, expected_failures: list[tuple[str, re.Pattern[str] | None]]) -> bool:
     """Return True if this snippet path appears in the expected-failure list (regardless of pattern)."""
     if not expected_failures:
         return False
@@ -966,19 +990,19 @@ def is_in_expected_failures(file_path, expected_failures):
 
 
 def _make_snippet_test(
-    file_path,
-    snippets_root,
-    snippet_index,
-    total_count,
-    expected_failures_list,
-    snippet_timeout,
-    cleanup_timeout,
-    platform_constraints_map,
-    current_platform_name,
-):
+    file_path: Path,
+    snippets_root: Path,
+    snippet_index: int,
+    total_count: int,
+    expected_failures_list: list[tuple[str, re.Pattern[str] | None]],
+    snippet_timeout: int,
+    cleanup_timeout: int,
+    platform_constraints_map: dict[str, tuple[str, ...]],
+    current_platform_name: str,
+) -> Any:
     """Create a test method for a single doc snippet."""
 
-    def test_snippet(self):
+    def test_snippet(self: unittest.TestCase) -> None:
         global _previous_snippet_path
 
         platform_skip_reason = get_platform_skip_reason(file_path, current_platform_name, platform_constraints_map)
@@ -1042,9 +1066,9 @@ for _exp_idx, _experience in enumerate(experience_names):
         _class_name = f"{_base_name}_{_dedup}"
         _dedup += 1
 
-    def _make_class_methods(exp_value, group_files):
+    def _make_class_methods(exp_value: str, group_files: list[Path]) -> tuple[Any, Any]:
         @classmethod
-        def setUpClass(cls):
+        def setUpClass(cls: type[unittest.TestCase]) -> None:
             global _simulation_app
             if _simulation_app is None:
                 from isaacsim import SimulationApp
@@ -1072,7 +1096,7 @@ for _exp_idx, _experience in enumerate(experience_names):
             print("=" * 80)
 
         @classmethod
-        def tearDownClass(cls):
+        def tearDownClass(cls: type[unittest.TestCase]) -> None:
             pass
 
         return setUpClass, tearDownClass
@@ -1132,7 +1156,7 @@ _result = _runner.run(_suite)
 _summary_printed = False
 
 
-def _print_summary():
+def _print_summary() -> None:
     global _summary_printed
     if _summary_printed:
         return

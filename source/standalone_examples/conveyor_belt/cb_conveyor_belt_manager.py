@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Manage conveyor belt metadata and Warp buffers."""
+
 import warp as wp
 
 # not needed for the purpose of this sample
@@ -20,8 +22,7 @@ wp.config.enable_backward = False
 
 
 class ConveyorBeltManager:
-    """Class to register conveyor belt objects and create and manage corresponding data
-    buffers.
+    """Conveyor belt registry and buffer manager.
 
     Holds various conveyor belt related data buffers that are used for the computation of the
     forces that conveyor belts apply to interacting rigid bodies.

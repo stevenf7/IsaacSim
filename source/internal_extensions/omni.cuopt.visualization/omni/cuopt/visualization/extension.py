@@ -7,6 +7,10 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+"""Extension entry point for the shared cuOpt visualization Python package."""
+
+from typing import Any
+
 import omni.ext
 
 
@@ -14,10 +18,12 @@ import omni.ext
 # instantiated when extension gets enabled and `on_startup(ext_id)` will be called. Later when extension gets disabled
 # on_shutdown() is called.
 class MyExtension(omni.ext.IExt):
+    """No-op lifecycle hook for loading visualization helpers as an extension."""
+
     # ext_id is current extension id. It can be used with extension manager to query additional information, like where
     # this extension is located on filesystem.
-    def on_startup(self, ext_id):
-        pass
+    def on_startup(self, ext_id: Any) -> Any:
+        """Handle extension startup; visualization helpers initialize lazily when imported."""
 
-    def on_shutdown(self):
-        pass
+    def on_shutdown(self) -> Any:
+        """Handle extension shutdown; no visualization state is owned by this hook."""

@@ -13,13 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides Warp array construction helpers for Newton tensor tests. Covers deterministic arange and linspace arrays on CPU or CUDA devices."""
+
 from __future__ import annotations
 
 import warp as wp
 
 
 @wp.kernel
-def _arange_k(a: wp.array(dtype=wp.int32)):
+def _arange_k(a: wp.array(dtype=wp.int32)) -> None:
     tid = wp.tid()
     a[tid] = tid
 
@@ -33,7 +35,7 @@ def arange(n: int, device: str = "cpu") -> wp.array:
 
 
 @wp.kernel
-def _linspace_k(a: wp.array(dtype=wp.float32), offset: wp.float32, step: wp.float32):
+def _linspace_k(a: wp.array(dtype=wp.float32), offset: wp.float32, step: wp.float32) -> None:
     tid = wp.tid()
     a[tid] = offset + float(tid) * step
 
@@ -71,7 +73,7 @@ def linspace(
 
 
 @wp.kernel
-def _fill_float32_k(a: wp.array(dtype=wp.float32), value: wp.float32):
+def _fill_float32_k(a: wp.array(dtype=wp.float32), value: wp.float32) -> None:
     tid = wp.tid()
     a[tid] = value
 
@@ -85,7 +87,7 @@ def fill_float32(n: int, value: float = 0.0, device: str = "cpu") -> wp.array:
 
 
 @wp.kernel
-def _fill_vec3_k(a: wp.array(dtype=wp.vec3), value: wp.vec3):
+def _fill_vec3_k(a: wp.array(dtype=wp.vec3), value: wp.vec3) -> None:
     tid = wp.tid()
     a[tid] = value
 
@@ -105,7 +107,7 @@ def _compute_dof_forces_k(
     force: wp.array(dtype=float, ndim=2),
     stiffness: float,
     damping: float,
-):
+) -> None:
     i, j = wp.tid()
     pos_target = 0.0
     force[i, j] = stiffness * (pos_target - pos[i, j]) - damping * vel[i, j]

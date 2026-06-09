@@ -43,9 +43,12 @@ def _make_text(path: str, body: str) -> None:
 
 
 def _build_source_scene(scene_dir: str) -> str:
-    """Build a non-flattened USD covering: relative texture, UDIM family, a
-    Reference sub-USD and a Payload sub-USD (each with their own texture), and an
-    SPG `.cu` kernel with a sibling `.cu.lua` launcher (undeclared in USD)."""
+    """Build a non-flattened USD with textures, references, payloads, and kernels.
+
+    The scene covers relative texture paths, a UDIM family, a Reference sub-USD
+    and a Payload sub-USD, plus an SPG `.cu` kernel with a sibling `.cu.lua`
+    launcher that is undeclared in USD.
+    """
     _make_png(os.path.join(scene_dir, "textures", "brick.png"))
     for udim in ("1001", "1002", "1003"):
         _make_png(os.path.join(scene_dir, "textures", f"tile.{udim}.png"))
@@ -99,40 +102,47 @@ def _build_source_scene(scene_dir: str) -> str:
 
 
 def _resolved_texture(stage: Usd.Stage, prim_path: str) -> str:
-    """Resolved path of a shader's `file` input, anchored at the layer that
-    authored it (so textures inside a sub-USD resolve correctly)."""
+    """Return the resolved path of a shader's `file` input.
+
+    Resolution is anchored at the layer that authored the input so textures
+    inside a sub-USD resolve correctly.
+    """
     asset = UsdShade.Shader(stage.GetPrimAtPath(prim_path)).GetInput("file").Get()
     return asset.resolvedPath if asset else ""
 
 
 def _exists_under(root: str, basename: str) -> bool:
     """True if a file named `basename` exists anywhere under `root`."""
-    for _, _, files in os.walk(root):
-        if basename in files:
-            return True
-    return False
+    return any(basename in files for _, _, files in os.walk(root))
 
 
 class TestCollectInputUsd(omni.kit.test.AsyncTestCase):
-    """collect_input on a .usd must produce a self-contained, relocatable cache
-    whose references all resolve inside it."""
+    """Validate self-contained caches collected from USD inputs.
 
-    async def setUp(self):
+    `collect_input` on a `.usd` must produce a relocatable cache whose
+    references all resolve inside it.
+    """
+
+    async def setUp(self) -> None:
+        """Create a source USD scene and cache directory."""
         self._tmp = tempfile.mkdtemp(prefix="test_writer_")
         scene_dir = os.path.join(self._tmp, "scene")
         os.makedirs(scene_dir)
         self._source_scene = _build_source_scene(scene_dir)
         self._cache_dir = os.path.join(self._tmp, "cache")
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Remove the temporary cache workspace."""
         shutil.rmtree(self._tmp, ignore_errors=True)
 
-    async def test_returns_stage_usd(self):
+    async def test_returns_stage_usd(self) -> None:
+        """Collecting a USD returns the cached stage path."""
         stage_path = await collect_input(self._source_scene, self._cache_dir)
         self.assertEqual(stage_path, os.path.join(self._cache_dir, "stage.usd"))
         self.assertTrue(os.path.isfile(stage_path))
 
-    async def test_textures_resolve_inside_cache(self):
+    async def test_textures_resolve_inside_cache(self) -> None:
+        """Texture dependencies resolve inside the collected cache."""
         await collect_input(self._source_scene, self._cache_dir)
         recorded = Usd.Stage.Open(os.path.join(self._cache_dir, "stage.usd"))
         for prim_path, label in [
@@ -148,35 +158,41 @@ class TestCollectInputUsd(omni.kit.test.AsyncTestCase):
                 f"{label}: resolved outside cache ({resolved!r})",
             )
 
-    async def test_udim_tiles_collected(self):
+    async def test_udim_tiles_collected(self) -> None:
+        """UDIM texture tiles are collected into the cache."""
         await collect_input(self._source_scene, self._cache_dir)
         for udim in ("1001", "1002", "1003"):
             self.assertTrue(_exists_under(self._cache_dir, f"tile.{udim}.png"), f"UDIM tile {udim} not collected")
 
-    async def test_referenced_cu_collected(self):
+    async def test_referenced_cu_collected(self) -> None:
+        """Referenced CUDA kernels are collected into the cache."""
         # `.cu` is declared via an asset attribute (info:spg:sourceAsset), so it is
         # a USD dependency and must be collected.
         await collect_input(self._source_scene, self._cache_dir)
         self.assertTrue(_exists_under(self._cache_dir, "foo.cu"), "referenced .cu was not collected")
 
-    async def test_unreferenced_companion_skipped(self):
+    async def test_unreferenced_companion_skipped(self) -> None:
+        """Unreferenced CUDA companion files are not collected from USD inputs."""
         # `.cu.lua` is referenced by no USD path, so it is not collected. Such
         # scenes must be provided as `.usdz` to keep the companion.
         await collect_input(self._source_scene, self._cache_dir)
         self.assertFalse(_exists_under(self._cache_dir, "foo.cu.lua"), "unreferenced .cu.lua should be skipped")
 
-    async def test_no_hash_bucketing(self):
+    async def test_no_hash_bucketing(self) -> None:
+        """Collected USD caches do not use hash-bucketed asset directories."""
         await collect_input(self._source_scene, self._cache_dir)
         self.assertFalse(os.path.isdir(os.path.join(self._cache_dir, "assets")))
 
-    async def test_source_not_mutated(self):
+    async def test_source_not_mutated(self) -> None:
+        """Collecting input does not mutate the source USD file."""
         source_mtime = os.path.getmtime(self._source_scene)
         source_size = os.path.getsize(self._source_scene)
         await collect_input(self._source_scene, self._cache_dir)
         self.assertEqual(os.path.getmtime(self._source_scene), source_mtime)
         self.assertEqual(os.path.getsize(self._source_scene), source_size)
 
-    async def test_cache_is_relocatable(self):
+    async def test_cache_is_relocatable(self) -> None:
+        """Collected caches remain resolvable after being moved."""
         await collect_input(self._source_scene, self._cache_dir)
         moved = os.path.join(self._tmp, "moved")
         shutil.copytree(self._cache_dir, moved)
@@ -190,7 +206,8 @@ class TestCollectInputUsd(omni.kit.test.AsyncTestCase):
 class TestCopyStage(omni.kit.test.AsyncTestCase):
     """copy_stage must copy the cache tree verbatim into the recording dir."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
+        """Create a collected cache and destination recording directory."""
         self._tmp = tempfile.mkdtemp(prefix="test_writer_copy_")
         scene_dir = os.path.join(self._tmp, "scene")
         os.makedirs(scene_dir)
@@ -199,10 +216,12 @@ class TestCopyStage(omni.kit.test.AsyncTestCase):
         self._cached_stage = await collect_input(self._source_scene, self._cache_dir)
         self._recording_dir = os.path.join(self._tmp, "recording")
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
+        """Remove the temporary copy-stage workspace."""
         shutil.rmtree(self._tmp, ignore_errors=True)
 
-    async def test_recording_mirrors_cache(self):
+    async def test_recording_mirrors_cache(self) -> None:
+        """The recording stage copy mirrors the collected cache."""
         writer = MobilityGenWriter(self._recording_dir, async_write=False)
         try:
             writer.copy_stage(self._cached_stage)
@@ -219,7 +238,8 @@ class TestCopyStage(omni.kit.test.AsyncTestCase):
 class TestCollectInputUsdz(omni.kit.test.AsyncTestCase):
     """USDZ inputs are byte-copied — every member (incl. `.cu.lua`) is preserved."""
 
-    async def test_usdz_input_is_byte_copied_with_members_preserved(self):
+    async def test_usdz_input_is_byte_copied_with_members_preserved(self) -> None:
+        """USDZ input archives are byte-copied with all members preserved."""
         import zipfile
 
         from pxr import UsdUtils
@@ -259,7 +279,8 @@ class TestCollectInputUsdz(omni.kit.test.AsyncTestCase):
 class TestCopyInit(omni.kit.test.AsyncTestCase):
     """copy_init must copy stage + dependency files + config + occupancy, but not state."""
 
-    async def test_init_files_copied_state_skipped(self):
+    async def test_init_files_copied_state_skipped(self) -> None:
+        """Initial replay files are copied while recorded state is skipped."""
         with tempfile.TemporaryDirectory() as tmp:
             src = os.path.join(tmp, "src")
             os.makedirs(src)

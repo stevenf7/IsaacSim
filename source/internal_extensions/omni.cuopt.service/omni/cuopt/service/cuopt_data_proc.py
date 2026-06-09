@@ -9,8 +9,13 @@
 # its affiliates is strictly prohibited.
 
 
-def preprocess_cuopt_data(graph, task, fleet):
+"""Convert loaded waypoint graph, order, and fleet samples into cuOpt payloads."""
 
+from typing import Any
+
+
+def preprocess_cuopt_data(graph: Any, task: Any, fleet: Any) -> Any:
+    """Build cuOpt waypoint-graph, fleet, and task dictionaries from sample models."""
     waypoint_graph_data = {
         "waypoint_graph": {
             "0": {

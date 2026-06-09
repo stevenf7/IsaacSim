@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tutorial 9, Part 1: Gripper Control
+"""Tutorial 9, Part 1: Gripper Control.
 
 Introduces the Articulation API by controlling the 2F-140 gripper on a UR10e
 robot. The gripper cycles between open and closed using set_dof_position_targets.
@@ -53,6 +53,7 @@ _HOLD_STEPS: int = 120
 
 
 async def setup_scene() -> Articulation:
+    """Create the UR10e gripper scene and return the articulation."""
     assets_root_path = await get_assets_root_path_async()
     stage_utils.add_reference_to_stage(
         usd_path=assets_root_path + "/Isaac/Samples/Rigging/Manipulator/configure_manipulator/ur10e/ur/ur_gripper.usd",
@@ -73,6 +74,7 @@ async def setup_scene() -> Articulation:
 
 
 def main(args: argparse.Namespace, app: SimulationApp) -> None:
+    """Run the gripper control tutorial."""
     SimulationManager.setup_simulation(dt=1.0 / 60.0)
 
     robot = app.run_coroutine(setup_scene())

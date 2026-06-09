@@ -18,7 +18,8 @@
 from __future__ import annotations
 
 import os
-from typing import Callable, Literal
+from collections.abc import Callable
+from typing import Any, Literal
 
 import carb
 import numpy as np
@@ -27,22 +28,22 @@ import warp as wp
 from isaacsim.core.simulation_manager import SimulationManager
 
 
-def cprint(message):
+def cprint(message: str) -> None:
     """Cprint."""
     if os.environ.get("ISAACSIM_TEST_VERBOSE", "0").lower() in ["1", "true", "yes"]:
         print(message)
 
 
 # simple decorator to skip test if default engine is not in supported engines
-def requires_engines(supported_engines: list[Literal["physx", "newton"]] = ["physx", "newton"]):
+def requires_engines(supported_engines: list[Literal["physx", "newton"]] = ["physx", "newton"]) -> Callable:
     """Requires engines."""
 
-    def decorator(func):
-        async def wrapper(self, *args, **kwargs):
+    def decorator(func: Callable) -> Callable:
+        async def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
             default_engine = SimulationManager.get_default_engine()
             if default_engine and default_engine.lower() not in supported_engines:
                 cprint(f"  |-- Skipping test: engine '{default_engine}' not in supported engines {supported_engines}")
-                return
+                return None
             return await func(self, *args, **kwargs)
 
         return wrapper
@@ -62,11 +63,11 @@ def parametrize(
     populate_stage_func: Callable[[int, Literal["wrap", "create"]], None],
     populate_stage_func_kwargs: dict = {},
     max_num_prims: int = 5,
-):
+) -> Callable:
     """Parametrize."""
 
-    def decorator(func):
-        async def wrapper(self):
+    def decorator(func: Callable) -> Callable:
+        async def wrapper(self: Any) -> None:
             # Switch to the default engine if specified in settings
             default_engine = SimulationManager.get_default_engine()
             if default_engine:
@@ -127,7 +128,7 @@ def check_array(
     shape: list[int] | None = None,
     dtype: type | None = None,
     device: str | wp.Device | None = None,
-):
+) -> None:
     """Check array."""
     for i, x in enumerate(a if isinstance(a, (list, tuple)) else [a]):
         assert isinstance(x, wp.array), f"[{i}]: {repr(x)} ({type(x)}) is not a Warp array"
@@ -139,7 +140,9 @@ def check_array(
             assert x.device == wp.get_device(device), f"[{i}]: Unexpected device: expected {device}, got {x.device}"
 
 
-def check_lists(a: list, b: list, *, check_value: bool = True, check_type: bool = True, predicate: callable = None):
+def check_lists(
+    a: list, b: list, *, check_value: bool = True, check_type: bool = True, predicate: callable = None
+) -> None:
     """Check lists."""
     assert len(a) == len(b), f"Unexpected length: expected {len(a)}, got {len(b)}"
     for x, y in zip(a, b):
@@ -157,7 +160,7 @@ def check_equal(
     b: wp.array | np.ndarray | list[wp.array] | list[np.ndarray],
     *,
     given: list | None = None,
-):
+) -> None:
     """Check equal."""
     msg = ""
     a = a if isinstance(a, (list, tuple)) else [a]
@@ -181,7 +184,7 @@ def check_allclose(
     rtol: float = 1e-03,
     atol: float = 1e-05,
     given: list | None = None,
-):
+) -> None:
     """Check allclose."""
     msg = ""
     a = a if isinstance(a, (list, tuple)) else [a]
@@ -204,12 +207,12 @@ def draw_sample(
     *,
     shape: tuple,
     dtype: type,
-    types=[list, np.ndarray, wp.array],
+    types: list = [list, np.ndarray, wp.array],
     low: int | float = 0.0,
     high: int | float = 1.0,
     normalized: bool = False,
     transform: callable = None,
-):
+) -> list:
     """Draw sample."""
     samples = []
     for _type in types:
@@ -282,7 +285,7 @@ def draw_choice(*, shape: tuple, choices: list) -> list:
     return samples
 
 
-def draw_indices(*, count: int, step: int = 2, types=[list, np.ndarray, wp.array, None]):
+def draw_indices(*, count: int, step: int = 2, types: list = [list, np.ndarray, wp.array, None]) -> list:
     """Draw indices."""
     indices = list(range(0, count, step))
     indices_list = []

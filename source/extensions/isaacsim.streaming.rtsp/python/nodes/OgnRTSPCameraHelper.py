@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""OmniGraph helper that wires a camera render product to an RTSP writer."""
+
 from __future__ import annotations
 
 import traceback
@@ -57,7 +59,7 @@ class OgnRTSPCameraHelperInternalState(BaseWriterNode):
 
 
 class OgnRTSPCameraHelper:
-    """OmniGraph node that sets up RTSP streaming for a camera render product."""
+    """Create and attach an RTSP writer from RTSPCameraHelper graph inputs."""
 
     @staticmethod
     def internal_state() -> OgnRTSPCameraHelperInternalState:
@@ -66,10 +68,15 @@ class OgnRTSPCameraHelper:
 
     @staticmethod
     def compute(db: og.Database) -> bool:
-        """OGN framework callback: set up the RTSP streaming pipeline.
+        """Set up RTSP streaming from the node's graph inputs.
 
-        This is a one-shot initializer - once the writer is attached,
-        subsequent ``compute`` calls return immediately.
+        Reads ``renderProductPath``, ``port``, ``mountPath``, ``useRawEncoding``,
+        and ``enabled`` from the OmniGraph database.  Setup is skipped when the
+        node is disabled, already initialized, or the render product path cannot
+        be resolved.  For a valid render product, the helper ensures the writer's
+        required ``LdrColor`` ``RenderVar`` exists, authors the SRTX compression
+        hint used by H.264 versus raw routing, constructs ``RTSPStreamWriter``,
+        and attaches it to the render product.
 
         Returns ``True`` on success or when already initialized, ``False``
         when prerequisites aren't met.  The return value is purely

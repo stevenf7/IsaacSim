@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test for physics material volume deformable."""
+"""Verifies VolumeDeformableMaterial properties across supported prim backends. Covers material type, friction, Young's modulus, Poisson ratio, and density accessors."""
 
-from typing import Literal
+from typing import Any, Literal
 
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.kit.test
@@ -33,7 +33,7 @@ from isaacsim.core.experimental.prims.tests.common import (
 from pxr import UsdShade
 
 
-async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs) -> None:
+async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"], **kwargs: Any) -> None:
     """Populate stage."""
     # create new stage
     stage = await stage_utils.create_new_stage_async()
@@ -46,23 +46,23 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
 class TestVolumeDeformableMaterial(omni.kit.test.AsyncTestCase):
     """Test volume deformable material."""
 
-    async def setUp(self):
+    async def setUp(self) -> None:
         """Method called to prepare the test fixture."""
         super().setUp()
 
-    async def tearDown(self):
+    async def tearDown(self) -> None:
         """Method called immediately after the test method has been called."""
         super().tearDown()
 
     # --------------------------------------------------------------------
 
     @parametrize(backends=["usd"], prim_class=VolumeDeformableMaterial, populate_stage_func=populate_stage)
-    async def test_len(self, prim, num_prims, device, backend):
+    async def test_len(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test len."""
         self.assertEqual(len(prim), num_prims, f"Invalid len ({num_prims} prims)")
 
     @parametrize(backends=["usd"], prim_class=VolumeDeformableMaterial, populate_stage_func=populate_stage)
-    async def test_properties_and_getters(self, prim, num_prims, device, backend):
+    async def test_properties_and_getters(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test properties and getters."""
         # test cases (properties)
         # - materials
@@ -71,7 +71,7 @@ class TestVolumeDeformableMaterial(omni.kit.test.AsyncTestCase):
             self.assertTrue(usd_prim.IsValid() and usd_prim.IsA(UsdShade.Material), f"Invalid material")
 
     @parametrize(backends=["usd"], prim_class=VolumeDeformableMaterial, populate_stage_func=populate_stage)
-    async def test_material_type(self, prim, num_prims, device, backend):
+    async def test_material_type(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test material type."""
         for p in prim.prims:
             self.assertTrue(
@@ -80,7 +80,7 @@ class TestVolumeDeformableMaterial(omni.kit.test.AsyncTestCase):
             )
 
     @parametrize(backends=["usd"], prim_class=VolumeDeformableMaterial, populate_stage_func=populate_stage)
-    async def test_friction_coefficients(self, prim, num_prims, device, backend):
+    async def test_friction_coefficients(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test friction coefficients."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
@@ -94,7 +94,7 @@ class TestVolumeDeformableMaterial(omni.kit.test.AsyncTestCase):
                 check_allclose((expected_v0, expected_v1), output, given=(v0, v1))
 
     @parametrize(backends=["usd"], prim_class=VolumeDeformableMaterial, populate_stage_func=populate_stage)
-    async def test_youngs_moduli(self, prim, num_prims, device, backend):
+    async def test_youngs_moduli(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test youngs moduli."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
@@ -105,7 +105,7 @@ class TestVolumeDeformableMaterial(omni.kit.test.AsyncTestCase):
                 check_allclose(expected_v0, output, given=(v0,))
 
     @parametrize(backends=["usd"], prim_class=VolumeDeformableMaterial, populate_stage_func=populate_stage)
-    async def test_poissons_ratios(self, prim, num_prims, device, backend):
+    async def test_poissons_ratios(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test poissons ratios."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")
@@ -116,7 +116,7 @@ class TestVolumeDeformableMaterial(omni.kit.test.AsyncTestCase):
                 check_allclose(expected_v0, output, given=(v0,))
 
     @parametrize(backends=["usd"], prim_class=VolumeDeformableMaterial, populate_stage_func=populate_stage)
-    async def test_densities(self, prim, num_prims, device, backend):
+    async def test_densities(self, prim: Any, num_prims: Any, device: Any, backend: Any) -> None:
         """Test densities."""
         for indices, expected_count in draw_indices(count=num_prims, step=2):
             cprint(f"  |    |-- indices: {type(indices).__name__}, expected_count: {expected_count}")

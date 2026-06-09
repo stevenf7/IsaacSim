@@ -322,7 +322,7 @@ if writer_type is not None and len(render_products) > 0:
 
 
 # RANDOMIZERS
-def on_overlap_hit(hit) -> bool:
+def on_overlap_hit(hit: object) -> bool:
     """Apply a random upwards velocity to objects overlapping the bounce area."""
     prim_path = str(PhysicsSchemaTools.intToSdfPath(hit.rigid_body))
     prim = stage.GetPrimAtPath(prim_path)
@@ -343,7 +343,7 @@ overlap_area_extent = (
 )
 
 
-def on_physics_step(dt: float, context) -> None:
+def on_physics_step(dt: float, context: object) -> None:
     """Check for overlapping objects on every physics update step."""
     get_physics_scene_query_interface().overlap_box(
         carb.Float3(overlap_area_extent),

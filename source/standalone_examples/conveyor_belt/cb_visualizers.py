@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Visualize conveyor belt velocity fields with debug-draw markers."""
 
 import warp as wp
 from isaacsim.util.debug_draw import _debug_draw
@@ -22,18 +23,17 @@ wp.config.enable_backward = False
 
 
 class VelocityFieldVisualizer:
-    """Class to inject and animate point markers that help visualize velocity field speeds and
-    directions.
-    """
+    """Debug marker visualizer for velocity field speeds and directions."""
 
     def __init__(
         self,
         velocity_startup_duration: float,
     ) -> None:
-        """Args:
-        velocity_startup_duration: Time (in seconds) until the velocity fields reach the defined
-            velocity magnitudes. This basically defines a linear acceleration phase that can be
-            used to smoothly get the velocity fields from zero to their actual target velocities.
+        """Initialize the velocity field visualizer.
+
+        Args:
+            velocity_startup_duration: Time until the velocity fields reach the defined
+                velocity magnitudes.
         """
         self._velocity_startup_duration = velocity_startup_duration
 
@@ -77,7 +77,7 @@ class VelocityFieldVisualizer:
     def reset(
         self,
     ) -> None:
-
+        """Reset elapsed visualizer time."""
         self._total_elapsed_time = 0.0
 
     def add_constant_velocity_field(
