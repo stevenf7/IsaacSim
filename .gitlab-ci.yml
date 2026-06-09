@@ -76,6 +76,7 @@ stages:
   - verify-github-staging
   - report-results
   - pages
+  - mirroring-sync
 
 # ==============================================================================================================
 # Default values applied to all jobs
@@ -290,10 +291,11 @@ osec:sonarqube:
 
 # Overrides for mirror-sync job
 mirror-sync: 
-  stage: check
+  stage: mirroring-sync
+  needs: []
 
 mirror-mark-eligible:
-  stage: check
+  stage: mirroring-sync
 
 # ==============================================================================================================
 .check-common:
