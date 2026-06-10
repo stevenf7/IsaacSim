@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tutorial 9, Part 1: Gripper Control.
+"""Tutorial 9, Part 1a: Gripper Control
 
 Introduces the Articulation API by controlling the 2F-140 gripper on a UR10e
 robot. The gripper cycles between open and closed using set_dof_position_targets.
