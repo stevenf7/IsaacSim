@@ -162,7 +162,36 @@ The USD writeback can be enabled by setting the ``set_write_to_usd`` property to
 Tutorials & Examples
 =====================
 
-Activate the ``Robotics Examples`` content browser from **Windows** > **Examples** > **Robotics Examples**. Navigate to **Manipulation**, select the Surface Gripper Example, and click the load button in the information window on the right side of the Robotics Examples content browser. You may need to adjust the GUI to see the load button.
+.. _isaac_surface_gripper_object_grasping_example:
+
+Surface Gripper Object Grasping Standalone Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This standalone example builds a minimal scene with a kinematic carrier, a dynamic gripper body, a D6 attachment joint, a Surface Gripper prim, and a target cube. The gripper lowers onto the cube, closes to grip it, lifts it, and then opens to release it.
+
+.. code-block:: bash
+
+    ./python.sh standalone_examples/api/isaacsim.robot.surface_gripper/gripper_grasp.py
+
+**Key concepts:**
+
+- A ``SurfaceGripper`` prim references one or more *attachment points*. These are D6 joints carrying the ``IsaacAttachmentPointAPI``. On close, the gripper raycasts along each attachment point's forward axis and re-targets the joint at the first object it hits.
+- The D6 attachment joint must have all six DOFs locked (``low > high``); these locks become the rigid gripper-to-object constraint once an object is gripped.
+- ``GripperView.apply_gripper_action`` drives the gripper: a positive value closes/grips, a negative value opens/releases. ``get_surface_gripper_status`` and ``get_gripped_objects`` read back the result.
+
+.. dropdown:: gripper_grasp.py: surface gripper and attachment point setup
+
+    .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot.surface_gripper/gripper_grasp.py
+        :language: python
+        :start-after: # <start-gripper-grasp-setup-snippet>
+        :end-before: # <end-gripper-grasp-setup-snippet>
+
+.. dropdown:: gripper_grasp.py: gripper view and grip control
+
+    .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.robot.surface_gripper/gripper_grasp.py
+        :language: python
+        :start-after: # <start-gripper-grasp-view-snippet>
+        :end-before: # <end-gripper-grasp-view-snippet>
 
 .. _isaac_surface_gripper_robotics_example:
 
@@ -173,6 +202,8 @@ This example shows a surface gripper mounted to a gantry, and contains cubes tha
 
 To run the example:
 
+#. Open **Robotics Examples** from **Windows** > **Examples** > **Robotics Examples**.
+#. Select **Manipulation > Surface Gripper Example**.
 #. Press the **Load** button. The scene should begin playing.
 #. You can move the gantry with the gamepad axes, or by manually editing the gantry joint target positions.
 #. Move the gantry near some cube or set of cubes, and click on the "Open/Close" button - the button label reflects the current gripper state. The gripper can also be closed by the down face button on the gamepad (e.g. X on PlayStation controllers, or A on Xbox controllers).
