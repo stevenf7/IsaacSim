@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.4] - 2026-06-09
+### Changed
+- Clarify Ackermann Controller `invertSteering` input description for rear-wheel-steered robots.
+
 ## [0.1.3] - 2026-06-02
 ### Fixed
 - Clarified DifferentialController velocityCommand output order and units.

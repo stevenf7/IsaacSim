@@ -1269,8 +1269,13 @@ local function get_doc_snippets_tests()
         },
         -- robot_simulation/mobile_robot_controllers
         {
-            "doc_snippets/tests-nativepython-testing-doc_snippets.robot_simulation.mobile_robot_controllers.ackemann_controller",
-            "../../../docs/isaacsim/snippets/robot_simulation/mobile_robot_controllers/ackemann_controller.py",
+            "doc_snippets/tests-nativepython-testing-doc_snippets.robot_simulation.mobile_robot_controllers.ackermann_controller",
+            "../../../docs/isaacsim/snippets/robot_simulation/mobile_robot_controllers/ackermann_controller.py",
+            "--test",
+        },
+        {
+            "doc_snippets/tests-nativepython-testing-doc_snippets.robot_simulation.mobile_robot_controllers.ackermann_controller_forklift",
+            "../../../docs/isaacsim/snippets/robot_simulation/mobile_robot_controllers/ackermann_controller_forklift.py",
             "--test",
         },
         {
