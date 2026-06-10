@@ -48,6 +48,7 @@ Categories
    usd_assets_featured
    usd_assets_third_party
    usd_assets_nurec
+   nurec_utils
 
 
 
@@ -65,6 +66,5 @@ Then, open the **Activity Progress** window (**Window > Utilities > Activity Pro
 .. image:: /images/isim_6.0_base_ref_gui_asset_browsers.png
     :align: center
     :width: 40%
-
 
 
