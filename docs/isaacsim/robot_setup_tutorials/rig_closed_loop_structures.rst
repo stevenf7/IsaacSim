@@ -261,11 +261,11 @@ Control the Gripper with OmniGraph
 
 We can also use an OmniGraph to control the gripper, by writing the target position of the finger joints directly in the graph.
 
-We have already prepared the graph in the ``Samples/Rigging/Gripper/Robotiq 2F-85/Robotiq_2F_85_complete/Robotiq_2F_75_controller.usd`` file, insert it as a layer to your Robotiq_2F_85_config.usd layer.
+We have already prepared the graph in the ``Samples/Rigging/Gripper/Robotiq 2F-85/Robotiq_2F_85_complete/Robotiq_2F_85_controller.usd`` file, insert it as a layer to your Robotiq_2F_85_config.usd layer.
 
 #. Open the **Layer** tab. 
 #. Select the Insert Sub-Layer layer.
-#. Find the ``Robotiq_2F_75_controller.usd`` file in the ``Samples/Rigging/Gripper/Robotiq 2F-85/Robotiq_2F_85_complete`` folder, and click ``Open``.
+#. Find the ``Robotiq_2F_85_controller.usd`` file in the ``Samples/Rigging/Gripper/Robotiq 2F-85/Robotiq_2F_85_complete`` folder, and click ``Open``.
 
 .. image:: /images/isim_6.0_full_tut_viewport_rig_closed_loop_struct_omnigraph.png
     :width: 800

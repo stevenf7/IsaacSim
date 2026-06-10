@@ -27,3 +27,4 @@ Migration guides for upgrading to |isaac-sim_short| 6.0.
    ros2_omnigraph_migration
    ext_isaacsim_replicator_agent_migration_guide
    mobility_gen_recordings_migration
+   surface_gripper_bindings_import
