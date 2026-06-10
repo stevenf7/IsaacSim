@@ -10,7 +10,7 @@
 # unit test), so it cannot alias the authored RP's output. GT layout: <gt_root>/<camera>/<ts_ns>.png.
 #
 # Loaded via load_config(), so it overlays config/nurec_config.yaml (the SPG carb overrides that
-# setup_for_rendering applies). Reuses the render-vs-GT stages + GT tree on the isaac-dev Nucleus.
+# setup_for_rendering applies).
 
 keyframe_tolerance_us: 1000   # match a GT timestamp to the nearest rig keyframe within 1 ms
 num_samples: 5                # random GT keyframes sampled per camera (null = all)

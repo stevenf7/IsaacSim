@@ -33,6 +33,16 @@ import argparse
 import os
 import random
 import sys
+from enum import Enum
+
+
+class CaseResult(Enum):
+    """Outcome of a copy-vs-bind case."""
+
+    PASS = 0
+    FAIL = 1
+    SKIP = 2
+
 
 _DEFAULT_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config", "nurec_copy_test.yaml")
 
@@ -117,24 +127,25 @@ def _render_target_keyframes(stage, name: str, target, ts_list: list[int]) -> di
     return images
 
 
-def run_case(case: dict) -> int:
+def run_case(case: dict) -> CaseResult:
     """Render bind + clone for each camera at N random GT keyframes; score the clone and compare to bind.
 
     Returns:
-        0 (clone passed the GT gate and matched the bind), 1 (failed a gate / mismatch), or 2 (not an
-        SPG stage, no GT timestamps, or no authored RenderProducts for the requested cameras).
+        `CaseResult.PASS` (clone passed the GT gate and matched the bind), `CaseResult.FAIL` (failed a
+        gate / mismatch), or `CaseResult.SKIP` (not an SPG stage, no GT timestamps, or no authored
+        RenderProducts for the requested cameras).
     """
     name = case.get("name") or "default"
     carb.log_warn(f"==================== copy-rp case: {name} ====================")
     ok, stage = open_stage(resolve_path(case["stage"], cfg_dir))
     if not ok or stage is None:
         carb.log_error(f"[{name}] failed to open stage: {case['stage']}")
-        return 2
+        return CaseResult.SKIP
 
     success, nurec, spg, problems = setup_for_rendering(stage, args.config)
     if not (success and spg):
         carb.log_error(f"[{name}] not a renderable SPG stage: nurec={nurec} spg={spg} problems={problems}")
-        return 2
+        return CaseResult.SKIP
 
     thresholds = case.get("thresholds") or {}
     min_psnr = args.min_psnr if args.min_psnr is not None else thresholds.get("min_psnr")
@@ -147,7 +158,7 @@ def run_case(case: dict) -> int:
     per_camera_ts = read_gt_timestamps(gt_root, cameras)
     if not per_camera_ts:
         carb.log_error(f"[{name}] no GT timestamps under {case['gt_root']} for cameras {cameras}")
-        return 2
+        return CaseResult.SKIP
 
     render_products = discover_render_products(stage)
     factory = RenderTargetFactory(has_spg=True)
@@ -209,7 +220,7 @@ def run_case(case: dict) -> int:
 
     if not rows:
         carb.log_error(f"[{name}] nothing rendered/scored")
-        return 2
+        return CaseResult.SKIP
 
     psnr_mean = float(np.mean([r["psnr"] for r in rows]))
     ssim_mean = float(np.mean([r["ssim"] for r in rows]))
@@ -224,13 +235,13 @@ def run_case(case: dict) -> int:
             carb.log_error(f"[{name}] FAIL {failure}")
         if not sanity_ok:
             carb.log_error(f"[{name}] FAIL clone-vs-GT below gate (PSNR={psnr_mean:.2f} SSIM={ssim_mean:.4f})")
-        return 1
+        return CaseResult.FAIL
     carb.log_warn(f"[{name}] PASS: clone renders correctly vs GT and matches bind")
-    return 0
+    return CaseResult.PASS
 
 
 results = {(case.get("name") or "default"): run_case(case) for case in cases}
-carb.log_warn(f"=== copy-rp results (0=pass 1=fail 2=no-score): {results} ===")
-exit_code = 0 if all(value == 0 for value in results.values()) else 1
+carb.log_warn(f"=== copy-rp results: { {name: r.name for name, r in results.items()} } ===")
+exit_code = 0 if all(r is CaseResult.PASS for r in results.values()) else 1
 simulation_app.close()
 sys.exit(exit_code)

@@ -1,5 +1,17 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """USD stage, pose, timestamp, and image helpers for the nurec example.
 
@@ -16,6 +28,18 @@ import numpy as np
 from PIL import Image
 
 USDZ_RIG_PARENT = "/World/rig_trajectories/sensor_rig_0"
+
+
+def is_remote_path(path: str) -> bool:
+    """Return True when `path` is a URL (e.g. `omniverse://`), not a local filesystem path.
+
+    Args:
+        path: The path to classify.
+
+    Returns:
+        True when `path` is a non-`file://` URL.
+    """
+    return "://" in path and not path.lower().startswith("file://")
 
 
 def save_image(path: str, image: np.ndarray) -> None:
