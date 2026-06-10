@@ -1,5 +1,17 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Rendering primitives for NuRec USDs, with or without PPISP.
 
@@ -45,18 +57,6 @@ _IDENTITY_EXPOSURE = {
     "exposure:responsivity": 1.0,
     "exposure:time": 1.0,
 }
-
-
-def _is_remote_path(path: str) -> bool:
-    """Return True when a stage path resolves through a URL scheme.
-
-    Args:
-        path: The stage path to check.
-
-    Returns:
-        True when `path` is a URL (e.g. `omniverse://`), not a local filesystem path.
-    """
-    return "://" in path and not path.lower().startswith("file://")
 
 
 def _timer(timing_label: str | None, name: str) -> AbstractContextManager[Any]:
@@ -738,10 +738,9 @@ def render_keyframes(
     Returns:
         The path of the written manifest, or None when nothing was rendered.
     """
-    source_kind = "omniverse" if _is_remote_path(stage_path) else "local"
-    with _timer(timing_label, f"stage_open_{source_kind}") as timer:
+    with _timer(timing_label, "stage_open") as timer:
         stage = open_stage(stage_path)
-    _log_timer(timing_label, f"stage open ({source_kind})", timer)
+    _log_timer(timing_label, "stage open", timer)
     if stage is None:
         carb.log_error(f"Failed to open stage: {stage_path}")
         return None

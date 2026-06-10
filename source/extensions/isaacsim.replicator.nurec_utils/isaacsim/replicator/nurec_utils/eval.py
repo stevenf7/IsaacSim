@@ -44,7 +44,7 @@ from isaacsim.replicator.nurec_utils.metrics.psnr_ssim import (
 )
 from isaacsim.replicator.nurec_utils.metrics.scoped_timer import ScopedTimer
 from isaacsim.replicator.nurec_utils.render import render_keyframes
-from isaacsim.replicator.nurec_utils.usd_utils import subsample
+from isaacsim.replicator.nurec_utils.usd_utils import is_remote_path, subsample
 
 # (csv/json key, plot label) for the headline metrics.
 HEADLINES = [("psnr", "PSNR (dB)"), ("ssim", "SSIM"), ("mean_abs_diff", "MAD")]
@@ -68,18 +68,6 @@ def _log_timer(label: str, timer: ScopedTimer) -> None:
         carb.log_info(f"[nurec timing] {label}: {timer.elapsed_time_ms:.3f} ms")
 
 
-def _is_remote(path: str) -> bool:
-    """Return True if `path` is a URL (e.g. `omniverse://`), not a local filesystem path.
-
-    Args:
-        path: The path or URL to classify.
-
-    Returns:
-        True when `path` is a non-`file://` URL.
-    """
-    return "://" in path and not path.lower().startswith("file://")
-
-
 def resolve_gt_root(gt_root: str) -> str:
     """Return a local directory for `gt_root`.
 
@@ -93,7 +81,7 @@ def resolve_gt_root(gt_root: str) -> str:
     Returns:
         An absolute local directory: the resolved path, or the temporary mirror for a remote root.
     """
-    if not _is_remote(gt_root):
+    if not is_remote_path(gt_root):
         return os.path.abspath(os.path.expanduser(gt_root))
     if gt_root in _GT_MIRROR_CACHE:
         carb.log_info(f"[nurec timing] omniverse GT mirror: cache hit {gt_root} -> {_GT_MIRROR_CACHE[gt_root]}")

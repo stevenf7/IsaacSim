@@ -1,5 +1,17 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Plotting helpers for evaluation output: time/index plots, histograms, pose heatmaps, panels.
 
@@ -10,23 +22,11 @@ from __future__ import annotations
 
 import os
 from collections.abc import Iterable
-from types import ModuleType
 
+import matplotlib.pyplot as plt
 import numpy as np
 
-
-def _plt() -> ModuleType:
-    """Import matplotlib configured for the headless Agg backend.
-
-    Returns:
-        The configured `matplotlib.pyplot` module.
-    """
-    import matplotlib
-
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-
-    return plt
+plt.switch_backend("Agg")  # headless backend, no display
 
 
 def plot_metric_over_index(values: Iterable[float], metric_name: str, out_path: str) -> None:
@@ -37,7 +37,6 @@ def plot_metric_over_index(values: Iterable[float], metric_name: str, out_path: 
         metric_name: Label for the metric (used on the y-axis and title).
         out_path: Path to write the PNG to (parent dirs are created).
     """
-    plt = _plt()
     fig, ax = plt.subplots(figsize=(10, 4))
     ax.plot(list(values), marker=".", linestyle="-", linewidth=0.8, markersize=2)
     ax.set_xlabel("frame index")
@@ -58,7 +57,6 @@ def plot_histogram(values: Iterable[float], metric_name: str, out_path: str) -> 
         metric_name: Label for the metric (used on the x-axis and title).
         out_path: Path to write the PNG to (parent dirs are created).
     """
-    plt = _plt()
     fig, ax = plt.subplots(figsize=(6, 4))
     ax.hist(list(values), bins=30)
     ax.set_xlabel(metric_name)
@@ -96,7 +94,6 @@ def plot_pose_heatmap(
         vmax: Upper bound of the color scale; pass the same across datasets for comparable
             heatmaps.
     """
-    plt = _plt()
     pos = np.asarray(list(positions), dtype=np.float64)
     vals = np.asarray(list(values), dtype=np.float64)
     idx_map = {"x": 0, "y": 1, "z": 2}
@@ -150,7 +147,6 @@ def save_comparison_panel(
         ssim_series: This camera's SSIM per frame, aligned to `timestamps`.
         current_ts: Timestamp (ns) of this frame, marked on the trend plots.
     """
-    plt = _plt()
     diff_label = f"|GT - rendered| x {diff_scale:g}"
     caption = f"PSNR = {psnr_value:.2f} dB     SSIM = {ssim_value:.3f}"
     have_trend = bool(timestamps) and psnr_series is not None and ssim_series is not None

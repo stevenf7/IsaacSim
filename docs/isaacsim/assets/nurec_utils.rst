@@ -275,3 +275,8 @@ Plain NuRec volume assets:
     _build/linux-x86_64/release/isaac-sim.sh \
         --/renderer/multiGpu/enabled=false \
         --/rtx/rtpt/gaussian/skipTonemapping/enabled=false
+
+References
+---------
+
+* `NuRec documentation <https://docs.nvidia.com/nurec/>`__

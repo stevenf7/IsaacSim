@@ -6,8 +6,8 @@
 # tolerance. Pick a case with `--case particle|volume`.
 #
 # stage and gt_root are Isaac-relative paths (e.g. /Isaac/Samples/...). resolve_path() in
-# rendering_setup.py prepends get_assets_root_path() at runtime so they work against both the
-# internal Nucleus (omniverse://isaac-dev.ov.nvidia.com) and the production S3 mirror.
+# rendering_setup.py prepends get_assets_root_path() at runtime so they work against both
+# Nucleus and the production S3 mirror.
 # gt_root may also be a local path or an omniverse:// URL. All per-case keys (stage, gt_root,
 # cameras, num_samples, thresholds, ...) can be overridden per case; top-level keys serve as
 # defaults for cases that omit them.
@@ -17,11 +17,8 @@
 keyframe_tolerance_us: 1000
 
 # Per-case pass/fail gates (aggregate PSNR/SSIM over the frames), enforced by
-# test_nurec_render_vs_gt.py. Calibrated from a deterministic warmup_steps=800 run with the
-# torch metrics (PSNR data_range=1.0; SSIM Gaussian 11x11/sigma=1.5), set a few dB / ~0.02
-# below the measured means as drift margin:
-#   particle: ~PSNR 27.5 / SSIM 0.937
-#   volume:   ~PSNR 29.7 / SSIM 0.962
+# test_nurec_render_vs_gt.py with the torch metrics (PSNR data_range=1.0;
+# SSIM Gaussian 11x11/sigma=1.5), set conservatively below the measured means as drift margin.
 cases:
   - name: particle_ppispon_sh
     stage: /Isaac/Samples/NuRec/Galileo/NRE_26_06/PPISP_ON/particle_sh.usdz
