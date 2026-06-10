@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.8] - 2026-06-09
+### Added
+- Teleop support for NuRec scenes with SPG (PPISP): the chase viewport renders through the scene's authored PPISP graph.
+### Changed
+- Depend on `isaacsim.replicator.nurec_utils`, deduplicating the local NuRec utilities.
+
 ## [0.2.7] - 2026-06-07
 ### Added
 - `collect_input()` (exported): caches a scene into a recording — `.usdz` byte-copied whole; `.usd`/`.usda`/`.usdc` collected via `omni.kit.usd.collect`.

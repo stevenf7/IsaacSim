@@ -31,7 +31,7 @@ import omni.ext
 import omni.kit
 import omni.ui as ui
 import omni.usd
-from isaacsim.core.experimental.utils.stage import open_stage_async
+from isaacsim.core.experimental.utils.stage import get_current_stage, open_stage_async
 from isaacsim.core.rendering_manager import ViewportManager
 from isaacsim.core.simulation_manager import SimulationEvent, SimulationManager
 from isaacsim.replicator.experimental.mobility_gen import (
@@ -42,8 +42,11 @@ from isaacsim.replicator.experimental.mobility_gen import (
     OccupancyMap,
     RecordingSession,
     collect_input,
+    route_chase_through_ppisp,
 )
 from isaacsim.replicator.mobility_gen.examples import GamepadTeleoperationScenario, KeyboardTeleoperationScenario
+from isaacsim.replicator.nurec_utils.rendering_setup import setup_for_rendering
+from omni.kit.notification_manager import NotificationStatus, post_notification
 from omni.kit.widget.filebrowser import FileBrowserItem
 from omni.kit.window.filepicker import FilePickerDialog
 
@@ -485,6 +488,16 @@ class MobilityGenExtension(omni.ext.IExt):
             self._build_button.enabled = True
             return
 
+        # NuRec: apply the render carb overrides for the loaded stage. Abort the build (rather than
+        # render a black scene) if a launch prerequisite is unmet (e.g. omni.rtx.spg not enabled).
+        stage = get_current_stage()
+        success, nurec, spg, problems = setup_for_rendering(stage)
+        carb.log_warn(f"[nurec] teleop render setup: nurec={nurec} spg={spg} success={success} (stage={scene_usd_str})")
+        if not success:
+            post_notification("NuRec scene cannot render. " + " ".join(problems), status=NotificationStatus.WARNING)
+            self._build_button.enabled = True
+            return
+
         try:
             self.session.build(
                 robot_type,
@@ -496,8 +509,11 @@ class MobilityGenExtension(omni.ext.IExt):
                 add_ground_plane=True,
                 build_chase_camera=True,
             )
-            if ViewportManager.get_viewport_api() is not None:
-                ViewportManager.set_camera(self.session.chase_camera_path)
+            if ViewportManager.get_viewport_api() is not None and self.session.chase_camera_path is not None:
+                # For an SPG scene, render the chase view through the export's authored PPISP graph;
+                # otherwise point the viewport straight at the chase camera.
+                if not (spg and route_chase_through_ppisp(stage, self.session.chase_camera_path)):
+                    ViewportManager.set_camera(self.session.chase_camera_path)
         except Exception as e:
             carb.log_error(f"MobilityGen: failed to set up scenario — {e}")
             self._build_button.enabled = True

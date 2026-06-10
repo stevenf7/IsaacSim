@@ -18,7 +18,8 @@ from .camera import MobilityGenCamera
 from .common import Buffer, Module
 from .config import Config
 from .inputs import Gamepad, GamepadDriver, Keyboard, KeyboardDriver
-from .nurec_overrides import apply_nurec_replay_overrides, is_nurec_stage
+from .nurec_overrides import ensure_nurec_replay_flags, setup_for_replay
+from .nurec_viewport import route_chase_through_ppisp
 from .occupancy_map import OccupancyMap
 from .path_planner import compress_path, generate_paths
 from .pose_samplers import GridPoseSampler, UniformPoseSampler
@@ -67,17 +68,18 @@ __all__ = [
     "SCENARIOS",
     "SensorConfig",
     "UniformPoseSampler",
-    "apply_nurec_replay_overrides",
     "apply_sensor_overrides",
     "collect_input",
     "compress_path",
+    "ensure_nurec_replay_flags",
     "generate_paths",
     "is_complete",
-    "is_nurec_stage",
     "load_scenario",
     "log_camera_properties",
     "mark_replay_complete",
     "replay_config_from_args",
+    "route_chase_through_ppisp",
     "save_sensor_overrides",
+    "setup_for_replay",
     "write_replay_config",
 ]

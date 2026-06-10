@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,27 +13,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""CLI wrapper for replaying MobilityGen recordings and rendering sensor data.
+"""Replay MobilityGen recordings of NuRec/SPG scenes with PPISP-developed sensor RGB.
+
+Experimental NuRec variant of replay_directory.py: it launches with ``omni.rtx.spg`` enabled and, after
+loading each scenario, swaps its sensor cameras to ExperimentalNuRecCamera so RGB is captured through a
+cloned PPISP RenderProduct (ISP-developed). On a non-SPG NuRec scene the cameras fall back to the plain
+RenderProduct. The MobilityGen extension is not modified.
+
+Experimental — subject to change in future versions.
 
 Example usage (from the Isaac Sim build directory):
 
     cd _build/linux-x86_64/release
-    ./python.sh ../../../source/standalone_examples/replicator/mobility_gen/replay_directory.py \\
-        --render_interval 6 \\
-        --enable isaacsim.replicator.mobility_gen.examples \\
+    ./python.sh standalone_examples/replicator/mobility_gen/replay_directory_for_nurec.py \\
+        --render_rt_subframes 36 \\
         --input ~/MobilityGenData/recordings \\
         --output ~/MobilityGenData/replays
 """
 
 from isaacsim import SimulationApp
 
-# multi_gpu disabled: segfaults on Kit 110.1.x (unsolved).
-simulation_app = SimulationApp(launch_config={"headless": True, "multi_gpu": False})
+# omni.rtx.spg must be enabled at launch to develop PPISP; multi_gpu disabled (segfaults on Kit 110.1.x).
+simulation_app = SimulationApp(
+    launch_config={
+        "headless": True,
+        "multi_gpu": False,
+        "extra_args": ["--enable", "omni.rtx.spg", "--/renderer/multiGpu/enabled=false"],
+    }
+)
 
 import argparse
 import glob
 import os
 import shutil
+import sys
 import time
 
 import carb
@@ -62,6 +75,10 @@ from isaacsim.replicator.experimental.mobility_gen import (
     setup_for_replay,
     write_replay_config,
 )
+
+# Experimental NuRec camera lives alongside this script; import after the app + extensions are up.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from experimental_nurec_camera import substitute_cameras_with_nurec
 
 if "MOBILITY_GEN_DATA" in os.environ:
     DATA_DIR = os.environ["MOBILITY_GEN_DATA"]
@@ -224,6 +241,11 @@ if __name__ == "__main__":
 
         scenario = load_scenario(recording_path)
 
+        # Swap sensor cameras to the experimental NuRec camera before rendering, so each one captures RGB
+        # through a cloned PPISP RenderProduct (created before the first render, when omni.rtx.spg
+        # registers it). No-op on non-SPG scenes (the camera falls back to a plain RenderProduct).
+        substitute_cameras_with_nurec(scenario)
+
         # Set up the loaded stage for replay: NuRec render overrides + RGB-only replay flags
         # (no-op on non-NuRec stages).
         setup_for_replay(args, get_current_stage())
@@ -281,7 +303,7 @@ if __name__ == "__main__":
             writer.copy_init(recording_path)
         write_replay_config(output_path, replay_config)
 
-        carb.log_warn(f"============== Replaying {i} / {len(recording_paths)} ==============")
+        carb.log_warn(f"============== Replaying {i} / {len(recording_paths)} (NuRec) ==============")
         carb.log_warn(f"\tInput path: {recording_path}")
         carb.log_warn(f"\tOutput path: {output_path}")
         carb.log_warn(f"\tRgb enabled: {args.rgb_enabled}")
