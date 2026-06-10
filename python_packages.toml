@@ -488,6 +488,7 @@ inventory.includes.all = [
     "exts/isaacsim.replicator.mobility_gen",
     "exts/isaacsim.replicator.mobility_gen.examples",
     "exts/isaacsim.replicator.mobility_gen.ui",
+    "exts/isaacsim.replicator.nurec_utils",
     "exts/isaacsim.replicator.synthetic_recorder",
     "exts/isaacsim.replicator.writers",
 ]

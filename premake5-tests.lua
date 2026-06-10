@@ -1067,6 +1067,21 @@ local function get_replicator_tests()
             "standalone_examples/api/isaacsim.replicator.teleop/sdg_teleop_replay.py",
             "--test",
         })
+        table.insert(tests, {
+            "tests-nativepython-isaacsim.replicator.nurec_utils.test_nurec_render_vs_gt",
+            "standalone_examples/testing/nurec/test_nurec_render_vs_gt.py",
+            "--num-samples 5",
+        })
+        table.insert(tests, {
+            "tests-nativepython-isaacsim.replicator.nurec_utils.test_keyframe_pose_rendering_consistency",
+            "standalone_examples/testing/nurec/test_keyframe_pose_rendering_consistency.py",
+            "--num-samples 1",
+        })
+        table.insert(tests, {
+            "tests-nativepython-isaacsim.replicator.nurec_utils.test_copy_rp_render",
+            "standalone_examples/testing/nurec/test_copy_rp_render.py",
+            "--num-samples 5",
+        })
     end
 
     return tests
