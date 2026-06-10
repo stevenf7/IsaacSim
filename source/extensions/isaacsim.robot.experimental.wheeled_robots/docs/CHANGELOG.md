@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.10] - 2026-06-09
+### Added
+- AckermannController `invert_steering` symmetry tests for instant and ramped commands.
+
+### Changed
+- Clarify that `invert_steering` is for rear-wheel-steered robots such as forklifts.
+
 ## [0.2.9] - 2026-05-13
 ### Fixed
 - Raise `ValueError` (instead of cryptic `TypeError`) when `HolonomicController` is constructed without `wheel_radius`, `wheel_positions`, `wheel_orientations`, or `mecanum_angles`.

@@ -273,8 +273,8 @@ OmniGraph Node
      - Radius of the front wheels of the robot in meters
    * - maxWheelVelocity
      - Maximum angular velocity of the robot wheel in rad/s
-   * - invertSteeringAngle
-     - Flips the sign of the steering angle, Set to true for rear wheel steering
+   * - invertSteering
+     - Set to true for rear-wheel-steered robots such as forklifts, where the steering joints actuate the rear axle and the front wheels stay fixed in heading
    * - useAcceleration
      - Use acceleration as an input, Set to false to use speed as input instead
    * - maxWheelRotation
@@ -304,5 +304,35 @@ Python
 
 The python snippet below creates an Ackermann controller for a NVIDIA Leatherback robot with a wheel base of 1.65m, track width of 1.25m, and wheel radius of 0.25m, sending it a desired forward velocity of 1.1 m/s and steering angle of 0.1 rad.
 
-.. literalinclude:: ../snippets/robot_simulation/mobile_robot_controllers/ackemann_controller.py
+.. literalinclude:: ../snippets/robot_simulation/mobile_robot_controllers/ackermann_controller.py
     :language: python
+
+.. figure:: images/isim_6.0_full_tut_viewport_ackermann_leatherback.webp
+   :align: center
+   :width: 80%
+   :alt: Leatherback robot driven by the Ackermann controller with front-wheel steering
+
+   Leatherback driven with front-wheel steering.
+
+Rear-wheel steering
+-------------------
+
+Use ``invert_steering=True`` when the robot steers with its *rear* wheels, not its front wheels. This mode is intended for rear-steered vehicles such as forklifts: the front wheels stay fixed in heading, and the rear axle carries the steering joints. 
+The controller still takes the same speed and steering-angle commands as in the front-steering case.
+
+The example uses an Isaac Sim ForkliftC asset with rear rotator joints, a wheel base of 1.65 m, track width of 1.05 m, front wheel radius of 0.325 m, and rear wheel radius of 0.255 m.
+
+.. figure:: /images/usd_assets_robots/robot_assets_docs_thumbnails/isim_5.1_full_ref_viewport_Isaac_Robots_IsaacSim_ForkliftC_forklift_c.usd.png
+   :align: center
+   :alt: ForkliftC
+   :width: 60%
+
+.. literalinclude:: ../snippets/robot_simulation/mobile_robot_controllers/ackermann_controller_forklift.py
+    :language: python
+
+.. figure:: images/isim_6.0_full_tut_viewport_ackermann_forklift_turn.webp
+   :align: center
+   :width: 80%
+   :alt: ForkliftC robot turning with rear-wheel steering using invert_steering=True
+
+   ForkliftC turning with ``invert_steering=True``.
