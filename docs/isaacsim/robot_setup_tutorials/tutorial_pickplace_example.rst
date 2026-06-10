@@ -39,12 +39,9 @@ This tutorial is divided into four parts, each corresponding to a standalone exa
    * - Part
      - Script
      - Description
-   * - 1a
+   * - 1
      - ``tutorial_9_gripper_control.py``
      - Gripper control using the Articulation API
-   * - 1b
-     - ``tutorial_9_gripper_grasp.py``
-     - Object grasping with a SurfaceGripper and attachment points
    * - 2
      - ``tutorial_9_arm_trajectory.py``
      - Joint-space trajectory planning and execution
@@ -57,7 +54,7 @@ This tutorial is divided into four parts, each corresponding to a standalone exa
 
 All scripts are located at ``standalone_examples/tutorials/manipulation/``.
 
-Part 1a: Gripper Control
+Part 1: Gripper Control
 ========================
 
 This example introduces the Articulation API by controlling the 2F-140 gripper joints directly with ``set_dof_position_targets``. The gripper closes fully and then opens again. 
@@ -81,36 +78,6 @@ This example introduces the Articulation API by controlling the 2F-140 gripper j
         :language: python
         :start-after: # <start-gripper-control-snippet>
         :end-before: # <end-gripper-control-snippet>
-
-
-Part 1b: Gripper Object Grasping
-=================================
-
-This example introduces the ``SurfaceGripper`` and the experimental ``GripperView`` API by grasping a cube with a suction-style gripper. The gripper lowers onto the cube, closes to grip it, lifts it, and then opens to release it.
-
-.. code-block:: bash
-
-    ./python.sh standalone_examples/tutorials/manipulation/tutorial_9_gripper_grasp.py
-
-**Key concepts:**
-
-- A ``SurfaceGripper`` prim references one or more *attachment points* — D6 joints carrying the ``IsaacAttachmentPointAPI``. On close, the gripper raycasts along each attachment point's forward axis and re-targets the joint at the first object it hits.
-- The D6 attachment joint must have all six DOFs locked (``low > high``); these locks become the rigid gripper-to-object constraint once an object is gripped.
-- ``GripperView.apply_gripper_action`` drives the gripper: a positive value closes/grips, a negative value opens/releases. ``get_surface_gripper_status`` and ``get_gripped_objects`` read back the result.
-
-.. dropdown:: tutorial_9_gripper_grasp.py — surface gripper and attachment point setup
-
-    .. literalinclude:: ../../../source/standalone_examples/tutorials/manipulation/tutorial_9_gripper_grasp.py
-        :language: python
-        :start-after: # <start-gripper-grasp-setup-snippet>
-        :end-before: # <end-gripper-grasp-setup-snippet>
-
-.. dropdown:: tutorial_9_gripper_grasp.py — gripper view and grip control
-
-    .. literalinclude:: ../../../source/standalone_examples/tutorials/manipulation/tutorial_9_gripper_grasp.py
-        :language: python
-        :start-after: # <start-gripper-grasp-view-snippet>
-        :end-before: # <end-gripper-grasp-view-snippet>
 
 
 Part 2: Arm Trajectory Following

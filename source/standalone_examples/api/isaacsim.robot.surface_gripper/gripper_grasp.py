@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tutorial 9, Part 1b: Gripper Object Grasping
+"""Surface Gripper Object Grasping Example
 
 Scene:
     - Ground plane.
@@ -40,25 +40,29 @@ The script does, in order:
 
 import argparse
 import sys
+from typing import Any
 
 from isaacsim import SimulationApp
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--test", action="store_true", help="Run in test mode")
 parser.add_argument("--headless", action="store_true", help="Run without a viewport")
 args, _ = parser.parse_known_args()
 
-simulation_app = SimulationApp({"headless": args.headless})
+simulation_app = SimulationApp({"headless": args.headless or args.test})
 
 import isaacsim.core.experimental.utils.app as app_utils
+import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import numpy as np
-from isaacsim.core.experimental.objects import Cube, GroundPlane
+from isaacsim.core.experimental.objects import Cube, DomeLight, GroundPlane
 from isaacsim.core.experimental.prims import GeomPrim, RigidPrim
 from isaacsim.robot.surface_gripper import GripperView, _surface_gripper
-from pxr import Gf, PhysxSchema, Sdf, UsdGeom, UsdPhysics
+from pxr import Gf, UsdPhysics
 from usd.schema.isaac import robot_schema
 
 GripperStatus = _surface_gripper.GripperStatus
+Vec3 = tuple[float, float, float]
 
 GRIPPER_PRIM_PATH = "/World/SurfaceGripper"
 GRIPPER_JOINTS_SCOPE = "/World/Surface_Gripper_Joints"
@@ -85,26 +89,35 @@ GRIPPER_GRASP_Z = CUBE_SIZE + GRIPPER_SIZE / 2.0 + 0.005  # ~46 mm
 GRIPPER_LIFT_Z = 0.30
 
 
-def _make_cube_geom(stage, path: str, size: float, position, color):
+def _make_cube_geom(path: str, size: float, position: Vec3, color: Vec3) -> Any:
     # Create the cube with the core (experimental) Cube helper and apply collision
     # via GeomPrim. Cube sets the geom's native ``size`` attribute (rather than a
     # scale op), which the surface gripper's scene-query raycast relies on -- it
     # does not reliably hit a scaled box collider.
     Cube(paths=path, sizes=size, positions=[position], colors=[color])
     GeomPrim(paths=path, apply_collision_apis=True)
-    return stage.GetPrimAtPath(path)
+    return prim_utils.get_prim_at_path(path)
 
 
-def _make_kinematic_cube(stage, path: str, size: float, position, color):
-    prim = _make_cube_geom(stage, path, size, position, color)
-    UsdPhysics.RigidBodyAPI.Apply(prim).GetKinematicEnabledAttr().Set(True)
-    PhysxSchema.PhysxRigidBodyAPI.Apply(prim).CreateDisableGravityAttr(True)
+def _make_kinematic_cube(path: str, size: float, position: Vec3, color: Vec3) -> Any:
+    prim = _make_cube_geom(path, size, position, color)
+    rigid_prim = RigidPrim(path)
+    prim_utils.ensure_api(prim, UsdPhysics.RigidBodyAPI).GetKinematicEnabledAttr().Set(True)
+    rigid_prim.set_enabled_gravities([False])
     return prim
 
 
-def _make_dynamic_cube(stage, path, size, position, color, mass, *, disable_gravity=False) -> RigidPrim:
+def _make_dynamic_cube(
+    path: str,
+    size: float,
+    position: Vec3,
+    color: Vec3,
+    mass: float,
+    *,
+    disable_gravity: bool = False,
+) -> RigidPrim:
     """Create a dynamic rigid cube and wrap it in a RigidPrim for pose readback."""
-    _make_cube_geom(stage, path, size, position, color)
+    _make_cube_geom(path, size, position, color)
     # RigidPrim applies the rigid-body APIs and sets the mass and gravity state.
     rigid_prim = RigidPrim(path, masses=[mass])
     if disable_gravity:
@@ -112,14 +125,14 @@ def _make_dynamic_cube(stage, path, size, position, color, mass, *, disable_grav
     return rigid_prim
 
 
-def build_scene(stage) -> tuple[RigidPrim, RigidPrim]:
+def build_scene(stage: Any) -> tuple[RigidPrim, RigidPrim]:
     stage_utils.set_stage_up_axis("Z")
-    UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
+    stage_utils.define_prim("/physicsScene", "PhysicsScene")
     GroundPlane("/World/GroundPlane")
+    DomeLight("/World/DomeLight").set_intensities(1000)
 
     # Static carrier (kinematic, never moved). Anchors all joints.
     _make_kinematic_cube(
-        stage,
         CARRIER_PATH,
         size=CARRIER_SIZE,
         position=(0.0, 0.0, CARRIER_Z),
@@ -128,7 +141,6 @@ def build_scene(stage) -> tuple[RigidPrim, RigidPrim]:
 
     # Dynamic gripper body, gravity disabled.
     gripper_body = _make_dynamic_cube(
-        stage,
         GRIPPER_BODY_PATH,
         size=GRIPPER_SIZE,
         position=(0.0, 0.0, GRIPPER_INIT_Z),
@@ -139,7 +151,6 @@ def build_scene(stage) -> tuple[RigidPrim, RigidPrim]:
 
     # Target dynamic cube to grasp.
     cube = _make_dynamic_cube(
-        stage,
         CUBE_PATH,
         size=CUBE_SIZE,
         position=(0.0, 0.0, CUBE_REST_Z),
@@ -149,8 +160,8 @@ def build_scene(stage) -> tuple[RigidPrim, RigidPrim]:
 
     # Prismatic joint between carrier (body0) and gripper body (body1) along Z,
     # with a strong linear drive used to move the gripper up/down.
-    UsdGeom.Scope.Define(stage, "/World/Joints")
-    pris = UsdPhysics.PrismaticJoint.Define(stage, DRIVE_JOINT_PATH)
+    stage_utils.define_prim("/World/Joints", "Scope")
+    pris = UsdPhysics.PrismaticJoint(stage_utils.define_prim(DRIVE_JOINT_PATH, "PhysicsPrismaticJoint"))
     pris.CreateBody0Rel().SetTargets([CARRIER_PATH])
     pris.CreateBody1Rel().SetTargets([GRIPPER_BODY_PATH])
     pris.CreateAxisAttr("Z")
@@ -177,8 +188,8 @@ def build_scene(stage) -> tuple[RigidPrim, RigidPrim]:
     # Attachment-point joint: D6 between gripper body (body0) and carrier
     # (body1). This joint's only purpose is to mark the surface-gripper
     # attachment pose -- the prismatic above does the structural work.
-    UsdGeom.Scope.Define(stage, GRIPPER_JOINTS_SCOPE)
-    attach = UsdPhysics.Joint.Define(stage, ATTACH_JOINT_PATH)
+    stage_utils.define_prim(GRIPPER_JOINTS_SCOPE, "Scope")
+    attach = UsdPhysics.Joint(stage_utils.define_prim(ATTACH_JOINT_PATH, "PhysicsJoint"))
     attach.CreateBody0Rel().SetTargets([GRIPPER_BODY_PATH])
     attach.CreateBody1Rel().SetTargets([CARRIER_PATH])
 
@@ -202,13 +213,15 @@ def build_scene(stage) -> tuple[RigidPrim, RigidPrim]:
         limit.CreateHighAttr().Set(-1.0)
 
     robot_schema.ApplyAttachmentPointAPI(attach_prim)
-    attach_prim.CreateAttribute(
-        robot_schema.Attributes.FORWARD_AXIS.name,
-        robot_schema.Attributes.FORWARD_AXIS.type,
+    prim_utils.create_prim_attribute(
+        attach_prim,
+        name=robot_schema.Attributes.FORWARD_AXIS.name,
+        type_name=robot_schema.Attributes.FORWARD_AXIS.type,
     ).Set("Z")
-    attach_prim.CreateAttribute(
-        robot_schema.Attributes.CLEARANCE_OFFSET.name,
-        robot_schema.Attributes.CLEARANCE_OFFSET.type,
+    prim_utils.create_prim_attribute(
+        attach_prim,
+        name=robot_schema.Attributes.CLEARANCE_OFFSET.name,
+        type_name=robot_schema.Attributes.CLEARANCE_OFFSET.type,
     ).Set(0.005)
 
     surface_gripper_prim = robot_schema.CreateSurfaceGripper(stage, GRIPPER_PRIM_PATH)
@@ -229,15 +242,15 @@ def _world_z(rigid_prim: RigidPrim) -> float:
     return float(positions.numpy()[0, 2])
 
 
-def set_gripper_target_z(stage, target_world_z: float) -> None:
+def set_gripper_target_z(target_world_z: float) -> None:
     """Drive the gripper body to a world Z by setting the prismatic drive target."""
-    target_attr = stage.GetPrimAtPath(DRIVE_JOINT_PATH).GetAttribute("drive:linear:physics:targetPosition")
+    target_attr = prim_utils.get_prim_at_path(DRIVE_JOINT_PATH).GetAttribute("drive:linear:physics:targetPosition")
     target_attr.Set(target_world_z - CARRIER_Z)
 
 
 def main() -> int:
     stage = stage_utils.create_new_stage()
-    UsdGeom.SetStageMetersPerUnit(stage, 1.0)
+    stage_utils.set_stage_units(meters_per_unit=1.0)
     gripper_body, cube = build_scene(stage)
 
     # <start-gripper-grasp-view-snippet>
@@ -275,7 +288,7 @@ def main() -> int:
         failures.append(f"init: expected empty grip, got {gripped}")
 
     # 2) Lower the gripper toward the cube, then close.
-    set_gripper_target_z(stage, GRIPPER_GRASP_Z)
+    set_gripper_target_z(GRIPPER_GRASP_Z)
     step_for(90)
     print(f"[lower] gripper z = {_world_z(gripper_body):.4f}")
 
@@ -291,7 +304,7 @@ def main() -> int:
 
     # 3) Lift the gripper; the cube should follow.
     for z in np.linspace(GRIPPER_GRASP_Z, GRIPPER_LIFT_Z, 30):
-        set_gripper_target_z(stage, float(z))
+        set_gripper_target_z(float(z))
         simulation_app.update()
     step_for(60)
 
@@ -321,7 +334,7 @@ def main() -> int:
     if cube_dropped_z > cube_lifted_z - 0.05:
         failures.append(f"drop: cube did not fall (lifted={cube_lifted_z:.4f}, after_open={cube_dropped_z:.4f})")
 
-    if not args.headless:
+    if not (args.headless or args.test):
         step_for(60)
 
     if failures:

@@ -126,6 +126,11 @@ isaacsim.robot.policy.examples
 * ``h1_standalone.py``
 * ``spot_standalone.py``
 
+isaacsim.robot.surface_gripper
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ``gripper_grasp.py``
+
 isaacsim.robot.wheeled_robots.examples
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

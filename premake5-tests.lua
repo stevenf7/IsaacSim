@@ -595,6 +595,12 @@ local function get_robot_tests()
             "standalone_examples/api/isaacsim.robot.policy.examples/spot_standalone.py",
             "--test",
         },
+        -- Surface Gripper
+        {
+            "tests-nativepython-isaacsim.robot.surface_gripper.gripper_grasp",
+            "standalone_examples/api/isaacsim.robot.surface_gripper/gripper_grasp.py",
+            "--test",
+        },
         -- Deprecated Manipulators (Franka)
         {
             "tests-nativepython-deprecated-isaacsim.robot.manipulators.franka.follow_target_with_ik",
