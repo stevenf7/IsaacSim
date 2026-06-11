@@ -280,7 +280,7 @@ Install ROS 2
       * - MSVC Build Tools 2022
         - Select the "Desktop development with C++" workload. Required for source builds. To get VS 2022 specifically, scroll to "Older Downloads" on the `Visual Studio downloads page <https://visualstudio.microsoft.com/vs/older-downloads/>`_ and expand **2022**.
       * - `Isaac Sim 6.0 <https://developer.nvidia.com/isaac-sim>`_
-        - Install the standalone |isaac-sim_short| package following :ref:`isaac_sim_install_workstation`. The Pixi workspace expects it at ``C:\\isaacsim`` (the default ``isaac_sim_package_path``); if you extracted elsewhere, update the value under ``[target.win.activation]`` in ``pixi.toml``. Enable the ROS 2 bridge extension inside |isaac-sim_short|.
+        - Install the standalone |isaac-sim_short| package following :ref:`isaac_sim_install_workstation`. The Pixi workspace expects it at ``C:\\isaacsim`` (the default ``isaac_sim_package_path``); if you extracted elsewhere, update the value under ``[target.win.activation]`` in ``pixi.toml``. The ``pixi run sim`` task launches |isaac-sim_short| from this local binary installation or source clone. Enable the ROS 2 bridge extension inside |isaac-sim_short|.
 
    Continue to :ref:`isaac_sim_ros_workspace_other_platforms` to clone and set up the Pixi workspace.
 
@@ -637,9 +637,9 @@ Setup ROS 2 Workspaces
       cd C:\\IsaacSim-ros_workspaces\\jazzy_ws
       pixi run sim
 
-   .. note:: The ``sim`` task uses the ``isaac_sim_package_path`` environment variable defined under ``[target.win.activation]`` in ``pixi.toml`` (default: ``C:\\isaacsim``). Edit that value if |isaac-sim_short| is installed in a different location.
+   .. note:: The ``sim`` task launches |isaac-sim_short| from the local binary installation or source clone pointed to by the ``isaac_sim_package_path`` environment variable under ``[target.win.activation]`` in ``pixi.toml`` (default: ``C:\\isaacsim``). Edit that value if |isaac-sim_short| is installed in a different location. The ``sim`` task does not launch the Pixi-installed PyPI ``isaacsim`` package.
 
-   .. note:: For Pixi workflows, run standalone scripts with the Pixi Python environment, for example ``pixi run python <path\\to\\script.py>`` or ``python <path\\to\\script.py>`` inside ``pixi shell``. Do not use the bundled ``python.bat`` or ``python.sh`` launchers, because Pixi installs |isaac-sim_short| from PyPI into the active environment.
+   .. note:: For Pixi workflows, run standalone scripts with the Pixi Python environment, for example ``pixi run python <path\\to\\script.py>`` or ``python <path\\to\\script.py>`` inside ``pixi shell``. The script path can point to a standalone sample from your local |isaac-sim_short| binary installation or source clone, but the simulator runtime is imported from the PyPI ``isaacsim`` package installed in the Pixi environment. Do not use the bundled ``python.bat`` or ``python.sh`` launchers for this workflow. This temporary split avoids dependency issues with the bundled launchers and is expected to be removed in a future release.
 
    To verify the ROS 2 bridge from within |isaac-sim_short|:
 
@@ -980,6 +980,8 @@ Configuring Options and Enabling Internal ROS Libraries
    .. code-block:: winbatch
 
       pixi run python <path\\to\\standalone\\script.py>
+
+   The script path can point to a standalone sample from your local |isaac-sim_short| binary installation or source clone, but the simulator runtime is imported from the PyPI ``isaacsim`` package installed in the Pixi environment. Use the Pixi Python environment instead of the bundled ``python.bat`` or ``python.sh`` launchers. This temporary split avoids dependency issues with the bundled launchers and is expected to be removed in a future release.
 
 
 Enabling the ROS 2 Bridge
