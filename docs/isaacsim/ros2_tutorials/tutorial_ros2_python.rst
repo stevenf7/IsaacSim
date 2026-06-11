@@ -44,7 +44,7 @@ Getting Started
 .. config-content::
    :show-when: platform=Windows
 
-   Windows standalone ROS 2 examples use the Pixi Python environment. Follow the Pixi setup in :ref:`isaac_sim_app_install_ros_other_platforms`, then run these commands from the Pixi workspace.
+   Windows standalone ROS 2 examples use the Pixi Python environment. Follow the Pixi setup in :ref:`isaac_sim_app_install_ros_other_platforms`, then run these commands from the Pixi workspace. The commands execute standalone sample scripts from the local |isaac-sim_short| binary installation or source clone pointed to by ``isaac_sim_package_path`` (default: ``C:\\isaacsim``), while the simulator runtime is imported from the PyPI ``isaacsim`` package installed in the Pixi environment. Replace the ``C:\\isaacsim`` prefix in the commands if you configured a different ``isaac_sim_package_path``. This temporary split avoids dependency issues with the bundled ``python.bat`` and ``python.sh`` launchers and is expected to be removed in a future release.
 
 .. note:: In Windows 11, depending on your machine's configuration, RViz2 might not open properly.
 
@@ -128,9 +128,9 @@ The sample can be executed by running the following:
 .. config-content::
    :show-when: platform=Windows
 
-   .. code-block:: bash
+   .. code-block:: winbatch
 
-      pixi run python standalone_examples/api/isaacsim.ros2.bridge/clock.py
+      pixi run python C:\\isaacsim\\standalone_examples\\api\\isaacsim.ros2.bridge\\clock.py
 
 Echo the following topics to observe messages being published:
 
@@ -179,9 +179,9 @@ The sample can be executed by running the following:
 .. config-content::
    :show-when: platform=Windows
 
-   .. code-block:: bash
+   .. code-block:: winbatch
 
-      pixi run python standalone_examples/api/isaacsim.ros2.bridge/camera_periodic.py
+      pixi run python C:\\isaacsim\\standalone_examples\\api\\isaacsim.ros2.bridge\\camera_periodic.py
 
 
 To exit the sample, you can terminate the process using ``CTRL-C`` from the terminal.
@@ -205,9 +205,9 @@ The sample can be executed by running the following:
 .. config-content::
    :show-when: platform=Windows
 
-   .. code-block:: bash
+   .. code-block:: winbatch
 
-      pixi run python standalone_examples/api/isaacsim.ros2.bridge/camera_manual.py
+      pixi run python C:\\isaacsim\\standalone_examples\\api\\isaacsim.ros2.bridge\\camera_manual.py
 
 To exit the sample, you can terminate the process using ``CTRL-C`` from the terminal.
 
@@ -257,9 +257,9 @@ The sample can be executed by running the following:
 .. config-content::
    :show-when: platform=Windows
 
-   .. code-block:: bash
+   .. code-block:: winbatch
 
-      pixi run python standalone_examples/api/isaacsim.ros2.bridge/carter_stereo.py
+      pixi run python C:\\isaacsim\\standalone_examples\\api\\isaacsim.ros2.bridge\\carter_stereo.py
 
 To exit the sample, you can terminate the process using ``CTRL-C`` from the terminal.
 
@@ -312,9 +312,9 @@ Run either of the following commands to run the sample with the specified enviro
         .. config-content::
            :show-when: platform=Windows
 
-           .. code-block:: bash
+           .. code-block:: winbatch
 
-              pixi run python standalone_examples/api/isaacsim.ros2.bridge/carter_multiple_robot_navigation.py --environment hospital
+              pixi run python C:\\isaacsim\\standalone_examples\\api\\isaacsim.ros2.bridge\\carter_multiple_robot_navigation.py --environment hospital
 
 
     .. tab-item:: Office Environment
@@ -329,9 +329,9 @@ Run either of the following commands to run the sample with the specified enviro
         .. config-content::
            :show-when: platform=Windows
 
-           .. code-block:: bash
+           .. code-block:: winbatch
 
-              pixi run python standalone_examples/api/isaacsim.ros2.bridge/carter_multiple_robot_navigation.py --environment office
+              pixi run python C:\\isaacsim\\standalone_examples\\api\\isaacsim.ros2.bridge\\carter_multiple_robot_navigation.py --environment office
 
 To exit the sample, you can terminate the process using ``CTRL-C`` from the terminal.
 
@@ -367,9 +367,9 @@ The sample can be executed by running the following:
 .. config-content::
    :show-when: platform=Windows
 
-   .. code-block:: bash
+   .. code-block:: winbatch
 
-      pixi run python standalone_examples/api/isaacsim.ros2.bridge/moveit.py
+      pixi run python C:\\isaacsim\\standalone_examples\\api\\isaacsim.ros2.bridge\\moveit.py
 
 To exit the sample you can terminate using the terminal with ``CTRL-C``
 
@@ -389,9 +389,9 @@ This is a basic subscriber example where upon receiving an empty ROS2 message, a
 .. config-content::
    :show-when: platform=Windows
 
-   .. code-block:: bash
+   .. code-block:: winbatch
 
-      pixi run python standalone_examples/api/isaacsim.ros2.bridge/subscriber.py
+      pixi run python C:\\isaacsim\\standalone_examples\\api\\isaacsim.ros2.bridge\\subscriber.py
 
 To exit the sample, you can terminate the process using ``CTRL-C`` from the terminal.
 
