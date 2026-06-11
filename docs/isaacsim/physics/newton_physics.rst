@@ -146,6 +146,9 @@ The following example loads a Franka robot and simulates it with Newton:
 
 For more on the physics umbrella UI (engine selector, scene settings, and related controls), see the `Omni Physics UI documentation <http://omniverse-docs.s3-website-us-east-1.amazonaws.com/omni_physics/110.0/dev_guide/physics_umbrella/physics_umbrella_ui.html>`_.
 
+.. note::
+   Newton utilizes NVIDIA Warp python framework for its GPU kernels. Warp kernels are compiled at runtime, and some warp kernels have to be recompiled based on the degrees of freedom in the asset. For the first time an asset is ran, the kernel compilation may take up to a minute depending on the machine and the complexity of the asset. Isaac sim may appear frozen during compilation. However, you can check the kernel compilation progress from the terminal/console. Once the kernels are compiled, they will be cached for the subsequent simulation runs.
+
 To compare simulation results between Newton and PhysX:
 
 * stop the simulation
