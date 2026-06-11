@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.1] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [1.8.0] - 2026-05-14
 ### Added
 - `parse_robot_name` helper in `importer_utils` for validating input file extension and parse name

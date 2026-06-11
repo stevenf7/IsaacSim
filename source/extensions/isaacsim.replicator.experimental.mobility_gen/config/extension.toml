@@ -1,5 +1,5 @@
 [package]
-version = "0.2.8"
+version = "0.2.9"
 category = "Simulation"
 title = "MobilityGen"
 description = "A toolset for generating mobility data for robots."
@@ -79,6 +79,8 @@ args = [
     "--/persistent/renderer/startupMessageDisplayed=1",
     "--/persistent/simulation/defaultMetersPerUnit=1.0",
     "--/persistent/simulation/minFrameRate=15",
+    "--/renderer/multiGpu/autoEnable=0",
+    "--/renderer/multiGpu/enabled=0",
     "--/rtx-transient/dlssg/enabled=0",
     "--/rtx-transient/resourcemanager/enableTextureStreaming=1",
     "--/rtx/descriptorSets=360000",

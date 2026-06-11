@@ -14,7 +14,8 @@
 # limitations under the License.
 
 """render.py helpers on synthetic in-memory stages (no rendering): camera-xform save/restore and
-the SPG RenderProduct clone."""
+the SPG RenderProduct clone.
+"""
 
 from __future__ import annotations
 
@@ -58,7 +59,11 @@ class TestCopyRenderProduct(omni.kit.test.AsyncTestCase):
 
     @staticmethod
     def _make_spg_stage() -> Usd.Stage:
-        """In-memory stage with one authored SPG RenderProduct (/Render/src) for /World/cam_a."""
+        """In-memory stage with one authored SPG RenderProduct (/Render/src) for /World/cam_a.
+
+        Returns:
+            The in-memory stage with the authored RenderProduct.
+        """
         stage = Usd.Stage.CreateInMemory()
         UsdGeom.Camera.Define(stage, "/World/cam_a")
         UsdGeom.Camera.Define(stage, "/World/cam_b")
@@ -77,7 +82,8 @@ class TestCopyRenderProduct(omni.kit.test.AsyncTestCase):
 
     async def test_clone_remaps_targets_and_rewrites_spg_assets(self) -> None:
         """The clone repoints to the new camera, keeps resolution, remaps internal targets, and
-        package-qualifies its SPG asset paths."""
+        package-qualifies its SPG asset paths.
+        """
         from isaacsim.replicator.nurec_utils.render import copy_render_product
 
         stage = self._make_spg_stage()
@@ -100,7 +106,8 @@ class TestCopyRenderProduct(omni.kit.test.AsyncTestCase):
 
     async def test_clone_is_separate_layer_and_leaves_source_unchanged(self) -> None:
         """The clone is a distinct prim authored only in the session layer with its own render var, and
-        the authored RenderProduct keeps its camera, var, and un-rewritten SPG asset."""
+        the authored RenderProduct keeps its camera, var, and un-rewritten SPG asset.
+        """
         from isaacsim.replicator.nurec_utils.render import copy_render_product
 
         stage = self._make_spg_stage()

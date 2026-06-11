@@ -1,4 +1,9 @@
 # Changelog
+
+## [4.2.3] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [4.2.2] - 2026-06-04
 ### Fixed
 - Fixed malformed `syncUsdLoads` setting path in `set_sync_mode` (was `/omni.kit.plugin/syncUsdLoads`, now `/omni/kit/plugin/syncUsdLoads`) so synchronous USD loads are correctly forced.

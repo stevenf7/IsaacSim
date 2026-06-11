@@ -16,13 +16,7 @@
 - def emit_extension_activated(extension_id: str, extension_version: str, action: str) -> bool
 - def emit_feature_used(extension_id: str, feature_name: str, feature_type: str, duration_ms: int = 0) -> bool
 - def get_telemetry_manager() -> TelemetryManager
-
-## Decorators
-
-### Function decorators
-- def telemetry(extension_id: str, feature_name: str, feature_type: str = "api_call", error_category: str = "runtime_error")
-- def telemetry_usage(extension_id: str, feature_name: str, feature_type: str = "api_call")
-- def telemetry_error(extension_id: str, feature_name: str, error_category: str = "runtime_error")
-
-### Class decorator
-- def telemetry_extension(cls) -> cls
+- def telemetry(extension_id: str, feature_name: str, feature_type: str = 'api_call', error_category: str = 'runtime_error') -> Callable[[Callable[..., Any]], Callable[Ellipsis, Any]]
+- def telemetry_error(extension_id: str, feature_name: str, error_category: str = 'runtime_error') -> Callable[[Callable[..., Any]], Callable[Ellipsis, Any]]
+- def telemetry_extension(cls: type[_T]) -> type[_T]
+- def telemetry_usage(extension_id: str, feature_name: str, feature_type: str = 'api_call') -> Callable[[Callable[..., Any]], Callable[Ellipsis, Any]]

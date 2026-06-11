@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.18.12] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [1.18.11] - 2026-05-26
 ### Fixed
 - `OgnROS2RtxLidarHelper`: drop the legacy `Camera + IsaacRtxLidarSensorAPI` branch from render-product validation; validation now only accepts `OmniLidar + OmniSensorGenericLidarCoreAPI`.

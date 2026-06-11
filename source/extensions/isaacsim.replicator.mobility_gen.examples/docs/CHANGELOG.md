@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.4] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [0.3.3] - 2026-06-04
 ### Removed
 - Stale `multiGpu` disable from `[[test]]` args; the Kit 110.1.1 multi-GPU startup crash no longer reproduces.

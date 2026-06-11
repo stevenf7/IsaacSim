@@ -98,7 +98,8 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         self.assertEqual(len(prim), num_prims, f"Invalid XformPrim ({num_prims} prims) len")
 
     @parametrize(backends=["usd"], operations=["wrap"], prim_class=XformPrim, populate_stage_func=populate_stage)
@@ -133,7 +134,8 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         if backend in ["usdrt", "fabric"]:
             await omni.kit.app.get_app().next_update_async()
@@ -166,7 +168,8 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         if backend in ["usdrt", "fabric"]:
             await omni.kit.app.get_app().next_update_async()
@@ -199,7 +202,8 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         if backend in ["usdrt", "fabric"]:
             await omni.kit.app.get_app().next_update_async()
@@ -223,7 +227,8 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         prim.reset_xform_op_properties()
         # test cases
         for indices, expected_count in draw_indices(count=num_prims, step=2):
@@ -302,7 +307,8 @@ class TestXformPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         prim.reset_xform_op_properties()
         # trigger events automatically
         timeline = omni.timeline.get_timeline_interface()

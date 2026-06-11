@@ -106,6 +106,7 @@ def _get_default_srtx_sensor_set_name() -> str:
     behavior for standalone Isaac Sim use). The host application is responsible
     for ensuring the value is valid for the SRTX server (lowercase letters,
     digits, hyphens, length 4-63, first char letter, last char letter/digit).
+
     Returns:
         Configured sensor-set name, or the default sensor-set name.
     """

@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.1] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [2.0.0] - 2026-04-13
 ### Changed
 - Refactored TelemetryManager to use Carbonite structured logging with generated schema headers

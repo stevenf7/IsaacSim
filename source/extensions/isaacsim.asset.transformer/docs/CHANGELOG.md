@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.5] - 2026-06-10
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [1.2.4] - 2026-06-09
 ### Added
 - `RuleInterface.request_deletion` / `RuleInterface.get_pending_deletions` for rules to register manager-owned working files for deletion after the manager releases its stage handle.

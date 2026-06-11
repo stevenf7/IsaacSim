@@ -92,7 +92,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
 
         Args:
             backend: Backend name under test.
-            prim: Prim or prim wrapper under test."""
+            prim: Prim or prim wrapper under test.
+        """
         if backend == "tensor":
             self.assertTrue(prim.is_physics_tensor_entity_valid(), f"Tensor API should be enabled ({backend})")
         elif backend in ["usd", "usdrt", "fabric"]:
@@ -106,7 +107,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         """Verify descendant joint targets resolve to the containing articulation.
 
         Returns:
-            Requested value."""
+            Requested value.
+        """
         await stage_utils.create_new_stage_async()
         stage = stage_utils.get_current_stage(backend="usd")
 
@@ -155,7 +157,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         """Verify generic PhysX drive attributes keep deterministic DOF ordering.
 
         Returns:
-            Requested value."""
+            Requested value.
+        """
 
         class FakeAttribute:
             def __init__(self, name: str) -> None:
@@ -199,7 +202,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         Articulation("/World/A_0")
 
     @parametrize(
@@ -212,7 +216,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         self.assertEqual(len(prim), num_prims, f"Invalid Articulation ({num_prims} prims) len")
 
     @parametrize(
@@ -225,7 +230,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases (properties)
@@ -316,7 +322,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend and define USD usage
         self.check_backend(backend, prim)
         if backend in ["usdrt", "fabric"]:
@@ -345,7 +352,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -391,7 +399,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -412,7 +421,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -433,7 +443,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -463,7 +474,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases (shapes)
@@ -490,7 +502,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -524,7 +537,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             backend: Backend name under test.
 
         Returns:
-            Requested value."""
+            Requested value.
+        """
 
         def _transform(x: Any) -> Any:  # transform to a diagonal inertia matrix
             x[:, :, [1, 2, 3, 5, 6, 7]] = 0.0
@@ -566,7 +580,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -603,7 +618,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases (coriolis and centrifugal compensation forces)
@@ -639,7 +655,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -664,7 +681,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -689,7 +707,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -714,7 +733,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -739,7 +759,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -767,7 +788,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -804,7 +826,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -868,7 +891,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -897,7 +921,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -935,7 +960,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -968,7 +994,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -1021,7 +1048,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -1093,7 +1121,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         if backend == "usd":
@@ -1143,7 +1172,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         if backend in ["usdrt", "fabric"]:
@@ -1174,7 +1204,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -1222,7 +1253,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         for backend in ["usd", "usdrt", "fabric"]:
             with use_backend(backend, raise_on_unsupported=True, raise_on_fallback=True):
                 self.assertListEqual(Articulation.fetch_articulation_root_api_prim_paths("/World"), ["/World/A_0"])
@@ -1251,7 +1283,8 @@ class TestArticulation(omni.kit.test.AsyncTestCase):
         """Assert link/joint/DOF metadata is non-empty pre-physics and matches post-physics.
 
         Args:
-            asset_relative_path: Value passed by the caller."""
+            asset_relative_path: Value passed by the caller.
+        """
         await stage_utils.create_new_stage_async()
         usd_path = f"{get_assets_root_path()}/{asset_relative_path}"
         stage_utils.add_reference_to_stage(usd_path=usd_path, path="/Robot")

@@ -1,5 +1,5 @@
 [package]
-version = "1.3.2"
+version = "1.3.3"
 category = "Example"
 title = "cuOpt Simple Interface"
 description="Extension demonstrating a simple interface with the cuOpt Service"

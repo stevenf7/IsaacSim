@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.2.3] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [3.2.2] - 2026-03-26
 ### Changed
 - Moved Python binding module to `bindings/` subdirectory

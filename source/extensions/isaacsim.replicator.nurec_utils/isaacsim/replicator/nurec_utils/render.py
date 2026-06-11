@@ -381,6 +381,13 @@ class CameraRenderer:
     ) -> "CameraRenderer":
         """Wire a CameraRenderer to `target`, releasing the target if construction fails.
 
+        Args:
+            stage: The open USD stage (time mapping and rig keyframes).
+            name: Logical camera name (for logs).
+            simulation_app: The running SimulationApp.
+            target: The wired render target to render from.
+            **kwargs: Additional keyword arguments forwarded to the constructor.
+
         Returns:
             The wired CameraRenderer.
         """
@@ -691,6 +698,15 @@ def _open_camera_renderer(
 
     Releases the render target if wiring the CameraRenderer fails, so a failed setup leaks no
     HydraTexture or created render product.
+
+    Args:
+        factory: Factory that creates render targets.
+        stage: The open USD stage.
+        cam: Camera name to render.
+        simulation_app: The running SimulationApp.
+        create_kwargs: Extra kwargs forwarded to `factory.create`.
+        warmup_steps: RTPT accumulation ticks per frame.
+        force_identity_exposure: Whether to force pass-through exposure on the camera.
 
     Returns:
         The wired CameraRenderer.

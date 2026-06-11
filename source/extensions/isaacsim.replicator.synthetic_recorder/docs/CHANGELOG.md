@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.4.5] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings.
+
 ## [2.4.4] - 2026-06-08
 ### Fixed
 - Remove extra new stage creation calls in tests

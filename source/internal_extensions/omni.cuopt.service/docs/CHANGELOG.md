@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.3] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [1.3.2] - 2026-02-03
 ### Changed
 - Replaced pickle serialization with JSON and zlib compression for security remediation

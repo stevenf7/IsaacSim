@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.11.2] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [3.11.1] - 2026-05-22
 ### Changed
 - Update urdf-usd-converter to v0.1.3

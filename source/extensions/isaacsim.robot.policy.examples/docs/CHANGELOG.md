@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.2.12] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [5.2.11] - 2026-05-28
 ### Fixed
 - Conditional use of asset until menagerie assets are tested with Isaac lab

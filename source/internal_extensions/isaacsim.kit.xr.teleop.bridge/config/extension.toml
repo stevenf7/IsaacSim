@@ -4,7 +4,7 @@ reloadable = false
 
 # This extension should be loaded after omni.kit.xr.system.openxr so we can register our component
 [package]
-version = "1.1.2"
+version = "1.1.3"
 category = "other"
 title = "Isaac Kit XR Teleop Bridge"
 description = "Provides OpenXR handle functions for constructing OpenXRSessionHandles with Kit XR"

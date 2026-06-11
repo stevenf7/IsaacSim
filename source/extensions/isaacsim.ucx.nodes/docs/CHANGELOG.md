@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.7] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings.
+
 ## [1.6.6] - 2026-06-04
 ### Changed
 - `OgnUCXPublishImage`: the image FlatBuffer's `Tensor.shape` is now `[height, width, bytes_per_pixel]` with `ndim = 3` and row-major strides, replacing the previous 1D `[dataSize]` shape. Receivers can now consume the image as a properly-shaped tensor without an external reshape step. `bytes_per_pixel` is derived as `dataSize / (height * width)` so future encodings do not require a code change here. Both the CPU path (`sendCudaBuffer = false`) and the GPU-direct metadata header (`sendCudaBuffer = true`) emit the same shape. Total byte count is still recoverable as `prod(shape)`.

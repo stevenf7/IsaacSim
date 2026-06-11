@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.8] - 2026-06-10
+### Fixed
+- Fix linter errors and missing or incomplete docstrings.
+
 ## [0.4.7] - 2026-06-09
 ### Changed
 - Teleop build validates NuRec render prerequisites (`setup_for_rendering`) on the loaded stage and aborts with a warning notification if one is unmet (e.g. `omni.rtx.spg` not enabled), instead of recording a black scene.

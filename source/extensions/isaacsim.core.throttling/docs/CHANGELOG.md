@@ -1,4 +1,9 @@
 # Changelog
+
+## [2.3.5] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings.
+
 ## [2.3.4] - 2026-06-03
 ### Fixed
 - Async rendering no longer re-enables on timeline stop/pause while a Replicator capture pipeline is attached, even when the orchestrator is briefly stopped between steps. Toggling async rendering in that window could emit a one-sided `ASSETS_LOADING` event (NVBug-6169678) that stalled the next Replicator step for the full asset-loading timeout.

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.5] - 2026-06-10
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [0.1.4] - 2026-06-09
 ### Changed
 - Clarify Ackermann Controller `invertSteering` input description for rear-wheel-steered robots.

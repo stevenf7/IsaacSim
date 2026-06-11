@@ -1,8 +1,13 @@
 # Changelog
 
+## [0.2.9] - 2026-06-10
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [0.2.8] - 2026-06-09
 ### Added
 - Teleop support for NuRec scenes with SPG (PPISP): the chase viewport renders through the scene's authored PPISP graph.
+
 ### Changed
 - Depend on `isaacsim.replicator.nurec_utils`, deduplicating the local NuRec utilities.
 

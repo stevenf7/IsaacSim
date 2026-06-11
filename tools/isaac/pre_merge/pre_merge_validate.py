@@ -195,7 +195,7 @@ def _run_teed(cmd: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]
 
 
 def check_python_lint(extensions: list[Path], fix: bool = False) -> int:
-    """Run ruff via ``run_python_linting.py`` on affected extensions.
+    """Run ruff and pydoclint via ``run_python_linting.py`` on affected extensions.
 
     Args:
         extensions: List of extension paths to lint.
@@ -214,7 +214,7 @@ def check_python_lint(extensions: list[Path], fix: bool = False) -> int:
         return 0
 
     ext_names = [ext.name for ext in extensions]
-    cmd = [sys.executable, str(script), "--ruff", "--extensions"] + ext_names
+    cmd = [sys.executable, str(script), "--ruff", "--pydoclint", "--extensions"] + ext_names
     if fix:
         cmd.append("--fix")
 
@@ -228,7 +228,7 @@ def check_python_lint(extensions: list[Path], fix: bool = False) -> int:
 
 
 def check_python_lint_paths(paths: list[Path], label: str, fix: bool = False) -> int:
-    """Run ruff via ``run_python_linting.py --path`` on arbitrary directories/files.
+    """Run ruff and pydoclint via ``run_python_linting.py --path`` on arbitrary directories/files.
 
     Used for source trees (such as ``source/standalone_examples``) that are not
     registered extensions but still contain Python that should be linted.
@@ -251,7 +251,7 @@ def check_python_lint_paths(paths: list[Path], label: str, fix: bool = False) ->
         log_warn("run_python_linting.py not found; skipping lint check.")
         return 0
 
-    cmd = [sys.executable, str(script), "--ruff", "--path"] + [str(p) for p in existing]
+    cmd = [sys.executable, str(script), "--ruff", "--pydoclint", "--path"] + [str(p) for p in existing]
     if fix:
         cmd.append("--fix")
 

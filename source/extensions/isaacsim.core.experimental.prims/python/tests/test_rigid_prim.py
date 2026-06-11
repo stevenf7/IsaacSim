@@ -79,7 +79,8 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
 
         Args:
             backend: Backend name under test.
-            prim: Prim or prim wrapper under test."""
+            prim: Prim or prim wrapper under test.
+        """
         if backend == "tensor":
             self.assertTrue(prim.is_physics_tensor_entity_valid(), f"Tensor API should be enabled ({backend})")
         elif backend in ["usd", "usdrt", "fabric"]:
@@ -105,7 +106,8 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         RigidPrim("/World/A_0")
 
     @parametrize(
@@ -122,7 +124,8 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         self.assertEqual(len(prim), num_prims, f"Invalid RigidPrim ({num_prims} prims) len")
 
     @parametrize(
@@ -138,7 +141,8 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend and define USD usage
         self.check_backend(backend, prim)
         if backend in ["usdrt", "fabric"]:
@@ -172,7 +176,8 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend and define USD usage
         self.check_backend(backend, prim)
         if backend in ["usdrt", "fabric"]:
@@ -207,7 +212,8 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -237,7 +243,8 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -268,7 +275,8 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -296,7 +304,8 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -323,7 +332,8 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -357,7 +367,8 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
             backend: Backend name under test.
 
         Returns:
-            Requested value."""
+            Requested value.
+        """
 
         def _transform(x: Any) -> Any:  # transform to a diagonal inertia matrix
             x[:, [1, 2, 3, 5, 6, 7]] = 0.0
@@ -392,7 +403,8 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -419,7 +431,8 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -446,7 +459,8 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         if backend == "usd":
@@ -483,7 +497,8 @@ class TestRigidPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
 
@@ -518,7 +533,8 @@ async def populate_stage_with_ground(max_num_prims: int, operation: Literal["wra
     Args:
         max_num_prims: Maximum number of prims to create for a test case.
         operation: Stage population operation to use.
-        **kwargs: Additional keyword arguments."""
+        **kwargs: Additional keyword arguments.
+    """
     assert operation == "wrap", "Other operations except 'wrap' are not supported"
     # create new stage
     await stage_utils.create_new_stage_async()
@@ -668,7 +684,8 @@ async def _wait_for_contact_data(
         counts_tuple_index: Value passed by the caller.
 
     Returns:
-        Contact data tuple returned once the requested contact count is available."""
+        Contact data tuple returned once the requested contact count is available.
+    """
     data = None
     frames_after = None
     for _ in range(max_steps):
@@ -709,7 +726,8 @@ class TestRigidPrimContactTracking(omni.kit.test.AsyncTestCase):
 
         Args:
             backend: Backend name under test.
-            prim: Prim or prim wrapper under test."""
+            prim: Prim or prim wrapper under test.
+        """
         if backend == "tensor":
             self.assertTrue(prim.is_physics_tensor_entity_valid(), f"Tensor API should be enabled ({backend})")
         elif backend in ["usd", "usdrt", "fabric"]:
@@ -736,7 +754,8 @@ class TestRigidPrimContactTracking(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # enabled contact tracking (usd backend)
@@ -836,7 +855,8 @@ class TestRigidPrimContactTracking(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # enabled contact tracking (usd backend)
@@ -927,7 +947,8 @@ def _assert_single_cube_raw_contact_data(
         start: Start index of the contact records to validate.
         count: Expected number of contact records.
         cube_index: Index of the cube under test.
-        backend: Backend name under test."""
+        backend: Backend name under test.
+    """
     slc = slice(start, start + count)
     forces_slc = forces_np[slc]
     points_slc = points_np[slc]
@@ -1040,7 +1061,8 @@ class TestRigidPrimRawContactTracking(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         self.assertTrue(prim.is_physics_tensor_entity_valid(), f"Tensor API should be enabled ({backend})")
         with use_backend("usd", raise_on_unsupported=True, raise_on_fallback=True):
             prim.set_sleep_thresholds([0.0])
@@ -1102,7 +1124,8 @@ class TestRigidPrimRawContactTracking(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         self.assertTrue(prim.is_physics_tensor_entity_valid(), f"Tensor API should be enabled ({backend})")
         with use_backend("usd", raise_on_unsupported=True, raise_on_fallback=True):
             prim.set_sleep_thresholds([0.0])

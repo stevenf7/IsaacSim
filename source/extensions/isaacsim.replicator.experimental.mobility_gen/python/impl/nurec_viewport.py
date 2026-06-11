@@ -98,6 +98,10 @@ def _force_identity_exposure(stage: Any, camera_path: str) -> None:
 
     Applies the exposure API schemas so the values are honored by the renderer (matching the export's
     `_no_isp` PPISP camera).
+
+    Args:
+        stage: The USD stage containing the camera.
+        camera_path: Path to the camera prim to modify.
     """
     from pxr import Sdf
 
@@ -117,6 +121,9 @@ def _apply_stage_render_settings(stage: Any) -> None:
     The Kit UI applies these on File->Open; a programmatic open does not, so apply them here (e.g.
     `rtx:post:tonemap:op`). Keys are colon-namespaced (`rtx:post:tonemap:op`) -> carb path
     (`/rtx/post/tonemap/op`).
+
+    Args:
+        stage: The USD stage whose baked render settings are applied.
     """
     import carb
     import carb.settings
@@ -134,7 +141,12 @@ def _apply_stage_render_settings(stage: Any) -> None:
 
 
 def _log_camera(prim: Any, *, label: str) -> None:
-    """Log a camera's path, intrinsics, exposure, and applied schemas (for tracing correctness)."""
+    """Log a camera's path, intrinsics, exposure, and applied schemas (for tracing correctness).
+
+    Args:
+        prim: The camera prim to log.
+        label: Label prefix identifying the log line.
+    """
     import carb
     from pxr import Usd, UsdGeom
 
@@ -152,6 +164,12 @@ def _render_products(stage: Any) -> dict[str, str]:
     """Return `{render_product_path: camera_target_path}` for authored RenderProducts under `/Render`.
 
     The camera target is `""` for a RenderProduct with no `camera` relationship.
+
+    Args:
+        stage: The USD stage to scan for RenderProducts.
+
+    Returns:
+        Mapping of each RenderProduct path to its camera target path.
     """
     out: dict[str, str] = {}
     render_scope = stage.GetPrimAtPath("/Render")

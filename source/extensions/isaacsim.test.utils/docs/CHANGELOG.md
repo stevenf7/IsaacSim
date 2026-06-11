@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.14.7] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [0.14.6] - 2026-05-19
 ### Added
 - Add `scroll_to_widget` helper (and `MenuUITestCase.scroll_to_widget`) that locates the enclosing `ui.ScrollingFrame` for a widget and scrolls it into view, used to click widgets pushed off-screen by dynamic sibling content.
