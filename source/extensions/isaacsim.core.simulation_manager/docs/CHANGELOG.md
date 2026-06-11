@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.15.5] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [1.15.4] - 2026-05-21
 ### Changed
 - `PhysicsScene.get_dt()` and `set_dt()` dispatch based on `PhysxSceneAPI` presence on the prim instead of querying the active engine.

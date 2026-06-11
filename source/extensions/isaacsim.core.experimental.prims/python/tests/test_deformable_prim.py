@@ -74,7 +74,8 @@ def _define_mesh(stage: Any, path: Any) -> None:
 
     Args:
         stage: USD stage to inspect or populate.
-        path: Prim path to inspect."""
+        path: Prim path to inspect.
+    """
     mesh = UsdGeom.Mesh.Define(stage, path)
     mesh.GetPointsAttr().Set(
         Vt.Vec3fArray(
@@ -118,7 +119,8 @@ async def populate_stage(max_num_prims: int, operation: Literal["wrap", "create"
     Args:
         max_num_prims: Maximum number of prims to create for a test case.
         operation: Stage population operation to use.
-        **kwargs: Additional keyword arguments."""
+        **kwargs: Additional keyword arguments.
+    """
     deformable_case = kwargs.get("deformable_case")
     assert operation == "wrap", "Other operations except 'wrap' are not supported"
     assert deformable_case in [
@@ -196,7 +198,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
 
         Args:
             backend: Backend name under test.
-            prim: Prim or prim wrapper under test."""
+            prim: Prim or prim wrapper under test.
+        """
         if backend == "tensor":
             self.assertTrue(prim.is_physics_tensor_entity_valid(), f"Tensor API should be enabled ({backend})")
         elif backend in ["usd", "usdrt", "fabric"]:
@@ -227,7 +230,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         DeformablePrim("/World/A_0")
 
     @parametrize(
@@ -246,7 +250,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         self.assertEqual(len(prim), num_prims, f"Invalid DeformablePrim ({num_prims} prims) len")
 
     @parametrize(
@@ -265,7 +270,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases (properties)
@@ -296,7 +302,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -323,7 +330,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -353,7 +361,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -384,7 +393,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases (surface does not support nodal kinematic targets)
@@ -406,7 +416,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         from isaacsim.core.experimental.materials import SurfaceDeformableMaterial
 
         choices = [
@@ -473,7 +484,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         DeformablePrim("/World/A_0")
 
     @parametrize(
@@ -492,7 +504,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         self.assertEqual(len(prim), num_prims, f"Invalid DeformablePrim ({num_prims} prims) len")
 
     @parametrize(
@@ -513,7 +526,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases (properties)
@@ -548,7 +562,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -575,7 +590,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -605,7 +621,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -636,7 +653,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases (surface does not support nodal kinematic targets)
@@ -658,7 +676,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         from isaacsim.core.experimental.materials import SurfaceDeformableMaterial
 
         choices = [
@@ -723,7 +742,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         DeformablePrim("/World/A_0")
 
     @parametrize(
@@ -742,7 +762,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         self.assertEqual(len(prim), num_prims, f"Invalid DeformablePrim ({num_prims} prims) len")
 
     @parametrize(
@@ -793,7 +814,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -820,7 +842,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -850,7 +873,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -881,7 +905,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -914,7 +939,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         from isaacsim.core.experimental.materials import VolumeDeformableMaterial
 
         choices = [
@@ -974,7 +1000,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -1003,7 +1030,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -1033,7 +1061,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         from isaacsim.core.experimental.materials import VolumeDeformableMaterial
 
         choices = [
@@ -1078,7 +1107,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         DeformablePrim("/World/A_0")
 
     @parametrize(
@@ -1097,7 +1127,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         self.assertEqual(len(prim), num_prims, f"Invalid DeformablePrim ({num_prims} prims) len")
 
     @parametrize(
@@ -1118,7 +1149,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases (properties)
@@ -1153,7 +1185,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -1182,7 +1215,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -1214,7 +1248,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -1245,7 +1280,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -1278,7 +1314,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         from isaacsim.core.experimental.materials import VolumeDeformableMaterial
 
         choices = [
@@ -1338,7 +1375,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -1366,7 +1404,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -1394,7 +1433,8 @@ class TestDeformablePrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         from isaacsim.core.experimental.materials import VolumeDeformableMaterial
 
         choices = [

@@ -393,6 +393,32 @@ def file_contains_simulation_app(file_path: str | Path) -> bool | None:
         raise
 
 
+def _wait_for_context_idle(simulation_app: Any, deadline: float | None = None, settle_frames: int = 600) -> bool:
+    """Pump app updates until the USD context is no longer opening/closing a stage.
+
+    A previous snippet may have launched a fire-and-forget ``open_stage_async`` whose
+    native loader-thread work is still in flight (state ``eOpening``) even after its
+    Python task was cancelled. While the context is in that state, ``can_close_stage``
+    and ``can_open_stage`` both return ``False`` and any new stage operation fails with
+    ``UsdContext busy`` / ``Stage opening or closing already in progress``. Letting the
+    in-flight operation settle here keeps that race from leaking into the next snippet.
+
+    Returns:
+        ``True`` if the context became idle (closeable or openable), ``False`` if the
+        deadline / frame budget was hit first.
+    """
+    import omni.usd
+
+    context = omni.usd.get_context()
+    for _ in range(settle_frames):
+        if context.can_close_stage() or context.can_open_stage():
+            return True
+        if deadline is not None and time.monotonic() > deadline:
+            return False
+        simulation_app.update()
+    return context.can_close_stage() or context.can_open_stage()
+
+
 def cleanup_before_new_stage(simulation_app: Any, file_path: str | Path, deadline: float | None = None) -> None:
     """Clean up the current stage before creating a new one."""
     import omni.timeline
@@ -426,8 +452,14 @@ def cleanup_before_new_stage(simulation_app: Any, file_path: str | Path, deadlin
     for _ in range(5):
         simulation_app.update()
 
-    # Close the current stage if possible; treat inability as recoverable.
+    # A fire-and-forget async snippet may have left an open/close in flight (state
+    # eOpening), which makes can_close_stage()/can_open_stage() report False and would
+    # cause the next stage operation to fail with "UsdContext busy". Let it settle first.
     context = omni.usd.get_context()
+    if not (context.can_close_stage() or context.can_open_stage()):
+        _wait_for_context_idle(simulation_app, deadline=deadline)
+
+    # Close the current stage if possible; treat inability as recoverable.
     if context.can_close_stage():
         context.close_stage()
         simulation_app.update()
@@ -808,6 +840,12 @@ def load_snippet_module(
             if not timed_out:
                 # Let snippet-created tasks finish naturally first.
                 _wait_for_snippet_tasks(simulation_app, snippet_tasks, settle_frames=30, deadline=deadline)
+
+            # If a snippet task is still pending because of an in-flight stage open/close,
+            # cancelling it would leave the USD context stuck in eOpening and break the
+            # next snippet ("UsdContext busy"). Let the context settle before cancelling.
+            if any(not task.done() for task in snippet_tasks):
+                _wait_for_context_idle(simulation_app, deadline=deadline)
 
             # Cancel still-pending snippet tasks so they do not leak across snippets.
             pending_snippet_tasks = [task for task in snippet_tasks if not task.done()]

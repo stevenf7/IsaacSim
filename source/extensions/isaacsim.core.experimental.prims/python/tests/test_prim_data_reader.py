@@ -543,7 +543,8 @@ def _read_float_buffer(ptr: Any, count: Any) -> Any:
         count: Expected number of contact records.
 
     Returns:
-        Requested value."""
+        Requested value.
+    """
     if not ptr or count <= 0:
         return []
     return list((ctypes.c_float * count).from_address(ptr))
@@ -595,7 +596,8 @@ class TestPrimDataReaderPhysxTransforms(omni.kit.test.AsyncTestCase):
         """Create a stage with a PhysicsScene and return it.
 
         Returns:
-            Requested value."""
+            Requested value.
+        """
         await stage_utils.create_new_stage_async()
         stage = omni.usd.get_context().get_stage()
         stage_utils.define_prim("/World", "Xform")

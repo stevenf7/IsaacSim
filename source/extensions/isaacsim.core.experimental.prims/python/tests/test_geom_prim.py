@@ -73,7 +73,8 @@ class TestGeomPrim(omni.kit.test.AsyncTestCase):
 
         Args:
             backend: Backend name under test.
-            rigid_prim: Value passed by the caller."""
+            rigid_prim: Value passed by the caller.
+        """
 
     # --------------------------------------------------------------------
 
@@ -92,7 +93,8 @@ class TestGeomPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         GeomPrim("/World/A_0")
 
     @parametrize(backends=["usd"], operations=["wrap"], prim_class=GeomPrim, populate_stage_func=populate_stage)
@@ -103,7 +105,8 @@ class TestGeomPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         self.assertEqual(len(prim), num_prims, f"Invalid GeomPrim ({num_prims} prims) len")
 
     @parametrize(backends=["usd"], operations=["wrap"], prim_class=GeomPrim, populate_stage_func=populate_stage)
@@ -114,7 +117,8 @@ class TestGeomPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -135,7 +139,8 @@ class TestGeomPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         choices = [
             "none",
             "convexDecomposition",
@@ -176,7 +181,8 @@ class TestGeomPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -200,7 +206,8 @@ class TestGeomPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         # check backend
         self.check_backend(backend, prim)
         # test cases
@@ -231,7 +238,8 @@ class TestGeomPrim(omni.kit.test.AsyncTestCase):
             prim: Prim or prim wrapper under test.
             num_prims: Number of prims under test.
             device: Device under test.
-            backend: Backend name under test."""
+            backend: Backend name under test.
+        """
         from isaacsim.core.experimental.materials import RigidBodyMaterial
 
         choices = [

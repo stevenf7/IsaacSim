@@ -1,5 +1,5 @@
 [package]
-version = "1.4.1"
+version = "1.4.2"
 category = "Example"
 title = "cuOpt Service Examples"
 description="A set of UI based examples using the NVIDIA cuOpt Service"

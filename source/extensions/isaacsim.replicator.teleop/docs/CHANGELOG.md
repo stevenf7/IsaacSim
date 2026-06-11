@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.6] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings.
+
 ## [0.3.5] - 2026-05-18
 ### Fixed
 - `test_teleop_sdg_pick_and_place.py`: updated golden images and fixed a grasp offset

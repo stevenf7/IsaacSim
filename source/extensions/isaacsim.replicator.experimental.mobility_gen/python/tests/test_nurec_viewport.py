@@ -36,7 +36,12 @@ class TestRouteChaseThroughPPISP(omni.kit.test.AsyncTestCase):
         """Nothing to release."""
 
     def _add_render_product(self, rp_path: str, camera_path: str) -> None:
-        """Author a typed RenderProduct under /Render targeting `camera_path`."""
+        """Author a typed RenderProduct under /Render targeting `camera_path`.
+
+        Args:
+            rp_path: Path at which to author the RenderProduct.
+            camera_path: Camera path the RenderProduct targets.
+        """
         self._stage.DefinePrim("/Render", "Scope")
         rp = self._stage.DefinePrim(rp_path, "RenderProduct")
         rp.CreateRelationship("camera").SetTargets([camera_path])

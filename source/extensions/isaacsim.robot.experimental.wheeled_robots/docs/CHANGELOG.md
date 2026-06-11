@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.11] - 2026-06-10
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [0.2.10] - 2026-06-09
 ### Added
 - AckermannController `invert_steering` symmetry tests for instant and ramped commands.

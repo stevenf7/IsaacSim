@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.5] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [1.4.4] - 2026-05-22
 ### Changed
 - `attach_writer()` now returns the attached Writer instance.

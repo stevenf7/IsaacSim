@@ -1,4 +1,7 @@
 # Changelog
+## [0.1.2] - 2026-06-10
+### Fixed
+- Fixed pydoclint errors and updated docstrings.
 
 ## [0.1.1] - 2026-06-10
 ### Changed

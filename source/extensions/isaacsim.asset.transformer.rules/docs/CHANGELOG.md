@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.10] - 2026-06-10
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [1.7.9] - 2026-06-09
 ### Fixed
 - `GeometriesRoutingRule` no longer fails with `PermissionError: [WinError 5] Access is denied` when converting `base.usd` to `.usda` on Windows. Manager-owned working files are now deleted via `RuleInterface.request_deletion` after the manager releases its stage handle, instead of in-rule `os.remove`.

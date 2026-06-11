@@ -71,7 +71,11 @@ class ScopedTimer:
 
     @classmethod
     def set_enabled(cls, enabled: bool) -> None:
-        """Enable or disable timing globally; when disabled, scoped timers are no-ops."""
+        """Enable or disable timing globally; when disabled, scoped timers are no-ops.
+
+        Args:
+            enabled: Whether timing is enabled.
+        """
         cls._enabled = enabled
 
     def __init__(self, name: str) -> None:

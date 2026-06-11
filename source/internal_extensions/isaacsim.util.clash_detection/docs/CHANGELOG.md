@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.2] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [0.2.1] - 2026-04-08
 ### Fixed
 - Fix mypy type errors: add type annotations, fix `_run()` returning truthy tuple instead of `False` on error, fix namedtuple name mismatch

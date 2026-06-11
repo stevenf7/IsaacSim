@@ -63,7 +63,8 @@ def _find_containing_articulation_root_path(stage: Usd.Stage, path: str) -> str 
         path: Prim path to inspect.
 
     Returns:
-        Containing articulation root path, or None when no root owns the prim path."""
+        Containing articulation root path, or None when no root owns the prim path.
+    """
     prim = stage.GetPrimAtPath(path)
     if prim is None or not prim.IsValid():
         return None
@@ -103,7 +104,8 @@ def _find_first_articulation_root(prim: Usd.Prim) -> Usd.Prim | None:
         prim: Prim or prim wrapper under test.
 
     Returns:
-        First articulation root prim found at or below the input prim, or None if none exists."""
+        First articulation root prim found at or below the input prim, or None if none exists.
+    """
     roots = _find_articulation_roots(prim)
     return roots[0] if roots else None
 
@@ -115,7 +117,8 @@ def _find_articulation_roots(prim: Usd.Prim) -> list[Usd.Prim]:
         prim: Prim or prim wrapper under test.
 
     Returns:
-        Articulation root prims found at or below the input prim."""
+        Articulation root prims found at or below the input prim.
+    """
     return [candidate for candidate in Usd.PrimRange(prim) if candidate.HasAPI(UsdPhysics.ArticulationRootAPI)]
 
 
@@ -128,7 +131,8 @@ def _articulation_contains_path(stage: Usd.Stage, root_path: str, target_path: s
         target_path: Prim path to search for within the articulation.
 
     Returns:
-        True if the connected articulation graph contains the target path, False otherwise."""
+        True if the connected articulation graph contains the target path, False otherwise.
+    """
     root_prim = stage.GetPrimAtPath(root_path)
     if root_prim is None or not root_prim.IsValid():
         return False
@@ -150,7 +154,8 @@ def _articulation_root_rank(root: Usd.Prim) -> tuple[int, int]:
         root: Articulation root candidate to rank.
 
     Returns:
-        Sort key that ranks articulation root candidates by namespace specificity."""
+        Sort key that ranks articulation root candidates by namespace specificity.
+    """
     scope_path = _get_articulation_scope_prim(root).GetPath().pathString
     root_path = root.GetPath().pathString
     return (len(scope_path), len(root_path))
@@ -163,7 +168,8 @@ def _get_articulation_scope_prim(root_prim: Usd.Prim) -> Usd.Prim:
         root_prim: Articulation root prim.
 
     Returns:
-        Prim whose subtree should be searched for articulation joints."""
+        Prim whose subtree should be searched for articulation joints.
+    """
     if root_prim.IsA(UsdPhysics.Joint):
         parent = root_prim.GetParent()
         return parent if parent is not None and parent.IsValid() else root_prim
@@ -179,7 +185,8 @@ def _get_root_link_prim(stage: Usd.Stage, root_prim: Usd.Prim, scope_prim: Usd.P
         scope_prim: Prim whose subtree is searched for articulation data.
 
     Returns:
-        Root link prim used to walk the articulation graph, or None if none can be found."""
+        Root link prim used to walk the articulation graph, or None if none can be found.
+    """
     if root_prim.IsA(UsdPhysics.Joint):
         for body_path in _joint_body_paths(root_prim):
             if body_path:
@@ -204,7 +211,8 @@ def _collect_candidate_joints(scope_prim: Usd.Prim, root_path: str) -> list[Usd.
         root_path: Articulation root path.
 
     Returns:
-        Joint prims in the articulation scope excluding nested articulation roots."""
+        Joint prims in the articulation scope excluding nested articulation roots.
+    """
     joints: list[Usd.Prim] = []
     for prim in Usd.PrimRange(scope_prim):
         if not prim.IsA(UsdPhysics.Joint):
@@ -224,7 +232,8 @@ def _is_under_foreign_articulation_root(prim: Usd.Prim, scope_prim: Usd.Prim, ro
         root_path: Articulation root path.
 
     Returns:
-        True if the prim is under a nested foreign articulation root, False otherwise."""
+        True if the prim is under a nested foreign articulation root, False otherwise.
+    """
     current = prim
     scope_path = scope_prim.GetPath()
     while current is not None and current.IsValid():
@@ -244,7 +253,8 @@ def _build_body_to_joints(joints: list[Usd.Prim]) -> dict[str, list[tuple[Usd.Pr
         joints: Joint prims to index by body path.
 
     Returns:
-        Mapping from each body path to its connected joint prims and body slot indices."""
+        Mapping from each body path to its connected joint prims and body slot indices.
+    """
     body_to_joints: dict[str, list[tuple[Usd.Prim, int]]] = {}
     for joint in joints:
         for body_index, body_path in enumerate(_joint_body_paths(joint)):
@@ -266,7 +276,8 @@ def _walk_connected_articulation(
         root_path: Articulation root path.
 
     Returns:
-        Reachable link paths and joint paths from the root link."""
+        Reachable link paths and joint paths from the root link.
+    """
     link_paths: list[str] = []
     joint_paths: list[str] = []
     visited_links: set[str] = set()
@@ -314,7 +325,8 @@ def _discover_dofs(stage: Usd.Stage, joint_paths: list[str]) -> tuple[list[str],
         joint_paths: Joint paths to inspect.
 
     Returns:
-        Commandable DOF paths and their tensor DOF types."""
+        Commandable DOF paths and their tensor DOF types.
+    """
     dof_paths: list[str] = []
     dof_types: list[omni.physics.tensors.DofType] = []
     for joint_path in joint_paths:
@@ -336,7 +348,8 @@ def _get_dof_type(joint: Usd.Prim) -> omni.physics.tensors.DofType:
         joint: Joint prim to query.
 
     Returns:
-        Tensor DOF type inferred from the joint prim."""
+        Tensor DOF type inferred from the joint prim.
+    """
     if joint.IsA(UsdPhysics.RevoluteJoint) or joint.IsA(UsdPhysics.SphericalJoint):
         return omni.physics.tensors.DofType.Rotation
     if joint.IsA(UsdPhysics.PrismaticJoint):
@@ -360,7 +373,8 @@ def _joint_body_paths(joint: Usd.Prim) -> tuple[str | None, str | None]:
         joint: Joint prim to query.
 
     Returns:
-        Resolved body0 and body1 relationship target paths."""
+        Resolved body0 and body1 relationship target paths.
+    """
     return (_relationship_target_path(joint, "physics:body0"), _relationship_target_path(joint, "physics:body1"))
 
 
@@ -372,7 +386,8 @@ def _relationship_target_path(prim: Usd.Prim, rel_name: str) -> str | None:
         rel_name: Relationship name to query.
 
     Returns:
-        First absolute target path for the relationship, or None if it has no target."""
+        First absolute target path for the relationship, or None if it has no target.
+    """
     rel = prim.GetRelationship(rel_name)
     if not rel:
         return None
@@ -393,7 +408,8 @@ def _path_is_at_or_under(path: str, prefix: str) -> bool:
         prefix: Namespace prefix to compare against.
 
     Returns:
-        True if the path is equal to or below the namespace prefix, False otherwise."""
+        True if the path is equal to or below the namespace prefix, False otherwise.
+    """
     if prefix == "/":
         return True
     return path == prefix or path.startswith(f"{prefix}/")

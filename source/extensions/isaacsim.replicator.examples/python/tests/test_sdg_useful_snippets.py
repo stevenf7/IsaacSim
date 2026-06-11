@@ -21,7 +21,7 @@ from typing import Any
 import carb.settings
 import omni.kit
 import omni.usd
-from isaacsim.test.utils.file_validation import validate_folder_contents
+from isaacsim.test.utils.file_validation import get_folder_file_summary, validate_folder_contents
 
 
 class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
@@ -515,6 +515,13 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
                 # (int): Number of samples to use in the filter. A higher number improves quality at the cost of performance.
                 settings.set("/rtx/post/motionblur/numSamples", 8)
 
+            # Warm up the renderer after switching the render mode so the first captured frame is fully resolved.
+            # Switching back to RealTimePathTracing after a PathTracing run needs extra updates before capture.
+            for _ in range(10):
+                await omni.kit.app.get_app().next_update_async()
+            # Drain any pending orchestrator/render work so the mode switch is fully applied before capture.
+            await rep.orchestrator.wait_until_complete_async()
+
             # Setup backend
             mode_str = f"pt_subsamples_{motion_blur_subsamples}_spp_{samples_per_pixel}" if use_path_tracing else "rt"
             delta_time_str = "None" if delta_time is None else f"{delta_time:.4f}"
@@ -628,7 +635,12 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
             # RayTracing output directory
             out_dir = os.path.join(motion_blur_root, f"dt_{delta_time_str}_rt")
             folder_contents_success = validate_folder_contents(path=out_dir, expected_counts={"png": NUM_FRAMES})
-            self.assertTrue(folder_contents_success, f"Output directory contents validation failed for {out_dir}")
+            summary = get_folder_file_summary(out_dir)
+            print(f"[MotionBlur] Validating {out_dir}: expected png={NUM_FRAMES}, found {summary}")
+            self.assertTrue(
+                folder_contents_success,
+                f"Output directory contents validation failed for {out_dir}: expected png={NUM_FRAMES}, found {summary}",
+            )
 
             # PathTracing output directories for all combinations of subsamples and samples_per_pixel
             for motion_blur_subsample in test_motion_blur_subsamples:
@@ -638,6 +650,10 @@ class TestSDGUsefulSnippets(omni.kit.test.AsyncTestCase):
                     folder_contents_success = validate_folder_contents(
                         path=out_dir, expected_counts={"png": NUM_FRAMES}
                     )
+                    summary = get_folder_file_summary(out_dir)
+                    print(f"[MotionBlur] Validating {out_dir}: expected png={NUM_FRAMES}, found {summary}")
                     self.assertTrue(
-                        folder_contents_success, f"Output directory contents validation failed for {out_dir}"
+                        folder_contents_success,
+                        f"Output directory contents validation failed for {out_dir}: "
+                        f"expected png={NUM_FRAMES}, found {summary}",
                     )

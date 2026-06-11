@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.4.2] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [1.4.1] - 2026-01-06
 ### Changed
 - Migrate more events to Events 2.0.

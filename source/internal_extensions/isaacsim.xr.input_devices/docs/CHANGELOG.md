@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.3] - 2026-06-09
+### Fixed
+- Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
+
 ## [1.1.2] - 2026-04-08
 ### Fixed
 - Fix mypy type errors: fix implicit Optional parameters, add type annotations for constants and variables
