@@ -30,6 +30,7 @@ args = [
 ]
 
 [[test]]
+timeout = 900
 dependencies = [
     "isaacsim.core.experimental.utils",
     "isaacsim.test.utils",

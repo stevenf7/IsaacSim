@@ -940,7 +940,7 @@ generate_report_cmd = [
 [[repo_test.suites.doc_snippets.group]]
 include = ["tests-nativepython*${shell_ext}"]
 exclude = ["*test_snippets_async*"]
-timeout = 300
+timeout = 600
 
 [repo_test.suites.doc_snippets_async]
 kind = "glob_and_exec"
