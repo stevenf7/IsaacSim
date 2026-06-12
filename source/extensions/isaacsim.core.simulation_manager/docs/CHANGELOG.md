@@ -1,4 +1,7 @@
 # Changelog
+## [1.15.6] - 2026-06-12
+### Changed
+- Reduce warning to an info level message when USD context or stage is not available.
 
 ## [1.15.5] - 2026-06-09
 ### Fixed

@@ -20,7 +20,6 @@ import io
 import os
 import posixpath
 
-import cv2
 import numpy as np
 import PIL.Image
 import yaml
@@ -391,6 +390,8 @@ free_thresh: {free_thresh}
         Returns:
             The buffered (aka: dilated / padded) occupancy map.
         """
+        import cv2
+
         buffer_distance_pixels = int(buffer_distance_pixels)
 
         radius = buffer_distance_pixels

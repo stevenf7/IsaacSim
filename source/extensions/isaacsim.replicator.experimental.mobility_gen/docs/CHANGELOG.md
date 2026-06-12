@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.10] - 2026-06-12
+### Fixed
+- `occupancy_map`: defer the `cv2` import to first use.
+
 ## [0.2.9] - 2026-06-10
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.

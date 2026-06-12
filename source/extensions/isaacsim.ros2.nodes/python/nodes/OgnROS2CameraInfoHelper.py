@@ -21,7 +21,6 @@ import contextlib
 from typing import Any
 
 import carb
-import cv2 as cv
 import numpy as np
 import omni
 import omni.replicator.core as rep
@@ -366,7 +365,9 @@ class OgnROS2CameraInfoHelper:
                     left_camera_prim=camera_left, right_camera_prim=camera_right
                 )
 
-                # Compute stereo rectification parameters
+                # Compute stereo rectification parameters.
+                import cv2 as cv
+
                 if distortion_model_left == "equidistant":
                     (
                         R1,
