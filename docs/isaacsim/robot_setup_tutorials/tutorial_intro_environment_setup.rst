@@ -85,7 +85,7 @@ Every new :ref:`isaac_sim_glossary_stage` is pre-populated with a :code:`default
 To create additional spotlights:
 
 #. Add a ground plane, if there isn't already one, so we can see the reflection of the light. **Create > Physics > Ground Plane**.
-#. Go to **Create > Light > Sphere Light**.
+#. Go to **Create > Lights > Sphere Light**.
 #. Pose the light on the stage. 
    - In the **Stage** tab on the top right, select the newly created light in the stage tree.
    - In the **Property** tab on the bottom , in the **Transform** section use the **Translate** tool to move it to a position above the ground plane, such as ``(0, 0, 7)``.
