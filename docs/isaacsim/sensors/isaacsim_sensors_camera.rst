@@ -200,6 +200,12 @@ located at ``standalone_examples/api/isaacsim.sensors.experimental.rtx/camera_op
     the renderer will fallback to the default pinhole model. Instead, use the deprecated Omniverse RTX Camera
     Projection Attributes referenced above to specify an arbitrary distortion model. This will be fixed in a future release.
 
+.. warning:: 
+    Unlike other USD prim types, certain attributes on ``Camera`` prims are defined in tenths-of-stage-units rather than stage units.
+    This means if you add a ``Camera`` to your stage from one defined with different stage units, those attributes (eg. focal length, aperture)
+    will be scaled incorrectly. To address this, you can enable the ``omni.usd.metrics.assembler.usdgeom`` extension, which will automatically
+    adjust the attributes to the correct units when adding a ``Camera`` prim to your stage. This extension is enabled by default in the |isaac-sim_short| full app.
+
 OpenCV Fisheye
 ~~~~~~~~~~~~~~
 
