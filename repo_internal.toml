@@ -889,8 +889,6 @@ exclude = [
     "tools/update.sh",
     "source/internal_extensions",
     "tools/docker/.env",
-    "CLAUDE.md",
-    "tools/claude",
     ".github/copy-pr-bot.yaml",
 ]
 
