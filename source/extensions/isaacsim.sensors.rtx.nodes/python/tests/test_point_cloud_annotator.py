@@ -100,7 +100,7 @@ class TestIsaacExtractRTXSensorPointCloud(omni.kit.test.AsyncTestCase):
                 if self._coords_type == "SPHERICAL":
                     self._validate_spherical_to_cartesian(gmo, pc_points, n)
                 elif self._coords_type == "CARTESIAN":
-                    self._validate_cartesian_passthrough(pc_points, n)
+                    self._validate_cartesian_passthrough(gmo, pc_points, n)
 
         def _validate_spherical_to_cartesian(self, gmo: Any, pc_points: Any, n: Any) -> None:
             """Validate the node's spherical-to-Cartesian conversion against reference.
@@ -130,15 +130,21 @@ class TestIsaacExtractRTXSensorPointCloud(omni.kit.test.AsyncTestCase):
             np.testing.assert_allclose(pc_points[:, 1], expected_y, atol=ABS_TOL, err_msg="Y mismatch")
             np.testing.assert_allclose(pc_points[:, 2], expected_z, atol=ABS_TOL, err_msg="Z mismatch")
 
-        def _validate_cartesian_passthrough(self, pc_points: Any, n: Any) -> None:
-            """Validate Cartesian data is passed through with non-zero content.
+        def _validate_cartesian_passthrough(self, gmo: Any, pc_points: Any, n: Any) -> None:
+            """Validate Cartesian data is passed through unchanged (no coordinate conversion).
 
             Args:
+                gmo: GenericModelOutput buffer with Cartesian coordinate arrays.
                 pc_points: Cartesian point cloud produced by the annotator.
                 n: Number of points expected in the cloud.
             """
             self._test.assertEqual(pc_points.shape[0], n)
-            self._test.assertGreater(np.count_nonzero(pc_points), 0, "Point cloud is all zeros")
+            x = np.ctypeslib.as_array(gmo.x, shape=(n,)).copy()
+            y = np.ctypeslib.as_array(gmo.y, shape=(n,)).copy()
+            z = np.ctypeslib.as_array(gmo.z, shape=(n,)).copy()
+            np.testing.assert_allclose(pc_points[:, 0], x, atol=ABS_TOL, err_msg="X mismatch (cartesian passthrough)")
+            np.testing.assert_allclose(pc_points[:, 1], y, atol=ABS_TOL, err_msg="Y mismatch (cartesian passthrough)")
+            np.testing.assert_allclose(pc_points[:, 2], z, atol=ABS_TOL, err_msg="Z mismatch (cartesian passthrough)")
 
     # ------------------------------------------------------------------
     # Test lifecycle
