@@ -1761,7 +1761,7 @@ publish-extensions:
       - ./repo.sh comment_archive_deps
       - ./repo.sh python_package --wheel
       - ls _build/packages/dist
-      - ./repo.sh python_package --publish
+      - ./repo.sh publish_python_wheels --timeout-seconds 900 --retries 2
     rules:
       - if: $ALLOW_PUBLISH_PYTHON_PACKAGES != "true"
         when: never
@@ -1804,7 +1804,7 @@ publish-python-packages-windows-x86_64:
       - ./repo.bat comment_archive_deps
       - ./repo.bat python_package --wheel
       - ls _build/packages/dist
-      - ./repo.bat python_package --publish
+      - ./repo.bat publish_python_wheels --timeout-seconds 900 --retries 2
     needs:
       - job: sign-windows-x86_64-release
         artifacts: true
