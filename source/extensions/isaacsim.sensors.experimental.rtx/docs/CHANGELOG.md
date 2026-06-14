@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.6] - 2026-06-12
+### Fixed
+- `camera_utils.draw_annotator_data_to_image`: defer the `cv2` import to first use.
+
 ## [1.4.5] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.

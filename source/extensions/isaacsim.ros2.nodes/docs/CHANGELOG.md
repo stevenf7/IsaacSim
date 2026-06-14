@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.18.13] - 2026-06-12
+### Fixed
+- `OgnROS2CameraInfoHelper`: defer the `cv2` import to first use.
+
 ## [1.18.12] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
