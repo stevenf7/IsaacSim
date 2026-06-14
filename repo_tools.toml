@@ -74,6 +74,14 @@ command = "publish_packages"
 entry_point = "${config_root}/tools/ci/publish_packages.py:setup_repo_tool"
 
 ########################################################################################################################
+# Python wheel publish tool with per-wheel timeout/retry handling
+########################################################################################################################
+
+[publish_python_wheels]
+command = "publish_python_wheels"
+entry_point = "${config_root}/tools/ci/publish_python_wheels.py:setup_repo_tool"
+
+########################################################################################################################
 # Isaac Sim Assets package publish tool
 ########################################################################################################################
 
