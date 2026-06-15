@@ -72,7 +72,6 @@ def _run_twine_upload(
         "-m",
         "twine",
         "upload",
-        "--skip-existing",
         "--repository-url",
         repository_url,
         str(wheel_path),
@@ -114,6 +113,8 @@ def _publish_one_wheel(
         raise omni.repo.man.exceptions.ConfigurationError("Entry for 'pypi.password' not found in tool config")
 
     for attempt in range(1, retries + 2):
+        # Artifactory's PyPI endpoint rejects Twine's --skip-existing flag, so keep
+        # the explicit pre-upload check as the compatible resume path.
         if _wheel_exists_on_server(str(wheel_path), repository_url, user, password):
             logger.warning("Package already exists on server, skipping: %s", wheel_path.name)
             return
