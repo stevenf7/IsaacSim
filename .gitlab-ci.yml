@@ -1820,12 +1820,14 @@ publish-python-packages-windows-x86_64:
 .python312-image-linux-x86_64:
   image:
     name: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-python312:1.0.17
-    entrypoint: [""]
+    # Titan honors the image entrypoint as a daemon; keep it alive so the job script can run.
+    entrypoint: ["/usr/bin/tail", "-f", "/dev/null"]
 
 .python312-image-linux-aarch64:
   image:
     name: urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-python312:1.0.17
-    entrypoint: [""]
+    # Titan honors the image entrypoint as a daemon; keep it alive so the job script can run.
+    entrypoint: ["/usr/bin/tail", "-f", "/dev/null"]
 
 verify-publish-python-packages-linux-x86_64:
     interruptible: true
