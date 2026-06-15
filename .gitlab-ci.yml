@@ -1818,10 +1818,14 @@ publish-python-packages-windows-x86_64:
 
 # Hidden jobs defining Python 3.12 images for Linux
 .python312-image-linux-x86_64:
-  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-python312:1.0.17
+  image:
+    name: urm.nvidia.com/ct-omniverse-docker/ci-jammy-x86_64-python312:1.0.17
+    entrypoint: [""]
 
 .python312-image-linux-aarch64:
-  image: urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-python312:1.0.17
+  image:
+    name: urm.nvidia.com/ct-omniverse-docker/ci-jammy-aarch64-python312:1.0.17
+    entrypoint: [""]
 
 verify-publish-python-packages-linux-x86_64:
     interruptible: true
@@ -1837,7 +1841,17 @@ verify-publish-python-packages-linux-x86_64:
       - source env_isaacsim/bin/activate
       # upgrade pip and install Isaac Sim - Python packages
       - pip install --upgrade pip
-      - pip install -r _build/packages/python/requirements.txt --extra-index-url "https://${ISAACSIM_ARTIFACTORY_USERNAME}:${ISAACSIM_ARTIFACTORY_PASSWORD}@artifactory.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple"
+      - |
+        for attempt in $(seq 1 10); do
+          if python -m pip install -r _build/packages/python/requirements.txt --extra-index-url "https://${ISAACSIM_ARTIFACTORY_USERNAME}:${ISAACSIM_ARTIFACTORY_PASSWORD}@artifactory.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple"; then
+            break
+          fi
+          if [ "$attempt" -eq 10 ]; then
+            exit 1
+          fi
+          echo "pip install failed; waiting for Artifactory index propagation (attempt ${attempt}/10)"
+          sleep 120
+        done
       # accept EULA
       - export OMNI_KIT_ACCEPT_EULA=YES
       # run tests
@@ -1867,7 +1881,22 @@ verify-publish-python-packages-windows-x86_64:
       - C:\env_isaacsim\Scripts\python.exe -m pip install --upgrade pip
       - C:\env_isaacsim\Scripts\activate.ps1
       # install Isaac Sim - Python packages
-      - pip install -r _build/packages/python/requirements.txt --extra-index-url "https://$($env:ISAACSIM_ARTIFACTORY_USERNAME):$($env:ISAACSIM_ARTIFACTORY_PASSWORD)@artifactory.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple"
+      - |
+        $requirements = "_build/packages/python/requirements.txt"
+        $extraIndexUrl = "https://$($env:ISAACSIM_ARTIFACTORY_USERNAME):$($env:ISAACSIM_ARTIFACTORY_PASSWORD)@artifactory.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple"
+        $maxAttempts = 10
+        $PSNativeCommandUseErrorActionPreference = $false
+        for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+            C:\env_isaacsim\Scripts\python.exe -m pip install -r $requirements --extra-index-url $extraIndexUrl
+            if ($LASTEXITCODE -eq 0) {
+                break
+            }
+            if ($attempt -eq $maxAttempts) {
+                exit $LASTEXITCODE
+            }
+            Write-Output "pip install failed; waiting for Artifactory index propagation (attempt $attempt/$maxAttempts)"
+            Start-Sleep -Seconds 120
+        }
       # accept EULA
       - $env:OMNI_KIT_ACCEPT_EULA = "YES"
       # run tests
