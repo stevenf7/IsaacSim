@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.2] - 2026-06-16
+### Fixed
+- Adding carb setting file to newton
+- Making newton respect resetOnStop carb setting
+
 ## [0.8.1] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings.

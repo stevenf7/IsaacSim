@@ -25,6 +25,7 @@ import usdrt
 import warp as wp
 from pxr import Usd
 
+from . import carb_config
 from .fabric import FabricManager
 from .newton_config import NewtonConfig
 
@@ -103,7 +104,8 @@ class NewtonStage:
             self.playing = False
             self.graph = None
             self._init_failed = False
-            self._restore_fabric_transforms()
+            if carb_config.reset_on_stop():
+                self._restore_fabric_transforms()
         if e.type == int(omni.timeline.TimelineEventType.PAUSE):
             self.playing = False
             self.graph = None
@@ -449,23 +451,20 @@ class NewtonStage:
         self.control = self.model.control()
         self.model.ground = True
         self.model.request_contact_attributes("force")
-        self.state_0 = self.model.state()
+
+        # state_0 will be set to None if resetOnStop is true, and the simulation is reset.
+        if not carb_config.reset_on_stop() and self.state_0:
+            restart_state = self.state_0
+            self.state_0 = self.model.state()
+            self.state_0.assign(restart_state)
+        else:
+            self.state_0 = self.model.state()
         self.state_1 = self.model.state()
+
         if self.cfg.use_cuda_graph:
             self.state_temp = self.model.state()
 
-        self.contacts = self.model.collide(self.state_0)
-
         newton.eval_fk(self.model, self.state_0.joint_q, self.state_0.joint_qd, self.state_0, None)
-
-        self.solver = self._get_solver(self.model, self.cfg.solver_cfg)
-
-        self.initial_body_q = self.state_0.body_q.numpy().copy()
-        self.initial_body_qd = self.state_0.body_qd.numpy().copy()
-
-        self.q_ik = self.model.joint_q
-        self.qd_ik = self.model.joint_qd
-        self.joint_torques = wp.zeros(self.model.joint_dof_count, dtype=wp.float32)
 
         valid_body_paths = set(self.model.body_label)
         self.fabric_manager.cleanup_stale_newton_index(valid_body_paths, self.device)
@@ -480,12 +479,32 @@ class NewtonStage:
             if not xformable_prim.HasWorldXform():
                 xformable_prim.SetWorldXformFromUsd()
 
+        # We also need to copy the fabric data with the new transform to the newton state
+        if not carb_config.reset_on_stop():
+            # state_1 contains the transform info (body_q) from the usd stage
+            # we copy the new object transforms (body_q) over to state_0
+            wp.copy(self.state_0.body_q, self.state_1.body_q)
+            # position of things might have changed from the stage, we need to update ik
+            newton.eval_ik(self.model, self.state_0, self.state_0.joint_q, self.state_0.joint_qd, None)
+
+        # use simulation state to set fabirc data
         self.fabric_manager.update_fabric(
             self.model,
             self.state_0,
             self.scene_scale,
             self.device,
         )
+
+        # Copy over initial states after body_q has been synced with the usd stage
+        self.contacts = self.model.collide(self.state_0)
+
+        self.initial_body_q = self.state_0.body_q.numpy().copy()
+        self.initial_body_qd = self.state_0.body_qd.numpy().copy()
+
+        self.q_ik = self.model.joint_q
+        self.qd_ik = self.model.joint_qd
+        self.joint_torques = wp.zeros(self.model.joint_dof_count, dtype=wp.float32)
+        self.solver = self._get_solver(self.model, self.cfg.solver_cfg)
 
         self.stage = usdrt_stage
         self.sim_time = 0.0
