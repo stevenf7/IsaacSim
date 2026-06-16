@@ -594,7 +594,7 @@ Setup Tips
         -v ~/docker/isaac-sim/data:/isaac-sim/.local/share/ov/data:rw \
         -v ~/docker/isaac-sim/pkg:/isaac-sim/.local/share/ov/pkg:rw \
         -u 1234:1234 \
-        nvcr.io/nvidia/isaac-sim:6.0.0
+        nvcr.io/nvidia/isaac-sim:6.0.1
 
     .. note:: These flags will use the use Home folder to save the |isaac-sim_short| cache, logs, config, and data.
 
@@ -608,7 +608,7 @@ Setup Tips
 
     .. code-block:: console
 
-        $ sudo docker run --gpus all -e "ACCEPT_EULA=Y" --rm --network=host nvcr.io/nvidia/isaac-sim:6.0.0
+        $ sudo docker run --gpus all -e "ACCEPT_EULA=Y" --rm --network=host nvcr.io/nvidia/isaac-sim:6.0.1
 
     .. note:: This flag is needed to connect to a Nucleus server.
 
@@ -681,7 +681,7 @@ Setup Tips
 
     .. code-block:: console
 
-        $ sudo docker run -it --entrypoint bash --gpus all -e "ACCEPT_EULA=Y" --rm --network=host nvcr.io/nvidia/isaac-sim:6.0.0
+        $ sudo docker run -it --entrypoint bash --gpus all -e "ACCEPT_EULA=Y" --rm --network=host nvcr.io/nvidia/isaac-sim:6.0.1
         $ ./runheadless.sh
 
     2. Proceed to :ref:`isaac_sim_setup_livestream_webrtc` to connect the native streaming client and
@@ -733,10 +733,10 @@ Setup Tips
 
     .. code-block:: console
 
-        $ docker pull nvcr.io/nvidia/isaac-sim:6.0.0
+        $ docker pull nvcr.io/nvidia/isaac-sim:6.0.1
         $ docker run --name isaac-sim --entrypoint bash -it --rm --gpus all --network=host \
             -e "ACCEPT_EULA=Y" -e "PRIVACY_CONSENT=Y" \
-            nvcr.io/nvidia/isaac-sim:6.0.0
+            nvcr.io/nvidia/isaac-sim:6.0.1
 
     2. Install any dependencies (for example, ROS or other libraries) and warm up the shader cache.
 
@@ -789,7 +789,7 @@ Setup Tips
 
     .. code-block:: console
 
-        $ sudo docker run --gpus all --rm -e "ACCEPT_EULA=Y" -v ~/docker/isaac-sim/documents:/root/Documents:rw nvcr.io/nvidia/isaac-sim:6.0.0
+        $ sudo docker run --gpus all --rm -e "ACCEPT_EULA=Y" -v ~/docker/isaac-sim/documents:/root/Documents:rw nvcr.io/nvidia/isaac-sim:6.0.1
 
     .. note:: Can now copy files to docker/isaac-sim/documents in your Home folder and it will show up in the |isaac-sim_short| container at /root/Documents.
 
@@ -910,7 +910,7 @@ Setup Tips
 
     .. code-block:: console
 
-        $ sudo docker run --gpus all -e "ACCEPT_EULA=Y" -e "OMNI_SERVER=omniverse://<ip_address>/NVIDIA/Assets/Isaac/6.0" --rm --network=host nvcr.io/nvidia/isaac-sim:6.0.0
+        $ sudo docker run --gpus all -e "ACCEPT_EULA=Y" -e "OMNI_SERVER=omniverse://<ip_address>/NVIDIA/Assets/Isaac/6.0" --rm --network=host nvcr.io/nvidia/isaac-sim:6.0.1
 
     .. _isaac_sim_setup_set_omni_user:
 
@@ -927,4 +927,4 @@ Setup Tips
 
     .. code-block:: console
 
-        $ sudo docker run --gpus all -e "ACCEPT_EULA=Y" -e "OMNI_USER=<username>" -e "OMNI_PASS=<password>" --rm --network=host nvcr.io/nvidia/isaac-sim:6.0.0
+        $ sudo docker run --gpus all -e "ACCEPT_EULA=Y" -e "OMNI_USER=<username>" -e "OMNI_PASS=<password>" --rm --network=host nvcr.io/nvidia/isaac-sim:6.0.1

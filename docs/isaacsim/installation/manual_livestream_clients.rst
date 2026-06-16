@@ -265,7 +265,7 @@ To use a prebuilt NGC image instead of building locally:
 
 .. code-block:: bash
 
-    ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
+    ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.1 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
 
 **Keyboard Shortcuts:**
 

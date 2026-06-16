@@ -70,7 +70,7 @@ The Compatibility Checker can be run either from a binary installation (Workstat
     .. code-block:: console
 
         $ docker run --entrypoint bash -it --gpus all --rm --network=host \
-            nvcr.io/nvidia/isaac-sim:6.0.0 ./isaac-sim.compatibility_check.sh --/app/quitAfter=10 --no-window
+            nvcr.io/nvidia/isaac-sim:6.0.1 ./isaac-sim.compatibility_check.sh --/app/quitAfter=10 --no-window
 
     * Run as GUI:
 
@@ -81,7 +81,7 @@ The Compatibility Checker can be run either from a binary installation (Workstat
             -e "PRIVACY_CONSENT=Y" \
             -v $HOME/.Xauthority:/isaac-sim/.Xauthority \
             -e DISPLAY \
-            nvcr.io/nvidia/isaac-sim:6.0.0 ./isaac-sim.compatibility_check.sh
+            nvcr.io/nvidia/isaac-sim:6.0.1 ./isaac-sim.compatibility_check.sh
 
 Verifying Compatibility
 ^^^^^^^^^^^^^^^^^^^^^^^^
