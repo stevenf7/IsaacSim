@@ -1056,6 +1056,52 @@ test-linux-x86_64:
     - echo "Running test with suite $SUITE $BUCKET_CMD $GEN_REPORT_CMD"
     - ./repo.sh ci test -- -s $SUITE $BUCKET_CMD $GEN_REPORT_CMD
 
+test-linux-x86_64-ros2-h264-camera:
+  extends:
+      - .test-common
+      - .test-linux-common
+      - .install-linux-test-packages
+      - .ipp_lnx_x86_64_gpu
+      - .kit-runner-test-linux-x86_64-1x-gpu
+  variables:
+    SUITE: pythontests
+    BUCKET: ros
+  script:
+    - echo "Running ROS2 H264 compressed camera golden-image test"
+    - ./repo.sh unzip_file --file _build/packages/isaac-sim-standalone*.7z --dst _build/linux-x86_64/release
+    - KIT_SITE_PACKAGES="$(./_build/linux-x86_64/release/python.sh -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')"
+    - ./_build/linux-x86_64/release/python.sh -m pip install --quiet --no-cache-dir --no-deps --target "$KIT_SITE_PACKAGES" pynvvideocodec==2.1.0
+    - ./_build/linux-x86_64/release/python.sh -c "import PyNvVideoCodec"
+    - |
+      ./repo.sh test \
+        -s "$SUITE" \
+        -b "$BUCKET" \
+        -f tests-isaacsim.ros2.nodes.sh \
+        --extra-arg=-f \
+        --extra-arg=test_rgb_h264_compressed_golden_image_comparison \
+        --extra-arg=--/omni/replicator/asyncRendering=1 \
+        --extra-arg=--/app/asyncRendering=1 \
+        --extra-arg=--/app/omni.usd/asyncHandshake=1 \
+        --list
+    - |
+      ./repo.sh test \
+        -s "$SUITE" \
+        -b "$BUCKET" \
+        -f tests-isaacsim.ros2.nodes.sh \
+        --extra-arg=-f \
+        --extra-arg=test_rgb_h264_compressed_golden_image_comparison \
+        --extra-arg=--/omni/replicator/asyncRendering=1 \
+        --extra-arg=--/app/asyncRendering=1 \
+        --extra-arg=--/app/omni.usd/asyncHandshake=1
+  after_script:
+    - mkdir -p _build/intermediate/${CI_JOB_ID}
+    - if [ -d _build/linux-x86_64/release/_testoutput ]; then
+    -   mkdir -p _testoutput
+    -   cp -r _build/linux-x86_64/release/_testoutput/. _testoutput/
+    -   cp -r _build/linux-x86_64/release/_testoutput _build/intermediate/${CI_JOB_ID}/
+    - fi
+    - !reference [.datadog-test-visibility-linux-x86_64, script]
+
 test-linux-x86_64-blocking:
   extends:
     - .test-common
