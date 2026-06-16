@@ -261,7 +261,7 @@ Running Isaac Sim Container
 
         .. code-block:: console
 
-            $ docker pull nvcr.io/nvidia/isaac-sim:6.0.0
+            $ docker pull nvcr.io/nvidia/isaac-sim:6.0.1
 
         4. Create the cached volume mounts on host:
 
@@ -290,7 +290,7 @@ Running Isaac Sim Container
                 -v ~/docker/isaac-sim/data:/isaac-sim/.local/share/ov/data:rw \
                 -v ~/docker/isaac-sim/pkg:/isaac-sim/.local/share/ov/pkg:rw \
                 -u 1234:1234 \
-                nvcr.io/nvidia/isaac-sim:6.0.0
+                nvcr.io/nvidia/isaac-sim:6.0.1
 
         .. note::
 
@@ -311,7 +311,7 @@ Running Isaac Sim Container
 
         .. code-block:: console
 
-            $ ISAACSIM_HOST=$PUBLIC_IP ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0 \
+            $ ISAACSIM_HOST=$PUBLIC_IP ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.1 \
                 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
 
         Then open ``http://<PUBLIC_IP>:8210`` in a Chromium-based browser. See :ref:`isaac_sim_docker_compose_deployment` or the `Docker README <https://github.com/isaac-sim/IsaacSim/blob/main/tools/docker/README.md>`_ for full details.

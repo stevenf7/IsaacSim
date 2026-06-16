@@ -120,7 +120,7 @@ This section describes how to run the |isaac-sim| container in headless mode wit
 
 .. code-block:: bash
 
-    docker pull nvcr.io/nvidia/isaac-sim:6.0.0
+    docker pull nvcr.io/nvidia/isaac-sim:6.0.1
 
 4. Create the cached volume mounts on host. Each directory maps to a container volume mount in the ``docker run`` command below:
 
@@ -149,7 +149,7 @@ This section describes how to run the |isaac-sim| container in headless mode wit
         -v ~/docker/isaac-sim/pkg:/isaac-sim/.local/share/ov/pkg:rw \
         -v ~/.cache/ov/hub:/var/cache/hub:rw \
         -u 1234:1234 \
-        nvcr.io/nvidia/isaac-sim:6.0.0
+        nvcr.io/nvidia/isaac-sim:6.0.1
 
 .. important::
 
@@ -223,7 +223,7 @@ The following environment variables can be passed to ``docker run`` with ``-e`` 
     .. code-block:: bash
 
         docker run --entrypoint bash -it --gpus all --rm --network=host \
-            nvcr.io/nvidia/isaac-sim:6.0.0 ./isaac-sim.compatibility_check.sh --/app/quitAfter=10 --no-window
+            nvcr.io/nvidia/isaac-sim:6.0.1 ./isaac-sim.compatibility_check.sh --/app/quitAfter=10 --no-window
 
     * You should see the text "System checking result: PASSED" if your system is compaitble.
 
@@ -452,7 +452,7 @@ To use a prebuilt NGC image instead of building locally:
 
 .. code-block:: bash
 
-    ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.0 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
+    ISAAC_SIM_IMAGE=nvcr.io/nvidia/isaac-sim:6.0.1 docker compose -p isim -f tools/docker/docker-compose.yml up --build -d
 
 To stop:
 
@@ -489,7 +489,7 @@ This section describes how to run the |isaac-sim| container with GUI.
 
 .. code-block:: bash
 
-    docker pull nvcr.io/nvidia/isaac-sim:6.0.0
+    docker pull nvcr.io/nvidia/isaac-sim:6.0.1
 
 4. Create the cached volume mounts on host. Each directory maps to a container volume mount in the ``docker run`` command below:
 
@@ -521,7 +521,7 @@ This section describes how to run the |isaac-sim| container with GUI.
         -v ~/docker/isaac-sim/pkg:/isaac-sim/.local/share/ov/pkg:rw \
         -v ~/.cache/ov/hub:/var/cache/hub:rw \
         -u 1234:1234 \
-        nvcr.io/nvidia/isaac-sim:6.0.0
+        nvcr.io/nvidia/isaac-sim:6.0.1
 
 6. Check if your system is compatible with |isaac-sim_short|:
 

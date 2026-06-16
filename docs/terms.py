@@ -78,8 +78,8 @@ TERMS = """
 .. |isaac-sdk| replace:: Isaac SDK
 .. |isaac-sim_long| replace:: NVIDIA Isaac Sim
 .. |isaac-sim_short| replace:: Isaac Sim
-.. |isaac-sim_version| replace:: 6.0.0
-.. |isaac-sim_version_strong| replace:: :raw-html:`<strong>6.0.0</strong>`
+.. |isaac-sim_version| replace:: 6.0.1
+.. |isaac-sim_version_strong| replace:: :raw-html:`<strong>6.0.1</strong>`
 .. |isaac-sim| replace:: NVIDIA Isaac Sim
 .. |cumotion| replace:: `cuMotion <https://nvidia-isaac.github.io/cumotion/>`__
 .. |kaolin_long| replace:: NVIDIA Omniverse™ Kaolin

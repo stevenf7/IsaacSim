@@ -45,7 +45,7 @@ The launch file called ``run_isaacsim.launch.py`` is included in the *launch* fo
 
 The launch parameters are defined below:
 
-    - **version**: Specify the version of Isaac Sim to use. Isaac Sim will be run from default install root folder for the specified version. Leave empty to use latest version of Isaac Sim. [**default_value** = "6.0.0"]
+    - **version**: Specify the version of Isaac Sim to use. Isaac Sim will be run from default install root folder for the specified version. Leave empty to use latest version of Isaac Sim. [**default_value** = "6.0.1"]
 
     - **install_path**: If Isaac Sim is installed in a non-default location, provide a specific path to Isaac Sim installation root folder. (If defined, "version" parameter will be ignored). [**default_value** = ""]
 
