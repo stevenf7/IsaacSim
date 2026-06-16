@@ -1890,8 +1890,10 @@ verify-publish-python-packages-linux-x86_64:
       # upgrade pip and install Isaac Sim - Python packages
       - pip install --upgrade pip
       - |
+        isaacsimLocalIndexUrl="https://${ISAACSIM_ARTIFACTORY_USERNAME}:${ISAACSIM_ARTIFACTORY_PASSWORD}@artifactory.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi-local/simple"
+        isaacsimIndexUrl="https://${ISAACSIM_ARTIFACTORY_USERNAME}:${ISAACSIM_ARTIFACTORY_PASSWORD}@artifactory.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple"
         for attempt in $(seq 1 10); do
-          if python -m pip install -r _build/packages/python/requirements.txt --extra-index-url "https://${ISAACSIM_ARTIFACTORY_USERNAME}:${ISAACSIM_ARTIFACTORY_PASSWORD}@artifactory.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple"; then
+          if python -m pip install -r _build/packages/python/requirements.txt --extra-index-url "${isaacsimLocalIndexUrl}" --extra-index-url "${isaacsimIndexUrl}"; then
             break
           fi
           if [ "$attempt" -eq 10 ]; then
@@ -1931,11 +1933,12 @@ verify-publish-python-packages-windows-x86_64:
       # install Isaac Sim - Python packages
       - |
         $requirements = "_build/packages/python/requirements.txt"
-        $extraIndexUrl = "https://$($env:ISAACSIM_ARTIFACTORY_USERNAME):$($env:ISAACSIM_ARTIFACTORY_PASSWORD)@artifactory.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple"
+        $localIndexUrl = "https://$($env:ISAACSIM_ARTIFACTORY_USERNAME):$($env:ISAACSIM_ARTIFACTORY_PASSWORD)@artifactory.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi-local/simple"
+        $indexUrl = "https://$($env:ISAACSIM_ARTIFACTORY_USERNAME):$($env:ISAACSIM_ARTIFACTORY_PASSWORD)@artifactory.nvidia.com/artifactory/api/pypi/sw-isaacsim-pypi/simple"
         $maxAttempts = 10
         $PSNativeCommandUseErrorActionPreference = $false
         for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
-            C:\env_isaacsim\Scripts\python.exe -m pip install -r $requirements --extra-index-url $extraIndexUrl
+            C:\env_isaacsim\Scripts\python.exe -m pip install -r $requirements --extra-index-url $localIndexUrl --extra-index-url $indexUrl
             if ($LASTEXITCODE -eq 0) {
                 break
             }
