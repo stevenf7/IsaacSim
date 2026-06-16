@@ -771,9 +771,8 @@ class TestConfiguredSrtxSensorSets(omni.kit.test.AsyncTestCase):
             ),
             patch.object(camera_info_helper, "compute_relative_pose", return_value=(np.zeros(3), np.eye(3))),
             patch.object(camera_info_helper, "collect_namespace", return_value=""),
-            patch.object(
-                camera_info_helper.cv,
-                "stereoRectify",
+            patch(
+                "cv2.stereoRectify",
                 return_value=(np.eye(3), np.eye(3), np.zeros((3, 4)), np.zeros((3, 4)), None, None, None),
             ),
             patch.object(
