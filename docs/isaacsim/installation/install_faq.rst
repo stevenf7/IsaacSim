@@ -388,11 +388,11 @@ Setup Tips
 
                 sudo apt install aria2
                 cd ~/Downloads
-                aria2c -c --checksum=md5=401e58c4e08c906fab5fc6fa6825c1cb "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.001.zip"
-                aria2c -c --checksum=md5=201941c1f0cdc91346cc40a941d8afaf "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.002.zip"
-                aria2c -c --checksum=md5=8cf4da965aed1a1eca5a9362f689bda8 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.003.zip"
-                aria2c -c --checksum=md5=14c023814d805c927e9c8cf766213ee1 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.004.zip"
-                aria2c -c --checksum=md5=ab770e11d0365c6b4a3591caf5daf5bb "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.005.zip"
+                aria2c -c --checksum=md5=92149a1f50a21c0f04cca6507ab00653 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.1.001.zip"
+                aria2c -c --checksum=md5=9b4b924e2d31bce41712d7637a0d6e42 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.1.002.zip"
+                aria2c -c --checksum=md5=b1c62924beda91251d3f5318ffec2b00 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.1.003.zip"
+                aria2c -c --checksum=md5=6bd7aa4d9b6c4161c2302e4c9418ade7 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.1.004.zip"
+                aria2c -c --checksum=md5=c4a17942014be6b50492ae860496fef7 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.1.005.zip"
 
         .. tab-item:: Windows
 
@@ -400,11 +400,11 @@ Setup Tips
 
                 winget install --id=aria2.aria2 -e
                 cd %USERPROFILE%/Downloads
-                aria2c -c --checksum=md5=401e58c4e08c906fab5fc6fa6825c1cb "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.001.zip"
-                aria2c -c --checksum=md5=201941c1f0cdc91346cc40a941d8afaf "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.002.zip"
-                aria2c -c --checksum=md5=8cf4da965aed1a1eca5a9362f689bda8 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.003.zip"
-                aria2c -c --checksum=md5=14c023814d805c927e9c8cf766213ee1 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.004.zip"
-                aria2c -c --checksum=md5=ab770e11d0365c6b4a3591caf5daf5bb "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.005.zip"
+                aria2c -c --checksum=md5=92149a1f50a21c0f04cca6507ab00653 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.1.001.zip"
+                aria2c -c --checksum=md5=9b4b924e2d31bce41712d7637a0d6e42 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.1.002.zip"
+                aria2c -c --checksum=md5=b1c62924beda91251d3f5318ffec2b00 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.1.003.zip"
+                aria2c -c --checksum=md5=6bd7aa4d9b6c4161c2302e4c9418ade7 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.1.004.zip"
+                aria2c -c --checksum=md5=c4a17942014be6b50492ae860496fef7 "https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.1.005.zip"
 
     If Aria2 reports a checksum failure, remove the failed part and rerun the command for that file before combining the parts.
 
@@ -417,8 +417,8 @@ Setup Tips
 
                 mkdir ~/isaacsim_assets
                 cd ~/Downloads
-                cat isaac-sim-assets-complete-6.0.0.001.zip isaac-sim-assets-complete-6.0.0.002.zip isaac-sim-assets-complete-6.0.0.003.zip isaac-sim-assets-complete-6.0.0.004.zip isaac-sim-assets-complete-6.0.0.005.zip > isaac-sim-assets-complete-6.0.0.zip
-                unzip "isaac-sim-assets-complete-6.0.0.zip" -d ~/isaacsim_assets
+                cat isaac-sim-assets-complete-6.0.1.001.zip isaac-sim-assets-complete-6.0.1.002.zip isaac-sim-assets-complete-6.0.1.003.zip isaac-sim-assets-complete-6.0.1.004.zip isaac-sim-assets-complete-6.0.1.005.zip > isaac-sim-assets-complete-6.0.1.zip
+                unzip "isaac-sim-assets-complete-6.0.1.zip" -d ~/isaacsim_assets
 
         .. tab-item:: Windows
 
@@ -426,8 +426,8 @@ Setup Tips
 
                 mkdir C:\isaacsim_assets
                 cd %USERPROFILE%/Downloads
-                copy /b isaac-sim-assets-complete-6.0.0.001.zip + isaac-sim-assets-complete-6.0.0.002.zip + isaac-sim-assets-complete-6.0.0.003.zip + isaac-sim-assets-complete-6.0.0.004.zip + isaac-sim-assets-complete-6.0.0.005.zip isaac-sim-assets-complete-6.0.0.zip
-                tar -xvzf "isaac-sim-assets-complete-6.0.0.zip" -C C:\isaacsim_assets
+                copy /b isaac-sim-assets-complete-6.0.1.001.zip + isaac-sim-assets-complete-6.0.1.002.zip + isaac-sim-assets-complete-6.0.1.003.zip + isaac-sim-assets-complete-6.0.1.004.zip + isaac-sim-assets-complete-6.0.1.005.zip isaac-sim-assets-complete-6.0.1.zip
+                tar -xvzf "isaac-sim-assets-complete-6.0.1.zip" -C C:\isaacsim_assets
 
     .. note::
 

@@ -11,19 +11,19 @@
     :keywords: lang=en isaac isaac-sim isaacsim download distributions releases
 
 
-.. |isim_linux_x86_64| replace:: `Linux (x86_64) <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-6.0.0-linux-x86_64.zip>`__
-.. |isim_linux_aarch64| replace:: `Linux (aarch64) <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-6.0.0-linux-aarch64.zip>`__
-.. |isim_windows| replace:: `Windows <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-6.0.0-windows-x86_64.zip>`__
+.. |isim_linux_x86_64| replace:: `Linux (x86_64) <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-6.0.1-linux-x86_64.zip>`__
+.. |isim_linux_aarch64| replace:: `Linux (aarch64) <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-6.0.1-linux-aarch64.zip>`__
+.. |isim_windows| replace:: `Windows <https://downloads.isaacsim.nvidia.com/isaac-sim-standalone-6.0.1-windows-x86_64.zip>`__
 .. |iswsc_linux_x86_64| replace:: `Linux (x86_64) <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-2.0.0-linux-x86_64.deb>`__
 .. |iswsc_linux_aarch64| replace:: `Linux (aarch64) <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-2.0.0-linux-aarch64.deb>`__
 .. |iswsc_windows| replace:: `Windows <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-2.0.0-windows-x86_64.exe>`__
 .. |iswsc_mac_x86_64| replace:: `macOS (x86_64) <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-2.0.0-macos-x86_64.dmg>`__
 .. |iswsc_mac_aarch64| replace:: `macOS (aarch64) <https://downloads.isaacsim.nvidia.com/isaacsim-webrtc-streaming-client-2.0.0-macos-aarch64.dmg>`__
-.. |isassets_complete_part1_zip| replace:: `Complete (Part 1 of 5) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.001.zip>`__
-.. |isassets_complete_part2_zip| replace:: `Complete (Part 2 of 5) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.002.zip>`__
-.. |isassets_complete_part3_zip| replace:: `Complete (Part 3 of 5) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.003.zip>`__
-.. |isassets_complete_part4_zip| replace:: `Complete (Part 4 of 5) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.004.zip>`__
-.. |isassets_complete_part5_zip| replace:: `Complete (Part 5 of 5) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.0.005.zip>`__
+.. |isassets_complete_part1_zip| replace:: `Complete (Part 1 of 5) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.1.001.zip>`__
+.. |isassets_complete_part2_zip| replace:: `Complete (Part 2 of 5) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.1.002.zip>`__
+.. |isassets_complete_part3_zip| replace:: `Complete (Part 3 of 5) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.1.003.zip>`__
+.. |isassets_complete_part4_zip| replace:: `Complete (Part 4 of 5) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.1.004.zip>`__
+.. |isassets_complete_part5_zip| replace:: `Complete (Part 5 of 5) <https://downloads.isaacsim.nvidia.com/isaac-sim-assets-complete-6.0.1.005.zip>`__
 
 
 .. _isaac_sim_download:
@@ -59,11 +59,11 @@ Latest Release
     +------------------------------------------+----------+------------------+-----------------------------------+--------------------------------------+
     | Name                                     | Version  | Release Date     | Links                             | MD5                                  |
     +==========================================+==========+==================+===================================+======================================+
-    | Isaac Sim                                | 6.0.0    | June 2026        | |isim_linux_x86_64|               | ``40ec5248271a0c2e7bc03f1ae725ca4c`` |
+    | Isaac Sim                                | 6.0.1    | June 2026        | |isim_linux_x86_64|               | ``65e2c2e83e2461ce0f33b0732d0ee4a3`` |
     +                                          +          +                  +-----------------------------------+--------------------------------------+
-    |                                          |          |                  | |isim_linux_aarch64|              | ``4b27cd783479d6eceb4d7cef32ef3e3d`` |
+    |                                          |          |                  | |isim_linux_aarch64|              | ``1b18ff16e1746d2800df59a7e4ba04b4`` |
     +                                          +          +                  +-----------------------------------+--------------------------------------+
-    |                                          |          |                  | |isim_windows|                    | ``4b49a4258792f09300ece31be1b6cfd9`` |
+    |                                          |          |                  | |isim_windows|                    | ``c7fa3a830b251f10305cd7883039df9b`` |
     +------------------------------------------+----------+------------------+-----------------------------------+--------------------------------------+
     | Isaac Sim WebRTC Streaming Client        | 2.0.0    | June 2026        | |iswsc_linux_x86_64|              | ``07bd252432fb92b93bdb33b337455827`` |
     +                                          +          +                  +-----------------------------------+--------------------------------------+
@@ -75,15 +75,15 @@ Latest Release
     +                                          +          +                  +-----------------------------------+--------------------------------------+
     |                                          |          |                  | |iswsc_mac_aarch64|               | ``1291ed7c3ecc72a4b731a901506d7cda`` |
     +------------------------------------------+----------+------------------+-----------------------------------+--------------------------------------+
-    | Isaac Sim Assets                         | 6.0.0    | June 2026        | |isassets_complete_part1_zip|     | ``401e58c4e08c906fab5fc6fa6825c1cb`` |
+    | Isaac Sim Assets                         | 6.0.1    | June 2026        | |isassets_complete_part1_zip|     | ``92149a1f50a21c0f04cca6507ab00653`` |
     +                                          +          +                  +-----------------------------------+--------------------------------------+
-    |                                          |          |                  | |isassets_complete_part2_zip|     | ``201941c1f0cdc91346cc40a941d8afaf`` |
+    |                                          |          |                  | |isassets_complete_part2_zip|     | ``9b4b924e2d31bce41712d7637a0d6e42`` |
     +                                          +          +                  +-----------------------------------+--------------------------------------+
-    |                                          |          |                  | |isassets_complete_part3_zip|     | ``8cf4da965aed1a1eca5a9362f689bda8`` |
+    |                                          |          |                  | |isassets_complete_part3_zip|     | ``b1c62924beda91251d3f5318ffec2b00`` |
     +                                          +          +                  +-----------------------------------+--------------------------------------+
-    |                                          |          |                  | |isassets_complete_part4_zip|     | ``14c023814d805c927e9c8cf766213ee1`` |
+    |                                          |          |                  | |isassets_complete_part4_zip|     | ``6bd7aa4d9b6c4161c2302e4c9418ade7`` |
     +                                          +          +                  +-----------------------------------+--------------------------------------+
-    |                                          |          |                  | |isassets_complete_part5_zip|     | ``ab770e11d0365c6b4a3591caf5daf5bb`` |
+    |                                          |          |                  | |isassets_complete_part5_zip|     | ``c4a17942014be6b50492ae860496fef7`` |
     +------------------------------------------+----------+------------------+-----------------------------------+--------------------------------------+
 
 The Complete Pack is split into five parts. Use the MD5 checksums above with the :ref:`isaac_sim_setup_assets_content_pack` Aria2 example to resume interrupted downloads and verify each part, then combine and extract them.

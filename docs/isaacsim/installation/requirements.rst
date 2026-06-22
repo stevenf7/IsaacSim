@@ -12,9 +12,9 @@
 
 .. _Unix Driver Archive: https://www.nvidia.com/en-us/drivers/unix/
 
-.. |linux_driver_580_95_05| replace:: `580.95.05 <https://www.nvidia.com/en-us/drivers/details/254666/>`__
-.. |linux_driver_580_142_aarch64| replace:: `580.142 <https://www.nvidia.com/download/driverResults.aspx/265446/en-us/>`__
-.. |windows_driver_581_42| replace:: `581.42 <https://www.nvidia.com/en-us/drivers/details/254655/>`__
+.. |linux_driver_595_58_03| replace:: `595.58.03 <https://www.nvidia.com/en-us/drivers/details/265870/>`__
+.. |linux_driver_580_159_03| replace:: `580.159.03 <https://www.nvidia.com/en-us/drivers/details/267260/>`__
+.. |windows_driver_595_97| replace:: `595.97 <https://www.nvidia.com/en-us/drivers/details/265877/>`__
 
 
 .. _isaac_sim_requirements:
@@ -49,8 +49,8 @@ System Requirements
     Storage                             | 50GB SSD                             | 500GB SSD                                | 1TB NVMe SSD
     GPU                                 | GeForce RTX 4080                     | GeForce RTX 5080                         | RTX PRO 6000 Blackwell
     VRAM [1]_                           | 16GB [2]_                            | 16GB                                     | 48GB
-    Driver [3]_                         | Linux: |linux_driver_580_95_05|      | Linux: |linux_driver_580_95_05|          | Linux: |linux_driver_580_95_05|
-                                        | Windows: |windows_driver_581_42|     | Windows: |windows_driver_581_42|         | Windows: |windows_driver_581_42|
+    Driver [3]_                         | Linux: |linux_driver_595_58_03|      | Linux: |linux_driver_595_58_03|          | Linux: |linux_driver_595_58_03|
+                                        | Windows: |windows_driver_595_97|     | Windows: |windows_driver_595_97|         | Windows: |windows_driver_595_97|
     =================================== ====================================== ========================================== =============================================
 
     .. [1] More RAM and VRAM is recommended for advanced usage of |isaac-sim_short|. Isaac Lab usage will require additional RAM and VRAM for training.
@@ -75,7 +75,7 @@ System Requirements
     =================================== ======================================
     Device                              | |spark_long|
     OS                                  | NVIDIA DGX OS 7
-    Driver [4]_                         | |linux_driver_580_142_aarch64|
+    Driver [4]_                         | |linux_driver_580_159_03|
     =================================== ======================================
 
     .. [4] Isaac Sim was tested on these driver versions. See :doc:`Technical Requirements<dev-guide:common/technical-requirements>` for recommended driver versions.

@@ -34,7 +34,7 @@ For a quick install on Linux or Windows:
 
                 mkdir ~/isaacsim
                 cd ~/Downloads
-                unzip "isaac-sim-standalone-6.0.0-linux-x86_64.zip" -d ~/isaacsim
+                unzip "isaac-sim-standalone-6.0.1-linux-x86_64.zip" -d ~/isaacsim
                 cd ~/isaacsim
                 ./post_install.sh
                 ./isaac-sim.sh
@@ -45,7 +45,7 @@ For a quick install on Linux or Windows:
 
                 mkdir ~/isaacsim
                 cd ~/Downloads
-                unzip "isaac-sim-standalone-6.0.0-linux-aarch64.zip" -d ~/isaacsim
+                unzip "isaac-sim-standalone-6.0.1-linux-aarch64.zip" -d ~/isaacsim
                 cd ~/isaacsim
                 ./post_install.sh
                 ./isaac-sim.sh
@@ -56,7 +56,7 @@ For a quick install on Linux or Windows:
 
                 mkdir C:\isaacsim
                 cd %USERPROFILE%/Downloads
-                tar -xvzf "isaac-sim-standalone-6.0.0-windows-x86_64.zip" -C C:\isaacsim
+                tar -xvzf "isaac-sim-standalone-6.0.1-windows-x86_64.zip" -C C:\isaacsim
                 cd C:\isaacsim
                 post_install.bat
                 isaac-sim.bat
