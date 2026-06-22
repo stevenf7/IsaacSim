@@ -13,6 +13,293 @@
 Release Notes
 =============
 
+
+6.0.1 GA
+========
+
+Release Highlights
+------------------
+
+General
+^^^^^^^
+
+- Updated to Kit SDK 110.1.1 -> 110.1.2
+- Upgraded the asset toolchain with major releases of the asset converter, importer, and exporter, along with DGN, HOOPS, JT, and CAD converter updates.
+- Completed a repo-wide linting and docstring pass with regenerated ``python_api.md`` files and extensive documentation updates from validation and design review feedback.
+
+NuRec and MobilityGen
+^^^^^^^^^^^^^^^^^^^^^^
+
+- Added the ``isaacsim.replicator.nurec_utils`` extension, which consolidates NuRec rendering, metrics, and detection utilities.
+- Added teleoperation support for NuRec scenes that render through Sparse Pixel Gaussian (SPG) graphs, plus volume NuRec detection in addition to particle scenes.
+
+
+Kit SDK Version
+---------------
+
+Changed: 110.1.1 -> 110.1.2
+
+Kit SDK Dependency Version Changes
+----------------------------------
+
+Added
+^^^^^
+- omni.usd.metrics.assembler.usdgeom: 0.1.0
+
+Changed
+^^^^^^^
+- isaacsim.app.compatibility_check: 1.1.3 -> 1.1.4
+- isaacsim.exp.full: 6.0.0 -> 6.0.1
+- isaacsim.replicator.agent.core: 1.6.7 -> 1.6.8
+- isaacsim.sensors.rtx.calibration: 0.3.9 -> 0.3.10
+- isaacsim.sensors.rtx.placement: 0.16.9 -> 0.16.10
+- isaacsim.util.debug_draw: 3.2.2 -> 3.2.3
+- omni.anim.behavior.ui: 110.1.3 -> 110.1.4
+- omni.cip.core: 2.0.17 -> 2.0.23
+- omni.cip.mega: 2.0.14 -> 2.0.18
+- omni.cip.mega.scenario_payload_ui: 2.0.5 -> 2.0.6
+- omni.cip.mega.ui: 2.0.14 -> 2.0.18
+- omni.cip.mega.waypoints_ui: 2.0.4 -> 2.0.5
+- omni.cip.pip: 2.0.1 -> 2.0.5
+- omni.cip.ui: 2.0.3 -> 2.0.5
+- omni.cip.workspace: 2.0.1 -> 2.0.3
+- omni.cip.wrapp_ui: 2.0.1 -> 2.0.2
+- omni.convexdecomposition: 110.1.11 -> 110.1.13
+- omni.cuopt.examples: 1.4.1 -> 1.4.2
+- omni.cuopt.service: 1.3.2 -> 1.3.3
+- omni.cuopt.visualization: 1.4.1 -> 1.4.2
+- omni.graph.action_nodes: 2.10.3 -> 2.11.0
+- omni.graph.action_nodes_core: 2.10.2 -> 2.11.0
+- omni.graph.examples.cpp: 2.10.3 -> 2.11.0
+- omni.graph.nodes: 2.11.1 -> 2.12.0
+- omni.graph.nodes_core: 2.10.3 -> 2.11.0
+- omni.graph.telemetry: 3.10.3 -> 3.11.1
+- omni.graph.ui_nodes: 2.10.5 -> 2.11.1
+- omni.kit.asset_converter: 5.1.4 -> 6.0.1
+- omni.kit.converter.dgn: 510.1.4 -> 510.1.5
+- omni.kit.converter.dgn_core: 512.3.0 -> 512.3.3
+- omni.kit.converter.hoops_core: 511.3.0 -> 511.3.2
+- omni.kit.converter.jt_core: 510.1.0 -> 510.1.1
+- omni.kit.property.physics: 110.1.11 -> 110.1.13
+- omni.kit.stagerecorder.bundle: 110.0.0 -> 110.0.2
+- omni.kit.stagerecorder.core: 110.0.9 -> 110.0.14
+- omni.kit.stagerecorder.ui: 110.0.0 -> 110.0.2
+- omni.kit.tool.asset_exporter: 4.0.7 -> 5.0.1
+- omni.kit.tool.asset_importer: 5.2.0 -> 6.0.1
+- omni.kit.variant.presenter: 107.1.3 -> 107.1.6
+- omni.physics: 110.1.11 -> 110.1.13
+- omni.physics.isaacsimready: 110.1.11 -> 110.1.13
+- omni.physics.physx: 110.1.11 -> 110.1.13
+- omni.physics.physx.ui: 110.1.11 -> 110.1.13
+- omni.physics.stageupdate: 110.1.11 -> 110.1.13
+- omni.physics.tensors: 110.1.11 -> 110.1.13
+- omni.physics.ui: 110.1.11 -> 110.1.13
+- omni.physx: 110.1.11 -> 110.1.13
+- omni.physx.asset_validator: 110.1.11 -> 110.1.13
+- omni.physx.bundle: 110.1.11 -> 110.1.13
+- omni.physx.camera: 110.1.11 -> 110.1.13
+- omni.physx.cct: 110.1.11 -> 110.1.13
+- omni.physx.commands: 110.1.11 -> 110.1.13
+- omni.physx.cooking: 110.1.11 -> 110.1.13
+- omni.physx.demos: 110.1.11 -> 110.1.13
+- omni.physx.fabric: 110.1.11 -> 110.1.13
+- omni.physx.foundation: 110.1.11 -> 110.1.13
+- omni.physx.gpu: 110.1.11 -> 110.1.13
+- omni.physx.graph: 110.1.11 -> 110.1.13
+- omni.physx.pvd: 110.1.11 -> 110.1.13
+- omni.physx.supportui: 110.1.11 -> 110.1.13
+- omni.physx.tensors: 110.1.11 -> 110.1.13
+- omni.physx.tests: 110.1.11 -> 110.1.13
+- omni.physx.tests.visual: 110.1.11 -> 110.1.13
+- omni.physx.ui: 110.1.11 -> 110.1.13
+- omni.physx.vehicle: 110.1.11 -> 110.1.13
+- omni.replicator.core: 1.13.25 -> 1.13.27
+- omni.services.convert.cad: 508.0.3 -> 508.0.4
+- omni.services.core: 1.10.0 -> 1.11.0
+- omni.usd.metrics.assembler.physics: 110.1.11 -> 110.1.13
+- omni.usd.schema.physx: 110.1.11 -> 110.1.13
+- omni.usdphysics: 110.1.11 -> 110.1.13
+- omni.usdphysics.ui: 110.1.11 -> 110.1.13
+- semantics.schema.property: 2.0.1 -> 2.0.2
+
+Extensions
+==========
+
+This section lists notable functional changes — new APIs, behavior changes, and
+bug fixes that affect users. Releases that only contained internal maintenance
+(linter, docstring, and test-only updates) are omitted.
+
+- **isaacsim.asset.transformer** (1.2.3 -> 1.2.5)
+
+    - Added
+
+      - `RuleInterface.request_deletion` / `RuleInterface.get_pending_deletions` for rules to register manager-owned working files for deletion after the manager releases its stage handle.
+
+    - Fixed
+
+      - `AssetTransformerManager.run` performs deferred file deletions after releasing the working stage, fixing Windows `PermissionError` when rules convert `payloads/<base>.usd` to `.usda`. The manager now drops its `base_layer` handle after asset collection and drains pending deletions after each rule.
+      - `_run_deferred_deletions` is best-effort and non-fatal: it skips `Sdf.Layer.Clear()` and logs files that cannot be removed instead of failing the rule.
+
+- **isaacsim.asset.transformer.rules** (1.7.8 -> 1.7.10)
+
+    - Fixed
+
+      - `GeometriesRoutingRule.process_rule` releases the rule-owned `.tmp.usda` layer handle before deleting it on the `save_base_as_usda = False` path.
+      - `GeometriesRoutingRule` no longer fails with `PermissionError: [WinError 5] Access is denied` when converting `base.usd` to `.usda` on Windows. Manager-owned working files are now deleted via `RuleInterface.request_deletion` after the manager releases its stage handle, instead of in-rule `os.remove`.
+      - `_create_visual_materials_scope` anchors source-layer references on `realPath` instead of `identifier`, so the `.usd` -> `.usda` rewrite on Windows updates `instances.usda` material references correctly.
+
+- **isaacsim.benchmark.services** (4.2.1 -> 4.2.3)
+
+    - Fixed
+
+      - Fixed malformed `syncUsdLoads` setting path in `set_sync_mode` (was `/omni.kit.plugin/syncUsdLoads`, now `/omni/kit/plugin/syncUsdLoads`) so synchronous USD loads are correctly forced.
+
+- **isaacsim.core.simulation_manager** (1.15.4 -> 1.15.6)
+
+    - Changed
+
+      - Reduce warning to an info level message when USD context or stage is not available.
+
+- **isaacsim.core.throttling** (2.3.3 -> 2.3.5)
+
+    - Changed
+
+      - Replaced the `_is_replicator_capturing` run-status check with an attached-annotator ownership check so throttling defers to Replicator whenever a capture pipeline is configured.
+
+    - Fixed
+
+      - Async rendering no longer re-enables on timeline stop/pause while a Replicator capture pipeline is attached, even when the orchestrator is briefly stopped between steps. Toggling async rendering in that window could emit a one-sided `ASSETS_LOADING` event (NVBug-6169678) that stalled the next Replicator step for the full asset-loading timeout.
+
+- **isaacsim.physics.newton** (0.7.14 -> 0.8.1)
+
+    - Changed
+
+      - Upgraded Newton pip package from 1.2.0 to 1.2.1.
+
+- **isaacsim.physics.newton.tensors** (0.1.7 -> 0.1.9)
+
+    - Changed
+
+      - Updated Newton pip package to 1.2.1.
+
+- **isaacsim.replicator.experimental.mobility_gen** (0.2.5 -> 0.2.10)
+
+    - Added
+
+      - Teleop support for NuRec scenes with SPG (PPISP): the chase viewport renders through the scene's authored PPISP graph.
+      - Volume NuRec detection (`OmniNuRecFieldAsset` / `omni:nurec:isNuRecVolume`), in addition to particle scenes.
+      - Warn on NuRec replay when `render_rt_subframes` is below the recommended value.
+      - `OccupancyMap.from_ros_yaml` loads occupancy maps from Omniverse/URL paths via `omni.client`.
+      - `RecordingSession`: headless build-and-record control extracted from the UI, so recordings can be driven from a script.
+      - `collect_input()` (exported): caches a scene into a recording — `.usdz` byte-copied whole; `.usd`/`.usda`/`.usdc` collected via `omni.kit.usd.collect`.
+      - `replay_directory.py` options: `--warmup_frames`, `--max_frames`, `--skip_completed`, `--self_contained`.
+
+    - Changed
+
+      - Depend on `isaacsim.replicator.nurec_utils`, deduplicating the local NuRec utilities.
+      - Replay runs with multi-GPU rendering disabled.
+      - Scene caching copies the input scene and its dependencies instead of flattening the stage (much faster for large scenes).
+
+    - Fixed
+
+      - `MobilityGenCamera.update_state`: guard depth/segmentation/normals/instance-id against empty annotator buffers (as RGB already is), avoiding a "tile cannot extend outside image" crash on replay.
+      - `occupancy_map`: defer the `cv2` import to first use.
+
+- **isaacsim.replicator.mobility_gen.ui** (0.4.4 -> 0.4.8)
+
+    - Changed
+
+      - Added a dependency on `isaacsim.replicator.nurec_utils`.
+      - For SPG scenes the chase viewport renders through the export's authored PPISP graph via `route_chase_through_ppisp`; non-SPG scenes point the viewport at the chase camera as before.
+      - Teleop build validates NuRec render prerequisites (`setup_for_rendering`) on the loaded stage and aborts with a warning notification if one is unmet (e.g. `omni.rtx.spg` not enabled), instead of recording a black scene.
+      - The recording panel now drives recordings through the shared `RecordingSession`, so the UI and headless scripts build and record scenes through the same path.
+      - `_cache_stage` now copies the input scene (and the files it needs) into a temporary folder before loading, then opens the stage from that copy. This removes the flatten + strip-kit-prims path and the USDZ re-export; USDZ inputs are copied as-is so every package member (including SPG `.cu.lua` launchers) is preserved, and recording start is much faster for large NuRec scenes.
+
+- **isaacsim.replicator.nurec_utils** (0.1.2)
+
+    - New extension
+
+- **isaacsim.robot.experimental.wheeled_robots** (0.2.9 -> 0.2.11)
+
+    - Changed
+
+      - Clarify that `invert_steering` is for rear-wheel-steered robots such as forklifts.
+
+- **isaacsim.robot.wheeled_robots.nodes** (0.1.2 -> 0.1.5)
+
+    - Changed
+
+      - Clarify Ackermann Controller `invertSteering` input description for rear-wheel-steered robots.
+
+    - Fixed
+
+      - Clarified DifferentialController velocityCommand output order and units.
+
+- **isaacsim.robot.wheeled_robots.ui** (2.3.1 -> 2.3.3)
+
+    - Fixed
+
+      - Corrected Differential Controller graph shortcut joint names and indices to use left/right wheel order.
+      - Supported joint index 0 by using -1 as the unset index sentinel.
+
+- **isaacsim.ros2.core** (1.9.1 -> 1.9.4)
+
+    - Fixed
+
+      - Dynamic ROS 2 message publishing leaked the previous sequence buffer every tick: `Ros2DynamicMessageImpl::_setArray` re-initialized variable-length array fields without finalizing the prior allocation. Finalize before re-initializing.
+      - `IPCBufferManager` destructor leaked one CUDA virtual address reservation (missing `cuMemAddressFree`) and one exported POSIX file descriptor per buffer on every teardown, and released allocation handles before unmapping them. Tear down in the documented VMM order (unmap, release, address-free) and close the exported file descriptors.
+      - `camera_info_utils.compute_relative_pose`: defer the `cv2` import to first use.
+
+- **isaacsim.ros2.nodes** (1.18.11 -> 1.18.13)
+
+    - Fixed
+
+      - `OgnROS2CameraInfoHelper`: defer the `cv2` import to first use.
+
+- **isaacsim.sensors.experimental.rtx** (1.4.4 -> 1.4.6)
+
+    - Fixed
+
+      - `camera_utils.draw_annotator_data_to_image`: defer the `cv2` import to first use.
+
+- **isaacsim.sensors.rtx.nodes** (0.1.0 -> 0.1.2)
+
+    - Fixed
+
+      - `IsaacExtractRTXSensorPointCloud` properly passes-through Cartesian point clouds.
+
+- **isaacsim.simulation_app** (2.18.3 -> 2.18.4)
+
+    - Added
+
+      - Added `shutdown_watchdog_timeout` launch config option (default 120s). When fast shutdown is enabled, `close()` arms a `faulthandler`-based watchdog before `app.shutdown()` so a deadlocked Kit teardown (e.g. the carb.tasking GIL deadlock) dumps all thread stacks and force-exits instead of hanging until an external timeout. The watchdog runs on a C thread so it fires even when the main thread is wedged holding the GIL.
+
+    - Fixed
+
+      - Fixed malformed `syncUsdLoads` setting path in `_start_app` and `_set_render_settings` (was `omni.kit.plugin/syncUsdLoads`, now `omni/kit/plugin/syncUsdLoads`) so the `sync_loads` launch config option correctly forces synchronous USD loads as documented.
+
+- **isaacsim.ucx.core** (1.4.2 -> 1.4.4)
+
+    - Fixed
+
+      - `waitForRequestWithTimeout` now treats `timeoutMs = 0` as "wait indefinitely", matching the documented OGN-node default (`"If 0, waits indefinitely"`). Previously only `g_kUcxInfiniteTimeout` (`UINT32_MAX`) was treated as the infinite sentinel; `timeoutMs = 0` fell through the polling loop on the first iteration and returned "Request timed out", causing intermittent send-side timeouts in any UCX OGN node using the default value.
+
+- **isaacsim.ucx.nodes** (1.6.4 -> 1.6.7)
+
+    - Changed
+
+      - `OgnUCXPublishImage`: the image FlatBuffer's `Tensor.shape` is now `[height, width, bytes_per_pixel]` with `ndim = 3` and row-major strides, replacing the previous 1D `[dataSize]` shape. Receivers can now consume the image as a properly-shaped tensor without an external reshape step. `bytes_per_pixel` is derived as `dataSize / (height * width)` so future encodings do not require a code change here. Both the CPU path (`sendCudaBuffer = false`) and the GPU-direct metadata header (`sendCudaBuffer = true`) emit the same shape. Total byte count is still recoverable as `prod(shape)`.
+
+    - Fixed
+
+      - `OgnUCXCameraHelper.ogn`: the `tag` input default is now the FNV-1a 32-bit hash of `"isaac.Image"` (`270059627`), matching the convention used by the other UCX OGN publishers (`OgnUCXPublishClock`, `OgnUCXPublishJointState`, `OgnUCXSubscribeJointCommand`). Previously the default was the literal `10`, which made `UCXCameraHelper` the only UCX publisher whose default tag did not derive from its FlatBuffer schema name and required consumers to override the input to receive frames.
+
+- **omni.pip.compute** (1.9.0 -> 1.9.2)
+
+    - Removed
+
+      - Removed "pynvvideocodec==2.1.0".
+
 6.0.0 GA
 ========
 
