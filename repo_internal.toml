@@ -40,7 +40,7 @@ default_footer_notice_links_enabled = true
 # Use 1 worker to avoid KeyError/EOFError in forked workers when resolving module paths (e.g. isaacsim.asset.gen.omap).
 sphinx_parallel = "1"
 copyright_start = 2023
-version = "6.0.1"
+version = "6.1.0"
 
 announcement = ""
 
