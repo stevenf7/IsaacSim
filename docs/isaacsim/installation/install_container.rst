@@ -541,3 +541,5 @@ This section describes how to run the |isaac-sim| container with GUI.
 
     * Running |isaac-sim_short| with GUI in the container is generally not recommended.
     * The application experience may not be as expected. For a full GUI app experience please run |isaac-sim_short| with the :ref:`isaac_sim_app_install_workstation`.
+    * GUI mode requires a **real local display**. It does not work over a remote or virtual display (for example, NoMachine, VNC, or DCV) or on a headless server with no connected monitor: the renderer cannot create a Vulkan swapchain and aborts with ``Failed to initialize graphics environment`` (``vkCreateSwapchainKHR`` returns ``VkResult: UNKNOWN_ERROR``).
+    * To run |isaac-sim_short| on a remote or headless host, use :ref:`headless mode with livestreaming <isaac_sim_setup_remote_headless_container>` instead.
