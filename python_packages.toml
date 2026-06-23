@@ -722,6 +722,8 @@ inventory.includes.all = [
     "exts/isaacsim.hsb.bridge",
     "exts/isaacsim.hsb.core",
     "exts/isaacsim.hsb.nodes",
+    # - agent chat
+    "exts/isaacsim.util.agent",
 # AUTOREMOVE: BEGIN
     # internal extensions (not included in extscache)
     [ "extsInternal/isaacsim.kit.xr.teleop.bridge", "exts" ],
