@@ -110,7 +110,7 @@ class LulaTestScenarios:
         self.art_ik = None
 
     def toggle_rmpflow_debug_mode(self) -> None:
-        """Toggles the RMPFlow debug mode on or off.
+        """Toggles RMPFlow debug mode.
 
         When enabled, visualization of collision spheres is activated and state updates are ignored.
         When disabled, collision sphere visualization is stopped and state updates resume.
@@ -136,10 +136,10 @@ class LulaTestScenarios:
         self.lula_ik = LulaKinematicsSolver(robot_description_path, urdf_path)
 
     def get_ik_frames(self) -> list:
-        """Gets all available frame names from the inverse kinematics solver.
+        """Gets available frame names from the inverse kinematics solver.
 
         Returns:
-            List of frame names, or empty list if IK solver is not initialized.
+            Frame names, or an empty list if the inverse kinematics solver is not initialized.
         """
         if self.lula_ik is None:
             return []
@@ -229,7 +229,7 @@ class LulaTestScenarios:
             self._trajectory_targets.append(waypoint)
 
     def on_rmpflow_follow_target_obstacles(self, articulation: object, **rmp_config: object) -> None:
-        """Sets up RmpFlow scenario for target following with obstacle avoidance.
+        """Sets up an RmpFlow scenario for target following with obstacle avoidance.
 
         Creates a motion policy controller using RmpFlow for the articulation to follow a target
         while avoiding wall obstacles. The scenario includes a red target cube and two wall obstacles.
@@ -256,7 +256,7 @@ class LulaTestScenarios:
             self.rmpflow.add_obstacle(obstacle)
 
     def on_rmpflow_follow_sinusoidal_target(self, articulation: object, **rmp_config: object) -> None:
-        """Sets up RmpFlow scenario for following a sinusoidal target trajectory.
+        """Sets up an RmpFlow scenario for following a sinusoidal target trajectory.
 
         Creates a motion policy controller using RmpFlow for the articulation to follow a target
         that moves in a sinusoidal pattern when updated via scenario parameters.
@@ -454,9 +454,14 @@ class LulaTestScenarios:
         based on frequency and radius parameters.
 
         Args:
-            **scenario_params: Scenario-specific parameters. For sinusoidal target scenarios,
-                includes w_z (vertical frequency), w_xy (horizontal frequency),
-                rad_z (vertical radius), rad_xy (horizontal radius), and height (base height).
+            **scenario_params: Scenario-specific parameters.
+
+        Keyword Args:
+            w_z: Vertical frequency for sinusoidal target motion.
+            w_xy: Horizontal frequency for sinusoidal target motion.
+            rad_z: Vertical radius for sinusoidal target motion.
+            rad_xy: Horizontal radius for sinusoidal target motion.
+            height: Base height for sinusoidal target motion.
         """
         if self.scenario_name == "Sinusoidal Target":
             w_z = scenario_params["w_z"]
@@ -486,11 +491,14 @@ class LulaTestScenarios:
         appropriate control action based on the current target position and orientation.
 
         Args:
-            **scenario_params: Parameters specific to the active scenario. For "Sinusoidal Target" scenario,
-                expects w_z, w_xy, rad_z, rad_xy, and height parameters.
+            **scenario_params: Parameters specific to the active scenario. For "Sinusoidal Target", includes w_z,
+                w_xy, rad_z, rad_xy, and height parameters.
 
         Returns:
             The articulation action for the next timestep. Returns an empty action if no controller is active.
+
+        Raises:
+            KeyError: If a required "Sinusoidal Target" scenario parameter is missing.
         """
         if self._ee_frame_prim is not None:
             position, orientation = self.art_ik.compute_end_effector_pose()

@@ -24,10 +24,10 @@ from isaacsim.robot_motion.motion_generation.lula.kinematics import LulaKinemati
 
 
 class KinematicsSolver(ArticulationKinematicsSolver):
-    """Kinematics Solver for Franka robot. This class loads a LulaKinematicsSolver object.
+    """Kinematics solver for the Franka robot. This class loads a LulaKinematicsSolver object.
 
     Args:
-        robot_articulation: An initialized Articulation object representing this Franka.
+        robot_articulation: An initialized SingleArticulation object representing this Franka.
         end_effector_frame_name: The name of the Franka end effector. If None, an end effector link will
             be automatically selected.
     """

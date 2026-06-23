@@ -26,10 +26,10 @@ from isaacsim.robot_motion.motion_generation.lula.kinematics import LulaKinemati
 
 
 class KinematicsSolver(ArticulationKinematicsSolver):
-    """Kinematics Solver for UR10 robot. This class loads a LulaKinematicsSolver object.
+    """Kinematics solver for a UR10 robot. This class loads a LulaKinematicsSolver object.
 
     Args:
-        robot_articulation: An initialized Articulation object representing this UR10.
+        robot_articulation: An initialized SingleArticulation object representing this UR10.
         end_effector_frame_name: The name of the UR10 end effector. If None, an end effector link will be
             automatically selected.
         attach_gripper: If True, a URDF will be loaded that includes a suction gripper.

@@ -42,7 +42,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
 
     This extension provides an interactive example showing how to use the LightBeam sensor to detect
     objects and measure distances using physics-based ray casting. The demo creates a scene with a
-    moveable cube and a LightBeam sensor that continuously scans for hits, displaying real-time data
+    movable cube and a LightBeam sensor that continuously scans for hits, displaying real-time data
     including beam hit status, linear depth measurements, and hit positions.
 
     The extension integrates with the Isaac Sim examples browser and provides a user interface that
@@ -80,7 +80,7 @@ class LightBeamSensorDemo(omni.ext.IExt):
         """Placeholder method for building the extension window."""
 
     def _on_stage_closed(self, event: object) -> None:
-        """Stage closed event callback.
+        """Handles stage closed events by closing the demonstration window.
 
         Args:
             event: The stage closed event.

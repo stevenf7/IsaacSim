@@ -18,3 +18,5 @@
 from .commands import *
 from .extension import *
 from .mesh_merger import *
+
+__all__ = ["MeshMerger", "MergeMeshesCommand", "Extension"]

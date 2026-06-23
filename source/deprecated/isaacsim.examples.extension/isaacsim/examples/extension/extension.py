@@ -102,6 +102,11 @@ class Extension(omni.ext.IExt):
         gc.collect()
 
     def _is_visible(self) -> bool:
+        """Check whether the extension window is visible.
+
+        Returns:
+            True if the extension window exists and is visible.
+        """
         return self._window.visible if self._window else False
 
     def _on_window(self, visible: bool) -> None:

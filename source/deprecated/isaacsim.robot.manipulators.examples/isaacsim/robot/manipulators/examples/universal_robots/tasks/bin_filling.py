@@ -31,7 +31,7 @@ from pxr import Sdf
 
 
 class BinFilling(BaseTask):
-    """Task using UR10 robot to fill a bin with cubes and showcase the surface gripper torque/force limits.
+    """Task using the UR10 robot to fill a bin with cubes and showcase the surface gripper torque/force limits.
 
     Args:
         name: Task name identifier. Should be unique if added to the World.
@@ -69,7 +69,7 @@ class BinFilling(BaseTask):
         """Loads the stage USD and adds the robot and packing bin to the World's scene.
 
         Args:
-            scene: The world's scene.
+            scene: The World's scene.
         """
         super().set_up_scene(scene)
         add_reference_to_stage(usd_path=self._ur10_asset_path, prim_path="/World/Scene")
@@ -94,7 +94,7 @@ class BinFilling(BaseTask):
         return
 
     def _create_cube_pool(self) -> None:
-        """Create the cube pool as dynamic cubes (hidden + rigid body physics disabled)."""
+        """Creates the cube pool as dynamic cubes with hidden visibility and rigid body physics disabled."""
         if len(self._cubes) > 0:
             return
 
@@ -119,13 +119,13 @@ class BinFilling(BaseTask):
     def get_observations(self) -> dict:
         """Returns current observations from the task needed for the behavioral layer at each time step.
 
-           Observations:
+        Observations:
             - packing_bin
                 - position
                 - orientation
                 - target_position
                 - size
-            - my_ur10:
+            - my_ur10
                 - joint_positions
                 - end_effector_position
                 - end_effector_orientation
@@ -152,10 +152,10 @@ class BinFilling(BaseTask):
         }
 
     def pre_step(self, time_step_index: int, simulation_time: float) -> None:
-        """Executed before the physics step.
+        """Executes before the physics step and drops queued cubes from the pipe on scheduled time steps.
 
         Args:
-            time_step_index: Current time step index
+            time_step_index: Current time step index.
             simulation_time: Current simulation time.
         """
         BaseTask.pre_step(self, time_step_index=time_step_index, simulation_time=simulation_time)
@@ -164,13 +164,13 @@ class BinFilling(BaseTask):
         return
 
     def post_reset(self) -> None:
-        """Executed after reseting the scene."""
+        """Executes after resetting the scene and clears cube drop counters."""
         self._cubes_to_add = 0
         self._active_cubes = 0
         return
 
     def add_cubes(self, cubes_number: int = 10) -> None:
-        """Adds number of cubes to be added by the pipe.
+        """Adds cubes to be dropped by the pipe.
 
         Args:
             cubes_number: Number of cubes to be added by the pipe.
@@ -194,7 +194,7 @@ class BinFilling(BaseTask):
         return
 
     def cleanup(self) -> None:
-        """Deactivate spawned cubes when resetting (hide + disable rigid bodies)."""
+        """Deactivates spawned cubes when resetting by hiding them and disabling rigid body physics."""
         count = self._active_cubes
         if count <= 0:
             return
@@ -210,10 +210,7 @@ class BinFilling(BaseTask):
         return
 
     def get_params(self) -> dict:
-        """Task parameters are.
-
-            - bin_name
-            - robot_name.
+        """Task parameters are: bin_name and robot_name.
 
         Returns:
             Defined parameters of the task.

@@ -31,7 +31,7 @@ class SingleViewDepthSensor(Camera):
     """A single view depth sensor that extends the Camera class with depth sensing capabilities.
 
     This class provides depth sensing functionality by applying the OmniSensorDepthSensorSingleViewAPI to the
-    render product. It allows configuration of various depth sensor parameters including baseline distance,
+    render product. It allows configuration of various depth sensor parameters, including baseline distance,
     confidence threshold, focal length, disparity settings, noise parameters, and outlier removal.
 
     The sensor supports multiple annotators for different types of depth data:
@@ -67,7 +67,6 @@ confidence threshold, focal length, and other sensor properties."""
         Args:
             physics_sim_view: Physics simulation view.
             attach_rgb_annotator: Whether to attach RGB annotator.
-
         """
         super().initialize(physics_sim_view=physics_sim_view, attach_rgb_annotator=attach_rgb_annotator)
         # Retrieve the render product prim and apply the appropriate schema to it
@@ -86,7 +85,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Args:
             baseline_mm: Baseline distance in millimeters.
-
         """
         if self._render_product_prim:
             self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:baselineMM").Set(baseline_mm)
@@ -96,7 +94,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Returns:
             The baseline distance in millimeters, or None if not available.
-
         """
         if self._render_product_prim and self._render_product_prim.HasAttribute("omni:rtx:post:depthSensor:baselineMM"):
             return self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:baselineMM").Get()
@@ -107,7 +104,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Args:
             confidence_threshold: Confidence threshold for the depth sensor.
-
         """
         if self._render_product_prim:
             self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:confidenceThreshold").Set(
@@ -119,7 +115,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Returns:
             The confidence threshold for the depth sensor, or None if not available.
-
         """
         if self._render_product_prim and self._render_product_prim.HasAttribute(
             "omni:rtx:post:depthSensor:confidenceThreshold"
@@ -132,7 +127,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Args:
             enabled: Whether to enable the depth sensor.
-
         """
         if self._render_product_prim:
             self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:enabled").Set(enabled)
@@ -142,7 +136,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Returns:
             True if the depth sensor is enabled, False otherwise, or None if not available.
-
         """
         if self._render_product_prim and self._render_product_prim.HasAttribute("omni:rtx:post:depthSensor:enabled"):
             return self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:enabled").Get()
@@ -153,7 +146,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Args:
             focal_length_pixel: Focal length in pixels.
-
         """
         if self._render_product_prim:
             self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:focalLengthPixel").Set(focal_length_pixel)
@@ -163,7 +155,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Returns:
             The focal length in pixels, or None if not available.
-
         """
         if self._render_product_prim and self._render_product_prim.HasAttribute(
             "omni:rtx:post:depthSensor:focalLengthPixel"
@@ -176,7 +167,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Args:
             max_disparity_pixel: Maximum disparity in pixels.
-
         """
         if self._render_product_prim:
             self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:maxDisparityPixel").Set(
@@ -187,8 +177,7 @@ confidence threshold, focal length, and other sensor properties."""
         """Maximum disparity in pixels.
 
         Returns:
-            The maximum disparity in pixels.
-
+            The maximum disparity in pixels, or None if not available.
         """
         if self._render_product_prim and self._render_product_prim.HasAttribute(
             "omni:rtx:post:depthSensor:maxDisparityPixel"
@@ -201,7 +190,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Args:
             max_distance: Maximum distance for disparity generation.
-
         """
         if self._render_product_prim:
             self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:maxDistance").Set(max_distance)
@@ -210,8 +198,7 @@ confidence threshold, focal length, and other sensor properties."""
         """Maximum distance for disparity generation.
 
         Returns:
-            The maximum distance for disparity generation.
-
+            The maximum distance for disparity generation, or None if not available.
         """
         if self._render_product_prim and self._render_product_prim.HasAttribute(
             "omni:rtx:post:depthSensor:maxDistance"
@@ -224,7 +211,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Args:
             min_distance: Minimum distance for disparity generation.
-
         """
         if self._render_product_prim:
             self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:minDistance").Set(min_distance)
@@ -233,8 +219,7 @@ confidence threshold, focal length, and other sensor properties."""
         """Minimum distance for disparity generation.
 
         Returns:
-            The minimum distance for disparity generation.
-
+            The minimum distance for disparity generation, or None if not available.
         """
         if self._render_product_prim and self._render_product_prim.HasAttribute(
             "omni:rtx:post:depthSensor:minDistance"
@@ -247,7 +232,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Args:
             noise_downscale_factor_pixel: Noise downscale factor in pixels.
-
         """
         if self._render_product_prim:
             self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:noiseDownscaleFactorPixel").Set(
@@ -258,8 +242,7 @@ confidence threshold, focal length, and other sensor properties."""
         """Noise downscale factor in pixels.
 
         Returns:
-            The noise downscale factor in pixels.
-
+            The noise downscale factor in pixels, or None if not available.
         """
         if self._render_product_prim and self._render_product_prim.HasAttribute(
             "omni:rtx:post:depthSensor:noiseDownscaleFactorPixel"
@@ -272,7 +255,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Args:
             noise_mean: Noise mean value.
-
         """
         if self._render_product_prim:
             self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:noiseMean").Set(noise_mean)
@@ -281,8 +263,7 @@ confidence threshold, focal length, and other sensor properties."""
         """Noise mean value.
 
         Returns:
-            The noise mean.
-
+            The noise mean, or None if not available.
         """
         if self._render_product_prim and self._render_product_prim.HasAttribute("omni:rtx:post:depthSensor:noiseMean"):
             return self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:noiseMean").Get()
@@ -293,7 +274,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Args:
             noise_sigma: Noise sigma value.
-
         """
         if self._render_product_prim:
             self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:noiseSigma").Set(noise_sigma)
@@ -302,8 +282,7 @@ confidence threshold, focal length, and other sensor properties."""
         """Noise sigma for the depth sensor.
 
         Returns:
-            The noise sigma value.
-
+            The noise sigma value, or None if not available.
         """
         if self._render_product_prim and self._render_product_prim.HasAttribute("omni:rtx:post:depthSensor:noiseSigma"):
             return self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:noiseSigma").Get()
@@ -314,7 +293,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Args:
             outlier_removal_enabled: Whether to enable outlier removal.
-
         """
         if self._render_product_prim:
             self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:outlierRemovalEnabled").Set(
@@ -325,8 +303,7 @@ confidence threshold, focal length, and other sensor properties."""
         """Outlier removal enabled attribute. Samples separated by this range (in pixels) will be removed.
 
         Returns:
-            Whether outlier removal is enabled.
-
+            Whether outlier removal is enabled, or None if not available.
         """
         if self._render_product_prim and self._render_product_prim.HasAttribute(
             "omni:rtx:post:depthSensor:outlierRemovalEnabled"
@@ -339,7 +316,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Args:
             rgb_depth_output_mode: The RGB depth output mode to set.
-
         """
         if self._render_product_prim:
             self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:rgbDepthOutputMode").Set(
@@ -350,8 +326,7 @@ confidence threshold, focal length, and other sensor properties."""
         """RGB depth output mode.
 
         Returns:
-            The RGB depth output mode value.
-
+            The RGB depth output mode value, or None if not available.
         """
         if self._render_product_prim and self._render_product_prim.HasAttribute(
             "omni:rtx:post:depthSensor:rgbDepthOutputMode"
@@ -364,7 +339,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Args:
             sensor_size_pixel: The sensor size in pixels to set.
-
         """
         if self._render_product_prim:
             self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:sensorSizePixel").Set(sensor_size_pixel)
@@ -373,8 +347,7 @@ confidence threshold, focal length, and other sensor properties."""
         """Sensor size in pixels.
 
         Returns:
-            The sensor size in pixels.
-
+            The sensor size in pixels, or None if not available.
         """
         if self._render_product_prim and self._render_product_prim.HasAttribute(
             "omni:rtx:post:depthSensor:sensorSizePixel"
@@ -387,7 +360,6 @@ confidence threshold, focal length, and other sensor properties."""
 
         Args:
             show_distance: Whether to show the distance.
-
         """
         if self._render_product_prim:
             self._render_product_prim.GetAttribute("omni:rtx:post:depthSensor:showDistance").Set(show_distance)
@@ -396,8 +368,7 @@ confidence threshold, focal length, and other sensor properties."""
         """Whether to show the distance.
 
         Returns:
-            True if distance is shown, False otherwise.
-
+            True if distance is shown, False otherwise, or None if not available.
         """
         if self._render_product_prim and self._render_product_prim.HasAttribute(
             "omni:rtx:post:depthSensor:showDistance"
@@ -446,7 +417,6 @@ class SingleViewDepthSensorAsset:
         >>>
         >>> # Get a specific depth sensor by camera prim path
         >>> depth_sensor = depth_sensor_asset.get_child_depth_sensor("/World/DepthSensor/Camera")
-
     """
 
     def __init__(
@@ -511,7 +481,6 @@ class SingleViewDepthSensorAsset:
 
         Returns:
             A configured SingleViewDepthSensor instance.
-
         """
         template_render_product_prim = get_prim_at_path(render_product_path)
         resolution_val = template_render_product_prim.GetAttribute("resolution").Get()
@@ -531,7 +500,7 @@ class SingleViewDepthSensorAsset:
         Each depth sensor will be enabled, even if the template render product is disabled.
 
         Args:
-            physics_sim_view: Optional physics simulation view.
+            physics_sim_view: Physics simulation view passed to each child depth sensor.
             attach_rgb_annotator: Whether to attach RGB annotator.
 
         Example:
@@ -545,7 +514,6 @@ class SingleViewDepthSensorAsset:
             >>>
             >>> # Initialize all depth sensors in the asset
             >>> depth_sensor_asset.initialize(attach_rgb_annotator=True)
-
         """
         # Initialize all child depth sensors
         for template_render_product_path, depth_sensor in self._depth_sensor_templates.items():
@@ -570,8 +538,7 @@ class SingleViewDepthSensorAsset:
         """Get all depth sensors in the asset.
 
         Returns:
-            List of all SingleViewDepthSensor instances in the asset.
-
+            All SingleViewDepthSensor instances in the asset.
         """
         return list(self._camera_prim_to_depth_sensor.values())
 
@@ -579,8 +546,7 @@ class SingleViewDepthSensorAsset:
         """Get all depth sensor paths in the asset.
 
         Returns:
-            List of all camera prim paths associated with depth sensors in the asset.
-
+            All camera prim paths associated with depth sensors in the asset.
         """
         return list(self._camera_prim_to_depth_sensor.keys())
 
@@ -615,7 +581,6 @@ class SingleViewDepthSensorAsset:
             >>> # Configure the depth sensor
             >>> depth_sensor.set_baseline_mm(60.0)
             >>> depth_sensor.set_confidence_threshold(0.95)
-
         """
         return self._camera_prim_to_depth_sensor[str(camera_prim_path)]
 
@@ -628,23 +593,17 @@ class SingleViewDepthSensorAsset:
         is created as a child of the specified parent prim and is named based on the
         camera prim's name with "_render_product" suffix.
 
-        The method performs validation to ensure:
-        - The parent prim path is valid
-        - The camera prim exists and is of type "Camera"
-        - The render product can be successfully created
+        The method returns an invalid prim if the camera prim is invalid, the camera prim is not a Camera,
+        or the RenderProduct prim cannot be created.
 
         Args:
             parent_prim_path: The USD path to the parent prim where the render product will be created.
                 If the path ends with "/", it will be automatically removed.
             camera_prim_path: The USD path to the camera prim that will be associated with the render product.
-            **kwargs: Additional keyword arguments to pass to the RenderProduct prim as attributes.
+            **kwargs: RenderProduct attribute values to set when matching attributes exist.
 
         Returns:
             The created RenderProduct prim, or an invalid prim if creation failed.
-
-        Raises:
-            RuntimeError: If the USD stage cannot be accessed.
-            ValueError: If the camera prim path is invalid or the prim is not a Camera.
 
         Example:
 
@@ -661,7 +620,6 @@ class SingleViewDepthSensorAsset:
             >>> # This creates a render product at "/World/DepthSensor/Camera_render_product"
             >>> # with the OmniSensorDepthSensorSingleViewAPI applied and a relationship
             >>> # to the camera at "/World/DepthSensor/Camera"
-
         """
         stage = omni.usd.get_context().get_stage()
         if parent_prim_path.endswith("/"):

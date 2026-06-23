@@ -121,7 +121,7 @@ class Extension(omni.ext.IExt):
     ) -> None:
         """Connect upstream nodes when an annotator is attached.
 
-        Callback function for annotator attachment. Will connect ancestral upstream node(s)
+        Callback function for annotator attachment. Connects ancestral upstream node(s)
         to each other and annotator node, if user desires connections beyond immediate
         parent nodes.
 
