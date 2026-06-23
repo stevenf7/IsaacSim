@@ -34,6 +34,7 @@ dependencies = [
     "isaacsim.storage.native",
     "isaacsim.test.utils",
 ]
+
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
     '*omni.syntheticdata.scripts.extension*stageFrameHistoryCount*',

@@ -99,3 +99,7 @@ args = [
     ### Extension specific args
     "--/rtx/ecoMode/enabled=True"
 ]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]

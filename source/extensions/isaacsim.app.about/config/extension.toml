@@ -26,5 +26,9 @@ dependencies = [
     "omni.kit.ui_test",  # ui_test is required by test_window_about.py for UI automation.
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [documentation]
 pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

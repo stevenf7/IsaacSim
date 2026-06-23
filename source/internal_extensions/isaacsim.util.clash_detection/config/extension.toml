@@ -27,6 +27,10 @@ name = "isaacsim.util.clash_detection.tests"
 [[test]]
 name = "startup"
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 pyCoverageEnabled = false
 dependencies=[
@@ -80,4 +84,8 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/rendering/perSensorTickTlas=true",
     "--/rtx/reservedDescriptors=900000",
+]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
 ]

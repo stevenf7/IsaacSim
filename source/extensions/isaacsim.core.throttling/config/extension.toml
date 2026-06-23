@@ -80,5 +80,9 @@ args = [
     "--/rtx/ecoMode/enabled=True"
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [documentation]
 pages = ["docs/Overview.md","docs/SETTINGS.md", "docs/CHANGELOG.md"]

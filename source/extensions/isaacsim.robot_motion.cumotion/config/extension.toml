@@ -39,6 +39,10 @@ name = "isaacsim.robot_motion.cumotion.tests"
 name = "startup"
 enabled = true
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 enabled = true
 dependencies = [

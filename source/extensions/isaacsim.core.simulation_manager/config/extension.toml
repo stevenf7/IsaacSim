@@ -96,6 +96,8 @@ args = [
 ]
 
 stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+    ### test-suite specific args
     "*[Error] [isaacsim.core.simulation_manager.impl.simulation_manager] Engine 'invalid_engine' not found. Available: PhysX*",
 ]
 
@@ -171,7 +173,10 @@ pythonTests.include = [
     "isaacsim.core.simulation_manager.tests.test_physics_scene.TestPhysicsScene*",
     "isaacsim.core.simulation_manager.tests.test_physics_scene.TestNewtonMjcScene*",
 ]
+
 stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+    ### test-suite specific args
     "*[Error] [isaacsim.core.simulation_manager.impl.simulation_manager] Engine 'invalid_engine' not found. Available: PhysX*",
 ]
 

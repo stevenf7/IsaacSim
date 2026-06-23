@@ -35,6 +35,10 @@ exts."isaacsim.physics.newton".auto_switch_on_startup = true
 [[test]]
 name = "startup"
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 timeout = 3600
 enabled = false

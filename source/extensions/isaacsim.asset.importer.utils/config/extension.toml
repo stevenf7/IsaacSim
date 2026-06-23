@@ -29,6 +29,7 @@ timeout = 900
 dependencies = [
     "omni.hydra.usdrt_delegate",
 ]
+
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]

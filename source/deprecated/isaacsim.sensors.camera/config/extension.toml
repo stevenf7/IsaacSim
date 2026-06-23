@@ -46,6 +46,10 @@ args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 timeout = 900
 dependencies = [
@@ -109,7 +113,10 @@ args = [
     "--/rtx/hydra/supportMultiTickRate=false",
     "--/rtx/rendering/perSensorTickTlas=false",
 ]
+
 stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+    ### test-suite specific args
     '*[Error] [rtx.postprocessing.plugin] DepthSensor: Texture sizes do not match: inColorTexDesc 1920x1080x1:11@0 inDepthTexDesc 1500x843x1:33@0*',
     '*[Error] [rtx.postprocessing.plugin] DepthSensor: Failed to allocate view resources for view * device **',
     '*[Error] [carb.scenerenderer-rtx.plugin] Failed to export AOV 38 to render product. The renderer did not generate the AOV texture.*',
@@ -179,7 +186,10 @@ args = [
     "--/rtx/rendering/perSensorTickTlas=true",
     "--/rtx/reservedDescriptors=900000",
 ]
+
 stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+    ### test-suite specific args
     '*[Error] [rtx.postprocessing.plugin] DepthSensor: Texture sizes do not match: inColorTexDesc 1920x1080x1:11@0 inDepthTexDesc 1500x843x1:33@0*',
     '*[Error] [rtx.postprocessing.plugin] DepthSensor: Failed to allocate view resources for view * device **',
     '*[Error] [carb.scenerenderer-rtx.plugin] Failed to export AOV 38 to render product. The renderer did not generate the AOV texture.*',
@@ -249,7 +259,10 @@ args = [
     "--/rtx/rendering/perSensorTickTlas=true",
     "--/rtx/reservedDescriptors=900000",
 ]
+
 stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+    ### test-suite specific args
     '*[Error] [rtx.postprocessing.plugin] DepthSensor: Texture sizes do not match: inColorTexDesc 1920x1080x1:11@0 inDepthTexDesc 1500x843x1:33@0*',
     '*[Error] [rtx.postprocessing.plugin] DepthSensor: Failed to allocate view resources for view * device **',
     '*[Error] [carb.scenerenderer-rtx.plugin] Failed to export AOV 38 to render product. The renderer did not generate the AOV texture.*',

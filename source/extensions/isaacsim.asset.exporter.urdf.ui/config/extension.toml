@@ -31,6 +31,10 @@ dependencies = [
     "omni.isaac.core_archive",
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 dependencies = [
     "isaacsim.storage.native",
@@ -87,6 +91,7 @@ args = [
     "--/app/window/dpiScaleOverride=1.0",
     "--/app/window/scaleToMonitor=false",
 ]
+
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]

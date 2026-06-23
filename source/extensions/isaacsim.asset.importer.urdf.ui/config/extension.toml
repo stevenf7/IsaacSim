@@ -47,6 +47,7 @@ dependencies = [
     "isaacsim.test.utils",
     "omni.kit.ui_test"
 ]
+
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]

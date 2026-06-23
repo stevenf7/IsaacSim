@@ -31,6 +31,7 @@ timeout = 900
 dependencies = [
     "isaacsim.test.utils",
 ]
+
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
     '*SyntheticData extension needs at least a stageFrameHistoryCount*',

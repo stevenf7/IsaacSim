@@ -31,6 +31,7 @@ dependencies = [
     "omni.kit.material.library",
     "omni.kit.primitive.mesh",
 ]
+
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]

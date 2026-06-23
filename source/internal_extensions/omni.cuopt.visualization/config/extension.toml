@@ -21,5 +21,13 @@ name = "omni.cuopt.visualization"
 [[test]]
 name = "startup"
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 dependencies = []
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]

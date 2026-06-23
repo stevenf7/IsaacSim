@@ -35,5 +35,9 @@ persistent.exts."isaacsim.robot_setup.wizard".launch_on_startup = false
 name = "startup"
 enabled = true
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [documentation]
 pages = ["docs/Overview.md","docs/SETTINGS.md", "docs/CHANGELOG.md"]

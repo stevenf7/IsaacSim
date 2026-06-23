@@ -50,6 +50,7 @@ timeout = 300
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
+
 stdoutFailPatterns.exclude = [
     "*omni.replicator.nv*",
     "*SyntheticData extension needs*",
@@ -72,6 +73,7 @@ args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
     "--no-window",
 ]
+
 stdoutFailPatterns.exclude = [
     "*omni.replicator.nv*",
     "*SyntheticData extension needs*",
@@ -137,6 +139,7 @@ args = [
     "--/rtx/rendering/perSensorTickTlas=true",
     "--/rtx/reservedDescriptors=900000",
 ]
+
 stdoutFailPatterns.exclude = [
     "*omni.replicator.nv*",
     "*Width 0 or height 0 is not valid*",

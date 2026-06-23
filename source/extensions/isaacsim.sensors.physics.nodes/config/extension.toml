@@ -37,12 +37,17 @@ args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 timeout = 900
 dependencies = [
     "isaacsim.core.experimental.objects",
     "isaacsim.test.utils",
 ]
+
 stdoutFailPatterns.exclude = [
     '*[Error] [omni.graph.core.plugin]*Failed to create effort sensor*',
     '*[Error] [omni.graph.core.plugin]*Invalid contact sensor prim*',

@@ -35,6 +35,10 @@ enabled = true
     "*",
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 enabled = true
 dependencies = ["isaacsim.test.utils"]

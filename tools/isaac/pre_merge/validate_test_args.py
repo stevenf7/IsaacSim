@@ -13,21 +13,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Validate and fix test args in extension.toml files.
+"""Validate and fix ``[[test]]`` sections in extension.toml files.
 
-Ensures that all ``[[test]]`` sections use the standard set of test arguments.
-Each non-startup, non-doctest ``[[test]]`` section must have an ``args`` array
-matching ``STANDARD_TEST_ARGS``, and startup sections must match ``STARTUP_TEST_ARGS``.
-Extension-specific arguments (marked with ``### Extension specific args``) are
-preserved.
+Two independent checks are performed (select with ``--check``):
+
+1. **args** — every non-startup, non-doctest ``[[test]]`` section must have an
+   ``args`` array matching ``STANDARD_TEST_ARGS`` (startup sections must match
+   ``STARTUP_TEST_ARGS``). Extension-specific arguments (marked with
+   ``### Extension specific args``) are preserved.
+2. **stdout** — every ``[[test]]`` section must contain the required
+   ``stdoutFailPatterns.exclude`` entries listed in ``REQUIRED_STDOUT_FAIL_EXCLUDE``
+   (e.g. ``'*The NumPy module was reloaded*'``), so benign warnings do not fail
+   tests. Missing entries are prepended to an existing exclude array, or a new
+   ``stdoutFailPatterns.exclude`` block is inserted in field order.
 
 Modes:
     - **Check** (default): report non-conforming files and exit non-zero.
-    - **Fix** (``--fix``): rewrite args in place to match the standard.
+    - **Fix** (``--fix``): rewrite sections in place to satisfy the checks.
 
 Usage (standalone):
-    # Validate all extensions
+    # Validate all extensions (both checks)
     python tools/isaac/pre_merge/validate_test_args.py
+
+    # Run only the stdoutFailPatterns.exclude standardization
+    python tools/isaac/pre_merge/validate_test_args.py --check stdout
+
+    # Auto-fix only the stdoutFailPatterns.exclude entries across all extensions
+    python tools/isaac/pre_merge/validate_test_args.py --check stdout --fix
 
     # Validate specific extensions
     python tools/isaac/pre_merge/validate_test_args.py --extensions isaacsim.core.utils isaacsim.ros2.core
@@ -35,7 +47,7 @@ Usage (standalone):
     # Validate a single file
     python tools/isaac/pre_merge/validate_test_args.py --file path/to/extension.toml
 
-    # Auto-fix all extensions
+    # Auto-fix all extensions (both checks)
     python tools/isaac/pre_merge/validate_test_args.py --fix
 
 Usage (via pre_merge_validate.py):
@@ -52,10 +64,14 @@ Usage (via pre_merge_validate.py):
 from __future__ import annotations
 
 import argparse
-import os
 import sys
 from pathlib import Path
-from typing import TextIO
+from typing import Any
+
+try:
+    import tomllib  # Python 3.11+
+except ModuleNotFoundError:  # pragma: no cover - fallback for older interpreters
+    tomllib = None  # type: ignore[assignment]
 
 # Standard arguments for regular (non-startup) test sections.
 STANDARD_TEST_ARGS = [
@@ -110,6 +126,20 @@ STANDARD_TEST_ARGS = [
 STARTUP_TEST_ARGS = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
+
+# stdoutFailPatterns.exclude entries that every [[test]] section must contain.
+# These suppress benign warnings that would otherwise be flagged as test failures.
+# Entries are written with single quotes, one per line, in the order listed here.
+REQUIRED_STDOUT_FAIL_EXCLUDE = [
+    "*The NumPy module was reloaded*",
+]
+
+# Marker comment separating the standard required excludes (above) from the
+# test-suite-specific excludes already present in an extension's exclude array.
+TEST_SUITE_SPECIFIC_MARKER = "### test-suite specific args"
+
+# Standard indentation for entries inside a stdoutFailPatterns.exclude array.
+_EXCLUDE_INDENT = "    "
 
 
 # ---------------------------------------------------------------------------
@@ -214,55 +244,138 @@ def _parse_existing_args(lines: list[str], start_idx: int, end_idx: int) -> list
 
 
 # ---------------------------------------------------------------------------
+# TOML parsing (read-only validation + value extraction via stdlib tomllib)
+# ---------------------------------------------------------------------------
+
+
+def _toml_parse(text: str) -> tuple[dict | None, str | None]:
+    """Parse TOML text using stdlib ``tomllib`` (read-only).
+
+    ``tomllib`` cannot serialize, so it is used only to (a) validate syntax and
+    (b) read values; all edits are performed line-based to preserve formatting.
+
+    Args:
+        text: TOML document text.
+
+    Returns:
+        Tuple of (parsed_data, error_message). ``parsed_data`` is ``None`` when
+        ``tomllib`` is unavailable (older interpreter) or parsing failed;
+        ``error_message`` is ``None`` unless parsing raised a decode error.
+    """
+    if tomllib is None:
+        return None, None
+    try:
+        return tomllib.loads(text), None
+    except tomllib.TOMLDecodeError as exc:
+        return None, str(exc)
+
+
+def _unscoped_excludes(test_table: dict[str, Any]) -> list[str]:
+    """Return a test table's unscoped ``stdoutFailPatterns.exclude`` entries.
+
+    Args:
+        test_table: A parsed ``[[test]]`` table.
+
+    Returns:
+        List of exclude pattern strings (empty if none declared).
+    """
+    sfp = test_table.get("stdoutFailPatterns")
+    if isinstance(sfp, dict):
+        exclude = sfp.get("exclude")
+        if isinstance(exclude, list):
+            return [e for e in exclude if isinstance(e, str)]
+    return []
+
+
+def _split_inline_array(line: str) -> tuple[str, list[str]]:
+    """Split a single-line ``key = [ ... ]`` array into its prefix and entries.
+
+    Args:
+        line: A line containing an inline array (``[`` and closing ``]``).
+
+    Returns:
+        Tuple of (text up to and including ``[``, list of raw entry tokens with
+        quoting preserved). Entries are empty for ``[]``.
+    """
+    open_pos = line.index("[")
+    close_pos = line.rindex("]")
+    head = line[: open_pos + 1]
+    inner = line[open_pos + 1 : close_pos].strip()
+    entries = [tok.strip() for tok in inner.split(",") if tok.strip()] if inner else []
+    return head, entries
+
+
+# ---------------------------------------------------------------------------
 # Section discovery
 # ---------------------------------------------------------------------------
 
 
 def _discover_test_sections(lines: list[str]) -> list[dict]:
-    """Find all ``[[test]]`` sections and their args ranges.
+    """Find all ``[[test]]`` sections and the ranges of their relevant arrays.
+
+    A section spans from its ``[[test]]`` header to the next top-level header
+    (any line whose first non-whitespace character is ``[``) or end of file.
 
     Args:
         lines: All lines of the file.
 
     Returns:
-        List of dicts with keys: start_line, is_startup, is_doctest,
-        args_start, args_end, extension_specific_start.
+        List of dicts with keys: start_line, end_line, is_startup, is_doctest,
+        args_start, args_end, extension_specific_start, exclude_start,
+        exclude_end, include_start.
     """
+    starts = [i for i, line in enumerate(lines) if line.strip() == "[[test]]"]
     test_sections: list[dict] = []
-    current: dict | None = None
-    in_test = False
 
-    for i, line in enumerate(lines):
-        stripped = line.strip()
+    for start in starts:
+        # Section ends at the next top-level header ('[' or '[[') or EOF.
+        end = len(lines)
+        for j in range(start + 1, len(lines)):
+            if lines[j].lstrip().startswith("["):
+                end = j
+                break
 
-        if stripped == "[[test]]":
-            in_test = True
-            current = {
-                "start_line": i,
-                "is_startup": False,
-                "is_doctest": False,
-                "args_start": None,
-                "args_end": None,
-                "extension_specific_start": None,
-            }
-            test_sections.append(current)
+        section: dict = {
+            "start_line": start,
+            "end_line": end,
+            "is_startup": False,
+            "is_doctest": False,
+            "args_start": None,
+            "args_end": None,
+            "extension_specific_start": None,
+            "exclude_start": None,
+            "exclude_end": None,
+            "include_start": None,
+        }
 
-        if in_test and current:
+        for i in range(start, end):
+            stripped = lines[i].strip()
+
             if 'name = "startup"' in stripped or "name = 'startup'" in stripped:
-                current["is_startup"] = True
+                section["is_startup"] = True
             if 'name = "doctest"' in stripped or "name = 'doctest'" in stripped:
-                current["is_doctest"] = True
+                section["is_doctest"] = True
+
             if stripped.startswith("args ="):
-                current["args_start"] = i
+                section["args_start"] = i
                 args_end = _find_args_section_end(lines, i)
-                current["args_end"] = args_end
+                section["args_end"] = args_end
                 if args_end is not None:
                     for j in range(i + 1, args_end):
                         if "### Extension specific args" in lines[j]:
-                            current["extension_specific_start"] = j
+                            section["extension_specific_start"] = j
                             break
-            if i > current["start_line"] and (stripped.startswith("[[") or stripped.startswith("[package]")):
-                in_test = False
+
+            # Unscoped stdoutFailPatterns.exclude block (ignores filter-scoped or
+            # pythonTests.exclude which begin with a quote or different key).
+            if stripped.startswith("stdoutFailPatterns.exclude") and section["exclude_start"] is None:
+                section["exclude_start"] = i
+                section["exclude_end"] = _find_args_section_end(lines, i)
+
+            if stripped.startswith("stdoutFailPatterns.include") and section["include_start"] is None:
+                section["include_start"] = i
+
+        test_sections.append(section)
 
     return test_sections
 
@@ -271,31 +384,23 @@ def _discover_test_sections(lines: list[str]) -> list[dict]:
 # Check / Fix logic
 # ---------------------------------------------------------------------------
 
+# Names of the individual checks this module can run.
+ALL_CHECKS = ("args", "stdout")
 
-def validate_extension_toml(file_path: str | Path, fix: bool = False, verbose: bool = False) -> list[str]:
-    """Validate (and optionally fix) test args in a single extension.toml.
+
+def _validate_fix_args(lines: list[str], fix: bool) -> tuple[list[str], list[str]]:
+    """Validate (and optionally fix) the ``args`` arrays of all test sections.
 
     Args:
-        file_path: Path to the extension.toml file.
-        fix: If True, rewrite the file with standardized args.
-        verbose: Print detailed progress.
+        lines: Current file lines (with newlines).
+        fix: Whether to apply fixes.
 
     Returns:
-        List of human-readable error strings (empty if conforming).
+        Tuple of (errors, possibly-modified lines).
     """
-    file_path = str(file_path)
     errors: list[str] = []
-
-    try:
-        original_lines = _read_lines(file_path)
-    except OSError as e:
-        return [f"Cannot read {file_path}: {e}"]
-
-    sections = _discover_test_sections(original_lines)
-    if not sections:
-        return []  # no [[test]] sections at all — nothing to validate
-
-    result_lines = original_lines.copy() if fix else None
+    sections = _discover_test_sections(lines)
+    result_lines = lines.copy()
 
     for section in sorted(sections, key=lambda s: s["start_line"], reverse=True):
         if section["is_doctest"]:
@@ -306,31 +411,318 @@ def validate_extension_toml(file_path: str | Path, fix: bool = False, verbose: b
             # that rely on defaults). Skip silently.
             continue
 
-        # Determine expected args
         expected_args = STARTUP_TEST_ARGS if section["is_startup"] else STANDARD_TEST_ARGS
 
-        # Parse existing standard args (before extension-specific marker)
         ext_specific_start = section["extension_specific_start"]
         std_end = (ext_specific_start - 1) if ext_specific_start is not None else section["args_end"]
-        existing_args = _parse_existing_args(original_lines, section["args_start"], std_end)
+        existing_args = _parse_existing_args(lines, section["args_start"], std_end)
 
         if existing_args != expected_args:
             section_type = "startup" if section["is_startup"] else "regular"
             errors.append(f"line {section['start_line'] + 1}: {section_type} [[test]] args do not match standard")
 
-            if fix and result_lines is not None:
+            if fix:
                 formatted = _format_args_section(expected_args)
                 formatted_text = [line + "\n" for line in formatted[:-1]]
 
                 if ext_specific_start is not None:
-                    ext_lines = original_lines[ext_specific_start : section["args_end"] + 1]
+                    ext_lines = lines[ext_specific_start : section["args_end"] + 1]
                     result_lines[section["args_start"] : section["args_end"] + 1] = formatted_text + ext_lines
                 else:
                     formatted_text.append(formatted[-1] + "\n")
                     result_lines[section["args_start"] : section["args_end"] + 1] = formatted_text
 
-    if fix and result_lines is not None and errors:
-        _write_lines(file_path, result_lines)
+    return errors, result_lines
+
+
+def _build_exclude_block(missing: list[str], lead_blank: bool, trail_blank: bool) -> list[str]:
+    """Build the lines for a new ``stdoutFailPatterns.exclude`` block.
+
+    Args:
+        missing: Pattern strings to include in the block.
+        lead_blank: Whether to prepend a blank separator line.
+        trail_blank: Whether to append a blank separator line.
+
+    Returns:
+        List of lines (with newlines) for the new block.
+    """
+    block: list[str] = []
+    if lead_blank:
+        block.append("\n")
+    block.append("stdoutFailPatterns.exclude = [\n")
+    for pat in missing:
+        block.append(f"    '{pat}',\n")
+    block.append("]\n")
+    if trail_blank:
+        block.append("\n")
+    return block
+
+
+def _section_missing(section: dict, test_table: dict | None, lines: list[str]) -> list[str]:
+    """Compute required exclude patterns missing from a section.
+
+    Uses the parsed unscoped ``stdoutFailPatterns.exclude`` list when available;
+    otherwise falls back to a substring scan of the section's text.
+
+    Args:
+        section: Discovered section info.
+        test_table: Corresponding parsed ``[[test]]`` table, or None.
+        lines: All file lines.
+
+    Returns:
+        Required patterns missing from the section.
+    """
+    if test_table is not None:
+        present = _unscoped_excludes(test_table)
+        return [p for p in REQUIRED_STDOUT_FAIL_EXCLUDE if p not in present]
+    section_text = "".join(lines[section["start_line"] : section["end_line"]])
+    return [p for p in REQUIRED_STDOUT_FAIL_EXCLUDE if p not in section_text]
+
+
+def _validate_fix_stdout_excludes(
+    lines: list[str],
+    fix: bool,
+    test_tables: list[dict] | None = None,
+) -> tuple[list[str], list[str]]:
+    """Ensure every ``[[test]]`` section contains the required exclude patterns.
+
+    For sections that already declare an unscoped ``stdoutFailPatterns.exclude``
+    array, only the *missing* pattern(s) are inserted at the top of that array.
+    For sections without one, a new block is inserted respecting field order
+    (after ``args``/``dependencies`` and before any ``stdoutFailPatterns.include``).
+
+    Args:
+        lines: Current file lines (with newlines).
+        fix: Whether to apply fixes.
+        test_tables: Parsed ``[[test]]`` tables in file order, used for precise
+            presence detection. When None or mismatched, a substring scan is used.
+
+    Returns:
+        Tuple of (errors, possibly-modified lines).
+    """
+    errors: list[str] = []
+    sections = _discover_test_sections(lines)
+    result_lines = lines.copy()
+
+    # Map each section (in file order) to its parsed table when counts agree.
+    sections_asc = sorted(sections, key=lambda s: s["start_line"])
+    use_parsed = test_tables is not None and len(test_tables) == len(sections_asc)
+    missing_by_start: dict[int, list[str]] = {}
+    for idx, sec in enumerate(sections_asc):
+        table = test_tables[idx] if use_parsed else None
+        missing_by_start[sec["start_line"]] = _section_missing(sec, table, lines)
+
+    # Process bottom-up so earlier line indices remain valid after insertions.
+    for section in sorted(sections, key=lambda s: s["start_line"], reverse=True):
+        missing = missing_by_start[section["start_line"]]
+        if not missing:
+            continue
+
+        patterns = ", ".join(f"'{p}'" for p in missing)
+        noun = "entry" if len(missing) == 1 else "entries"
+        errors.append(
+            f"line {section['start_line'] + 1}: [[test]] missing required stdoutFailPatterns.exclude {noun}: {patterns}"
+        )
+
+        if not fix:
+            continue
+
+        if section["exclude_start"] is not None:
+            _fix_existing_exclude(result_lines, section, missing)
+        elif section["include_start"] is not None:
+            # Must appear before stdoutFailPatterns.include to satisfy field order.
+            inc = section["include_start"]
+            lead = inc > 0 and result_lines[inc - 1].strip() != ""
+            block = _build_exclude_block(missing, lead_blank=lead, trail_blank=True)
+            result_lines[inc:inc] = block
+        else:
+            # Append after the last real field line (skip trailing blanks/comments)
+            # so the block lands at top level of the section, not inside an array.
+            anchor = section["start_line"]
+            for i in range(section["start_line"], section["end_line"]):
+                stripped = result_lines[i].strip()
+                if stripped and not stripped.startswith("#"):
+                    anchor = i
+            insert_at = anchor + 1
+            # A trailing blank is needed only when the next line is a header/comment
+            # (i.e. there is no existing blank separating us from what follows).
+            need_trail = insert_at < len(result_lines) and result_lines[insert_at].strip() != ""
+            block = _build_exclude_block(missing, lead_blank=True, trail_blank=need_trail)
+            result_lines[insert_at:insert_at] = block
+
+    # Normalize spacing of unscoped exclude blocks (runs after insertions so it
+    # also tidies blocks we just modified).
+    spacing_errors, result_lines = _normalize_exclude_spacing(result_lines, fix)
+    errors.extend(spacing_errors)
+
+    return errors, result_lines
+
+
+def _normalize_exclude_spacing(lines: list[str], fix: bool) -> tuple[list[str], list[str]]:
+    """Standardize whitespace around each unscoped ``stdoutFailPatterns.exclude`` block.
+
+    Enforces exactly one blank line before the block (separating it from the
+    preceding field) and no blank lines inside the array.
+
+    Args:
+        lines: Current file lines (with newlines).
+        fix: Whether to apply fixes.
+
+    Returns:
+        Tuple of (errors, possibly-modified lines).
+    """
+    errors: list[str] = []
+    result_lines = lines.copy()
+    sections = _discover_test_sections(result_lines)
+
+    # Bottom-up so edits do not invalidate earlier sections' indices.
+    for section in sorted(sections, key=lambda s: s["start_line"], reverse=True):
+        es = section["exclude_start"]
+        ee = section["exclude_end"]
+        if es is None or ee is None or ee == es:
+            continue  # no block, or inline (handled during insertion)
+
+        internal_blanks = [i for i in range(es + 1, ee) if result_lines[i].strip() == ""]
+
+        # Find the insertion point for a leading blank, skipping a comment block
+        # that documents the exclude array so the blank goes above it.
+        ins = es
+        while ins - 1 >= 0 and result_lines[ins - 1].lstrip().startswith("#"):
+            ins -= 1
+        prev = result_lines[ins - 1].strip() if ins - 1 >= 0 else ""
+        missing_lead = prev != "" and prev != "[[test]]"
+
+        if internal_blanks or missing_lead:
+            issue = []
+            if missing_lead:
+                issue.append("missing blank line before block")
+            if internal_blanks:
+                issue.append("blank line(s) inside array")
+            errors.append(f"line {es + 1}: stdoutFailPatterns.exclude has non-standard spacing ({', '.join(issue)})")
+            if fix:
+                for i in sorted(internal_blanks, reverse=True):
+                    del result_lines[i]
+                if missing_lead:
+                    result_lines.insert(ins, "\n")
+
+    return errors, result_lines
+
+
+def _fix_existing_exclude(result_lines: list[str], section: dict, missing: list[str]) -> None:
+    """Insert missing patterns into a section's existing unscoped exclude array.
+
+    Handles both multi-line arrays (entries reindented to the standard indent,
+    a separating marker added before pre-existing test-suite entries) and inline
+    arrays (expanded to multi-line first to keep the result valid TOML). Mutates
+    ``result_lines`` in place.
+
+    Args:
+        result_lines: File lines being edited.
+        section: Discovered section info.
+        missing: Required patterns to insert (already known to be absent).
+    """
+    open_idx = section["exclude_start"]
+    close_idx = section["exclude_end"]
+    inline = close_idx is None or close_idx == open_idx
+
+    if inline:
+        # Expand `key = [ ... ]` (or `[]`) into a multi-line block so we never
+        # append entries after a closed array.
+        head, existing = _split_inline_array(result_lines[open_idx])
+        rebuilt = [f"{head}\n"]
+        rebuilt += [f"{_EXCLUDE_INDENT}'{p}',\n" for p in missing]
+        if existing:
+            rebuilt.append(f"{_EXCLUDE_INDENT}{TEST_SUITE_SPECIFIC_MARKER}\n")
+            rebuilt += [f"{_EXCLUDE_INDENT}{tok},\n" for tok in existing]
+        rebuilt.append("]\n")
+        result_lines[open_idx : open_idx + 1] = rebuilt
+        return
+
+    # Multi-line array: normalize entry indentation and detect an existing marker.
+    has_marker = False
+    for i in range(open_idx + 1, close_idx):
+        stripped = result_lines[i].strip()
+        if not stripped:
+            continue
+        if stripped == TEST_SUITE_SPECIFIC_MARKER:
+            has_marker = True
+        result_lines[i] = f"{_EXCLUDE_INDENT}{stripped}\n"
+
+    existing_entries = any(result_lines[i].strip() for i in range(open_idx + 1, close_idx))
+    new_entries = [f"{_EXCLUDE_INDENT}'{p}',\n" for p in missing]
+    if existing_entries and not has_marker:
+        new_entries.append(f"{_EXCLUDE_INDENT}{TEST_SUITE_SPECIFIC_MARKER}\n")
+    result_lines[open_idx + 1 : open_idx + 1] = new_entries
+
+
+def validate_extension_toml(
+    file_path: str | Path,
+    fix: bool = False,
+    verbose: bool = False,
+    checks: tuple[str, ...] | None = None,
+) -> list[str]:
+    """Validate (and optionally fix) test sections in a single extension.toml.
+
+    Two independent checks are available (see :data:`ALL_CHECKS`):
+
+    - ``"args"``: every non-startup/non-doctest ``[[test]]`` section must use
+      ``STANDARD_TEST_ARGS`` (startup uses ``STARTUP_TEST_ARGS``).
+    - ``"stdout"``: every ``[[test]]`` section must contain the
+      :data:`REQUIRED_STDOUT_FAIL_EXCLUDE` ``stdoutFailPatterns.exclude`` entries.
+
+    Args:
+        file_path: Path to the extension.toml file.
+        fix: If True, rewrite the file to satisfy the selected checks.
+        verbose: Print detailed progress.
+        checks: Which checks to run; defaults to all of :data:`ALL_CHECKS`.
+
+    Returns:
+        List of human-readable error strings (empty if conforming).
+    """
+    file_path = str(file_path)
+    selected = tuple(checks) if checks else ALL_CHECKS
+    errors: list[str] = []
+
+    try:
+        lines = _read_lines(file_path)
+    except OSError as e:
+        return [f"Cannot read {file_path}: {e}"]
+
+    # Ensure the final line is newline-terminated so appends form real blank
+    # lines instead of merging into an un-terminated last line.
+    if lines and not lines[-1].endswith("\n"):
+        lines[-1] += "\n"
+
+    # Validate syntax up front; refuse to edit a file we cannot parse.
+    parsed, parse_err = _toml_parse("".join(lines))
+    if parse_err is not None:
+        return [f"invalid TOML, cannot validate/fix: {parse_err}"]
+
+    if not _discover_test_sections(lines):
+        return []  # no [[test]] sections at all — nothing to validate
+
+    test_tables = parsed.get("test") if isinstance(parsed, dict) else None
+    if not isinstance(test_tables, list):
+        test_tables = None
+
+    changed = False
+
+    if "args" in selected:
+        args_errors, lines = _validate_fix_args(lines, fix)
+        errors.extend(args_errors)
+        changed = changed or (fix and bool(args_errors))
+
+    if "stdout" in selected:
+        stdout_errors, lines = _validate_fix_stdout_excludes(lines, fix, test_tables)
+        errors.extend(stdout_errors)
+        changed = changed or (fix and bool(stdout_errors))
+
+    if fix and changed:
+        # Defense-in-depth: never write a file our edits would make unparseable.
+        _, post_err = _toml_parse("".join(lines))
+        if post_err is not None:
+            return errors + [f"fix aborted: edit would produce invalid TOML ({post_err}); file left unchanged"]
+        _write_lines(file_path, lines)
         if verbose:
             print(f"  Fixed: {file_path}")
 
@@ -370,6 +762,7 @@ def _find_extension_tomls(repo_root: Path, extension_names: list[str] | None = N
     search_dirs = [
         repo_root / "source" / "extensions",
         repo_root / "source" / "internal_extensions",
+        repo_root / "source" / "deprecated",
     ]
 
     for search_dir in search_dirs:
@@ -414,7 +807,14 @@ def _build_parser() -> argparse.ArgumentParser:
         metavar="EXT",
         help="Validate only the named extensions.",
     )
-    parser.add_argument("--fix", action="store_true", help="Auto-fix non-conforming args in place.")
+    parser.add_argument("--fix", action="store_true", help="Auto-fix non-conforming sections in place.")
+    parser.add_argument(
+        "--check",
+        choices=("all", *ALL_CHECKS),
+        default="all",
+        help="Which validation(s) to run: 'args' (standard test args), "
+        "'stdout' (required stdoutFailPatterns.exclude entries), or 'all' (default).",
+    )
     parser.add_argument("--verbose", action="store_true", help="Verbose output.")
     return parser
 
@@ -430,12 +830,13 @@ def main(argv: list[str] | None = None) -> int:
     """
     parser = _build_parser()
     args = parser.parse_args(argv)
+    checks = ALL_CHECKS if args.check == "all" else (args.check,)
 
     if args.file:
         if not args.file.exists():
             print(f"Error: {args.file} not found.")
             return 1
-        all_errors = validate_extension_toml(args.file, fix=args.fix, verbose=args.verbose)
+        all_errors = validate_extension_toml(args.file, fix=args.fix, verbose=args.verbose, checks=checks)
         if all_errors:
             for err in all_errors:
                 print(f"  {args.file}: {err}")
@@ -460,7 +861,7 @@ def main(argv: list[str] | None = None) -> int:
 
     for toml_path in toml_files:
         rel = toml_path.relative_to(repo_root)
-        errors = validate_extension_toml(toml_path, fix=args.fix, verbose=args.verbose)
+        errors = validate_extension_toml(toml_path, fix=args.fix, verbose=args.verbose, checks=checks)
         if errors:
             files_with_errors += 1
             total_errors += len(errors)
@@ -474,7 +875,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"\n{total_errors} issue(s) {action} in {files_with_errors} file(s).")
         return 1
 
-    print(f"All {len(toml_files)} extension.toml files have conforming test args.")
+    label = {"all": "test sections", "args": "test args", "stdout": "stdout fail patterns"}[args.check]
+    print(f"All {len(toml_files)} extension.toml files have conforming {label}.")
     return 0
 
 

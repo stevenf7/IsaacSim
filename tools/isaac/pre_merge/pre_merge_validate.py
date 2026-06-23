@@ -22,7 +22,7 @@ to a standalone script:
   2. Code formatting verification   -> repo.sh format --verify
   3. Changelog and version bump     -> validate_changelog.py
   4. extension.toml validation      -> validate_extension_toml.py
-  5. Test args validation            -> validate_test_args.py
+  5. Test section validation         -> validate_test_args.py (args + stdoutFailPatterns.exclude)
   6. Settings docs validation       -> validate_settings.py
   7. Extension structure validation  -> validate_extension_structure.py
   8. License header validation       -> validate_license_headers.py
@@ -473,12 +473,12 @@ def check_test_args(extensions: list[Path], fix: bool = False) -> int:
             for issue in issues:
                 print(f"    {issue}", flush=True)
             if fix:
-                log_pass(f"{ext.name}: test args fixed.")
+                log_pass(f"{ext.name}: test sections fixed.")
             else:
-                log_fail(f"{ext.name}: test args do not match standard.")
+                log_fail(f"{ext.name}: test sections do not match standard.")
                 errors += 1
         else:
-            log_pass(f"{ext.name}: test args OK.")
+            log_pass(f"{ext.name}: test sections OK.")
 
     return errors
 
@@ -905,7 +905,11 @@ def build_parser() -> argparse.ArgumentParser:
     checks.add_argument("--format", action="store_true", help="Run code format verification")
     checks.add_argument("--changelog", action="store_true", help="Check changelog and version bump")
     checks.add_argument("--toml", action="store_true", help="Validate extension.toml files")
-    checks.add_argument("--test-args", action="store_true", help="Validate test args in extension.toml")
+    checks.add_argument(
+        "--test-args",
+        action="store_true",
+        help="Validate [[test]] sections in extension.toml (standard args + required stdoutFailPatterns.exclude)",
+    )
     checks.add_argument("--settings", action="store_true", help="Validate settings docs against extension.toml")
     checks.add_argument("--structure", action="store_true", help="Validate extension directory structure")
     checks.add_argument("--license", action="store_true", help="Validate SPDX license headers on changed files")
@@ -1165,7 +1169,7 @@ def _run(args: argparse.Namespace) -> int:
             total_errors += check_extension_toml(extensions, fix=args.fix)
 
         if run_all_validation or args.test_args:
-            header("Test Args Validation")
+            header("Test Section Validation (args + stdoutFailPatterns.exclude)")
             total_errors += check_test_args(extensions, fix=args.fix)
 
         if run_all_validation or args.settings:

@@ -61,3 +61,7 @@ dependencies=[
     "omni.kit.test",
 ]
 pythonTests.include = ["isaacsim.app.compatibility_check.tests.*"]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]

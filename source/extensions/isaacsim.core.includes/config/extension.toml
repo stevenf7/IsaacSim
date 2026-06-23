@@ -26,5 +26,9 @@ cppTests.libraries = [
     "bin/${lib_prefix}isaacsim.core.includes.tests${lib_ext}",
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [documentation]
 pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

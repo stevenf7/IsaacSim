@@ -59,6 +59,10 @@ args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 timeout = 900
 dependencies = [
@@ -118,6 +122,7 @@ args = [
     "--/renderer/raytracingMotion/enableHydraEngineMasking=true",
     "--/renderer/raytracingMotion/enabledForHydraEngines=0,1,2,3",
 ]
+
 stdoutFailPatterns.exclude = [
     '*Failed to read texture file*direction.exr*',
     '*Failed to read texture file*pattern_??.png*',
