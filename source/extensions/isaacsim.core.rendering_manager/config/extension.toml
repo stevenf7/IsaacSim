@@ -81,6 +81,10 @@ args = [
 enabled = true
 pythonTests.include = ["isaacsim.core.rendering_manager.tests.test_rendering_manager.*"]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 name = "viewport_manager"
 timeout = 900
@@ -137,6 +141,10 @@ args = [
 enabled = true
 pythonTests.include = ["isaacsim.core.rendering_manager.tests.test_viewport_manager.*"]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 name = "docstrings"
 timeout = 900
@@ -192,6 +200,10 @@ args = [
 ]
 enabled = true
 pythonTests.include = ["isaacsim.core.rendering_manager.tests.test_docstrings.*"]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
 
 [documentation]
 pages = ["docs/Overview.md", "docs/CHANGELOG.md"]

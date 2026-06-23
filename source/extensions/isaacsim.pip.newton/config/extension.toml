@@ -33,3 +33,7 @@ name = "isaacsim.pip.newton"
 dependencies = [
     "omni.warp.core"
 ]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]

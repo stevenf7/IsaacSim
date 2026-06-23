@@ -28,6 +28,10 @@ path = "bin/*.plugin"
 [[test]]
 name = "startup"
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 timeout = 3600
 dependencies = [

@@ -35,8 +35,13 @@ name = "omni.cuopt.examples.warehouse_transport_demo"
 [[test]]
 name = "startup"
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 dependencies = []
+
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]

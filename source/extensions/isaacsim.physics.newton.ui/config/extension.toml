@@ -25,6 +25,7 @@ name = "isaacsim.physics.newton.ui"
 dependencies = [
 
 ]
+
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]

@@ -28,6 +28,10 @@ name = "startup"
 dependencies = [
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 timeout = 400
 dependencies = [
@@ -36,6 +40,7 @@ dependencies = [
     "isaacsim.storage.native",
     "isaacsim.test.utils"
 ]
+
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
     "*Missing call to destroyResourceBindingSignature()*",

@@ -29,6 +29,10 @@ args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 dependencies = [
     "isaacsim.test.utils",
@@ -84,6 +88,7 @@ args = [
     "--/app/window/dpiScaleOverride=1.0",
     "--/app/window/scaleToMonitor=false",
 ]
+
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]

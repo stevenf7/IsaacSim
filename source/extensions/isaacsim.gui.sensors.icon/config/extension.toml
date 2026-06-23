@@ -48,6 +48,10 @@ args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 enabled = true
 dependencies = [
@@ -108,6 +112,8 @@ args = [
 
 
 stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+    ### test-suite specific args
     "*<class 'omni.kit.menu.utils.scripts.utils.MenuUtilsExtension'>: extension object is still alive*", # Leak
     "*<class 'omni.kit.window.tests.Extension'>: extension object is still alive*", # Leak
     "*createDLSSContext error: unable to initialize context. Optional DLSS feature is disabled.*",

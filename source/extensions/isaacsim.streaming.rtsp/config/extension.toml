@@ -36,6 +36,7 @@ name = "startup"
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
+
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]
@@ -96,6 +97,7 @@ pythonTests.include = [
     "isaacsim.streaming.rtsp.tests.test_rtsp_camera_helper.*",
     "isaacsim.streaming.rtsp.tests.test_rtsp_writer.*",
 ]
+
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]

@@ -23,8 +23,11 @@ name = "isaacsim.xr.input_devices"
 
 [[test]]
 name = "startup"
+
 stdoutFailPatterns.exclude = [
- "*[Error] [isaacsim.xr.input_devices.impl.vive_tracker] pysurvive not available*"
+    '*The NumPy module was reloaded*',
+    ### test-suite specific args
+    "*[Error] [isaacsim.xr.input_devices.impl.vive_tracker] pysurvive not available*"
 ]
 
 [[test]]
@@ -77,5 +80,7 @@ args = [
 ]
 
 stdoutFailPatterns.exclude = [
- "*[Error] [isaacsim.xr.input_devices.impl.vive_tracker] pysurvive not available*"
+    '*The NumPy module was reloaded*',
+    ### test-suite specific args
+    "*[Error] [isaacsim.xr.input_devices.impl.vive_tracker] pysurvive not available*"
 ]

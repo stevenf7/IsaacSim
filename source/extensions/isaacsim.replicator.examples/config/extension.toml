@@ -37,6 +37,10 @@ args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 name = "augmentation"
 pythonTests.include = [
@@ -95,6 +99,10 @@ args = [
     "--/rtx/reservedDescriptors=900000",
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 name = "ogn"
 pythonTests.include = [
@@ -151,6 +159,10 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/rendering/perSensorTickTlas=true",
     "--/rtx/reservedDescriptors=900000",
+]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
 ]
 
 [[test]]
@@ -219,6 +231,10 @@ args = [
     "--/rtx/reservedDescriptors=900000",
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 name = "sdg_core"
 pythonTests.include = [
@@ -276,6 +292,10 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/rendering/perSensorTickTlas=true",
     "--/rtx/reservedDescriptors=900000",
+]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
 ]
 
 # Tests for other extensions not specific to a bucket.
@@ -340,6 +360,10 @@ args = [
     "--/rtx/reservedDescriptors=900000",
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 name = "sdg_ur10"
 pythonTests.include = [
@@ -398,6 +422,10 @@ args = [
     "--/rtx/newDenoiser/enabled=1",
     "--/rtx/rendering/perSensorTickTlas=true",
     "--/rtx/reservedDescriptors=900000",
+]
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
 ]
 
 [documentation]

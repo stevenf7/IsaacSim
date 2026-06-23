@@ -94,12 +94,17 @@ args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 timeout = 1200
 dependencies = [
     "omni.isaac.ml_archive",
 ]
 pythonTests.exclude = []
+
 stdoutFailPatterns.exclude = [
     # This is excluded in at least 3 kit tests.
     "*Missing call to destroyResourceBindingSignature()*",

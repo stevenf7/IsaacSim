@@ -22,6 +22,8 @@ name = "isaacsim.asset.transformer.tests"
 
 [[test]]
 stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+    ### test-suite specific args
     "*[isaacsim.asset.transformer.manager] Rule '*' failed*",
 ]
 

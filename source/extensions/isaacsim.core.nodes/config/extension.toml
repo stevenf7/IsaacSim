@@ -43,6 +43,7 @@ name = "startup"
 args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
+
 stdoutFailPatterns.exclude = [
     '*The NumPy module was reloaded*',
 ]
@@ -104,6 +105,7 @@ args = [
     "--/app/hydraEngine/waitIdle=1",
     "--/app/updateOrder/checkForHydraRenderComplete=1000",
 ]
+
 stdoutFailPatterns.exclude = [
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacComputeOdometry: [/TestGraph] Omnigraph Error: no chassis prim found*',
     '*[Error] [omni.graph.core.plugin] /TestGraph/Template_isaacsim_core_nodes_IsaacCreateRenderProduct: [/TestGraph] OmniGraph Error: Camera prim must be specified*',

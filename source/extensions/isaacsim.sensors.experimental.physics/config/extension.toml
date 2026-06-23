@@ -40,6 +40,10 @@ args = [
     "--/app/settings/fabricDefaultStageFrameHistoryCount=3",
 ]
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 name = "cpp"
 dependencies = [
@@ -47,6 +51,7 @@ dependencies = [
     "isaacsim.storage.native",
     "isaacsim.test.utils",
 ]
+
 stdoutFailPatterns.exclude = [
     '*[Error] [isaacsim.sensors.physics.plugin] Imu Sensor does not exist*',
     '*[Error] [isaacsim.sensors.physics.plugin] Contact Sensor does not exist*',
@@ -117,6 +122,7 @@ dependencies = [
     "isaacsim.core.experimental.objects",
     "isaacsim.test.utils",
 ]
+
 stdoutFailPatterns.exclude = [
     '*[Error] [isaacsim.sensors.physics.plugin] Imu Sensor does not exist*',
     '*[Error] [isaacsim.sensors.physics.plugin] Contact Sensor does not exist*',

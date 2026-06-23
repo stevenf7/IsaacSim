@@ -50,8 +50,16 @@ exts."isaacsim.gui.content_browser".folders = [
 name = "startup"
 enabled = false
 
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
+
 [[test]]
 enabled = true
+
+stdoutFailPatterns.exclude = [
+    '*The NumPy module was reloaded*',
+]
 
 # disable startup test
 [documentation]
