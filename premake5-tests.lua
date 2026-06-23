@@ -331,6 +331,11 @@ local function get_sensor_tests()
             "--test",
         },
         {
+            "tests-nativepython-isaacsim.sensors.experimental.rtx.export_point_cloud",
+            "standalone_examples/api/isaacsim.sensors.experimental.rtx/export_point_cloud.py",
+            "--headless --max-frames 120 --output-file _out_debug_draw_point_cloud/point_cloud.npz",
+        },
+        {
             "tests-nativepython-isaacsim.sensors.experimental.rtx.resolve_lidar_object_ids",
             "standalone_examples/api/isaacsim.sensors.experimental.rtx/resolve_lidar_object_ids.py",
             "--test",
@@ -507,6 +512,17 @@ local function get_sensor_tests()
     end
 
     return tests
+end
+
+local function get_utility_tests()
+    local point_cloud_file = "$SAMPLE_DIR/standalone_examples/api/isaacsim.util.debug_draw/point_cloud.npz"
+    return {
+        {
+            "tests-nativepython-isaacsim.util.debug_draw.import_point_cloud",
+            "standalone_examples/api/isaacsim.util.debug_draw/import_point_cloud.py",
+            "--input-file " .. point_cloud_file .. " --test",
+        },
+    }
 end
 
 local function get_robot_tests()
@@ -1646,6 +1662,7 @@ function create_tests()
 
     register_python_sample_tests(get_core_tests())
     register_python_sample_tests(get_sensor_tests())
+    register_python_sample_tests(get_utility_tests())
     register_python_sample_tests(get_robot_tests())
     register_python_sample_tests(get_asset_tests())
     register_python_sample_tests(get_replicator_tests())
