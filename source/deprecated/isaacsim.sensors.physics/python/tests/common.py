@@ -53,7 +53,7 @@ async def reset_timeline(timeline: Any = None, *, steps: int = 2) -> None:
     """Stop and restart the timeline.
 
     Args:
-        timeline: Timeline interface to control. Defaults to the global timeline if None.
+        timeline: Timeline interface to control. If None, uses the global timeline.
         steps: Number of simulation steps to run after restarting.
     """
     if timeline is None:
@@ -67,10 +67,22 @@ async def reset_timeline(timeline: Any = None, *, steps: int = 2) -> None:
 
 @dataclass
 class AntConfig:
-    """Configuration data for ant robot used in sensor tests."""
+    """Configuration data for the ant robot used in sensor tests.
+
+    Args:
+        leg_paths: Prim paths for the ant lower arm links.
+        sphere_path: Prim path for the ant sphere body.
+        sensor_offsets: Sensor offsets for the leg sensors.
+        imu_sensor_offsets: Sensor offsets for the IMU sensors.
+        sensor_quatd: Sensor orientation quaternions for the IMU sensors.
+        colors: RGBA colors for the leg sensors.
+        shoulder_joints: Prim paths for the ant shoulder joints.
+        lower_joints: Prim paths for the ant lower arm joints.
+    """
 
     leg_paths: list[str] = field(default_factory=lambda: [f"/Ant/Arm_{i + 1:02d}/Lower_Arm" for i in range(4)])
     sphere_path: str = "/Ant/Sphere"
+    """Path to the ant sphere prim."""
     sensor_offsets: list[Gf.Vec3d] = field(default_factory=lambda: [Gf.Vec3d(40, 0, 0) for _ in range(4)])
     # IMU sensor offsets (at origin for each sensor location)
     imu_sensor_offsets: list[Gf.Vec3d] = field(default_factory=lambda: [Gf.Vec3d(0, 0, 0) for _ in range(5)])
@@ -97,7 +109,10 @@ async def setup_ant_scene(physics_rate: float = 60.0) -> AntConfig:
         physics_rate: Physics simulation rate in Hz.
 
     Returns:
-        AntConfig with paths and sensor configuration for the ant robot.
+        Paths and sensor configuration for the ant robot.
+
+    Raises:
+        RuntimeError: If the Isaac Sim assets folder cannot be found.
     """
     assets_root_path = await get_assets_root_path_async()
     if assets_root_path is None:

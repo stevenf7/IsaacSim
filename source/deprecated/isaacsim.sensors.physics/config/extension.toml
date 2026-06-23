@@ -130,4 +130,4 @@ args = [
 ]
 
 [documentation]
-pages = ["docs/Overview.md", "docs/CHANGELOG.md"]
+pages = ["docs/Overview.md", "docs/commands_api.md", "docs/CHANGELOG.md"]

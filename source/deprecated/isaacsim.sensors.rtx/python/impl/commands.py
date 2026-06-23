@@ -44,8 +44,8 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
     """Base class for creating RTX sensors in Isaac Sim.
 
     This class provides functionality to create various types of RTX sensors (lidar, radar, etc.)
-    in the Isaac Sim environment. It handles sensor creation through either USD references,
-    Replicator API, or direct camera prim creation.
+    in the Isaac Sim environment. It handles sensor creation through USD references,
+    the Replicator API, or direct camera prim creation.
 
     Args:
         path: Path where the sensor will be created. If None, a default path will be used.
@@ -57,7 +57,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
         orientation: Quaternion for sensor orientation.
         visibility: Visibility flag for the sensor.
         variant: Variant name for the sensor configuration.
-        force_camera_prim: If True, forces creation of a camera prim instead of using references or Replicator API.
+        force_camera_prim: If True, forces creation of a camera prim instead of using references or the Replicator API.
         **kwargs: Additional keyword arguments for prim creation.
     """
 
@@ -112,10 +112,9 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
     def _add_reference(self) -> Usd.Prim | None:
         """Add a reference to the stage if a config or usd_path is provided.
 
-        If a config is provided, this method looks up the corresponding USD path from
-        supported configs. If usd_path is provided directly, it uses that path.
-        The method adds a reference to the stage and sets the prim's variant if provided.
-        It also handles finding the correct sensor prim within referenced assets.
+        If a config is provided, this method looks up the corresponding USD path from supported configs. If usd_path is
+        provided directly, it uses that path. The method adds a reference to the stage and sets the prim's variant if
+        provided. It also handles finding the correct sensor prim within referenced assets.
 
         Returns:
             The created or found prim, or None if no config/usd_path was provided or found.
@@ -218,8 +217,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
     def _call_replicator_api(self) -> Usd.Prim | None:
         """Create a sensor using the Replicator API.
 
-        Converts position and orientation into the format required by the Replicator API
-        and creates the sensor prim.
+        Converts position and orientation into the format required by the Replicator API and creates the sensor prim.
 
         Returns:
             The created prim, or None if no Replicator API is available.
@@ -254,8 +252,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
     def _create_camera_prim(self) -> Usd.Prim:
         """Create a camera prim for the sensor.
 
-        This method is deprecated as of Isaac Sim 5.0. It creates a basic camera prim
-        with sensor-specific attributes.
+        This method is deprecated as of Isaac Sim 5.0. It creates a basic camera prim with sensor-specific attributes.
 
         Returns:
             The created camera prim.
@@ -279,8 +276,7 @@ class IsaacSensorCreateRtxSensor(omni.kit.commands.Command):
     def do(self) -> Usd.Prim:
         """Execute the sensor creation command.
 
-        Creates the sensor using the most appropriate method based on the configuration
-        and available APIs.
+        Creates the sensor using the most appropriate method based on the configuration and available APIs.
 
         Returns:
             The created sensor prim.
@@ -339,6 +335,9 @@ class IsaacSensorCreateRtxLidar(IsaacSensorCreateRtxSensor):
     def do(self) -> Usd.Prim:
         """Execute the Lidar sensor creation command.
 
+        Configures the created Lidar sensor to keep invalid points, accumulate outputs, and map auxOutputType to the
+        Replicator RenderVar channels attribute.
+
         Returns:
             The created Lidar sensor prim.
         """
@@ -374,10 +373,6 @@ class IsaacSensorCreateRtxRadar(IsaacSensorCreateRtxSensor):
 
     RTX Radar requires Motion BVH to be enabled. If Motion BVH is not enabled,
     the command will warn the user and not create the prim.
-
-    Args:
-        **kwargs: Keyword arguments passed to the parent class constructor.
-            See IsaacSensorCreateRtxSensor for available parameters.
     """
 
     _replicator_api: Callable[..., Any] = staticmethod(rep.functional.create.omni_radar)
@@ -393,8 +388,8 @@ class IsaacSensorCreateRtxRadar(IsaacSensorCreateRtxSensor):
         """Execute the Radar sensor creation command.
 
         Checks if Motion BVH settings are enabled before creating the radar sensor.
-        If Motion BVH is not enabled, logs a warning and returns None without
-        creating the prim.
+        If Motion BVH is not enabled, logs a warning and returns None without creating the prim.
+        For a valid prim, maps Radar auxOutputType to the RenderVar channels attribute.
 
         Returns:
             The created Radar sensor prim, or None if Motion BVH is not enabled.
@@ -460,10 +455,6 @@ class IsaacSensorCreateRtxUltrasonic(IsaacSensorCreateRtxSensor):
 
     This class specializes the base RTX sensor creation for Ultrasonic sensors, providing
     specific configuration and plugin settings for Ultrasonic functionality.
-
-    Args:
-        **kwargs: Keyword arguments passed to the parent class constructor.
-            See IsaacSensorCreateRtxSensor for available parameters.
     """
 
     _sensor_type: str = "ultrasonic"

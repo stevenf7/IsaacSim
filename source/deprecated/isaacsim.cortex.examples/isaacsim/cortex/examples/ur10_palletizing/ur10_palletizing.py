@@ -60,7 +60,7 @@ class Ur10Assets:
 def random_bin_spawn_transform() -> tuple[np.ndarray, np.ndarray]:
     """Generate a random spawn transform for a bin on the conveyor.
 
-    Creates a randomized position and orientation for spawning bins. The position has random x-coordinate
+    Creates a randomized position and orientation for spawning bins. The position has a random x-coordinate
     within the conveyor width, with a 50% chance of flipping the bin upside down for varied orientations.
 
     Returns:
@@ -92,7 +92,7 @@ class BinStackingTask(BaseTask):
     This task manages the dynamic spawning and manipulation of bins on a conveyor system. It continuously
     spawns bins with random orientations and positions, monitors their movement through the conveyor system,
     and coordinates with the robot's behavior system for stacking operations. The task handles bin lifecycle
-    management including creation, tracking, and cleanup of bin objects in the simulation environment.
+    management, including creation, tracking, and cleanup of bin objects in the simulation environment.
 
     The task integrates with Isaac Sim's Cortex framework to provide autonomous bin handling capabilities.
     Bins are spawned with random orientations (including potential upside-down configurations) and initial
@@ -140,7 +140,7 @@ class BinStackingTask(BaseTask):
         self.on_conveyor = None
 
     def pre_step(self, time_step_index: int, simulation_time: float) -> None:
-        """Spawn a new randomly oriented bin if the previous bin has been placed.
+        """Spawns a new randomly oriented bin if the previous bin has been placed.
 
         Args:
             time_step_index: The current simulation time step index.
@@ -330,7 +330,7 @@ class BinStacking(CortexBase):
         for the bin stacking scenario.
 
         Args:
-            step_size: The time step size for the physics simulation.
+            step_size: Time step size for the physics simulation.
         """
         world = self.get_world()
         world.step(False, False)
