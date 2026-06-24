@@ -101,7 +101,9 @@ for i in range(5):
 
         if speed < 0.1:
             print(f"Cube_{i} stopped moving after {s} simulation steps, writing data..")
-            # Tigger the writer and update the annotators with new data
+            # Reset DLSS history after physics-only stepping to avoid ghosting on capture
+            carb.settings.get_settings().set("/rtx-transient/post/dlss/forceParamReset", True)
+            # Capture the data
             rep.orchestrator.step(rt_subframes=4, delta_time=0.0, pause_timeline=False)
             rgb_path = os.path.join(annotator_dir, f"Cube_{i}_step_{s}_rgb.png")
             write_image(path=rgb_path, data=rgb_annot.get_data())

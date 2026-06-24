@@ -31,6 +31,7 @@ import carb.settings
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Usd, UsdGeom, UsdPhysics
 
@@ -118,8 +119,12 @@ def randomize_boxes(boxes: list[Any], start_height: float, rng: Any) -> None:
         )
 
 
-def run_workflow() -> None:
-    """Run the pallet drop SDG workflow."""
+def run_workflow(*, physics_only: bool) -> None:
+    """Run the pallet drop SDG workflow.
+
+    When ``physics_only`` is ``True``, simulation steps during box drops use
+    ``SimulationManager.step()`` and intermediate frames are not rendered.
+    """
     assets_root_path = get_assets_root_path()
     if assets_root_path is None:
         carb.log_error("[SDG] Could not resolve assets root path; aborting.")
@@ -142,6 +147,8 @@ def run_workflow() -> None:
     # Seed the functional randomizer so re-running the script is reproducible.
     rng = rep.rng.ReplicatorRNG(seed=42)
     timeline = omni.timeline.get_timeline_interface()
+    if physics_only:
+        SimulationManager.initialize_physics()
 
     # Create a dome light which will be randomized by texture and brightness.
     rep.functional.create.xform(name="SDG")
@@ -235,10 +242,13 @@ def run_workflow() -> None:
     randomize_boxes(boxes, start_height=0.3, rng=rng)
 
     # Drop the boxes.
-    timeline.play()
-    for _ in range(NUM_SIMULATION_FRAMES):
-        simulation_app.update()
-    timeline.pause()
+    if physics_only:
+        SimulationManager.step(steps=NUM_SIMULATION_FRAMES)
+    else:
+        timeline.play()
+        for _ in range(NUM_SIMULATION_FRAMES):
+            simulation_app.update()
+        timeline.pause()
 
     # Setup SDG.
     rep.functional.create.scope(name="Cameras", parent="/SDG")
@@ -249,9 +259,9 @@ def run_workflow() -> None:
     # Disable render products by default and only enable them at capture time.
     rp.hydra_texture.set_updates_enabled(False)
 
-    # Attach a `BasicWriter` to save common annotations from the same camera view.
+    # Attach a `BasicWriter` to save the data
     backend = rep.backends.get("DiskBackend")
-    out_dir = os.path.join(os.getcwd(), "_out_workflow_01")
+    out_dir = os.path.join(os.getcwd(), f"_out_workflow_01_{'physics' if physics_only else 'render'}")
     backend.initialize(output_dir=out_dir)
     print(f"[SDG] Output directory: {out_dir}")
     writer = rep.writers.get("BasicWriter")
@@ -274,16 +284,22 @@ def run_workflow() -> None:
         # Re-drop one box so each capture has a slightly different physical arrangement.
         box = boxes[int(rng.generator.integers(0, len(boxes)))]
         randomize_boxes([box], start_height=1.2, rng=rng)
-        timeline.play()
-        for _ in range(NUM_SIMULATION_FRAMES):
-            simulation_app.update()
-        timeline.pause()
+        if physics_only:
+            SimulationManager.step(steps=NUM_SIMULATION_FRAMES)
+        else:
+            timeline.play()
+            for _ in range(NUM_SIMULATION_FRAMES):
+                simulation_app.update()
+            timeline.pause()
 
         # Sample a new camera position on a small orbit while looking at the pallet.
         randomize_camera(cam, pallet, rng=rng)
 
         # Enable rendering only for the capture step to avoid extra GPU work.
         rp.hydra_texture.set_updates_enabled(True)
+        if physics_only:
+            # Reset DLSS history after physics-only settling to avoid ghosting on capture
+            carb.settings.get_settings().set("/rtx-transient/post/dlss/forceParamReset", True)
         rep.orchestrator.step(delta_time=0.0, rt_subframes=RT_SUBFRAMES)
         rp.hydra_texture.set_updates_enabled(False)
 
@@ -293,7 +309,14 @@ def run_workflow() -> None:
     rp.destroy()
 
 
-run_workflow()
+def run_workflows() -> None:
+    print("[SDG] Running workflow and rendering physics simulation frames")
+    run_workflow(physics_only=False)
+    print("[SDG] Running workflow without rendering physics simulation frames")
+    run_workflow(physics_only=True)
+
+
+run_workflows()
 
 # <start-sdg-workflow-01-test>
 import argparse
@@ -316,17 +339,19 @@ if args.test:
     # BasicWriter with rgb + colorized semantic_segmentation writes 2 png + 1 json per capture.
     expected_json_count = NUM_CAPTURES
     expected_png_count = NUM_CAPTURES * 2
-    out_dir = os.path.join(os.getcwd(), "_out_workflow_01")
-    ok = validate_folder_contents(
-        path=out_dir,
-        recursive=True,
-        expected_counts={"png": expected_png_count, "json": expected_json_count},
-        fail_on_empty_files=True,
-    )
-    if not ok:
-        print(f"[SDG][Test][FAIL] Output validation failed for {out_dir}")
-        sys.exit(1)
-    print(f"[SDG][Test][PASS] Output validation succeeded for {out_dir}")
+    out_dir_physics = os.path.join(os.getcwd(), "_out_workflow_01_physics")
+    out_dir_render = os.path.join(os.getcwd(), "_out_workflow_01_render")
+    for out_dir in [out_dir_physics, out_dir_render]:
+        ok = validate_folder_contents(
+            path=out_dir,
+            recursive=True,
+            expected_counts={"png": expected_png_count, "json": expected_json_count},
+            fail_on_empty_files=True,
+        )
+        if not ok:
+            print(f"[SDG][Test][FAIL] Output validation failed for {out_dir}")
+            sys.exit(1)
+        print(f"[SDG][Test][PASS] Output validation succeeded for {out_dir}")
 # <end-sdg-workflow-01-test>
 
 simulation_app.close()

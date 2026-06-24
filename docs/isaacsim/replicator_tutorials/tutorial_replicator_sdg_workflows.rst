@@ -19,9 +19,9 @@ This tutorial is for developers who are comfortable with rigid-body simulation a
 Prerequisites
 -------------
 
-Before starting, make sure you have:
+Before starting, it is recommended that you:
 
-- Read :ref:`Getting Started Scripts <isaac_sim_app_tutorial_replicator_getting_started>`. It introduces the orchestrator step, the capture-on-play flag, ``rt_subframes``, ``wait_for_render``, ``wait_until_complete``, and DLSS quality mode one concept at a time. This tutorial assumes you know what each one does.
+- Read :ref:`Getting Started Scripts <isaac_sim_app_tutorial_replicator_getting_started>`. It introduces the orchestrator step, the capture-on-play flag, ``rt_subframes``, ``wait_for_render``, ``wait_until_complete``, DLSS quality mode, and DLSS temporal reset.
 - Familiarity with USD (Universal Scene Description) concepts: prims, scopes, references, and transforms.
 - A working |isaac-sim_short| install you can run as a :ref:`Standalone Application <standalone-application>` or through the :ref:`Script Editor <script-editor>`.
 - Enough disk space for the captured dataset (scales with resolution and frame count).
@@ -106,6 +106,22 @@ DLSS Quality Mode
 
 Available values: ``0`` Performance, ``1`` Balanced, ``2`` Quality, ``3`` Auto.
 
+.. _isaac_sim_app_tutorial_replicator_sdg_workflows_dlss_reset:
+
+DLSS temporal reset
+-------------------
+
+In case of ghosting artifacts caused by fast-moving, teleported, or re-posed objects, DLSS denoising may be reusing stale motion and color history from prior frames. If the renderer skipped frames (physics-only stepping, a large pose jump, or a teleport between captures), that temporal data is missing or stale and faint trails or blurred silhouettes can show up in RGB captures.
+
+Set ``/rtx-transient/post/dlss/forceParamReset`` immediately before the orchestrator step to discard DLSS history and start a fresh render. Workflow 1 does this on every capture when ``physics_only=True``. This is a one-shot flag in the ``rtx-transient`` namespace; set it again before each capture after a render gap:
+
+.. code-block:: python
+
+    carb.settings.get_settings().set("/rtx-transient/post/dlss/forceParamReset", True)
+    rep.orchestrator.step(delta_time=0.0, rt_subframes=RT_SUBFRAMES)
+
+Use this together with Quality DLSS mode and a higher ``rt_subframes`` value. See also :ref:`simulation event driven capture <isaac_sim_replicator_simulation_get_data>`, :ref:`Workflow 1 <isaac_sim_app_tutorial_replicator_sdg_workflows_workflow_01>`, and :ref:`DLSS temporal reset <isaac_sim_replicator_getting_started_dlss_reset>` in the getting started guide.
+
 Render Product Updates
 ----------------------
 
@@ -124,7 +140,7 @@ The pattern both scripts use is to disable updates immediately after the render 
     rep.orchestrator.step(delta_time=0.0, rt_subframes=RT_SUBFRAMES)
     rp.hydra_texture.set_updates_enabled(False)
 
-The cost difference is most visible in Workflow 1, which advances PhysX many ticks between captures, and in any pipeline with multiple high-resolution cameras.
+The cost difference is most visible in Workflow 1 when ``physics_only=True``, which advances many physics steps between captures without rendering, and in any pipeline with multiple high-resolution cameras.
 
 Seeded Randomization
 --------------------
@@ -167,7 +183,7 @@ The following sections present two complete example scripts that apply the setti
 Workflow 1: Physics-Based Object Settling
 #########################################
 
-This workflow builds one scene (dome light, pallet, distractors, cardboxes, and camera) and keeps it for the whole run. Before each capture it re-drops one box and lets PhysX settle it, so every frame shows a slightly different physical arrangement of the same objects. The render product and writer are created once and reused, which avoids per-capture setup cost when the scene structure does not change.
+This workflow builds one scene (dome light, pallet, distractors, cardboxes, and camera) and keeps it for the whole run. Before each capture it re-drops one box and lets physics settle it, so every frame shows a slightly different physical arrangement of the same objects. The render product and writer are created once and reused, which avoids per-capture setup cost when the scene structure does not change.
 
 .. image:: /images/isim_6.0_replicator_tut_external_workflow_1.webp
     :align: center
@@ -180,15 +196,15 @@ The script defines helper functions that each randomize one part of the existing
 - ``randomize_distractors`` - samples positions, rotations, scales, and display colors for the distractor prims.
 - ``randomize_pallet`` - picks one of the pre-created materials and binds it to the pallet.
 - ``randomize_camera`` - samples an orbit position around the pallet and points the camera back at it.
-- ``randomize_boxes`` - writes per-box poses just before the timeline plays so PhysX settles the boxes over ``NUM_SIMULATION_FRAMES`` ticks.
+- ``randomize_boxes`` - writes per-box poses before physics settles the drop over ``NUM_SIMULATION_FRAMES`` steps.
 
 The capture loop runs ``NUM_CAPTURES`` times:
 
 #. Randomize the lighting, distractors, and pallet material with the helpers above.
-#. Pick one box at random, give it a fresh pose, and advance the timeline ``NUM_SIMULATION_FRAMES`` ticks so PhysX settles the new pose.
-#. Move the camera, enable the render product, call the orchestrator step, then disable the render product again.
+#. Pick one box at random, give it a fresh pose, and settle it with ``NUM_SIMULATION_FRAMES`` physics steps (``SimulationManager.step()`` when ``physics_only=True``, otherwise timeline play and application updates).
+#. Move the camera, enable the render product, reset DLSS history if ``physics_only=True``, call the orchestrator step, then disable the render product again.
 
-Physics runs *between* captures (step 2), and only the orchestrator step (step 3) produces a frame.
+Physics runs *between* captures (step 2), and only the orchestrator step (step 3) produces a frame. The example runs both ``physics_only=False`` (timeline updates with rendering during drops) and ``physics_only=True`` (``SimulationManager.step()`` without intermediate renders).
 
 The standalone example can also be run directly (on Windows use ``python.bat`` instead of ``python.sh``):
 
@@ -211,7 +227,7 @@ The standalone example can also be run directly (on Windows use ``python.bat`` i
             :lines: 16-
             :end-before: # <start-sdg-workflow-01-test>
 
-Output directory ``_out_workflow_01``: per captured frame, an ``rgb_*.png``, a colorized ``semantic_segmentation_*.png``, and a matching ``*.json`` label map written by the ``BasicWriter``.
+Output directory ``_out_workflow_01_render`` or ``_out_workflow_01_physics`` (the standalone example runs both modes): per captured frame, an ``rgb_*.png``, a colorized ``semantic_segmentation_*.png``, and a matching ``*.json`` label map written by the ``BasicWriter``.
 
 .. _isaac_sim_app_tutorial_replicator_sdg_workflows_workflow_02:
 
@@ -264,7 +280,7 @@ Troubleshooting
 
 See :ref:`Replicator Troubleshooting <isaac_sim_replicator_troubleshooting>` for the full list.
 
-- **Ghosting or artifacts in early captures.** Increase ``rt_subframes`` (see :ref:`above <isaac_sim_app_tutorial_replicator_sdg_workflows_rt_subframes>`).
+- **Ghosting or artifacts in captures (trails, smearing, or blurred silhouettes).** Often caused by missing or stale DLSS temporal history after fast motion, teleports, or physics-only steps between renders. Increase ``rt_subframes`` (see :ref:`above <isaac_sim_app_tutorial_replicator_sdg_workflows_rt_subframes>`) and set ``/rtx-transient/post/dlss/forceParamReset`` before the orchestrator step when settling used ``physics_only=True`` (see :ref:`DLSS temporal reset <isaac_sim_app_tutorial_replicator_sdg_workflows_dlss_reset>`).
 - **Frames missing from the writer.** ``wait_until_complete`` was not called before exit.
 - **Scattered assets overlap or land in the wrong place after a rebuild (Workflow 2).** The previous scene scope was not removed before authoring the new one, so Replicator's scatter-mesh cache reused stale planes.
 - **Slow runs even though few frames are written.** The render product was left enabled during physics, scene construction, or randomization. Disable it and re-enable only around the orchestrator step.

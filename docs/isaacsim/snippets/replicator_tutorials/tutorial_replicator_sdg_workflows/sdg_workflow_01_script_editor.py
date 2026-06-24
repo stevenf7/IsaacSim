@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Basic SDG workflow with scene creation, asset placement, randomization, and data capture.
+"""Basic SDG workflow with scene creation, asset placement, randomization, and data capture.
+
 Boxes are randomized and simulated with physics before each capture.
 """
 
@@ -28,6 +28,7 @@ import omni.kit.app
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.storage.native import get_assets_root_path
 from pxr import Usd, UsdGeom, UsdPhysics
 
@@ -41,7 +42,7 @@ ENV_URL = "/Isaac/Environments/Grid/default_environment.usd"
 
 
 def randomize_distractors(prims, rng):
-    # Sample small distractors on a loose ring around the pallet.
+    """Randomize small distractors on a loose ring around the pallet."""
     count = len(prims)
     angles = rng.generator.uniform(0.0, 2.0 * math.pi, count)
     radii = rng.generator.uniform(0.9, 1.4, count)
@@ -62,6 +63,7 @@ def randomize_distractors(prims, rng):
 
 
 def randomize_dome_light(dome_light, texture_urls, rng):
+    """Randomize the dome light texture and intensity."""
     texture_url = texture_urls[int(rng.generator.integers(0, len(texture_urls)))]
     intensity = float(rng.generator.uniform(500.0, 900.0))
     rep.functional.modify.attribute(dome_light, "inputs:texture:file", texture_url)
@@ -69,11 +71,13 @@ def randomize_dome_light(dome_light, texture_urls, rng):
 
 
 def randomize_pallet(pallet, materials, rng):
+    """Randomize the pallet material."""
     material = materials[int(rng.generator.integers(0, len(materials)))]
     rep.functional.modify.material(pallet, material)
 
 
 def randomize_camera(camera, look_at, rng):
+    """Randomize the camera pose while keeping it aimed at the target."""
     theta = float(rng.generator.uniform(0.0, 2.0 * math.pi))
     radius = float(rng.generator.uniform(2.6, 3.4))
     position = (
@@ -91,6 +95,7 @@ def randomize_camera(camera, look_at, rng):
 
 
 def randomize_boxes(boxes, start_height, rng):
+    """Randomize box poses before dropping them onto the pallet."""
     for i, box in enumerate(boxes):
         lateral_range = 0.4
         height = start_height + 0.2 * i
@@ -111,7 +116,12 @@ def randomize_boxes(boxes, start_height, rng):
         )
 
 
-async def run_workflow_async():
+async def run_workflow_async(*, physics_only: bool) -> None:
+    """Run the pallet drop SDG workflow.
+
+    When ``physics_only`` is ``True``, simulation steps during box drops use
+    ``SimulationManager.step()`` and intermediate frames are not rendered.
+    """
     assets_root_path = get_assets_root_path()
     if assets_root_path is None:
         carb.log_error("[SDG] Could not resolve assets root path; aborting.")
@@ -132,6 +142,9 @@ async def run_workflow_async():
 
     # Seed the functional randomizer so re-running the script is reproducible.
     rng = rep.rng.ReplicatorRNG(seed=42)
+    timeline = omni.timeline.get_timeline_interface()
+    if physics_only:
+        SimulationManager.initialize_physics()
 
     # Create a dome light which will be randomized by texture and brightness.
     rep.functional.create.xform(name="SDG")
@@ -225,11 +238,13 @@ async def run_workflow_async():
     randomize_boxes(boxes, start_height=0.3, rng=rng)
 
     # Drop the boxes.
-    timeline = omni.timeline.get_timeline_interface()
-    timeline.play()
-    for _ in range(NUM_SIMULATION_FRAMES):
-        await omni.kit.app.get_app().next_update_async()
-    timeline.pause()
+    if physics_only:
+        SimulationManager.step(steps=NUM_SIMULATION_FRAMES)
+    else:
+        timeline.play()
+        for _ in range(NUM_SIMULATION_FRAMES):
+            await omni.kit.app.get_app().next_update_async()
+        timeline.pause()
 
     # Setup SDG.
     rep.functional.create.scope(name="Cameras", parent="/SDG")
@@ -240,9 +255,9 @@ async def run_workflow_async():
     # Disable render products by default and only enable them at capture time.
     rp.hydra_texture.set_updates_enabled(False)
 
-    # Create a `BasicWriter` to save common annotations from the same camera view.
+    # Create a `BasicWriter` to save the data
     backend = rep.backends.get("DiskBackend")
-    out_dir = os.path.join(os.getcwd(), "_out_workflow_01")
+    out_dir = os.path.join(os.getcwd(), f"_out_workflow_01_{'physics' if physics_only else 'render'}")
     backend.initialize(output_dir=out_dir)
     print(f"[SDG] Output directory: {out_dir}")
     writer = rep.writers.get("BasicWriter")
@@ -265,16 +280,22 @@ async def run_workflow_async():
         # Re-drop one box so each capture has a slightly different physical arrangement.
         box = boxes[int(rng.generator.integers(0, len(boxes)))]
         randomize_boxes([box], start_height=1.2, rng=rng)
-        timeline.play()
-        for _ in range(NUM_SIMULATION_FRAMES):
-            await omni.kit.app.get_app().next_update_async()
-        timeline.pause()
+        if physics_only:
+            SimulationManager.step(steps=NUM_SIMULATION_FRAMES)
+        else:
+            timeline.play()
+            for _ in range(NUM_SIMULATION_FRAMES):
+                await omni.kit.app.get_app().next_update_async()
+            timeline.pause()
 
         # Sample a new camera position on a small orbit while looking at the pallet.
         randomize_camera(cam, pallet, rng=rng)
 
         # Enable rendering only for the capture step to avoid extra GPU work.
         rp.hydra_texture.set_updates_enabled(True)
+        if physics_only:
+            # Reset DLSS history after physics-only settling to avoid ghosting on capture
+            carb.settings.get_settings().set("/rtx-transient/post/dlss/forceParamReset", True)
         await rep.orchestrator.step_async(delta_time=0.0, rt_subframes=RT_SUBFRAMES)
         rp.hydra_texture.set_updates_enabled(False)
 
@@ -284,4 +305,11 @@ async def run_workflow_async():
     rp.destroy()
 
 
-asyncio.ensure_future(run_workflow_async())
+async def run_workflows_async() -> None:
+    print("[SDG] Running workflow and rendering physics simulation frames")
+    await run_workflow_async(physics_only=False)
+    print("[SDG] Running workflow without rendering physics simulation frames")
+    await run_workflow_async(physics_only=True)
+
+
+asyncio.ensure_future(run_workflows_async())

@@ -58,6 +58,8 @@ Example on how to access data from multiple cameras in a scene using annotators 
 
             </details>
 
+.. _isaac_sim_replicator_simulation_get_data:
+
 Synthetic Data Access at Specific Simulation Timepoints
 --------------------------------------------------------
 
