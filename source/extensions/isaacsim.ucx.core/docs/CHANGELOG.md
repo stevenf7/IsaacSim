@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.5] - 2026-06-23
+### Fixed
+- Removed `[[native.plugin]]` declaration.
+
 ## [1.4.4] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
