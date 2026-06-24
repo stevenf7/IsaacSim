@@ -99,6 +99,22 @@ When using Replicator for synthetic data generation (SDG) workflows, it is recom
     # Set DLSS to Quality mode (2) for best SDG results (Options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto))
     carb.settings.get_settings().set("/rtx/post/dlss/execMode", 2)
 
+.. _isaac_sim_replicator_getting_started_dlss_reset:
+
+DLSS temporal reset
+-------------------
+
+DLSS accumulates motion and denoiser history across renders. When physics advances without rendering, such as many ``SimulationManager.step()`` calls between captures, the next frame can show ghosting because DLSS still references stale history.
+
+Set ``/rtx-transient/post/dlss/forceParamReset`` immediately before the capture step to clear that history on the next render. :ref:`Workflow 1 <isaac_sim_app_tutorial_replicator_sdg_workflows_workflow_01>` and the :ref:`simulation event driven capture <isaac_sim_replicator_simulation_get_data>` example set this flag when physics runs without rendering between captures.
+
+.. code-block:: python
+
+    import carb.settings
+
+    carb.settings.get_settings().set("/rtx-transient/post/dlss/forceParamReset", True)
+    rep.orchestrator.step(rt_subframes=4)
+
 .. _isaac_sim_replicator_getting_started_wait_for_render:
 
 Wait for Render Parameter
