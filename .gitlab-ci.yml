@@ -293,9 +293,15 @@ osec:sonarqube:
 mirror-sync: 
   stage: mirroring-sync
   needs: []
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "feature/isaacsim_next"
+    - !reference [.rules-version-changed, rules]
 
 mirror-mark-eligible:
   stage: mirroring-sync
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "feature/isaacsim_next"
+    - !reference [.rules-version-changed, rules]
 
 # ==============================================================================================================
 .check-common:
