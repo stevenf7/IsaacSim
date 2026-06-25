@@ -256,7 +256,7 @@ objects:
 
 Paths relative to `$ISAAC_SIM_DIR` (install root or `<this-repo>` for a source build) and `$ISAAC_LAB_DIR`:
 
-- API examples: `$ISAAC_SIM_DIR/source/standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_0[1-5].py`, `sdg_workflow_0[12].py`, `multi_camera.py`, `motion_blur.py`, `cosmos_writer_simple.py`, `simready_assets_sdg.py`, `sdg_deformables.py`, `sdg_geomsubset.py`, `subscribers_and_events.py`, `custom_event_and_write.py`, `custom_fps_writer_annotator.py`.
+- API examples: `$ISAAC_SIM_DIR/source/standalone_examples/api/isaacsim.replicator.examples/sdg_getting_started_0[1-5].py`, `sdg_workflow_0[12].py`, `multi_camera.py`, `motion_blur_raytracing.py`, `motion_blur_pathtracing.py`, `cosmos_writer_simple.py`, `simready_assets_sdg.py`, `sdg_deformables.py`, `sdg_geomsubset.py`, `subscribers_and_events.py`, `custom_event_and_write.py`, `custom_fps_writer_annotator.py`.
 - Scene-based SDG: `$ISAAC_SIM_DIR/source/standalone_examples/replicator/scene_based_sdg/`
 - Object-based SDG: `$ISAAC_SIM_DIR/source/standalone_examples/replicator/object_based_sdg/`
 - Augmentation pipelines: `$ISAAC_SIM_DIR/source/standalone_examples/replicator/augmentation/`

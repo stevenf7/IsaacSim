@@ -153,15 +153,20 @@ The following example showcases the use of custom events to trigger randomizatio
 Motion Blur
 ---------------------------------------------
 
-This example demonstrates how to capture motion blur data using `RTX Real-Time <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/rtx-renderer_rt.html>`_ and `RTX Interactive (Path Tracing) <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/rtx-renderer_pt.html>`_ rendering modes. For the |real_time_render| mode, refer to `motion blur parameters <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/rtx_post-processing.html#motion-blur>`_. For the |interactive_render| mode, motion blur is achieved by rendering multiple subframes (``/omni/replicator/pathTracedMotionBlurSubSamples``) and combining them to create the effect.
+These examples demonstrate how to capture motion blur data using the `RTX Real-Time <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/rtx-renderer_rt.html>`_ and `RTX Interactive (Path Tracing) <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/rtx-renderer_pt.html>`_ rendering modes. Each rendering mode exposes its own parameters to finetune the motion blur, so the examples are split into a dedicated raytracing version and a path tracing version.
 
-The example uses animated and physics-enabled assets with synchronized motion. Keyframe animated assets can be advanced at any custom delta time due to their interpolated motion, whereas physics-enabled assets require a custom physics FPS to ensure motion samples at any custom delta time. The example showcases how to compute the target physics FPS, change it if needed, and restore the original physics FPS after capturing the motion blur.
+Both examples use animated and physics-enabled assets with synchronized motion. Keyframe animated assets can be advanced at any custom delta time due to their interpolated motion, whereas physics-enabled assets require a custom physics FPS to ensure motion samples at any custom delta time. The examples showcase how to compute the target physics FPS, change it if needed, and restore the original physics FPS after capturing the motion blur.
+
+RTX Real-Time Motion Blur
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This example captures motion blur in the |real_time_render| mode. The blur is finetuned through the `motion blur parameters <https://docs.omniverse.nvidia.com/materials-and-rendering/latest/rtx_post-processing.html#motion-blur>`_: the maximum blur diameter fraction (``/rtx/post/motionblur/maxBlurDiameterFraction``), the exposure time fraction (``/rtx/post/motionblur/exposureFraction``), and the number of filter samples (``/rtx/post/motionblur/numSamples``).
 
 The standalone example can also be run directly (on Windows use ``python.bat`` instead of ``python.sh``):
 
 .. code-block:: bash
 
-    ./python.sh standalone_examples/api/isaacsim.replicator.examples/motion_blur.py
+    ./python.sh standalone_examples/api/isaacsim.replicator.examples/motion_blur_raytracing.py
 
 
 .. tab-set::
@@ -171,9 +176,9 @@ The standalone example can also be run directly (on Windows use ``python.bat`` i
         .. raw:: html
 
             <details open>
-            <summary>Motion Blur</summary>
+            <summary>RTX Real-Time Motion Blur</summary>
 
-        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/motion_blur_script_editor.py
+        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/motion_blur_raytracing_script_editor.py
             :language: python
             :lines: 16-
 
@@ -186,9 +191,54 @@ The standalone example can also be run directly (on Windows use ``python.bat`` i
         .. raw:: html
 
             <details open>
-            <summary>Motion Blur</summary>
+            <summary>RTX Real-Time Motion Blur</summary>
 
-        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/motion_blur.py
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/motion_blur_raytracing.py
+            :language: python
+            :lines: 16-
+            :end-before: # <start-motion-blur-test>
+
+        .. raw:: html
+
+            </details>
+
+Path Tracing Motion Blur
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This example captures motion blur in the |interactive_render| mode. The blur is achieved by rendering multiple subframes (``/omni/replicator/pathTracedMotionBlurSubSamples``) and combining them to create the effect. The blur quality is finetuned through the number of subsamples and the samples per pixel (``/rtx/pathtracing/spp`` and ``/rtx/pathtracing/totalSpp``).
+
+The standalone example can also be run directly (on Windows use ``python.bat`` instead of ``python.sh``):
+
+.. code-block:: bash
+
+    ./python.sh standalone_examples/api/isaacsim.replicator.examples/motion_blur_pathtracing.py
+
+
+.. tab-set::
+
+    .. tab-item:: Script Editor
+
+        .. raw:: html
+
+            <details open>
+            <summary>Path Tracing Motion Blur</summary>
+
+        .. literalinclude:: ../snippets/replicator_tutorials/tutorial_replicator_isaac_snippets/motion_blur_pathtracing_script_editor.py
+            :language: python
+            :lines: 16-
+
+        .. raw:: html
+
+            </details>
+
+    .. tab-item:: Standalone Application
+
+        .. raw:: html
+
+            <details open>
+            <summary>Path Tracing Motion Blur</summary>
+
+        .. literalinclude:: ../../../source/standalone_examples/api/isaacsim.replicator.examples/motion_blur_pathtracing.py
             :language: python
             :lines: 16-
             :end-before: # <start-motion-blur-test>

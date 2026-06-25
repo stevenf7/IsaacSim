@@ -18,7 +18,6 @@ isaac_lab_tutorials/tutorial_instanceable_assets/save_as_path_str_usd_file_path_
 #
 # ---- WG3: replicator / SDG ----
 # Missing modules or API changes in current build
-replicator_tutorials/tutorial_replicator_isaac_snippets/motion_blur_script_editor.py
 replicator_tutorials/tutorial_replicator_custom_og_randomizer/replicator_wrapper.py
 replicator_tutorials/tutorial_replicator_ur10_palletizing/sdg_ur10_palletizing_script_editor.py
 replicator_tutorials/tutorial_replicator_augmentation/writer_augmentation_script_editor.py
