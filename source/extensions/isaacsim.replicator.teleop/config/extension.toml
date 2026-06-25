@@ -1,5 +1,5 @@
 [package]
-version = "0.3.6"
+version = "0.3.7"
 category = "Simulation"
 title = "Replicator Teleop"
 description = "Teleoperation utilities and marker management for replicator workflows"
@@ -20,7 +20,6 @@ writeTarget.python = true
 "isaacsim.storage.native" = {}
 "omni.kit.pip_archive" = {}
 "omni.pip.compute" = {}
-"omni.ui" = {}
 "omni.usd" = {}
 
 [[python.module]]
