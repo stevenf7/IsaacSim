@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.7] - 2026-06-25
+### Changed
+- Removed `omni.ui` dependency; UI remains in `isaacsim.replicator.teleop.ui`.
+
 ## [0.3.6] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings.
