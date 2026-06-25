@@ -1002,8 +1002,13 @@ local function get_replicator_tests()
             "--gpu_dynamics",
         },
         {
-            "tests-nativepython-testing-isaacsim.replicator.examples.motion_blur_short",
-            "/standalone_examples/api/isaacsim.replicator.examples/motion_blur.py",
+            "tests-nativepython-testing-isaacsim.replicator.examples.motion_blur_raytracing",
+            "/standalone_examples/api/isaacsim.replicator.examples/motion_blur_raytracing.py",
+            "--delta_times None 0.00416666666 --test",
+        },
+        {
+            "tests-nativepython-testing-isaacsim.replicator.examples.motion_blur_pathtracing",
+            "/standalone_examples/api/isaacsim.replicator.examples/motion_blur_pathtracing.py",
             "--delta_times None 0.00416666666 --samples_per_pixel 32 --motion_blur_subsamples 4 --test",
         },
         {

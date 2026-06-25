@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.11.7] - 2026-06-12
+### Changed
+- Split motion blur tests into `test_sdg_motion_blur.py` with golden RGB validation.
+- Split the motion blur example, snippet, and tests into separate raytracing (`motion_blur_raytracing*`) and path tracing (`motion_blur_pathtracing*`) versions, each exposing render-mode-specific finetuning parameters.
+
 ## [1.11.6] - 2026-06-10
 ### Fixed
 - Add warmup steps to motion blur example test to make it more stable in CI

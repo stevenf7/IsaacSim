@@ -71,7 +71,8 @@ isaacsim.replicator.examples
 * ``cosmos_writer_simple.py``
 * ``custom_event_and_write.py``
 * ``custom_fps_writer_annotator.py``
-* ``motion_blur.py``
+* ``motion_blur_pathtracing.py``
+* ``motion_blur_raytracing.py``
 * ``multi_camera.py``
 * ``sdg_deformables.py``
 * ``sdg_geomsubset.py``

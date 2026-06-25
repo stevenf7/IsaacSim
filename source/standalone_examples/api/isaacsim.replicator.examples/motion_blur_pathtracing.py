@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Demonstrate motion blur capture with configurable delta times and render modes."""
+"""Demonstrate motion blur capture with the RTX Interactive (Path Tracing) render mode."""
 
 from isaacsim import SimulationApp
 
@@ -23,11 +23,13 @@ import argparse
 import os
 
 import carb.settings
+import isaacsim.core.experimental.utils.stage as stage_utils
 import omni.replicator.core as rep
 import omni.timeline
 import omni.usd
+from isaacsim.core.experimental.prims import RigidPrim
+from isaacsim.core.simulation_manager import PhysicsScene
 from isaacsim.storage.native import get_assets_root_path
-from pxr import PhysxSchema, UsdPhysics
 
 # Paths to the animated and physics-ready assets
 PHYSICS_ASSET_URL = "/Isaac/Props/YCB/Axis_Aligned_Physics/003_cracker_box.usd"
@@ -82,7 +84,7 @@ motion_blur_subsamples = args.motion_blur_subsamples
 
 def setup_stage() -> None:
     """Create a new USD stage with animated and physics-enabled assets with synchronized motion."""
-    omni.usd.get_context().new_stage()
+    stage_utils.create_new_stage()
     settings = carb.settings.get_settings()
     # Set DLSS to Quality mode (2) for best SDG results , options: 0 (Performance), 1 (Balanced), 2 (Quality), 3 (Auto)
     settings.set("rtx/post/dlss/execMode", 2)
@@ -90,9 +92,9 @@ def setup_stage() -> None:
     # Capture data only on request
     rep.orchestrator.set_capture_on_play(False)
 
-    stage = omni.usd.get_context().get_stage()
     timeline = omni.timeline.get_timeline_interface()
     timeline.set_end_time(ANIMATION_DURATION)
+    timeline.commit()
 
     # Create lights
     rep.functional.create.xform(name="World")
@@ -106,12 +108,9 @@ def setup_stage() -> None:
         prim = rep.functional.create.reference(
             usd_path=physics_asset_url, parent="/World", name=f"physics_asset_{int(abs(velocity))}", position=location
         )
-        physics_rigid_body_api = UsdPhysics.RigidBodyAPI(prim)
-        physics_rigid_body_api.GetVelocityAttr().Set((0, 0, -velocity))
-        physx_rigid_body_api = PhysxSchema.PhysxRigidBodyAPI(prim)
-        physx_rigid_body_api.GetDisableGravityAttr().Set(True)
-        physx_rigid_body_api.GetAngularDampingAttr().Set(0.0)
-        physx_rigid_body_api.GetLinearDampingAttr().Set(0.0)
+        rigid_prim = RigidPrim(str(prim.GetPrimPath()))
+        rigid_prim.set_enabled_gravities([False])
+        rigid_prim.set_velocities(linear_velocities=[(0, 0, -velocity)], angular_velocities=[(0, 0, 0)])
 
     # Setup animated assets maintaining the same velocity as the physics assets
     anim_asset_url = assets_root_path + ANIM_ASSET_URL
@@ -128,14 +127,13 @@ def setup_stage() -> None:
         prim.GetAttribute("xformOp:translate").Set(end_location, time=end_keyframe_time)
 
 
-def run_motion_blur_example(
+def run_motion_blur_example_pt(
     num_frames: int,
     delta_time: float | None = None,
-    use_path_tracing: bool = True,
     motion_blur_subsamples: int = 8,
     samples_per_pixel: int = 64,
 ) -> None:
-    """Capture motion blur frames with the given delta time step and render mode."""
+    """Capture motion blur frames with the given delta time step using Path Tracing rendering."""
     setup_stage()
     stage = omni.usd.get_context().get_stage()
     settings = carb.settings.get_settings()
@@ -143,32 +141,20 @@ def run_motion_blur_example(
     # Enable motion blur capture
     settings.set("/omni/replicator/captureMotionBlur", True)
 
-    # Set motion blur settings based on the render mode
-    if use_path_tracing:
-        print("[MotionBlur] Setting PathTracing render mode motion blur settings")
-        settings.set("/rtx/rendermode", "PathTracing")
-        # (int): Total number of samples for each rendered pixel, per frame.
-        settings.set("/rtx/pathtracing/spp", samples_per_pixel)
-        # (int): Maximum number of samples to accumulate per pixel. When this count is reached the rendering stops until a scene or setting change is detected, restarting the rendering process. Set to 0 to remove this limit.
-        settings.set("/rtx/pathtracing/totalSpp", samples_per_pixel)
-        settings.set("/rtx/pathtracing/optixDenoiser/enabled", 0)
-        # Number of sub samples to render if in PathTracing render mode and motion blur is enabled.
-        settings.set("/omni/replicator/pathTracedMotionBlurSubSamples", motion_blur_subsamples)
-    else:
-        print("[MotionBlur] Setting RealTimePathTracing render mode motion blur settings")
-        settings.set("/rtx/rendermode", "RealTimePathTracing")
-        # 0: Disabled, 1: TAA, 2: FXAA, 3: DLSS, 4:RTXAA
-        settings.set("/rtx/post/aa/op", 2)
-        # (float): The fraction of the largest screen dimension to use as the maximum motion blur diameter.
-        settings.set("/rtx/post/motionblur/maxBlurDiameterFraction", 0.02)
-        # (float): Exposure time fraction in frames (1.0 = one frame duration) to sample.
-        settings.set("/rtx/post/motionblur/exposureFraction", 1.0)
-        # (int): Number of samples to use in the filter. A higher number improves quality at the cost of performance.
-        settings.set("/rtx/post/motionblur/numSamples", 8)
+    # Set Path Tracing motion blur settings
+    print("[MotionBlur] Setting PathTracing render mode motion blur settings")
+    settings.set("/rtx/rendermode", "PathTracing")
+    # (int): Total number of samples for each rendered pixel, per frame.
+    settings.set("/rtx/pathtracing/spp", samples_per_pixel)
+    # (int): Maximum number of samples to accumulate per pixel. When this count is reached the rendering stops until a scene or setting change is detected, restarting the rendering process. Set to 0 to remove this limit.
+    settings.set("/rtx/pathtracing/totalSpp", samples_per_pixel)
+    settings.set("/rtx/pathtracing/optixDenoiser/enabled", 0)
+    # Number of sub samples to render if in PathTracing render mode and motion blur is enabled.
+    settings.set("/omni/replicator/pathTracedMotionBlurSubSamples", motion_blur_subsamples)
 
     # Setup backend
-    mode_str = f"pt_subsamples_{motion_blur_subsamples}_spp_{samples_per_pixel}" if use_path_tracing else "rt"
     delta_time_str = "None" if delta_time is None else f"{delta_time:.4f}"
+    mode_str = f"pt_subsamples_{motion_blur_subsamples}_spp_{samples_per_pixel}"
     output_directory = os.path.join(os.getcwd(), f"_out_motion_blur_func_dt_{delta_time_str}_{mode_str}")
     print(f"[MotionBlur] Output directory: {output_directory}")
     backend = rep.backends.get("DiskBackend")
@@ -187,42 +173,44 @@ def run_motion_blur_example(
     for _ in range(5):
         simulation_app.update()
 
-    # Create or get the physics scene
     rep.functional.physics.create_physics_scene(path="/PhysicsScene")
-    physx_scene = PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/PhysicsScene"))
+    physics_scene = PhysicsScene("/PhysicsScene")
 
-    # Check the target physics depending on the delta time and the render mode
-    target_physics_fps = stage.GetTimeCodesPerSecond() if delta_time is None else 1 / delta_time
-    if use_path_tracing:
-        target_physics_fps *= motion_blur_subsamples
+    # Path tracing renders multiple subframes per frame, so the physics FPS is scaled accordingly
+    stage_time_codes_per_second = stage.GetTimeCodesPerSecond()
+    target_physics_fps = stage_time_codes_per_second if delta_time is None else 1 / delta_time
+    target_physics_fps *= motion_blur_subsamples
 
-    # Check if the physics FPS needs to be increased to match the delta time
-    original_physics_fps = physx_scene.GetTimeStepsPerSecondAttr().Get()
-    if target_physics_fps > original_physics_fps:
-        print(f"[MotionBlur] Changing physics FPS from {original_physics_fps} to {target_physics_fps}")
-        physx_scene.GetTimeStepsPerSecondAttr().Set(target_physics_fps)
+    target_physics_dt = 1.0 / target_physics_fps
+    original_physics_dt = physics_scene.get_dt()
 
-    # Start the timeline for physics updates in the step function
+    if target_physics_dt < original_physics_dt:
+        print(f"[MotionBlur] Changing physics FPS from {1.0 / original_physics_dt:.0f} to {target_physics_fps:.0f}")
+        physics_scene.set_dt(target_physics_dt)
+
+    # Start the timeline
     timeline = omni.timeline.get_timeline_interface()
     timeline.play()
+    timeline.commit()
 
-    # Capture frames
     for i in range(num_frames):
         print(f"[MotionBlur] \tCapturing frame {i}")
         rep.orchestrator.step(delta_time=delta_time)
 
-    # Restore the original physics FPS
-    if target_physics_fps > original_physics_fps:
-        print(f"[MotionBlur] Restoring physics FPS from {target_physics_fps} to {original_physics_fps}")
-        physx_scene.GetTimeStepsPerSecondAttr().Set(original_physics_fps)
+    if target_physics_dt < original_physics_dt:
+        print(f"[MotionBlur] Restoring physics FPS from {target_physics_fps:.0f} to {1.0 / original_physics_dt:.0f}")
+        physics_scene.set_dt(original_physics_dt)
 
     # Switch back to the raytracing render mode
-    if use_path_tracing:
-        print("[MotionBlur] Restoring render mode to RealTimePathTracing")
-        settings.set("/rtx/rendermode", "RealTimePathTracing")
+    print("[MotionBlur] Restoring render mode to RealTimePathTracing")
+    settings.set("/rtx/rendermode", "RealTimePathTracing")
 
     # Wait until the data is fully written
     rep.orchestrator.wait_until_complete()
+
+    # Stop the timeline
+    timeline.stop()
+    timeline.commit()
 
     # Cleanup
     writer.detach()
@@ -235,20 +223,16 @@ def run_motion_blur_examples(
     samples_per_pixel: list[int],
     motion_blur_subsamples: list[int],
 ) -> None:
-    """Run motion blur examples across all delta time and render mode combinations."""
+    """Run Path Tracing motion blur examples across all delta time, subsample, and spp combinations."""
     print(
         f"[MotionBlur] Running with delta_times={delta_times}, samples_per_pixel={samples_per_pixel}, motion_blur_subsamples={motion_blur_subsamples}"
     )
     for delta_time in delta_times:
-        # RayTracing examples
-        run_motion_blur_example(num_frames=num_frames, delta_time=delta_time, use_path_tracing=False)
-        # PathTracing examples
         for motion_blur_subsample in motion_blur_subsamples:
             for samples_per_pixel_value in samples_per_pixel:
-                run_motion_blur_example(
+                run_motion_blur_example_pt(
                     num_frames=num_frames,
                     delta_time=delta_time,
-                    use_path_tracing=True,
                     motion_blur_subsamples=motion_blur_subsample,
                     samples_per_pixel=samples_per_pixel_value,
                 )
@@ -278,12 +262,11 @@ test_parser.add_argument(
 test_args, _ = test_parser.parse_known_args()
 
 if test_args.test:
-    # Each run_motion_blur_example call produces one output dir with NUM_FRAMES rgb pngs.
+    # Each run_motion_blur_example_pt call produces one output dir with NUM_FRAMES rgb pngs.
     # Mirror the iteration in run_motion_blur_examples to reconstruct the expected dir names.
     expected_out_dirs = []
     for dt in delta_times:
         dt_str = "None" if dt is None else f"{dt:.4f}"
-        expected_out_dirs.append(os.path.join(os.getcwd(), f"_out_motion_blur_func_dt_{dt_str}_rt"))
         for sub in motion_blur_subsamples:
             for spp in samples_per_pixel:
                 expected_out_dirs.append(
