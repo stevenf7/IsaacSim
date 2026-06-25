@@ -47,7 +47,7 @@ include:
     file: "modules/omniverse-repo-compliance.gitlab-ci.yml"
     ref: v1_latest
   - project: 'omniverse/devplat/gitlab/templates/common/github-mirror-control'
-    file: 'templates/candidate-pipeline.yml'
+    file: 'templates/candidate-pipeline-multi-platform-extensions.yml'
     ref: v1_latest
 
   # Internal
@@ -289,19 +289,35 @@ osec:sonarqube:
         interruptible: true
       # - !reference [.rules-push-manual, rules]
 
-# Overrides for mirror-sync job
-mirror-sync: 
-  stage: mirroring-sync
-  needs: []
+
+# Shared mirror rules: feature/isaacsim_next on every push; develop/release on version bump only.
+.mirror-isaac-sync-rules:
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "feature/isaacsim_next"
     - !reference [.rules-version-changed, rules]
 
+# Overrides for mirror-sync jobs (decoupled from main pipeline via mirroring-sync stage).
+mirror-sync:
+  stage: mirroring-sync
+  needs: []
+  rules:
+    - !reference [.mirror-isaac-sync-rules, rules]
+
+mirror-sync-extensions-windows:
+  stage: mirroring-sync
+  needs: []
+  rules:
+    - !reference [.mirror-isaac-sync-rules, rules]
+
 mirror-mark-eligible:
   stage: mirroring-sync
+  needs:
+    - job: mirror-sync
+      artifacts: true
+    - job: mirror-sync-extensions-windows
+      artifacts: true
   rules:
-    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "feature/isaacsim_next"
-    - !reference [.rules-version-changed, rules]
+    - !reference [.mirror-isaac-sync-rules, rules]
 
 # ==============================================================================================================
 .check-common:
