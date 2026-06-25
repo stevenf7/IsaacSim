@@ -169,8 +169,8 @@ void MapGenerator::updateSettings(const float cellSize,
  * @brief Sets the transform parameters for the map generation
  * @details
  * Defines the origin and boundaries of the area to be mapped in world coordinates.
- * The boundaries are adjusted to align with the cell grid by rounding the min/max
- * points to the nearest cell boundaries.
+ * The XY boundaries are adjusted to align with the cell grid by rounding the min/max
+ * points to the nearest cell boundaries. The lower Z bound is preserved.
  *
  * @param[in] inputOrigin Origin point of the map in world coordinates
  * @param[in] inputMinPoint Minimum point of the map relative to origin
@@ -178,15 +178,15 @@ void MapGenerator::updateSettings(const float cellSize,
  *
  * @post m_inputOrigin, m_inputMinPoint, and m_inputMaxPoint will be updated
  *
- * @note The min/max points are adjusted to align with cell boundaries
- *       by rounding down/up to the nearest cell size multiple
+ * @note XY min/max points are adjusted to align with cell boundaries. The lower Z
+ *       bound is preserved so callers can exclude floor contacts with a positive minZ.
  */
 void MapGenerator::setTransform(carb::Float3 inputOrigin, carb::Float3 inputMinPoint, carb::Float3 inputMaxPoint)
 {
     carb::Float3 roundedMin = {
         std::floor(inputMinPoint.x / m_cellSize) * m_cellSize,
         std::floor(inputMinPoint.y / m_cellSize) * m_cellSize,
-        std::floor(inputMinPoint.z / m_cellSize) * m_cellSize,
+        inputMinPoint.z,
     };
 
     carb::Float3 roundedMax = {
@@ -234,9 +234,10 @@ void MapGenerator::generate2d()
     // Clear existing octree data
     m_tree->clear();
 
-    // Create overlap test geometry
-    // Use a tall box that extends in Z direction to detect obstacles at any height
-    float geomHeight = ::physx::PxAbs(m_inputMaxPoint.z - m_inputMinPoint.z) / 2.0f + m_cellSize / 2.0f;
+    // Create overlap test geometry. Use the requested Z band exactly so minZ == 0
+    // includes floor contacts, while any positive minZ can exclude a floor at z=0.
+    const float zSpan = ::physx::PxAbs(m_inputMaxPoint.z - m_inputMinPoint.z);
+    float geomHeight = std::max(zSpan / 2.0f, m_cellSize / 2.0f);
     ::physx::PxBoxGeometry cellGeom(::physx::PxVec3(m_cellSize / 2.0f, m_cellSize / 2.0f, geomHeight));
 
     // Sets to store occupied and unoccupied cell keys

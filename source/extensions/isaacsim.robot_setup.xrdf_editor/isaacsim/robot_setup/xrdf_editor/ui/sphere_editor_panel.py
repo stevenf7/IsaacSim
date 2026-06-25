@@ -32,6 +32,7 @@ from isaacsim.gui.components.ui_utils import (
     xyz_builder,
 )
 from isaacsim.gui.components.widgets import DynamicComboBoxModel
+from omni.kit.notification_manager import NotificationStatus, post_notification
 from omni.kit.window.property.templates import LABEL_WIDTH
 
 from .. import sphere_generation
@@ -498,10 +499,12 @@ class SphereEditorPanel:
             return
         mesh_list = self._state.link_to_meshes.get(link_name, [])
         if not mesh_list:
-            carb.log_warn(
+            message = (
                 f"Could not generate spheres for any meshes in link {link_name}.  This is likely "
                 f"due to all meshes nested under {link_name} being instanceable"
             )
+            carb.log_warn(message)
+            post_notification(message, status=NotificationStatus.WARNING)
             return
 
         if self._mesh_model is None:

@@ -531,14 +531,21 @@ class OccupancyMapWindow(MenuHelperWindow):
         self.on_update_location(0)
         self.on_update_cell_size(0)
 
-        async def generate_task() -> None:
-            self._timeline.stop()
+        asyncio.ensure_future(self._generate_map_async())
+
+    async def _generate_map_async(self) -> None:
+        """Runs the asynchronous occupancy map generation task."""
+        session = None
+        layer_identifier = None
+        self._timeline.stop()
+        try:
             await omni.kit.app.get_app().next_update_async()
             if not self._models["physx_geom"].get_value_as_bool():
                 layer = Sdf.Layer.CreateAnonymous("anon_occupancy_map")
+                layer_identifier = layer.identifier
                 stage = omni.usd.get_context().get_stage()
                 session = stage.GetSessionLayer()
-                session.subLayerPaths.append(layer.identifier)
+                session.subLayerPaths.append(layer_identifier)
                 with Usd.EditContext(stage, layer):
                     with Sdf.ChangeBlock():
                         for prim in stage.Traverse():
@@ -573,7 +580,7 @@ class OccupancyMapWindow(MenuHelperWindow):
                                         # Skip if we have errors here
                                         try:
                                             utils.setCollider(prim, "none")
-                                        except Exception as e:
+                                        except Exception:
                                             continue
                             elif prim.IsA(UsdGeom.Xformable) and prim.IsInstanceable():
                                 UsdPhysics.CollisionAPI.Apply(prim)
@@ -582,21 +589,16 @@ class OccupancyMapWindow(MenuHelperWindow):
                                 UsdPhysics.CollisionAPI.Apply(prim)
                                 UsdPhysics.MeshCollisionAPI.Apply(prim)
 
-                self._timeline.play()
-                await omni.kit.app.get_app().next_update_async()
-                self._om.generate()
-                await omni.kit.app.get_app().next_update_async()
-                self._timeline.stop()
-                session.subLayerPaths.remove(layer.identifier)
-                layer = None
-            else:
-                self._timeline.play()
-                await omni.kit.app.get_app().next_update_async()
-                self._om.generate()
-                await omni.kit.app.get_app().next_update_async()
-                self._timeline.stop()
-
-        asyncio.ensure_future(generate_task())
+            self._timeline.play()
+            await omni.kit.app.get_app().next_update_async()
+            self._om.generate()
+            await omni.kit.app.get_app().next_update_async()
+        except Exception as exc:
+            carb.log_warn(f"Failed to generate occupancy map: {exc}")
+        finally:
+            self._timeline.stop()
+            if session is not None and layer_identifier in session.subLayerPaths:
+                session.subLayerPaths.remove(layer_identifier)
 
     def _fill_image(self) -> None:
         """Generates a colored image from the occupancy map buffer.

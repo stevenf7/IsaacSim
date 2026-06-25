@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.3] - 2026-06-12
+### Fixed
+- Allow example `ui_hook` content in the detail panel to receive usable vertical space instead of being hosted in a zero-height stack.
+
 ## [0.3.2] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.

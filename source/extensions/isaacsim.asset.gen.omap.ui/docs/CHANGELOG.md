@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.2] - 2026-06-12
+### Changed
+- Occupancy map generation now always stops the timeline and cleans temporary layers when generation fails.
+
 ## [2.6.1] - 2026-04-14
 ### Changed
 - UI improvements: unified filename field, auto-updating YAML, window docks to Property panel
