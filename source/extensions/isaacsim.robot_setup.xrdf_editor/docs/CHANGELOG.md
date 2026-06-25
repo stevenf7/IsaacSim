@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.6.3] - 2026-06-12
+### Fixed
+- XRDF export now writes empty sphere groups as `{}` instead of YAML null and shows a visible warning when automatic sphere generation is blocked by instanceable meshes.
+
 ## [3.6.2] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.

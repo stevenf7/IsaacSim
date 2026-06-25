@@ -316,6 +316,19 @@ class TestXrdfIoPure(omni.kit.test.AsyncTestCase):
             )
             np.testing.assert_allclose(result.joint_positions, inputs.joint_positions, atol=1e-3)
 
+    async def test_write_xrdf_file_empty_spheres_serializes_mapping(self) -> None:
+        """Empty generated sphere groups must round-trip as a mapping, not YAML null."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = os.path.join(tmpdir, "robot.xrdf")
+            inputs = self._build_minimal_inputs(path)
+            write_xrdf_file(inputs)
+
+            with open(path) as f:
+                parsed = yaml.safe_load(f)
+
+            spheres = parsed["geometry"][DEFAULT_GEOMETRY_GROUP_NAME]["spheres"]
+            self.assertEqual(spheres, {})
+
     async def test_is_valid_xrdf_file_rejects_non_xrdf(self) -> None:
         """Test is valid xrdf file rejects non xrdf."""
         with tempfile.TemporaryDirectory() as tmpdir:

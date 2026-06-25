@@ -28,7 +28,7 @@ from isaacsim.asset.gen.omap.utils import compute_coordinates, generate_image, u
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 from isaacsim.core.experimental.utils.stage import open_stage_async
 from isaacsim.storage.native import get_assets_root_path_async
-from pxr import PhysxSchema, Sdf, UsdGeom, UsdPhysics
+from pxr import Gf, PhysxSchema, Sdf, UsdGeom, UsdPhysics
 
 
 # Having a test class dervived from omni.kit.test.AsyncTestCase declared on the root of module will make it auto-discoverable by omni.kit.test
@@ -107,6 +107,50 @@ class TestOccupancyMapGenerator(omni.kit.test.AsyncTestCase):
         generator.generate2d()
         buffer = generator.get_buffer()
         self.assertEqual(len(buffer), 0)
+
+    async def test_public_interface_positive_min_z_excludes_floor_collision(self) -> None:
+        """A positive lower Z bound must exclude a floor at z=0."""
+        await omni.usd.get_context().new_stage_async()
+        context = omni.usd.get_context()
+        stage = context.get_stage()
+        UsdGeom.Xform.Define(stage, "/World")
+
+        floor = UsdGeom.Cube.Define(stage, "/World/Floor")
+        floor.GetSizeAttr().Set(1.0)
+        floor_xform = UsdGeom.Xformable(floor.GetPrim())
+        floor_xform.AddTranslateOp().Set(Gf.Vec3d(0, 0, -0.05))
+        floor_xform.AddScaleOp().Set(Gf.Vec3f(10.0, 10.0, 0.1))
+        UsdPhysics.CollisionAPI.Apply(floor.GetPrim())
+
+        for path, x in [("/World/Obstacle", 2.0), ("/World/Obstacle2", -2.0)]:
+            cube = UsdGeom.Cube.Define(stage, path)
+            cube.CreateSizeAttr(2.0)
+            cube.AddTranslateOp().Set(Gf.Vec3d(x, 0, 0.5))
+            UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
+
+        UsdPhysics.Scene.Define(stage, Sdf.Path("/World/physicsScene"))
+        for _ in range(30):
+            await omni.kit.app.get_app().next_update_async()
+
+        async def generate_occupied_count(min_z: float) -> int:
+            self._om.set_cell_size(0.05)
+            self._om.set_transform((0.0, 0.0, 0.0), (-4.0, -4.0, min_z), (4.0, 4.0, 2.0))
+
+            self._timeline.play()
+            await omni.kit.app.get_app().next_update_async()
+            self._om.generate()
+            await omni.kit.app.get_app().next_update_async()
+            self._timeline.stop()
+
+            dims = self._om.get_dimensions()
+            self.assertEqual((dims.x, dims.y), (160, 160))
+            buffer = np.array(self._om.get_buffer(), dtype=np.float32)
+            return int(np.sum(buffer == 1.0))
+
+        self.assertEqual(await generate_occupied_count(0.0), 0)
+        self.assertGreater(await generate_occupied_count(0.0001), 0)
+        self.assertGreater(await generate_occupied_count(0.01), 0)
+        self.assertGreater(await generate_occupied_count(0.05), 0)
 
     # Actual test, notice it is "async" function, so "await" can be used if needed
     async def test_simple_room(self) -> None:

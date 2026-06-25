@@ -342,6 +342,9 @@ def _write_yaml_item(f: TextIO, item: Any, tabbing: str) -> None:
         tabbing: Leading indentation string.
     """
     if isinstance(item, dict):
+        if len(item) == 0:
+            f.write(f"{tabbing}{{}}\n")
+            return
         for k in list(item.keys()):
             f.write(f"{tabbing}{k}: ")
             tabbing = " " * len(tabbing)
