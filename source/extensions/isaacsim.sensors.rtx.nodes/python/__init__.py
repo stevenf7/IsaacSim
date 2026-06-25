@@ -14,3 +14,4 @@
 # limitations under the License.
 
 from .impl import Extension  # noqa: F401
+from .impl.utils import SCALAR_FIELDS, register_scalar_colored_point_cloud_writer  # noqa: F401

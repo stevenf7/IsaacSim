@@ -370,6 +370,17 @@ local function get_sensor_tests()
             "standalone_examples/api/isaacsim.sensors.experimental.rtx/apply_nonvisual_materials.py",
             "--test",
         },
+        -- Debug Draw point cloud coloring (RTX sensor scalar -> per-point color)
+        {
+            "tests-nativepython-isaacsim.util.debug_draw.lidar_point_cloud_coloring",
+            "standalone_examples/api/isaacsim.util.debug_draw/test_lidar_point_cloud_coloring.py",
+            "--test",
+        },
+        {
+            "tests-nativepython-isaacsim.util.debug_draw.radar_point_cloud_coloring",
+            "standalone_examples/api/isaacsim.util.debug_draw/test_radar_point_cloud_coloring.py",
+            "--test",
+        },
         -- From Misc Physics
         {
             "tests-nativepython-testing-isaacsim.sensors.physics.contact_sensor",

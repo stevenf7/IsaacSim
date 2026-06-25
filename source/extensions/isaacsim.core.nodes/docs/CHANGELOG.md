@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.10.6] - 2026-06-14
+### Added
+- `IsaacMapScalarsToColors` node to map a per-point scalar buffer to per-point colors.
+
 ## [5.10.5] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
