@@ -27,7 +27,6 @@
 #include <isaacsim/util/debug_draw/PrimitiveDrawingHelper.h>
 
 #include <OgnDebugDrawPointCloudDatabase.h>
-#include <iostream>
 
 namespace isaacsim
 {
@@ -99,13 +98,40 @@ public:
 
 
         const carb::ColorRgba* color = (const carb::ColorRgba*)db.inputs.color().data();
+        // Optional per-point colors supplied as a host buffer pointer, one RGBA entry per vertex
+        const pxr::GfVec4f* colors = reinterpret_cast<const pxr::GfVec4f*>(db.inputs.colorsPtr());
+        const size_t numColors = db.inputs.colorsBufferSize() / sizeof(pxr::GfVec4f);
         float size = db.inputs.size();
 
         if (!db.inputs.testMode() && numVerts > 0)
         {
-            state.m_pointDrawing->setVertices(input, numVerts);
-            state.m_pointDrawing->setColor(*color);
-            state.m_pointDrawing->setWidth(size);
+            // Use per-point colors when one is supplied per vertex, otherwise the single flat color
+            if (colors && numColors == numVerts)
+            {
+                // Reuse the persistent per-instance buffers so their capacity is retained across
+                // steps and the per-point arrays are not reallocated every compute().
+                state.m_pointPositions.assign(input, input + numVerts);
+                state.m_pointColors.clear();
+                state.m_pointWidths.clear();
+                state.m_pointColors.reserve(numVerts);
+                state.m_pointWidths.reserve(numVerts);
+                for (size_t index = 0; index < numVerts; ++index)
+                {
+                    const pxr::GfVec4f& pointColor = colors[index];
+                    state.m_pointColors.emplace_back(
+                        carb::ColorRgba{ pointColor[0], pointColor[1], pointColor[2], pointColor[3] });
+                    state.m_pointWidths.emplace_back(size);
+                }
+                state.m_pointDrawing->clear();
+                state.m_pointDrawing->addVertices(state.m_pointPositions, state.m_pointColors, state.m_pointWidths);
+            }
+            else
+            {
+                state.m_pointDrawing->setVertices(input, numVerts);
+                state.m_pointDrawing->setColor(*color);
+                state.m_pointDrawing->setWidth(size);
+            }
+
             // if there is no transform input, then don't use it.
             auto& nodeObj = db.abi_node();
             const AttributeObj attr = nodeObj.iNode->getAttributeByToken(nodeObj, inputs::transform.m_token);
@@ -133,6 +159,11 @@ public:
 
 private:
     std::shared_ptr<isaacsim::util::debug_draw::drawing::PrimitiveDrawingHelper> m_pointDrawing{ nullptr };
+
+    // Persistent per-point buffers reused across compute() calls to avoid per-step reallocation.
+    std::vector<carb::Float3> m_pointPositions;
+    std::vector<carb::ColorRgba> m_pointColors;
+    std::vector<float> m_pointWidths;
 };
 
 REGISTER_OGN_NODE()

@@ -42,6 +42,16 @@
                 "description": "Color of points",
                 "default": [0.75,0.75,1,1]
             },
+            "colorsPtr": {
+                "type": "uint64",
+                "description": "Pointer to a host buffer of per-point RGBA colors. 0 uses the flat color input.",
+                "default": 0
+            },
+            "colorsBufferSize": {
+                "type": "uint64",
+                "description": "Size in bytes of the buffer pointed to by colorsPtr",
+                "default": 0
+            },
             "size": {
                 "type": "float",
                 "description": "Size of points",

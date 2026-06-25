@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.2.4] - 2026-06-14
+### Added
+- Added per-point color input support to `OgnDebugDrawPointCloud`.
+
 ## [3.2.3] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
