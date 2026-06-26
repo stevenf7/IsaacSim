@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.3.0] - 2026-06-26
+### Removed
+- Remove crash reporter build metadata registration from the deprecated extension.
+
 ## [5.2.13] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.

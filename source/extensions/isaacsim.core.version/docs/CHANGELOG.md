@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.0] - 2026-06-26
+### Changed
+- Register Isaac Sim build metadata for crash reports from `isaacsim.core.version`.
+
 ## [2.1.1] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
