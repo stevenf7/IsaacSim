@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.10.7] - 2026-06-16
+### Added
+- `IsaacReadCameraInfo`: added a `cameraIntrinsics` output (3x3 intrinsics matrix) computed from the camera's focal length, apertures, and resolution.
+
 ## [5.10.6] - 2026-06-14
 ### Added
 - `IsaacMapScalarsToColors` node to map a per-point scalar buffer to per-point colors.
