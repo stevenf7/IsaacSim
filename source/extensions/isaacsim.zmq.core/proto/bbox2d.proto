@@ -1,0 +1,41 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package isaacsim.zmq;
+
+// BBox2DItem represents a single 2D bounding box
+message BBox2DItem {
+    uint32 semantic_id      = 1;  // Semantic class identifier
+    int32  x_min            = 2;  // Left pixel coordinate
+    int32  y_min            = 3;  // Top pixel coordinate
+    int32  x_max            = 4;  // Right pixel coordinate
+    int32  y_max            = 5;  // Bottom pixel coordinate
+    float  occlusion_ratio  = 6;  // Occlusion ratio [0, 1]
+}
+
+// BBox2DInfo carries metadata for the bounding box set
+message BBox2DInfo {
+    map<string, string> id_to_labels = 1;  // Maps semantic ID string → label string
+    repeated int32      bbox_ids     = 2;  // List of bbox IDs
+}
+
+// Bbox2D is the top-level bounding-box message
+message Bbox2D {
+    double              timestamp = 1;
+    repeated BBox2DItem data      = 2;
+    BBox2DInfo          info      = 3;
+}
