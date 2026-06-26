@@ -20,7 +20,6 @@ from __future__ import annotations
 import asyncio
 import gc
 import os
-from typing import Optional
 
 import carb
 import isaacsim.core.experimental.utils.stage as stage_utils
@@ -216,16 +215,16 @@ class OccupancyMapWindow(MenuHelperWindow):
         self._timeline = omni.timeline.get_timeline_interface()
         self._om = _omap.acquire_omap_interface()
         self._layers = omni.kit.usd.layers.get_layers()
-        self._filepicker: Optional[object] = None
-        self._yaml_filepicker: Optional[object] = None
-        self._ros_yaml_text: Optional[str] = None
-        self._map_bottom_left: Optional[object] = None
-        self._map_scale: Optional[float] = None
-        self._map_scale_to_meters: Optional[float] = None
+        self._filepicker: object | None = None
+        self._yaml_filepicker: object | None = None
+        self._ros_yaml_text: str | None = None
+        self._map_bottom_left: object | None = None
+        self._map_scale: float | None = None
+        self._map_scale_to_meters: float | None = None
         self._models = {}
-        self._stage_open_callback: Optional[object] = None
-        self._image: Optional[list[int]] = None
-        self._im: Optional[object] = None
+        self._stage_open_callback: object | None = None
+        self._image: list[int] | None = None
+        self._im: object | None = None
 
         self.prev_origin: list[float] = [0.0, 0.0]
         self.lower_bound: list[float] = list(DEFAULT_LOWER_BOUND)
