@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.4] - 2026-06-26
+### Removed
+- Remove the ROS 1 transform listener (`transform_listener_ros`) and the ROS-version dispatch; the extension now targets ROS 2 only.
+
 ## [2.3.3] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
