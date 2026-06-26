@@ -99,6 +99,7 @@ fetch.pip.files_to_pull = [
   "${root}/deps/pip_newton.toml",
   "${root}/deps/pip_episode_recorder.toml",
   "${root}/deps/pip_teleop.toml",
+  "${root}/deps/pip_zmq.toml",
 ]
 
 enable_compiler_version_check = true
