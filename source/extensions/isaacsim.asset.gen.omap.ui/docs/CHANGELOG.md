@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.3] - 2026-06-23
+### Changed
+- Replace `omni.physx.scripts.utils` (`setCollider`/`removePhysics`) usage with `isaacsim.core.experimental.utils.physics` helpers
+
 ## [2.6.2] - 2026-06-12
 ### Changed
 - Occupancy map generation now always stops the timeline and cleans temporary layers when generation fails.

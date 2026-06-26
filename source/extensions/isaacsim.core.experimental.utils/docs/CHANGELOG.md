@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.18.0] - 2026-06-23
+### Added
+- Add `physics` utils module with `apply_collision`, `remove_collision`, `apply_rigid_body`, and `remove_rigid_body` authoring helpers (in-repo replacement for `omni.physx.scripts.utils`), with `test_physics` coverage
+
 ## [0.17.2] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings.

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.3] - 2026-06-23
+### Changed
+- Replace `omni.physx.scripts.utils` (`setCollider`/`removeCollider`/`hasSchema`) usage with `isaacsim.core.experimental.utils.physics` helpers and direct USD schema checks; drop the `omni.physx` dependency
+
 ## [1.2.2] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.

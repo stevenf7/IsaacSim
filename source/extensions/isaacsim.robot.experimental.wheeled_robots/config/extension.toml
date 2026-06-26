@@ -1,5 +1,5 @@
 [package]
-version = "0.2.11"
+version = "0.2.12"
 category = "Simulation"
 title = "Wheeled Robots (Experimental)"
 description = "This extension provides wheeled robot utilities"
@@ -17,7 +17,6 @@ writeTarget.kit = true
 "isaacsim.core.experimental.utils" = {}
 "isaacsim.gui.components" = {}
 "omni.isaac.core_archive" = {} # scipy, osqp, qdldl
-"omni.physx" = {}
 
 [[python.module]]
 name = "isaacsim.robot.experimental.wheeled_robots"
