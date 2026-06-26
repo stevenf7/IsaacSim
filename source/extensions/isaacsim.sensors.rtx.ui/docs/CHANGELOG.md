@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.2] - 2026-06-24
+### Fixed
+- Use USD-authored defaults for Create menu sensor variant selections.
+
 ## [1.5.1] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings.
