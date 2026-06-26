@@ -43,7 +43,3 @@ The extension groups higher-level building blocks into submodules:
 - `isaacsim.core.api.loggers`: {class}`DataLogger <isaacsim.core.api.loggers.DataLogger>` for recording simulation data.
 
 Prim-level state wrappers used by these helpers (rigid bodies, articulations, geometry, and so on) live in the `isaacsim.core.prims` extension.
-
-### C++ interface
-
-The extension ships a Carbonite plugin (`isaacsim.core.api.plugin`). On startup it registers Isaac Sim build metadata with the crash reporter, including build version, repository, hash, branch, and date, so crash data can be tied to the exact build that produced it.

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright (c) 2020-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,19 +19,25 @@
 #include <isaacSim/Version.h>
 #include <omni/ext/IExt.h>
 
-namespace isaacsim::core::api
+namespace isaacsim
 {
-class CoreExt : public omni::ext::IExt
+namespace core
+{
+namespace version
+{
+class VersionExt : public omni::ext::IExt
 {
 public:
     void onStartup(const char* extId) override{};
     void onShutdown() override{};
 };
 }
+}
+}
 
-const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.core.api.plugin", "Core interface to Isaac sim", "NVIDIA",
-                                                    carb::PluginHotReload::eEnabled, "dev" };
-CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::core::api::CoreExt)
+const struct carb::PluginImplDesc g_kPluginDesc = { "isaacsim.core.version.plugin", "Isaac Sim version metadata plugin",
+                                                    "NVIDIA", carb::PluginHotReload::eEnabled, "dev" };
+CARB_PLUGIN_IMPL(g_kPluginDesc, isaacsim::core::version::VersionExt)
 
 void addCrashreporterMetadata()
 {
@@ -51,7 +57,7 @@ CARB_EXPORT void carbOnPluginShutdown()
 {
 }
 
-void fillInterface(isaacsim::core::api::CoreExt& iface)
+void fillInterface(isaacsim::core::version::VersionExt& iface)
 {
     iface = {};
 }
