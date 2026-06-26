@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.6] - 2026-06-23
+### Removed
+- Removed the unused `omni.physx` dependency. The extension does not reference any `omni.physx` API directly.
+
 ## [0.1.5] - 2026-06-10
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.

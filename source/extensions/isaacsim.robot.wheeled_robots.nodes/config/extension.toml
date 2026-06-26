@@ -1,5 +1,5 @@
 [package]
-version = "0.1.5"
+version = "0.1.6"
 category = "Simulation"
 title = "Wheeled Robots Nodes"
 description = "OmniGraph nodes for wheeled robot controllers including differential, holonomic, and Ackermann steering"
@@ -18,7 +18,6 @@ writeTarget.kit = true
 "isaacsim.robot.experimental.wheeled_robots" = {}
 "omni.graph" = {}
 "omni.graph.tools" = {}
-"omni.physx" = {}
 
 [[python.module]]
 name = "isaacsim.robot.wheeled_robots.nodes"

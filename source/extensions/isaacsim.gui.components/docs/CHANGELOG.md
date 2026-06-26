@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.6] - 2026-06-23
+### Removed
+- Removed the unused `omni.physx` entry from the test dependencies; the extension's PhysX subscription and simulation-control code already migrated to Omni Physics, and the tests do not reference any `omni.physx` API.
+
 ## [1.8.5] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings.

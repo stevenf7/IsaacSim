@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.9] - 2026-06-23
+### Changed
+- Update utility snippets to use `isaacsim.core.experimental.utils.physics` helpers instead of `omni.physx.scripts.utils`
+
+### Removed
+- Remove the collision/rigid-body utility snippet tests now covered by `isaacsim.core.experimental.utils` `test_physics`
+
 ## [2.6.8] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings.

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.9.0] - 2026-06-23
+### Added
+- `GeomPrim.remove_collision_apis()` to remove the collision APIs (and, for meshes, the mesh-approximation and PhysX cooked-data APIs) applied by `apply_collision_apis()`. Maintained replacement for `omni.physx.scripts.utils.removeCollider`.
+- `RigidPrim.remove_physics_apis()` to remove the `UsdPhysics.RigidBodyAPI` / `PhysxSchema.PhysxRigidBodyAPI` applied at construction. Maintained replacement for `omni.physx.scripts.utils.removePhysics`.
+
 ## [1.8.9] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.

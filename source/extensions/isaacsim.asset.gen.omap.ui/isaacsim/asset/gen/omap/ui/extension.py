@@ -23,6 +23,7 @@ import os
 from typing import Optional
 
 import carb
+import isaacsim.core.experimental.utils.physics as physics_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
 import omni
 import omni.ext
@@ -48,7 +49,6 @@ from omni.kit.menu.utils import (
     add_menu_items,
     remove_menu_items,
 )
-from omni.physx.scripts import utils
 from PIL import Image
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics
 
@@ -550,7 +550,7 @@ class OccupancyMapWindow(MenuHelperWindow):
                     with Sdf.ChangeBlock():
                         for prim in stage.Traverse():
                             if prim.HasAPI(UsdPhysics.CollisionAPI) and prim.HasAPI(UsdPhysics.RigidBodyAPI):
-                                utils.removePhysics(prim)
+                                physics_utils.remove_rigid_body(prim)
                     await omni.kit.app.get_app().next_update_async()
                     with Sdf.ChangeBlock():
                         for prim in stage.Traverse():
@@ -577,9 +577,13 @@ class OccupancyMapWindow(MenuHelperWindow):
                                         UsdPhysics.CollisionAPI.Apply(prim)
                                         UsdPhysics.MeshCollisionAPI.Apply(prim)
                                     else:
-                                        # Skip if we have errors here
+                                        # The collider already exists, so switch its approximation to
+                                        # triangle mesh ("none") for accurate occupancy mapping. Author
+                                        # the MeshCollisionAPI approximation directly: apply_collision is
+                                        # a no-op once CollisionAPI is applied. Skip on any error.
                                         try:
-                                            utils.setCollider(prim, "none")
+                                            mesh_collision_api = UsdPhysics.MeshCollisionAPI.Apply(prim)
+                                            mesh_collision_api.CreateApproximationAttr().Set(UsdPhysics.Tokens.none)
                                         except Exception:
                                             continue
                             elif prim.IsA(UsdGeom.Xformable) and prim.IsInstanceable():
