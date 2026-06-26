@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.2] - 2026-06-25
+### Removed
+- Removed unused `omni.usd.libs` runtime dependency.
+
 ## [1.0.1] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings.
