@@ -227,18 +227,19 @@
 
 ## Functions
 
-- def apply_nurec_replay_overrides(args: argparse.Namespace, stage: Usd.Stage | None) -> bool
 - def apply_sensor_overrides(robot_prim_path: str, recording_path: str, stage: Usd.Stage | None = None)
 - async def collect_input(input_path: str, dest_dir: str) -> str
 - def compress_path(path: np.ndarray, eps: float = 0.001) -> tuple[np.ndarray, np.ndarray]
+- def ensure_nurec_replay_flags(args: argparse.Namespace)
 - def generate_paths(start: tuple[int, int], freespace: np.ndarray) -> GeneratePathsOutput
 - def is_complete(output_path: str, expected_config: dict[str, Any]) -> bool
-- def is_nurec_stage(stage: Usd.Stage | None) -> bool
 - def load_scenario(path: str) -> MobilityGenScenario
 - def log_camera_properties(stage: Usd.Stage, robot_prim_path: str)
 - def mark_replay_complete(output_path: str, frames_rendered: int)
 - def replay_config_from_args(source_recording: str, args: argparse.Namespace) -> dict[str, Any]
+- def route_chase_through_ppisp(stage: Any, chase_camera_path: str) -> str | None
 - def save_sensor_overrides(robot_prim_path: str, output_dir: str, root_layer: Sdf.Layer | None = None, stage: Usd.Stage | None = None)
+- def setup_for_replay(args: argparse.Namespace, stage: Usd.Stage | None) -> tuple[bool, bool, bool, list[str]]
 - def write_replay_config(output_path: str, replay_config: dict[str, Any])
 
 ## Variables

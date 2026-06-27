@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.3.4] - 2026-06-26
+### Changed
+- Remove the lifecycle `Extension` class from the documented public Python API.
+
 ## [2.3.3] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.

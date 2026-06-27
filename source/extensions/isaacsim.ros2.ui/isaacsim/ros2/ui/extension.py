@@ -18,7 +18,7 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Any, Optional
+from typing import Any
 
 import carb
 import omni.ext
@@ -160,7 +160,7 @@ class Extension(omni.ext.IExt, MenuHelperExtensionFull):
         # add_layout(self.__ros_menu_layout)
 
     def create_asset(
-        self, usd_path: str, stage_path: str, camera_position: Optional[Any] = None, camera_target: Optional[Any] = None
+        self, usd_path: str, stage_path: str, camera_position: Any | None = None, camera_target: Any | None = None
     ) -> None:
         """Create a USD asset reference on the stage.
 
