@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.3] - 2026-05-21
+### Fixed
+- Release all reader-owned stage resources when the owning USD context begins closing to avoid retaining `UsdStage` references after close.
+- Reinitialize the reader after stage-close invalidation and create PhysX simulation views lazily when PhysX-backed views are requested.
+
+### Added
+- Add C++ regression coverage for stage-close cleanup and reader reinitialization, including a fail pattern for unexpected USD stage reference count warnings.
+
 ## [0.3.2] - 2026-05-20
 ### Fixed
 - Release the stage handle on stage close
