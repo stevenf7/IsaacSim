@@ -41,6 +41,7 @@
 #include <omni/physics/tensors/TensorApi.h>
 #include <omni/physx/IPhysxSimulation.h>
 #include <omni/usd/UsdContext.h>
+#include <omni/usd/UsdManager.h>
 #include <physxSchema/physxContactReportAPI.h>
 #include <physxSchema/physxRigidBodyAPI.h>
 #include <pxr/usd/usdPhysics/articulationRootAPI.h>
@@ -736,6 +737,8 @@ public:
     void initialize(long stageId, int deviceOrdinal) override
     {
         ++m_generation;
+        _releaseStageResources();
+
         m_stageId = stageId;
         m_deviceOrdinal = deviceOrdinal;
         m_simulationManager = carb::getCachedInterface<ISimulationManager>();
@@ -749,7 +752,7 @@ public:
         // this the strong UsdStageRefPtr lives until shutdown() / next initialize(),
         // which keeps the stage alive past close and produces "Unexpected reference
         // count of 2 for UsdStage" warnings on every stage-close-after-play.
-        _subscribeStageClosingEvent();
+        _subscribeStageClosingEvent(stageId);
 
         if (m_usdStage)
         {
@@ -762,48 +765,12 @@ public:
                 m_usdrtStage = usdrt::UsdStage::Attach(fabricStageId, stageInProgress);
             }
         }
-
-        // Release stale views and simulation view before recreating.
-        // After a timeline stop/play cycle within the same stage, the
-        // PhysX simulation view is invalidated; we must recreate it.
-        for (auto& [id, data] : m_viewData)
-            _releasePhysxHandles(data);
-        m_views.clear();
-        m_viewData.clear();
-
-        if (m_simulationView)
-        {
-            m_simulationView->release(true);
-            m_simulationView = nullptr;
-        }
-
-        const char* activeEngine = isaacsim::core::includes::getActivePhysicsEngineName();
-        if (m_tensorApi && stageId != 0 && activeEngine)
-        {
-            m_simulationView = m_tensorApi->createSimulationView(stageId, activeEngine);
-            if (m_simulationView)
-            {
-                m_deviceOrdinal = m_simulationView->getDeviceOrdinal();
-            }
-        }
     }
 
     void shutdown() override
     {
-        m_stageClosingObserver = {};
-
-        for (auto& [id, data] : m_viewData)
-            _releasePhysxHandles(data);
-        m_views.clear();
-        m_viewData.clear();
-
-        if (m_simulationView)
-        {
-            m_simulationView->release(true);
-            m_simulationView = nullptr;
-        }
-        m_usdrtStage = nullptr;
-        m_usdStage = nullptr;
+        m_stageClosingObserver = nullptr;
+        _releaseStageResources();
         m_tensorApi = nullptr;
         m_simulationManager = nullptr;
     }
@@ -1061,6 +1028,46 @@ private:
         }
     }
 
+    bool _ensureSimulationView()
+    {
+        if (m_simulationView)
+            return true;
+
+        const char* activeEngine = isaacsim::core::includes::getActivePhysicsEngineName();
+        if (!m_tensorApi || m_stageId == 0 || !activeEngine)
+            return false;
+
+        m_simulationView = m_tensorApi->createSimulationView(m_stageId, activeEngine);
+        if (m_simulationView)
+        {
+            m_deviceOrdinal = m_simulationView->getDeviceOrdinal();
+            return true;
+        }
+        return false;
+    }
+
+    void _releaseStageResources()
+    {
+        for (auto& [id, data] : m_viewData)
+            _releasePhysxHandles(data);
+
+        m_views.clear();
+        m_viewData.clear();
+
+        if (m_simulationView)
+        {
+            m_simulationView->release(true);
+            m_simulationView = nullptr;
+        }
+
+        m_usdrtStage = nullptr;
+        m_usdStage = nullptr;
+        m_contactEvents.clear();
+        m_contactPoints.clear();
+        m_stageId = 0;
+        m_deviceOrdinal = -1;
+    }
+
     // ---- Transform callbacks: bulk PhysX tensor read for physics prims, Fabric fallback for the rest ----
 
     void _setupTransformCallbacks(ViewData& data)
@@ -1076,7 +1083,7 @@ private:
         usdrt::UsdStageRefPtr usdrtStage = m_usdrtStage;
         std::vector<std::string> primPaths = data.primPaths;
 
-        if (data.engine == EngineType::ePhysX && m_simulationView)
+        if (data.engine == EngineType::ePhysX && _ensureSimulationView())
         {
             std::vector<std::string> physicsPaths;
             std::vector<size_t> physicsIndices;
@@ -1232,7 +1239,7 @@ private:
 
     void _setupPhysxArticulationCallbacks(ViewData& data)
     {
-        if (!m_simulationView || data.primPaths.empty())
+        if (!_ensureSimulationView() || data.primPaths.empty())
             return;
 
         data.physxArticulationView = m_simulationView->createArticulationView(data.primPaths);
@@ -1324,7 +1331,7 @@ private:
 
     void _setupPhysxRigidBodyCallbacks(ViewData& data)
     {
-        if (!m_simulationView)
+        if (!_ensureSimulationView())
             return;
 
         data.physxRigidBodyView = m_simulationView->createRigidBodyView(data.primPaths);
@@ -1379,14 +1386,16 @@ private:
         angularVelocity.callback = linearVelocity.callback;
     }
 
-    void _subscribeStageClosingEvent()
+    void _subscribeStageClosingEvent(long stageId)
     {
-        // Drop the strong UsdStageRefPtr in m_usdStage before
-        // UsdContext::closeStageInternal runs its refcount sanity check
-        // (NVBug 6169671). Kit fires eClosing synchronously from closeStageTask
-        // and waits for all observers before calling closeStageInternal.
+        m_stageClosingObserver = nullptr;
+
         auto ed = carb::getCachedInterface<carb::eventdispatcher::IEventDispatcher>();
-        omni::usd::UsdContext* usdContext = omni::usd::UsdContext::getContext();
+        omni::usd::UsdContext* usdContext = omni::usd::UsdManager::getContextFromStageId(stageId);
+        if (!usdContext)
+        {
+            usdContext = omni::usd::UsdContext::getContext();
+        }
         if (!ed || !usdContext)
         {
             return;
@@ -1398,13 +1407,8 @@ private:
                                                   usdContext->stageEventName(omni::usd::StageEventType::eClosing),
                                                   [this](const carb::eventdispatcher::Event&)
                                                   {
-                                                      if (m_simulationView)
-                                                      {
-                                                          m_simulationView->release(true);
-                                                          m_simulationView = nullptr;
-                                                      }
-                                                      m_usdrtStage = nullptr;
-                                                      m_usdStage = nullptr;
+                                                      ++m_generation;
+                                                      _releaseStageResources();
                                                   });
     }
 
@@ -1457,8 +1461,9 @@ public:
         if (!m_reader)
             return false;
 
-        const bool needsInit =
-            !m_initialized || m_forceReinitialize || stageId != m_lastStageId || deviceOrdinal != m_lastDeviceOrdinal;
+        const bool readerStageInvalid = m_reader->getStageId() != stageId;
+        const bool needsInit = !m_initialized || m_forceReinitialize || readerStageInvalid ||
+                               stageId != m_lastStageId || deviceOrdinal != m_lastDeviceOrdinal;
         if (needsInit)
         {
             m_reader->initialize(stageId, deviceOrdinal);
