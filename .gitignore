@@ -3,6 +3,7 @@ _*/
 .ci-dashboard-venv/
 !_impl/
 !docs/isaacsim/_extra/
+!skills/_internal/
 # exclude local website repo, used for publishing
 website/
 

@@ -57,7 +57,7 @@ ViewportManager.set_camera_view("/OmniverseKit_Persp", eye=[2.5, -2.0, 1.8], tar
 and thumbnails are custom-rendered, not standard named widgets.
 
 **Fix:** Use the model API: `inner.category_selection = [item]` for categories,
-`detail_view.selection = [item]` for examples. See `scripts/browser_helpers.py`.
+`detail_view.selection = [item]` for examples.
 
 ## Two Button Dicts on Templates
 

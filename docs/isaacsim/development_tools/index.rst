@@ -29,6 +29,7 @@ Tools
    jupyter_notebook
    omniverse_script_editor
    isaac_sim_mcp
+   agent_skills
 
 
 

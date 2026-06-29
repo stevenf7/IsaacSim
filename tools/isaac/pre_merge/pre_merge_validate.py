@@ -30,6 +30,8 @@ to a standalone script:
  10. C++ linting (clang-tidy)        -> clang_tidy.py  (--clang-tidy flag, requires build)
  11. Extension test discovery & run  -> run_extension_tests.py
  12. API docs check (checkapi)       -> run_checkapi.py (--checkapi flag, requires build)
+ 13. Skills SKILL.md validation      -> inline          (--skills flag; auto when skills/ files modified)
+ 14. Skills CI tests (tier a + d)    -> run_skill_tests.sh (--skills-tests flag; auto when skills/ modified)
 
 Determines the full set of changed files by comparing against the merge-base
 of the current branch with its upstream (auto-detected, or set via --base-branch).
@@ -39,6 +41,12 @@ When source/apps/ files are modified, isaacsim.app.setup tests are also included
 Usage:
     # Run all validation checks (no tests)
     python tools/isaac/pre_merge/pre_merge_validate.py
+
+    # Run skills SKILL.md spec validation only
+    python tools/isaac/pre_merge/pre_merge_validate.py --skills
+
+    # Run skills CI tests (tier a + d) only
+    python tools/isaac/pre_merge/pre_merge_validate.py --skills-tests
 
     # Run specific checks
     python tools/isaac/pre_merge/pre_merge_validate.py --lint --format
@@ -767,7 +775,113 @@ def check_python_packages() -> int:
 
 
 # ---------------------------------------------------------------------------
-# Check 9: C++ linting (clang-tidy) — delegates to clang_tidy.py
+# Check 9: Skills SKILL.md validation — delegates to validate_skills.py
+# ---------------------------------------------------------------------------
+
+
+def _modified_skill_dirs(modified_files: list[Path]) -> list[Path]:
+    """Return skill directories that contain at least one modified file.
+
+    Args:
+        modified_files: Full list of changed files discovered by pre-merge logic.
+
+    Returns:
+        Sorted list of skill directory paths with modified files.
+    """
+    skills_root = REPO_ROOT / "skills"
+    seen: set[Path] = set()
+    for f in modified_files:
+        try:
+            rel = f.relative_to(skills_root)
+            skill_dir = skills_root / rel.parts[0]
+            if (skill_dir / "SKILL.md").exists():
+                seen.add(skill_dir)
+        except ValueError:
+            pass
+    return sorted(seen)
+
+
+def check_skills_validate(modified_files: list[Path], all_skills: bool = False) -> int:
+    """Validate SKILL.md files against the Anthropic skill spec via ``validate_skills.py``.
+
+    Args:
+        modified_files: Changed files from the branch diff.
+        all_skills: If True, validate every skill regardless of diff.
+
+    Returns:
+        Exit code (0 if clean, 1 if issues).
+    """
+    script = TOOLS_DIR / "validate_skills.py"
+    if not script.exists():
+        log_warn("validate_skills.py not found; skipping skills validation.")
+        return 0
+
+    skills_root = REPO_ROOT / "skills"
+    if not skills_root.exists():
+        log_info("No skills/ directory; skipping skills validation.")
+        return 0
+
+    if all_skills:
+        cmd = [sys.executable, str(script), "--all"]
+    else:
+        skill_dirs = _modified_skill_dirs(modified_files)
+        if not skill_dirs:
+            log_info("No modified skills to validate.")
+            return 0
+        cmd = [sys.executable, str(script)] + [str(d) for d in skill_dirs]
+
+    proc = _run_teed(cmd, cwd=REPO_ROOT)
+    if proc.returncode != 0:
+        log_fail("Skills SKILL.md validation reported issues.")
+        return 1
+    log_pass("Skills SKILL.md validation clean.")
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# Check 10: Skills tests — run_skill_tests.sh
+# ---------------------------------------------------------------------------
+
+
+def check_skills_tests(modified_files: list[Path], all_skills: bool = False) -> int:
+    """Run skills tests (tier a + d) via ``run_skill_tests.sh``.
+
+    Tests run whenever skills files appear in the branch diff, or always when
+    *all_skills* is ``True``.
+
+    Args:
+        modified_files: Changed files from the branch diff.
+        all_skills: If True, run tests regardless of diff.
+
+    Returns:
+        Exit code (0 if all pass, 1 if any fail).
+    """
+    skills_root = REPO_ROOT / "skills"
+    test_script = REPO_ROOT / "tools" / "isaac" / "skills_tests" / "run_skill_tests.sh"
+
+    if not skills_root.exists():
+        log_info("No skills/ directory; skipping skills tests.")
+        return 0
+    if not test_script.exists():
+        log_warn("run_skill_tests.sh not found; skipping skills tests.")
+        return 0
+
+    if not all_skills:
+        skills_prefix = str(skills_root) + "/"
+        if not any(str(f).startswith(skills_prefix) for f in modified_files):
+            log_info("No modified skills files; skipping skills tests.")
+            return 0
+
+    proc = _run_teed(["bash", str(test_script)], cwd=REPO_ROOT)
+    if proc.returncode != 0:
+        log_fail("Skills tests failed.")
+        return 1
+    log_pass("Skills tests passed.")
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# Check 11: C++ linting (clang-tidy) — delegates to clang_tidy.py
 # ---------------------------------------------------------------------------
 
 
@@ -796,7 +910,7 @@ def check_clang_tidy(extensions: list[Path], fix: bool = False) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Check 10: API docs check (checkapi) — delegates to run_checkapi.py
+# Check 12: API docs check (checkapi) — delegates to run_checkapi.py
 # ---------------------------------------------------------------------------
 
 
@@ -835,7 +949,7 @@ def check_checkapi(extensions: list[Path], fix: bool = False) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Check 11: Extension tests — delegates to run_extension_tests.py
+# Check 13: Extension tests — delegates to run_extension_tests.py
 # ---------------------------------------------------------------------------
 
 
@@ -923,6 +1037,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--checkapi",
         action="store_true",
         help="Run checkapi to verify python_api.md is up-to-date for modified extensions (requires a build).",
+    )
+    checks.add_argument(
+        "--skills",
+        action="store_true",
+        help="Validate SKILL.md files against the Anthropic skill spec "
+        "(line count, description length, inline code blocks, hardcoded paths). "
+        "Runs automatically when skills/ files are in the branch diff.",
+    )
+    checks.add_argument(
+        "--skills-tests",
+        action="store_true",
+        dest="skills_tests",
+        help="Run the skills CI test suite (tiers a + d) via run_skill_tests.sh. "
+        "Runs automatically when skills/ files are in the branch diff.",
     )
     checks.add_argument(
         "--test",
@@ -1088,6 +1216,8 @@ def _run(args: argparse.Namespace) -> int:
         args.packages,
         args.clang_tidy,
         args.checkapi,
+        args.skills,
+        args.skills_tests,
         args.test,
     ]
     run_all_validation = not any(check_flags)
@@ -1187,6 +1317,14 @@ def _run(args: argparse.Namespace) -> int:
         if run_all_validation or args.packages:
             header("Python Package Definitions")
             total_errors += check_python_packages()
+
+        if run_all_validation or args.skills:
+            header("Skills SKILL.md Validation")
+            total_errors += check_skills_validate(modified, all_skills=args.all_extensions)
+
+        if run_all_validation or args.skills_tests:
+            header("Skills CI Tests")
+            total_errors += check_skills_tests(modified, all_skills=args.all_extensions)
 
         if args.clang_tidy:
             header("C++ Linting (clang-tidy)")

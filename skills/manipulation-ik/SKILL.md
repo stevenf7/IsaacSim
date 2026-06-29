@@ -74,25 +74,9 @@ Pattern source: `UR10.differential_inverse_kinematics` (UR wrapper) + `UR10Follo
    - `pseudoinverse`, `transpose`, `singular-value-decomposition` also available.
 4. Push as `set_dof_position_targets(current + dq, dof_indices=arm_dofs)`.
 
-```python
-# Conceptual sketch — see ur10.py and follow_target_with_ik.py for the live code
-from isaacsim.core.experimental.prims import Articulation, RigidPrim
+`differential_ik_step(arm, target_pos, target_quat, arm_dofs, method, damping, scale)` — compute Jacobian, solve IK delta, apply via `set_dof_position_targets`. Conceptual pattern; live code is in `isaacsim.robot.experimental.manipulators.examples.{ur10,franka}`.
 
-arm = MyArm("/World/robot", create_robot=True)
-ee  = arm.end_effector_link
-J   = arm.get_jacobian_matrices().numpy()[:, arm.end_effector_link_index - 1, :, :arm_dofs]
-cur_pos, cur_q = ee.get_world_poses()
-dq = arm.differential_inverse_kinematics(
-    jacobian_end_effector=J,
-    current_position=cur_pos.numpy(),
-    current_orientation=cur_q.numpy(),
-    goal_position=target_pos,
-    goal_orientation=target_quat,
-    method="damped-least-squares",
-    method_cfg={"scale": 1.0, "damping": 0.05, "min_singular_value": 1e-5},
-)
-arm.set_dof_position_targets(cur_dofs[:, :arm_dofs] + dq, dof_indices=list(range(arm_dofs)))
-```
+See [`scripts/differential_ik_sketch.py`](scripts/differential_ik_sketch.py).
 
 Tuning (start conservative, increase after stability):
 
@@ -117,29 +101,9 @@ Pattern: IK for precision (approach, descent, final placement), joint-space inte
 
 For pose authoring, persistence, and replay use `isaacsim.robot.poser`. It wraps a kinematic chain (from `usd.schema.isaac.robot_schema`) and provides IK plus a named-pose library stored as `IsaacNamedPose` prims on the robot.
 
-```python
-from isaacsim.robot.poser import (
-    RobotPoser, Transform,
-    store_named_pose, apply_pose_by_name,
-    list_named_poses, delete_named_pose,
-    export_poses, import_poses,
-    validate_robot_schema,
-)
+`solve_and_store_pose(stage, robot_prim, start_prim, end_prim, target_pos, target_orient, pose_name)` — validate schema, solve IK, apply joints, store as named pose. `apply_stored_pose` / `export_all_poses` for replay and persistence.
 
-# Robot must carry IsaacRobotAPI (applied during URDF/MJCF import).
-validate_robot_schema(stage, robot_prim)
-
-poser = RobotPoser(stage, robot_prim, start_prim, end_prim)
-target = Transform(position=[0.5, 0.2, 0.8], orientation=[1, 0, 0, 0])
-result = poser.solve_ik(target)
-if result.success:
-    poser.apply_pose(result.joints)
-    store_named_pose(stage, robot_prim, "pick_position", result)
-
-# Later:
-apply_pose_by_name(stage, robot_prim, "pick_position")
-export_poses(stage, robot_prim, "/path/to/poses.json")
-```
+See [`scripts/robot_poser_example.py`](scripts/robot_poser_example.py).
 
 Standalone helpers (no `RobotPoser` needed) for FK / DOF target application:
 

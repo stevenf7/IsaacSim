@@ -26,6 +26,10 @@ embedded. Import individual functions as needed.
 
 def bake_waypoints(xform_op, waypoints, speed_mps, fps=30, mpu=1.0, max_frames=3600):
     """Bake linear waypoint interpolation as timeSamples."""
+    import math
+
+    from pxr import Gf
+
     dists = [
         math.sqrt((waypoints[i + 1][0] - waypoints[i][0]) ** 2 + (waypoints[i + 1][1] - waypoints[i][1]) ** 2)
         for i in range(len(waypoints) - 1)
@@ -485,6 +489,44 @@ class MaxRectsBinPack:
 # ======================================================================
 # Block 10
 # ======================================================================
+
+
+def cross(a, b):
+    """3D cross product of two vectors."""
+    return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
+
+
+def dot(a, b):
+    """3D dot product of two vectors."""
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+
+
+def add(a, b):
+    """Component-wise addition of two vectors."""
+    return (a[0] + b[0], a[1] + b[1], a[2] + b[2])
+
+
+def sub(a, b):
+    """Component-wise subtraction (a - b)."""
+    return (a[0] - b[0], a[1] - b[1], a[2] - b[2])
+
+
+def neg(a):
+    """Negate a vector."""
+    return (-a[0], -a[1], -a[2])
+
+
+def scale(v, s):
+    """Scale a vector by a scalar."""
+    return (v[0] * s, v[1] * s, v[2] * s)
+
+
+def normalize(v):
+    """Return the unit vector (zero vector for near-zero input)."""
+    length = math.sqrt(dot(v, v))
+    if length < 1e-12:
+        return (0.0, 0.0, 0.0)
+    return (v[0] / length, v[1] / length, v[2] / length)
 
 
 def frustum_planes(eye, forward, up, fov_h, fov_v, near, far):

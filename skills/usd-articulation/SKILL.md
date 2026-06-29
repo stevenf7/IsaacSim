@@ -26,28 +26,11 @@ Rule: visual plausibility is not mechanical correctness. If it doesn't articulat
 
 ## Multi-arm assembly (correct pattern)
 
-```python
-from pxr import Usd, UsdGeom, UsdPhysics, Sdf, Gf
+`assemble_multi_arm_robot(stage, chassis_usd, arm_usd, robot_root, arm_offset, chassis_body_path, arm_base_path)` — spawn chassis + arm, create a FixedJoint, remove ArticulationRootAPI from the arm.
 
-# Spawn chassis
-chassis = stage.DefinePrim("/World/Robot", "Xform")
-chassis.GetReferences().AddReference(CHASSIS_USD)
+See [`scripts/multi_arm_assembly.py`](scripts/multi_arm_assembly.py).
 
-# Spawn arms as children
-left = stage.DefinePrim("/World/Robot/LeftArm", "Xform")
-left.GetReferences().AddReference(ARM_USD)
-UsdGeom.Xformable(left).AddTranslateOp().Set(Gf.Vec3d(0.0, 0.6, 0.5))
 
-# REQUIRED: FixedJoint connecting arm to chassis
-joint = UsdPhysics.FixedJoint.Define(stage, "/World/Robot/LeftArmAttachment")
-joint.CreateBody0Rel().SetTargets([Sdf.Path("/World/Robot/.../Chassis")])
-joint.CreateBody1Rel().SetTargets([Sdf.Path("/World/Robot/LeftArm/.../BaseMount")])
-
-# REQUIRED: Remove ArticulationRootAPI from arm (only chassis keeps it)
-arm_prim = stage.GetPrimAtPath("/World/Robot/LeftArm/...")
-arm_prim.RemoveAPI(UsdPhysics.ArticulationRootAPI)
-
-```
 
 ### What does not work
 
@@ -59,39 +42,9 @@ arm_prim.RemoveAPI(UsdPhysics.ArticulationRootAPI)
 
 Apply the modern Isaac Robot Schema on top of the physics layer. The URDF/MJCF importers do this automatically; for hand-authored or retrofitted USDs apply it manually.
 
-```python
-from pxr import Usd
-from usd.schema.isaac.robot_schema import (
-    Classes, Attributes,
-    ApplyRobotAPI, ApplyLinkAPI, ApplyJointAPI, ApplySiteAPI,
-    CreateNamedPose, CreateSurfaceGripper,
-    PopulateRobotSchemaFromArticulation, GenerateRobotLinkTree, GetAllNamedPoses,
-)
+`apply_robot_schema(stage, robot_prim, link_prims, joint_prims, site_prims, robot_type)` — apply `IsaacRobotAPI` on root, `IsaacLinkAPI` on each link, `IsaacJointAPI` on each joint, `IsaacSiteAPI` on grasp/mount frames, then call `PopulateRobotSchemaFromArticulation` to fill `ROBOT_LINKS`/`ROBOT_JOINTS`. Valid `robot_type` tokens: Default, End Effector, Manipulator, Humanoid, Wheeled, Holonomic, Quadruped, Mobile Manipulators, Aerial.
 
-stage = Usd.Stage.Open("/path/robot.usd")
-robot_prim = stage.GetPrimAtPath("/World/Robot")
-
-# IsaacRobotAPI on the root: stores robot_type, ordered link/joint relations.
-ApplyRobotAPI(robot_prim)
-robot_prim.GetAttribute(Attributes.ROBOT_TYPE).Set("Mobile Manipulators")
-# Or pick from get_allowed_tokens(Attributes.ROBOT_TYPE) — tokens include:
-#   Default, End Effector, Manipulator, Humanoid,
-#   Wheeled, Holonomic, Quadruped, Mobile Manipulators, Aerial.
-
-# IsaacLinkAPI on each rigid link; IsaacJointAPI on each joint.
-for link in (link_prims):  # walk articulated links
-    ApplyLinkAPI(link)
-for joint in (joint_prims):
-    ApplyJointAPI(joint)
-
-# IsaacSiteAPI on grasp / mount / reference frames (replaces deprecated
-# IsaacReferencePointAPI).
-ApplySiteAPI(grasp_frame_prim)
-
-# One-shot retrofit: populate ordered link/joint graph from an existing
-# Articulation (uses physics traversal to fill ROBOT_LINKS / ROBOT_JOINTS).
-PopulateRobotSchemaFromArticulation(stage, robot_prim)
-```
+See [`scripts/apply_robot_schema.py`](scripts/apply_robot_schema.py).
 
 | Schema | Applied to | Role |
 |---|---|---|
@@ -120,36 +73,9 @@ Before trusting any multi-arm robot:
 
 Run via `$ISAAC_SIM_DIR/python.sh`. Enforces exactly one `ArticulationRootAPI`, prints joints and connected bodies, flags arms whose `BaseMount` is not bound to the chassis via a `FixedJoint`, and reports the Robot Schema state.
 
-```python
-import sys
-from pxr import Usd, UsdPhysics, Sdf
-from usd.schema.isaac.robot_schema import Classes, Attributes, GetAllNamedPoses
+`validate_articulation(usd_path)` — assert exactly 1 ArticulationRootAPI, print FixedJoint-attached arms and Robot Schema state.
 
-stage = Usd.Stage.Open(sys.argv[1])
-
-art_roots = [p.GetPath() for p in stage.Traverse() if p.HasAPI(UsdPhysics.ArticulationRootAPI)]
-print(f"ArticulationRootAPI count: {len(art_roots)} -- {art_roots}")
-assert len(art_roots) == 1, "must be exactly 1 articulation root"
-
-joints = [p for p in stage.Traverse() if p.IsA(UsdPhysics.Joint)]
-chassis_paths = {str(art_roots[0])}
-attached_arms = set()
-for j in joints:
-    j_api = UsdPhysics.Joint(j)
-    b0 = j_api.GetBody0Rel().GetTargets()
-    b1 = j_api.GetBody1Rel().GetTargets()
-    if j.IsA(UsdPhysics.FixedJoint) and any(str(t).startswith(p) for t in b0 for p in chassis_paths):
-        attached_arms.update(str(t) for t in b1)
-print(f"Joints: {len(joints)} | FixedJoint-attached children: {sorted(attached_arms)}")
-
-# Robot Schema overlay
-robots = [p for p in stage.Traverse() if p.HasAPI(Classes.ROBOT_API)]
-print(f"IsaacRobotAPI count: {len(robots)}")
-for r in robots:
-    rt = r.GetAttribute(Attributes.ROBOT_TYPE).Get()
-    poses = GetAllNamedPoses(stage, r)
-    print(f"  {r.GetPath()}: robot_type={rt!r}  named_poses={list(poses)}")
-```
+See [`scripts/validate_articulation.py`](scripts/validate_articulation.py).
 
 Extend with whatever arm/leg path patterns your asset uses. Binary goal: exactly one root, every limb connected to the chassis via a `FixedJoint` or articulated joint chain, and the Robot Schema overlay present.
 

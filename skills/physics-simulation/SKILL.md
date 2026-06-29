@@ -127,34 +127,9 @@ px.CreateEnableStabilizationAttr().Set(False)
 
 ### RigidBody / Collision / Static / Kinematic
 
-```python
-from pxr import UsdPhysics, Gf
+`setup_dynamic_body(stage, prim_path, mass_kg, com_offset)` — RigidBodyAPI + CollisionAPI (movable). `setup_static_collider(stage, prim_path)` — CollisionAPI only (immovable). `setup_kinematic_body(stage, prim_path)` — RigidBodyAPI (kinematic) + CollisionAPI (scripted motion).
 
-def setup_dynamic_body(stage, prim_path, mass_kg=1.0, com_offset=None):
-    """Movable, simulated body. RigidBodyAPI + CollisionAPI on the same prim."""
-    prim = stage.GetPrimAtPath(prim_path)
-    UsdPhysics.RigidBodyAPI.Apply(prim)
-    mass_api = UsdPhysics.MassAPI.Apply(prim)
-    mass_api.CreateMassAttr().Set(mass_kg)
-    if com_offset:
-        mass_api.CreateCenterOfMassAttr().Set(Gf.Vec3f(*com_offset))
-    UsdPhysics.CollisionAPI.Apply(prim)
-    return prim
-
-def setup_static_collider(stage, prim_path):
-    """Immovable terrain, walls, fixed obstacles."""
-    prim = stage.GetPrimAtPath(prim_path)
-    UsdPhysics.CollisionAPI.Apply(prim)
-    return prim
-
-def setup_kinematic_body(stage, prim_path):
-    """Scripted motion: conveyors, elevators, vibrating bowls, escape wheels."""
-    prim = stage.GetPrimAtPath(prim_path)
-    UsdPhysics.RigidBodyAPI.Apply(prim)
-    UsdPhysics.RigidBodyAPI(prim).CreateKinematicEnabledAttr().Set(True)
-    UsdPhysics.CollisionAPI.Apply(prim)
-    return prim
-```
+See [`scripts/prim_physics_setup.py`](scripts/prim_physics_setup.py).
 
 **Rule:** `RigidBodyAPI` + `CollisionAPI` on the **same prim**. Splitting them across parent/child causes intermittent collision failures.
 

@@ -30,7 +30,7 @@ authoring).
 ## Quick index
 
 <!-- AUTOREMOVE: BEGIN -->
-- [Repo-native developer skills (dev-only)](#repo-native-developer-skills-dev-only) — build, CI, debug, doc-snippets
+- [Repo-native developer skills (dev-only)](#repo-native-developer-skills-dev-only) — build, CI, debug, doc-snippets, skills-test-harness
 <!-- AUTOREMOVE: END -->
 - [Repo-native public skills](#repo-native-public-skills) — remote-control, profile, validate
 - [Foundations & operating loop](#foundations--operating-loop) — what every robotics-sim session loads
@@ -59,6 +59,7 @@ Operate on this repo's source tree. Run from the repo root. Excluded from publis
 | [`cicd`](_internal/cicd/SKILL.md) | Navigate this repo's GitLab pipelines: stages, jobs, variables, common debug flows, and the IsaacLab / IsaacSim dashboard subcommands under `tools/ci/dashboards/`. |
 | [`debug-with-local-kit`](_internal/debug-with-local-kit/SKILL.md) | Build Kit from source, link Isaac Sim against the local Kit build, add debug prints / step through Kit code, and investigate Kit-level rendering / multitick / sensor issues. |
 | [`doc-snippets`](_internal/doc-snippets/SKILL.md) | Author and runtime-test the Python code samples shown in Isaac Sim user docs (`.py` + `literalinclude`, the snippet test runner, async vs `SimulationApp` styles, common pitfalls). |
+| [`skills-test-harness`](_internal/skills-test-harness/SKILL.md) | Discovery-driven tests that auto-find and execute every skill script + snippet (`tools/isaac/skills_tests`); how to run the suite and triage a failure as a missing prerequisite, missing scaffolding, or a real script bug. |
 
 ---
 <!-- AUTOREMOVE: END -->
@@ -330,4 +331,4 @@ Read in this order if you can only load a slice. Item 21 is the always-on pair.
 
 ---
 
-*Library size: 29 skills (7 repo-native + 22 robotics-sim). Last consolidation: 2026-05-21.*
+*Library size: 30 skills (8 repo-native + 22 robotics-sim). Last consolidation: 2026-05-21.*

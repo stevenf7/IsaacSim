@@ -107,28 +107,9 @@ For an N-episode batch driver, wrap that bootstrap in a Python `for episode in r
 
 Skeleton (paraphrased from `load_stage.py`, adapted for batch):
 
-```python
-from isaacsim import SimulationApp
+`run_batch_simulation(scene_path, num_episodes, steps_per_episode, dt, device)` — headless SimulationApp loop that opens a USD, waits for load, sets up physics, steps, and stops each episode.
 
-simulation_app = SimulationApp({"headless": True, "renderer": "RayTracedLighting"})
-
-import isaacsim.core.experimental.utils.app as app_utils
-import isaacsim.core.experimental.utils.stage as stage_utils
-from isaacsim.core.simulation_manager import SimulationManager
-
-NUM_EPISODES, STEPS_PER_EPISODE = 100, 1000
-for episode in range(NUM_EPISODES):
-    stage_utils.open_stage("/path/to/scene.usd")
-    while stage_utils.is_stage_loading():
-        simulation_app.update()
-    SimulationManager.setup_simulation(dt=1.0 / 60.0, device="cpu")
-    app_utils.play()
-    for _ in range(STEPS_PER_EPISODE):
-        simulation_app.update()
-    app_utils.stop()
-
-simulation_app.close()
-```
+See [`scripts/batch_simulation.py`](scripts/batch_simulation.py).
 
 Avoid the legacy `isaacsim.core.api.World` / `isaacsim.core.utils.stage` paths — they are deprecated in Kit 110.
 

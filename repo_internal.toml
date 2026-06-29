@@ -831,10 +831,13 @@ exclude = [
     "AGENTS.md",
     "AGENTS.public.md",
     "skills/_internal",
+    "skills/SKILLS.md",
+    "skills/SKILLS.public.md",
     ".claude/skills/build-docs",
     ".claude/skills/cicd",
     ".claude/skills/debug-with-local-kit",
     ".claude/skills/doc-snippets",
+    ".claude/skills/skills-test-harness",
     ".dependabot.toml",
     ".eula_accepted",
     ".git",
@@ -929,7 +932,6 @@ end_marker = "# FOR DEVELOPMENT - END #"
 files = [
     "deps/kit-sdk-deps.packman.xml",
     "tools/docker/README.md",
-    "skills/SKILLS.md",
 ]
 begin_marker = "<!-- AUTOREMOVE: BEGIN -->"
 end_marker = "<!-- AUTOREMOVE: END -->"
@@ -950,6 +952,10 @@ destination_file = "tools/packman/config.packman.xml"
 [[repo_stage_for_github.file_move]]
 source_file = "AGENTS.public.md"
 destination_file = "AGENTS.md"
+
+[[repo_stage_for_github.file_move]]
+source_file = "skills/SKILLS.public.md"
+destination_file = "skills/SKILLS.md"
 
 [[repo_stage_for_github.toml_merge]]
 source_file = "repo.toml"

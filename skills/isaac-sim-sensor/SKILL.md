@@ -121,32 +121,9 @@ To wrap a custom prim from Python, call `Lidar("/World/.../my_lidar")` (no `conf
 
 `RtxCamera` + `CameraSensor` is the recommended path. Fall back to plain `UsdGeom.Camera` + Replicator render product when you don't need tick-rate / lens distortion / tiled batching. See `isaac-camera` for the full surface.
 
-```python
-from pxr import UsdGeom, Gf
-import omni.replicator.core as rep
+`create_camera_sensor(stage, path, focal_length, resolution)` — define a USD camera prim and return its Replicator render product. `attach_annotators(rp)` — attach RGB, depth, segmentation, bbox, normals, and motion-vector annotators.
 
-def create_camera_sensor(stage, path, focal_length=24.0, resolution=(1280, 720)):
-    cam = UsdGeom.Camera.Define(stage, path)
-    cam.GetFocalLengthAttr().Set(focal_length)
-    cam.GetHorizontalApertureAttr().Set(36.0)
-    cam.GetVerticalApertureAttr().Set(20.25)
-    cam.GetClippingRangeAttr().Set(Gf.Vec2f(0.01, 100.0))
-    return rep.create.render_product(path, resolution)
-
-
-def attach_annotators(rp):
-    names = ["rgb", "distance_to_camera",
-             "semantic_segmentation", "instance_segmentation",
-             "motion_vectors",
-             "bounding_box_2d_tight", "bounding_box_3d",
-             "normals"]
-    ann = {}
-    for n in names:
-        init = {"colorize": True} if "segmentation" in n else {}
-        ann[n] = rep.AnnotatorRegistry.get_annotator(n, init_params=init)
-        ann[n].attach([rp])
-    return ann
-```
+See [`scripts/create_camera_sensor.py`](scripts/create_camera_sensor.py).
 
 Tiled multi-view / stereo / lens distortion: use `isaacsim.sensors.experimental.rtx.{TiledCameraSensor, SingleViewDepthCameraSensor, RtxCamera}`.
 
@@ -156,52 +133,9 @@ RTX sensors (`Lidar`, `Radar`, `Acoustic`) all produce a `GenericModelOutput` (G
 
 **Use a `Writer` for GMO.** The Replicator scheduler invokes `Writer.write` on every produced render product, so the consumer sees every event with no gaps. This is the pattern used by every canonical `source/standalone_examples/api/isaacsim.sensors.experimental.rtx/*` example (`inspect_lidar_gmo.py`, `inspect_radar_gmo.py`, `inspect_acoustic_gmo.py`, `lidar_robot_integration.py`, `resolve_lidar_object_ids.py`, `apply_nonvisual_materials.py`). The pattern below transposes directly to `Radar` / `RadarSensor` (Section 3) and `Acoustic` / `AcousticSensor` (Section 4).
 
-```python
-import omni.replicator.core as rep
-from omni.replicator.core import Writer
-from isaacsim.sensors.experimental.rtx import (
-    Lidar, LidarSensor, parse_generic_model_output_data,
-    SUPPORTED_LIDAR_CONFIGS,
-)
+`create_lidar_with_gmo_writer(path, config, variant, simulation_app)` — create an RTX lidar, define a `GmoInspectWriter` that attaches the `GenericModelOutput` annotator, register it, and run the update loop.
 
-lidar = Lidar.create(
-    path="/World/lidar",
-    config="OS1",                          # see SUPPORTED_LIDAR_CONFIGS (Section 0)
-    variant="OS1_REV6_32ch20hz512res",
-    aux_output_level="FULL",               # NONE | BASIC | EXTRA | FULL
-    tick_rate=20.0,                        # Hz; None preserves authored value
-    accumulate_outputs=True,               # True = full scan per output
-)
-
-# Sensor brings no annotators — the writer brings its own GMO annotator.
-sensor = LidarSensor(lidar, annotators=[])
-
-
-class GmoInspectWriter(Writer):
-    def __init__(self):
-        self.data_structure = "renderProduct"
-        self.annotators = [rep.annotators.get("GenericModelOutput")]
-
-    def write(self, data):
-        if "renderProducts" not in data:
-            return
-        for _rp, rp_data in data["renderProducts"].items():
-            raw = rp_data.get("GenericModelOutput")
-            if isinstance(raw, dict):
-                raw = raw.get("data")
-            gmo = parse_generic_model_output_data(raw)
-            if gmo.numElements > 0:
-                ...    # use gmo.x / gmo.y / gmo.z / gmo.scalar / gmo.matId / ...
-
-
-rep.WriterRegistry.register(GmoInspectWriter)
-sensor.attach_writer("GmoInspectWriter")
-
-import omni.timeline
-omni.timeline.get_timeline_interface().play()
-while simulation_app.is_running():
-    simulation_app.update()
-```
+See [`scripts/lidar_gmo_writer.py`](scripts/lidar_gmo_writer.py).
 
 For real-time viewport visualization (not data capture), attach the built-in `draw-point-cloud` writer instead:
 

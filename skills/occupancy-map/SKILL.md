@@ -57,48 +57,9 @@ Use when the scene lacks colliders, you need a deterministic projection from aut
 ### 1. Extract Obstacles from USD
 Read all prims, project XY footprint onto 2D grid. Filter by height to separate navigable floor markings from solid obstacles.
 
-```python
-from pxr import Usd, UsdGeom, Gf
-import numpy as np
+`extract_obstacles_from_usd(usd_path, resolution, facility_width, facility_depth, robot_height_min, robot_height_max, skip_prefixes)` — returns a uint8 grid (1=free, 2=occupied).
 
-stage = Usd.Stage.Open(usd_path)
-mpu = UsdGeom.GetStageMetersPerUnit(stage)
-bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), [UsdGeom.Tokens.default_])
-
-RESOLUTION = 0.1  # meters per pixel
-ROBOT_HEIGHT_MIN = 0.05  # ignore floor markings below this
-ROBOT_HEIGHT_MAX = 2.0   # robot clearance height
-
-grid_w = int(facility_width / RESOLUTION)
-grid_h = int(facility_depth / RESOLUTION)
-grid = np.ones((grid_h, grid_w), dtype=np.uint8)  # 1=free
-
-# Skip navigable prims (routes, floor, humans, exits, List below as a reference)
-SKIP_PREFIXES = ("Floor", "FL", "AR", "HR", "FR", "AMR", "Exit", "Hum", "Divider", "Stair")
-
-for prim in stage.TraverseAll():
-    if not prim.IsA(UsdGeom.Gprim):
-        continue
-    name = prim.GetName()
-    if any(name.startswith(p) for p in SKIP_PREFIXES):
-        continue
-    
-    bbox = bbox_cache.ComputeWorldBound(prim)
-    rng = bbox.ComputeAlignedRange()
-    lo, hi = rng.GetMin(), rng.GetMax()
-    
-    if hi[2] * mpu < ROBOT_HEIGHT_MIN or lo[2] * mpu > ROBOT_HEIGHT_MAX:
-        continue
-    
-    x_min = max(0, int(lo[0] * mpu / RESOLUTION))
-    x_max = min(grid_w, int(hi[0] * mpu / RESOLUTION) + 1)
-    y_min = max(0, int(lo[1] * mpu / RESOLUTION))
-    y_max = min(grid_h, int(hi[1] * mpu / RESOLUTION) + 1)
-    
-    r_min = grid_h - y_max  # flip Y for image coords
-    r_max = grid_h - y_min
-    grid[r_min:r_max, x_min:x_max] = 2  # occupied
-```
+See [`scripts/usd_projection_pipeline.py`](scripts/usd_projection_pipeline.py).
 
 ### 2. Apply Robot Buffer
 ```python
@@ -116,28 +77,9 @@ buffered = binary_dilation((grid == 2), structure=kernel)
 ```
 
 ### 3. Export ROS Format
-```python
-from PIL import Image
-import yaml
+`export_ros_map(grid, output_dir, resolution)` — writes `map.png` (grayscale, ROS standard) and `map.yaml` to `output_dir`.
 
-# Grayscale map (ROS standard)
-img_data = np.full_like(grid, 205)  # grey=unknown
-img_data[grid == 1] = 254  # white=free
-img_data[grid == 2] = 0    # black=occupied
-Image.fromarray(img_data, 'L').save("map.png")
-
-# YAML config
-yaml_data = {
-    "image": "map.png",
-    "resolution": RESOLUTION,
-    "origin": [0.0, 0.0, 0.0],  # [x, y, yaw] of bottom-left pixel
-    "negate": 0,
-    "occupied_thresh": 0.65,
-    "free_thresh": 0.196,
-}
-with open("map.yaml", "w") as f:
-    yaml.dump(yaml_data, f, default_flow_style=False)
-```
+See [`scripts/usd_projection_pipeline.py`](scripts/usd_projection_pipeline.py).
 
 ### 4. Generate Colored Visualization
 ```python
