@@ -43,35 +43,6 @@ def main(args: argparse.Namespace):
     if not omni.repo.ci.is_windows():
         extra_flags.append("--no-docker")
 
-    if os.getenv("USE_VS_2026") == "true":
-        # First we need to inject a new packman xml file to pull msvc
-        with open("./deps/msvc.packman.xml", "w") as f:
-            f.write(
-                """
-<project toolsVersion="5.0">
-  <dependency name="msvc" linkPath="../_build/host-deps/msvc" tags="non-redist">
-    <package name="msvc" version="2026-18.3.0" platforms="windows-x86_64" />
-  </dependency>
-  <dependency name="winsdk" linkPath="../_build/host-deps/winsdk" tags="non-redist">
-    <!--package name="winsdk" version="10.0.26100.0" platforms="windows-x86_64" /-->
-    <package name="winsdk" version="10.0.17763.0" platforms="windows-x86_64" />
-  </dependency>
-</project>
-"""
-            )
-
-        with open("./repo.toml", "r") as repo_toml_in:
-            repo_toml_data = repo_toml_in.read()
-        with open("./repo.toml", "w") as repo_toml_out:
-            repo_toml_data = repo_toml_data.replace(
-                "fetch.packman_target_files_to_pull = [\n",
-                'fetch.packman_target_files_to_pull = [\n  "${root}/deps/msvc.packman.xml",\n',
-            )
-            # repo_toml_data = repo_toml_data.replace('"token:in_ci==true".vs_version = "vs2019"', '"token:in_ci==true".vs_version = "18"\n"token:in_ci==true".msvc_version = "14.50.35717"')
-            # repo_toml_data = repo_toml_data.replace('"token:in_ci==true".vs_path = "C:\\\\vs2019"', '')
-
-            repo_toml_out.write(repo_toml_data)
-
     build_cmd = ["${root}/repo${shell_ext}", "build", "-x"] + extra_flags
 
     # Full rebuild config

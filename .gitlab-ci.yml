@@ -774,20 +774,6 @@ build-windows-x86_64-release:
       - ./repo.bat ci build -c release
 
 # ==============================================================================================================
-build-windows-x86_64-release-vs2026:
-    extends:
-      - .build-common
-      - .runner-large-build-windows-x86_64
-      - .osec:vault:v3:prod_token_job
-    before_script:
-      - !reference ['.osec:vault:v3:windows:powershell', 'packman_s3:perform_vault_requests']
-    variables:
-      USE_VS_2026: "true"
-    script:
-      - ./repo.bat ci build -c release
-
-
-# ==============================================================================================================
 build-windows-x86_64-debug:
     extends:
       - .build-common
@@ -1002,7 +988,7 @@ test-docs-isaacsim-design:
       - !reference [.determine_report_generation_timing_windows, script]
       - cmd /c "if not \"%REPORT_TIMING%\"==\"inline\" (repo.bat ci test -- --generate-report)"
     needs:
-      - job: build-windows-x86_64-release-vs2026
+      - job: build-windows-x86_64-release
         artifacts: true
 
 # ==============================================================================================================
