@@ -115,6 +115,16 @@ For RViz2 visualization:
 
 	                ros2 param set /rviz use_sim_time true
 
+Graph Shortcut
+^^^^^^^^^^^^^^^^^^^
+
+There is a menu shortcut to build the Radar sensor graph. Go to **Tools > Robotics > ROS 2 OmniGraphs > RTX Radar**.
+
+If you don't observe any ROS2 graphs listed, you need to enable the ROS2 bridge. A popup will appear asking for the parameters needed to populate the graph. You must provide the Graph Path, the Radar Prim, frameId, any Node Namespaces if you have one, the Point Cloud Topic, and check the metadata boxes (Radial Velocity, Intensity, Timestamp) for the per-point fields you want included in the published ``PointCloud2``. If you want to add the graph to an existing graph, check the **Add to an existing graph?** box. This will append the nodes to the existing graph, and use the existing tick node, context node, and simulation time node if they exist.
+
+.. note:: Selecting **Radial Velocity (m/s)** requires the OmniRadar prim to be created with auxiliary output level ``"BASIC"`` so that the radial velocity channel is populated. See the **Exposing Radar Metadata** section below for details.
+
+
 Programmatic Setup (Script Editor)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

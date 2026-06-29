@@ -29,7 +29,7 @@ from isaacsim.gui.components.menu import open_content_browser_to_path
 from isaacsim.storage.native.nucleus import get_assets_root_path
 from omni.kit.menu.utils import MenuHelperExtensionFull, MenuItemDescription, add_menu_items, remove_menu_items
 
-from .og_rtx_sensors import Ros2CameraGraph, Ros2RtxLidarGraph
+from .og_rtx_sensors import Ros2CameraGraph, Ros2RtxLidarGraph, Ros2RtxRadarGraph
 from .og_utils import Ros2ClockGraph, Ros2GenericPubGraph, Ros2JointStatesGraph, Ros2OdometryGraph, Ros2TfPubGraph
 
 
@@ -57,6 +57,12 @@ class Extension(omni.ext.IExt, MenuHelperExtensionFull):
             lambda: Ros2RtxLidarGraph(),
             "ROS 2 RTX Lidar",
             "RTX Lidar",
+            "Tools/Robotics/ROS 2 OmniGraphs",
+        )
+        self.menu_startup(
+            lambda: Ros2RtxRadarGraph(),
+            "ROS 2 RTX Radar",
+            "RTX Radar",
             "Tools/Robotics/ROS 2 OmniGraphs",
         )
         self.menu_startup(
