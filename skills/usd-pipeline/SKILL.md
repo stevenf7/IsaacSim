@@ -45,73 +45,9 @@ translate_z = -asset_bbox_min_z  (puts asset base on ground plane)
 
 ### Script Pattern (Kit Python — No Renderer Needed)
 
-```python
-from pxr import Usd, UsdGeom, UsdShade
-import os
+`measure_asset(path)` — open a USD file, compute bbox, detect UsdPreviewSurface shader, count prims.  Returns dict with width/depth/height/center/mpu/prims/dual_shader/shader_tag.  `catalog_assets(root_dir, extensions)` — recursively find and measure all USD assets.
 
-def measure_asset(path):
-    """Measure a USD asset: bbox, shader type, prim count."""
-    if not os.path.exists(path):
-        return None
-    
-    stage = Usd.Stage.Open(path)
-    dp = stage.GetDefaultPrim()
-    if not dp:
-        children = list(stage.GetPseudoRoot().GetChildren())
-        dp = children[0] if children else None
-    if not dp:
-        return {"error": "no default prim"}
-    
-    bc = UsdGeom.BBoxCache(Usd.TimeCode.Default(), [UsdGeom.Tokens.default_])
-    r = bc.ComputeWorldBound(dp).ComputeAlignedRange()
-    mn, mx = r.GetMin(), r.GetMax()
-    
-    if mn[0] > 1e30:
-        return {"error": "invalid bbox"}
-    
-    mpu = UsdGeom.GetStageMetersPerUnit(stage)
-    w, d, h = (mx[0]-mn[0])*mpu, (mx[1]-mn[1])*mpu, (mx[2]-mn[2])*mpu
-    cx = (mn[0]+mx[0])/2
-    cy = (mn[1]+mx[1])/2
-    cz = mn[2]  # base of asset
-    
-    # Check for UsdPreviewSurface (headless-compatible)
-    has_preview_surface = False
-    for p in stage.Traverse():
-        if p.IsA(UsdShade.Shader):
-            sid = p.GetAttribute("info:id")
-            if sid and sid.Get() and "Preview" in str(sid.Get()):
-                has_preview_surface = True
-                break
-    
-    prims = sum(1 for _ in stage.Traverse())
-    
-    return {
-        "width": w, "depth": d, "height": h,
-        "center": (cx, cy, cz),
-        "mpu": mpu,
-        "prims": prims,
-        "dual_shader": has_preview_surface,  # True = renders everywhere
-        "shader_tag": "dual" if has_preview_surface else "MDL-only"
-    }
-```
-
-### Batch Discovery Pattern
-
-```python
-import glob
-
-def catalog_assets(root_dir, extensions=(".usd", ".usda", ".usdc")):
-    """Recursively find and measure all USD assets in a directory tree."""
-    results = {}
-    for ext in extensions:
-        for path in glob.glob(f"{root_dir}/**/*{ext}", recursive=True):
-            info = measure_asset(path)
-            if info and "error" not in info:
-                name = os.path.basename(path).replace(".usd", "").replace(".usda", "")
-                results[name] = {**info, "path": path}
-    return results
-```
+See [`scripts/measure_asset.py`](scripts/measure_asset.py).
 
 ### Key Learnings
 
@@ -184,87 +120,9 @@ Exception: If an asset is dramatically larger than its zone (e.g., 83m assembly 
 
 ### SimulationApp Runtime Placement
 
-```python
-from isaacsim import SimulationApp
-app = SimulationApp({"headless": True, "width": 1920, "height": 1080,
-                      "renderer": "RayTracedLighting"})
+`get_asset_bbox(stage, asset_path, app)` — reference asset temporarily to get accurate bbox center. `collect_blocks(stage)` — group visible Cube prims by name prefix with world positions. `place_assets(stage, blocks, asset_map, asset_bboxes, module_name)` — place assets at block positions with bbox-center offset correction; hides original cubes.
 
-import omni.usd
-from pxr import Gf, UsdGeom, Usd
-from collections import defaultdict
-
-stage = omni.usd.get_context().get_stage()
-
-# 1. Compute asset bbox in Kit runtime (more reliable than offline)
-def get_asset_bbox(stage, asset_path, app):
-    """Reference asset temporarily to get accurate bbox."""
-    bc = UsdGeom.BBoxCache(Usd.TimeCode.Default(), [UsdGeom.Tokens.default_])
-    name = os.path.basename(asset_path).replace(".", "_")
-    test = stage.DefinePrim(f"/BBoxTest_{name}", "Xform")
-    test.GetReferences().AddReference(asset_path)
-    for _ in range(5): app.update()
-    r = bc.ComputeWorldBound(test).ComputeAlignedRange()
-    mn, mx = r.GetMin(), r.GetMax()
-    stage.RemovePrim(f"/BBoxTest_{name}")
-    if mn[0] > 1e30:
-        return None
-    return {"cx": (mn[0]+mx[0])/2, "cy": (mn[1]+mx[1])/2, "cz": mn[2]}
-
-# 2. Collect visible cube blocks by prefix
-def collect_blocks(stage):
-    xf_cache = UsdGeom.XformCache(Usd.TimeCode.Default())
-    blocks = defaultdict(list)
-    for prim in stage.Traverse():
-        if not prim.IsA(UsdGeom.Cube): continue
-        img = UsdGeom.Imageable(prim)
-        if img.ComputeVisibility(Usd.TimeCode.Default()) == "invisible": continue
-        name = prim.GetName()
-        prefix = ""
-        for c in name:
-            if c.isdigit(): break
-            prefix += c
-        mtx = xf_cache.GetLocalToWorldTransform(prim)
-        pos = mtx.ExtractTranslation()
-        blocks[prefix].append({
-            "name": name, "path": str(prim.GetPath()),
-            "x": pos[0], "y": pos[1], "z": pos[2]
-        })
-    return blocks
-
-# 3. Place assets with offset correction
-def place_assets(stage, blocks, asset_map, asset_bboxes, module_name):
-    root = stage.DefinePrim(f"/World/{module_name}", "Xform")
-    placed = 0
-    
-    for prefix, asset_path in asset_map.items():
-        block_list = blocks.get(prefix, [])
-        if not block_list: continue
-        bb = asset_bboxes.get(asset_path)
-        if not bb: continue
-        
-        group = stage.DefinePrim(f"/World/{module_name}/{prefix}", "Xform")
-        
-        for b in block_list:
-            prim = stage.DefinePrim(
-                f"/World/{module_name}/{prefix}/{b['name']}", "Xform")
-            xf = UsdGeom.Xformable(prim)
-            # OFFSET CORRECTION — the key insight
-            tx = b["x"] - bb["cx"]
-            ty = b["y"] - bb["cy"]
-            tz = -bb["cz"]  # ground the asset
-            xf.AddTranslateOp(UsdGeom.XformOp.PrecisionDouble).Set(
-                Gf.Vec3d(tx, ty, tz))
-            prim.GetReferences().AddReference(asset_path)
-            placed += 1
-        
-        # Hide original cubes
-        for b in block_list:
-            orig = stage.GetPrimAtPath(b["path"])
-            if orig:
-                UsdGeom.Imageable(orig).MakeInvisible()
-    
-    return placed
-```
+See [`scripts/place_assets.py`](scripts/place_assets.py).
 
 ### Hierarchy Convention
 
@@ -290,51 +148,15 @@ def place_assets(stage, blocks, asset_map, asset_bboxes, module_name):
 
 Use `bake_waypoints()` from `spatial-reasoning` skill to animate robots, humans, or objects along paths.
 
-```python
-# In spatial-reasoning skill:
-def bake_waypoints(xform_op, waypoints, speed_mps, fps=30, mpu=1.0):
-    """Create keyframed animation for XformOp along a list of (x,y,z) points."""
-    time_count = len(waypoints)
-    time_samples = [i/fps for i in range(time_count)]
-    
-    for i, wp in enumerate(waypoints):
-        t = time_samples[i]
-        xform_op.Set(Gf.Vec3d(wp[0]*mpu, wp[1]*mpu, wp[2]*mpu), t)
-```
+`bake_waypoints(xform_op, waypoints, speed_mps, fps, mpu)` — keyframe an XformOp along a list of (x,y,z) waypoints. Defined in the `spatial-reasoning` skill at [`../spatial-reasoning/scripts/spatial.py`](../spatial-reasoning/scripts/spatial.py).
 
 ### Articulation Builder
 
 For robot USD:
 
-```python
-from pxr import Usd, UsdGeom, UsdPhysics, Gf, Sdf
+`build_forklift_articulation(output_path)` — create chassis + fixed-joint mast + prismatic lift joint; includes `_create_box`, `_create_fixed_joint`, `_create_prismatic_joint` helpers.
 
-# Creates a nested articulation tree with joints
-stage = Usd.Stage.CreateNew("robot.usd")
-
-root = UsdGeom.Xform.Define(stage, "/Robot")
-UsdPhysics.ArticulationRootAPI.Apply(root.GetPrim())
-
-# Base link
-base = _create_box(stage, "/Robot/base", size=(2.5, 1.2, 0.4), mass=2000.0)
-UsdPhysics.RigidBodyAPI.Apply(base)
-
-# Mast base (fixed to chassis front)
-mast_base = _create_box(stage, "/Robot/base/MastBase", size=(0.1, 1.0, 2.0), mass=200.0)
-UsdPhysics.RigidBodyAPI.Apply(mast_base)
-_create_fixed_joint(stage, "/Robot/base/MastBase/FixedJoint", 
-        body0="/Robot/base", body1="/Robot/base/MastBase",
-        local_pos=Gf.Vec3f(1.3, 0, 0.3))
-
-# Inner Mast (prismatic lift)
-inner_mast = _create_box(stage, "/Robot/base/MastBase/InnerMast", size=(0.08, 0.9, 1.8), mass=100.0)
-UsdPhysics.RigidBodyAPI.Apply(inner_mast)
-_create_prismatic_joint(
-    stage, "/Robot/base/MastBase/InnerMast/LiftJoint",
-    body0="/Robot/base/MastBase", body1="/Robot/base/MastBase/InnerMast",
-    axis="Z", lower_limit=0.0, upper_limit=3.0,
-    drive_stiffness=1e6, drive_damping=1e4)
-```
+See [`scripts/articulation_builder.py`](scripts/articulation_builder.py).
 
 ### UV Mapping & Materials
 

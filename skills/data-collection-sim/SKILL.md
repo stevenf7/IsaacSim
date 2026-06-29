@@ -111,52 +111,9 @@ Core annotators available via `rep.annotators.get(name)`:
 
 ## Minimal Pipeline
 
-```python
-# 1. Scene
-rep.orchestrator.set_capture_on_play(False)
-carb.settings.get_settings().set("rtx/post/dlss/execMode", 2)  # DLSS Quality
-assets_root = get_assets_root_path()
-stage_utils.open_stage(assets_root + "/Isaac/Environments/Simple_Warehouse/full_warehouse.usd")
+`run_minimal_sdg_pipeline(output_dir, num_frames, rt_subframes)` — open a warehouse stage, tag a prop with semantic labels, create a camera, attach a BasicWriter, and run the capture loop.
 
-# 2. Semantic labels — add a referenced prop and tag it for annotators.
-stage_utils.add_reference_to_stage(
-    usd_path=assets_root + "/Isaac/Props/YCB/Axis_Aligned/003_cracker_box.usd",
-    path="/World/MyObj",
-)
-prim = stage_utils.get_current_stage().GetPrimAtPath("/World/MyObj")
-# Either API writes the UsdSemantics LabelsAPI schema on the prim:
-add_labels(prim, labels=["cracker_box"], taxonomy="class")
-# or, equivalently:
-# rep.functional.modify.semantics(prim, {"class": "cracker_box"}, mode="add")
-
-# 3. Camera + render product
-cam = rep.functional.create.camera(position=(3, 3, 2), look_at=(0, 0, 0), name="DataCam")
-rp = rep.create.render_product(cam, (1280, 720), name="main_view")
-
-# 4. Writer (explicit backend form)
-backend = rep.backends.get("DiskBackend")
-backend.initialize(output_dir="/tmp/sdg_output")
-writer = rep.writers.get("BasicWriter")
-writer.initialize(
-    backend=backend,
-    rgb=True,
-    bounding_box_2d_tight=True,
-    semantic_segmentation=True,
-    distance_to_image_plane=True,
-)
-writer.attach(rp)
-
-# 5. Capture loop with randomization (static scene: delta_time=0.0 freezes timeline)
-for i in range(NUM_FRAMES):
-    # Randomize object pose, camera, lights here
-    rep.orchestrator.step(delta_time=0.0, rt_subframes=32)
-
-# 6. Cleanup
-rep.orchestrator.wait_until_complete()
-writer.detach()
-rp.destroy()
-simulation_app.close()
-```
+See [`scripts/minimal_sdg_pipeline.py`](scripts/minimal_sdg_pipeline.py).
 
 ## Domain Randomization
 

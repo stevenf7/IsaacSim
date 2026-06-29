@@ -41,30 +41,9 @@ UI: `File -> Import from ROS2 URDF Node` (opens an import window with the same c
 
 Python (preferred over the deprecated `URDFImportFromROS2Node` Kit command):
 
-```python
-from functools import partial
+`import_urdf_from_ros(usd_out_path, merge_fixed_joints, fix_base, robot_type)` — subscribe to `robot_state_publisher`, resolve `package://` URLs, and import URDF when the description is received.
 
-from isaacsim.asset.importer.urdf import URDFImporter, URDFImporterConfig
-from isaacsim.ros2.urdf import RobotDefinitionReader
-
-config = URDFImporterConfig(
-    usd_path="/path/out",
-    merge_fixed_joints=True,
-    fix_base=False,
-    robot_type="Manipulator",
-)
-importer = URDFImporter()
-
-def _on_description(urdf_abs_path: str, package_found: bool) -> None:
-    # `urdf_abs_path` is a temp file with package:// already resolved.
-    config.urdf_path = urdf_abs_path
-    importer.config = config
-    importer.import_urdf()
-
-reader = RobotDefinitionReader()        # singleton
-reader.description_received_fn = partial(_on_description)
-reader.start_get_robot_description("robot_state_publisher")
-```
+See [`scripts/urdf_importer_ros.py`](scripts/urdf_importer_ros.py).
 
 Requires the `isaacsim.ros2.urdf` extension (depends on `isaacsim.ros2.bridge` for the ROS 2 runtime), the ROS 2 environment sourced before launching Isaac Sim, and a reachable node publishing `robot_description`. The reader runs asynchronously — the callback fires once the `GetParameters` service replies.
 

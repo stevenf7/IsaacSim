@@ -120,7 +120,8 @@ for obj_cfg in config["objects"]:
         xf = UsdGeom.Xformable(p)
         xf.ClearXformOpOrder()
         xf.AddTranslateOp().Set(Gf.Vec3d(rng.uniform(-15, 5), rng.uniform(-5, 10), 0))
-        quat = euler_angles_to_quaternion([0, 0, rng.uniform(0, 2 * math.pi)])
+        # euler_angles_to_quaternion returns a wp.array; convert to numpy before indexing.
+        quat = euler_angles_to_quaternion([0, 0, rng.uniform(0, 2 * math.pi)]).numpy()
         xf.AddOrientOp().Set(Gf.Quatf(float(quat[0]), float(quat[1]), float(quat[2]), float(quat[3])))
         # Semantic label for annotators
         rep.functional.modify.semantics(p, {"class": label}, mode="add")
@@ -176,7 +177,8 @@ for i in range(num_frames):
                 rep.functional.modify.pose(
                     op,
                     position_value=(rng.uniform(-15, 5), rng.uniform(-5, 10), 0),
-                    rotation_value=list(euler_angles_to_quaternion([0, 0, rng.uniform(0, 2 * math.pi)])),
+                    # modify.pose wants Euler angles (degrees) or a Gf quaternion -- not a list quat.
+                    rotation_value=(0.0, 0.0, math.degrees(rng.uniform(0, 2 * math.pi))),
                 )
 
     rep.orchestrator.step(delta_time=0.0, rt_subframes=rt_subframes)

@@ -96,6 +96,35 @@ function setup_isaacsim_folder_links()
         { "source/tools", "_build/%{platform}/%{config}/tools" },
     }
 
+    -- Agent skills and pointer guides. Assemble a public-only skills/ tree plus the AGENTS.md
+    -- and CLAUDE.md guides in the build output so they ship in both the binary and pip packages
+    -- without users cloning the repo. Dev-only skills under skills/_internal are skipped, and the
+    -- public index/guide are shipped under their canonical names (the internal repo keeps
+    -- SKILLS.public.md / AGENTS.public.md; the public repo already uses SKILLS.md / AGENTS.md).
+    -- Per-directory entries keep the skill list current as skills are added.
+    local cfg_dst = "_build/%{platform}/%{config}"
+    local agent_stage = {}
+    for _, skill_dir in ipairs(os.matchdirs(root .. "/skills/*")) do
+        local skill_name = path.getname(skill_dir)
+        if skill_name ~= "_internal" then
+            table.insert(agent_stage, { "skills/" .. skill_name, cfg_dst .. "/skills/" .. skill_name })
+        end
+    end
+    if os.isfile(root .. "/skills/SKILLS.public.md") then
+        table.insert(agent_stage, { "skills/SKILLS.public.md", cfg_dst .. "/skills/SKILLS.md" })
+    elseif os.isfile(root .. "/skills/SKILLS.md") then
+        table.insert(agent_stage, { "skills/SKILLS.md", cfg_dst .. "/skills/SKILLS.md" })
+    end
+    if os.isfile(root .. "/AGENTS.public.md") then
+        table.insert(agent_stage, { "AGENTS.public.md", cfg_dst .. "/AGENTS.md" })
+    elseif os.isfile(root .. "/AGENTS.md") then
+        table.insert(agent_stage, { "AGENTS.md", cfg_dst .. "/AGENTS.md" })
+    end
+    if os.isfile(root .. "/CLAUDE.md") then
+        table.insert(agent_stage, { "CLAUDE.md", cfg_dst .. "/CLAUDE.md" })
+    end
+    repo_build.prebuild_copy(agent_stage)
+
     if os.target() == "linux" then
         repo_build.prebuild_link {
             { "source/scripts/python/linux-x86_64/icon", "_build/%{platform}/%{config}/data/icon" },

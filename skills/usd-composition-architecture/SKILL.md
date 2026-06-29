@@ -1,17 +1,14 @@
 ---
 name: usd-composition-architecture
 description: >
-  NVIDIA's USD asset composition pattern for Isaac Sim — how robot assets are split into
-  a binary geometry crate plus a set of human-editable USDA layers (base, instances,
-  materials, physics, physx, mujoco, robot, interface) connected via composition arcs
-  (payload, reference, sublayer, variant). Covers the "binary for meshes, USDA for
-  everything else" rule, headless RL optimization by skipping appearance, and the
-  Asset Transformer pipeline that produces this layout.
-  Use when: building new robot or environment assets for Isaac Sim, restructuring an
-  existing asset with the Asset Transformer, optimizing RL training startup time and
-  VRAM by skipping appearance payloads, debugging why physics edits in a USDA do not
-  apply, debugging joint limits or mass properties, creating asset variants with
-  different configs or materials.
+  NVIDIA's USD asset composition pattern for Isaac Sim — binary geometry crate plus
+  human-editable USDA layers (base, instances, materials, physics, physx, mujoco,
+  robot, interface) connected via composition arcs (payload, reference, sublayer,
+  variant). Covers the "binary for meshes, USDA for everything else" rule, headless
+  RL optimization by skipping appearance payloads, and the Asset Transformer pipeline.
+  Use when: building or restructuring robot/environment assets for Isaac Sim, optimizing
+  RL training startup time and VRAM, debugging physics edits that don't apply, debugging
+  joint limits or mass properties, or creating asset variants.
   Triggers on: USD payload composition, layered USD, physics payload, appearance payload,
   USDA vs USD, USDA vs USDC, geometries.usdc, RL optimization payload, composition arcs,
   Asset Transformer, Isaac Sim Asset Structure, USD asset structure.

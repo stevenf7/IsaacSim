@@ -431,6 +431,27 @@ def _list_remotes() -> list[str]:
     return [r.strip() for r in proc.stdout.strip().splitlines() if r.strip()]
 
 
+def _current_branch() -> str | None:
+    """Return the current branch's short name, or None when detached/unavailable.
+
+    Returns:
+        The current branch name (e.g. ``feature/my-change``), or None when
+        HEAD is detached or the name cannot be resolved.
+    """
+    proc = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    if proc.returncode != 0:
+        return None
+    name = proc.stdout.strip()
+    if not name or name == "HEAD":
+        return None
+    return name
+
+
 def _tracking_branch() -> str | None:
     """Return the current branch's configured upstream ref, if any.
 
@@ -456,13 +477,40 @@ def _tracking_branch() -> str | None:
     return ref
 
 
+def _upstream_is_current_branch(tracking_ref: str) -> bool:
+    """Return True if the upstream ref is the remote copy of the current branch.
+
+    A feature branch that has been pushed normally tracks
+    ``<remote>/<same-branch-name>`` (e.g. ``origin/feature/my-change`` while
+    on ``feature/my-change``). That upstream is the branch itself, not an
+    integration branch, so diffing against it yields no changes and it must not
+    be used as the base. A genuine integration upstream (e.g.
+    ``upstream/develop``) does not match the current branch name and is kept.
+
+    Args:
+        tracking_ref: Upstream ref resolved from ``@{u}`` (e.g.
+            ``origin/feature/my-change``).
+
+    Returns:
+        True when ``tracking_ref`` equals ``<remote>/<current-branch>`` for any
+        configured remote, otherwise False.
+    """
+    branch = _current_branch()
+    if not branch:
+        return False
+    return any(tracking_ref == f"{remote}/{branch}" for remote in _list_remotes())
+
+
 def detect_base_branch() -> str | None:
     """Auto-detect the mainline integration branch this feature branch diverged from.
 
     Detection order:
-      1. The current branch's configured upstream (``@{u}``), when set. This
-         respects each developer's actual tracking branch (e.g.
-         ``upstream/develop``) rather than guessing from remote names.
+      1. The current branch's configured upstream (``@{u}``), when set and when
+         it is *not* the remote copy of the current branch itself. This honors a
+         real integration upstream (e.g. ``upstream/develop``) while ignoring the
+         common case of a pushed feature branch tracking ``<remote>/<same-name>``
+         (e.g. ``origin/feature/my-change``), which would otherwise diff the
+         branch against itself and report no changes.
       2. Fallback heuristic per remote: develop, main, master.
          Remote priority: ``main``, ``origin``, then any others alphabetically.
 
@@ -470,7 +518,7 @@ def detect_base_branch() -> str | None:
         Base branch ref if found, otherwise None.
     """
     tracking = _tracking_branch()
-    if tracking:
+    if tracking and not _upstream_is_current_branch(tracking):
         return tracking
 
     remotes = _list_remotes()

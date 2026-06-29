@@ -30,6 +30,7 @@ For tasks about this Isaac Sim source repo. Excluded from published packages.
 | [`cicd`](skills/_internal/cicd/SKILL.md) | Navigate the GitLab pipelines: stages, jobs, variables, debug flows, IsaacLab/IsaacSim dashboards under `tools/ci/dashboards/`. |
 | [`debug-with-local-kit`](skills/_internal/debug-with-local-kit/SKILL.md) | Build Kit from source, link Isaac Sim against it, debug Kit-internal rendering / multitick / sensor issues. |
 | [`doc-snippets`](skills/_internal/doc-snippets/SKILL.md) | Author and runtime-test the Python samples shown in user docs (`literalinclude`, snippet test runner, async vs `SimulationApp`). |
+| [`skills-test-harness`](skills/_internal/skills-test-harness/SKILL.md) | Discovery-driven tests for every skill script + snippet (`tools/isaac/skills_tests`); run the suite and triage failures (prerequisite vs scaffolding vs script bug). |
 
 ### Repo-native public skills (`skills/`)
 

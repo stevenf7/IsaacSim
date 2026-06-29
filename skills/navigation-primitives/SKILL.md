@@ -44,41 +44,9 @@ Read this first for any mobile-robot work, then jump to the specialization.
 
 Do not hardcode footprints. Walk the articulation's collider prims and union their world-space AABBs. This handles every robot (Spot, Carter, VSVXL, Jetbot, Kaya, H1, custom) and stays correct when assets change.
 
-```python
-import isaacsim.core.experimental.utils.bounds as bounds_utils
-from pxr import Usd, UsdPhysics
-import numpy as np
+`compute_robot_footprint(stage, robot_root)` — walk CollisionAPI prims, union their AABBs, return size, z_offset, inscribed_radius, circumscribed_radius.
 
-def compute_robot_footprint(stage: Usd.Stage, robot_root: str) -> dict:
-    """Return footprint dims + Z-offset + inscribed/circumscribed radii.
-
-    Uses prims tagged with UsdPhysics.CollisionAPI under `robot_root`. Falls back
-    to UsdGeom.Imageable if no colliders are authored.
-    """
-    collider_paths = []
-    for prim in Usd.PrimRange(stage.GetPrimAtPath(robot_root)):
-        if prim.HasAPI(UsdPhysics.CollisionAPI):
-            collider_paths.append(prim.GetPath())
-    if not collider_paths:
-        collider_paths = [stage.GetPrimAtPath(robot_root).GetPath()]
-
-    aabb = bounds_utils.compute_combined_aabb(collider_paths)  # [xmin,ymin,zmin, xmax,ymax,zmax]
-    mn, mx = aabb[:3], aabb[3:]
-    size = mx - mn
-
-    origin_z = stage.GetPrimAtPath(robot_root).GetAttribute("xformOp:translate").Get()[2]
-    z_offset = max(0.0, origin_z - mn[2])  # how far origin sits above lowest collider
-
-    half_w, half_d = size[0] / 2.0, size[1] / 2.0
-    return {
-        "size": tuple(size),                       # full footprint extents (m)
-        "z_offset": float(z_offset),               # origin → lowest collider (m)
-        "inscribed_radius":  float(min(half_w, half_d)),  # safe for ANY yaw
-        "circumscribed_radius": float(np.hypot(half_w, half_d)),  # worst-case yaw
-        "aabb_min": tuple(mn),
-        "aabb_max": tuple(mx),
-    }
-```
+See [`scripts/robot_footprint.py`](scripts/robot_footprint.py).
 
 Use `inscribed_radius` when the robot can rotate freely in place (over-conservative, zero clip). Use `circumscribed_radius` only when you require zero false negatives. For non-circular robots (Spot, VSVXL), prefer the oriented-footprint check below over a single radius.
 
@@ -102,35 +70,9 @@ If your `compute_robot_footprint` output is far from these, your collider author
 
 Use when you need a runtime omap and don't already have a `map.yaml`. For the canonical `map.yaml` workflow consumed by MobilityGen, use `occupancy-map` instead.
 
-```python
-from pxr import Usd, UsdGeom, Gf
-import numpy as np
+`occupancy_map_from_usd(stage, x_range, y_range, resolution, z_cutoff, colliders_only)` — rasterize USD geometry into a 2D uint8 grid (0=free, 255=occupied).
 
-stage = Usd.Stage.Open(stage_path)
-bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), [UsdGeom.Tokens.default_])
-
-RESOLUTION = 0.25  # meters per cell
-X_RANGE = (-15, 175)
-Y_RANGE = (-25, 155)
-Z_CUTOFF = 4.5  # ignore obstacles above this height
-# Robot dims come from compute_robot_footprint(stage, "/World/Robot"); see above.
-
-grid_w = int((X_RANGE[1] - X_RANGE[0]) / RESOLUTION)
-grid_h = int((Y_RANGE[1] - Y_RANGE[0]) / RESOLUTION)
-grid = np.zeros((grid_h, grid_w), dtype=np.uint8)  # 0=free, 255=occupied
-
-for prim in Usd.PrimRange(stage.GetPrimAtPath("/World")):
-    bb = bbox_cache.ComputeWorldBound(prim)
-    r = bb.ComputeAlignedRange()
-    if r.IsEmpty(): continue
-    mn, mx = r.GetMin(), r.GetMax()
-    if mn[2] > Z_CUTOFF: continue
-    x0 = max(0, int((mn[0] - X_RANGE[0]) / RESOLUTION))
-    x1 = min(grid_w, int((mx[0] - X_RANGE[0]) / RESOLUTION))
-    y0 = max(0, int((mn[1] - Y_RANGE[0]) / RESOLUTION))
-    y1 = min(grid_h, int((mx[1] - Y_RANGE[0]) / RESOLUTION))
-    grid[y0:y1, x0:x1] = 255
-```
+See [`scripts/occupancy_map_from_usd.py`](scripts/occupancy_map_from_usd.py).
 
 ### Obstacle Filtering (CRITICAL — learned 2026-03-13)
 

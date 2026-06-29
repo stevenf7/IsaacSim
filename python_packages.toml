@@ -44,6 +44,11 @@ inventory.includes.all = [
     "LICENSE.txt",
     # apps
     "apps",
+    # agent skills (SKILL.md workflow guides); the build output stages a public-only tree
+    "skills",
+    # agent pointer guides that auto-load the skills (public versions)
+    "AGENTS.md",
+    "CLAUDE.md",
 ]
 
 [isaacsim-kernel]
