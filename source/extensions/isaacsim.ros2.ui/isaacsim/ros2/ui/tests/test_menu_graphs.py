@@ -667,6 +667,252 @@ class TestMenuROS2LidarGraph(ROS2MenuTestBase):
                     self.assertEqual(type_value, "laser_scan", "Helper should be configured for laser_scan")
 
 
+class TestMenuROS2RadarGraph(ROS2MenuTestBase):
+    """Test ROS2 RTX Radar OmniGraph creation from menu."""
+
+    async def _setup_radar(self, path: str = "/World/test_radar", aux_output_level: str = "NONE") -> Any:
+        """Create an RTX Radar prim on the stage.
+
+        RTX Radar requires Motion BVH; this is defensively enabled here in case the
+        test runner does not pick up the extension.toml app args.
+        """
+        import carb
+
+        carb.settings.get_settings().set("/renderer/raytracingMotion/enabled", True)
+        from isaacsim.sensors.experimental.rtx import Radar
+
+        radar = Radar(path=path, aux_output_level=aux_output_level)
+        await omni.kit.app.get_app().next_update_async()
+        return radar
+
+    async def test_radar_graph_creation(self) -> None:
+        """Test creation of RTX Radar graph structure via menu."""
+        robot, base_link_path, art_root_path = await self.setup_test_environment()
+        radar_path = "/World/test_radar"
+        await self._setup_radar(radar_path)
+
+        # Click through the menu to create the graph
+        window_name = "ROS2 RTX Radar Graph"
+        param_window = await menu_click_with_retry("Tools/Robotics/ROS 2 OmniGraphs/RTX Radar", window_name=window_name)
+        self.assertIsNotNone(param_window, "Parameter window not found")
+
+        root_widget_path = f"{window_name}//Frame/VStack[0]"
+
+        # Find and set RTX Radar prim
+        radar_prim = ui_test.find(root_widget_path + "/HStack[2]/StringField[0]")
+        radar_prim.model.set_value(radar_path)
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Click OK button (radar dialog OK/Cancel row is HStack[6])
+        ok_button = ui_test.find(root_widget_path + "/HStack[6]/Button[0]")
+        self.assertIsNotNone(ok_button, "OK button not found")
+        await ok_button.click()
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Get the created graph at default path
+        graph = og.get_graph_by_path("/Graph/ROS_RadarRTX")
+        self.assertIsNotNone(graph, "Graph was not created")
+
+        # Verify essential nodes exist
+        nodes = graph.get_nodes()
+        node_types = {node.get_type_name() for node in nodes}
+
+        expected_nodes = {
+            "omni.graph.action.OnPlaybackTick",
+            "isaacsim.ros2.bridge.ROS2Context",
+            "isaacsim.core.nodes.OgnIsaacRunOneSimulationFrame",
+            "isaacsim.core.nodes.IsaacCreateRenderProduct",
+            "isaacsim.ros2.bridge.ROS2RtxRadarHelper",
+        }
+
+        for expected in expected_nodes:
+            self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
+
+    async def test_radar_null_conditions(self) -> None:
+        """Test radar graph with null target prim."""
+        robot, base_link_path, art_root_path = await self.setup_test_environment()
+
+        # Click through the menu to create the graph
+        window_name = "ROS2 RTX Radar Graph"
+        param_window = await menu_click_with_retry("Tools/Robotics/ROS 2 OmniGraphs/RTX Radar", window_name=window_name)
+        self.assertIsNotNone(param_window, "Parameter window not found")
+
+        root_widget_path = f"{window_name}//Frame/VStack[0]"
+
+        # Leave radar path empty (null condition)
+        radar_prim_field = ui_test.find(root_widget_path + "/HStack[2]/StringField[0]")
+        radar_prim_field.model.set_value("")
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Click OK button
+        ok_button = ui_test.find(root_widget_path + "/HStack[6]/Button[0]")
+        self.assertIsNotNone(ok_button, "OK button not found")
+        await ok_button.click()
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Run simulation to test (should not crash)
+        self._timeline.play()
+        await omni.kit.app.get_app().next_update_async()
+        self._timeline.stop()
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Verify simulation completed (implicit test that no crash occurred)
+        self.assertFalse(self._timeline.is_playing())
+
+    async def test_radar_with_metadata(self) -> None:
+        """Test creation of RTX Radar graph with helper metadata flags enabled.
+
+        Unlike the lidar graph (which inserts a separate PointCloudConfig node),
+        the radar helper exposes its metadata as boolean inputs directly on
+        ROS2RtxRadarHelper, so this test verifies the helper's input attributes
+        are set rather than checking for a config node.
+        """
+        robot, base_link_path, art_root_path = await self.setup_test_environment()
+        radar_path = "/World/test_radar"
+        # BASIC aux output level is required for the radial velocity channel to populate.
+        await self._setup_radar(radar_path, aux_output_level="BASIC")
+
+        # Click through the menu to create the graph
+        window_name = "ROS2 RTX Radar Graph"
+        param_window = await menu_click_with_retry("Tools/Robotics/ROS 2 OmniGraphs/RTX Radar", window_name=window_name)
+        self.assertIsNotNone(param_window, "Parameter window not found")
+
+        root_widget_path = f"{window_name}//Frame/VStack[0]"
+
+        # Find and set RTX Radar prim
+        radar_prim = ui_test.find(root_widget_path + "/HStack[2]/StringField[0]")
+        radar_prim.model.set_value(radar_path)
+
+        # Enable each metadata checkbox. Metadata rows live in the inner VStack[0]
+        # (sibling to the parameter HStacks), one HStack per option. Order matches
+        # Ros2RtxRadarGraph.METADATA_OPTIONS: RadialVelocityMS, Intensity, Timestamp.
+        for row_index in range(3):
+            checkbox = ui_test.find(
+                root_widget_path + f"/VStack[0]/HStack[{row_index}]/HStack[0]/VStack[0]/ToolButton[0]"
+            )
+            if checkbox:
+                checkbox.model.set_value(True)
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Click OK button
+        ok_button = ui_test.find(root_widget_path + "/HStack[6]/Button[0]")
+        self.assertIsNotNone(ok_button, "OK button not found")
+        await ok_button.click()
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Get the created graph at default path
+        graph = og.get_graph_by_path("/Graph/ROS_RadarRTX")
+        self.assertIsNotNone(graph, "Graph was not created")
+
+        nodes = graph.get_nodes()
+        node_types = {node.get_type_name() for node in nodes}
+
+        expected_nodes = {
+            "omni.graph.action.OnPlaybackTick",
+            "isaacsim.ros2.bridge.ROS2Context",
+            "isaacsim.core.nodes.OgnIsaacRunOneSimulationFrame",
+            "isaacsim.core.nodes.IsaacCreateRenderProduct",
+            "isaacsim.ros2.bridge.ROS2RtxRadarHelper",
+        }
+        for expected in expected_nodes:
+            self.assertIn(expected, node_types, f"Missing expected node type: {expected}")
+
+        # Verify the radar helper has each metadata flag set to True.
+        radar_helper_node = None
+        for node in nodes:
+            if node.get_type_name() == "isaacsim.ros2.bridge.ROS2RtxRadarHelper":
+                radar_helper_node = node
+                break
+        self.assertIsNotNone(radar_helper_node, "Radar helper node not found")
+
+        for input_name in ("outputRadialVelocityMS", "outputIntensity", "outputTimestamp"):
+            attr = radar_helper_node.get_attribute(f"inputs:{input_name}")
+            self.assertIsNotNone(attr, f"Missing input attribute: inputs:{input_name}")
+            self.assertTrue(
+                og.Controller.get(attr),
+                f"inputs:{input_name} should be True after enabling the corresponding checkbox",
+            )
+
+    async def test_radar_data_flow(self) -> None:
+        """Test RTX Radar data is being properly published to ROS2 topics.
+
+        The generic RTX Radar configuration intentionally produces few returns
+        (often only 1-2 points in a static scene per the tutorial), so this
+        test only asserts that at least one PointCloud2 message arrives and
+        carries the expected x/y/z fields. It does NOT assert a minimum point
+        count.
+        """
+        # Cubes provide something for the radar beam to bounce off.
+        robot, base_link_path, art_root_path = await self.setup_test_environment(add_test_cubes=True)
+        radar_path = "/World/test_radar"
+        await self._setup_radar(radar_path)
+
+        # Set up the ROS 2 subscriber before the graph starts publishing.
+        self.point_cloud_data = None
+        point_cloud_topic = "/radar_point_cloud"
+
+        def point_cloud_callback(msg: Any) -> None:
+            self.point_cloud_data = msg
+
+        self.create_subscription(self.node, PointCloud2, point_cloud_topic, point_cloud_callback)
+
+        # Click through the menu to create the graph.
+        window_name = "ROS2 RTX Radar Graph"
+        param_window = await menu_click_with_retry("Tools/Robotics/ROS 2 OmniGraphs/RTX Radar", window_name=window_name)
+        self.assertIsNotNone(param_window, "Parameter window not found")
+
+        root_widget_path = f"{window_name}//Frame/VStack[0]"
+
+        radar_prim_field = ui_test.find(root_widget_path + "/HStack[2]/StringField[0]")
+        radar_prim_field.model.set_value(radar_path)
+
+        await omni.kit.app.get_app().next_update_async()
+
+        ok_button = ui_test.find(root_widget_path + "/HStack[6]/Button[0]")
+        self.assertIsNotNone(ok_button, "OK button not found")
+        await ok_button.click()
+
+        await omni.kit.app.get_app().next_update_async()
+
+        # Verify graph was created.
+        graph = og.get_graph_by_path("/Graph/ROS_RadarRTX")
+        self.assertIsNotNone(graph, "Graph was not created")
+
+        # Run simulation to generate radar data.
+        self._timeline.play()
+
+        def spin_ros() -> None:
+            rclpy.spin_once(self.node, timeout_sec=0.01)
+
+        await self.simulate_until_condition(
+            lambda: self.point_cloud_data is not None, max_frames=300, per_frame_callback=spin_ros
+        )
+
+        self._timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        # Validate that the helper actually published something.
+        self.assertIsNotNone(self.point_cloud_data, "No PointCloud2 message received from radar")
+        if self.point_cloud_data:
+            # PointCloud2 schema: x/y/z must be present regardless of point count.
+            field_names = [field.name for field in self.point_cloud_data.fields]
+            self.assertIn("x", field_names, "Radar PointCloud2 missing 'x' field")
+            self.assertIn("y", field_names, "Radar PointCloud2 missing 'y' field")
+            self.assertIn("z", field_names, "Radar PointCloud2 missing 'z' field")
+
+            from sensor_msgs_py.point_cloud2 import read_points
+
+            points_array = read_points(self.point_cloud_data)
+            print(f"[radar_data_flow] received {len(points_array)} point(s)")
+
+
 class TestMenuROS2JointStatesGraph(ROS2MenuTestBase):
     """Test ROS2 Joint States OmniGraph creation from menu."""
 

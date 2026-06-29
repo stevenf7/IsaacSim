@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""User interface for generating ROS2 camera and RTX lidar sensor OmniGraph action graphs."""
+"""User interface for generating ROS2 camera, RTX lidar, and RTX radar sensor OmniGraph action graphs."""
 
 from pathlib import Path
 
@@ -155,8 +155,8 @@ class Ros2CameraGraph(MenuHelperWindow):
         # TODO: so far only support if there's one existing render node. If there are multiple render nodes, it won't check if every node has unique camera prims.
         if render_node is None or render_node.get_attribute("inputs:cameraPrim").get()[0] != self._camera_prim:
             render_node = stage_utils.generate_next_free_path(
-                self._og_path + "/RenderProduct", ""
-            )  # this is actually a string path at this point, not a node prim despite the name. This is so that it's consistent with the others.
+                self._og_path + "/RenderProduct", prepend_default_prim=False
+            )  # this is actually a string path at this point, not a node prim despite the name.
             render_node_name = Path(render_node).name
             og.Controller.edit(
                 graph_handle,
@@ -807,8 +807,8 @@ class Ros2RtxLidarGraph(MenuHelperWindow):
         # TODO: so far only support if there's one existing render node. If there are multiple render nodes, it won't check if every node has unique camera prims.
         if render_node is None or render_node.get_attribute("inputs:cameraPrim").get()[0] != self._lidar_prim:
             render_node = stage_utils.generate_next_free_path(
-                self._og_path + "/RenderProduct", ""
-            )  # this is actually a string path at this point, not a node prim despite the name. This is so that it's consistent with the others.
+                self._og_path + "/RenderProduct", prepend_default_prim=False
+            )  # this is actually a string path at this point, not a node prim despite the name.
             render_node_name = Path(render_node).name
             og.Controller.edit(
                 graph_handle,
@@ -1138,5 +1138,319 @@ class Ros2RtxLidarGraph(MenuHelperWindow):
             attr_name: Name of the metadata attribute being toggled.
             check_state: Whether the metadata option is enabled.
 
+        """
+        self._metadata_selected[attr_name] = check_state
+
+
+class Ros2RtxRadarGraph(MenuHelperWindow):
+    """A UI helper window for generating ROS2 action graphs for RTX radar sensors.
+
+    This window provides an interface to configure and generate OmniGraph action graphs that publish RTX radar detections to ROS2 as ``sensor_msgs/PointCloud2`` messages. It supports both creating new graphs and adding nodes to existing graphs. Users can optionally include per-point radial velocity, intensity, and timestamp metadata in the published point cloud.
+
+    RTX Radar requires Motion BVH to be enabled in the renderer for Doppler velocity estimation. Radial velocity metadata additionally requires the OmniRadar prim to be authored with auxiliary output level ``"BASIC"``.
+    """
+
+    # Point cloud metadata options: (display_name, attribute_name)
+    # attribute_name corresponds to the boolean input on ROS2RtxRadarHelper:
+    # outputRadialVelocityMS, outputIntensity, outputTimestamp.
+    METADATA_OPTIONS = [
+        ("Radial Velocity (m/s)", "RadialVelocityMS"),
+        ("Intensity", "Intensity"),
+        ("Timestamp", "Timestamp"),
+    ]
+    """Point cloud metadata options exposed by the ROS2RtxRadarHelper node.
+
+    Each tuple is ``(display_name, attribute_suffix)``. The helper input name is
+    ``inputs:output<attribute_suffix>``.
+    """
+
+    def __init__(self) -> None:
+        """Initialize the ROS2 RTX radar graph window."""
+        super().__init__("ROS2 RTX Radar Graph", width=400, height=400)
+        self._og_path = "/Graph/ROS_RadarRTX"
+        self._frame_id = "radar"
+        self._node_namespace = ""
+        self._add_to_existing_graph = False
+        self._radar_prim = ""
+        self._point_cloud_topic = "/radar_point_cloud"
+
+        # Metadata options - dictionary keyed by attribute suffix.
+        self._metadata_selected = {attr_name: False for _, attr_name in self.METADATA_OPTIONS}
+
+        # build UI
+        self._build_ui()
+
+    def make_graph(self) -> None:
+        """Create or modify an action graph for ROS2 RTX Radar publishing.
+
+        Generates a new graph or extends an existing one to publish RTX Radar detections to ROS 2 as PointCloud2 messages. Selected metadata options (radial velocity, intensity, timestamp) are enabled directly on the ROS2RtxRadarHelper node.
+        """
+        self._timeline = omni.timeline.get_timeline_interface()
+        self._timeline.stop()
+
+        keys = og.Controller.Keys
+        if not self._add_to_existing_graph:
+            self._og_path = stage_utils.generate_next_free_path(self._og_path, prepend_default_prim=False)
+            graph_handle, nodes, _, _ = og.Controller.edit(
+                {"graph_path": self._og_path, "evaluator_name": "execution"},
+                {
+                    keys.CREATE_NODES: [
+                        ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+                        ("RunOnce", "isaacsim.core.nodes.OgnIsaacRunOneSimulationFrame"),
+                        ("RenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
+                        ("Context", "isaacsim.ros2.bridge.ROS2Context"),
+                    ],
+                    keys.SET_VALUES: [("RenderProduct.inputs:cameraPrim", self._radar_prim)],
+                    keys.CONNECT: [
+                        ("OnPlaybackTick.outputs:tick", "RunOnce.inputs:execIn"),
+                        ("RunOnce.outputs:step", "RenderProduct.inputs:execIn"),
+                    ],
+                },
+            )
+        else:
+            graph_handle = og.get_graph_by_path(self._og_path)
+
+        # Walk the graph to discover the required upstream nodes.
+        all_nodes = graph_handle.get_nodes()
+        tick_node = None
+        context_node = None
+        run_once_node = None
+        render_node = None
+        render_node_path = None
+        for node in all_nodes:
+            node_path = node.get_prim_path()
+            node_type = node.get_type_name()
+            if node_type == "omni.graph.action.OnPlaybackTick" or node_type == "omni.graph.action.OnTick":
+                tick_node = node_path
+            elif node_type == "isaacsim.ros2.bridge.ROS2Context":
+                context_node = node_path
+            elif node_type == "isaacsim.core.nodes.OgnIsaacRunOneSimulationFrame":
+                run_once_node = node_path
+            elif node_type == "isaacsim.core.nodes.IsaacCreateRenderProduct":
+                render_node_path = node_path
+                render_node = node
+
+        if not tick_node or not context_node or not run_once_node:
+            carb.log_warn(
+                f"ActionGraph {self._og_path} missing node(s) necessary to build ROS2 graph. Skipping graph generation. Consider building new graph using tool."
+            )
+            return
+
+        # If the existing graph has no render node, or its render node targets a different prim, add a new one wired to the radar prim.
+        if render_node is None or render_node.get_attribute("inputs:cameraPrim").get()[0] != self._radar_prim:
+            render_node = stage_utils.generate_next_free_path(
+                self._og_path + "/RenderProduct", prepend_default_prim=False
+            )
+            render_node_name = Path(render_node).name
+            og.Controller.edit(
+                graph_handle,
+                {
+                    keys.CREATE_NODES: [
+                        (render_node_name, "isaacsim.core.nodes.IsaacCreateRenderProduct"),
+                    ],
+                    keys.SET_VALUES: [
+                        (render_node_name + ".inputs:cameraPrim", self._radar_prim),
+                    ],
+                    keys.CONNECT: [
+                        (run_once_node + ".outputs:step", render_node_name + ".inputs:execIn"),
+                    ],
+                },
+            )
+        else:
+            render_node = render_node_path
+
+        # Create the radar helper. Metadata flags are set directly on the helper inputs.
+        radar_helper_node = stage_utils.generate_next_free_path(
+            self._og_path + "/RadarHelper", prepend_default_prim=False
+        )
+        radar_helper_node_name = Path(radar_helper_node).name
+
+        helper_set_values = [
+            (radar_helper_node + ".inputs:topicName", self._point_cloud_topic),
+            (radar_helper_node + ".inputs:frameId", self._frame_id),
+            (radar_helper_node + ".inputs:nodeNamespace", self._node_namespace),
+        ]
+        for attr_suffix, selected in self._metadata_selected.items():
+            if selected:
+                helper_set_values.append((f"{radar_helper_node}.inputs:output{attr_suffix}", True))
+
+        og.Controller.edit(
+            graph_handle,
+            {
+                keys.CREATE_NODES: [
+                    (radar_helper_node_name, "isaacsim.ros2.bridge.ROS2RtxRadarHelper"),
+                ],
+                keys.SET_VALUES: helper_set_values,
+                keys.CONNECT: [
+                    (render_node + ".outputs:execOut", radar_helper_node + ".inputs:execIn"),
+                    (render_node + ".outputs:renderProductPath", radar_helper_node + ".inputs:renderProductPath"),
+                ],
+            },
+        )
+        if context_node:
+            og.Controller.connect(
+                og.Controller.attribute(context_node + ".outputs:context"),
+                og.Controller.attribute(radar_helper_node + ".inputs:context"),
+            )
+
+        # Radial velocity metadata requires the radar prim to be authored with aux output level "BASIC".
+        if self._metadata_selected.get("RadialVelocityMS"):
+            stage = omni.usd.get_context().get_stage()
+            radar_prim = stage.GetPrimAtPath(self._radar_prim)
+            channels_attr = radar_prim.GetAttribute("_replicator:rendervar:GenericModelOutput:channels")
+            if not channels_attr.IsValid() or "BASIC" not in (channels_attr.Get() or []):
+                post_notification(
+                    "Radial Velocity selected but the radar prim does not advertise the BASIC auxiliary "
+                    "output channel. Recreate the radar with aux_output_level='BASIC' (or author "
+                    "_replicator:rendervar:GenericModelOutput:channels = ['BASIC']) for radial velocity to populate.",
+                    status=NotificationStatus.WARNING,
+                )
+
+    def _build_ui(self) -> None:
+        """Build the user interface for the RTX Radar graph configuration window.
+
+        Creates input fields for graph path, radar prim selection, frame ID, node namespace, and point cloud topic. Includes checkboxes for the three per-point metadata fields exposed by the ROS2RtxRadarHelper node.
+        """
+        og_path_def = ParamWidget.FieldDef(
+            name="og_path", label="Graph Path", type=ui.StringField, default=self._og_path
+        )
+        frame_id_def = ParamWidget.FieldDef(
+            name="frame_id", label="Frame ID", type=ui.StringField, default=self._frame_id
+        )
+        node_namespace_def = ParamWidget.FieldDef(
+            name="node_namespace", label="Node Namespace", type=ui.StringField, default=self._node_namespace
+        )
+        point_cloud_topic_def = ParamWidget.FieldDef(
+            name="point_cloud_topic", label="Point Cloud Topic", type=ui.StringField, default=self._point_cloud_topic
+        )
+
+        with self.frame:
+            with ui.VStack(spacing=4):
+                with ui.HStack():
+                    ui.Label("Add to an existing graph?", width=ui.Percent(30))
+                    cb = ui.SimpleBoolModel(default_value=self._add_to_existing_graph)
+                    SimpleCheckBox(self._add_to_existing_graph, self._on_use_existing_graph, model=cb)
+                self.og_path_input = ParamWidget(field_def=og_path_def)
+                self.radar_prim_input = SelectPrimWidget(label="Radar Prim", default=self._radar_prim)
+                self.frame_id_input = ParamWidget(field_def=frame_id_def)
+                self.node_namespace_input = ParamWidget(field_def=node_namespace_def)
+                ui.Spacer(height=5)
+                self.point_cloud_topic_input = ParamWidget(field_def=point_cloud_topic_def)
+
+                ui.Spacer(height=5)
+                ui.Label("Point Cloud Metadata", word_wrap=True)
+                with ui.VStack(spacing=2):
+                    for display_name, attr_name in self.METADATA_OPTIONS:
+                        with ui.HStack():
+                            ui.Label(display_name, width=ui.Percent(30))
+                            cb = ui.SimpleBoolModel(default_value=self._metadata_selected[attr_name])
+                            SimpleCheckBox(
+                                self._metadata_selected[attr_name],
+                                lambda checked, attr=attr_name: self._on_metadata_changed(attr, checked),
+                                model=cb,
+                            )
+
+                with ui.HStack():
+                    ui.Spacer(width=ui.Percent(10))
+                    ui.Button("OK", height=40, width=ui.Percent(30), clicked_fn=self._on_ok)
+                    ui.Spacer(width=ui.Percent(20))
+                    ui.Button("Cancel", height=40, width=ui.Percent(30), clicked_fn=self._on_cancel)
+                    ui.Spacer(width=ui.Percent(10))
+                with ui.Frame(height=30):
+                    with ui.VStack():
+                        with ui.HStack():
+                            ui.Label("Python Script for Graph Generation", width=ui.Percent(30))
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_open_IDE_clicked("", __file__),
+                                style=get_style()["IconButton.Image::OpenConfig"],
+                            )
+                        with ui.HStack():
+                            ui.Label("Documentations", width=0, word_wrap=True)
+                            ui.Button(
+                                name="IconButton",
+                                width=24,
+                                height=24,
+                                clicked_fn=lambda: on_docs_link_clicked(
+                                    "https://docs.isaacsim.omniverse.nvidia.com/latest/ros2_tutorials/tutorial_ros2_rtx_radar.html#graph-shortcut"
+                                ),
+                                style=get_style()["IconButton.Image::OpenLink"],
+                            )
+
+        return
+
+    def _on_ok(self) -> None:
+        """Handle the OK button click event.
+
+        Collects values from all UI input fields, validates the parameters, and generates the graph if validation passes. Closes the window upon successful graph generation.
+        """
+        self._og_path = self.og_path_input.get_value()
+        self._radar_prim = self.radar_prim_input.get_value()
+        self._frame_id = self.frame_id_input.get_value()
+        self._node_namespace = self.node_namespace_input.get_value()
+        self._point_cloud_topic = self.point_cloud_topic_input.get_value()
+
+        if self._check_params():
+            self.make_graph()
+            self.visible = False
+        else:
+            post_notification("Parameter check failed", status=NotificationStatus.WARNING)
+
+    def _on_cancel(self) -> None:
+        """Handle the Cancel button click event.
+
+        Closes the window without generating or modifying the graph.
+        """
+        self.visible = False
+
+    def _check_params(self) -> bool:
+        """Validate the graph and radar prim parameters.
+
+        Verifies that the specified graph path exists if adding to an existing graph, and confirms that the radar prim is a valid RTX radar (an ``OmniRadar`` prim with the ``OmniSensorGenericRadarWpmDmatAPI`` schema applied).
+
+        Returns:
+            True if all parameters are valid, False otherwise.
+        """
+        stage = omni.usd.get_context().get_stage()
+
+        if self._add_to_existing_graph:
+            og_prim = stage.GetPrimAtPath(self._og_path)
+            if not (og_prim.IsValid() and og_prim.IsA(OmniGraphSchema.OmniGraph)):
+                post_notification(
+                    self._og_path + " is not an existing graph, check the og path",
+                    status=NotificationStatus.WARNING,
+                )
+                return False
+
+        radar_prim = stage.GetPrimAtPath(self._radar_prim)
+        if (
+            radar_prim.IsValid()
+            and radar_prim.GetTypeName() == "OmniRadar"
+            and radar_prim.HasAPI("OmniSensorGenericRadarWpmDmatAPI")
+        ):
+            return True
+
+        post_notification(
+            self._radar_prim + " is not a valid RTX radar prim, check the radar prim",
+            status=NotificationStatus.WARNING,
+        )
+        return False
+
+    def _on_use_existing_graph(self, check_state: bool) -> None:
+        """Handle the checkbox state change for using an existing graph.
+
+        Args:
+            check_state: Whether to add nodes to an existing graph instead of creating a new one.
+        """
+        self._add_to_existing_graph = check_state
+
+    def _on_metadata_changed(self, attr_name: str, check_state: bool) -> None:
+        """Handle metadata checkbox state change.
+
+        Args:
+            attr_name: Attribute suffix of the metadata field being toggled.
+            check_state: Whether the metadata option is enabled.
         """
         self._metadata_selected[attr_name] = check_state
