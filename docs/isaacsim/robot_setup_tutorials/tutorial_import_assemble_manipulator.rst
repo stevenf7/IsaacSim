@@ -12,9 +12,9 @@ This is the first manipulator tutorial in a series of four tutorials. This tutor
 
 |isaac-sim_short| always uses Python 3.12, so the UR description package and any ROS packages used in this tutorial must be available in a Python 3.12 environment. How you obtain the package depends on your platform:
 
-- **Ubuntu 24.04 + ROS 2 Jazzy** — install the prebuilt ``ros-jazzy-ur-description`` apt package; the system Python (3.12) already matches |isaac-sim_short|.
-- **Ubuntu 22.04 + ROS 2 Humble or Jazzy** — the system Python is 3.10, so the workspace must be cloned and rebuilt against Python 3.12 using the included ``build_ros.sh`` script.
-- **Windows + Pixi-based ROS 2 Jazzy** — add the UR description package to your Pixi environment (``pixi add ros-jazzy-ur-description``); Pixi-managed ROS 2 Jazzy already runs on Python 3.12. See :ref:`isaac_sim_app_install_ros_other_platforms` for Pixi setup. WSL2 is not supported for the ROS-based URDF import workflow — use the prebuilt USD files in the content browser instead.
+- **Ubuntu 24.04 + ROS 2 Jazzy** --- install the prebuilt ``ros-jazzy-ur-description`` apt package; the system Python (3.12) already matches |isaac-sim_short|.
+- **Ubuntu 22.04 + ROS 2 Humble or Jazzy** --- the system Python is 3.10, so the workspace must be cloned and rebuilt against Python 3.12 using the included ``build_ros.sh`` script.
+- **Windows + Pixi-based ROS 2 Jazzy** --- add the UR description package to your Pixi environment (``pixi add ros-jazzy-ur-description``); Pixi-managed ROS 2 Jazzy already runs on Python 3.12. See :ref:`isaac_sim_app_install_ros` for Pixi setup. WSL2 is not supported for the ROS-based URDF import workflow --- use the prebuilt USD files in the content browser instead.
 
 .. attention::
    ROS 2 Humble on Windows (Pixi) is not a supported configuration for this tutorial. On Windows, only ROS 2 Jazzy with Pixi is supported. Switch to ROS 2 Jazzy on Windows, or move to a Linux configuration, to follow this tutorial as written.
@@ -23,6 +23,8 @@ Verify or choose your configuration in the **Build Environment** banner at the t
 
 .. config-selector::
    :title: Build Environment
+   :persist: session
+   :persist-key: ros2
    :options: platform=Linux|Windows,ubuntu_version=Ubuntu 24.04|Ubuntu 22.04,ros_distro=Jazzy|Humble
    :dependencies: ubuntu_version=platform:Linux
 
@@ -155,7 +157,7 @@ Follow the steps for the configuration you selected in the **Build Environment**
 .. config-content::
    :show-when: platform=Windows,ros_distro=Jazzy
 
-   On Windows, the URDF import workflow in this tutorial is supported only with a `Pixi-based <https://pixi.sh/>`_ ROS 2 Jazzy installation. Follow :ref:`isaac_sim_app_install_ros_other_platforms` for Windows ROS 2 setup and to install or build the UR description package against the Pixi environment. If you are using WSL2, skip the ROS-based import steps and use the prebuilt USD files in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/``.
+   On Windows, the URDF import workflow in this tutorial is supported only with a `Pixi-based <https://pixi.sh/>`_ ROS 2 Jazzy installation. Follow :ref:`isaac_sim_app_install_ros` for Windows ROS 2 setup and to install or build the UR description package against the Pixi environment. If you are using WSL2, skip the ROS-based import steps and use the prebuilt USD files in the content browser at ``Isaac Sim/Samples/Rigging/Manipulator/import_manipulator/``.
 
 .. config-content::
    :show-when: platform=Windows,ros_distro=Humble
@@ -209,7 +211,7 @@ Launch the URDF Publisher Topic
    .. config-content::
       :show-when: platform=Linux,ubuntu_version=Ubuntu 22.04,ros_distro=Jazzy
 
-      ROS 2 Jazzy is not natively available on Ubuntu 22.04, so run the launch command from a ROS 2 Jazzy Docker container with ``jazzy_ws`` mounted and built natively. Follow :ref:`isaac_ros_docker_other_platforms` to start an ``osrf/ros:jazzy-desktop`` container, build ``jazzy_ws`` inside it, then from inside the container run:
+      ROS 2 Jazzy is not natively available on Ubuntu 22.04, so run the launch command from a ROS 2 Jazzy Docker container with ``jazzy_ws`` mounted and built natively. Follow :ref:`isaac_ros_docker` to start an ``osrf/ros:jazzy-desktop`` container, build ``jazzy_ws`` inside it, then from inside the container run:
 
       .. code-block:: bash
 

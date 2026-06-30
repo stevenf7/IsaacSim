@@ -54,7 +54,7 @@ To build your own ROS 2 custom message packages for use with |isaac-sim_short|, 
 If you are on Ubuntu 24.04 and using ROS 2 Jazzy, you can follow the instructions :ref:`isaac_sim_ros_workspace_setup` to build the ROS 2 workspace with Python 3.12.
 
 Otherwise, run ``./build_ros.sh`` and source your workspaces before running |isaac-sim_short|.
-Ensure you have completed the steps in :ref:`isaac_sim_ros_workspace_setup_other_platforms`.
+Ensure you have completed the steps in :ref:`isaac_sim_ros_workspace_setup`.
     
 
 #. Run |isaac-sim_short| from the same terminal where the sourced workspace contains the minimal ROS 2 dependencies needed to enable the ROS 2 bridge and the ``custom_message`` package, which contains our sample message.
