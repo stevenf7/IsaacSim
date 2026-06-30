@@ -3,7 +3,7 @@ reloadable = false
 order = 0
 
 [package]
-version = "1.0.0"
+version = "1.0.1"
 category = "Simulation"
 title = "ZMQ Core"
 description = "ZMQ Core extension providing ZeroMQ socket infrastructure and protobuf schemas for Isaac Sim ZMQ bridge"
