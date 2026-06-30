@@ -74,10 +74,9 @@ if os.target() == "linux" then
         "-Wl,--no-as-needed,-lz,--as-needed",
     }
 
-    -- Add .proto files as source inputs so the custom build rule fires them through protoc.
-    -- The generated .pb.cc files are also listed so gmake compiles them.
-    -- Using custom build rules (not prebuildcommands) ensures make knows how to BUILD
-    -- the .pb.cc files before it tries to compile them — fixing the dependency timing.
+    -- Feed the .proto files to the custom build rule below. The generated .pb.cc
+    -- are NOT listed here: premake already compiles them via the rule's buildoutputs.
+    -- Listing them as well made premake compile each proto twice (duplicate object).
     files {
         proto_src_dir .. "/clock.proto",
         proto_src_dir .. "/image.proto",
@@ -86,13 +85,6 @@ if os.target() == "linux" then
         proto_src_dir .. "/update_prim_attribute.proto",
         proto_src_dir .. "/joint_states.proto",
         proto_src_dir .. "/joint_command.proto",
-        proto_out_dir .. "/clock.pb.cc",
-        proto_out_dir .. "/image.pb.cc",
-        proto_out_dir .. "/bbox2d.pb.cc",
-        proto_out_dir .. "/camera_params.pb.cc",
-        proto_out_dir .. "/update_prim_attribute.pb.cc",
-        proto_out_dir .. "/joint_states.pb.cc",
-        proto_out_dir .. "/joint_command.pb.cc",
     }
 
     -- Custom build rule: .proto → .pb.cc + .pb.h
@@ -116,13 +108,13 @@ if os.target() == "linux" then
 
     filter { "system:linux" }
     disablewarnings { "error=pragmas" }
-    buildoptions("-fvisibility=default")
+    -- -Wno-undef silences the toolchain's global -Wundef on the generated protobuf
+    -- sources, which reference macros (e.g. PROTOBUF_ENABLE_DEBUG_LOGGING_MAY_LEAK_PII)
+    -- that protobuf leaves undefined in non-debug builds. Applied at project scope (not
+    -- a per-file filter) so it reaches the compiled .pb.o via ALL_CXXFLAGS; safe here
+    -- since the hand-written sources don't rely on -Wundef.
+    buildoptions { "-fvisibility=default", "-Wno-undef" }
     linkoptions { "-Wl,--export-dynamic", "-Wl,-rpath,'$$ORIGIN/lib'" }
-
-    -- Suppress -Wundef from generated protobuf sources (PROTOBUF_ENABLE_DEBUG_LOGGING_MAY_LEAK_PII
-    -- and similar macros are intentionally undefined in non-debug protobuf builds).
-    filter { "system:linux", "files:**.pb.cc" }
-    buildoptions { "-Wno-undef" }
     filter {}
     filter { "system:windows" }
     buildoptions("-D_CRT_SECURE_NO_WARNINGS")
