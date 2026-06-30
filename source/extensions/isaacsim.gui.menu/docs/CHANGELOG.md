@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.10.7] - 2026-06-26
+### Changed
+- Mark the menu package root as lifecycle-only with no public Python API.
+
+## [2.10.6] - 2026-06-26
+### Changed
+- Replace package-root star imports with explicit public API imports.
+
 ## [2.10.5] - 2026-05-19
 ### Fixed
 - Help menu: `OpenUSD Reference Guide`, `Warp Getting Started`, and `Warp Documentation` now render reliably in `isaacsim.exp.full.kit`. Previously they bound to `source=` items not provided by the app's dependency closure and rendered as orphan separators. Register the actions and `MenuItemDescription`s locally instead.

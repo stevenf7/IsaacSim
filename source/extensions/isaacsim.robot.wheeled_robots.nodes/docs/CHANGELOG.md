@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.7] - 2026-06-29
+### Changed
+- Hide the Kit lifecycle extension class from the generated public Python API.
+
 ## [0.1.6] - 2026-06-23
 ### Removed
 - Removed the unused `omni.physx` dependency. The extension does not reference any `omni.physx` API directly.

@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.1.3] - 2026-06-26
+### Changed
+- Hide the Kit lifecycle extension class from the generated public Python API.
+
 ## [5.1.2] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.

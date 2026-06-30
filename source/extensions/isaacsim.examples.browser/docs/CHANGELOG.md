@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.4] - 2026-06-26
+### Changed
+- Replace package-root star imports with explicit public API imports.
+
 ## [0.3.3] - 2026-06-12
 ### Fixed
 - Allow example `ui_hook` content in the detail panel to receive usable vertical space instead of being hosted in a zero-height stack.
