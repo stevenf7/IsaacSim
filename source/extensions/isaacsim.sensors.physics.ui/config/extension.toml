@@ -37,6 +37,7 @@ timeout = 900
 dependencies = [
     "isaacsim.test.utils",
     "omni.kit.window.stage",
+    "omni.hydra.rtx",
 ]
 
 stdoutFailPatterns.exclude = [

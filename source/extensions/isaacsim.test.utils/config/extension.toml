@@ -41,6 +41,10 @@ stdoutFailPatterns.exclude = [
 
 [[test]]
 
+dependencies = [
+    "omni.hydra.rtx",
+]
+
 args = [
     "--enable",
     "omni.kit.loop-isaac",

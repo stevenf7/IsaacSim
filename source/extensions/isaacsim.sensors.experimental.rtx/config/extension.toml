@@ -1,5 +1,5 @@
 [package]
-version = "1.4.6"
+version = "1.4.7"
 category = "Simulation"
 title = "Isaac Sim RTX Sensor Simulation"
 description = "Provides APIs for RTX-based sensors, including RTX Lidar, RTX Radar & RTX Acoustic."
@@ -21,6 +21,7 @@ writeTarget.platform = true  # ships platform-specific binaries copied from gene
 "isaacsim.storage.native" = {}
 "omni.replicator.core" = {}
 "omni.sensors.nv.acoustic" = {}
+"omni.sensors.nv.camera" = {}
 "omni.sensors.nv.common" = {}
 "omni.sensors.nv.ids" = {}
 "omni.sensors.nv.lidar" = {}
@@ -117,10 +118,11 @@ args = [
     "--/rtx/rendering/perSensorTickTlas=true",
     "--/rtx/reservedDescriptors=900000",
     ### Extension specific args
-    "--/rtx-transient/stableIds/enabled=true",
     "--/renderer/raytracingMotion/enabled=true",
-    "--/renderer/raytracingMotion/enableHydraEngineMasking=true",
     "--/renderer/raytracingMotion/enabledForHydraEngines=0,1,2,3",
+    "--/renderer/raytracingMotion/enableHydraEngineMasking=true",
+    "--/rtx-transient/stableIds/enabled=true",
+    "--/rtx/spg/enabled=true",
 ]
 
 stdoutFailPatterns.exclude = [

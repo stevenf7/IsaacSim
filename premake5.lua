@@ -62,6 +62,7 @@ function isaacsim_kit_settings()
     -- Setup include paths. Add kit SDK include paths too.
     includedirs {
         "%{root}/_build/target-deps/gsl/include",
+        "%{root}/_build/target-deps/rtx_plugins/include",
     }
 
     -- Carbonite carb lib

@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.7] - 2026-06-12
+### Fixed
+- `SingleViewDepthCameraSensor`: correctly populates render vars for depth sensor SPG.
+
 ## [1.4.6] - 2026-06-12
 ### Fixed
 - `camera_utils.draw_annotator_data_to_image`: defer the `cv2` import to first use.
