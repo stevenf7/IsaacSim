@@ -41,6 +41,7 @@ stdoutFailPatterns.exclude = [
 [[test]]
 dependencies = [
     "isaacsim.test.utils",
+    "omni.hydra.rtx",
     "omni.kit.viewport.window",
 ]
 

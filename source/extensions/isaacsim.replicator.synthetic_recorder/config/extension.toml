@@ -37,6 +37,7 @@ stdoutFailPatterns.exclude = [
 timeout = 900
 dependencies = [
     "isaacsim.test.utils",
+    "omni.hydra.rtx",
     "omni.kit.viewport.window",
 ]
 
@@ -103,6 +104,7 @@ name = "test_recorder_outputs"
 timeout = 900
 dependencies = [
     "isaacsim.test.utils",
+    "omni.hydra.rtx",
     "omni.kit.viewport.window",
 ]
 
@@ -172,6 +174,7 @@ name = "test_recorder_ui"
 timeout = 900
 dependencies = [
     "isaacsim.test.utils",
+    "omni.hydra.rtx",
     "omni.kit.viewport.window",
 ]
 
@@ -241,6 +244,7 @@ name = "test_recorder_timeline"
 timeout = 900
 dependencies = [
     "isaacsim.test.utils",
+    "omni.hydra.rtx",
     "omni.kit.viewport.window",
 ]
 

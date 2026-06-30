@@ -22,11 +22,18 @@ from typing import Any, Literal, get_args
 import carb
 import isaacsim.core.experimental.utils.prim as prim_utils
 import isaacsim.core.experimental.utils.stage as stage_utils
+import omni.replicator.core as rep
 from pxr import Sdf, Usd
 
 from ._camera_common import CAMERA_ANNOTATOR_SPEC as ANNOTATOR_SPEC
 from .camera_sensor import CameraSensor
 from .rtx_camera import RtxCamera
+
+_DEPTH_SENSOR_INPUT_RENDER_VARS = (
+    "Camera3dPositionSD",
+    "DistanceToImagePlaneSD",
+    "LdrColor",
+)
 
 ANNOTATOR = Literal[
     "bounding_box_2d_loose",
@@ -97,20 +104,45 @@ class SingleViewDepthCameraSensor(CameraSensor):
         self._annotators_spec = {annotator: ANNOTATOR_SPEC[annotator] for annotator in get_args(ANNOTATOR)}
         # initialize base class
         super().__init__(path, resolution=resolution, annotators=annotators)
-        # initialize instance
-        self._render_product_prim = prim_utils.get_prim_at_path(self.render_product)
-        self._render_product_prim.ApplyAPI("OmniSensorDepthSensorSingleViewAPI")
-        # - update render settings
-        settings = carb.settings.get_settings()
-        settings.set("/exts/omni.usd.schema.render_settings/rtx/renderSettings/apiSchemas/autoApply", None)
-        settings.set("/exts/omni.usd.schema.render_settings/rtx/camera/apiSchemas/autoApply", None)
-        settings.set("/exts/omni.usd.schema.render_settings/rtx/renderProduct/apiSchemas/autoApply", None)
         # copy depth sensor attributes from any pre-existing template render product in a loaded USD asset
         self._populate_from_asset_template()
+
+    def _initialize_sensor(self, annotators: str | list[str], *, render_vars: list[str] | None = None) -> None:
+        """Initialize the render product with depth-sensor input AOVs.
+
+        ``DepthSensor*`` output AOVs are generated from input render vars provided by
+        ``omni.sensors.nv.camera``. Replicator attaches the output annotator, but the
+        input render vars must also be requested on the render product.
+
+        Args:
+            annotators: Annotator/sensor types to attach.
+            render_vars: Render variables to pass to the render product.
+        """
+        render_vars = list(render_vars or [])
+        for render_var in _DEPTH_SENSOR_INPUT_RENDER_VARS:
+            if render_var not in render_vars:
+                render_vars.append(render_var)
+        self._hydra_texture = rep.create.render_product(
+            camera=self.authoring_object.paths[0],
+            resolution=(self._resolution[1], self._resolution[0]),  # (width, height)
+            name=f"camera_sensor_{hash(self)}",
+            render_vars=render_vars,
+        )
+        self._render_product_prim = prim_utils.get_prim_at_path(self._hydra_texture.path)
+        self._render_product_prim.ApplyAPI("OmniSensorDepthSensorSingleViewAPI")
+        self._configure_depth_sensor_render_settings()
+        self.attach_annotators(annotators)
 
     """
     Methods.
     """
+
+    def _configure_depth_sensor_render_settings(self) -> None:
+        """Configure render settings consumed by depth sensor render products."""
+        settings = carb.settings.get_settings()
+        settings.set("/exts/omni.usd.schema.render_settings/rtx/renderSettings/apiSchemas/autoApply", None)
+        settings.set("/exts/omni.usd.schema.render_settings/rtx/camera/apiSchemas/autoApply", None)
+        settings.set("/exts/omni.usd.schema.render_settings/rtx/renderProduct/apiSchemas/autoApply", None)
 
     def _populate_from_asset_template(self) -> None:
         """Copy depth sensor attributes from a template render product embedded in a loaded USD asset.
