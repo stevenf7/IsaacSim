@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.1] - 2026-06-29
+### Changed
+- Replace package-root star imports with explicit public API imports.
+
 ## [2.2.0] - 2026-06-26
 ### Changed
 - Register Isaac Sim build metadata for crash reports from `isaacsim.core.version`.

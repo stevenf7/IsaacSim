@@ -1,5 +1,5 @@
 [package]
-version = "0.1.0"
+version = "0.1.1"
 category = "Simulation"
 title = "AI Agent Chat"
 description = "In-UI chat panel that drives an external AI coding agent to build and manipulate Isaac Sim scenes over the python_server socket."

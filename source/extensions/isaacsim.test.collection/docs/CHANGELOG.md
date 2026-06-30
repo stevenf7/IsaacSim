@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.10] - 2026-06-29
+### Changed
+- Replace package-root star imports with explicit lifecycle imports.
+
 ## [2.6.9] - 2026-06-23
 ### Changed
 - Update utility snippets to use `isaacsim.core.experimental.utils.physics` helpers instead of `omni.physx.scripts.utils`

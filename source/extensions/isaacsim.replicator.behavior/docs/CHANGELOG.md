@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.6] - 2026-06-26
+### Changed
+- Expose the documented behavior classes and behavior script helpers from the package root.
+
+## [1.5.5] - 2026-06-26
+### Changed
+- Replace package-root star imports with explicit lifecycle imports.
+
 ## [1.5.4] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings.

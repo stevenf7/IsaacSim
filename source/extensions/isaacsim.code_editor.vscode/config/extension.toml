@@ -1,5 +1,5 @@
 [package]
-version = "1.2.3"
+version = "1.2.4"
 category = "Utility"
 title = "VS Code integration"
 description = "VS Code launcher and menu integration for Isaac Sim"
