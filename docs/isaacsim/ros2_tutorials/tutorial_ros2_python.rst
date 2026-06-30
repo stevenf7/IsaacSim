@@ -28,6 +28,8 @@ Verify or choose your configuration in the **Standalone Environment** banner at 
 
 .. config-selector::
    :title: Standalone Environment
+   :persist: session
+   :persist-key: ros2
    :options: platform=Linux|Windows
 
 Getting Started
@@ -44,7 +46,7 @@ Getting Started
 .. config-content::
    :show-when: platform=Windows
 
-   Windows standalone ROS 2 examples use the Pixi Python environment. Follow the Pixi setup in :ref:`isaac_sim_app_install_ros_other_platforms`, then run these commands from the Pixi workspace. The commands execute standalone sample scripts from the local |isaac-sim_short| binary installation or source clone pointed to by ``isaac_sim_package_path`` (default: ``C:\\isaacsim``), while the simulator runtime is imported from the PyPI ``isaacsim`` package installed in the Pixi environment. Replace the ``C:\\isaacsim`` prefix in the commands if you configured a different ``isaac_sim_package_path``. This temporary split avoids dependency issues with the bundled ``python.bat`` and ``python.sh`` launchers and is expected to be removed in a future release.
+   Windows standalone ROS 2 examples use the Pixi Python environment. Follow the Pixi setup in :ref:`isaac_sim_app_install_ros`, then run these commands from the Pixi workspace. The commands execute standalone sample scripts from the local |isaac-sim_short| binary installation or source clone pointed to by ``isaac_sim_package_path`` (default: ``C:\\isaacsim``), while the simulator runtime is imported from the PyPI ``isaacsim`` package installed in the Pixi environment. Replace the ``C:\\isaacsim`` prefix in the commands if you configured a different ``isaac_sim_package_path``. This temporary split avoids dependency issues with the bundled ``python.bat`` and ``python.sh`` launchers and is expected to be removed in a future release.
 
 .. note:: In Windows 11, depending on your machine's configuration, RViz2 might not open properly.
 

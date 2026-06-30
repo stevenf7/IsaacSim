@@ -28,7 +28,6 @@ The following tutorials detail the process of extracting and manipulating synthe
     :maxdepth: 1
 
     ../installation/install_ros
-    ../installation/install_ros_other_platforms
     index.rst
     ./../nvidia_isaac_ros/isaac_ros_tutorials.rst
     ros2_reference_architecture

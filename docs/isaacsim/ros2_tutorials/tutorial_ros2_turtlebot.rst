@@ -89,7 +89,7 @@ Importing TurtleBot URDF
 
         .. tab-item:: Windows (Pixi)
 
-            The :ref:`isaac_sim_app_install_ros_other_platforms` instructions prescribe Command Prompt. Use the matching tab below for the shell you launched ``pixi shell`` from:
+            The :ref:`ROS 2 installation instructions <isaac_sim_app_install_ros>` prescribe Command Prompt. Use the matching tab below for the shell you launched ``pixi shell`` from:
 
             .. tab-set::
 

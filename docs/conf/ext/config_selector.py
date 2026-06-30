@@ -1,467 +1,356 @@
+from __future__ import annotations
+
 import json
+import re
+from collections.abc import Callable, Mapping, MutableMapping
+from html import escape
+from typing import ClassVar, TypedDict, cast
 
-from docutils import nodes
-from docutils.parsers.rst import Directive, directives
+from docutils import nodes  # type: ignore[import-untyped]
+from docutils.parsers.rst import Directive, directives  # type: ignore[import-untyped]
+from sphinx.application import Sphinx
+from sphinx.config import Config
+from sphinx.writers.html5 import HTML5Translator
+
+ConfigConditions = dict[str, str]
+ConfigDependencies = dict[str, ConfigConditions]
+ConfigOptions = dict[str, list[str]]
+DirectiveOption = Callable[[str], str]
+
+_CONFIG_SELECTOR_STATIC_PATH = "design_static"
+_CONFIG_SELECTOR_JS = "isaacsim-config-selector.js"
+_CONFIG_SELECTOR_SCOPES_KEY = "config_selector_scopes"
 
 
-class config_selector(nodes.General, nodes.Element):
-    """Node for the configuration selector widget"""
+class ExtensionMetadata(TypedDict):
+    """Metadata returned to Sphinx when the extension is registered."""
+
+    version: str
+    parallel_read_safe: bool
+    parallel_write_safe: bool
+
+
+class config_selector(nodes.General, nodes.Element):  # type: ignore[misc]
+    """Node for the configuration selector widget."""
 
     pass
 
 
-class config_content(nodes.General, nodes.Element):
-    """Node for content that should be shown/hidden based on configuration"""
+class config_content(nodes.General, nodes.Element):  # type: ignore[misc]
+    """Node for content that should be shown/hidden based on configuration."""
 
     pass
 
 
-class ConfigSelectorDirective(Directive):
+def _option_str(options: Mapping[str, str], key: str, default: str) -> str:
+    return options.get(key, default)
+
+
+def _normalize_scope(scope: str) -> str:
+    normalized_scope = re.sub(r"[^A-Za-z0-9_-]+", "-", scope.strip()).strip("-")
+    return normalized_scope or "default"
+
+
+def _normalize_id_part(identifier: str, fallback: str) -> str:
+    normalized_identifier = re.sub(r"[^A-Za-z0-9_-]+", "-", identifier.strip()).strip("-")
+    return normalized_identifier or fallback
+
+
+def _persist_mode(argument: str) -> str:
+    mode = argument.strip().lower()
+    if mode != "session":
+        raise ValueError(':persist: must be "session"')
+    return mode
+
+
+def _document_temp_data(document: nodes.document) -> MutableMapping[str, str] | None:
+    settings = getattr(document, "settings", None)
+    env = getattr(settings, "env", None)
+    temp_data = getattr(env, "temp_data", None)
+    if isinstance(temp_data, MutableMapping):
+        return cast(MutableMapping[str, str], temp_data)
+    return None
+
+
+def _current_selector_scope(document: nodes.document) -> str:
+    temp_data = _document_temp_data(document)
+    if temp_data is None:
+        return "default"
+
+    scope = temp_data.get("config_selector_scope", "default")
+    if isinstance(scope, str):
+        return scope
+    return "default"
+
+
+def _set_current_selector_scope(document: nodes.document, scope: str) -> None:
+    temp_data = _document_temp_data(document)
+    if temp_data is not None:
+        temp_data["config_selector_scope"] = scope
+
+
+def _register_selector_scope(document: nodes.document, scope: str, line: int) -> None:
+    temp_data = _document_temp_data(document)
+    if temp_data is None:
+        return
+
+    used_scopes = temp_data.get(_CONFIG_SELECTOR_SCOPES_KEY, "")
+    used_scope_list = used_scopes.split(",") if used_scopes else []
+    if scope in used_scope_list:
+        document.reporter.warning(
+            f'config-selector scope "{scope}" is used more than once in this document; '
+            "set a unique :scope: to avoid duplicate HTML IDs and shared URL parameters.",
+            line=line,
+        )
+        return
+
+    used_scope_list.append(scope)
+    temp_data[_CONFIG_SELECTOR_SCOPES_KEY] = ",".join(used_scope_list)
+
+
+def _parse_config_options(options_str: str) -> ConfigOptions:
+    config_options: ConfigOptions = {}
+
+    for option_pair in options_str.split(","):
+        if "=" in option_pair:
+            key, values = option_pair.strip().split("=", 1)
+            config_options[key.strip()] = [value.strip() for value in values.split("|")]
+
+    return config_options
+
+
+def _parse_dependencies(deps_str: str) -> ConfigDependencies:
+    config_deps: ConfigDependencies = {}
+
+    for dep_pair in deps_str.split(",") if deps_str else []:
+        dep_pair = dep_pair.strip()
+        if "=" not in dep_pair:
+            continue
+
+        key, dep = dep_pair.split("=", 1)
+        conditions: ConfigConditions = {}
+        for dep_condition in dep.split(";"):
+            if ":" in dep_condition:
+                dep_key, dep_value = dep_condition.split(":", 1)
+                conditions[dep_key.strip()] = dep_value.strip()
+        if conditions:
+            config_deps[key.strip()] = conditions
+
+    return config_deps
+
+
+def _parse_conditions(show_when_str: str) -> ConfigConditions:
+    conditions: ConfigConditions = {}
+
+    for condition in show_when_str.split(","):
+        if "=" in condition:
+            key, value = condition.strip().split("=", 1)
+            conditions[key.strip()] = value.strip()
+
+    return conditions
+
+
+def _node_str(node: config_selector | config_content, key: str, default: str) -> str:
+    return cast(str, node.get(key, default))
+
+
+def _node_config_options(node: config_selector) -> ConfigOptions:
+    return cast(ConfigOptions, node.get("config_options", {}))
+
+
+def _node_config_deps(node: config_selector) -> ConfigDependencies:
+    return cast(ConfigDependencies, node.get("config_deps", {}))
+
+
+def _node_conditions(node: config_content) -> ConfigConditions:
+    return cast(ConfigConditions, node.get("conditions", {}))
+
+
+class ConfigSelectorDirective(Directive):  # type: ignore[misc]
     """
     Directive to create a configuration selector at the top of the page.
 
     Usage:
     .. config-selector::
-       :options: platform=Ubuntu 22.04|Ubuntu 24.04|Windows,ros_distro=Humble|Jazzy,package_type=Default|Custom
-       :dependencies: install_method=platform:Windows
+       :scope: setup
+       :options: platform=Linux|Windows,mode=Standard|Advanced
+       :dependencies: mode=platform:Linux
 
     The optional ``:dependencies:`` option accepts a comma-separated list of
-    ``key=dep_key:dep_value`` pairs.  A row tagged this way is only visible
-    when the named dependency key has the specified value.
+    ``key=dep_key:dep_value`` pairs. A row tagged this way is only visible
+    when the named dependency key has the specified value. Multiple conditions
+    for the same row can be separated by semicolons, for example
+    ``mode=platform:Linux;edition:Advanced``.
     """
 
-    has_content = False
-    required_arguments = 0
-    optional_arguments = 0
-    option_spec = {
+    has_content: ClassVar[bool] = False
+    required_arguments: ClassVar[int] = 0
+    optional_arguments: ClassVar[int] = 0
+    option_spec: ClassVar[dict[str, DirectiveOption]] = {
         "options": directives.unchanged_required,
         "dependencies": directives.unchanged,
         "title": directives.unchanged,
+        "scope": directives.unchanged,
+        "persist": _persist_mode,
+        "persist-key": directives.unchanged,
     }
 
-    def run(self):
-        # Parse the options string
-        options_str = self.options.get("options", "")
-        deps_str = self.options.get("dependencies", "")
-        title = self.options.get("title", "Configuration").strip()
-        config_options = {}
-        config_deps = {}
+    def run(self) -> list[config_selector]:
+        options = cast(Mapping[str, str], self.options)
+        options_str = _option_str(options, "options", "")
+        deps_str = _option_str(options, "dependencies", "")
+        title = _option_str(options, "title", "Configuration").strip()
+        scope = _normalize_scope(_option_str(options, "scope", "default"))
+        persist = _option_str(options, "persist", "")
+        persist_key = _normalize_id_part(_option_str(options, "persist-key", scope), scope)
+        _register_selector_scope(self.state.document, scope, self.lineno)
+        _set_current_selector_scope(self.state.document, scope)
 
-        for option_pair in options_str.split(","):
-            if "=" in option_pair:
-                key, values = option_pair.strip().split("=", 1)
-                config_options[key.strip()] = [v.strip() for v in values.split("|")]
-
-        # Parse dependencies: "install_method=platform:Windows" means the
-        # install_method row is only shown when platform == Windows.
-        for dep_pair in deps_str.split(",") if deps_str else []:
-            dep_pair = dep_pair.strip()
-            if "=" in dep_pair:
-                key, dep = dep_pair.split("=", 1)
-                if ":" in dep:
-                    dep_key, dep_value = dep.split(":", 1)
-                    config_deps[key.strip()] = {dep_key.strip(): dep_value.strip()}
-
-        return [config_selector(config_options=config_options, config_deps=config_deps, title=title)]
+        # Parse dependencies: "mode=platform:Linux" means the
+        # mode row is only shown when platform == Linux. Multiple
+        # dependency conditions for one row can be separated with semicolons.
+        selector_node = config_selector(
+            config_options=_parse_config_options(options_str),
+            config_deps=_parse_dependencies(deps_str),
+            title=title,
+            scope=scope,
+            persist=persist,
+            persist_key=persist_key,
+        )
+        return [selector_node]
 
 
-class ConfigContentDirective(Directive):
+class ConfigContentDirective(Directive):  # type: ignore[misc]
     """
     Directive to wrap content that should be shown/hidden based on configuration.
 
     Usage:
     .. config-content::
-       :show-when: platform=Ubuntu 22.04,ros_distro=Humble
+       :show-when: platform=Linux,mode=Advanced
 
-       Content that only shows when Ubuntu 22.04 and Humble are selected.
+       Content that only shows when Linux and Advanced are selected.
     """
 
-    has_content = True
-    required_arguments = 0
-    optional_arguments = 0
-    option_spec = {
+    has_content: ClassVar[bool] = True
+    required_arguments: ClassVar[int] = 0
+    optional_arguments: ClassVar[int] = 0
+    option_spec: ClassVar[dict[str, DirectiveOption]] = {
         "show-when": directives.unchanged_required,
+        "scope": directives.unchanged,
     }
 
-    def run(self):
-        # Parse the show-when conditions
-        show_when_str = self.options.get("show-when", "")
-        conditions = {}
+    def run(self) -> list[config_content]:
+        options = cast(Mapping[str, str], self.options)
+        show_when_str = _option_str(options, "show-when", "")
+        scope = _normalize_scope(_option_str(options, "scope", _current_selector_scope(self.state.document)))
+        content_node = config_content(conditions=_parse_conditions(show_when_str), scope=scope)
 
-        for condition in show_when_str.split(","):
-            if "=" in condition:
-                key, value = condition.strip().split("=", 1)
-                conditions[key.strip()] = value.strip()
-
-        # Create the content node
-        content_node = config_content(conditions=conditions)
-
-        # Parse the content
         self.state.nested_parse(self.content, self.content_offset, content_node)
-
         return [content_node]
 
 
-def visit_config_selector_html(self, node):
-    """Render the configuration selector as HTML"""
-    config_options = node.get("config_options", {})
-    config_deps = node.get("config_deps", {})
-    title = node.get("title", "Configuration")
+def visit_config_selector_html(translator: HTML5Translator, node: config_selector) -> None:
+    """Render the configuration selector as HTML."""
 
-    selector_html = [f'<div class="config-selector" id="config-selector" role="region" aria-label="{title} selector">']
-    selector_html.append(f"<h3>{title}</h3>")
+    config_options = _node_config_options(node)
+    config_deps = _node_config_deps(node)
+    title = _node_str(node, "title", "Configuration")
+    scope = _node_str(node, "scope", "default")
+    persist = _node_str(node, "persist", "")
+    persist_key = _node_str(node, "persist_key", scope)
+    selector_id = f"config-selector-{scope}"
+    scope_attr = escape(scope, quote=True)
+    title_attr = escape(title, quote=True)
+    title_text = escape(title, quote=False)
+
+    selector_html = [
+        f'<div class="config-selector" id="{escape(selector_id, quote=True)}" data-config-scope="{scope_attr}" role="region" aria-label="{title_attr} selector">'
+    ]
+    selector_html.append(f"<h3>{title_text}</h3>")
     selector_html.append('<div class="config-options">')
 
     for key, values in config_options.items():
         dep = config_deps.get(key)
         if dep:
-            dep_json = json.dumps(dep).replace('"', "&quot;")
+            dep_json = escape(json.dumps(dep, separators=(",", ":")), quote=True)
             selector_html.append(f'<div class="config-row" data-show-when="{dep_json}">')
         else:
-            selector_html.append(f'<div class="config-row">')
-        selector_html.append(f'<div class="config-label">{key.replace("_", " ").title()}:</div>')
-        selector_html.append(f'<div class="config-buttons" data-config-key="{key}">')
+            selector_html.append('<div class="config-row">')
+        key_label = escape(key.replace("_", " ").title(), quote=False)
+        key_attr = escape(key, quote=True)
+        selector_html.append(f'<div class="config-label">{key_label}:</div>')
+        selector_html.append(f'<div class="config-buttons" data-config-key="{key_attr}">')
 
         for i, value in enumerate(values):
             active_class = "active" if i == 0 else ""
-            clean_value = value.replace(" ", "_").replace(".", "_")
+            pressed = "true" if i == 0 else "false"
+            key_id = _normalize_id_part(key, "key")
+            value_id = _normalize_id_part(value, "value")
+            button_id = f"{scope}_{key_id}_{i}_{value_id}"
+            value_attr = escape(value, quote=True)
+            value_text = escape(value, quote=False)
             selector_html.append(
-                f'<button class="config-btn {active_class}" data-value="{value}" data-key="{key}" id="{key}_{clean_value}">{value}</button>'
+                f'<button type="button" class="config-btn btn btn-sm btn-outline-primary {active_class}" data-value="{value_attr}" data-key="{key_attr}" id="{button_id}" aria-pressed="{pressed}">{value_text}</button>'
             )
 
         selector_html.append("</div>")
         selector_html.append("</div>")
 
     selector_html.append("</div>")
+
+    metadata_json = json.dumps(
+        {
+            "scope": scope,
+            "title": title,
+            "options": config_options,
+            "dependencies": config_deps,
+            "persist": persist,
+            "persistKey": persist_key,
+        },
+        separators=(",", ":"),
+    ).replace("</", "<\\/")
+    selector_html.append(
+        f'<script type="application/json" class="config-selector-metadata" data-config-scope="{scope_attr}">{metadata_json}</script>'
+    )
     selector_html.append("</div>")
 
-    # Add CSS and JavaScript
-    css = """
-    <style>
-    .config-selector {
-        position: fixed;
-        top: var(--pst-header-height, 60px);
-        left: 0;
-        right: 0;
-        z-index: 1020;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: center;
-        gap: 12px 18px;
-        background-color: var(--pst-color-surface, rgba(248, 249, 250, 0.95));
-        border-bottom: 1px solid var(--pst-color-border, var(--color-border, #dee2e6));
-        border-radius: 0;
-        padding: 10px 24px;
-        margin: 0;
-        box-shadow: 0 4px 12px var(--pst-color-shadow, rgba(0,0,0,0.08));
-        backdrop-filter: saturate(180%) blur(6px);
-        -webkit-backdrop-filter: saturate(180%) blur(6px);
-    }
-
-    [data-theme="dark"] .config-selector {
-        background-color: var(--pst-color-surface, rgba(30, 30, 30, 0.92));
-        border-color: var(--pst-color-border, #404040);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    }
-
-    .config-selector h3 {
-        display: inline-block;
-        margin: 0 16px 0 0;
-        color: var(--pst-color-text-base, var(--color-foreground-primary, #212529));
-        font-size: 0.95em;
-        font-weight: 600;
-        vertical-align: middle;
-    }
-
-    [data-theme="dark"] .config-selector h3 {
-        color: var(--pst-color-text-base, #ffffff);
-    }
-
-    .config-options {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 10px 18px;
-        align-items: center;
-    }
-
-    .config-row {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .config-label {
-        font-weight: 600;
-        color: var(--pst-color-text-base, var(--color-foreground-primary, #212529));
-        font-size: 13px;
-        white-space: nowrap;
-    }
-
-    [data-theme="dark"] .config-label {
-        color: var(--pst-color-text-base, #ffffff);
-    }
-    
-    .config-buttons {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-    
-    .config-btn {
-        padding: 5px 10px;
-        border: 2px solid var(--pst-color-border, var(--color-border, #dee2e6));
-        border-radius: 6px;
-        background-color: var(--pst-color-surface, var(--color-background-primary, #ffffff));
-        color: var(--pst-color-text-base, var(--color-foreground-primary, #212529));
-        font-size: 12px;
-        font-weight: 500;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
-        white-space: nowrap;
-        user-select: none;
-        outline: none;
-    }
-    
-    [data-theme="dark"] .config-btn {
-        border-color: var(--pst-color-border, #404040);
-        background-color: var(--pst-color-surface, #2d2d2d);
-        color: var(--pst-color-text-base, #cccccc);
-    }
-    
-    .config-btn:hover {
-        border-color: var(--pst-color-primary, var(--color-brand-primary, #0d6efd));
-        background-color: var(--pst-color-primary-bg, var(--color-background-hover, #e9ecef));
-        color: var(--pst-color-text-base, var(--color-foreground-primary, #212529));
-    }
-    
-    [data-theme="dark"] .config-btn:hover {
-        border-color: #666666;
-        background-color: #3d3d3d;
-        color: #ffffff;
-    }
-    
-    .config-btn.active {
-        border-color: #76b900;
-        background-color: #76b900;
-        color: #ffffff;
-        font-weight: 600;
-    }
-    
-    .config-btn.active:hover {
-        border-color: #669900;
-        background-color: #669900;
-        color: #ffffff;
-    }
-    
-    .config-btn:focus {
-        box-shadow: 0 0 0 3px rgba(118, 185, 0, 0.2);
-    }
-    
-    .config-content {
-        transition: opacity 0.3s ease-in-out;
-    }
-    
-    .config-content.hidden {
-        display: none;
-    }
-    
-    @media (max-width: 768px) {
-        .config-selector {
-            padding: 8px 10px;
-        }
-
-        .config-options {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 8px;
-        }
-    }
-
-    @media print {
-        .config-selector {
-            position: static;
-            backdrop-filter: none;
-        }
-    }
-    </style>
-    """
-
-    js = """
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const buttons = document.querySelectorAll('.config-btn');
-        const contents = document.querySelectorAll('.config-content');
-
-        // Returns the active value for each visible config row.
-        // Rows hidden by a data-show-when dependency are excluded so their
-        // value does not accidentally filter out content blocks.
-        function getCurrentConfig() {
-            const config = {};
-            const buttonGroups = document.querySelectorAll('.config-buttons');
-
-            buttonGroups.forEach(group => {
-                const row = group.closest('.config-row');
-                if (row && row.style.display === 'none') return;
-
-                const activeBtn = group.querySelector('.config-btn.active');
-                if (activeBtn) {
-                    config[group.dataset.configKey] = activeBtn.dataset.value;
-                }
-            });
-
-            return config;
-        }
-
-        // Show or hide config rows that have a data-show-when dependency.
-        // Must be called before updateVisibility() so getCurrentConfig() is correct.
-        function updateRowVisibility() {
-            const config = getCurrentConfig();
-            document.querySelectorAll('.config-row[data-show-when]').forEach(row => {
-                try {
-                    const showWhen = JSON.parse(row.dataset.showWhen || '{}');
-                    const visible = Object.entries(showWhen).every(([k, v]) => config[k] === v);
-                    row.style.display = visible ? '' : 'none';
-                } catch (e) {
-                    console.warn('Error parsing data-show-when for row:', e);
-                }
-            });
-        }
-
-        function updateVisibility() {
-            const currentConfig = getCurrentConfig();
-
-            contents.forEach(content => {
-                try {
-                    const conditions = JSON.parse(content.dataset.conditions || '{}');
-                    const shouldShow = Object.entries(conditions).every(
-                        ([key, value]) => currentConfig[key] === value
-                    );
-
-                    if (shouldShow) {
-                        content.classList.remove('hidden');
-                        content.style.display = 'block';
-                    } else {
-                        content.classList.add('hidden');
-                        content.style.display = 'none';
-                    }
-                } catch (e) {
-                    console.warn('Error parsing conditions for content block:', e);
-                }
-            });
-        }
-
-        // Add click event listeners to buttons
-        buttons.forEach(button => {
-            button.addEventListener('click', function() {
-                this.parentNode.querySelectorAll('.config-btn').forEach(s => s.classList.remove('active'));
-                this.classList.add('active');
-
-                // Row visibility must be updated before content visibility.
-                updateRowVisibility();
-                updateVisibility();
-            });
-
-            button.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    this.click();
-                }
-            });
-        });
-
-        const banner = document.querySelector('.config-selector');
-
-        // Position the banner just below whatever is currently pinned to
-        // the top of the viewport (PyData navbar + version-warning + any
-        // announcement). Recomputed on scroll/resize so the banner shifts
-        // down when the version-warning is visible and up after it scrolls
-        // out of view.
-        const topElements = [
-            document.querySelector('.bd-header-announcement'),
-            document.querySelector('#bd-header-version-warning'),
-            document.querySelector('.bd-header.navbar'),
-        ].filter(Boolean);
-
-        // Element that holds article content; padded down so its content
-        // is never overlapped by the fixed banner regardless of wrap.
-        const contentRoot = document.querySelector('.bd-main') ||
-                            document.querySelector('main') ||
-                            document.body;
-
-        function updateBannerTop() {
-            if (!banner) return;
-            let bottom = 0;
-            topElements.forEach(el => {
-                const rect = el.getBoundingClientRect();
-                if (rect.bottom > bottom) bottom = rect.bottom;
-            });
-            banner.style.top = Math.max(0, bottom) + 'px';
-        }
-
-        function updateContentOffset() {
-            if (!banner || !contentRoot) return;
-            const h = banner.offsetHeight;
-            contentRoot.style.paddingTop = h + 'px';
-            // Anchor links should land below the banner, not behind it.
-            document.documentElement.style.scrollPaddingTop = (h + 16) + 'px';
-        }
-
-        if (banner && 'ResizeObserver' in window) {
-            new ResizeObserver(() => {
-                updateContentOffset();
-                updateBannerTop();
-            }).observe(banner);
-        }
-        window.addEventListener('resize', () => {
-            updateContentOffset();
-            updateBannerTop();
-        });
-        window.addEventListener('scroll', updateBannerTop, { passive: true });
-
-        // Initial update
-        setTimeout(function() {
-            updateRowVisibility();
-            updateVisibility();
-            updateContentOffset();
-            updateBannerTop();
-        }, 100);
-
-        // Watch for theme changes
-    });
-    </script>
-    """
-
-    self.body.append(css)
-    self.body.append("".join(selector_html))
-    self.body.append(js)
+    translator.body.append("".join(selector_html))
 
 
-def depart_config_selector_html(self, node):
+def depart_config_selector_html(_translator: HTML5Translator, _node: config_selector) -> None:
     pass
 
 
-def visit_config_content_html(self, node):
-    """Render the config content wrapper"""
-    conditions = node.get("conditions", {})
-    conditions_json = json.dumps(conditions).replace('"', "&quot;")
+def visit_config_content_html(translator: HTML5Translator, node: config_content) -> None:
+    """Render the config content wrapper."""
 
-    self.body.append(f'<div class="config-content" data-conditions="{conditions_json}">')
+    conditions = _node_conditions(node)
+    scope = _node_str(node, "scope", "default")
+    conditions_json = escape(json.dumps(conditions, separators=(",", ":")), quote=True)
+
+    translator.body.append(
+        f'<div class="config-content" data-config-scope="{escape(scope, quote=True)}" data-conditions="{conditions_json}">'
+    )
 
 
-def depart_config_content_html(self, node):
-    self.body.append("</div>")
+def depart_config_content_html(translator: HTML5Translator, _node: config_content) -> None:
+    translator.body.append("</div>")
 
 
-def setup(app):
-    """Setup the extension"""
+def _on_config_inited(_app: Sphinx, config: Config) -> None:
+    if _CONFIG_SELECTOR_STATIC_PATH not in config.html_static_path:
+        config.html_static_path.append(_CONFIG_SELECTOR_STATIC_PATH)
+
+
+def setup(app: Sphinx) -> ExtensionMetadata:
+    """Set up the extension."""
+
     app.add_node(config_selector, html=(visit_config_selector_html, depart_config_selector_html))
     app.add_node(config_content, html=(visit_config_content_html, depart_config_content_html))
     app.add_directive("config-selector", ConfigSelectorDirective)
     app.add_directive("config-content", ConfigContentDirective)
+    app.add_js_file(_CONFIG_SELECTOR_JS)
+    app.connect("config-inited", _on_config_inited)
 
     return {
         "version": "1.0",

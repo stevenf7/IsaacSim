@@ -297,6 +297,14 @@ Running Isaac Sim
    * On |spark_short| / :ref:`aarch64 architecture<isaac_sim_requirements_aarch64_limitations>`, it may be necessary to preload (``LD_PRELOAD``) the ``libgomp`` shared library for some modules to be loaded.
      When the ``isaacsim`` package is imported, a check will be performed, after which a message providing preload instructions may be displayed.
 
+.. note::
+
+    Linux pip installations do not run the ``python.sh`` or ``isaac-sim.sh`` launchers used by binary
+    installations. When no ROS 2 environment is sourced, the ROS 2 Bridge extension configures the bundled ROS 2
+    libraries automatically. If the ROS 2 Bridge prints environment setup warnings and your workflow does not use
+    ROS 2, you can ignore them. If you want to use a system ROS 2 installation, custom message packages, or a custom
+    RMW implementation, source that environment in the same terminal before launching |isaac-sim_short|.
+
 Launching Isaac Sim Experiences
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -33,7 +33,6 @@ Section Contents
    manual_livestream_clients
    install_python
    install_ros
-   install_ros_other_platforms
    install_faq
 
 

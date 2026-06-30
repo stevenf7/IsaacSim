@@ -360,6 +360,98 @@ button.isaacsim-action.sd-btn-outline-primary:focus {
 }
 
 
+/* Configuration selector toolbar. Markup is emitted by docs/conf/ext/config_selector.py. */
+.config-selector {
+  position: fixed;
+  inset-block-start: var(--pst-header-height, 60px);
+  inset-inline: 0;
+  z-index: var(--pst-zindex-fixed, 1020);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1.125rem;
+  margin: 0;
+  padding: 0.625rem 1.5rem;
+  color: var(--pst-color-text-base);
+  background: var(--pst-color-background);
+  border-block-end: 1px solid var(--pst-color-border);
+  box-shadow: none !important;
+}
+
+.config-selector h3 {
+  margin: 0 0.25rem 0 0;
+  color: var(--pst-color-text-base);
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.config-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem 1.125rem;
+}
+
+.config-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.config-label {
+  color: var(--pst-color-text-muted, var(--pst-color-text-base));
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.config-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.config-btn.btn {
+  white-space: nowrap;
+}
+
+.config-btn.btn-outline-primary {
+  --bs-btn-color: var(--nv-color-green-2, var(--pst-color-primary, #004831));
+  --bs-btn-border-color: var(--nv-color-green, #76b900);
+  --bs-btn-hover-color: #111713;
+  --bs-btn-hover-bg: var(--nv-color-green, #76b900);
+  --bs-btn-hover-border-color: var(--nv-color-green, #76b900);
+  --bs-btn-active-color: #111713;
+  --bs-btn-active-bg: var(--nv-color-green, #76b900);
+  --bs-btn-active-border-color: var(--nv-color-green, #76b900);
+  --bs-btn-focus-shadow-rgb: var(--isaacsim-nv-green-rgb);
+}
+
+.config-content.hidden {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .config-selector {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .config-options {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+}
+
+@media print {
+  .config-selector {
+    position: static;
+  }
+}
+
 
 .isaacsim-tabset__radio {
   position: absolute;
