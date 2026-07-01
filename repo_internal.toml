@@ -194,6 +194,7 @@ python_paths = [
   "${root}/_build/${platform}/${config}/extscache/omni.kit.pip_archive*/pip_prebundle",
   "${root}/_build/${platform}/${config}/extscache/omni.kit.pip_archive*/pip_prebundle/Pillow/pillow*",
   "${root}/_build/${platform}/${config}/extsDeprecated/omni.isaac.ml_archive/pip_prebundle",
+  "${root}/_build/${platform}/${config}/exts/isaacsim.pip.nv/pip_prebundle",
 ]
 
 sphinx_conf_py_extra = """
@@ -616,6 +617,7 @@ excluded_extensions = [
   "omni.pip.compute",
   "omni.pip.cloud",
   "isaacsim.pip.newton",
+  "isaacsim.pip.nv",
 ]
 extension_folder = [
   "${root}/source/extensions",
@@ -629,6 +631,7 @@ dependencies_files = [
   "https://gitlab-master.nvidia.com/omniverse/kit/-/raw/${githash}/kit/deps/pip-3.12.toml",
   "${root}/deps/pip.toml",  # omni.isaac.core_archive
   "${root}/deps/pip_ml.toml",  # omni.isaac.ml_archive
+  "${root}/deps/pip_nv.toml",  # isaacsim.pip.nv
   "${root}/deps/pip_compute.toml",  # omni.pip.compute
   "${root}/deps/pip_cloud.toml",  # omni.pip.cloud
   "${root}/deps/pip_newton.toml",  # isaacsim.pip.newton
@@ -992,6 +995,7 @@ exts_exclude = [
   "omni.pip.compute",
   "omni.pip.cloud",
   "omni.isaac.core_archive",
+  "isaacsim.pip.nv",
   "isaacsim.xr.input_devices",
   "isaacsim.kit.xr.teleop.bridge",
   "isaacsim.replicator.episode_recorder",

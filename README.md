@@ -266,7 +266,7 @@ A successful [build](#quick-start) is required before packaging.
 The three steps, in order:
 
 1. `python_package --create` stages per-package source trees under `_build/packages/python/` from the wheel definitions in [python_packages.toml](python_packages.toml).
-2. `comment_archive_deps` comments out references to Kit pip-archive extensions (`omni.kit.pip_archive`, `omni.isaac.core_archive`, `omni.isaac.ml_archive`, `omni.pip.compute`, `omni.pip.cloud`, `isaacsim.pip.newton`) in the generated `extension.toml` and `*.kit` files so wheel metadata is self-contained.
+2. `comment_archive_deps` comments out references to Kit pip-archive extensions (`omni.kit.pip_archive`, `omni.isaac.core_archive`, `omni.isaac.ml_archive`, `omni.pip.compute`, `omni.pip.cloud`, `isaacsim.pip.newton`, `isaacsim.pip.nv`) in the generated `extension.toml` and `*.kit` files so wheel metadata is self-contained.
 3. `python_package --wheel` builds the `.whl` files into `_build/packages/dist/`.
 
 Install locally-built wheels into a Python 3.12 virtual environment:

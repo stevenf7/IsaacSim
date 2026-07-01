@@ -278,6 +278,7 @@ Extensions
    isaacsim.physics.newton.tensors <source/extensions/isaacsim.physics.newton.tensors/docs/index>
    isaacsim.physics.newton.ui <source/extensions/isaacsim.physics.newton.ui/docs/index>
    isaacsim.pip.newton <source/extensions/isaacsim.pip.newton/docs/index>
+   isaacsim.pip.nv <source/extensions/isaacsim.pip.nv/docs/index>
    omni.cuopt.examples <source/internal_extensions/omni.cuopt.examples/docs/index>
    omni.cuopt.service <source/internal_extensions/omni.cuopt.service/docs/index>
    omni.cuopt.visualization <source/internal_extensions/omni.cuopt.visualization/docs/index>

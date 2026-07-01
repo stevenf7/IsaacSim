@@ -89,6 +89,7 @@ fetch.packman_target_files_to_pull = [
 fetch.pip.files_to_pull = [
   "${root}/deps/pip.toml",
   "${root}/deps/pip_ml.toml",
+  "${root}/deps/pip_nv.toml",
   "${root}/deps/pip_lula.toml",
   "${root}/deps/pip_cumotion.toml",
   "${root}/deps/pip_pink.toml",
@@ -1381,6 +1382,7 @@ wheel.python = "cp312"
 [repo_comment_archive_deps]
 archives = [
   "isaacsim.pip.newton",
+  "isaacsim.pip.nv",
   "omni.isaac.core_archive",
   "omni.isaac.ml_archive",
   "omni.pip.compute",
