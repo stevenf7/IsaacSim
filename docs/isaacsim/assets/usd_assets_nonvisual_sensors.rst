@@ -804,17 +804,6 @@ To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>picoScan1
 
 To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>picoScan150>SICK_picoScan150.usd*
 
-.. mdinclude:: SICK/TIM781/readme.md
-
-.. figure:: /images/usd_assets_sensors/isim_4.5_full_ref_viewport_Isaac_Sensors_tim781.png
-    :align: center
-    :alt: SICK TiM781 3
-    :width: 50%
-
-    To create the sensor from the menu: *Create>Sensors>RTX Lidar>SICK>TiM781*
-
-To create the sensor from the Content Browser: *Isaac Sim>Sensors>SICK>tim781.usd*
-
 SLAMTEC
 ----------
 

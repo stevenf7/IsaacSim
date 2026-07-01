@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.3] - 2026-06-29
+### Removed
+- Removed the Create menu action for the retired SICK TiM781 asset.
+
 ## [1.5.2] - 2026-06-24
 ### Fixed
 - Use USD-authored defaults for Create menu sensor variant selections.
