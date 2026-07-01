@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.8] - 2026-06-29
+### Removed
+- Removed the retired SICK TiM781 asset from `SUPPORTED_LIDAR_CONFIGS`; use the SICK picoScan100 family instead.
+
 ## [1.4.7] - 2026-06-12
 ### Fixed
 - `SingleViewDepthCameraSensor`: correctly populates render vars for depth sensor SPG.

@@ -1,5 +1,9 @@
 # Changelog
 
+## [15.17.2] - 2026-06-29
+### Removed
+- Removed the legacy lidar configuration for the retired SICK TiM781 asset.
+
 ## [15.17.1] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.
