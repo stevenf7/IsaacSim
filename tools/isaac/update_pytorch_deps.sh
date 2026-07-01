@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Script to update PyTorch dependencies in pip_ml.toml and python_packages.toml
+# Script to update PyTorch dependencies in pip_ml.toml, pip_nv.toml and python_packages.toml
 
 # Check for required arguments
 if [ "$#" -lt 2 ]; then
@@ -26,11 +26,16 @@ fi
 PYTHON_VERSION=$1
 PYTORCH_INSTALL_CMD=$2
 PIP_ML_TOML="deps/pip_ml.toml"
+PIP_NV_TOML="deps/pip_nv.toml"
 PYTHON_PACKAGES_TOML="python_packages.toml"
 
 # Check if TOML files exist
 if [ ! -f "$PIP_ML_TOML" ]; then
     echo "Error: $PIP_ML_TOML not found."
+    exit 1
+fi
+if [ ! -f "$PIP_NV_TOML" ]; then
+    echo "Error: $PIP_NV_TOML not found."
     exit 1
 fi
 if [ ! -f "$PYTHON_PACKAGES_TOML" ]; then
@@ -90,12 +95,16 @@ INDEX_URL=$(echo "$PYTORCH_INSTALL_CMD" | grep -oP '(?:--index-url|--extra-index
 echo "Updating $PIP_ML_TOML..."
 python tools/isaac/update_toml.py "$TEMP_DIR/requirements.txt" "$PIP_ML_TOML"
 
+echo "Updating $PIP_NV_TOML..."
+python tools/isaac/update_toml.py "$TEMP_DIR/requirements.txt" "$PIP_NV_TOML"
+
 echo "Updating $PYTHON_PACKAGES_TOML..."
 python tools/isaac/update_toml.py "$TEMP_DIR/requirements.txt" "$PYTHON_PACKAGES_TOML"
 
 if [ -n "$INDEX_URL" ]; then
     echo "Updating extra_args index URL to: $INDEX_URL"
     sed -i 's|extra_args = \["--extra-index-url", "[^"]*"\]|extra_args = ["--extra-index-url", "'"$INDEX_URL"'"]|g' "$PIP_ML_TOML"
+    sed -i 's|extra_args = \["--extra-index-url", "[^"]*"\]|extra_args = ["--extra-index-url", "'"$INDEX_URL"'"]|g' "$PIP_NV_TOML"
 else
     echo "Warning: No --index-url or --extra-index-url found in install command, skipping extra_args update."
 fi
