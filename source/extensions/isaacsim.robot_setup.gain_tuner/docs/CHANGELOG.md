@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.5.4] - 2026-07-01
+### Fixed
+- Built-in Step and Sinusoidal tests: observed-joint plot was a flat line because recorded samples aliased the reused PhysX/Warp buffer from `get_dof_positions()/get_dof_velocities()`. Copy each sample before storing so the observed trajectory reflects actual motion (command series was already copied; stress and snap-to-limits tests already copied).
+
 ## [3.5.3] - 2026-06-09
 ### Fixed
 - Fix linter errors and missing or incomplete docstrings, and update `python_api.md`.

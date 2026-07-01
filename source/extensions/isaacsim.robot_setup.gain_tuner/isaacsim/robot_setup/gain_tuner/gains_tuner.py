@@ -1391,8 +1391,8 @@ class GainTuner:
 
             yield ()
 
-            self._observed_joint_positions.append(self._articulation.get_dof_positions().numpy()[0])
-            self._observed_joint_velocities.append(self._articulation.get_dof_velocities().numpy()[0])
+            self._observed_joint_positions.append(self._articulation.get_dof_positions().numpy()[0].copy())
+            self._observed_joint_velocities.append(self._articulation.get_dof_velocities().numpy()[0].copy())
 
     def _record_test_sample(self, position_targets: np.ndarray, velocity_targets: np.ndarray) -> None:
         """Record a single test sample.
@@ -1403,8 +1403,8 @@ class GainTuner:
         """
         self._joint_position_commands.append(np.copy(position_targets))
         self._joint_velocity_commands.append(np.copy(velocity_targets))
-        self._observed_joint_positions.append(self._articulation.get_dof_positions().numpy()[0])
-        self._observed_joint_velocities.append(self._articulation.get_dof_velocities().numpy()[0])
+        self._observed_joint_positions.append(self._articulation.get_dof_positions().numpy()[0].copy())
+        self._observed_joint_velocities.append(self._articulation.get_dof_velocities().numpy()[0].copy())
         self._command_times.append(self._test_timestep)
 
     def _finalize_test_data(self) -> None:
