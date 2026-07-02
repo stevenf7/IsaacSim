@@ -71,7 +71,10 @@ from isaacsim.robot_setup.gain_tuner.ui.joint_table_widget import (
     _tunable_value_column_ids,
     get_damping_attr,
     get_joint_drive_mode,
+    get_mimic_damping_ratio_attr,
+    get_mimic_natural_frequency_attr,
     get_stiffness_attr,
+    is_joint_mimic,
 )
 from isaacsim.robot_setup.gain_tuner.usd_layer_utils import (
     collect_gain_save_edits,
@@ -1796,6 +1799,21 @@ class TestGainTunerUsdUtilitiesCollectEdits(omni.kit.test.AsyncTestCase):
         self.assertAlmostEqual(collected_values[dr_attr.GetPath()], 0.08, places=5)
 
 
+class _FakeMimicPrim:
+    """Minimal stand-in for a USD joint prim for mimic-detection unit tests.
+
+    Only implements ``GetAppliedSchemas`` (used by mimic detection and the
+    PhysX axis parser). Avoids depending on runtime schema registration of the
+    PhysX/Newton mimic APIs, which may not be loaded in all test configs.
+    """
+
+    def __init__(self, applied_schemas: list[str]) -> None:
+        self._applied_schemas = list(applied_schemas)
+
+    def GetAppliedSchemas(self) -> list[str]:  # noqa: N802 - matches USD API
+        return list(self._applied_schemas)
+
+
 class TestJointTableHelpers(omni.kit.test.AsyncTestCase):
     """Joint table attribute getters and cell applicability (no full tree view)."""
 
@@ -1816,6 +1834,38 @@ class TestJointTableHelpers(omni.kit.test.AsyncTestCase):
         stage = Usd.Stage.CreateInMemory()
         prim = stage.DefinePrim("/nondrive", "Xform")
         self.assertIsNone(get_stiffness_attr(prim))
+
+    async def test_is_joint_mimic_detects_physx_schema(self) -> None:
+        """Joints with the legacy PhysX per-axis mimic schema are detected."""
+        joint = _FakeMimicPrim(["PhysxJointAPI", "PhysxMimicJointAPI:rotZ"])
+        self.assertTrue(is_joint_mimic(joint))
+
+    async def test_is_joint_mimic_detects_newton_schema(self) -> None:
+        """Joints with the Newton single-apply mimic schema are detected."""
+        joint = _FakeMimicPrim(["NewtonMimicAPI"])
+        self.assertTrue(is_joint_mimic(joint))
+
+    async def test_is_joint_mimic_false_for_plain_joint(self) -> None:
+        """Plain driven joints are not reported as mimic."""
+        joint = _FakeMimicPrim(["PhysxJointAPI"])
+        self.assertFalse(is_joint_mimic(joint))
+
+    async def test_newton_mimic_gain_attrs_return_none(self) -> None:
+        """Newton mimic joints have no NF/DR/damping attrs, so getters return None.
+
+        This also guards against the axis-parsing IndexError that occurs when a
+        mimic joint has no PhysX per-axis schema instance.
+        """
+        joint = _FakeMimicPrim(["NewtonMimicAPI"])
+        self.assertTrue(is_joint_mimic(joint))
+        self.assertIsNone(get_mimic_natural_frequency_attr(joint))
+        self.assertIsNone(get_mimic_damping_ratio_attr(joint))
+        self.assertIsNone(get_damping_attr(joint))
+
+    async def test_get_joint_drive_mode_newton_mimic(self) -> None:
+        """Newton mimic joints report the MIMIC drive mode."""
+        joint = _FakeMimicPrim(["NewtonMimicAPI"])
+        self.assertEqual(get_joint_drive_mode(joint), JointDriveMode.MIMIC.value)
 
     async def test_tunable_value_column_ids_stiffness_vs_nf_mode(self) -> None:
         """Tunable value columns switch between stiffness and natural-frequency modes."""

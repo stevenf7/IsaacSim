@@ -189,7 +189,7 @@ class JointDriveMode(IntEnum):
     """Velocity-only drive (zero stiffness, non-zero damping)."""
 
     MIMIC = 3
-    """Mimic joint (parameters from PhysX MimicJointAPI)."""
+    """Mimic joint (PhysX PhysxMimicJointAPI or Newton NewtonMimicAPI)."""
 
 
 class ComboListModel(ui.AbstractItemModel):
@@ -309,47 +309,82 @@ class ComboListModel(ui.AbstractItemModel):
         return self.get_current_index() == self._default_index
 
 
+# Applied-schema tokens for mimic joints. PhysX uses a multi-apply schema whose
+# applied name ends in the drive axis (e.g. ``PhysxMimicJointAPI:rotZ``). Newton
+# uses a single-apply schema (``NewtonMimicAPI``) with no axis suffix and no
+# natural-frequency / damping-ratio / damping tuning attributes.
+_PHYSX_MIMIC_SCHEMA_TOKEN = "MimicJointAPI"
+_NEWTON_MIMIC_SCHEMA_TOKEN = "NewtonMimicAPI"
+
+
+def _get_physx_mimic_axis(joint: object) -> str | None:
+    """Return the drive axis of an applied PhysX ``MimicJointAPI``, or None.
+
+    Args:
+        joint: The joint to inspect.
+
+    Returns:
+        The axis instance token (e.g. ``rotZ``) if a PhysX mimic schema is
+        applied, otherwise None (including for Newton-only mimic joints).
+    """
+    physx_schemas = [a for a in joint.GetAppliedSchemas() if _PHYSX_MIMIC_SCHEMA_TOKEN in a]
+    if not physx_schemas:
+        return None
+    return physx_schemas[-1].split(":")[-1]
+
+
 def is_joint_mimic(joint: object) -> bool:
-    """Check if a joint has mimic joint API applied.
+    """Check if a joint has a mimic joint API applied.
+
+    Detects both the legacy PhysX ``PhysxMimicJointAPI`` (multi-apply, per-axis)
+    and the current Newton ``NewtonMimicAPI`` (single-apply) schemas so mimic
+    joints authored by either path are recognized.
 
     Args:
         joint: The joint to check
 
     Returns:
-        True if joint has MimicJointAPI applied, False otherwise
+        True if joint has a PhysX or Newton mimic API applied, False otherwise
     """
-    return len([a for a in joint.GetAppliedSchemas() if "MimicJointAPI" in a]) > 0
+    return any(
+        _PHYSX_MIMIC_SCHEMA_TOKEN in a or a.startswith(_NEWTON_MIMIC_SCHEMA_TOKEN)
+        for a in joint.GetAppliedSchemas()
+    )
 
 
 def get_mimic_natural_frequency_attr(joint: object) -> pxr.Usd.Attribute | None:
     """Get the natural frequency attribute for a mimic joint.
 
+    Only PhysX mimic joints expose a natural-frequency attribute; Newton mimic
+    joints have no tunable gains, so None is returned for them.
+
     Args:
         joint: The joint to get the attribute from
 
     Returns:
-        The natural frequency attribute if joint is mimic, None otherwise
+        The natural frequency attribute for a PhysX mimic joint, None otherwise
     """
-    if is_joint_mimic(joint):
-        mimic_axis = [a for a in joint.GetAppliedSchemas() if "MimicJointAPI" in a][-1].split(":")[-1]
-        attr = joint.GetAttribute(f"physxMimicJoint:{mimic_axis}:naturalFrequency")
-        return attr
+    mimic_axis = _get_physx_mimic_axis(joint)
+    if mimic_axis is not None:
+        return joint.GetAttribute(f"physxMimicJoint:{mimic_axis}:naturalFrequency")
     return None
 
 
 def get_mimic_damping_ratio_attr(joint: object) -> pxr.Usd.Attribute | None:
     """Get the damping ratio attribute for a mimic joint.
 
+    Only PhysX mimic joints expose a damping-ratio attribute; Newton mimic
+    joints have no tunable gains, so None is returned for them.
+
     Args:
         joint: The joint to get the attribute from
 
     Returns:
-        The damping ratio attribute if joint is mimic, None otherwise
+        The damping ratio attribute for a PhysX mimic joint, None otherwise
     """
-    if is_joint_mimic(joint):
-        mimic_axis = [a for a in joint.GetAppliedSchemas() if "MimicJointAPI" in a][-1].split(":")[-1]
-        attr = joint.GetAttribute(f"physxMimicJoint:{mimic_axis}:dampingRatio")
-        return attr
+    mimic_axis = _get_physx_mimic_axis(joint)
+    if mimic_axis is not None:
+        return joint.GetAttribute(f"physxMimicJoint:{mimic_axis}:dampingRatio")
     return None
 
 
@@ -413,9 +448,14 @@ def get_damping_attr(joint: object, drive_axis: object = None) -> pxr.Usd.Attrib
         The damping attribute if valid joint type, None otherwise
     """
     if is_joint_mimic(joint):
-        mimic_axis = [a for a in joint.GetAppliedSchemas() if "MimicJointAPI" in a][-1].split(":")[-1]
-        attr = joint.GetAttribute(f"physxMimicJoint:{mimic_axis}:damping")
-        return attr
+        # Mimic joints are constraint-driven and never expose a drive damping
+        # attribute. PhysX mimic joints expose a dedicated damping attr; Newton
+        # mimic joints have none, so return None rather than falling through to
+        # the DriveAPI damping.
+        mimic_axis = _get_physx_mimic_axis(joint)
+        if mimic_axis is not None:
+            return joint.GetAttribute(f"physxMimicJoint:{mimic_axis}:damping")
+        return None
     if drive_axis:
         driveAPI = pxr.UsdPhysics.DriveAPI(joint, drive_axis)
         if driveAPI:

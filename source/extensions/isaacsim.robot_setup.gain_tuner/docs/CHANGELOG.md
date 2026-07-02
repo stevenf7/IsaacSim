@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.5.5] - 2026-07-02
+### Fixed
+- `is_joint_mimic`: detect Newton `NewtonMimicAPI` (single-apply) joints in addition to legacy PhysX `PhysxMimicJointAPI`, so Newton-authored mimic joints are recognized as mimic instead of being shown/tested as regular driven joints. Mimic gain-attribute getters (`get_mimic_natural_frequency_attr`, `get_mimic_damping_ratio_attr`, `get_damping_attr`) now parse the PhysX per-axis instance safely and return `None` for Newton mimic joints (which have no tunable gains), avoiding an `IndexError` from axis parsing.
+
 ## [3.5.4] - 2026-07-01
 ### Fixed
 - Built-in Step and Sinusoidal tests: observed-joint plot was a flat line because recorded samples aliased the reused PhysX/Warp buffer from `get_dof_positions()/get_dof_velocities()`. Copy each sample before storing so the observed trajectory reflects actual motion (command series was already copied; stress and snap-to-limits tests already copied).
